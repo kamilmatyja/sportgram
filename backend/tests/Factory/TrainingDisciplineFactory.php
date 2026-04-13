@@ -13,7 +13,7 @@ final class TrainingDisciplineFactory extends BaseFactory
     {
         $defaults = [
             'trainingParticipant' => TrainingParticipantFactory::make(),
-            'discipline' => self::uniqueEnum(DisciplineEnum::class),
+            'discipline' => self::randomEnum(DisciplineEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

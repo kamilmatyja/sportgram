@@ -15,7 +15,7 @@ final class EventDisciplineListFactory extends BaseFactory
             'eventDisciplineDistance' => EventDisciplineDistanceFactory::make(),
             'feed' => FeedFactory::make(),
             'user' => UserFactory::make(),
-            'status' => self::uniqueEnum(EventDisciplineListStatusEnum::class),
+            'status' => self::randomEnum(EventDisciplineListStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

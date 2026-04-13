@@ -14,8 +14,8 @@ final class FeedCommentFactory extends BaseFactory
         $defaults = [
             'feed' => FeedFactory::make(),
             'user' => UserFactory::make(),
-            'text' => self::uniqueString('text'),
-            'status' => self::uniqueEnum(ElementStatusEnum::class),
+            'text' => self::randomString('text'),
+            'status' => self::randomEnum(ElementStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

@@ -14,7 +14,7 @@ final class PageFollowFactory extends BaseFactory
         $defaults = [
             'page' => PageFactory::make(),
             'user' => UserFactory::make(),
-            'status' => self::uniqueEnum(PageFollowStatusEnum::class),
+            'status' => self::randomEnum(PageFollowStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

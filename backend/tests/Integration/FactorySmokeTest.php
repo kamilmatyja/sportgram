@@ -49,7 +49,7 @@ class FactorySmokeTest extends TestCase
      * @template T
      * @param class-string<T> $factoryClass
      */
-    public function testFactoryMakeWorks(string $factoryClass): void
+    final public function testFactoryMakeWorks(string $factoryClass): void
     {
         $entity = $factoryClass::make();
         $this->assertIsObject($entity, "Factory $factoryClass did not return an object");

@@ -15,8 +15,8 @@ final class FeedReactionFactory extends BaseFactory
         $defaults = [
             'feed' => FeedFactory::make(),
             'user' => UserFactory::make(),
-            'reaction' => self::uniqueEnum(FeedReactionEnum::class),
-            'status' => self::uniqueEnum(ElementStatusEnum::class),
+            'reaction' => self::randomEnum(FeedReactionEnum::class),
+            'status' => self::randomEnum(ElementStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

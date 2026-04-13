@@ -14,13 +14,13 @@ final class PageFactory extends BaseFactory
     {
         $defaults = [
             'user' => UserFactory::make(),
-            'title' => self::uniqueString('title'),
-            'description' => self::uniqueString('description'),
-            'link' => self::uniqueString('link'),
-            'profilePhoto' => self::uniqueBinaryFileString(),
-            'backgroundPhoto' => self::uniqueBinaryFileString(),
-            'color' => self::uniqueEnum(ColorEnum::class),
-            'status' => self::uniqueEnum(ElementStatusEnum::class),
+            'title' => self::randomString('title'),
+            'description' => self::randomString('description'),
+            'link' => self::randomString('link'),
+            'profilePhoto' => self::randoBinary(),
+            'backgroundPhoto' => self::randoBinary(),
+            'color' => self::randomEnum(ColorEnum::class),
+            'status' => self::randomEnum(ElementStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

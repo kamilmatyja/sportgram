@@ -13,9 +13,9 @@ final class StoryFactory extends BaseFactory
     {
         $defaults = [
             'user' => UserFactory::make(),
-            'text' => self::uniqueString('text'),
-            'photo' => self::uniqueBinaryFileString(),
-            'status' => self::uniqueEnum(ElementStatusEnum::class),
+            'text' => self::randomString('text'),
+            'photo' => self::randoBinary(),
+            'status' => self::randomEnum(ElementStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

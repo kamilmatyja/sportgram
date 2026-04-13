@@ -13,7 +13,7 @@ final class UserRoleFactory extends BaseFactory
     {
         $defaults = [
             'user' => UserFactory::make(),
-            'role' => self::uniqueEnum(RoleEnum::class),
+            'role' => self::randomEnum(RoleEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

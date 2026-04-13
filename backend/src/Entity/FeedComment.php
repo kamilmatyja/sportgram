@@ -55,4 +55,44 @@ class FeedComment
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getFeed(): Feed
+    {
+        return $this->feed;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getText(): string
+    {
+        return $this->text;
+    }
+
+    public function getStatus(): ElementStatusEnum
+    {
+        return $this->status;
+    }
 }

@@ -48,4 +48,34 @@ class ConversationActivity
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getSenderUser(): User
+    {
+        return $this->senderUser;
+    }
+
+    public function getReceiverUser(): User
+    {
+        return $this->receiverUser;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
 }

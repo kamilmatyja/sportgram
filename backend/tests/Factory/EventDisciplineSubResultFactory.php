@@ -13,7 +13,7 @@ final class EventDisciplineSubResultFactory extends BaseFactory
         $defaults = [
             'eventDisciplineSubDistance' => EventDisciplineSubDistanceFactory::make(),
             'user' => UserFactory::make(),
-            'time' => self::uniqueInt(),
+            'time' => self::randomInt(),
         ];
 
         $data = array_replace($defaults, $overrides);

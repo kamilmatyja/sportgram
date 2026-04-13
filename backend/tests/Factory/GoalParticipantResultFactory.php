@@ -14,7 +14,7 @@ final class GoalParticipantResultFactory extends BaseFactory
         $defaults = [
             'goalParticipant' => GoalParticipantFactory::make(),
             'feed' => FeedFactory::make(),
-            'status' => self::uniqueEnum(GoalParticipantResultStatusEnum::class),
+            'status' => self::randomEnum(GoalParticipantResultStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

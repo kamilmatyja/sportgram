@@ -14,8 +14,8 @@ final class ConversationFactory extends BaseFactory
         $defaults = [
             'senderUser' => UserFactory::make(),
             'receiverUser' => UserFactory::make(),
-            'text' => self::uniqueString('text'),
-            'status' => self::uniqueEnum(ConversationStatusEnum::class),
+            'text' => self::randomString('text'),
+            'status' => self::randomEnum(ConversationStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

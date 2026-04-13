@@ -13,8 +13,8 @@ final class NotificationFactory extends BaseFactory
     {
         $defaults = [
             'user' => UserFactory::make(),
-            'text' => self::uniqueString('text'),
-            'status' => self::uniqueEnum(NotificationStatusEnum::class),
+            'text' => self::randomString('text'),
+            'status' => self::randomEnum(NotificationStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

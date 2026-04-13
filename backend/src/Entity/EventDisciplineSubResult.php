@@ -51,4 +51,39 @@ class EventDisciplineSubResult
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getEventDisciplineSubDistance(): EventDisciplineSubDistance
+    {
+        return $this->eventDisciplineSubDistance;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getTime(): int
+    {
+        return $this->time;
+    }
 }

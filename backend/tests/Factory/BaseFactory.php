@@ -25,44 +25,44 @@ abstract class BaseFactory
         return self::$faker;
     }
 
-    protected static function uniqueInt(): int
+    protected static function randomInt(): int
     {
-        return self::faker()->unique()->numberBetween(1, 2137);
+        return self::faker()->numberBetween(1, 2137);
     }
 
-    protected static function uniqueCode(): int
+    protected static function randomCode(): int
     {
-        return self::faker()->unique()->numberBetween(100000, 999999);
+        return self::faker()->numberBetween(100000, 999999);
     }
 
-    protected static function uniqueName(): string
+    protected static function randomName(): string
     {
-        return self::faker()->unique()->name;
+        return self::faker()->name;
     }
 
-    protected static function uniqueEmail(): string
+    protected static function randomEmail(): string
     {
-        return self::faker()->unique()->email;
+        return self::faker()->email;
     }
 
-    protected static function uniqueString(string $prefix): string
+    protected static function randomString(string $prefix): string
     {
-        return sprintf('%s-%s', $prefix, self::faker()->unique()->uuid);
+        return sprintf('%s-%s', $prefix, self::faker()->uuid);
     }
 
-    protected static function uniqueDate(): DateTimeImmutable
+    protected static function randomData(): DateTimeImmutable
     {
-        return new DateTimeImmutable(self::faker()->unique()->dateTimeThisDecade()->format('Y-m-dTH:i:sP'));
+        return new DateTimeImmutable(self::faker()->dateTimeThisDecade()->format('Y-m-dTH:i:sP'));
     }
 
-    protected static function uniqueBinaryFileString(): string
+    protected static function randoBinary(): string
     {
-        return self::faker()->unique()->word;
+        return self::faker()->word;
     }
 
-    protected static function uniqueId(): Uuid
+    protected static function randomId(): Uuid
     {
-        return Uuid::fromString(self::faker()->unique()->uuid);
+        return Uuid::fromString(self::faker()->uuid);
     }
 
     /**
@@ -70,7 +70,7 @@ abstract class BaseFactory
      * @param class-string<T> $class
      * @return T
      */
-    protected static function uniqueEnum(string $class): UnitEnum
+    protected static function randomEnum(string $class): UnitEnum
     {
         return self::faker()->randomElement($class::cases());
     }

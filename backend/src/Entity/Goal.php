@@ -84,4 +84,74 @@ class Goal
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getFeed(): Feed
+    {
+        return $this->feed;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getStartedAt(): ?DateTimeImmutable
+    {
+        return $this->startedAt;
+    }
+
+    public function getEndedAt(): ?DateTimeImmutable
+    {
+        return $this->endedAt;
+    }
+
+    public function getText(): string
+    {
+        return $this->text;
+    }
+
+    public function getLink(): string
+    {
+        return $this->link;
+    }
+
+    public function getDiscipline(): DisciplineEnum
+    {
+        return $this->discipline;
+    }
+
+    public function getDistance(): int
+    {
+        return $this->distance;
+    }
+
+    public function getTime(): ?int
+    {
+        return $this->time;
+    }
+
+    public function getStatus(): GoalStatusEnum
+    {
+        return $this->status;
+    }
 }

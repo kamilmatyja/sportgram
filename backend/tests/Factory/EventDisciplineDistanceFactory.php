@@ -12,7 +12,7 @@ final class EventDisciplineDistanceFactory extends BaseFactory
     {
         $defaults = [
             'eventDiscipline' => EventDisciplineFactory::make(),
-            'distance' => self::uniqueInt(),
+            'distance' => self::randomInt(),
         ];
 
         $data = array_replace($defaults, $overrides);

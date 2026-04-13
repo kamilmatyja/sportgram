@@ -55,4 +55,39 @@ class GoalParticipantResult
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getGoalParticipant(): GoalParticipant
+    {
+        return $this->goalParticipant;
+    }
+
+    public function getFeed(): Feed
+    {
+        return $this->feed;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getStatus(): GoalParticipantResultStatusEnum
+    {
+        return $this->status;
+    }
 }

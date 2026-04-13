@@ -14,7 +14,7 @@ final class EventDisciplineResultFactory extends BaseFactory
             'eventDisciplineDistance' => EventDisciplineDistanceFactory::make(),
             'feed' => FeedFactory::make(),
             'user' => UserFactory::make(),
-            'time' => self::uniqueInt(),
+            'time' => self::randomInt(),
         ];
 
         $data = array_replace($defaults, $overrides);

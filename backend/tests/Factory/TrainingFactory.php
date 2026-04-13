@@ -14,13 +14,13 @@ final class TrainingFactory extends BaseFactory
         $defaults = [
             'feed' => FeedFactory::make(),
             'user' => UserFactory::make(),
-            'startedAt' => self::uniqueDate(),
-            'endedAt' => self::uniqueDate(),
-            'title' => self::uniqueString('title'),
-            'description' => self::uniqueString('description'),
-            'link' => self::uniqueString('link'),
-            'location' => self::uniqueString('location'),
-            'status' => self::uniqueEnum(ElementStatusEnum::class),
+            'startedAt' => self::randomData(),
+            'endedAt' => self::randomData(),
+            'title' => self::randomString('title'),
+            'description' => self::randomString('description'),
+            'link' => self::randomString('link'),
+            'location' => self::randomString('location'),
+            'status' => self::randomEnum(ElementStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

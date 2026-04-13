@@ -13,11 +13,11 @@ final class PushSubscriptionFactory extends BaseFactory
     {
         $defaults = [
             'user' => UserFactory::make(),
-            'endpoint' => self::uniqueString('endpoint'),
-            'p256dh' => self::uniqueString('p256dh'),
-            'auth' => self::uniqueString('auth'),
-            'userAgent' => self::uniqueString('userAgent'),
-            'status' => self::uniqueEnum(PushSubscriptionStatusEnum::class),
+            'endpoint' => self::randomString('endpoint'),
+            'p256dh' => self::randomString('p256dh'),
+            'auth' => self::randomString('auth'),
+            'userAgent' => self::randomString('userAgent'),
+            'status' => self::randomEnum(PushSubscriptionStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

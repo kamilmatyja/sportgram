@@ -17,22 +17,22 @@ final class UserFactory extends BaseFactory
     public static function make(array $overrides = []): User
     {
         $defaults = [
-            'birthAt' => self::uniqueDate(),
-            'firstName' => self::uniqueName(),
-            'lastName' => self::uniqueName(),
-            'gender' => self::uniqueEnum(GenderEnum::class),
-            'phone' => self::uniqueInt(),
-            'email' => self::uniqueEmail(),
-            'password' => self::uniqueString('password'),
-            'link' => self::uniqueString('link'),
-            'language' => self::uniqueEnum(LanguageEnum::class),
-            'country' => self::uniqueEnum(CountryEnum::class),
-            'theme' => self::uniqueEnum(ThemeEnum::class),
-            'color' => self::uniqueEnum(ColorEnum::class),
-            'profilePhoto' => self::uniqueBinaryFileString(),
-            'backgroundPhoto' => self::uniqueBinaryFileString(),
-            'bio' => self::uniqueString('bio'),
-            'status' => self::uniqueEnum(UserStatusEnum::class),
+            'birthAt' => self::randomData(),
+            'firstName' => self::randomName(),
+            'lastName' => self::randomName(),
+            'gender' => self::randomEnum(GenderEnum::class),
+            'phone' => self::randomInt(),
+            'email' => self::randomEmail(),
+            'password' => self::randomString('password'),
+            'link' => self::randomString('link'),
+            'language' => self::randomEnum(LanguageEnum::class),
+            'country' => self::randomEnum(CountryEnum::class),
+            'theme' => self::randomEnum(ThemeEnum::class),
+            'color' => self::randomEnum(ColorEnum::class),
+            'profilePhoto' => self::randoBinary(),
+            'backgroundPhoto' => self::randoBinary(),
+            'bio' => self::randomString('bio'),
+            'status' => self::randomEnum(UserStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

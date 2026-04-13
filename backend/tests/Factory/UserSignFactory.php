@@ -13,9 +13,9 @@ final class UserSignFactory extends BaseFactory
     {
         $defaults = [
             'user' => UserFactory::make(),
-            'code' => self::uniqueCode(),
-            'attempt' => self::uniqueInt(),
-            'status' => self::uniqueEnum(UnauthorizedStatusEnum::class),
+            'code' => self::randomCode(),
+            'attempt' => self::randomInt(),
+            'status' => self::randomEnum(UnauthorizedStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

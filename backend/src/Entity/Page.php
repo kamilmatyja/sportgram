@@ -75,4 +75,64 @@ class Page
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getLink(): string
+    {
+        return $this->link;
+    }
+
+    public function getProfilePhoto(): string
+    {
+        return $this->profilePhoto;
+    }
+
+    public function getBackgroundPhoto(): string
+    {
+        return $this->backgroundPhoto;
+    }
+
+    public function getColor(): ColorEnum
+    {
+        return $this->color;
+    }
+
+    public function getStatus(): ElementStatusEnum
+    {
+        return $this->status;
+    }
 }

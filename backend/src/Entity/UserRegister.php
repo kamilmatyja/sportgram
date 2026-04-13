@@ -58,4 +58,44 @@ class UserRegister
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getCode(): int
+    {
+        return $this->code;
+    }
+
+    public function getAttempt(): int
+    {
+        return $this->attempt;
+    }
+
+    public function getStatus(): UnauthorizedStatusEnum
+    {
+        return $this->status;
+    }
 }

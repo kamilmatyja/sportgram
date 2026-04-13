@@ -69,4 +69,59 @@ class TrainingDisciplineSubDistance
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getTrainingDisciplineDistance(): TrainingDisciplineDistance
+    {
+        return $this->trainingDisciplineDistance;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getSubDistance(): int
+    {
+        return $this->subDistance;
+    }
+
+    public function getTime(): int
+    {
+        return $this->time;
+    }
+
+    public function getLat(): ?int
+    {
+        return $this->lat;
+    }
+
+    public function getLng(): ?int
+    {
+        return $this->lng;
+    }
+
+    public function getAccuracy(): ?int
+    {
+        return $this->accuracy;
+    }
+
+    public function getSpeed(): ?int
+    {
+        return $this->speed;
+    }
 }

@@ -13,15 +13,15 @@ final class EventFactory extends BaseFactory
     {
         $defaults = [
             'pageParticipant' => PageParticipantFactory::make(),
-            'startedAt' => self::uniqueDate(),
-            'endedAt' => self::uniqueDate(),
-            'title' => self::uniqueString('title'),
-            'description' => self::uniqueString('description'),
-            'link' => self::uniqueString('link'),
-            'rules' => self::uniqueString('rules'),
-            'photo' => self::uniqueBinaryFileString(),
-            'location' => self::uniqueString('location'),
-            'status' => self::uniqueEnum(ElementStatusEnum::class),
+            'startedAt' => self::randomData(),
+            'endedAt' => self::randomData(),
+            'title' => self::randomString('title'),
+            'description' => self::randomString('description'),
+            'link' => self::randomString('link'),
+            'rules' => self::randomString('rules'),
+            'photo' => self::randoBinary(),
+            'location' => self::randomString('location'),
+            'status' => self::randomEnum(ElementStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

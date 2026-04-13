@@ -14,7 +14,7 @@ final class FriendFactory extends BaseFactory
         $defaults = [
             'senderUser' => UserFactory::make(),
             'receiverUser' => UserFactory::make(),
-            'status' => self::uniqueEnum(FriendStatusEnum::class),
+            'status' => self::randomEnum(FriendStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

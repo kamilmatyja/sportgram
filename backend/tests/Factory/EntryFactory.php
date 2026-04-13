@@ -13,8 +13,8 @@ final class EntryFactory extends BaseFactory
     {
         $defaults = [
             'user' => UserFactory::make(),
-            'entityId' => self::uniqueId(),
-            'type' => self::uniqueEnum(EntryTypeEnum::class),
+            'entityId' => self::randomId(),
+            'type' => self::randomEnum(EntryTypeEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

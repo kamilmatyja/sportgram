@@ -79,4 +79,69 @@ class Training
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getFeed(): Feed
+    {
+        return $this->feed;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getStartedAt(): DateTimeImmutable
+    {
+        return $this->startedAt;
+    }
+
+    public function getEndedAt(): DateTimeImmutable
+    {
+        return $this->endedAt;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getLink(): string
+    {
+        return $this->link;
+    }
+
+    public function getLocation(): string
+    {
+        return $this->location;
+    }
+
+    public function getStatus(): ElementStatusEnum
+    {
+        return $this->status;
+    }
 }

@@ -15,14 +15,14 @@ final class GoalFactory extends BaseFactory
         $defaults = [
             'feed' => FeedFactory::make(),
             'user' => UserFactory::make(),
-            'startedAt' => self::uniqueDate(),
-            'endedAt' => self::uniqueDate(),
-            'text' => self::uniqueString('text'),
-            'link' => self::uniqueString('link'),
-            'discipline' => self::uniqueEnum(DisciplineEnum::class),
-            'distance' => self::uniqueInt(),
-            'time' => self::uniqueInt(),
-            'status' => self::uniqueEnum(GoalStatusEnum::class),
+            'startedAt' => self::randomData(),
+            'endedAt' => self::randomData(),
+            'text' => self::randomString('text'),
+            'link' => self::randomString('link'),
+            'discipline' => self::randomEnum(DisciplineEnum::class),
+            'distance' => self::randomInt(),
+            'time' => self::randomInt(),
+            'status' => self::randomEnum(GoalStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

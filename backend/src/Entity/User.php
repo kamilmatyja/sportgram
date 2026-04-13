@@ -110,4 +110,104 @@ class User
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getBirthAt(): DateTimeImmutable
+    {
+        return $this->birthAt;
+    }
+
+    public function getFirstName(): string
+    {
+        return $this->firstName;
+    }
+
+    public function getLastName(): string
+    {
+        return $this->lastName;
+    }
+
+    public function getGender(): GenderEnum
+    {
+        return $this->gender;
+    }
+
+    public function getPhone(): int
+    {
+        return $this->phone;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function getLink(): string
+    {
+        return $this->link;
+    }
+
+    public function getLanguage(): LanguageEnum
+    {
+        return $this->language;
+    }
+
+    public function getCountry(): CountryEnum
+    {
+        return $this->country;
+    }
+
+    public function getTheme(): ThemeEnum
+    {
+        return $this->theme;
+    }
+
+    public function getColor(): ColorEnum
+    {
+        return $this->color;
+    }
+
+    public function getProfilePhoto(): string
+    {
+        return $this->profilePhoto;
+    }
+
+    public function getBackgroundPhoto(): string
+    {
+        return $this->backgroundPhoto;
+    }
+
+    public function getBio(): string
+    {
+        return $this->bio;
+    }
+
+    public function getStatus(): UserStatusEnum
+    {
+        return $this->status;
+    }
 }

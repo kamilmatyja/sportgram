@@ -82,4 +82,74 @@ class Event
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getPageParticipant(): PageParticipant
+    {
+        return $this->pageParticipant;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getStartedAt(): DateTimeImmutable
+    {
+        return $this->startedAt;
+    }
+
+    public function getEndedAt(): DateTimeImmutable
+    {
+        return $this->endedAt;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    public function getLink(): string
+    {
+        return $this->link;
+    }
+
+    public function getRules(): string
+    {
+        return $this->rules;
+    }
+
+    public function getPhoto(): string
+    {
+        return $this->photo;
+    }
+
+    public function getLocation(): string
+    {
+        return $this->location;
+    }
+
+    public function getStatus(): ElementStatusEnum
+    {
+        return $this->status;
+    }
 }

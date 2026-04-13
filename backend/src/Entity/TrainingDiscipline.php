@@ -48,4 +48,34 @@ class TrainingDiscipline
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getTrainingParticipant(): TrainingParticipant
+    {
+        return $this->trainingParticipant;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getDeletedAt(): ?DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getDiscipline(): DisciplineEnum
+    {
+        return $this->discipline;
+    }
 }

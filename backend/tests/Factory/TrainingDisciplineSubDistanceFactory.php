@@ -12,12 +12,12 @@ final class TrainingDisciplineSubDistanceFactory extends BaseFactory
     {
         $defaults = [
             'trainingDisciplineDistance' => TrainingDisciplineDistanceFactory::make(),
-            'subDistance' => self::uniqueInt(),
-            'time' => self::uniqueInt(),
-            'lat' => self::uniqueInt(),
-            'lng' => self::uniqueInt(),
-            'accuracy' => self::uniqueInt(),
-            'speed' => self::uniqueInt(),
+            'subDistance' => self::randomInt(),
+            'time' => self::randomInt(),
+            'lat' => self::randomInt(),
+            'lng' => self::randomInt(),
+            'accuracy' => self::randomInt(),
+            'speed' => self::randomInt(),
         ];
 
         $data = array_replace($defaults, $overrides);
