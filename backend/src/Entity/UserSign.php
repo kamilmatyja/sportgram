@@ -35,7 +35,7 @@ class UserSign
 
     public function __construct(
         User $user,
-        string $code,
+        int $code,
         int $attempt,
         UnauthorizedStatusEnum $status,
     ) {

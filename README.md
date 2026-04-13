@@ -51,3 +51,7 @@ Starter zawiera gotowe ikony SVG:
 - Dodać encje i migracje (`php bin/console make:entity`, `make:migration`, `doctrine:migrations:migrate`)
 - Dodać autoryzację JWT do API
 - Podpiąć Web Push (VAPID) po stronie backendu
+
+5. Uruchomienie testów
+-  docker compose exec php vendor/bin/phpunit tests/Factory/FactorySmokeTest.php --testdox
+
