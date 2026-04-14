@@ -4,28 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Tests\ApiTestCase;
 
-class UserCreateTest extends WebTestCase
+class UserCreateTest extends ApiTestCase
 {
-    private KernelBrowser $client;
-
     final protected function setUp(): void
     {
         parent::setUp();
 
-        $this->client = static::createClient();
-        $container = static::getContainer();
-        $em = $container->get('doctrine')->getManager();
-        $connection = $em->getConnection();
-        $platform = $connection->getDatabasePlatform();
-        $connection->executeStatement($platform->getTruncateTableSQL('users', true));
+        $this->truncate('user_registers');
+        $this->truncate('user_roles');
+        $this->truncate('users');
     }
 
     final public function testEmptyPayload(): void
     {
-        $result = $this->post([]);
+        $result = $this->post('/users', []);
         $this->assertEquals(422, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -73,7 +67,7 @@ class UserCreateTest extends WebTestCase
             'status' => null,
             'roles' => null,
         ];
-        $result = $this->post($data);
+        $result = $this->post('/users', $data);
         $this->assertEquals(422, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -122,11 +116,11 @@ class UserCreateTest extends WebTestCase
             'roles' => [1, 2],
         ];
 
-        $result1 = $this->post($data);
+        $result1 = $this->post('/users', $data);
         $this->assertEquals(201, $result1['status']);
         $this->assertArrayHasKey('id', $result1['json']);
 
-        $result2 = $this->post($data);
+        $result2 = $this->post('/users', $data);
         $this->assertEquals(422, $result2['status']);
         $this->assertArrayHasKey('errors', $result2['json']);
         $expected = [
@@ -160,7 +154,7 @@ class UserCreateTest extends WebTestCase
             'status' => 1,
             'roles' => [1, 2],
         ];
-        $result = $this->post($data);
+        $result = $this->post('/users', $data);
         $this->assertEquals(422, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -195,17 +189,8 @@ class UserCreateTest extends WebTestCase
             'roles' => [1, 2],
         ];
 
-        $result1 = $this->post($data);
-        $this->assertEquals(201, $result1['status']);
-        $this->assertArrayHasKey('id', $result1['json']);
-    }
-
-    private function post(array $data): array
-    {
-        $this->client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
-        return [
-            'status' => $this->client->getResponse()->getStatusCode(),
-            'json' => json_decode($this->client->getResponse()->getContent(), true),
-        ];
+        $result = $this->post('/users', $data);
+        $this->assertEquals(201, $result['status']);
+        $this->assertArrayHasKey('id', $result['json']);
     }
 }
