@@ -2,8 +2,12 @@
 
 namespace App\Enum;
 
+use App\Trait\EnumValuesTrait;
+
 enum ColorEnum: int
 {
+    use EnumValuesTrait;
+
     case Red = 1;
     case Green = 2;
     case Blue = 3;

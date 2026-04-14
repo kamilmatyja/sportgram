@@ -2,8 +2,12 @@
 
 namespace App\Enum;
 
+use App\Trait\EnumValuesTrait;
+
 enum FeedReactionEnum: int
 {
+    use EnumValuesTrait;
+
     case Like = 1;
     case Love = 2;
     case Haha = 3;

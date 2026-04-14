@@ -26,6 +26,7 @@ docker compose up -d --build
 
 ```bash
 docker compose exec php composer install
+docker compose exec php composer require symfony/routing symfony/validator
 ```
 
 3. Uruchom frontend:

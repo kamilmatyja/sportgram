@@ -2,8 +2,12 @@
 
 namespace App\Enum;
 
+use App\Trait\EnumValuesTrait;
+
 enum DisciplineEnum: int
 {
+    use EnumValuesTrait;
+
     case Running = 1;
     case Cycling = 2;
     case InlineSkating = 3;
