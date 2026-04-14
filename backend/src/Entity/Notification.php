@@ -28,13 +28,16 @@ class Notification
     private ?DateTimeImmutable $deletedAt = null;
     #[ORM\Column(name: 'text', type: 'text', length: 2048)]
     private string $text;
+    #[ORM\Column(name: 'link', type: 'text', length: 128, nullable: true)]
+    private ?string $link = null;
     #[ORM\Column(name: 'status', type: 'integer', enumType: NotificationStatusEnum::class)]
     private NotificationStatusEnum $status;
 
-    public function __construct(User $user, string $text, NotificationStatusEnum $status)
+    public function __construct(User $user, string $text, ?string $link, NotificationStatusEnum $status)
     {
         $this->user = $user;
         $this->text = $text;
+        $this->link = $link;
         $this->status = $status;
     }
 
@@ -80,6 +83,11 @@ class Notification
     public function getText(): string
     {
         return $this->text;
+    }
+
+    public function getLink(): ?string
+    {
+        return $this->link;
     }
 
     public function getStatus(): NotificationStatusEnum

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Factory;
 
 use App\Entity\GoalParticipantResult;
-use App\Enum\GoalParticipantResultStatusEnum;
+use App\Enum\ParticipantStatusEnum;
 
 final class GoalParticipantResultFactory extends BaseFactory
 {
@@ -14,7 +14,7 @@ final class GoalParticipantResultFactory extends BaseFactory
         $defaults = [
             'goalParticipant' => GoalParticipantFactory::make(),
             'feed' => FeedFactory::make(),
-            'status' => self::randomEnum(GoalParticipantResultStatusEnum::class),
+            'status' => self::randomEnum(ParticipantStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

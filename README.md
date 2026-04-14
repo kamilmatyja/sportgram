@@ -55,3 +55,6 @@ Starter zawiera gotowe ikony SVG:
 5. Uruchomienie testów
 -  docker compose exec php vendor/bin/phpunit tests/Factory/FactorySmokeTest.php --testdox
 
+6. Tworzenie migracji
+- docker compose exec php php bin/console doctrine:migrations:diff
+- docker compose exec php php bin/console doctrine:migrations:migrate -n

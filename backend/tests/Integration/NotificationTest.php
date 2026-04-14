@@ -15,11 +15,13 @@ class NotificationTest extends TestCase
     {
         $user = $this->createMock(User::class);
         $text = 'Notification message';
+        $link = 'https://example.com';
         $status = NotificationStatusEnum::Read;
-        $entity = new Notification($user, $text, $status);
+        $entity = new Notification($user, $text, $link, $status);
         $this->assertInstanceOf(Notification::class, $entity);
         $this->assertSame($user, $entity->getUser());
         $this->assertSame($text, $entity->getText());
+        $this->assertSame($link, $entity->getLink());
         $this->assertSame($status, $entity->getStatus());
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\ParticipantStatusEnum;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -28,11 +29,14 @@ class PageParticipant
     private DateTimeImmutable $updatedAt;
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
+    #[ORM\Column(name: 'status', type: 'integer', enumType: ParticipantStatusEnum::class)]
+    private ParticipantStatusEnum $status;
 
-    public function __construct(Page $page, User $user)
+    public function __construct(Page $page, User $user, ParticipantStatusEnum $status)
     {
         $this->page = $page;
         $this->user = $user;
+        $this->status = $status;
     }
 
     #[ORM\PrePersist]
@@ -77,5 +81,10 @@ class PageParticipant
     public function getDeletedAt(): ?DateTimeImmutable
     {
         return $this->deletedAt;
+    }
+
+    public function getStatus(): ParticipantStatusEnum
+    {
+        return $this->status;
     }
 }

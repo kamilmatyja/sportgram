@@ -14,6 +14,7 @@ final class NotificationFactory extends BaseFactory
         $defaults = [
             'user' => UserFactory::make(),
             'text' => self::randomString('text'),
+            'link' => self::randomString('link'),
             'status' => self::randomEnum(NotificationStatusEnum::class),
         ];
 
@@ -22,6 +23,7 @@ final class NotificationFactory extends BaseFactory
         return new Notification(
             $data['user'],
             $data['text'],
+            $data['link'],
             $data['status']
         );
     }

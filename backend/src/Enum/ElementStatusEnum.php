@@ -6,5 +6,5 @@ enum ElementStatusEnum: int
 {
     case Draft = 1;
     case Active = 2;
-    case Cancelled = 3;
+    case Rejected = 3;
 }

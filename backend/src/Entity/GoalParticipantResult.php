@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\GoalParticipantResultStatusEnum;
+use App\Enum\ParticipantStatusEnum;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -29,13 +29,13 @@ class GoalParticipantResult
     private DateTimeImmutable $updatedAt;
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
-    #[ORM\Column(name: 'status', type: 'integer', enumType: GoalParticipantResultStatusEnum::class)]
-    private GoalParticipantResultStatusEnum $status;
+    #[ORM\Column(name: 'status', type: 'integer', enumType: ParticipantStatusEnum::class)]
+    private ParticipantStatusEnum $status;
 
     public function __construct(
         GoalParticipant $goalParticipant,
         Feed $feed,
-        GoalParticipantResultStatusEnum $status,
+        ParticipantStatusEnum $status,
     ) {
         $this->goalParticipant = $goalParticipant;
         $this->feed = $feed;
@@ -86,7 +86,7 @@ class GoalParticipantResult
         return $this->deletedAt;
     }
 
-    public function getStatus(): GoalParticipantResultStatusEnum
+    public function getStatus(): ParticipantStatusEnum
     {
         return $this->status;
     }
