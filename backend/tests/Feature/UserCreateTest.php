@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use Tests\ApiTestCase;
-
 class UserCreateTest extends ApiTestCase
 {
     final protected function setUp(): void
@@ -20,7 +18,7 @@ class UserCreateTest extends ApiTestCase
     final public function testEmptyPayload(): void
     {
         $result = $this->post('/users', []);
-        $this->assertEquals(422, $result['status']);
+        $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
             'birthAt',
@@ -41,8 +39,10 @@ class UserCreateTest extends ApiTestCase
             'roles'
         ];
         foreach ($expected as $field) {
-            $this->assertArrayHasKey("[$field]", $result['json']['errors']);
-            $this->assertEquals(['This field is missing.'], $result['json']['errors']["[$field]"]);
+            $this->assertArrayHasKey($field, $result['json']['errors']);
+            $this->assertEquals([
+                'This value should not be blank.'
+            ], $result['json']['errors'][$field]);
         }
     }
 
@@ -68,7 +68,7 @@ class UserCreateTest extends ApiTestCase
             'roles' => null,
         ];
         $result = $this->post('/users', $data);
-        $this->assertEquals(422, $result['status']);
+        $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
             'birthAt',
@@ -88,13 +88,33 @@ class UserCreateTest extends ApiTestCase
             'bio',
             'roles'
         ];
+        $typeErrors = [
+            'birthAt' => 'This value should be of type string.',
+            'firstName' => 'This value should be of type string.',
+            'lastName' => 'This value should be of type string.',
+            'gender' => 'This value should be of type int.',
+            'phone' => 'This value should be of type int.',
+            'email' => 'This value should be of type string.',
+            'password' => 'This value should be of type string.',
+            'link' => 'This value should be of type string.',
+            'language' => 'This value should be of type int.',
+            'country' => 'This value should be of type int.',
+            'theme' => 'This value should be of type int.',
+            'color' => 'This value should be of type int.',
+            'profilePhoto' => 'This value should be of type string.',
+            'backgroundPhoto' => 'This value should be of type string.',
+            'bio' => 'This value should be of type string.',
+            'roles' => 'This value should be of type array.',
+        ];
         foreach ($expected as $field) {
-            $this->assertArrayHasKey("[$field]", $result['json']['errors']);
-            $this->assertEquals(['This value should not be blank.'], $result['json']['errors']["[$field]"]);
+            $this->assertArrayHasKey($field, $result['json']['errors']);
+            $this->assertEquals([
+                $typeErrors[$field]
+            ], $result['json']['errors'][$field]);
         }
     }
 
-    final public function testDuplicatePhoneAndEmail(): void
+    final public function testDuplicate(): void
     {
         $data = [
             'birthAt' => '2000-01-01',
@@ -121,15 +141,18 @@ class UserCreateTest extends ApiTestCase
         $this->assertArrayHasKey('id', $result1['json']);
 
         $result2 = $this->post('/users', $data);
-        $this->assertEquals(422, $result2['status']);
+        $this->assertEquals(400, $result2['status']);
         $this->assertArrayHasKey('errors', $result2['json']);
         $expected = [
             'phone',
             'email',
+            'link',
         ];
         foreach ($expected as $field) {
-            $this->assertArrayHasKey("[$field]", $result2['json']['errors']);
-            $this->assertEquals(['This value is already used.'], $result2['json']['errors']["[$field]"]);
+            $this->assertArrayHasKey($field, $result2['json']['errors']);
+            $this->assertEquals([
+                'This value is already used.'
+            ], $result2['json']['errors'][$field]);
         }
     }
 
@@ -155,15 +178,17 @@ class UserCreateTest extends ApiTestCase
             'roles' => [1, 2],
         ];
         $result = $this->post('/users', $data);
-        $this->assertEquals(422, $result['status']);
+        $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
             'profilePhoto',
             'backgroundPhoto'
         ];
         foreach ($expected as $field) {
-            $this->assertArrayHasKey("[$field]", $result['json']['errors']);
-            $this->assertEquals(['This value should be a valid base64 string.'], $result['json']['errors']["[$field]"]);
+            $this->assertArrayHasKey($field, $result['json']['errors']);
+            $this->assertEquals([
+                'This value should be a valid base64 string.'
+            ], $result['json']['errors'][$field]);
         }
     }
 
@@ -189,14 +214,16 @@ class UserCreateTest extends ApiTestCase
             'roles' => [1, 2],
         ];
         $result = $this->post('/users', $data);
-        $this->assertEquals(422, $result['status']);
+        $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
             'phone'
         ];
         foreach ($expected as $field) {
-            $this->assertArrayHasKey("[$field]", $result['json']['errors']);
-            $this->assertEquals(['This value should be a valid number.'], $result['json']['errors']["[$field]"]);
+            $this->assertArrayHasKey($field, $result['json']['errors']);
+            $this->assertEquals([
+                'This value should be of type int.'
+            ], $result['json']['errors'][$field]);
         }
     }
 

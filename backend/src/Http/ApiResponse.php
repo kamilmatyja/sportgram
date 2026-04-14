@@ -12,18 +12,9 @@ class ApiResponse extends JsonResponse
         return new self(['id' => $id->toString()], self::HTTP_CREATED);
     }
 
-    public static function error(string $message, int $status = self::HTTP_BAD_REQUEST): self
+    public static function error(array $errors): self
     {
-        return new self(['error' => $message], $status);
-    }
-
-    public static function validationErrors(iterable $errors): self
-    {
-        $errorMessages = [];
-        foreach ($errors as $error) {
-            $errorMessages[$error->getPropertyPath()][] = $error->getMessage();
-        }
-        return new self(['errors' => $errorMessages], self::HTTP_UNPROCESSABLE_ENTITY);
+        return new self(['errors' => $errors], self::HTTP_BAD_REQUEST);
     }
 }
 

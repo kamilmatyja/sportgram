@@ -3,36 +3,51 @@
 namespace App\EventSubscriber;
 
 use App\Http\ApiResponse;
-use App\Http\ValidationException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 class ExceptionSubscriber implements EventSubscriberInterface
 {
     public static function getSubscribedEvents(): array
     {
         return [
-            'kernel.exception' => 'onKernelException',
+            'kernel.exception' => 'onException',
         ];
     }
 
-    public function onKernelException(ExceptionEvent $event): void
+    public function onException(ExceptionEvent $event): void
     {
-        $exception = $event->getThrowable();
+        $e = $event->getThrowable();
 
-        if ($exception instanceof ValidationException) {
-            $response = ApiResponse::validationErrors($exception->getViolations());
-            $event->setResponse($response);
+        $violations = null;
+
+        if ($e instanceof ValidationFailedException) {
+            $violations = $e->getViolations();
+        }
+
+        if ($e instanceof UnprocessableEntityHttpException) {
+            $previous = $e->getPrevious();
+
+            if ($previous instanceof ValidationFailedException) {
+                $violations = $previous->getViolations();
+            }
+        }
+
+        if (!$violations) {
             return;
         }
 
-        $status = 400;
-        if ($exception instanceof HttpExceptionInterface) {
-            $status = $exception->getStatusCode();
+        $errors = [];
+
+        foreach ($violations as $violation) {
+            $field = $violation->getPropertyPath();
+
+            $errors[$field][] = $violation->getMessage();
         }
-        $response = ApiResponse::error($exception->getMessage(), $status);
-        $event->setResponse($response);
+
+        $event->setResponse(ApiResponse::error($errors));
     }
 }
 

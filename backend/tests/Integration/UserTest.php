@@ -24,7 +24,6 @@ class UserTest extends TestCase
         $gender = GenderEnum::Male;
         $phone = 123456789;
         $email = 'user@example.com';
-        $password = 'password';
         $link = 'user-link';
         $language = LanguageEnum::Polish;
         $country = CountryEnum::Poland;
@@ -41,7 +40,6 @@ class UserTest extends TestCase
             $gender,
             $phone,
             $email,
-            $password,
             $link,
             $language,
             $country,
@@ -59,7 +57,6 @@ class UserTest extends TestCase
         $this->assertSame($gender, $entity->getGender());
         $this->assertSame($phone, $entity->getPhone());
         $this->assertSame($email, $entity->getEmail());
-        $this->assertSame($password, $entity->getPassword());
         $this->assertSame($link, $entity->getLink());
         $this->assertSame($language, $entity->getLanguage());
         $this->assertSame($country, $entity->getCountry());

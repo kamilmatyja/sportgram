@@ -20,6 +20,7 @@ use App\Repository\UserRoleRepository;
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Random\RandomException;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Uuid;
 
 readonly class UserService
@@ -27,7 +28,8 @@ readonly class UserService
     public function __construct(
         private UserRepository $userRepository,
         private UserRoleRepository $userRoleRepository,
-        private UserRegisterRepository $userRegisterRepository
+        private UserRegisterRepository $userRegisterRepository,
+        private UserPasswordHasherInterface $hasher
     )
     {
     }
@@ -45,7 +47,6 @@ readonly class UserService
             GenderEnum::from($dto->gender),
             $dto->phone,
             $dto->email,
-            password_hash($dto->password, PASSWORD_BCRYPT),
             $dto->link,
             LanguageEnum::from($dto->language),
             CountryEnum::from($dto->country),
@@ -56,6 +57,11 @@ readonly class UserService
             $dto->bio,
             UserStatusEnum::Pending
         );
+
+        $user->setPassword(
+            $this->hasher->hashPassword($user, $dto->password)
+        );
+
         $this->userRepository->add($user);
 
         foreach ($dto->roles as $role) {

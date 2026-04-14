@@ -9,13 +9,16 @@ use App\Enum\LanguageEnum;
 use App\Enum\ThemeEnum;
 use App\Enum\UserStatusEnum;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'users')]
 #[ORM\HasLifecycleCallbacks]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
@@ -60,6 +63,8 @@ class User
     private string $bio;
     #[ORM\Column(name: 'status', type: 'integer', enumType: UserStatusEnum::class)]
     private UserStatusEnum $status;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserRole::class)]
+    private $roles;
 
     public function __construct(
         DateTimeImmutable $birthAt,
@@ -68,7 +73,6 @@ class User
         GenderEnum $gender,
         int $phone,
         string $email,
-        string $password,
         string $link,
         LanguageEnum $language,
         CountryEnum $country,
@@ -85,7 +89,6 @@ class User
         $this->gender = $gender;
         $this->phone = $phone;
         $this->email = $email;
-        $this->password = $password;
         $this->link = $link;
         $this->language = $language;
         $this->country = $country;
@@ -95,6 +98,7 @@ class User
         $this->backgroundPhoto = $backgroundPhoto;
         $this->bio = $bio;
         $this->status = $status;
+        $this->roles = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -109,6 +113,11 @@ class User
     public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->id->toString();
     }
 
     public function getId(): ?Uuid
@@ -161,6 +170,11 @@ class User
         return $this->email;
     }
 
+    public function setPassword(string $password): void
+    {
+        $this->password = $password;
+    }
+
     public function getPassword(): string
     {
         return $this->password;
@@ -209,5 +223,10 @@ class User
     public function getStatus(): UserStatusEnum
     {
         return $this->status;
+    }
+
+    public function getRoles(): array
+    {
+        return $this->roles->toArray();
     }
 }
