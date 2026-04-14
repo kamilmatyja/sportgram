@@ -101,7 +101,7 @@ class UserCreateTest extends ApiTestCase
             'firstName' => 'Jan',
             'lastName' => 'Kowalski',
             'gender' => 1,
-            'phone' => '123456789',
+            'phone' => 123456789,
             'email' => 'jan.kowalski@example.com',
             'password' => 'tajnehaslo',
             'link' => 'janek',
@@ -140,7 +140,7 @@ class UserCreateTest extends ApiTestCase
             'firstName' => 'Jan',
             'lastName' => 'Kowalski',
             'gender' => 1,
-            'phone' => '999999999',
+            'phone' => 123456789,
             'email' => 'unique@example.com',
             'password' => 'tajnehaslo',
             'link' => 'janek2',
@@ -167,6 +167,39 @@ class UserCreateTest extends ApiTestCase
         }
     }
 
+    final public function testInvalidTypes(): void
+    {
+        $data = [
+            'birthAt' => '2000-01-01',
+            'firstName' => 'Jan',
+            'lastName' => 'Kowalski',
+            'gender' => 1,
+            'phone' => 'ala ma kota',
+            'email' => 'unique@example.com',
+            'password' => 'tajnehaslo',
+            'link' => 'janek2',
+            'language' => 2,
+            'country' => 35,
+            'theme' => 1,
+            'color' => 3,
+            'profilePhoto' => base64_encode('hello'),
+            'backgroundPhoto' => base64_encode('hello'),
+            'bio' => 'Testowy użytkownik',
+            'status' => 1,
+            'roles' => [1, 2],
+        ];
+        $result = $this->post('/users', $data);
+        $this->assertEquals(422, $result['status']);
+        $this->assertArrayHasKey('errors', $result['json']);
+        $expected = [
+            'phone'
+        ];
+        foreach ($expected as $field) {
+            $this->assertArrayHasKey("[$field]", $result['json']['errors']);
+            $this->assertEquals(['This value should be a valid number.'], $result['json']['errors']["[$field]"]);
+        }
+    }
+
     final public function testSuccess(): void
     {
         $data = [
@@ -174,7 +207,7 @@ class UserCreateTest extends ApiTestCase
             'firstName' => 'Jan',
             'lastName' => 'Kowalski',
             'gender' => 1,
-            'phone' => '123456789',
+            'phone' => 123456789,
             'email' => 'jan.kowalski@example.com',
             'password' => 'tajnehaslo',
             'link' => 'janek',

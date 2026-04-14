@@ -28,7 +28,7 @@ class Notification
     private ?DateTimeImmutable $deletedAt = null;
     #[ORM\Column(name: 'text', type: 'text', length: 2048)]
     private string $text;
-    #[ORM\Column(name: 'link', type: 'text', length: 128, nullable: true)]
+    #[ORM\Column(name: 'link', type: 'text', length: 128, unique: true, nullable: true)]
     private ?string $link = null;
     #[ORM\Column(name: 'status', type: 'integer', enumType: NotificationStatusEnum::class)]
     private NotificationStatusEnum $status;

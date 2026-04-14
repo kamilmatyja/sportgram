@@ -29,7 +29,7 @@ class Conversation
     private DateTimeImmutable $updatedAt;
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
-    #[ORM\Column(name: 'text', type: 'text', length: 4096)]
+    #[ORM\Column(name: 'text', type: 'text', length: 2048)]
     private string $text;
     #[ORM\Column(name: 'status', type: 'integer', enumType: ConversationStatusEnum::class)]
     private ConversationStatusEnum $status;

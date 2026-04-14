@@ -4,7 +4,7 @@ namespace App\Enum;
 
 use App\Trait\EnumValuesTrait;
 
-enum ParticipantStatusEnum: int
+enum SaveStatusEnum: int
 {
     use EnumValuesTrait;
 

@@ -22,7 +22,11 @@ class UserCreateInputConstraints
             'firstName' => [new Assert\NotBlank(), new Assert\Length(max: 64)],
             'lastName' => [new Assert\NotBlank(), new Assert\Length(max: 64)],
             'gender' => [new Assert\NotBlank(), new Assert\Choice(choices: GenderEnum::values())],
-            'phone' => [new Assert\NotBlank(), new Assert\Length(max: 16), new UniqueUserField(field: 'phone')],
+            'phone' => [
+                new Assert\NotBlank(),
+                new Assert\Range(min: 1000, max: 999999999999),
+                new UniqueUserField(field: 'phone'),
+            ],
             'email' => [
                 new Assert\NotBlank(),
                 new Assert\Email(),
@@ -30,7 +34,7 @@ class UserCreateInputConstraints
                 new UniqueUserField(field: 'email')
             ],
             'password' => [new Assert\NotBlank(), new Assert\Length(min: 8, max: 32)],
-            'link' => [new Assert\NotBlank(), new Assert\Length(max: 64)],
+            'link' => [new Assert\NotBlank(), new Assert\Length(max: 64), new UniqueUserField(field: 'link')],
             'language' => [new Assert\NotBlank(), new Assert\Choice(choices: LanguageEnum::values())],
             'country' => [new Assert\NotBlank(), new Assert\Choice(choices: CountryEnum::values())],
             'theme' => [new Assert\NotBlank(), new Assert\Choice(choices: ThemeEnum::values())],

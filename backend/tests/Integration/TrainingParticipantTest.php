@@ -7,7 +7,7 @@ namespace Tests\Integration;
 use App\Entity\Training;
 use App\Entity\TrainingParticipant;
 use App\Entity\User;
-use App\Enum\ParticipantStatusEnum;
+use App\Enum\SaveStatusEnum;
 use PHPUnit\Framework\TestCase;
 
 class TrainingParticipantTest extends TestCase
@@ -16,7 +16,7 @@ class TrainingParticipantTest extends TestCase
     {
         $training = $this->createMock(Training::class);
         $user = $this->createMock(User::class);
-        $status = ParticipantStatusEnum::Pending;
+        $status = SaveStatusEnum::Pending;
         $entity = new TrainingParticipant($training, $user, $status);
         $this->assertInstanceOf(TrainingParticipant::class, $entity);
         $this->assertSame($training, $entity->getTraining());

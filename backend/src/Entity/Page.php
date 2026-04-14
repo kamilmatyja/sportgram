@@ -29,9 +29,9 @@ class Page
     private ?DateTimeImmutable $deletedAt = null;
     #[ORM\Column(name: 'title', type: 'text', length: 256)]
     private string $title;
-    #[ORM\Column(name: 'description', type: 'text', length: 4096)]
+    #[ORM\Column(name: 'description', type: 'text', length: 2048)]
     private string $description;
-    #[ORM\Column(name: 'link', type: 'text', length: 64)]
+    #[ORM\Column(name: 'link', type: 'text', length: 64, unique: true)]
     private string $link;
     #[ORM\Column(name: 'profile_photo', type: 'binary')]
     private string $profilePhoto;

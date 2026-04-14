@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Factory;
 
 use App\Entity\PageParticipant;
-use App\Enum\ParticipantStatusEnum;
+use App\Enum\SaveStatusEnum;
 
 final class PageParticipantFactory extends BaseFactory
 {
@@ -14,7 +14,7 @@ final class PageParticipantFactory extends BaseFactory
         $defaults = [
             'page' => PageFactory::make(),
             'user' => UserFactory::make(),
-            'status' => self::randomEnum(ParticipantStatusEnum::class),
+            'status' => self::randomEnum(SaveStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

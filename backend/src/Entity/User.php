@@ -56,7 +56,7 @@ class User
     private string $profilePhoto;
     #[ORM\Column(name: 'background_photo', type: 'binary')]
     private string $backgroundPhoto;
-    #[ORM\Column(name: 'bio', type: 'text', length: 1024)]
+    #[ORM\Column(name: 'bio', type: 'text', length: 2048)]
     private string $bio;
     #[ORM\Column(name: 'status', type: 'integer', enumType: UserStatusEnum::class)]
     private UserStatusEnum $status;

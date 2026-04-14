@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Factory;
 
 use App\Entity\EventDisciplineList;
-use App\Enum\EventDisciplineListStatusEnum;
+use App\Enum\SaveStatusEnum;
 
 final class EventDisciplineListFactory extends BaseFactory
 {
@@ -15,7 +15,7 @@ final class EventDisciplineListFactory extends BaseFactory
             'eventDisciplineDistance' => EventDisciplineDistanceFactory::make(),
             'feed' => FeedFactory::make(),
             'user' => UserFactory::make(),
-            'status' => self::randomEnum(EventDisciplineListStatusEnum::class),
+            'status' => self::randomEnum(SaveStatusEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);

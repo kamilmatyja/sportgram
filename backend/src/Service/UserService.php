@@ -43,7 +43,7 @@ readonly class UserService
             $dto->firstName,
             $dto->lastName,
             GenderEnum::from($dto->gender),
-            (int)$dto->phone,
+            $dto->phone,
             $dto->email,
             password_hash($dto->password, PASSWORD_BCRYPT),
             $dto->link,

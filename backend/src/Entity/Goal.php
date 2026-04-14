@@ -34,9 +34,9 @@ class Goal
     private ?DateTimeImmutable $startedAt = null;
     #[ORM\Column(name: 'ended_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $endedAt = null;
-    #[ORM\Column(name: 'text', type: 'text', length: 4096)]
+    #[ORM\Column(name: 'text', type: 'text', length: 2048)]
     private string $text;
-    #[ORM\Column(name: 'link', type: 'text', length: 64)]
+    #[ORM\Column(name: 'link', type: 'text', length: 64, unique: true)]
     private string $link;
     #[ORM\Column(name: 'discipline', type: 'integer', enumType: DisciplineEnum::class)]
     private DisciplineEnum $discipline;

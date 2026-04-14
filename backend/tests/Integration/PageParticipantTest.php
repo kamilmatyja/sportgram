@@ -7,7 +7,7 @@ namespace Tests\Integration;
 use App\Entity\Page;
 use App\Entity\PageParticipant;
 use App\Entity\User;
-use App\Enum\ParticipantStatusEnum;
+use App\Enum\SaveStatusEnum;
 use PHPUnit\Framework\TestCase;
 
 class PageParticipantTest extends TestCase
@@ -16,7 +16,7 @@ class PageParticipantTest extends TestCase
     {
         $page = $this->createMock(Page::class);
         $user = $this->createMock(User::class);
-        $status = ParticipantStatusEnum::Pending;
+        $status = SaveStatusEnum::Pending;
         $entity = new PageParticipant($page, $user, $status);
         $this->assertInstanceOf(PageParticipant::class, $entity);
         $this->assertSame($page, $entity->getPage());

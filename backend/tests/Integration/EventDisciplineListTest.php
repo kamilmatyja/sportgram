@@ -8,7 +8,7 @@ use App\Entity\EventDisciplineDistance;
 use App\Entity\EventDisciplineList;
 use App\Entity\Feed;
 use App\Entity\User;
-use App\Enum\EventDisciplineListStatusEnum;
+use App\Enum\SaveStatusEnum;
 use PHPUnit\Framework\TestCase;
 
 class EventDisciplineListTest extends TestCase
@@ -18,7 +18,7 @@ class EventDisciplineListTest extends TestCase
         $distance = $this->createMock(EventDisciplineDistance::class);
         $feed = $this->createMock(Feed::class);
         $user = $this->createMock(User::class);
-        $status = EventDisciplineListStatusEnum::Active;
+        $status = SaveStatusEnum::Accepted;
         $entity = new EventDisciplineList($distance, $feed, $user, $status);
         $this->assertInstanceOf(EventDisciplineList::class, $entity);
         $this->assertSame($distance, $entity->getEventDisciplineDistance());

@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\ParticipantStatusEnum;
+use App\Enum\SaveStatusEnum;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -29,10 +29,10 @@ class TrainingParticipant
     private DateTimeImmutable $updatedAt;
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
-    #[ORM\Column(name: 'status', type: 'integer', enumType: ParticipantStatusEnum::class)]
-    private ParticipantStatusEnum $status;
+    #[ORM\Column(name: 'status', type: 'integer', enumType: SaveStatusEnum::class)]
+    private SaveStatusEnum $status;
 
-    public function __construct(Training $training, User $user, ParticipantStatusEnum $status)
+    public function __construct(Training $training, User $user, SaveStatusEnum $status)
     {
         $this->training = $training;
         $this->user = $user;
@@ -83,7 +83,7 @@ class TrainingParticipant
         return $this->deletedAt;
     }
 
-    public function getStatus(): ParticipantStatusEnum
+    public function getStatus(): SaveStatusEnum
     {
         return $this->status;
     }

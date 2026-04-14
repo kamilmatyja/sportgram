@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\EventDisciplineListStatusEnum;
+use App\Enum\SaveStatusEnum;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -32,14 +32,14 @@ class EventDisciplineList
     private DateTimeImmutable $updatedAt;
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
-    #[ORM\Column(name: 'status', type: 'integer', enumType: EventDisciplineListStatusEnum::class)]
-    private EventDisciplineListStatusEnum $status;
+    #[ORM\Column(name: 'status', type: 'integer', enumType: SaveStatusEnum::class)]
+    private SaveStatusEnum $status;
 
     public function __construct(
         EventDisciplineDistance $eventDisciplineDistance,
         Feed $feed,
         User $user,
-        EventDisciplineListStatusEnum $status,
+        SaveStatusEnum $status,
     ) {
         $this->eventDisciplineDistance = $eventDisciplineDistance;
         $this->feed = $feed;
@@ -96,7 +96,7 @@ class EventDisciplineList
         return $this->deletedAt;
     }
 
-    public function getStatus(): EventDisciplineListStatusEnum
+    public function getStatus(): SaveStatusEnum
     {
         return $this->status;
     }

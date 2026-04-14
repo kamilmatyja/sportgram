@@ -35,9 +35,9 @@ class Training
     private DateTimeImmutable $endedAt;
     #[ORM\Column(name: 'title', type: 'text', length: 256)]
     private string $title;
-    #[ORM\Column(name: 'description', type: 'text', length: 4096)]
+    #[ORM\Column(name: 'description', type: 'text', length: 2048)]
     private string $description;
-    #[ORM\Column(name: 'link', type: 'text', length: 2048)]
+    #[ORM\Column(name: 'link', type: 'text', length: 64, unique: true)]
     private string $link;
     #[ORM\Column(name: 'location', type: 'text', length: 1024)]
     private string $location;

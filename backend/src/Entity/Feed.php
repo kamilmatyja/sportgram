@@ -26,9 +26,9 @@ class Feed
     private DateTimeImmutable $updatedAt;
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
-    #[ORM\Column(name: 'text', type: 'text', length: 4096, nullable: true)]
+    #[ORM\Column(name: 'text', type: 'text', length: 2048, nullable: true)]
     private ?string $text = null;
-    #[ORM\Column(name: 'photo', type: 'binary', length: 2048, nullable: true)]
+    #[ORM\Column(name: 'photo', type: 'binary', nullable: true)]
     private ?string $photo = null;
     #[ORM\Column(name: 'status', type: 'integer', enumType: ElementStatusEnum::class)]
     private ElementStatusEnum $status;

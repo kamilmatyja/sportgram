@@ -8,7 +8,7 @@ class UserCreateDto
     public string $firstName;
     public string $lastName;
     public int $gender;
-    public string $phone;
+    public int $phone;
     public string $email;
     public string $password;
     public string $link;
