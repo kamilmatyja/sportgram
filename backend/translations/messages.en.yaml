@@ -1,0 +1,4 @@
+registration:
+  code:
+    subject: 'Your registration code'
+    body: 'Your registration code is: %code%'

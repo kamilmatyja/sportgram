@@ -227,6 +227,115 @@ class UserCreateTest extends ApiTestCase
         }
     }
 
+    final public function testEmptyRoles(): void
+    {
+        $data = [
+            'birthAt' => '2000-01-01',
+            'firstName' => 'Jan',
+            'lastName' => 'Kowalski',
+            'gender' => 1,
+            'phone' => 123456789,
+            'email' => 'jan.kowalski@example.com',
+            'password' => 'tajnehaslo',
+            'link' => 'janek',
+            'language' => 2,
+            'country' => 35,
+            'theme' => 1,
+            'color' => 3,
+            'profilePhoto' => base64_encode('hello'),
+            'backgroundPhoto' => base64_encode('hello'),
+            'bio' => 'Testowy użytkownik',
+            'status' => 1,
+            'roles' => [],
+        ];
+
+        $result = $this->post('/users', $data);
+        $this->assertEquals(400, $result['status']);
+        $this->assertArrayHasKey('errors', $result['json']);
+        $expected = [
+            'roles'
+        ];
+        foreach ($expected as $field) {
+            $this->assertArrayHasKey($field, $result['json']['errors']);
+            $this->assertEquals([
+                'This value should not be blank.',
+                'This collection should contain 1 element or more.'
+            ], $result['json']['errors'][$field]);
+        }
+    }
+
+    final public function testDuplicateRoles(): void
+    {
+        $data = [
+            'birthAt' => '2000-01-01',
+            'firstName' => 'Jan',
+            'lastName' => 'Kowalski',
+            'gender' => 1,
+            'phone' => 123456789,
+            'email' => 'jan.kowalski@example.com',
+            'password' => 'tajnehaslo',
+            'link' => 'janek',
+            'language' => 2,
+            'country' => 35,
+            'theme' => 1,
+            'color' => 3,
+            'profilePhoto' => base64_encode('hello'),
+            'backgroundPhoto' => base64_encode('hello'),
+            'bio' => 'Testowy użytkownik',
+            'status' => 1,
+            'roles' => [1, 2, 1],
+        ];
+
+        $result = $this->post('/users', $data);
+        $this->assertEquals(400, $result['status']);
+        $this->assertArrayHasKey('errors', $result['json']);
+        $expected = [
+            'roles'
+        ];
+        foreach ($expected as $field) {
+            $this->assertArrayHasKey($field, $result['json']['errors']);
+            $this->assertEquals([
+                'This collection should contain only unique elements.'
+            ], $result['json']['errors'][$field]);
+        }
+    }
+
+    final public function testNotExistRole(): void
+    {
+        $data = [
+            'birthAt' => '2000-01-01',
+            'firstName' => 'Jan',
+            'lastName' => 'Kowalski',
+            'gender' => 1,
+            'phone' => 123456789,
+            'email' => 'jan.kowalski@example.com',
+            'password' => 'tajnehaslo',
+            'link' => 'janek',
+            'language' => 2,
+            'country' => 35,
+            'theme' => 1,
+            'color' => 3,
+            'profilePhoto' => base64_encode('hello'),
+            'backgroundPhoto' => base64_encode('hello'),
+            'bio' => 'Testowy użytkownik',
+            'status' => 1,
+            'roles' => [4],
+        ];
+
+        $result = $this->post('/users', $data);
+        $this->assertEquals(400, $result['status']);
+        $this->assertArrayHasKey('errors', $result['json']);
+        $expected = [
+            'roles[0]'
+        ];
+        foreach ($expected as $field) {
+            $this->assertArrayHasKey($field, $result['json']['errors']);
+            $this->assertEquals([
+                'The value you selected is not a valid choice.'
+            ], $result['json']['errors'][$field]);
+        }
+    }
+
     final public function testSuccess(): void
     {
         $data = [

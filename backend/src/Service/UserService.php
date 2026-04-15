@@ -20,8 +20,10 @@ use App\Repository\UserRoleRepository;
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Random\RandomException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class UserService
 {
@@ -29,7 +31,9 @@ readonly class UserService
         private UserRepository $userRepository,
         private UserRoleRepository $userRoleRepository,
         private UserRegisterRepository $userRegisterRepository,
-        private UserPasswordHasherInterface $hasher
+        private UserPasswordHasherInterface $hasher,
+        private EmailService $emailService,
+        private TranslatorInterface $translator
     )
     {
     }
@@ -37,6 +41,7 @@ readonly class UserService
     /**
      * @throws DateMalformedStringException
      * @throws RandomException
+     * @throws TransportExceptionInterface
      */
     final public function createUser(UserCreateDto $dto): Uuid
     {
@@ -72,7 +77,14 @@ readonly class UserService
         $userRegister = new UserRegister($user, random_int(100000, 999999), 0, UnauthorizedStatusEnum::NotSent);
         $this->userRegisterRepository->add($userRegister);
 
-        // TODO - send email with code
+        $locale = $user->getLanguage()->getLocale();
+        $subject = $this->translator->trans('registration.code.subject', locale: $locale);
+        $body = $this->translator->trans(
+            'registration.code.body',
+            ['%code%' => $userRegister->getCode()],
+            locale: $locale
+        );
+        $this->emailService->send($user->getEmail(), $subject, $body);
 
         return $user->getId();
     }

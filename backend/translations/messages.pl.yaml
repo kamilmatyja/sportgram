@@ -1,0 +1,5 @@
+registration:
+  code:
+    subject: 'Twój kod rejestracyjny'
+    body: 'Twój kod rejestracyjny to: %code%'
+
