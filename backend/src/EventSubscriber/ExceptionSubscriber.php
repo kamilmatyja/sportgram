@@ -17,7 +17,7 @@ class ExceptionSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function onException(ExceptionEvent $event): void
+    final public function onException(ExceptionEvent $event): void
     {
         $e = $event->getThrowable();
 
@@ -25,14 +25,14 @@ class ExceptionSubscriber implements EventSubscriberInterface
 
         if ($e instanceof ValidationFailedException) {
             $violations = $e->getViolations();
-        }
-
-        if ($e instanceof UnprocessableEntityHttpException) {
+        } elseif ($e instanceof UnprocessableEntityHttpException) {
             $previous = $e->getPrevious();
 
             if ($previous instanceof ValidationFailedException) {
                 $violations = $previous->getViolations();
             }
+        } else {
+            $event->setResponse(ApiResponse::error([$e->getMessage()]));
         }
 
         if (!$violations) {

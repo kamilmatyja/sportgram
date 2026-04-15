@@ -17,7 +17,7 @@ class UserCreateTest extends ApiTestCase
 
     final public function testEmptyPayload(): void
     {
-        $result = $this->post('/users', []);
+        $result = $this->post('/api/users', []);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -67,7 +67,7 @@ class UserCreateTest extends ApiTestCase
             'status' => null,
             'roles' => null,
         ];
-        $result = $this->post('/users', $data);
+        $result = $this->post('/api/users', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -136,11 +136,11 @@ class UserCreateTest extends ApiTestCase
             'roles' => [1, 2],
         ];
 
-        $result1 = $this->post('/users', $data);
+        $result1 = $this->post('/api/users', $data);
         $this->assertEquals(201, $result1['status']);
         $this->assertArrayHasKey('id', $result1['json']);
 
-        $result2 = $this->post('/users', $data);
+        $result2 = $this->post('/api/users', $data);
         $this->assertEquals(400, $result2['status']);
         $this->assertArrayHasKey('errors', $result2['json']);
         $expected = [
@@ -177,7 +177,7 @@ class UserCreateTest extends ApiTestCase
             'status' => 1,
             'roles' => [1, 2],
         ];
-        $result = $this->post('/users', $data);
+        $result = $this->post('/api/users', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -213,7 +213,7 @@ class UserCreateTest extends ApiTestCase
             'status' => 1,
             'roles' => [1, 2],
         ];
-        $result = $this->post('/users', $data);
+        $result = $this->post('/api/users', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -249,7 +249,7 @@ class UserCreateTest extends ApiTestCase
             'roles' => [],
         ];
 
-        $result = $this->post('/users', $data);
+        $result = $this->post('/api/users', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -286,7 +286,7 @@ class UserCreateTest extends ApiTestCase
             'roles' => [1, 2, 1],
         ];
 
-        $result = $this->post('/users', $data);
+        $result = $this->post('/api/users', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -322,7 +322,7 @@ class UserCreateTest extends ApiTestCase
             'roles' => [4],
         ];
 
-        $result = $this->post('/users', $data);
+        $result = $this->post('/api/users', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -358,7 +358,7 @@ class UserCreateTest extends ApiTestCase
             'roles' => [1, 2],
         ];
 
-        $result = $this->post('/users', $data);
+        $result = $this->post('/api/users', $data);
         $this->assertEquals(201, $result['status']);
         $this->assertArrayHasKey('id', $result['json']);
     }

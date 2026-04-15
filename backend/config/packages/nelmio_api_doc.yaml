@@ -1,0 +1,11 @@
+nelmio_api_doc:
+  documentation:
+    info:
+      title: Sportgram API
+      description: API documentation for Sportgram
+      version: 1.0.0
+
+  areas:
+    default:
+      path_patterns:
+        - ^/

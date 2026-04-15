@@ -59,3 +59,8 @@ Starter zawiera gotowe ikony SVG:
 6. Tworzenie migracji
 - docker compose exec php php bin/console doctrine:migrations:diff
 - docker compose exec php php bin/console doctrine:migrations:migrate -n
+
+7. Swagger
+
+- http://localhost:8080/api/doc
+- http://localhost:8080/api/doc.json
