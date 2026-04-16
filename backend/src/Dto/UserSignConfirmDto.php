@@ -5,7 +5,7 @@ namespace App\Dto;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[OA\Schema]
+#[OA\Schema(schema: 'UserSignConfirmDto')]
 class UserSignConfirmDto
 {
     #[Assert\NotBlank]

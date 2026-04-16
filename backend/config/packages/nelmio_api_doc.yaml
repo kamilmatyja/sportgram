@@ -15,3 +15,8 @@ nelmio_api_doc:
     default:
       path_patterns:
         - ^/
+
+  models:
+    use_jms: false
+    names:
+      - { alias: UserResource, type: App\Resource\UserResource }

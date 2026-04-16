@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{UserCreateNanoDto,
     UserDto,
+    UserListDto,
     UserRegisterConfirmDto,
     UserRegisterDto,
     UserSignConfirmDto,
@@ -12,12 +13,13 @@ use App\Dto\{UserCreateNanoDto,
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Conflict, Created, Forbidden, Ok, Token, Unauthorized};
+use App\Resource\UserResource;
 use App\Security\Voter\UserVoter;
 use App\Service\UserService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse};
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Attribute\{MapQueryString, MapRequestPayload};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -108,7 +110,59 @@ class UserController extends AbstractController
         return ApiResponse::ok($userId);
     }
 
-    #[Route('/api/users/registers', name: 'register_sign', methods: ['POST'])]
+    #[Route('/api/users', name: 'user_list', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[OA\Get(
+        summary: 'List of users',
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(ref: '#/components/schemas/UserResource'),
+                ),
+            ),
+            new BadRequest(),
+        ],
+    )]
+    final public function list(
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        UserListDto $dto,
+        UserService $service,
+    ): JsonResponse {
+        $users = $service->listUsers($dto);
+
+        $data = UserResource::fromEntityCollection($users);
+
+        return ApiResponse::list($data);
+    }
+
+    #[Route('/api/users/{id}', name: 'user_details', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[OA\Get(
+        summary: 'Details of users',
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(ref: '#/components/schemas/UserResource'),
+            ),
+            new BadRequest(),
+        ],
+    )]
+    final public function details(
+        string $id,
+        UserService $service,
+    ): JsonResponse {
+        $user = $service->detailsUser($id);
+
+        $data = UserResource::fromEntity($user);
+
+        return ApiResponse::list($data);
+    }
+
+    #[Route('/api/users/registers', name: 'user_register', methods: ['POST'])]
     #[IsGranted('IS_ANONYMOUS')]
     #[OA\Post(
         summary: 'Register user',

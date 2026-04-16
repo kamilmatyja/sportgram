@@ -6,7 +6,7 @@ use App\Enum\UserStatusEnum;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[OA\Schema]
+#[OA\Schema(schema: 'UserUpdateStatusDto')]
 class UserUpdateStatusDto
 {
     #[Assert\NotBlank]

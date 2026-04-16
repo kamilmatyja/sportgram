@@ -8,7 +8,7 @@ use App\Validator\{Base64String, UniqueField};
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[OA\Schema]
+#[OA\Schema(schema: 'UserDto')]
 class UserDto
 {
     #[Assert\NotBlank]

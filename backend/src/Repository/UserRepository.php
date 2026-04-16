@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Dto\UserListDto;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -34,5 +35,40 @@ class UserRepository extends ServiceEntityRepository
         $user = $this->findOneBy(['email' => $email, 'deleted_at' => null], ['created_at' => 'DESC']);
 
         return $user;
+    }
+
+    final public function findUsers(UserListDto $dto): array
+    {
+        $qb = $this->createQueryBuilder('u');
+
+        if ($dto->filter->firstName) {
+            $qb->andWhere('u.firstName LIKE :firstName')
+                ->setParameter('firstName', '%' . $dto->filter->firstName . '%');
+        }
+
+        if ($dto->filter->lastName) {
+            $qb->andWhere('u.lastName LIKE :lastName')
+                ->setParameter('lastName', '%' . $dto->filter->lastName . '%');
+        }
+
+        if ($dto->filter->gender !== null) {
+            $qb->andWhere('u.gender = :gender')
+                ->setParameter('gender', $dto->filter->gender);
+        }
+
+        if ($dto->filter->country !== null) {
+            $qb->andWhere('u.country = :country')
+                ->setParameter('country', $dto->filter->country);
+        }
+
+        if ($dto->sort) {
+            [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
+            $qb->orderBy('u.' . $field, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
+        }
+
+        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
+            ->setMaxResults($dto->limit);
+
+        return $qb->getQuery()->getResult();
     }
 }

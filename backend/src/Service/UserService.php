@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Dto\{UserCreateNanoDto,
     UserDto,
+    UserListDto,
     UserRegisterConfirmDto,
     UserRegisterDto,
     UserSignConfirmDto,
@@ -262,6 +263,22 @@ readonly class UserService
         $this->userRepository->save($user);
 
         return $user->id;
+    }
+
+    final public function listUsers(UserListDto $dto): array
+    {
+        return $this->userRepository->findUsers($dto);
+    }
+
+    final public function detailsUser(string $userId): User
+    {
+        $user = $this->userRepository->findById($userId);
+
+        if (! $user) {
+            throw new ValidatorException('User not found.');
+        }
+
+        return $user;
     }
 
     /**

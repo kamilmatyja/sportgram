@@ -8,7 +8,7 @@ use App\Validator\{UniqueField};
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[OA\Schema]
+#[OA\Schema(schema: 'UserCreateNanoDto')]
 class UserCreateNanoDto
 {
     #[Assert\NotBlank]
