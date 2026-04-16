@@ -1,5 +1,8 @@
-registration:
+register:
   code:
     subject: 'Twój kod rejestracyjny'
     body: 'Twój kod rejestracyjny to: %code%'
-
+sign:
+  code:
+    subject: 'Twój kod logowania'
+    body: 'Twój kod logowania to: %code%'

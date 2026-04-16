@@ -13,10 +13,18 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
-    final public function add(User $user): void
+    final public function save(User $user): void
     {
         $em = $this->getEntityManager();
         $em->persist($user);
         $em->flush();
+    }
+
+    final public function findOneByEmail(string $email): ?User
+    {
+        /** @var ?User $user */
+        $user = $this->findOneBy(['email' => $email]);
+
+        return $user;
     }
 }

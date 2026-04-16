@@ -15,7 +15,7 @@ class TrainingDisciplineSubDistance
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
-    private ?Uuid $id = null {
+    public ?Uuid $id = null {
         get {
             return $this->id;
         }
@@ -30,14 +30,14 @@ class TrainingDisciplineSubDistance
     }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt {
+    public DateTimeImmutable $createdAt {
         get {
             return $this->createdAt;
         }
     }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt {
+    public DateTimeImmutable $updatedAt {
         get {
             return $this->updatedAt;
         }

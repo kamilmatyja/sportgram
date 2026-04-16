@@ -24,14 +24,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt {
+    public DateTimeImmutable $createdAt {
         get {
             return $this->createdAt;
         }
     }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt {
+    public DateTimeImmutable $updatedAt {
         get {
             return $this->updatedAt;
         }
@@ -213,6 +213,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     final public function getUserIdentifier(): string
     {
         return $this->email;
+    }
+
+    final public function getPassword(): string
+    {
+        return $this->password;
     }
 
     final public function getRoles(): array

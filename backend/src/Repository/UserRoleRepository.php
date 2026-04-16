@@ -13,7 +13,7 @@ class UserRoleRepository extends ServiceEntityRepository
         parent::__construct($registry, UserRole::class);
     }
 
-    final public function add(UserRole $userRole): void
+    final public function save(UserRole $userRole): void
     {
         $em = $this->getEntityManager();
         $em->persist($userRole);

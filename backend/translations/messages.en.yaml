@@ -1,4 +1,8 @@
-registration:
+register:
   code:
     subject: 'Your registration code'
     body: 'Your registration code is: %code%'
+sign:
+  code:
+    subject: 'Your sign code'
+    body: 'Your sign code is: %code%'
