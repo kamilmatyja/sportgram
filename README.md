@@ -61,6 +61,8 @@ Starter zawiera gotowe ikony SVG:
 - docker compose exec php php bin/console doctrine:migrations:migrate -n
 
 7. Swagger
-
 - http://localhost:8080/api/doc
 - http://localhost:8080/api/doc.json
+
+8. Cs fixer
+- docker compose exec php vendor/bin/php-cs-fixer fix

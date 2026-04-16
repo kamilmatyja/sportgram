@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Tests\Factory;
 
 use DateTimeImmutable;
-use Faker\Factory as FakerFactory;
-use Faker\Generator as FakerGenerator;
+use Faker\{Factory as FakerFactory, Generator as FakerGenerator};
 use Symfony\Component\Uid\Uuid;
 use UnitEnum;
 
@@ -22,6 +21,7 @@ abstract class BaseFactory
         if (self::$faker === null) {
             self::$faker = FakerFactory::create();
         }
+
         return self::$faker;
     }
 

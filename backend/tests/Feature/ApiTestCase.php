@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\{Connection, Exception};
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -48,4 +47,3 @@ abstract class ApiTestCase extends WebTestCase
         $this->connection->executeStatement($this->platform->getTruncateTableSQL($name, true));
     }
 }
-

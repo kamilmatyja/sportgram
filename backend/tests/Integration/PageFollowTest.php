@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Page;
-use App\Entity\PageFollow;
-use App\Entity\User;
+use App\Entity\{Page, PageFollow, User};
 use App\Enum\PageFollowStatusEnum;
 use PHPUnit\Framework\TestCase;
 

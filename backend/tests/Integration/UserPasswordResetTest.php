@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\User;
-use App\Entity\UserPasswordReset;
+use App\Entity\{User, UserPasswordReset};
 use App\Enum\UnauthorizedStatusEnum;
 use PHPUnit\Framework\TestCase;
 

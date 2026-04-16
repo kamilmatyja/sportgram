@@ -20,7 +20,7 @@ final class EventDisciplineFactory extends BaseFactory
 
         return new EventDiscipline(
             $data['event'],
-            $data['discipline']
+            $data['discipline'],
         );
     }
 }

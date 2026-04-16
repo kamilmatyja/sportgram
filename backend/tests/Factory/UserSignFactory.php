@@ -24,7 +24,7 @@ final class UserSignFactory extends BaseFactory
             $data['user'],
             $data['code'],
             $data['attempt'],
-            $data['status']
+            $data['status'],
         );
     }
 }

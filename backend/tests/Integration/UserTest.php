@@ -5,12 +5,7 @@ declare(strict_types=1);
 namespace Tests\Integration;
 
 use App\Entity\User;
-use App\Enum\ColorEnum;
-use App\Enum\CountryEnum;
-use App\Enum\GenderEnum;
-use App\Enum\LanguageEnum;
-use App\Enum\ThemeEnum;
-use App\Enum\UserStatusEnum;
+use App\Enum\{ColorEnum, CountryEnum, GenderEnum, LanguageEnum, ThemeEnum, UserStatusEnum};
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -48,7 +43,7 @@ class UserTest extends TestCase
             $profilePhoto,
             $backgroundPhoto,
             $bio,
-            $status
+            $status,
         );
         $this->assertInstanceOf(User::class, $entity);
         $this->assertSame($birthAt, $entity->getBirthAt());

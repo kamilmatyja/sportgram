@@ -23,7 +23,7 @@ final class EventDisciplineResultFactory extends BaseFactory
             $data['eventDisciplineDistance'],
             $data['feed'],
             $data['user'],
-            $data['time']
+            $data['time'],
         );
     }
 }

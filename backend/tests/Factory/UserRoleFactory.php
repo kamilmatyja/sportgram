@@ -20,7 +20,7 @@ final class UserRoleFactory extends BaseFactory
 
         return new UserRole(
             $data['user'],
-            $data['role']
+            $data['role'],
         );
     }
 }

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Story;
-use App\Entity\User;
+use App\Entity\{Story, User};
 use App\Enum\ElementStatusEnum;
 use PHPUnit\Framework\TestCase;
 
@@ -25,4 +24,3 @@ class StoryTest extends TestCase
         $this->assertSame($status, $entity->getStatus());
     }
 }
-

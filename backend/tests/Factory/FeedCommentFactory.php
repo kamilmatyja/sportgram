@@ -24,7 +24,7 @@ final class FeedCommentFactory extends BaseFactory
             $data['feed'],
             $data['user'],
             $data['text'],
-            $data['status']
+            $data['status'],
         );
     }
 }

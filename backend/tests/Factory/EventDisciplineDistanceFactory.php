@@ -19,7 +19,7 @@ final class EventDisciplineDistanceFactory extends BaseFactory
 
         return new EventDisciplineDistance(
             $data['eventDiscipline'],
-            $data['distance']
+            $data['distance'],
         );
     }
 }

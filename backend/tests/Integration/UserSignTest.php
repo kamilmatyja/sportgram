@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\User;
-use App\Entity\UserSign;
+use App\Entity\{User, UserSign};
 use App\Enum\UnauthorizedStatusEnum;
 use PHPUnit\Framework\TestCase;
 
@@ -25,4 +24,3 @@ class UserSignTest extends TestCase
         $this->assertSame($status, $entity->getStatus());
     }
 }
-

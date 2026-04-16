@@ -13,7 +13,7 @@ readonly class EmailService
 
     public function __construct(
         private MailerInterface $mailer,
-        ParameterBagInterface $params
+        ParameterBagInterface $params,
     ) {
         $this->fromEmail = $params->get('MAILER_FROM');
     }

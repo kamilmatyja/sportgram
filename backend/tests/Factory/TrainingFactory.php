@@ -34,7 +34,7 @@ final class TrainingFactory extends BaseFactory
             $data['description'],
             $data['link'],
             $data['location'],
-            $data['status']
+            $data['status'],
         );
     }
 }

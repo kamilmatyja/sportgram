@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Feed;
-use App\Entity\FeedReaction;
-use App\Entity\User;
-use App\Enum\ElementStatusEnum;
-use App\Enum\FeedReactionEnum;
+use App\Entity\{Feed, FeedReaction, User};
+use App\Enum\{ElementStatusEnum, FeedReactionEnum};
 use PHPUnit\Framework\TestCase;
 
 class FeedReactionTest extends TestCase

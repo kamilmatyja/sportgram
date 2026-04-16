@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\TrainingDiscipline;
-use App\Entity\TrainingDisciplineDistance;
+use App\Entity\{TrainingDiscipline, TrainingDisciplineDistance};
 use PHPUnit\Framework\TestCase;
 
 class TrainingDisciplineDistanceTest extends TestCase

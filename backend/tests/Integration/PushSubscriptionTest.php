@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\PushSubscription;
-use App\Entity\User;
+use App\Entity\{PushSubscription, User};
 use App\Enum\PushSubscriptionStatusEnum;
 use PHPUnit\Framework\TestCase;
 
@@ -29,4 +28,3 @@ class PushSubscriptionTest extends TestCase
         $this->assertSame($status, $entity->getStatus());
     }
 }
-

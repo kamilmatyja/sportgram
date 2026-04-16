@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\TrainingDiscipline;
-use App\Entity\TrainingParticipant;
+use App\Entity\{TrainingDiscipline, TrainingParticipant};
 use App\Enum\DisciplineEnum;
 use PHPUnit\Framework\TestCase;
 
@@ -21,4 +20,3 @@ class TrainingDisciplineTest extends TestCase
         $this->assertSame($discipline, $entity->getDiscipline());
     }
 }
-

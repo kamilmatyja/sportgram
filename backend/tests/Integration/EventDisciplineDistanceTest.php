@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\EventDiscipline;
-use App\Entity\EventDisciplineDistance;
+use App\Entity\{EventDiscipline, EventDisciplineDistance};
 use PHPUnit\Framework\TestCase;
 
 class EventDisciplineDistanceTest extends TestCase
@@ -20,4 +19,3 @@ class EventDisciplineDistanceTest extends TestCase
         $this->assertSame($distance, $entity->getDistance());
     }
 }
-

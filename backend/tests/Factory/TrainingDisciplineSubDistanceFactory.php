@@ -29,7 +29,7 @@ final class TrainingDisciplineSubDistanceFactory extends BaseFactory
             $data['lat'],
             $data['lng'],
             $data['accuracy'],
-            $data['speed']
+            $data['speed'],
         );
     }
 }

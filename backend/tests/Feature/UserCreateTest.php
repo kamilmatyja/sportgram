@@ -36,12 +36,12 @@ class UserCreateTest extends ApiTestCase
             'profilePhoto',
             'backgroundPhoto',
             'bio',
-            'roles'
+            'roles',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
             $this->assertEquals([
-                'This value should not be blank.'
+                'This value should not be blank.',
             ], $result['json']['errors'][$field]);
         }
     }
@@ -86,7 +86,7 @@ class UserCreateTest extends ApiTestCase
             'profilePhoto',
             'backgroundPhoto',
             'bio',
-            'roles'
+            'roles',
         ];
         $typeErrors = [
             'birthAt' => 'This value should be of type string.',
@@ -109,7 +109,7 @@ class UserCreateTest extends ApiTestCase
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
             $this->assertEquals([
-                $typeErrors[$field]
+                $typeErrors[$field],
             ], $result['json']['errors'][$field]);
         }
     }
@@ -151,7 +151,7 @@ class UserCreateTest extends ApiTestCase
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result2['json']['errors']);
             $this->assertEquals([
-                'This value is already used.'
+                'This value is already used.',
             ], $result2['json']['errors'][$field]);
         }
     }
@@ -182,12 +182,12 @@ class UserCreateTest extends ApiTestCase
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
             'profilePhoto',
-            'backgroundPhoto'
+            'backgroundPhoto',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
             $this->assertEquals([
-                'This value should be a valid base64 string.'
+                'This value should be a valid base64 string.',
             ], $result['json']['errors'][$field]);
         }
     }
@@ -217,12 +217,12 @@ class UserCreateTest extends ApiTestCase
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
-            'phone'
+            'phone',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
             $this->assertEquals([
-                'This value should be of type int.'
+                'This value should be of type int.',
             ], $result['json']['errors'][$field]);
         }
     }
@@ -253,13 +253,13 @@ class UserCreateTest extends ApiTestCase
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
-            'roles'
+            'roles',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
             $this->assertEquals([
                 'This value should not be blank.',
-                'This collection should contain 1 element or more.'
+                'This collection should contain 1 element or more.',
             ], $result['json']['errors'][$field]);
         }
     }
@@ -290,12 +290,12 @@ class UserCreateTest extends ApiTestCase
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
-            'roles'
+            'roles',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
             $this->assertEquals([
-                'This collection should contain only unique elements.'
+                'This collection should contain only unique elements.',
             ], $result['json']['errors'][$field]);
         }
     }
@@ -326,12 +326,12 @@ class UserCreateTest extends ApiTestCase
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
-            'roles[0]'
+            'roles[0]',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
             $this->assertEquals([
-                'The value you selected is not a valid choice.'
+                'The value you selected is not a valid choice.',
             ], $result['json']['errors'][$field]);
         }
     }

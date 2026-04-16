@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Page;
-use App\Entity\PageParticipant;
-use App\Entity\User;
+use App\Entity\{Page, PageParticipant, User};
 use App\Enum\SaveStatusEnum;
 use PHPUnit\Framework\TestCase;
 
@@ -24,4 +22,3 @@ class PageParticipantTest extends TestCase
         $this->assertSame($status, $entity->getStatus());
     }
 }
-

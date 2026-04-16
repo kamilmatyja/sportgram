@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Notification;
-use App\Entity\User;
+use App\Entity\{Notification, User};
 use App\Enum\NotificationStatusEnum;
 use PHPUnit\Framework\TestCase;
 

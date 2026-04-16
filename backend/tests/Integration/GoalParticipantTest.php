@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Goal;
-use App\Entity\GoalParticipant;
-use App\Entity\User;
+use App\Entity\{Goal, GoalParticipant, User};
 use App\Enum\SaveStatusEnum;
 use PHPUnit\Framework\TestCase;
 
@@ -24,4 +22,3 @@ class GoalParticipantTest extends TestCase
         $this->assertSame($status, $entity->getStatus());
     }
 }
-

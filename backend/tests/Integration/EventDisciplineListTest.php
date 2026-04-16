@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\EventDisciplineDistance;
-use App\Entity\EventDisciplineList;
-use App\Entity\Feed;
-use App\Entity\User;
+use App\Entity\{EventDisciplineDistance, EventDisciplineList, Feed, User};
 use App\Enum\SaveStatusEnum;
 use PHPUnit\Framework\TestCase;
 

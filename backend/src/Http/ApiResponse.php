@@ -17,4 +17,3 @@ class ApiResponse extends JsonResponse
         return new self(['errors' => $errors], self::HTTP_BAD_REQUEST);
     }
 }
-

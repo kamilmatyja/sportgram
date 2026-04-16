@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Feed;
-use App\Entity\Training;
-use App\Entity\User;
+use App\Entity\{Feed, Training, User};
 use App\Enum\ElementStatusEnum;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
@@ -37,4 +35,3 @@ class TrainingTest extends TestCase
         $this->assertSame($status, $entity->getStatus());
     }
 }
-

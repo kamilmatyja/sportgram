@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Event;
-use App\Entity\EventDiscipline;
+use App\Entity\{Event, EventDiscipline};
 use App\Enum\DisciplineEnum;
 use PHPUnit\Framework\TestCase;
 

@@ -24,7 +24,7 @@ final class EventDisciplineListFactory extends BaseFactory
             $data['eventDisciplineDistance'],
             $data['feed'],
             $data['user'],
-            $data['status']
+            $data['status'],
         );
     }
 }

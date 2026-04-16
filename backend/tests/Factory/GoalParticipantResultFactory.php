@@ -22,7 +22,7 @@ final class GoalParticipantResultFactory extends BaseFactory
         return new GoalParticipantResult(
             $data['goalParticipant'],
             $data['feed'],
-            $data['status']
+            $data['status'],
         );
     }
 }

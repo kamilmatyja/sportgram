@@ -22,7 +22,7 @@ final class PageFollowFactory extends BaseFactory
         return new PageFollow(
             $data['page'],
             $data['user'],
-            $data['status']
+            $data['status'],
         );
     }
 }

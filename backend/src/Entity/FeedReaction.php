@@ -2,8 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\ElementStatusEnum;
-use App\Enum\FeedReactionEnum;
+use App\Enum\{ElementStatusEnum, FeedReactionEnum};
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;

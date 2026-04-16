@@ -2,8 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\DisciplineEnum;
-use App\Enum\GoalStatusEnum;
+use App\Enum\{DisciplineEnum, GoalStatusEnum};
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;

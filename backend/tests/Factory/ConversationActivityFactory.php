@@ -19,7 +19,7 @@ final class ConversationActivityFactory extends BaseFactory
 
         return new ConversationActivity(
             $data['senderUser'],
-            $data['receiverUser']
+            $data['receiverUser'],
         );
     }
 }

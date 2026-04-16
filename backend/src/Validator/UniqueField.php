@@ -15,7 +15,7 @@ class UniqueField extends Constraint
         public string $field,
         ?string $message = null,
         ?array $groups = null,
-        $payload = null
+        $payload = null,
     ) {
         parent::__construct([], $groups, $payload);
 

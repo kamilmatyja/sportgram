@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\EventDisciplineSubDistance;
-use App\Entity\EventDisciplineSubResult;
-use App\Entity\User;
+use App\Entity\{EventDisciplineSubDistance, EventDisciplineSubResult, User};
 use PHPUnit\Framework\TestCase;
 
 class EventDisciplineSubResultTest extends TestCase

@@ -2,17 +2,11 @@
 
 namespace App\Entity;
 
-use App\Enum\ColorEnum;
-use App\Enum\CountryEnum;
-use App\Enum\GenderEnum;
-use App\Enum\LanguageEnum;
-use App\Enum\ThemeEnum;
-use App\Enum\UserStatusEnum;
+use App\Enum\{ColorEnum, CountryEnum, GenderEnum, LanguageEnum, ThemeEnum, UserStatusEnum};
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\{PasswordAuthenticatedUserInterface, UserInterface};
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity]

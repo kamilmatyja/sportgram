@@ -36,7 +36,7 @@ final class EventFactory extends BaseFactory
             $data['rules'],
             $data['photo'],
             $data['location'],
-            $data['status']
+            $data['status'],
         );
     }
 }

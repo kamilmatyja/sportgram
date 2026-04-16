@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Tests\Factory;
 
 use App\Entity\Goal;
-use App\Enum\DisciplineEnum;
-use App\Enum\GoalStatusEnum;
+use App\Enum\{DisciplineEnum, GoalStatusEnum};
 
 final class GoalFactory extends BaseFactory
 {
@@ -37,7 +36,7 @@ final class GoalFactory extends BaseFactory
             $data['discipline'],
             $data['distance'],
             $data['time'],
-            $data['status']
+            $data['status'],
         );
     }
 }

@@ -2,8 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\ColorEnum;
-use App\Enum\ElementStatusEnum;
+use App\Enum\{ColorEnum, ElementStatusEnum};
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;

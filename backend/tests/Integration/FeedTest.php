@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Feed;
-use App\Entity\User;
+use App\Entity\{Feed, User};
 use App\Enum\ElementStatusEnum;
 use PHPUnit\Framework\TestCase;
 

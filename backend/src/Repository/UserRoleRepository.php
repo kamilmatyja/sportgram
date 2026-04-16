@@ -20,4 +20,3 @@ class UserRoleRepository extends ServiceEntityRepository
         $em->flush();
     }
 }
-

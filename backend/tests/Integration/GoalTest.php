@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Feed;
-use App\Entity\Goal;
-use App\Entity\User;
-use App\Enum\DisciplineEnum;
-use App\Enum\GoalStatusEnum;
+use App\Entity\{Feed, Goal, User};
+use App\Enum\{DisciplineEnum, GoalStatusEnum};
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 

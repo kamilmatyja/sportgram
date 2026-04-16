@@ -22,7 +22,7 @@ final class FriendFactory extends BaseFactory
         return new Friend(
             $data['senderUser'],
             $data['receiverUser'],
-            $data['status']
+            $data['status'],
         );
     }
 }

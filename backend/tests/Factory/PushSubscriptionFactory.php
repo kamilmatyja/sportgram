@@ -28,7 +28,7 @@ final class PushSubscriptionFactory extends BaseFactory
             $data['p256dh'],
             $data['auth'],
             $data['userAgent'],
-            $data['status']
+            $data['status'],
         );
     }
 }

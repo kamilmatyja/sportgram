@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Tests\Factory;
 
 use App\Entity\FeedReaction;
-use App\Enum\ElementStatusEnum;
-use App\Enum\FeedReactionEnum;
+use App\Enum\{ElementStatusEnum, FeedReactionEnum};
 
 final class FeedReactionFactory extends BaseFactory
 {
@@ -25,7 +24,7 @@ final class FeedReactionFactory extends BaseFactory
             $data['feed'],
             $data['user'],
             $data['reaction'],
-            $data['status']
+            $data['status'],
         );
     }
 }

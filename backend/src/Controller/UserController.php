@@ -18,7 +18,7 @@ class UserController extends AbstractController
         summary: 'Create user',
         requestBody: new OA\RequestBody(
             required: true,
-            content: new OA\JsonContent(ref: '#/components/schemas/UserCreateDto')
+            content: new OA\JsonContent(ref: '#/components/schemas/UserCreateDto'),
         ),
         responses: [
             new OA\Response(
@@ -29,11 +29,11 @@ class UserController extends AbstractController
                         new OA\Property(
                             property: 'id',
                             type: 'string',
-                            example: 'b3b6c1e2-8e2a-4c1a-9e2a-8e2a4c1a9e2a'
-                        )
+                            example: 'b3b6c1e2-8e2a-4c1a-9e2a-8e2a4c1a9e2a',
+                        ),
                     ],
-                    type: 'object'
-                )
+                    type: 'object',
+                ),
             ),
             new OA\Response(
                 response: 400,
@@ -45,18 +45,19 @@ class UserController extends AbstractController
                             type: 'object',
                             example: [
                                 'email' => ['This value is already used.'],
-                                'password' => ['This value is too short.']
-                            ]
-                        )
+                                'password' => ['This value is too short.'],
+                            ],
+                        ),
                     ],
-                    type: 'object'
-                )
-            )
-        ]
+                    type: 'object',
+                ),
+            ),
+        ],
     )]
     public function create(
-        #[MapRequestPayload] UserCreateDto $dto,
-        UserService $userService
+        #[MapRequestPayload]
+        UserCreateDto $dto,
+        UserService $userService,
     ): JsonResponse {
         $userId = $userService->createUser($dto);
 

@@ -21,7 +21,7 @@ final class EventDisciplineSubResultFactory extends BaseFactory
         return new EventDisciplineSubResult(
             $data['eventDisciplineSubDistance'],
             $data['user'],
-            $data['time']
+            $data['time'],
         );
     }
 }

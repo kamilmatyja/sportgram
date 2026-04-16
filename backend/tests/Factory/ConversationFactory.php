@@ -24,7 +24,7 @@ final class ConversationFactory extends BaseFactory
             $data['senderUser'],
             $data['receiverUser'],
             $data['text'],
-            $data['status']
+            $data['status'],
         );
     }
 }

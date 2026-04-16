@@ -7,40 +7,40 @@ namespace Tests\Integration;
 use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Tests\Factory\ConversationActivityFactory;
-use Tests\Factory\ConversationFactory;
-use Tests\Factory\EntryFactory;
-use Tests\Factory\EventDisciplineDistanceFactory;
-use Tests\Factory\EventDisciplineFactory;
-use Tests\Factory\EventDisciplineListFactory;
-use Tests\Factory\EventDisciplineResultFactory;
-use Tests\Factory\EventDisciplineSubDistanceFactory;
-use Tests\Factory\EventDisciplineSubResultFactory;
-use Tests\Factory\EventFactory;
-use Tests\Factory\FeedCommentFactory;
-use Tests\Factory\FeedFactory;
-use Tests\Factory\FeedReactionFactory;
-use Tests\Factory\FriendFactory;
-use Tests\Factory\GoalFactory;
-use Tests\Factory\GoalParticipantFactory;
-use Tests\Factory\GoalParticipantResultFactory;
-use Tests\Factory\NotificationFactory;
-use Tests\Factory\PageFactory;
-use Tests\Factory\PageFollowFactory;
-use Tests\Factory\PageParticipantFactory;
-use Tests\Factory\PushSubscriptionFactory;
-use Tests\Factory\StoryFactory;
-use Tests\Factory\TrainingDisciplineDistanceFactory;
-use Tests\Factory\TrainingDisciplineFactory;
-use Tests\Factory\TrainingDisciplineSubDistanceFactory;
-use Tests\Factory\TrainingFactory;
-use Tests\Factory\TrainingParticipantFactory;
-use Tests\Factory\UserDisciplineFactory;
-use Tests\Factory\UserFactory;
-use Tests\Factory\UserPasswordResetFactory;
-use Tests\Factory\UserRegisterFactory;
-use Tests\Factory\UserRoleFactory;
-use Tests\Factory\UserSignFactory;
+use Tests\Factory\{ConversationActivityFactory,
+    ConversationFactory,
+    EntryFactory,
+    EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventDisciplineListFactory,
+    EventDisciplineResultFactory,
+    EventDisciplineSubDistanceFactory,
+    EventDisciplineSubResultFactory,
+    EventFactory,
+    FeedCommentFactory,
+    FeedFactory,
+    FeedReactionFactory,
+    FriendFactory,
+    GoalFactory,
+    GoalParticipantFactory,
+    GoalParticipantResultFactory,
+    NotificationFactory,
+    PageFactory,
+    PageFollowFactory,
+    PageParticipantFactory,
+    PushSubscriptionFactory,
+    StoryFactory,
+    TrainingDisciplineDistanceFactory,
+    TrainingDisciplineFactory,
+    TrainingDisciplineSubDistanceFactory,
+    TrainingFactory,
+    TrainingParticipantFactory,
+    UserDisciplineFactory,
+    UserFactory,
+    UserPasswordResetFactory,
+    UserRegisterFactory,
+    UserRoleFactory,
+    UserSignFactory};
 
 class FactorySmokeTest extends TestCase
 {
@@ -93,4 +93,3 @@ class FactorySmokeTest extends TestCase
         yield [UserSignFactory::class];
     }
 }
-

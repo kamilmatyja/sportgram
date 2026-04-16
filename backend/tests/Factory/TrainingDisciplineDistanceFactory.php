@@ -21,7 +21,7 @@ final class TrainingDisciplineDistanceFactory extends BaseFactory
         return new TrainingDisciplineDistance(
             $data['trainingDiscipline'],
             $data['distance'],
-            $data['time']
+            $data['time'],
         );
     }
 }

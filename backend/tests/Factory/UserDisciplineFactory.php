@@ -20,7 +20,7 @@ final class UserDisciplineFactory extends BaseFactory
 
         return new UserDiscipline(
             $data['user'],
-            $data['discipline']
+            $data['discipline'],
         );
     }
 }

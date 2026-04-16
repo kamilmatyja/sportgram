@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Friend;
-use App\Entity\User;
+use App\Entity\{Friend, User};
 use App\Enum\FriendStatusEnum;
 use PHPUnit\Framework\TestCase;
 

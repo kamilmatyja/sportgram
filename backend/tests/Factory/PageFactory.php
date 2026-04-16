@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Tests\Factory;
 
 use App\Entity\Page;
-use App\Enum\ColorEnum;
-use App\Enum\ElementStatusEnum;
+use App\Enum\{ColorEnum, ElementStatusEnum};
 
 final class PageFactory extends BaseFactory
 {
@@ -33,7 +32,7 @@ final class PageFactory extends BaseFactory
             $data['profilePhoto'],
             $data['backgroundPhoto'],
             $data['color'],
-            $data['status']
+            $data['status'],
         );
     }
 }

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Training;
-use App\Entity\TrainingParticipant;
-use App\Entity\User;
+use App\Entity\{Training, TrainingParticipant, User};
 use App\Enum\SaveStatusEnum;
 use PHPUnit\Framework\TestCase;
 

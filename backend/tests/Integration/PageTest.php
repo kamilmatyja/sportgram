@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Page;
-use App\Entity\User;
-use App\Enum\ColorEnum;
-use App\Enum\ElementStatusEnum;
+use App\Entity\{Page, User};
+use App\Enum\{ColorEnum, ElementStatusEnum};
 use PHPUnit\Framework\TestCase;
 
 class PageTest extends TestCase

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\User;
-use App\Entity\UserDiscipline;
+use App\Entity\{User, UserDiscipline};
 use App\Enum\DisciplineEnum;
 use PHPUnit\Framework\TestCase;
 

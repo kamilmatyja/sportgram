@@ -3,14 +3,8 @@
 namespace App\Dto;
 
 use App\Entity\User;
-use App\Enum\ColorEnum;
-use App\Enum\CountryEnum;
-use App\Enum\GenderEnum;
-use App\Enum\LanguageEnum;
-use App\Enum\RoleEnum;
-use App\Enum\ThemeEnum;
-use App\Validator\Base64String;
-use App\Validator\UniqueField;
+use App\Enum\{ColorEnum, CountryEnum, GenderEnum, LanguageEnum, RoleEnum, ThemeEnum};
+use App\Validator\{Base64String, UniqueField};
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -84,7 +78,7 @@ class UserCreateDto
     #[Assert\NotBlank]
     #[Assert\All([
         new Assert\NotBlank(),
-        new Assert\Choice(callback: [RoleEnum::class, 'values'])
+        new Assert\Choice(callback: [RoleEnum::class, 'values']),
     ])]
     #[Assert\Count(min: 1)]
     #[Assert\Unique]

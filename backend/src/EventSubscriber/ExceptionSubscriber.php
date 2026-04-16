@@ -35,7 +35,7 @@ class ExceptionSubscriber implements EventSubscriberInterface
             $event->setResponse(ApiResponse::error([$e->getMessage()]));
         }
 
-        if (!$violations) {
+        if (! $violations) {
             return;
         }
 
@@ -50,4 +50,3 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $event->setResponse(ApiResponse::error($errors));
     }
 }
-

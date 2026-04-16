@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\User;
-use App\Entity\UserRole;
+use App\Entity\{User, UserRole};
 use App\Enum\RoleEnum;
 use PHPUnit\Framework\TestCase;
 
@@ -21,4 +20,3 @@ class UserRoleTest extends TestCase
         $this->assertSame($role, $entity->getRole());
     }
 }
-

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\ConversationActivity;
-use App\Entity\User;
+use App\Entity\{ConversationActivity, User};
 use PHPUnit\Framework\TestCase;
 
 class ConversationActivityTest extends TestCase

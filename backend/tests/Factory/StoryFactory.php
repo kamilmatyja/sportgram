@@ -24,7 +24,7 @@ final class StoryFactory extends BaseFactory
             $data['user'],
             $data['text'],
             $data['photo'],
-            $data['status']
+            $data['status'],
         );
     }
 }

@@ -24,7 +24,7 @@ final class NotificationFactory extends BaseFactory
             $data['user'],
             $data['text'],
             $data['link'],
-            $data['status']
+            $data['status'],
         );
     }
 }

@@ -22,7 +22,7 @@ final class TrainingParticipantFactory extends BaseFactory
         return new TrainingParticipant(
             $data['training'],
             $data['user'],
-            $data['status']
+            $data['status'],
         );
     }
 }

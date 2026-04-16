@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Event;
-use App\Entity\PageParticipant;
+use App\Entity\{Event, PageParticipant};
 use App\Enum\ElementStatusEnum;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
@@ -34,7 +33,7 @@ class EventTest extends TestCase
             $rules,
             $photo,
             $location,
-            $status
+            $status,
         );
         $this->assertInstanceOf(Event::class, $entity);
         $this->assertSame($pageParticipant, $entity->getPageParticipant());

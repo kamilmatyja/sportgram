@@ -22,7 +22,7 @@ final class EntryFactory extends BaseFactory
         return new Entry(
             $data['user'],
             $data['entityId'],
-            $data['type']
+            $data['type'],
         );
     }
 }

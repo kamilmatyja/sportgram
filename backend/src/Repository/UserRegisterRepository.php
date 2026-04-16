@@ -20,4 +20,3 @@ class UserRegisterRepository extends ServiceEntityRepository
         $em->flush();
     }
 }
-

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Feed;
-use App\Entity\GoalParticipant;
-use App\Entity\GoalParticipantResult;
+use App\Entity\{Feed, GoalParticipant, GoalParticipantResult};
 use App\Enum\SaveStatusEnum;
 use PHPUnit\Framework\TestCase;
 

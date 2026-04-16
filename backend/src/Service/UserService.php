@@ -3,20 +3,16 @@
 namespace App\Service;
 
 use App\Dto\UserCreateDto;
-use App\Entity\User;
-use App\Entity\UserRegister;
-use App\Entity\UserRole;
-use App\Enum\ColorEnum;
-use App\Enum\CountryEnum;
-use App\Enum\GenderEnum;
-use App\Enum\LanguageEnum;
-use App\Enum\RoleEnum;
-use App\Enum\ThemeEnum;
-use App\Enum\UnauthorizedStatusEnum;
-use App\Enum\UserStatusEnum;
-use App\Repository\UserRegisterRepository;
-use App\Repository\UserRepository;
-use App\Repository\UserRoleRepository;
+use App\Entity\{User, UserRegister, UserRole};
+use App\Enum\{ColorEnum,
+    CountryEnum,
+    GenderEnum,
+    LanguageEnum,
+    RoleEnum,
+    ThemeEnum,
+    UnauthorizedStatusEnum,
+    UserStatusEnum};
+use App\Repository\{UserRegisterRepository, UserRepository, UserRoleRepository};
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Random\RandomException;
@@ -33,9 +29,8 @@ readonly class UserService
         private UserRegisterRepository $userRegisterRepository,
         private UserPasswordHasherInterface $hasher,
         private EmailService $emailService,
-        private TranslatorInterface $translator
-    )
-    {
+        private TranslatorInterface $translator,
+    ) {
     }
 
     /**
@@ -60,11 +55,11 @@ readonly class UserService
             base64_decode($dto->profilePhoto, true),
             base64_decode($dto->backgroundPhoto, true),
             $dto->bio,
-            UserStatusEnum::Pending
+            UserStatusEnum::Pending,
         );
 
         $user->setPassword(
-            $this->hasher->hashPassword($user, $dto->password)
+            $this->hasher->hashPassword($user, $dto->password),
         );
 
         $this->userRepository->add($user);
@@ -82,7 +77,7 @@ readonly class UserService
         $body = $this->translator->trans(
             'registration.code.body',
             ['%code%' => $userRegister->getCode()],
-            locale: $locale
+            locale: $locale,
         );
         $this->emailService->send($user->getEmail(), $subject, $body);
 

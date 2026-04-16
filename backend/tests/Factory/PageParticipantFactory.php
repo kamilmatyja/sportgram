@@ -22,7 +22,7 @@ final class PageParticipantFactory extends BaseFactory
         return new PageParticipant(
             $data['page'],
             $data['user'],
-            $data['status']
+            $data['status'],
         );
     }
 }

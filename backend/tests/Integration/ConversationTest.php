@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\Conversation;
-use App\Entity\User;
+use App\Entity\{Conversation, User};
 use App\Enum\ConversationStatusEnum;
 use PHPUnit\Framework\TestCase;
 

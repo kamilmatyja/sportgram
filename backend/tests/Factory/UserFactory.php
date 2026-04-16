@@ -5,12 +5,7 @@ declare(strict_types=1);
 namespace Tests\Factory;
 
 use App\Entity\User;
-use App\Enum\ColorEnum;
-use App\Enum\CountryEnum;
-use App\Enum\GenderEnum;
-use App\Enum\LanguageEnum;
-use App\Enum\ThemeEnum;
-use App\Enum\UserStatusEnum;
+use App\Enum\{ColorEnum, CountryEnum, GenderEnum, LanguageEnum, ThemeEnum, UserStatusEnum};
 
 final class UserFactory extends BaseFactory
 {
@@ -51,7 +46,7 @@ final class UserFactory extends BaseFactory
             $data['profilePhoto'],
             $data['backgroundPhoto'],
             $data['bio'],
-            $data['status']
+            $data['status'],
         );
     }
 }
