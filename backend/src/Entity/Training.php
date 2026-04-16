@@ -16,45 +16,97 @@ class Training
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
-    private ?Uuid $id = null;
+    private ?Uuid $id = null {
+        get {
+            return $this->id;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: Feed::class)]
     #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false)]
-    private Feed $feed;
+    public Feed $feed {
+        get {
+            return $this->feed;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
-    private User $user;
+    public User $user {
+        get {
+            return $this->user;
+        }
+    }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt {
+        get {
+            return $this->createdAt;
+        }
+    }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt;
+    private DateTimeImmutable $updatedAt {
+        get {
+            return $this->updatedAt;
+        }
+    }
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null;
+    private ?DateTimeImmutable $deletedAt = null {
+        get {
+            return $this->deletedAt;
+        }
+    }
 
     #[ORM\Column(name: 'started_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $startedAt;
+    public DateTimeImmutable $startedAt {
+        get {
+            return $this->startedAt;
+        }
+    }
 
     #[ORM\Column(name: 'ended_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $endedAt;
+    public DateTimeImmutable $endedAt {
+        get {
+            return $this->endedAt;
+        }
+    }
 
     #[ORM\Column(name: 'title', type: 'text', length: 256)]
-    private string $title;
+    public string $title {
+        get {
+            return $this->title;
+        }
+    }
 
     #[ORM\Column(name: 'description', type: 'text', length: 2048)]
-    private string $description;
+    public string $description {
+        get {
+            return $this->description;
+        }
+    }
 
     #[ORM\Column(name: 'link', type: 'text', length: 64, unique: true)]
-    private string $link;
+    public string $link {
+        get {
+            return $this->link;
+        }
+    }
 
     #[ORM\Column(name: 'location', type: 'text', length: 1024)]
-    private string $location;
+    public string $location {
+        get {
+            return $this->location;
+        }
+    }
 
     #[ORM\Column(name: 'status', type: 'integer', enumType: ElementStatusEnum::class)]
-    private ElementStatusEnum $status;
+    public ElementStatusEnum $status {
+        get {
+            return $this->status;
+        }
+    }
 
     public function __construct(
         Feed $feed,
@@ -79,7 +131,7 @@ class Training
     }
 
     #[ORM\PrePersist]
-    public function onPrePersist(): void
+    final public function onPrePersist(): void
     {
         $now = new DateTimeImmutable();
         $this->createdAt = $now;
@@ -87,73 +139,8 @@ class Training
     }
 
     #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function getId(): ?Uuid
-    {
-        return $this->id;
-    }
-
-    public function getFeed(): Feed
-    {
-        return $this->feed;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function getDeletedAt(): ?DateTimeImmutable
-    {
-        return $this->deletedAt;
-    }
-
-    public function getStartedAt(): DateTimeImmutable
-    {
-        return $this->startedAt;
-    }
-
-    public function getEndedAt(): DateTimeImmutable
-    {
-        return $this->endedAt;
-    }
-
-    public function getTitle(): string
-    {
-        return $this->title;
-    }
-
-    public function getDescription(): string
-    {
-        return $this->description;
-    }
-
-    public function getLink(): string
-    {
-        return $this->link;
-    }
-
-    public function getLocation(): string
-    {
-        return $this->location;
-    }
-
-    public function getStatus(): ElementStatusEnum
-    {
-        return $this->status;
     }
 }

@@ -16,27 +16,55 @@ class TrainingParticipant
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
-    private ?Uuid $id = null;
+    private ?Uuid $id = null {
+        get {
+            return $this->id;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: Training::class)]
     #[ORM\JoinColumn(name: 'training_id', referencedColumnName: 'id', nullable: false)]
-    private Training $training;
+    public Training $training {
+        get {
+            return $this->training;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
-    private User $user;
+    public User $user {
+        get {
+            return $this->user;
+        }
+    }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt {
+        get {
+            return $this->createdAt;
+        }
+    }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt;
+    private DateTimeImmutable $updatedAt {
+        get {
+            return $this->updatedAt;
+        }
+    }
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null;
+    private ?DateTimeImmutable $deletedAt = null {
+        get {
+            return $this->deletedAt;
+        }
+    }
 
     #[ORM\Column(name: 'status', type: 'integer', enumType: SaveStatusEnum::class)]
-    private SaveStatusEnum $status;
+    public SaveStatusEnum $status {
+        get {
+            return $this->status;
+        }
+    }
 
     public function __construct(Training $training, User $user, SaveStatusEnum $status)
     {
@@ -46,7 +74,7 @@ class TrainingParticipant
     }
 
     #[ORM\PrePersist]
-    public function onPrePersist(): void
+    final public function onPrePersist(): void
     {
         $now = new DateTimeImmutable();
         $this->createdAt = $now;
@@ -54,43 +82,8 @@ class TrainingParticipant
     }
 
     #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function getId(): ?Uuid
-    {
-        return $this->id;
-    }
-
-    public function getTraining(): Training
-    {
-        return $this->training;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function getDeletedAt(): ?DateTimeImmutable
-    {
-        return $this->deletedAt;
-    }
-
-    public function getStatus(): SaveStatusEnum
-    {
-        return $this->status;
     }
 }

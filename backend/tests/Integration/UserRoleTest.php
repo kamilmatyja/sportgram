@@ -16,7 +16,7 @@ class UserRoleTest extends TestCase
         $role = RoleEnum::Administrator;
         $entity = new UserRole($user, $role);
         $this->assertInstanceOf(UserRole::class, $entity);
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($role, $entity->getRole());
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($role, $entity->role);
     }
 }

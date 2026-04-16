@@ -36,15 +36,15 @@ class EventTest extends TestCase
             $status,
         );
         $this->assertInstanceOf(Event::class, $entity);
-        $this->assertSame($pageParticipant, $entity->getPageParticipant());
-        $this->assertSame($startedAt, $entity->getStartedAt());
-        $this->assertSame($endedAt, $entity->getEndedAt());
-        $this->assertSame($title, $entity->getTitle());
-        $this->assertSame($description, $entity->getDescription());
-        $this->assertSame($link, $entity->getLink());
-        $this->assertSame($rules, $entity->getRules());
-        $this->assertSame($photo, $entity->getPhoto());
-        $this->assertSame($location, $entity->getLocation());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($pageParticipant, $entity->pageParticipant);
+        $this->assertSame($startedAt, $entity->startedAt);
+        $this->assertSame($endedAt, $entity->endedAt);
+        $this->assertSame($title, $entity->title);
+        $this->assertSame($description, $entity->description);
+        $this->assertSame($link, $entity->link);
+        $this->assertSame($rules, $entity->rules);
+        $this->assertSame($photo, $entity->photo);
+        $this->assertSame($location, $entity->location);
+        $this->assertSame($status, $entity->status);
     }
 }

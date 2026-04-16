@@ -16,8 +16,8 @@ class TrainingDisciplineDistanceTest extends TestCase
         $time = 3600;
         $entity = new TrainingDisciplineDistance($discipline, $distance, $time);
         $this->assertInstanceOf(TrainingDisciplineDistance::class, $entity);
-        $this->assertSame($discipline, $entity->getTrainingDiscipline());
-        $this->assertSame($distance, $entity->getDistance());
-        $this->assertSame($time, $entity->getTime());
+        $this->assertSame($discipline, $entity->trainingDiscipline);
+        $this->assertSame($distance, $entity->distance);
+        $this->assertSame($time, $entity->time);
     }
 }

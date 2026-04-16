@@ -58,9 +58,7 @@ readonly class UserService
             UserStatusEnum::Pending,
         );
 
-        $user->setPassword(
-            $this->hasher->hashPassword($user, $dto->password),
-        );
+        $user->password = $this->hasher->hashPassword($user, $dto->password);
 
         $this->userRepository->add($user);
 
@@ -72,15 +70,15 @@ readonly class UserService
         $userRegister = new UserRegister($user, random_int(100000, 999999), 0, UnauthorizedStatusEnum::NotSent);
         $this->userRegisterRepository->add($userRegister);
 
-        $locale = $user->getLanguage()->getLocale();
+        $locale = $user->language->getLocale();
         $subject = $this->translator->trans('registration.code.subject', locale: $locale);
         $body = $this->translator->trans(
             'registration.code.body',
-            ['%code%' => $userRegister->getCode()],
+            ['%code%' => $userRegister->code],
             locale: $locale,
         );
-        $this->emailService->send($user->getEmail(), $subject, $body);
+        $this->emailService->send($user->email, $subject, $body);
 
-        return $user->getId();
+        return $user->id;
     }
 }

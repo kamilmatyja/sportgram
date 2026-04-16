@@ -20,11 +20,11 @@ class PushSubscriptionTest extends TestCase
         $status = PushSubscriptionStatusEnum::Active;
         $entity = new PushSubscription($user, $endpoint, $p256dh, $auth, $userAgent, $status);
         $this->assertInstanceOf(PushSubscription::class, $entity);
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($endpoint, $entity->getEndpoint());
-        $this->assertSame($p256dh, $entity->getP256dh());
-        $this->assertSame($auth, $entity->getAuth());
-        $this->assertSame($userAgent, $entity->getUserAgent());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($endpoint, $entity->endpoint);
+        $this->assertSame($p256dh, $entity->p256dh);
+        $this->assertSame($auth, $entity->auth);
+        $this->assertSame($userAgent, $entity->userAgent);
+        $this->assertSame($status, $entity->status);
     }
 }

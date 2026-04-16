@@ -22,13 +22,13 @@ class PageTest extends TestCase
         $status = ElementStatusEnum::Active;
         $entity = new Page($user, $title, $description, $link, $profilePhoto, $backgroundPhoto, $color, $status);
         $this->assertInstanceOf(Page::class, $entity);
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($title, $entity->getTitle());
-        $this->assertSame($description, $entity->getDescription());
-        $this->assertSame($link, $entity->getLink());
-        $this->assertSame($profilePhoto, $entity->getProfilePhoto());
-        $this->assertSame($backgroundPhoto, $entity->getBackgroundPhoto());
-        $this->assertSame($color, $entity->getColor());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($title, $entity->title);
+        $this->assertSame($description, $entity->description);
+        $this->assertSame($link, $entity->link);
+        $this->assertSame($profilePhoto, $entity->profilePhoto);
+        $this->assertSame($backgroundPhoto, $entity->backgroundPhoto);
+        $this->assertSame($color, $entity->color);
+        $this->assertSame($status, $entity->status);
     }
 }

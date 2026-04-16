@@ -17,8 +17,8 @@ class TrainingParticipantTest extends TestCase
         $status = SaveStatusEnum::Pending;
         $entity = new TrainingParticipant($training, $user, $status);
         $this->assertInstanceOf(TrainingParticipant::class, $entity);
-        $this->assertSame($training, $entity->getTraining());
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($training, $entity->training);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($status, $entity->status);
     }
 }

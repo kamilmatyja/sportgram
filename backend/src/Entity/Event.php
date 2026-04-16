@@ -16,47 +16,103 @@ class Event
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
-    private ?Uuid $id = null;
+    private ?Uuid $id = null {
+        get {
+            return $this->id;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: PageParticipant::class)]
     #[ORM\JoinColumn(name: 'page_participant_id', referencedColumnName: 'id', nullable: false)]
-    private PageParticipant $pageParticipant;
+    public PageParticipant $pageParticipant {
+        get {
+            return $this->pageParticipant;
+        }
+    }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt {
+        get {
+            return $this->createdAt;
+        }
+    }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt;
+    private DateTimeImmutable $updatedAt {
+        get {
+            return $this->updatedAt;
+        }
+    }
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null;
+    private ?DateTimeImmutable $deletedAt = null {
+        get {
+            return $this->deletedAt;
+        }
+    }
 
     #[ORM\Column(name: 'started_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $startedAt;
+    public DateTimeImmutable $startedAt {
+        get {
+            return $this->startedAt;
+        }
+    }
 
     #[ORM\Column(name: 'ended_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $endedAt;
+    public DateTimeImmutable $endedAt {
+        get {
+            return $this->endedAt;
+        }
+    }
 
     #[ORM\Column(name: 'title', type: 'text', length: 256)]
-    private string $title;
+    public string $title {
+        get {
+            return $this->title;
+        }
+    }
 
     #[ORM\Column(name: 'description', type: 'text', length: 2048)]
-    private string $description;
+    public string $description {
+        get {
+            return $this->description;
+        }
+    }
 
     #[ORM\Column(name: 'link', type: 'text', length: 64, unique: true)]
-    private string $link;
+    public string $link {
+        get {
+            return $this->link;
+        }
+    }
 
     #[ORM\Column(name: 'rules', type: 'text', length: 2048)]
-    private string $rules;
+    public string $rules {
+        get {
+            return $this->rules;
+        }
+    }
 
     #[ORM\Column(name: 'photo', type: 'binary')]
-    private string $photo;
+    public string $photo {
+        get {
+            return $this->photo;
+        }
+    }
 
     #[ORM\Column(name: 'location', type: 'text', length: 1024)]
-    private string $location;
+    public string $location {
+        get {
+            return $this->location;
+        }
+    }
 
     #[ORM\Column(name: 'status', type: 'integer', enumType: ElementStatusEnum::class)]
-    private ElementStatusEnum $status;
+    public ElementStatusEnum $status {
+        get {
+            return $this->status;
+        }
+    }
 
     public function __construct(
         PageParticipant $pageParticipant,
@@ -83,7 +139,7 @@ class Event
     }
 
     #[ORM\PrePersist]
-    public function onPrePersist(): void
+    final public function onPrePersist(): void
     {
         $now = new DateTimeImmutable();
         $this->createdAt = $now;
@@ -91,78 +147,8 @@ class Event
     }
 
     #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function getId(): ?Uuid
-    {
-        return $this->id;
-    }
-
-    public function getPageParticipant(): PageParticipant
-    {
-        return $this->pageParticipant;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function getDeletedAt(): ?DateTimeImmutable
-    {
-        return $this->deletedAt;
-    }
-
-    public function getStartedAt(): DateTimeImmutable
-    {
-        return $this->startedAt;
-    }
-
-    public function getEndedAt(): DateTimeImmutable
-    {
-        return $this->endedAt;
-    }
-
-    public function getTitle(): string
-    {
-        return $this->title;
-    }
-
-    public function getDescription(): string
-    {
-        return $this->description;
-    }
-
-    public function getLink(): string
-    {
-        return $this->link;
-    }
-
-    public function getRules(): string
-    {
-        return $this->rules;
-    }
-
-    public function getPhoto(): string
-    {
-        return $this->photo;
-    }
-
-    public function getLocation(): string
-    {
-        return $this->location;
-    }
-
-    public function getStatus(): ElementStatusEnum
-    {
-        return $this->status;
     }
 }

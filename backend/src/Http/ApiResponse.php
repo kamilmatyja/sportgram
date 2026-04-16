@@ -12,8 +12,23 @@ class ApiResponse extends JsonResponse
         return new self(['id' => $id->toString()], self::HTTP_CREATED);
     }
 
-    public static function error(array $errors): self
+    public static function error(string $error, int $status): self
+    {
+        return new self(['errors' => $error], $status);
+    }
+
+    public static function badRequest(array $errors): self
     {
         return new self(['errors' => $errors], self::HTTP_BAD_REQUEST);
+    }
+
+    public static function unauthorized(string $error): self
+    {
+        return new self(['error' => $error], self::HTTP_UNAUTHORIZED);
+    }
+
+    public static function forbidden(string $error): self
+    {
+        return new self(['error' => $error], self::HTTP_FORBIDDEN);
     }
 }

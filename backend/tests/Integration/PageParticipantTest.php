@@ -17,8 +17,8 @@ class PageParticipantTest extends TestCase
         $status = SaveStatusEnum::Pending;
         $entity = new PageParticipant($page, $user, $status);
         $this->assertInstanceOf(PageParticipant::class, $entity);
-        $this->assertSame($page, $entity->getPage());
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($page, $entity->page);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($status, $entity->status);
     }
 }

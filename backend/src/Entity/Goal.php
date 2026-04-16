@@ -16,48 +16,104 @@ class Goal
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
-    private ?Uuid $id = null;
+    private ?Uuid $id = null {
+        get {
+            return $this->id;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: Feed::class)]
     #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false)]
-    private Feed $feed;
+    public Feed $feed {
+        get {
+            return $this->feed;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
-    private User $user;
+    public User $user {
+        get {
+            return $this->user;
+        }
+    }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt {
+        get {
+            return $this->createdAt;
+        }
+    }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt;
+    private DateTimeImmutable $updatedAt {
+        get {
+            return $this->updatedAt;
+        }
+    }
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null;
+    private ?DateTimeImmutable $deletedAt = null {
+        get {
+            return $this->deletedAt;
+        }
+    }
 
     #[ORM\Column(name: 'started_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $startedAt = null;
+    public ?DateTimeImmutable $startedAt = null {
+        get {
+            return $this->startedAt;
+        }
+    }
 
     #[ORM\Column(name: 'ended_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $endedAt = null;
+    public ?DateTimeImmutable $endedAt = null {
+        get {
+            return $this->endedAt;
+        }
+    }
 
     #[ORM\Column(name: 'text', type: 'text', length: 2048)]
-    private string $text;
+    public string $text {
+        get {
+            return $this->text;
+        }
+    }
 
     #[ORM\Column(name: 'link', type: 'text', length: 64, unique: true)]
-    private string $link;
+    public string $link {
+        get {
+            return $this->link;
+        }
+    }
 
     #[ORM\Column(name: 'discipline', type: 'integer', enumType: DisciplineEnum::class)]
-    private DisciplineEnum $discipline;
+    public DisciplineEnum $discipline {
+        get {
+            return $this->discipline;
+        }
+    }
 
     #[ORM\Column(name: 'distance', type: 'integer')]
-    private int $distance;
+    public int $distance {
+        get {
+            return $this->distance;
+        }
+    }
 
     #[ORM\Column(name: 'time', type: 'integer', nullable: true)]
-    private ?int $time = null;
+    public ?int $time = null {
+        get {
+            return $this->time;
+        }
+    }
 
     #[ORM\Column(name: 'status', type: 'integer', enumType: GoalStatusEnum::class)]
-    private GoalStatusEnum $status;
+    public GoalStatusEnum $status {
+        get {
+            return $this->status;
+        }
+    }
 
     public function __construct(
         Feed $feed,
@@ -84,7 +140,7 @@ class Goal
     }
 
     #[ORM\PrePersist]
-    public function onPrePersist(): void
+    final public function onPrePersist(): void
     {
         $now = new DateTimeImmutable();
         $this->createdAt = $now;
@@ -92,78 +148,8 @@ class Goal
     }
 
     #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function getId(): ?Uuid
-    {
-        return $this->id;
-    }
-
-    public function getFeed(): Feed
-    {
-        return $this->feed;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function getDeletedAt(): ?DateTimeImmutable
-    {
-        return $this->deletedAt;
-    }
-
-    public function getStartedAt(): ?DateTimeImmutable
-    {
-        return $this->startedAt;
-    }
-
-    public function getEndedAt(): ?DateTimeImmutable
-    {
-        return $this->endedAt;
-    }
-
-    public function getText(): string
-    {
-        return $this->text;
-    }
-
-    public function getLink(): string
-    {
-        return $this->link;
-    }
-
-    public function getDiscipline(): DisciplineEnum
-    {
-        return $this->discipline;
-    }
-
-    public function getDistance(): int
-    {
-        return $this->distance;
-    }
-
-    public function getTime(): ?int
-    {
-        return $this->time;
-    }
-
-    public function getStatus(): GoalStatusEnum
-    {
-        return $this->status;
     }
 }

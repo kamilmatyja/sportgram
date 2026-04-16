@@ -16,35 +16,75 @@ class PushSubscription
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
-    private ?Uuid $id = null;
+    private ?Uuid $id = null {
+        get {
+            return $this->id;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
-    private User $user;
+    public User $user {
+        get {
+            return $this->user;
+        }
+    }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt {
+        get {
+            return $this->createdAt;
+        }
+    }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt;
+    private DateTimeImmutable $updatedAt {
+        get {
+            return $this->updatedAt;
+        }
+    }
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null;
+    private ?DateTimeImmutable $deletedAt = null {
+        get {
+            return $this->deletedAt;
+        }
+    }
 
     #[ORM\Column(name: 'endpoint', type: 'text', length: 2048)]
-    private string $endpoint;
+    public string $endpoint {
+        get {
+            return $this->endpoint;
+        }
+    }
 
     #[ORM\Column(name: 'p256dh', length: 256)]
-    private string $p256dh;
+    public string $p256dh {
+        get {
+            return $this->p256dh;
+        }
+    }
 
     #[ORM\Column(name: 'auth', length: 256)]
-    private string $auth;
+    public string $auth {
+        get {
+            return $this->auth;
+        }
+    }
 
     #[ORM\Column(name: 'user_agent', type: 'text', length: 1024, nullable: true)]
-    private ?string $userAgent = null;
+    public ?string $userAgent = null {
+        get {
+            return $this->userAgent;
+        }
+    }
 
     #[ORM\Column(name: 'status', type: 'integer', enumType: PushSubscriptionStatusEnum::class)]
-    private PushSubscriptionStatusEnum $status;
+    public PushSubscriptionStatusEnum $status {
+        get {
+            return $this->status;
+        }
+    }
 
     public function __construct(
         User $user,
@@ -63,7 +103,7 @@ class PushSubscription
     }
 
     #[ORM\PrePersist]
-    public function onPrePersist(): void
+    final public function onPrePersist(): void
     {
         $now = new DateTimeImmutable();
         $this->createdAt = $now;
@@ -71,58 +111,8 @@ class PushSubscription
     }
 
     #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function getId(): ?Uuid
-    {
-        return $this->id;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function getDeletedAt(): ?DateTimeImmutable
-    {
-        return $this->deletedAt;
-    }
-
-    public function getEndpoint(): string
-    {
-        return $this->endpoint;
-    }
-
-    public function getP256dh(): string
-    {
-        return $this->p256dh;
-    }
-
-    public function getAuth(): string
-    {
-        return $this->auth;
-    }
-
-    public function getUserAgent(): ?string
-    {
-        return $this->userAgent;
-    }
-
-    public function getStatus(): PushSubscriptionStatusEnum
-    {
-        return $this->status;
     }
 }

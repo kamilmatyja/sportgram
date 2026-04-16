@@ -16,41 +16,89 @@ class Page
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
-    private ?Uuid $id = null;
+    private ?Uuid $id = null {
+        get {
+            return $this->id;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
-    private User $user;
+    public User $user {
+        get {
+            return $this->user;
+        }
+    }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt {
+        get {
+            return $this->createdAt;
+        }
+    }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt;
+    private DateTimeImmutable $updatedAt {
+        get {
+            return $this->updatedAt;
+        }
+    }
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null;
+    private ?DateTimeImmutable $deletedAt = null {
+        get {
+            return $this->deletedAt;
+        }
+    }
 
     #[ORM\Column(name: 'title', type: 'text', length: 256)]
-    private string $title;
+    public string $title {
+        get {
+            return $this->title;
+        }
+    }
 
     #[ORM\Column(name: 'description', type: 'text', length: 2048)]
-    private string $description;
+    public string $description {
+        get {
+            return $this->description;
+        }
+    }
 
     #[ORM\Column(name: 'link', type: 'text', length: 64, unique: true)]
-    private string $link;
+    public string $link {
+        get {
+            return $this->link;
+        }
+    }
 
     #[ORM\Column(name: 'profile_photo', type: 'binary')]
-    private string $profilePhoto;
+    public string $profilePhoto {
+        get {
+            return $this->profilePhoto;
+        }
+    }
 
     #[ORM\Column(name: 'background_photo', type: 'binary')]
-    private string $backgroundPhoto;
+    public string $backgroundPhoto {
+        get {
+            return $this->backgroundPhoto;
+        }
+    }
 
     #[ORM\Column(name: 'color', type: 'integer', enumType: ColorEnum::class)]
-    private ColorEnum $color;
+    public ColorEnum $color {
+        get {
+            return $this->color;
+        }
+    }
 
     #[ORM\Column(name: 'status', type: 'integer', enumType: ElementStatusEnum::class)]
-    private ElementStatusEnum $status;
+    public ElementStatusEnum $status {
+        get {
+            return $this->status;
+        }
+    }
 
     public function __construct(
         User $user,
@@ -73,7 +121,7 @@ class Page
     }
 
     #[ORM\PrePersist]
-    public function onPrePersist(): void
+    final public function onPrePersist(): void
     {
         $now = new DateTimeImmutable();
         $this->createdAt = $now;
@@ -81,68 +129,8 @@ class Page
     }
 
     #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function getId(): ?Uuid
-    {
-        return $this->id;
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function getDeletedAt(): ?DateTimeImmutable
-    {
-        return $this->deletedAt;
-    }
-
-    public function getTitle(): string
-    {
-        return $this->title;
-    }
-
-    public function getDescription(): string
-    {
-        return $this->description;
-    }
-
-    public function getLink(): string
-    {
-        return $this->link;
-    }
-
-    public function getProfilePhoto(): string
-    {
-        return $this->profilePhoto;
-    }
-
-    public function getBackgroundPhoto(): string
-    {
-        return $this->backgroundPhoto;
-    }
-
-    public function getColor(): ColorEnum
-    {
-        return $this->color;
-    }
-
-    public function getStatus(): ElementStatusEnum
-    {
-        return $this->status;
     }
 }

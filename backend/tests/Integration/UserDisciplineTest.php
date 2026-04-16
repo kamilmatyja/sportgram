@@ -16,7 +16,7 @@ class UserDisciplineTest extends TestCase
         $discipline = DisciplineEnum::Running;
         $entity = new UserDiscipline($user, $discipline);
         $this->assertInstanceOf(UserDiscipline::class, $entity);
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($discipline, $entity->getDiscipline());
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($discipline, $entity->discipline);
     }
 }

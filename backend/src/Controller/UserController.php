@@ -10,10 +10,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
     #[Route('/api/users', name: 'create_user', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMINISTRATOR')]
     #[OA\Post(
         summary: 'Create user',
         requestBody: new OA\RequestBody(
@@ -37,7 +39,7 @@ class UserController extends AbstractController
             ),
             new OA\Response(
                 response: 400,
-                description: 'Error',
+                description: 'Bad request',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(
@@ -52,9 +54,41 @@ class UserController extends AbstractController
                     type: 'object',
                 ),
             ),
+            new OA\Response(
+                response: 401,
+                description: 'Unauthorized',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: 'errors',
+                            type: 'object',
+                            example: [
+                                'Full authentication is required to access this resource.',
+                            ],
+                        ),
+                    ],
+                    type: 'object',
+                ),
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Forbidden',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: 'errors',
+                            type: 'object',
+                            example: [
+                                'You do not have permission to access this resource.',
+                            ],
+                        ),
+                    ],
+                    type: 'object',
+                ),
+            ),
         ],
     )]
-    public function create(
+    final public function create(
         #[MapRequestPayload]
         UserCreateDto $dto,
         UserService $userService,

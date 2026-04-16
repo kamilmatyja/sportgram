@@ -16,7 +16,7 @@ class EventDisciplineTest extends TestCase
         $discipline = DisciplineEnum::Running;
         $entity = new EventDiscipline($event, $discipline);
         $this->assertInstanceOf(EventDiscipline::class, $entity);
-        $this->assertSame($event, $entity->getEvent());
-        $this->assertSame($discipline, $entity->getDiscipline());
+        $this->assertSame($event, $entity->event);
+        $this->assertSame($discipline, $entity->discipline);
     }
 }

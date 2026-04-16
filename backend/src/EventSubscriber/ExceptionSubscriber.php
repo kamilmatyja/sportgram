@@ -7,6 +7,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
+use Throwable;
 
 class ExceptionSubscriber implements EventSubscriberInterface
 {
@@ -32,7 +33,9 @@ class ExceptionSubscriber implements EventSubscriberInterface
                 $violations = $previous->getViolations();
             }
         } else {
-            $event->setResponse(ApiResponse::error([$e->getMessage()]));
+            $exceptionWithCode = $this->findExceptionWithNonZeroCode($e) ?? $e;
+
+            $event->setResponse(ApiResponse::error($exceptionWithCode->getMessage(), $exceptionWithCode->getCode()));
         }
 
         if (! $violations) {
@@ -47,6 +50,19 @@ class ExceptionSubscriber implements EventSubscriberInterface
             $errors[$field][] = $violation->getMessage();
         }
 
-        $event->setResponse(ApiResponse::error($errors));
+        $event->setResponse(ApiResponse::badRequest($errors));
+    }
+
+    private function findExceptionWithNonZeroCode(Throwable $e): ?Throwable
+    {
+        while ($e !== null) {
+            if ($e->getCode() !== 0) {
+                return $e;
+            }
+
+            $e = $e->getPrevious();
+        }
+
+        return null;
     }
 }

@@ -18,9 +18,9 @@ class EventDisciplineListTest extends TestCase
         $status = SaveStatusEnum::Accepted;
         $entity = new EventDisciplineList($distance, $feed, $user, $status);
         $this->assertInstanceOf(EventDisciplineList::class, $entity);
-        $this->assertSame($distance, $entity->getEventDisciplineDistance());
-        $this->assertSame($feed, $entity->getFeed());
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($distance, $entity->eventDisciplineDistance);
+        $this->assertSame($feed, $entity->feed);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($status, $entity->status);
     }
 }

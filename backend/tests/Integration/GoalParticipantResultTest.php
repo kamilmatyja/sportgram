@@ -17,8 +17,8 @@ class GoalParticipantResultTest extends TestCase
         $status = SaveStatusEnum::Pending;
         $entity = new GoalParticipantResult($goalParticipant, $feed, $status);
         $this->assertInstanceOf(GoalParticipantResult::class, $entity);
-        $this->assertSame($goalParticipant, $entity->getGoalParticipant());
-        $this->assertSame($feed, $entity->getFeed());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($goalParticipant, $entity->goalParticipant);
+        $this->assertSame($feed, $entity->feed);
+        $this->assertSame($status, $entity->status);
     }
 }

@@ -16,30 +16,62 @@ class Conversation
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
-    private ?Uuid $id = null;
+    private ?Uuid $id = null {
+        get {
+            return $this->id;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'sender_user_id', referencedColumnName: 'id', nullable: false)]
-    private User $senderUser;
+    public User $senderUser {
+        get {
+            return $this->senderUser;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'receiver_user_id', referencedColumnName: 'id', nullable: false)]
-    private User $receiverUser;
+    public User $receiverUser {
+        get {
+            return $this->receiverUser;
+        }
+    }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt {
+        get {
+            return $this->createdAt;
+        }
+    }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt;
+    private DateTimeImmutable $updatedAt {
+        get {
+            return $this->updatedAt;
+        }
+    }
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null;
+    private ?DateTimeImmutable $deletedAt = null {
+        get {
+            return $this->deletedAt;
+        }
+    }
 
     #[ORM\Column(name: 'text', type: 'text', length: 2048)]
-    private string $text;
+    public string $text {
+        get {
+            return $this->text;
+        }
+    }
 
     #[ORM\Column(name: 'status', type: 'integer', enumType: ConversationStatusEnum::class)]
-    private ConversationStatusEnum $status;
+    public ConversationStatusEnum $status {
+        get {
+            return $this->status;
+        }
+    }
 
     public function __construct(User $senderUser, User $receiverUser, string $text, ConversationStatusEnum $status)
     {
@@ -50,7 +82,7 @@ class Conversation
     }
 
     #[ORM\PrePersist]
-    public function onPrePersist(): void
+    final public function onPrePersist(): void
     {
         $now = new DateTimeImmutable();
         $this->createdAt = $now;
@@ -58,48 +90,8 @@ class Conversation
     }
 
     #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function getId(): ?Uuid
-    {
-        return $this->id;
-    }
-
-    public function getSenderUser(): User
-    {
-        return $this->senderUser;
-    }
-
-    public function getReceiverUser(): User
-    {
-        return $this->receiverUser;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function getDeletedAt(): ?DateTimeImmutable
-    {
-        return $this->deletedAt;
-    }
-
-    public function getText(): string
-    {
-        return $this->text;
-    }
-
-    public function getStatus(): ConversationStatusEnum
-    {
-        return $this->status;
     }
 }

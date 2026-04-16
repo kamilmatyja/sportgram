@@ -9,13 +9,13 @@ use Symfony\Component\Routing\Attribute\Route;
 class BaseController extends AbstractController
 {
     #[Route('/api/doc', name: 'swagger_ui', methods: ['GET'])]
-    public function swagger(): Response
+    final public function swagger(): Response
     {
         return $this->forward('nelmio_api_doc.controller.swagger_ui');
     }
 
     #[Route('/api/doc.json', name: 'swagger_json', methods: ['GET'])]
-    public function swaggerJson(): Response
+    final public function swaggerJson(): Response
     {
         return $this->forward('nelmio_api_doc.controller.swagger_json');
     }

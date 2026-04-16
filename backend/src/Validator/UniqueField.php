@@ -24,7 +24,7 @@ class UniqueField extends Constraint
         }
     }
 
-    public function getRequiredOptions(): array
+    final public function getRequiredOptions(): array
     {
         return ['entity', 'field'];
     }

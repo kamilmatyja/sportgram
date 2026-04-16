@@ -18,9 +18,9 @@ class FeedTest extends TestCase
         $status = ElementStatusEnum::Active;
         $entity = new Feed($user, $text, $photo, $status);
         $this->assertInstanceOf(Feed::class, $entity);
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($text, $entity->getText());
-        $this->assertSame($photo, $entity->getPhoto());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($text, $entity->text);
+        $this->assertSame($photo, $entity->photo);
+        $this->assertSame($status, $entity->status);
     }
 }

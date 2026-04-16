@@ -15,7 +15,7 @@ class EventDisciplineSubDistanceTest extends TestCase
         $subDistance = 500;
         $entity = new EventDisciplineSubDistance($distance, $subDistance);
         $this->assertInstanceOf(EventDisciplineSubDistance::class, $entity);
-        $this->assertSame($distance, $entity->getEventDisciplineDistance());
-        $this->assertSame($subDistance, $entity->getSubDistance());
+        $this->assertSame($distance, $entity->eventDisciplineDistance);
+        $this->assertSame($subDistance, $entity->subDistance);
     }
 }

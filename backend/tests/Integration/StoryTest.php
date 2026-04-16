@@ -18,9 +18,9 @@ class StoryTest extends TestCase
         $status = ElementStatusEnum::Active;
         $entity = new Story($user, $text, $photo, $status);
         $this->assertInstanceOf(Story::class, $entity);
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($text, $entity->getText());
-        $this->assertSame($photo, $entity->getPhoto());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($text, $entity->text);
+        $this->assertSame($photo, $entity->photo);
+        $this->assertSame($status, $entity->status);
     }
 }

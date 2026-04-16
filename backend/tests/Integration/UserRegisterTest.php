@@ -18,9 +18,9 @@ class UserRegisterTest extends TestCase
         $status = UnauthorizedStatusEnum::Sent;
         $entity = new UserRegister($user, $code, $attempt, $status);
         $this->assertInstanceOf(UserRegister::class, $entity);
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($code, $entity->getCode());
-        $this->assertSame($attempt, $entity->getAttempt());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($code, $entity->code);
+        $this->assertSame($attempt, $entity->attempt);
+        $this->assertSame($status, $entity->status);
     }
 }

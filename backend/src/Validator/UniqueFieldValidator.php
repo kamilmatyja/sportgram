@@ -13,7 +13,7 @@ class UniqueFieldValidator extends ConstraintValidator
     ) {
     }
 
-    public function validate($value, Constraint $constraint): void
+    final public function validate($value, Constraint $constraint): void
     {
         if (! $constraint instanceof UniqueField) {
             throw new UnexpectedTypeException($constraint, UniqueField::class);

@@ -17,9 +17,9 @@ class EventDisciplineResultTest extends TestCase
         $time = 123;
         $entity = new EventDisciplineResult($distance, $feed, $user, $time);
         $this->assertInstanceOf(EventDisciplineResult::class, $entity);
-        $this->assertSame($distance, $entity->getEventDisciplineDistance());
-        $this->assertSame($feed, $entity->getFeed());
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($time, $entity->getTime());
+        $this->assertSame($distance, $entity->eventDisciplineDistance);
+        $this->assertSame($feed, $entity->feed);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($time, $entity->time);
     }
 }

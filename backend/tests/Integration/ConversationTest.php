@@ -18,9 +18,9 @@ class ConversationTest extends TestCase
         $status = ConversationStatusEnum::Sent;
         $entity = new Conversation($sender, $receiver, $text, $status);
         $this->assertInstanceOf(Conversation::class, $entity);
-        $this->assertSame($sender, $entity->getSenderUser());
-        $this->assertSame($receiver, $entity->getReceiverUser());
-        $this->assertSame($text, $entity->getText());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($sender, $entity->senderUser);
+        $this->assertSame($receiver, $entity->receiverUser);
+        $this->assertSame($text, $entity->text);
+        $this->assertSame($status, $entity->status);
     }
 }

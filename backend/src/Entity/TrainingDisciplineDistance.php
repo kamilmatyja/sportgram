@@ -15,26 +15,54 @@ class TrainingDisciplineDistance
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
-    private ?Uuid $id = null;
+    private ?Uuid $id = null {
+        get {
+            return $this->id;
+        }
+    }
 
     #[ORM\ManyToOne(targetEntity: TrainingDiscipline::class)]
     #[ORM\JoinColumn(name: 'training_discipline_id', referencedColumnName: 'id', nullable: false)]
-    private TrainingDiscipline $trainingDiscipline;
+    public TrainingDiscipline $trainingDiscipline {
+        get {
+            return $this->trainingDiscipline;
+        }
+    }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt {
+        get {
+            return $this->createdAt;
+        }
+    }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt;
+    private DateTimeImmutable $updatedAt {
+        get {
+            return $this->updatedAt;
+        }
+    }
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null;
+    private ?DateTimeImmutable $deletedAt = null {
+        get {
+            return $this->deletedAt;
+        }
+    }
 
     #[ORM\Column(name: 'distance', type: 'integer')]
-    private int $distance;
+    public int $distance {
+        get {
+            return $this->distance;
+        }
+    }
 
     #[ORM\Column(name: 'time', type: 'integer')]
-    private int $time;
+    public int $time {
+        get {
+            return $this->time;
+        }
+    }
 
     public function __construct(TrainingDiscipline $trainingDiscipline, int $distance, int $time)
     {
@@ -44,7 +72,7 @@ class TrainingDisciplineDistance
     }
 
     #[ORM\PrePersist]
-    public function onPrePersist(): void
+    final public function onPrePersist(): void
     {
         $now = new DateTimeImmutable();
         $this->createdAt = $now;
@@ -52,43 +80,8 @@ class TrainingDisciplineDistance
     }
 
     #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    public function getId(): ?Uuid
-    {
-        return $this->id;
-    }
-
-    public function getTrainingDiscipline(): TrainingDiscipline
-    {
-        return $this->trainingDiscipline;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function getDeletedAt(): ?DateTimeImmutable
-    {
-        return $this->deletedAt;
-    }
-
-    public function getDistance(): int
-    {
-        return $this->distance;
-    }
-
-    public function getTime(): int
-    {
-        return $this->time;
     }
 }

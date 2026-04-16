@@ -18,9 +18,9 @@ class FeedReactionTest extends TestCase
         $status = ElementStatusEnum::Active;
         $entity = new FeedReaction($feed, $user, $reaction, $status);
         $this->assertInstanceOf(FeedReaction::class, $entity);
-        $this->assertSame($feed, $entity->getFeed());
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($reaction, $entity->getReaction());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($feed, $entity->feed);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($reaction, $entity->reaction);
+        $this->assertSame($status, $entity->status);
     }
 }

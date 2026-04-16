@@ -20,12 +20,12 @@ class TrainingDisciplineSubDistanceTest extends TestCase
         $speed = 5;
         $entity = new TrainingDisciplineSubDistance($distance, $subDistance, $time, $lat, $lng, $accuracy, $speed);
         $this->assertInstanceOf(TrainingDisciplineSubDistance::class, $entity);
-        $this->assertSame($distance, $entity->getTrainingDisciplineDistance());
-        $this->assertSame($subDistance, $entity->getSubDistance());
-        $this->assertSame($time, $entity->getTime());
-        $this->assertSame($lat, $entity->getLat());
-        $this->assertSame($lng, $entity->getLng());
-        $this->assertSame($accuracy, $entity->getAccuracy());
-        $this->assertSame($speed, $entity->getSpeed());
+        $this->assertSame($distance, $entity->trainingDisciplineDistance);
+        $this->assertSame($subDistance, $entity->subDistance);
+        $this->assertSame($time, $entity->time);
+        $this->assertSame($lat, $entity->lat);
+        $this->assertSame($lng, $entity->lng);
+        $this->assertSame($accuracy, $entity->accuracy);
+        $this->assertSame($speed, $entity->speed);
     }
 }

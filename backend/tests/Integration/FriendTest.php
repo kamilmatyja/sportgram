@@ -17,8 +17,8 @@ class FriendTest extends TestCase
         $status = FriendStatusEnum::Pending;
         $entity = new Friend($sender, $receiver, $status);
         $this->assertInstanceOf(Friend::class, $entity);
-        $this->assertSame($sender, $entity->getSenderUser());
-        $this->assertSame($receiver, $entity->getReceiverUser());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($sender, $entity->senderUser);
+        $this->assertSame($receiver, $entity->receiverUser);
+        $this->assertSame($status, $entity->status);
     }
 }

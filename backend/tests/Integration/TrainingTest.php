@@ -24,14 +24,14 @@ class TrainingTest extends TestCase
         $status = ElementStatusEnum::Active;
         $entity = new Training($feed, $user, $startedAt, $endedAt, $title, $description, $link, $location, $status);
         $this->assertInstanceOf(Training::class, $entity);
-        $this->assertSame($feed, $entity->getFeed());
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($startedAt, $entity->getStartedAt());
-        $this->assertSame($endedAt, $entity->getEndedAt());
-        $this->assertSame($title, $entity->getTitle());
-        $this->assertSame($description, $entity->getDescription());
-        $this->assertSame($link, $entity->getLink());
-        $this->assertSame($location, $entity->getLocation());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($feed, $entity->feed);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($startedAt, $entity->startedAt);
+        $this->assertSame($endedAt, $entity->endedAt);
+        $this->assertSame($title, $entity->title);
+        $this->assertSame($description, $entity->description);
+        $this->assertSame($link, $entity->link);
+        $this->assertSame($location, $entity->location);
+        $this->assertSame($status, $entity->status);
     }
 }

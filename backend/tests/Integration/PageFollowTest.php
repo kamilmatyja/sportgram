@@ -17,8 +17,8 @@ class PageFollowTest extends TestCase
         $status = PageFollowStatusEnum::Accepted;
         $entity = new PageFollow($page, $user, $status);
         $this->assertInstanceOf(PageFollow::class, $entity);
-        $this->assertSame($page, $entity->getPage());
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($page, $entity->page);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($status, $entity->status);
     }
 }

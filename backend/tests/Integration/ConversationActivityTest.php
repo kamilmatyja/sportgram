@@ -15,7 +15,7 @@ class ConversationActivityTest extends TestCase
         $receiver = $this->createMock(User::class);
         $entity = new ConversationActivity($sender, $receiver);
         $this->assertInstanceOf(ConversationActivity::class, $entity);
-        $this->assertSame($sender, $entity->getSenderUser());
-        $this->assertSame($receiver, $entity->getReceiverUser());
+        $this->assertSame($sender, $entity->senderUser);
+        $this->assertSame($receiver, $entity->receiverUser);
     }
 }

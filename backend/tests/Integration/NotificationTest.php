@@ -18,9 +18,9 @@ class NotificationTest extends TestCase
         $status = NotificationStatusEnum::Read;
         $entity = new Notification($user, $text, $link, $status);
         $this->assertInstanceOf(Notification::class, $entity);
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($text, $entity->getText());
-        $this->assertSame($link, $entity->getLink());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($text, $entity->text);
+        $this->assertSame($link, $entity->link);
+        $this->assertSame($status, $entity->status);
     }
 }

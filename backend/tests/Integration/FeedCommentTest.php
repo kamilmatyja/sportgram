@@ -18,9 +18,9 @@ class FeedCommentTest extends TestCase
         $status = ElementStatusEnum::Active;
         $entity = new FeedComment($feed, $user, $text, $status);
         $this->assertInstanceOf(FeedComment::class, $entity);
-        $this->assertSame($feed, $entity->getFeed());
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($text, $entity->getText());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($feed, $entity->feed);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($text, $entity->text);
+        $this->assertSame($status, $entity->status);
     }
 }

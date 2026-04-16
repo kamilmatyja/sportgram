@@ -6,7 +6,7 @@ use Symfony\Component\Validator\{Constraint, ConstraintValidator};
 
 class Base64StringValidator extends ConstraintValidator
 {
-    public function validate($value, Constraint $constraint): void
+    final public function validate($value, Constraint $constraint): void
     {
         if (null === $value || '' === $value) {
             return;

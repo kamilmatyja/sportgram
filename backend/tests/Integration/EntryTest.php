@@ -18,8 +18,8 @@ class EntryTest extends TestCase
         $type = EntryTypeEnum::User;
         $entity = new Entry($user, $entityId, $type);
         $this->assertInstanceOf(Entry::class, $entity);
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($entityId, $entity->getEntityId());
-        $this->assertSame($type, $entity->getType());
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($entityId, $entity->entityId);
+        $this->assertSame($type, $entity->type);
     }
 }

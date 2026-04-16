@@ -4,8 +4,7 @@ namespace App\Entity;
 
 use App\Enum\{ColorEnum, CountryEnum, GenderEnum, LanguageEnum, ThemeEnum, UserStatusEnum};
 use DateTimeImmutable;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\{Mapping as ORM, PersistentCollection};
 use Symfony\Component\Security\Core\User\{PasswordAuthenticatedUserInterface, UserInterface};
 use Symfony\Component\Uid\Uuid;
 
@@ -18,67 +17,150 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
-    private ?Uuid $id = null;
+    public ?Uuid $id = null {
+        get {
+            return $this->id;
+        }
+    }
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt {
+        get {
+            return $this->createdAt;
+        }
+    }
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $updatedAt;
+    private DateTimeImmutable $updatedAt {
+        get {
+            return $this->updatedAt;
+        }
+    }
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null;
+    private ?DateTimeImmutable $deletedAt = null {
+        get {
+            return $this->deletedAt;
+        }
+    }
 
     #[ORM\Column(name: 'birth_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $birthAt;
+    public DateTimeImmutable $birthAt {
+        get {
+            return $this->birthAt;
+        }
+    }
 
     #[ORM\Column(name: 'first_name', type: 'text', length: 64)]
-    private string $firstName;
+    public string $firstName {
+        get {
+            return $this->firstName;
+        }
+    }
 
     #[ORM\Column(name: 'last_name', type: 'text', length: 64)]
-    private string $lastName;
+    public string $lastName {
+        get {
+            return $this->lastName;
+        }
+    }
 
     #[ORM\Column(name: 'gender', type: 'integer', enumType: GenderEnum::class)]
-    private GenderEnum $gender;
+    public GenderEnum $gender {
+        get {
+            return $this->gender;
+        }
+    }
 
     #[ORM\Column(name: 'phone', type: 'integer', length: 16, unique: true)]
-    private int $phone;
+    public int $phone {
+        get {
+            return $this->phone;
+        }
+    }
 
     #[ORM\Column(name: 'email', type: 'text', length: 64, unique: true)]
-    private string $email;
+    public string $email {
+        get {
+            return $this->email;
+        }
+    }
 
     #[ORM\Column(name: 'password', type: 'text', length: 256)]
-    private string $password;
+    public string $password {
+        get {
+            return $this->password;
+        }
+        set {
+            $this->password = $value;
+        }
+    }
 
     #[ORM\Column(name: 'link', type: 'text', length: 64)]
-    private string $link;
+    public string $link {
+        get {
+            return $this->link;
+        }
+    }
 
     #[ORM\Column(name: 'language', type: 'integer', enumType: LanguageEnum::class)]
-    private LanguageEnum $language;
+    public LanguageEnum $language {
+        get {
+            return $this->language;
+        }
+    }
 
     #[ORM\Column(name: 'country', type: 'integer', enumType: CountryEnum::class)]
-    private CountryEnum $country;
+    public CountryEnum $country {
+        get {
+            return $this->country;
+        }
+    }
 
     #[ORM\Column(name: 'theme', type: 'integer', enumType: ThemeEnum::class)]
-    private ThemeEnum $theme;
+    public ThemeEnum $theme {
+        get {
+            return $this->theme;
+        }
+    }
 
     #[ORM\Column(name: 'color', type: 'integer', enumType: ColorEnum::class)]
-    private ColorEnum $color;
+    public ColorEnum $color {
+        get {
+            return $this->color;
+        }
+    }
 
     #[ORM\Column(name: 'profile_photo', type: 'binary')]
-    private string $profilePhoto;
+    public string $profilePhoto {
+        get {
+            return $this->profilePhoto;
+        }
+    }
 
     #[ORM\Column(name: 'background_photo', type: 'binary')]
-    private string $backgroundPhoto;
+    public string $backgroundPhoto {
+        get {
+            return $this->backgroundPhoto;
+        }
+    }
 
     #[ORM\Column(name: 'bio', type: 'text', length: 2048)]
-    private string $bio;
+    public string $bio {
+        get {
+            return $this->bio;
+        }
+    }
 
     #[ORM\Column(name: 'status', type: 'integer', enumType: UserStatusEnum::class)]
-    private UserStatusEnum $status;
+    public UserStatusEnum $status {
+        get {
+            return $this->status;
+        }
+    }
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserRole::class)]
-    private $roles;
+    #[ORM\OneToMany(targetEntity: UserRole::class, mappedBy: 'user')]
+    public ?PersistentCollection $roles = null;
 
     public function __construct(
         DateTimeImmutable $birthAt,
@@ -112,11 +194,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->backgroundPhoto = $backgroundPhoto;
         $this->bio = $bio;
         $this->status = $status;
-        $this->roles = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
-    public function onPrePersist(): void
+    final public function onPrePersist(): void
     {
         $now = new DateTimeImmutable();
         $this->createdAt = $now;
@@ -124,123 +205,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     #[ORM\PreUpdate]
-    public function onPreUpdate(): void
+    final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
     }
 
-    public function getUserIdentifier(): string
-    {
-        return $this->id->toString();
-    }
-
-    public function getId(): ?Uuid
-    {
-        return $this->id;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function getDeletedAt(): ?DateTimeImmutable
-    {
-        return $this->deletedAt;
-    }
-
-    public function getBirthAt(): DateTimeImmutable
-    {
-        return $this->birthAt;
-    }
-
-    public function getFirstName(): string
-    {
-        return $this->firstName;
-    }
-
-    public function getLastName(): string
-    {
-        return $this->lastName;
-    }
-
-    public function getGender(): GenderEnum
-    {
-        return $this->gender;
-    }
-
-    public function getPhone(): int
-    {
-        return $this->phone;
-    }
-
-    public function getEmail(): string
+    final public function getUserIdentifier(): string
     {
         return $this->email;
     }
 
-    public function setPassword(string $password): void
+    final public function getRoles(): array
     {
-        $this->password = $password;
-    }
+        if (! $this->roles) {
+            return [];
+        }
 
-    public function getPassword(): string
-    {
-        return $this->password;
-    }
-
-    public function getLink(): string
-    {
-        return $this->link;
-    }
-
-    public function getLanguage(): LanguageEnum
-    {
-        return $this->language;
-    }
-
-    public function getCountry(): CountryEnum
-    {
-        return $this->country;
-    }
-
-    public function getTheme(): ThemeEnum
-    {
-        return $this->theme;
-    }
-
-    public function getColor(): ColorEnum
-    {
-        return $this->color;
-    }
-
-    public function getProfilePhoto(): string
-    {
-        return $this->profilePhoto;
-    }
-
-    public function getBackgroundPhoto(): string
-    {
-        return $this->backgroundPhoto;
-    }
-
-    public function getBio(): string
-    {
-        return $this->bio;
-    }
-
-    public function getStatus(): UserStatusEnum
-    {
-        return $this->status;
-    }
-
-    public function getRoles(): array
-    {
-        return $this->roles->toArray();
+        return array_map(
+            fn (UserRole $role) => $role->role->getLabel(),
+            $this->roles->toArray(),
+        );
     }
 }

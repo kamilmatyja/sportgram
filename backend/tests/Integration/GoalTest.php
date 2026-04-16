@@ -25,15 +25,15 @@ class GoalTest extends TestCase
         $status = GoalStatusEnum::Active;
         $entity = new Goal($feed, $user, $startedAt, $endedAt, $text, $link, $discipline, $distance, $time, $status);
         $this->assertInstanceOf(Goal::class, $entity);
-        $this->assertSame($feed, $entity->getFeed());
-        $this->assertSame($user, $entity->getUser());
-        $this->assertSame($startedAt, $entity->getStartedAt());
-        $this->assertSame($endedAt, $entity->getEndedAt());
-        $this->assertSame($text, $entity->getText());
-        $this->assertSame($link, $entity->getLink());
-        $this->assertSame($discipline, $entity->getDiscipline());
-        $this->assertSame($distance, $entity->getDistance());
-        $this->assertSame($time, $entity->getTime());
-        $this->assertSame($status, $entity->getStatus());
+        $this->assertSame($feed, $entity->feed);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($startedAt, $entity->startedAt);
+        $this->assertSame($endedAt, $entity->endedAt);
+        $this->assertSame($text, $entity->text);
+        $this->assertSame($link, $entity->link);
+        $this->assertSame($discipline, $entity->discipline);
+        $this->assertSame($distance, $entity->distance);
+        $this->assertSame($time, $entity->time);
+        $this->assertSame($status, $entity->status);
     }
 }
