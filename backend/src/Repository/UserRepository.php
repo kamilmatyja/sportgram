@@ -20,10 +20,18 @@ class UserRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findOneByEmail(string $email): ?User
+    final public function findById(string $id): ?User
     {
         /** @var ?User $user */
-        $user = $this->findOneBy(['email' => $email]);
+        $user = $this->find($id);
+
+        return $user;
+    }
+
+    final public function findByEmail(string $email): ?User
+    {
+        /** @var ?User $user */
+        $user = $this->findOneBy(['email' => $email, 'deleted_at' => null], ['created_at' => 'DESC']);
 
         return $user;
     }

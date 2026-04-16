@@ -22,7 +22,7 @@ class UserDiscipline
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'disciplines')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     public User $user {
         get {
@@ -76,5 +76,15 @@ class UserDiscipline
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
+    }
+
+    final public function softDelete(): void
+    {
+        $this->deletedAt = new DateTimeImmutable();
+    }
+
+    final public function isDeleted(): bool
+    {
+        return $this->deletedAt !== null;
     }
 }

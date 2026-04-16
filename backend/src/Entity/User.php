@@ -163,6 +163,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: UserRole::class, mappedBy: 'user')]
     public Collection $roles;
 
+    #[ORM\OneToMany(targetEntity: UserDiscipline::class, mappedBy: 'user')]
+    public Collection $disciplines;
+
     public function __construct(
         DateTimeImmutable $birthAt,
         string $firstName,
@@ -196,6 +199,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->bio = $bio;
         $this->status = $status;
         $this->roles = new ArrayCollection();
+        $this->disciplines = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -210,6 +214,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
+    }
+
+    final public function softDelete(): void
+    {
+        $this->deletedAt = new DateTimeImmutable();
+    }
+
+    final public function isDeleted(): bool
+    {
+        return $this->deletedAt !== null;
     }
 
     final public function getUserIdentifier(): string

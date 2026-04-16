@@ -2,7 +2,13 @@
 
 namespace App\Service;
 
-use App\Dto\{UserCreateDto, UserRegisterConfirmDto, UserSignConfirmDto, UserSignDto};
+use App\Dto\{UserCreateNanoDto,
+    UserDto,
+    UserRegisterConfirmDto,
+    UserRegisterDto,
+    UserSignConfirmDto,
+    UserSignDto,
+    UserUpdateStatusDto};
 use App\Entity\{User, UserDiscipline, UserRegister, UserRole, UserSign};
 use App\Enum\{ColorEnum,
     CountryEnum,
@@ -24,6 +30,7 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Random\RandomException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -40,6 +47,7 @@ readonly class UserService
         private EmailService $emailService,
         private TranslatorInterface $translator,
         private JWTTokenManagerInterface $jwtManager,
+        private AuthorizationCheckerInterface $authorizationChecker,
     ) {
     }
 
@@ -48,15 +56,15 @@ readonly class UserService
      * @throws RandomException
      * @throws TransportExceptionInterface
      */
-    final public function createUser(UserCreateDto $dto): Uuid
+    final public function createUser(UserDto $dto): Uuid
     {
         $user = new User(
             new DateTimeImmutable($dto->birthAt),
-            $dto->firstName,
-            $dto->lastName,
+            mb_ucfirst(mb_strtolower($dto->firstName)),
+            mb_ucfirst(mb_strtolower($dto->lastName)),
             GenderEnum::from($dto->gender),
             $dto->phone,
-            $dto->email,
+            mb_strtolower($dto->email),
             $dto->link,
             LanguageEnum::from($dto->language),
             CountryEnum::from($dto->country),
@@ -104,11 +112,164 @@ readonly class UserService
     }
 
     /**
+     * @throws DateMalformedStringException
+     * @throws RandomException
+     * @throws TransportExceptionInterface
+     */
+    final public function createUserNano(UserCreateNanoDto $dto): Uuid
+    {
+        $user = new User(
+            new DateTimeImmutable($dto->birthAt),
+            mb_ucfirst(mb_strtolower($dto->firstName)),
+            mb_ucfirst(mb_strtolower($dto->lastName)),
+            GenderEnum::from($dto->gender),
+            $dto->phone,
+            mb_strtolower($dto->email),
+            sprintf('%s-%s-%s', $dto->firstName, $dto->lastName, random_int(100, 999)),
+            LanguageEnum::Polish,
+            CountryEnum::from($dto->country),
+            ThemeEnum::Light,
+            ColorEnum::Blue,
+            file_get_contents(__DIR__ . '/../../public/profile.webp'),
+            file_get_contents(__DIR__ . '/../../public/background.webp'),
+            sprintf('%s %s bio', $dto->firstName, $dto->lastName),
+            UserStatusEnum::Pending,
+        );
+
+        $user->password = $this->hasher->hashPassword($user, $dto->password);
+
+        $this->userRepository->save($user);
+
+        foreach ($dto->roles as $role) {
+            $role = new UserRole($user, RoleEnum::from($role));
+            $this->userRoleRepository->save($role);
+        }
+
+        $userRegister = new UserRegister($user, random_int(100000, 999999), 0, UnauthorizedStatusEnum::NotSent);
+        $this->userRegisterRepository->save($userRegister);
+
+        $locale = $user->language->getLocale();
+        $subject = $this->translator->trans('register.code.subject', locale: $locale);
+        $body = $this->translator->trans(
+            'register.code.body',
+            ['%code%' => $userRegister->code],
+            locale: $locale,
+        );
+
+        try {
+            $this->emailService->send($user->email, $subject, $body);
+        } finally {
+            $userRegister->status = UnauthorizedStatusEnum::Sent;
+            $this->userRegisterRepository->save($userRegister);
+        }
+
+        return $user->id;
+    }
+
+    /**
+     * @throws DateMalformedStringException
+     */
+    final public function updateUser(string $id, UserDto $dto): Uuid
+    {
+        if (! $this->authorizationChecker->isGranted(RoleEnum::ROLE_ADMINISTRATOR) && in_array(
+            RoleEnum::ROLE_ADMINISTRATOR,
+            $dto->roles,
+            true,
+        )) {
+            throw new ValidatorException('Role not allowed for this user.');
+        }
+
+        $user = $this->userRepository->findById($id);
+
+        if (! $user) {
+            throw new ValidatorException('User not found.');
+        }
+
+        $user->birthAt = new DateTimeImmutable($dto->birthAt);
+        $user->firstName = mb_ucfirst(mb_strtolower($dto->firstName));
+        $user->lastName = mb_ucfirst(mb_strtolower($dto->lastName));
+        $user->gender = GenderEnum::from($dto->gender);
+        $user->phone = $dto->phone;
+        $user->email = mb_strtolower($dto->email);
+        $user->link = $dto->link;
+        $user->language = LanguageEnum::from($dto->language);
+        $user->country = CountryEnum::from($dto->country);
+        $user->theme = ThemeEnum::from($dto->theme);
+        $user->color = ColorEnum::from($dto->color);
+        $user->profilePhoto = base64_decode($dto->profilePhoto, true);
+        $user->backgroundPhoto = base64_decode($dto->backgroundPhoto, true);
+        $user->bio = $dto->bio;
+
+        if (! empty($dto->password)) {
+            $user->password = $this->hasher->hashPassword($user, $dto->password);
+        }
+
+        /** @var UserRole $role */
+        foreach ($user->roles as $role) {
+            if (in_array($role->role->value, $dto->roles, true)) {
+                unset($dto->roles[array_search($role->role->value, $dto->roles)]);
+            } else {
+                $role->softDelete();
+                $this->userRoleRepository->save($role);
+            }
+        }
+
+        /** @var int $role */
+        foreach ($dto->roles as $role) {
+            $roleEntity = new UserRole($user, RoleEnum::from($role));
+            $this->userRoleRepository->save($roleEntity);
+        }
+
+        /** @var UserDiscipline $discipline */
+        foreach ($user->disciplines as $discipline) {
+            if (in_array($discipline->discipline->value, $dto->disciplines, true)) {
+                unset($dto->disciplines[array_search($discipline->discipline->value, $dto->disciplines)]);
+            } else {
+                $discipline->softDelete();
+                $this->userDisciplineRepository->save($discipline);
+            }
+        }
+
+        /** @var int $discipline */
+        foreach ($dto->disciplines ?? [] as $discipline) {
+            $disciplineEntity = new UserDiscipline($user, DisciplineEnum::from($discipline));
+            $this->userDisciplineRepository->save($disciplineEntity);
+        }
+
+        $this->userRepository->save($user);
+
+        return $user->id;
+    }
+
+    final public function updateUserStatus(string $id, UserUpdateStatusDto $dto): Uuid
+    {
+        $user = $this->userRepository->findById($id);
+
+        if (! $user) {
+            throw new ValidatorException('User not found.');
+        }
+
+        $user->status = UserStatusEnum::from($dto->status);
+        $this->userRepository->save($user);
+
+        return $user->id;
+    }
+
+    final public function deleteUser(string $userId): Uuid
+    {
+        $user = $this->userRepository->findById($userId);
+        $user->softDelete();
+        $this->userRepository->save($user);
+
+        return $user->id;
+    }
+
+    /**
      * @throws ValidatorException
      */
-    final public function registerUserConfirm(UserRegisterConfirmDto $dto): Uuid
+    final public function registerUser(UserRegisterDto $dto): Uuid
     {
-        $user = $this->userRepository->findOneByEmail($dto->email);
+        $user = $this->userRepository->findByEmail($dto->email);
 
         if (! $user) {
             throw new ValidatorException('User not found.');
@@ -118,7 +279,24 @@ readonly class UserService
             throw new ValidatorException('User is banned.');
         }
 
-        $userRegister = $this->userRegisterRepository->findLastByUserId($user->id);
+        $userRegister = $this->userSignRepository->findLastByUserId($user->id);
+
+        if ($userRegister
+            && $userRegister->attempt >= 3
+            && $userRegister->status === UnauthorizedStatusEnum::Incorrect
+            && $userRegister->updatedAt->diff(new DateTimeImmutable())->days < 1) {
+            throw new ValidatorException('Too many attempts.');
+        }
+
+        return $userRegister->id;
+    }
+
+    /**
+     * @throws ValidatorException
+     */
+    final public function registerUserConfirm(string $id, UserRegisterConfirmDto $dto): Uuid
+    {
+        $userRegister = $this->userRegisterRepository->findLastByUserId($id);
 
         if (! $userRegister) {
             throw new ValidatorException('User register not found.');
@@ -128,9 +306,7 @@ readonly class UserService
             throw new ValidatorException('Code already used.');
         }
 
-        if ($userRegister->attempt >= 3
-            && $userRegister->status === UnauthorizedStatusEnum::Incorrect
-            && $userRegister->updatedAt->diff(new DateTimeImmutable())->days < 1) {
+        if ($userRegister->attempt > 3) {
             throw new ValidatorException('Too many attempts.');
         }
 
@@ -146,7 +322,46 @@ readonly class UserService
         $userRegister->status = UnauthorizedStatusEnum::Correct;
         $this->userRegisterRepository->save($userRegister);
 
-        return $user->id;
+        return $userRegister->id;
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     */
+    final public function registerUserResend(string $id): Uuid
+    {
+        $userRegister = $this->userRegisterRepository->findLastByUserId($id);
+
+        if (! $userRegister) {
+            throw new ValidatorException('User register not found.');
+        }
+
+        if ($userRegister->status === UnauthorizedStatusEnum::Correct) {
+            throw new ValidatorException('Code already used.');
+        }
+
+        if ($userRegister->attempt > 3) {
+            throw new ValidatorException('Too many attempts.');
+        }
+
+        $user = $userRegister->user;
+
+        $locale = $user->language->getLocale();
+        $subject = $this->translator->trans('register.code.subject', locale: $locale);
+        $body = $this->translator->trans(
+            'register.code.body',
+            ['%code%' => $userRegister->code],
+            locale: $locale,
+        );
+
+        try {
+            $this->emailService->send($user->email, $subject, $body);
+        } finally {
+            $userRegister->status = UnauthorizedStatusEnum::Sent;
+            $this->userRegisterRepository->save($userRegister);
+        }
+
+        return $userRegister->id;
     }
 
     /**
@@ -156,7 +371,7 @@ readonly class UserService
      */
     final public function signUser(UserSignDto $dto): Uuid
     {
-        $user = $this->userRepository->findOneByEmail($dto->email);
+        $user = $this->userRepository->findByEmail($dto->email);
 
         if (! $user) {
             throw new ValidatorException('User not found.');
@@ -240,5 +455,44 @@ readonly class UserService
         $user = $userSign->user;
 
         return $this->jwtManager->create($user);
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     */
+    final public function signUserResend(string $id): Uuid
+    {
+        $userSign = $this->userSignRepository->findLastByUserId($id);
+
+        if (! $userSign) {
+            throw new ValidatorException('User sign not found.');
+        }
+
+        if ($userSign->status === UnauthorizedStatusEnum::Correct) {
+            throw new ValidatorException('Code already used.');
+        }
+
+        if ($userSign->attempt > 3) {
+            throw new ValidatorException('Too many attempts.');
+        }
+
+        $user = $userSign->user;
+
+        $locale = $user->language->getLocale();
+        $subject = $this->translator->trans('sign.code.subject', locale: $locale);
+        $body = $this->translator->trans(
+            'sign.code.body',
+            ['%code%' => $userSign->code],
+            locale: $locale,
+        );
+
+        try {
+            $this->emailService->send($user->email, $subject, $body);
+        } finally {
+            $userSign->status = UnauthorizedStatusEnum::Sent;
+            $this->userSignRepository->save($userSign);
+        }
+
+        return $userSign->id;
     }
 }

@@ -9,7 +9,7 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema]
-class UserCreateDto
+class UserDto
 {
     #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d')]
@@ -51,6 +51,7 @@ class UserCreateDto
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 5, max: 64)]
+    #[Assert\Regex(pattern: '/^[a-zA-Z0-9-]+$/')]
     #[UniqueField(entity: User::class, field: 'link')]
     #[OA\Property(example: 'my-link')]
     public string $link;

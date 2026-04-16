@@ -12,7 +12,7 @@ class ApiResponse extends JsonResponse
         return new self(['token' => $token], self::HTTP_OK);
     }
 
-    public static function updated(Uuid $id): self
+    public static function ok(Uuid $id): self
     {
         return new self(['id' => $id->toString()], self::HTTP_OK);
     }

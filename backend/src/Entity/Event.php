@@ -151,4 +151,14 @@ class Event
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
+    final public function softDelete(): void
+    {
+        $this->deletedAt = new DateTimeImmutable();
+    }
+
+    final public function isDeleted(): bool
+    {
+        return $this->deletedAt !== null;
+    }
 }
