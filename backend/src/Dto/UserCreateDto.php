@@ -99,6 +99,7 @@ class UserCreateDto
     #[Assert\Unique]
     #[OA\Property(example: [1, 2])]
     public array $roles;
+
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Choice(callback: [DisciplineEnum::class, 'values']),
@@ -106,5 +107,5 @@ class UserCreateDto
     #[Assert\Count(min: 0)]
     #[Assert\Unique]
     #[OA\Property(example: [1, 2])]
-    public array $disciplines;
+    public ?array $disciplines = null;
 }

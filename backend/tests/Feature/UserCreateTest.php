@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enum\RoleEnum;
+
 class UserCreateTest extends ApiTestCase
 {
     final protected function setUp(): void
@@ -17,7 +19,7 @@ class UserCreateTest extends ApiTestCase
 
     final public function testEmptyPayload(): void
     {
-        $result = $this->post('/api/users', []);
+        $result = $this->post('/api/users', [], RoleEnum::Administrator);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -66,8 +68,9 @@ class UserCreateTest extends ApiTestCase
             'bio' => null,
             'status' => null,
             'roles' => null,
+            'disciplines' => null,
         ];
-        $result = $this->post('/api/users', $data);
+        $result = $this->post('/api/users', $data, RoleEnum::Administrator);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -134,13 +137,14 @@ class UserCreateTest extends ApiTestCase
             'bio' => 'Testowy użytkownik',
             'status' => 1,
             'roles' => [1, 2],
+            'disciplines' => [1, 2],
         ];
 
-        $result1 = $this->post('/api/users', $data);
+        $result1 = $this->post('/api/users', $data, RoleEnum::Administrator);
         $this->assertEquals(201, $result1['status']);
         $this->assertArrayHasKey('id', $result1['json']);
 
-        $result2 = $this->post('/api/users', $data);
+        $result2 = $this->post('/api/users', $data, RoleEnum::Administrator);
         $this->assertEquals(400, $result2['status']);
         $this->assertArrayHasKey('errors', $result2['json']);
         $expected = [
@@ -176,8 +180,9 @@ class UserCreateTest extends ApiTestCase
             'bio' => 'Testowy użytkownik',
             'status' => 1,
             'roles' => [1, 2],
+            'disciplines' => [1, 2],
         ];
-        $result = $this->post('/api/users', $data);
+        $result = $this->post('/api/users', $data, RoleEnum::Administrator);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -212,8 +217,9 @@ class UserCreateTest extends ApiTestCase
             'bio' => 'Testowy użytkownik',
             'status' => 1,
             'roles' => [1, 2],
+            'disciplines' => [1, 2],
         ];
-        $result = $this->post('/api/users', $data);
+        $result = $this->post('/api/users', $data, RoleEnum::Administrator);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -227,7 +233,7 @@ class UserCreateTest extends ApiTestCase
         }
     }
 
-    final public function testEmptyRoles(): void
+    final public function testEmpty(): void
     {
         $data = [
             'birthAt' => '2000-01-01',
@@ -247,9 +253,10 @@ class UserCreateTest extends ApiTestCase
             'bio' => 'Testowy użytkownik',
             'status' => 1,
             'roles' => [],
+            'disciplines' => [],
         ];
 
-        $result = $this->post('/api/users', $data);
+        $result = $this->post('/api/users', $data, RoleEnum::Administrator);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -264,7 +271,7 @@ class UserCreateTest extends ApiTestCase
         }
     }
 
-    final public function testDuplicateRoles(): void
+    final public function testDuplicates(): void
     {
         $data = [
             'birthAt' => '2000-01-01',
@@ -284,13 +291,15 @@ class UserCreateTest extends ApiTestCase
             'bio' => 'Testowy użytkownik',
             'status' => 1,
             'roles' => [1, 2, 1],
+            'disciplines' => [1, 2, 1],
         ];
 
-        $result = $this->post('/api/users', $data);
+        $result = $this->post('/api/users', $data, RoleEnum::Administrator);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
             'roles',
+            'disciplines',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
@@ -300,7 +309,7 @@ class UserCreateTest extends ApiTestCase
         }
     }
 
-    final public function testNotExistRole(): void
+    final public function testNotExist(): void
     {
         $data = [
             'birthAt' => '2000-01-01',
@@ -320,13 +329,15 @@ class UserCreateTest extends ApiTestCase
             'bio' => 'Testowy użytkownik',
             'status' => 1,
             'roles' => [4],
+            'disciplines' => [20],
         ];
 
-        $result = $this->post('/api/users', $data);
+        $result = $this->post('/api/users', $data, RoleEnum::Administrator);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
             'roles[0]',
+            'disciplines[0]',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
@@ -358,8 +369,64 @@ class UserCreateTest extends ApiTestCase
             'roles' => [1, 2],
         ];
 
-        $result = $this->post('/api/users', $data);
+        $result = $this->post('/api/users', $data, RoleEnum::Administrator);
         $this->assertEquals(201, $result['status']);
         $this->assertArrayHasKey('id', $result['json']);
+    }
+
+    final public function testUnauthorized(): void
+    {
+        $data = [
+            'birthAt' => '2000-01-01',
+            'firstName' => 'Jan',
+            'lastName' => 'Kowalski',
+            'gender' => 1,
+            'phone' => 123456789,
+            'email' => 'jan.kowalski@example.com',
+            'password' => 'tajnehaslo',
+            'link' => 'janek',
+            'language' => 2,
+            'country' => 35,
+            'theme' => 1,
+            'color' => 3,
+            'profilePhoto' => base64_encode('hello'),
+            'backgroundPhoto' => base64_encode('hello'),
+            'bio' => 'Testowy użytkownik',
+            'status' => 1,
+            'roles' => [1, 2],
+        ];
+
+        $result = $this->post('/api/users', $data);
+        $this->assertEquals(401, $result['status']);
+        $this->assertArrayHasKey('error', $result['json']);
+        $this->assertEquals('Authentication required.', $result['json']['error']);
+    }
+
+    final public function testForbidden(): void
+    {
+        $data = [
+            'birthAt' => '2000-01-01',
+            'firstName' => 'Jan',
+            'lastName' => 'Kowalski',
+            'gender' => 1,
+            'phone' => 123456789,
+            'email' => 'jan.kowalski@example.com',
+            'password' => 'tajnehaslo',
+            'link' => 'janek',
+            'language' => 2,
+            'country' => 35,
+            'theme' => 1,
+            'color' => 3,
+            'profilePhoto' => base64_encode('hello'),
+            'backgroundPhoto' => base64_encode('hello'),
+            'bio' => 'Testowy użytkownik',
+            'status' => 1,
+            'roles' => [1, 2],
+        ];
+
+        $result = $this->post('/api/users', $data, RoleEnum::Participant);
+        $this->assertEquals(403, $result['status']);
+        $this->assertArrayHasKey('error', $result['json']);
+        $this->assertEquals('Access Denied.', $result['json']['error']);
     }
 }

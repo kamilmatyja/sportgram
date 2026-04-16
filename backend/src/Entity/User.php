@@ -4,7 +4,8 @@ namespace App\Entity;
 
 use App\Enum\{ColorEnum, CountryEnum, GenderEnum, LanguageEnum, ThemeEnum, UserStatusEnum};
 use DateTimeImmutable;
-use Doctrine\ORM\{Mapping as ORM, PersistentCollection};
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\ORM\{Mapping as ORM};
 use Symfony\Component\Security\Core\User\{PasswordAuthenticatedUserInterface, UserInterface};
 use Symfony\Component\Uid\Uuid;
 
@@ -160,7 +161,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     #[ORM\OneToMany(targetEntity: UserRole::class, mappedBy: 'user')]
-    public ?PersistentCollection $roles = null;
+    public Collection $roles;
 
     public function __construct(
         DateTimeImmutable $birthAt,
@@ -194,6 +195,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->backgroundPhoto = $backgroundPhoto;
         $this->bio = $bio;
         $this->status = $status;
+        $this->roles = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -222,21 +224,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     final public function getRoles(): array
     {
-        if (! $this->roles) {
-            return [];
-        }
-
         return array_map(
             fn (UserRole $role) => $role->role->getLabel(),
             $this->roles->toArray(),
         );
-    }
-
-    final public function addRole(UserRole $role): void
-    {
-        if ($this->roles !== null && !in_array($role, $this->roles->toArray(), true)) {
-            $this->roles->add($role);
-            $role->user = $this;
-        }
     }
 }

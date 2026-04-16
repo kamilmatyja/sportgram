@@ -74,11 +74,10 @@ readonly class UserService
 
         foreach ($dto->roles as $role) {
             $role = new UserRole($user, RoleEnum::from($role));
-            $user->addRole($role);
             $this->userRoleRepository->save($role);
         }
 
-        foreach ($dto->disciplines as $discipline) {
+        foreach ($dto->disciplines ?? [] as $discipline) {
             $discipline = new UserDiscipline($user, DisciplineEnum::from($discipline));
             $this->userDisciplineRepository->save($discipline);
         }
