@@ -3,19 +3,23 @@
 namespace App\Service;
 
 use App\Dto\{UserCreateDto, UserRegisterConfirmDto, UserSignConfirmDto, UserSignDto};
-use App\Entity\{User, UserRegister, UserRole, UserSign};
+use App\Entity\{User, UserDiscipline, UserRegister, UserRole, UserSign};
 use App\Enum\{ColorEnum,
     CountryEnum,
+    DisciplineEnum,
     GenderEnum,
     LanguageEnum,
     RoleEnum,
     ThemeEnum,
     UnauthorizedStatusEnum,
     UserStatusEnum};
-use App\Repository\{UserRegisterRepository, UserRepository, UserRoleRepository, UserSignRepository};
+use App\Repository\{UserDisciplineRepository,
+    UserRegisterRepository,
+    UserRepository,
+    UserRoleRepository,
+    UserSignRepository};
 use DateMalformedStringException;
 use DateTimeImmutable;
-use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTEncodeFailureException;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Random\RandomException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -29,6 +33,7 @@ readonly class UserService
     public function __construct(
         private UserRepository $userRepository,
         private UserRoleRepository $userRoleRepository,
+        private UserDisciplineRepository $userDisciplineRepository,
         private UserRegisterRepository $userRegisterRepository,
         private UserSignRepository $userSignRepository,
         private UserPasswordHasherInterface $hasher,
@@ -69,7 +74,13 @@ readonly class UserService
 
         foreach ($dto->roles as $role) {
             $role = new UserRole($user, RoleEnum::from($role));
+            $user->addRole($role);
             $this->userRoleRepository->save($role);
+        }
+
+        foreach ($dto->disciplines as $discipline) {
+            $discipline = new UserDiscipline($user, DisciplineEnum::from($discipline));
+            $this->userDisciplineRepository->save($discipline);
         }
 
         $userRegister = new UserRegister($user, random_int(100000, 999999), 0, UnauthorizedStatusEnum::NotSent);
@@ -116,6 +127,12 @@ readonly class UserService
 
         if ($userRegister->status === UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Code already used.');
+        }
+
+        if ($userRegister->attempt >= 3
+            && $userRegister->status === UnauthorizedStatusEnum::Incorrect
+            && $userRegister->updatedAt->diff(new DateTimeImmutable())->days < 1) {
+            throw new ValidatorException('Too many attempts.');
         }
 
         $userRegister->attempt += 1;
@@ -192,7 +209,6 @@ readonly class UserService
 
     /**
      * @throws ValidatorException
-     * @throws JWTEncodeFailureException
      */
     final public function signUserConfirm(string $userSignId, UserSignConfirmDto $dto): string
     {

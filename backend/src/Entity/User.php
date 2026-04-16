@@ -231,4 +231,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->roles->toArray(),
         );
     }
+
+    final public function addRole(UserRole $role): void
+    {
+        if ($this->roles !== null && !in_array($role, $this->roles->toArray(), true)) {
+            $this->roles->add($role);
+            $role->user = $this;
+        }
+    }
 }
