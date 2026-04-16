@@ -42,6 +42,13 @@ return $config
         'trailing_comma_in_multiline' => [
             'elements' => ['arrays', 'arguments', 'parameters', 'match'],
         ],
+        'class_attributes_separation' => [
+            'elements' => [
+                'property' => 'one',
+                'method' => 'one',
+                'const' => 'one',
+            ],
+        ],
     ])
     ->setFinder($finder);
 

@@ -16,25 +16,35 @@ class TrainingDisciplineSubDistance
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
     private ?Uuid $id = null;
+
     #[ORM\ManyToOne(targetEntity: TrainingDisciplineDistance::class)]
     #[ORM\JoinColumn(name: 'training_discipline_distance_id', referencedColumnName: 'id', nullable: false)]
     private TrainingDisciplineDistance $trainingDisciplineDistance;
+
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private DateTimeImmutable $createdAt;
+
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
     private DateTimeImmutable $updatedAt;
+
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
+
     #[ORM\Column(name: 'sub_distance', type: 'integer')]
     private int $subDistance;
+
     #[ORM\Column(name: 'time', type: 'integer')]
     private int $time;
+
     #[ORM\Column(name: 'lat', type: 'integer', nullable: true)]
     private ?int $lat = null;
+
     #[ORM\Column(name: 'lng', type: 'integer', nullable: true)]
     private ?int $lng = null;
+
     #[ORM\Column(name: 'accuracy', type: 'integer', nullable: true)]
     private ?int $accuracy = null;
+
     #[ORM\Column(name: 'speed', type: 'integer', nullable: true)]
     private ?int $speed = null;
 

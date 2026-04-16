@@ -17,18 +17,24 @@ class Friend
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
     private ?Uuid $id = null;
+
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'sender_user_id', referencedColumnName: 'id', nullable: false)]
     private User $senderUser;
+
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'receiver_user_id', referencedColumnName: 'id', nullable: false)]
     private User $receiverUser;
+
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private DateTimeImmutable $createdAt;
+
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
     private DateTimeImmutable $updatedAt;
+
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
+
     #[ORM\Column(name: 'status', type: 'integer', enumType: FriendStatusEnum::class)]
     private FriendStatusEnum $status;
 

@@ -19,44 +19,64 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
     private ?Uuid $id = null;
+
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private DateTimeImmutable $createdAt;
+
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
     private DateTimeImmutable $updatedAt;
+
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
+
     #[ORM\Column(name: 'birth_at', type: 'datetime_immutable')]
     private DateTimeImmutable $birthAt;
+
     #[ORM\Column(name: 'first_name', type: 'text', length: 64)]
     private string $firstName;
+
     #[ORM\Column(name: 'last_name', type: 'text', length: 64)]
     private string $lastName;
+
     #[ORM\Column(name: 'gender', type: 'integer', enumType: GenderEnum::class)]
     private GenderEnum $gender;
+
     #[ORM\Column(name: 'phone', type: 'integer', length: 16, unique: true)]
     private int $phone;
+
     #[ORM\Column(name: 'email', type: 'text', length: 64, unique: true)]
     private string $email;
+
     #[ORM\Column(name: 'password', type: 'text', length: 256)]
     private string $password;
+
     #[ORM\Column(name: 'link', type: 'text', length: 64)]
     private string $link;
+
     #[ORM\Column(name: 'language', type: 'integer', enumType: LanguageEnum::class)]
     private LanguageEnum $language;
+
     #[ORM\Column(name: 'country', type: 'integer', enumType: CountryEnum::class)]
     private CountryEnum $country;
+
     #[ORM\Column(name: 'theme', type: 'integer', enumType: ThemeEnum::class)]
     private ThemeEnum $theme;
+
     #[ORM\Column(name: 'color', type: 'integer', enumType: ColorEnum::class)]
     private ColorEnum $color;
+
     #[ORM\Column(name: 'profile_photo', type: 'binary')]
     private string $profilePhoto;
+
     #[ORM\Column(name: 'background_photo', type: 'binary')]
     private string $backgroundPhoto;
+
     #[ORM\Column(name: 'bio', type: 'text', length: 2048)]
     private string $bio;
+
     #[ORM\Column(name: 'status', type: 'integer', enumType: UserStatusEnum::class)]
     private UserStatusEnum $status;
+
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: UserRole::class)]
     private $roles;
 

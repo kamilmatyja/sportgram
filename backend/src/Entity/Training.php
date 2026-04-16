@@ -17,30 +17,42 @@ class Training
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
     private ?Uuid $id = null;
+
     #[ORM\ManyToOne(targetEntity: Feed::class)]
     #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false)]
     private Feed $feed;
+
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     private User $user;
+
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private DateTimeImmutable $createdAt;
+
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
     private DateTimeImmutable $updatedAt;
+
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
+
     #[ORM\Column(name: 'started_at', type: 'datetime_immutable')]
     private DateTimeImmutable $startedAt;
+
     #[ORM\Column(name: 'ended_at', type: 'datetime_immutable')]
     private DateTimeImmutable $endedAt;
+
     #[ORM\Column(name: 'title', type: 'text', length: 256)]
     private string $title;
+
     #[ORM\Column(name: 'description', type: 'text', length: 2048)]
     private string $description;
+
     #[ORM\Column(name: 'link', type: 'text', length: 64, unique: true)]
     private string $link;
+
     #[ORM\Column(name: 'location', type: 'text', length: 1024)]
     private string $location;
+
     #[ORM\Column(name: 'status', type: 'integer', enumType: ElementStatusEnum::class)]
     private ElementStatusEnum $status;
 

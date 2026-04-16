@@ -17,15 +17,20 @@ class TrainingDiscipline
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
     private ?Uuid $id = null;
+
     #[ORM\ManyToOne(targetEntity: TrainingParticipant::class)]
     #[ORM\JoinColumn(name: 'training_participant_id', referencedColumnName: 'id', nullable: false)]
     private TrainingParticipant $trainingParticipant;
+
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private DateTimeImmutable $createdAt;
+
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
     private DateTimeImmutable $updatedAt;
+
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $deletedAt = null;
+
     #[ORM\Column(name: 'discipline', type: 'integer', enumType: DisciplineEnum::class)]
     private DisciplineEnum $discipline;
 
