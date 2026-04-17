@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Dto\{UserSignConfirmDto, UserSignDto};
+use App\Dto\{UserCodeDto, UserSignDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Conflict, Created, Ok, Token};
 use App\Service\SignService;
@@ -27,7 +27,7 @@ class SignController extends AbstractController
         UserSignDto $dto,
         SignService $signService,
     ): JsonResponse {
-        $userSignId = $signService->signUser($dto);
+        $userSignId = $signService->sign($dto);
 
         return ApiResponse::created($userSignId);
     }
@@ -35,17 +35,17 @@ class SignController extends AbstractController
     #[Route('/api/signs/{id}/confirm', name: 'user_sign_confirm', methods: ['PATCH'])]
     #[IsGranted('IS_ANONYMOUS')]
     #[OA\Patch(
-        summary: 'Confirm user sign',
-        requestBody: new Body('UserSignConfirmDto'),
+        summary: 'Confirm sign user',
+        requestBody: new Body('UserCodeDto'),
         responses: [new Token(), new BadRequest(), new Conflict()],
     )]
-    final public function confirmSign(
+    final public function confirm(
         string $id,
         #[MapRequestPayload]
-        UserSignConfirmDto $dto,
+        UserCodeDto $dto,
         SignService $signService,
     ): JsonResponse {
-        $token = $signService->signUserConfirm($id, $dto);
+        $token = $signService->confirm($id, $dto);
 
         return ApiResponse::token($token);
     }
@@ -53,15 +53,15 @@ class SignController extends AbstractController
     #[Route('/api/signs/{id}/resend', name: 'user_sign_resend', methods: ['POST'])]
     #[IsGranted('IS_ANONYMOUS')]
     #[OA\Post(
-        summary: 'Resend user sign',
+        summary: 'Resend sign user',
         responses: [new Ok(), new Conflict()],
     )]
-    final public function resendSign(
+    final public function resend(
         string $id,
         SignService $signService,
     ): JsonResponse {
-        $userId = $signService->signUserResend($id);
+        $userSignId = $signService->resend($id);
 
-        return ApiResponse::ok($userId);
+        return ApiResponse::ok($userSignId);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Dto\UserListDto;
+use App\Dto\UserIndexDto;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -48,7 +48,7 @@ class UserRepository extends ServiceEntityRepository
         return $user;
     }
 
-    final public function findUsers(UserListDto $dto): array
+    final public function findUsers(UserIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('u');
 

@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserListDto, UserUpdateDto, UserUpdateStatusDto};
+use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserIndexDto, UserUpdateDto, UserUpdateStatusDto};
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Includes, Item, Ok, Unauthorized};
@@ -30,7 +30,7 @@ class UserController extends AbstractController
         UserCreateDto $dto,
         UserService $userService,
     ): JsonResponse {
-        $userId = $userService->createUser($dto);
+        $userId = $userService->create($dto);
 
         return ApiResponse::created($userId);
     }
@@ -47,7 +47,7 @@ class UserController extends AbstractController
         UserCreateNanoDto $dto,
         UserService $userService,
     ): JsonResponse {
-        $userId = $userService->createUserNano($dto);
+        $userId = $userService->createNano($dto);
 
         return ApiResponse::created($userId);
     }
@@ -65,7 +65,7 @@ class UserController extends AbstractController
         UserUpdateDto $dto,
         UserService $userService,
     ): JsonResponse {
-        $userId = $userService->updateUser($id, $dto);
+        $userId = $userService->update($id, $dto);
 
         return ApiResponse::ok($userId);
     }
@@ -83,7 +83,7 @@ class UserController extends AbstractController
         UserUpdateStatusDto $dto,
         UserService $userService,
     ): JsonResponse {
-        $userId = $userService->updateUserStatus($id, $dto);
+        $userId = $userService->updateStatus($id, $dto);
 
         return ApiResponse::ok($userId);
     }
@@ -98,27 +98,27 @@ class UserController extends AbstractController
         string $id,
         UserService $userService,
     ): JsonResponse {
-        $userId = $userService->deleteUser($id);
+        $userId = $userService->delete($id);
 
         return ApiResponse::ok($userId);
     }
 
-    #[Route('/api/users', name: 'user_list', methods: ['GET'])]
+    #[Route('/api/users', name: 'user_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'List of users',
+        summary: 'Index of users',
         responses: [new Collection('UserResource'), new BadRequest()],
     )]
-    final public function list(
+    final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
-        UserListDto $dto,
+        UserIndexDto $dto,
         UserService $service,
     ): JsonResponse {
-        $users = $service->listUsers($dto);
+        $users = $service->index($dto);
 
         $data = UserResource::fromEntityCollection($users);
 
-        return ApiResponse::list($data);
+        return ApiResponse::elements($data);
     }
 
     #[Route('/api/users/{id}', name: 'user_details', methods: ['GET'])]
@@ -134,10 +134,10 @@ class UserController extends AbstractController
         UserDetailsQueryDto $dto,
         UserService $service,
     ): JsonResponse {
-        $user = $service->detailsUser($id, $dto);
+        $user = $service->details($id, $dto);
 
         $data = UserResource::fromEntity($user, $dto);
 
-        return ApiResponse::list($data);
+        return ApiResponse::elements($data);
     }
 }

@@ -5,8 +5,8 @@ namespace App\Dto;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[OA\Schema(schema: 'UserRegisterDto')]
-class UserRegisterDto
+#[OA\Schema(schema: 'UserEmailDto')]
+class UserEmailDto
 {
     #[Assert\NotBlank]
     #[Assert\Email]

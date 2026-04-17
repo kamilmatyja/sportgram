@@ -5,7 +5,7 @@ namespace App\Dto;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class UserListDto
+class UserIndexDto
 {
     #[Assert\Positive]
     #[Assert\Range(min: 1, max: 1000)]

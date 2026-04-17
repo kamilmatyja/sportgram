@@ -6,3 +6,7 @@ sign:
   code:
     subject: 'Your sign code'
     body: 'Your sign code is: %code%'
+passwordReset:
+  code:
+    subject: 'Your password reset code'
+    body: 'Your password reset code is: %code%'

@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{UserSignConfirmDto, UserSignDto};
+use App\Dto\{UserCodeDto, UserSignDto};
 use App\Entity\{User, UserSign};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
 use App\Repository\{UserRegisterRepository, UserRepository, UserSignRepository};
@@ -33,7 +33,7 @@ readonly class SignService
      * @throws RandomException
      * @throws TransportExceptionInterface
      */
-    final public function signUser(UserSignDto $dto): Uuid
+    final public function sign(UserSignDto $dto): Uuid
     {
         $user = $this->userRepository->findByEmail($dto->email);
 
@@ -75,7 +75,7 @@ readonly class SignService
     /**
      * @throws ValidatorException
      */
-    final public function signUserConfirm(string $userSignId, UserSignConfirmDto $dto): string
+    final public function confirm(string $userSignId, UserCodeDto $dto): string
     {
         $userSign = $this->userSignRepository->findById($userSignId);
 
@@ -111,7 +111,7 @@ readonly class SignService
     /**
      * @throws TransportExceptionInterface
      */
-    final public function signUserResend(string $id): Uuid
+    final public function resend(string $id): Uuid
     {
         $userSign = $this->userSignRepository->findLastByUserId($id);
 

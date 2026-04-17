@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Dto\{UserCodeDto, UserEmailDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Conflict, Created, Ok};
-use App\Service\RegisterService;
+use App\Service\PasswordResetService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{JsonResponse};
@@ -13,29 +13,29 @@ use Symfony\Component\HttpKernel\Attribute\{MapRequestPayload};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-class RegisterController extends AbstractController
+class PasswordResetController extends AbstractController
 {
-    #[Route('/api/registers', name: 'user_register', methods: ['POST'])]
+    #[Route('/api/password-resets', name: 'user_password_reset', methods: ['POST'])]
     #[IsGranted('IS_ANONYMOUS')]
     #[OA\Post(
-        summary: 'Register user',
+        summary: 'Reset user password',
         requestBody: new Body('UserEmailDto'),
         responses: [new Created(), new BadRequest(), new Conflict()],
     )]
-    final public function register(
+    final public function passwordReset(
         #[MapRequestPayload]
         UserEmailDto $dto,
-        RegisterService $registerService,
+        PasswordResetService $passwordResetService,
     ): JsonResponse {
-        $userRegisterId = $registerService->register($dto);
+        $userPasswordResetId = $passwordResetService->passwordReset($dto);
 
-        return ApiResponse::created($userRegisterId);
+        return ApiResponse::created($userPasswordResetId);
     }
 
-    #[Route('/api/registers/{id}/confirm', name: 'user_register_confirm', methods: ['PATCH'])]
+    #[Route('/api/password-resets/{id}/confirm', name: 'user_password_reset_confirm', methods: ['PATCH'])]
     #[IsGranted('IS_ANONYMOUS')]
     #[OA\Patch(
-        summary: 'Confirm register user',
+        summary: 'Confirm reset user password',
         requestBody: new Body('UserCodeDto'),
         responses: [new Ok(), new BadRequest(), new Conflict()],
     )]
@@ -43,25 +43,25 @@ class RegisterController extends AbstractController
         string $id,
         #[MapRequestPayload]
         UserCodeDto $dto,
-        RegisterService $registerService,
+        PasswordResetService $passwordResetService,
     ): JsonResponse {
-        $userRegisterId = $registerService->confirm($id, $dto);
+        $userPasswordResetId = $passwordResetService->confirm($id, $dto);
 
-        return ApiResponse::ok($userRegisterId);
+        return ApiResponse::ok($userPasswordResetId);
     }
 
-    #[Route('/api/registers/{id}/resend', name: 'user_register_resend', methods: ['POST'])]
+    #[Route('/api/password-resets/{id}/resend', name: 'user_password_reset_resend', methods: ['POST'])]
     #[IsGranted('IS_ANONYMOUS')]
     #[OA\Post(
-        summary: 'Resend register user',
+        summary: 'Resend reset user password',
         responses: [new Ok(), new Conflict()],
     )]
     final public function resend(
         string $id,
-        RegisterService $registerService,
+        PasswordResetService $passwordResetService,
     ): JsonResponse {
-        $userRegisterId = $registerService->resend($id);
+        $userPasswordResetId = $passwordResetService->resend($id);
 
-        return ApiResponse::ok($userRegisterId);
+        return ApiResponse::ok($userPasswordResetId);
     }
 }

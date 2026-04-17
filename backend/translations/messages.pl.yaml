@@ -6,3 +6,7 @@ sign:
   code:
     subject: 'Twój kod logowania'
     body: 'Twój kod logowania to: %code%'
+passwordReset:
+  code:
+    subject: 'Twój kod resetowania hasła'
+    body: 'Twój kod resetowania hasła to: %code%'

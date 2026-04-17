@@ -12,7 +12,7 @@ class ApiResponse extends JsonResponse
         return new self(['token' => $token], self::HTTP_OK);
     }
 
-    public static function list(array $data): self
+    public static function elements(array $data): self
     {
         return new self(['data' => $data], self::HTTP_OK);
     }

@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{UserRegisterConfirmDto, UserRegisterDto};
+use App\Dto\{UserCodeDto, UserEmailDto};
 use App\Entity\{User, UserRegister};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
 use App\Repository\{UserRegisterRepository, UserRepository, UserSignRepository};
@@ -26,7 +26,7 @@ readonly class RegisterService
     /**
      * @throws ValidatorException
      */
-    final public function registerUser(UserRegisterDto $dto): Uuid
+    final public function register(UserEmailDto $dto): Uuid
     {
         $user = $this->userRepository->findByEmail($dto->email);
 
@@ -53,7 +53,7 @@ readonly class RegisterService
     /**
      * @throws ValidatorException
      */
-    final public function registerUserConfirm(string $id, UserRegisterConfirmDto $dto): Uuid
+    final public function confirm(string $id, UserCodeDto $dto): Uuid
     {
         $userRegister = $this->userRegisterRepository->findLastByUserId($id);
 
@@ -87,7 +87,7 @@ readonly class RegisterService
     /**
      * @throws TransportExceptionInterface
      */
-    final public function registerUserResend(string $id): Uuid
+    final public function resend(string $id): Uuid
     {
         $userRegister = $this->userRegisterRepository->findLastByUserId($id);
 

@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserListDto, UserUpdateDto, UserUpdateStatusDto};
+use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserIndexDto, UserUpdateDto, UserUpdateStatusDto};
 use App\Entity\{User, UserDiscipline, UserRegister, UserRole};
 use App\Enum\{ColorEnum,
     CountryEnum,
@@ -23,7 +23,6 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class UserService
 {
@@ -33,8 +32,6 @@ readonly class UserService
         private UserDisciplineRepository $userDisciplineRepository,
         private UserRegisterRepository $userRegisterRepository,
         private UserPasswordHasherInterface $hasher,
-        private EmailService $emailService,
-        private TranslatorInterface $translator,
         private AuthorizationCheckerInterface $authorizationChecker,
         private RegisterService $registerService,
     ) {
@@ -45,7 +42,7 @@ readonly class UserService
      * @throws RandomException
      * @throws TransportExceptionInterface
      */
-    final public function createUser(UserCreateDto $dto): Uuid
+    final public function create(UserCreateDto $dto): Uuid
     {
         $user = new User(
             new DateTimeImmutable($dto->birthAt),
@@ -92,7 +89,7 @@ readonly class UserService
      * @throws RandomException
      * @throws TransportExceptionInterface
      */
-    final public function createUserNano(UserCreateNanoDto $dto): Uuid
+    final public function createNano(UserCreateNanoDto $dto): Uuid
     {
         $user = new User(
             new DateTimeImmutable($dto->birthAt),
@@ -132,7 +129,7 @@ readonly class UserService
     /**
      * @throws DateMalformedStringException
      */
-    final public function updateUser(string $id, UserUpdateDto $dto): Uuid
+    final public function update(string $id, UserUpdateDto $dto): Uuid
     {
         if (! $this->authorizationChecker->isGranted(UserRoleVoter::ASSIGN_ADMIN_ROLE, $dto)) {
             throw new ValidatorException('Role not allowed for this user.');
@@ -203,7 +200,7 @@ readonly class UserService
         return $user->id;
     }
 
-    final public function updateUserStatus(string $id, UserUpdateStatusDto $dto): Uuid
+    final public function updateStatus(string $id, UserUpdateStatusDto $dto): Uuid
     {
         $user = $this->userRepository->findById($id);
 
@@ -217,7 +214,7 @@ readonly class UserService
         return $user->id;
     }
 
-    final public function deleteUser(string $userId): Uuid
+    final public function delete(string $userId): Uuid
     {
         $user = $this->userRepository->findById($userId);
         $user->softDelete();
@@ -226,12 +223,12 @@ readonly class UserService
         return $user->id;
     }
 
-    final public function listUsers(UserListDto $dto): array
+    final public function index(UserIndexDto $dto): array
     {
         return $this->userRepository->findUsers($dto);
     }
 
-    final public function detailsUser(string $userId, UserDetailsQueryDto $dto): User
+    final public function details(string $userId, UserDetailsQueryDto $dto): User
     {
         if ($dto->include === $dto::USER_DISCIPLINES) {
             $user = $this->userRepository->findWithDisciplines($userId);
