@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{UserCreateDto, UserCreateNanoDto, UserListDto, UserUpdateDto, UserUpdateStatusDto};
+use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserListDto, UserUpdateDto, UserUpdateStatusDto};
 use App\Entity\{User, UserDiscipline, UserRegister, UserRole};
 use App\Enum\{ColorEnum,
     CountryEnum,
@@ -231,9 +231,13 @@ readonly class UserService
         return $this->userRepository->findUsers($dto);
     }
 
-    final public function detailsUser(string $userId): User
+    final public function detailsUser(string $userId, UserDetailsQueryDto $dto): User
     {
-        $user = $this->userRepository->findById($userId);
+        if ($dto->include === $dto::USER_DISCIPLINES) {
+            $user = $this->userRepository->findWithDisciplines($userId);
+        } else {
+            $user = $this->userRepository->findById($userId);
+        }
 
         if (! $user) {
             throw new ValidatorException('User not found.');

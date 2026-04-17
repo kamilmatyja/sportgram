@@ -2,7 +2,8 @@
 
 namespace App\Resource;
 
-use App\Entity\User;
+use App\Dto\UserDetailsQueryDto;
+use App\Entity\{User, UserDiscipline};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -51,9 +52,9 @@ use OpenApi\Attributes as OA;
 )]
 class UserResource
 {
-    public static function fromEntity(User $user): array
+    public static function fromEntity(User $user, ?UserDetailsQueryDto $dto = null): array
     {
-        return [
+        $data = [
             'id' => $user->id?->toString(),
             'createdAt' => $user->createdAt->format('Y-m-d'),
             'updatedAt' => $user->updatedAt->format('Y-m-d'),
@@ -73,6 +74,15 @@ class UserResource
             'bio' => $user->bio,
             'status' => $user->status,
         ];
+
+        if ($dto?->include === $dto::USER_DISCIPLINES) {
+            $data['disciplines'] = array_map(
+                fn (UserDiscipline $discipline) => DisciplineResource::fromEntity($discipline),
+                $user->disciplines->toArray(),
+            );
+        }
+
+        return $data;
     }
 
     public static function fromEntityCollection(array $users): array

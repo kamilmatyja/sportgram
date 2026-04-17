@@ -29,6 +29,17 @@ class UserRepository extends ServiceEntityRepository
         return $user;
     }
 
+    final public function findWithDisciplines(string $id): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.disciplines', 'd')
+            ->addSelect('d')
+            ->where('u.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     final public function findByEmail(string $email): ?User
     {
         /** @var ?User $user */

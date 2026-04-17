@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
-use App\Dto\{UserCreateDto, UserCreateNanoDto, UserListDto, UserUpdateDto, UserUpdateStatusDto};
+use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserListDto, UserUpdateDto, UserUpdateStatusDto};
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Includes, Item, Ok, Unauthorized};
 use App\Resource\UserResource;
 use App\Security\Voter\UserVoter;
 use App\Service\UserService;
@@ -125,15 +125,18 @@ class UserController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of users',
-        responses: [new Item('UserResource'), new BadRequest()],
+        parameters: [new Includes([UserDetailsQueryDto::USER_DISCIPLINES])],
+        responses: [new Item('UserResource', ['disciplines' => 'DisciplineResource']), new BadRequest()],
     )]
     final public function details(
         string $id,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        UserDetailsQueryDto $dto,
         UserService $service,
     ): JsonResponse {
-        $user = $service->detailsUser($id);
+        $user = $service->detailsUser($id, $dto);
 
-        $data = UserResource::fromEntity($user);
+        $data = UserResource::fromEntity($user, $dto);
 
         return ApiResponse::list($data);
     }
