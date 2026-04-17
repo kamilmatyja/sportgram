@@ -23,7 +23,7 @@ class UserRegisterRepository extends ServiceEntityRepository
     final public function findLastByUserId(string $userId): ?UserRegister
     {
         /** @var ?UserRegister $userRegister */
-        $userRegister = $this->findOneBy(['user' => $userId, 'deleted_at' => null], ['created_at' => 'DESC']);
+        $userRegister = $this->findOneBy(['user' => $userId], ['created_at' => 'DESC']);
 
         return $userRegister;
     }

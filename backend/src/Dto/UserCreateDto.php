@@ -8,8 +8,8 @@ use App\Validator\{Base64String, UniqueField};
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[OA\Schema(schema: 'UserDto')]
-class UserDto
+#[OA\Schema(schema: 'UserCreateDto')]
+class UserCreateDto
 {
     #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d')]

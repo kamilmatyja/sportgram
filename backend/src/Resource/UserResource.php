@@ -25,6 +25,7 @@ use OpenApi\Attributes as OA;
         'profilePhoto',
         'backgroundPhoto',
         'bio',
+        'status',
     ],
     properties: [
         new OA\Property(property: 'id', type: 'string', example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'),
@@ -44,6 +45,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'profilePhoto', type: 'string', format: 'byte'),
         new OA\Property(property: 'backgroundPhoto', type: 'string', format: 'byte'),
         new OA\Property(property: 'bio', type: 'string'),
+        new OA\Property(property: 'status', type: 'integer', example: 1),
     ],
     type: 'object',
 )]
@@ -69,6 +71,7 @@ class UserResource
             'profilePhoto' => $user->profilePhoto,
             'backgroundPhoto' => $user->backgroundPhoto,
             'bio' => $user->bio,
+            'status' => $user->status,
         ];
     }
 

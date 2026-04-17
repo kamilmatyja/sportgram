@@ -31,7 +31,7 @@ class UserSignRepository extends ServiceEntityRepository
     final public function findLastByUserId(string $userId): ?UserSign
     {
         /** @var ?UserSign $userSign */
-        $userSign = $this->findOneBy(['user' => $userId, 'deleted_at' => null], ['created_at' => 'DESC']);
+        $userSign = $this->findOneBy(['user' => $userId], ['created_at' => 'DESC']);
 
         return $userSign;
     }

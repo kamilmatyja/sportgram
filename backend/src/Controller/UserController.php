@@ -2,17 +2,10 @@
 
 namespace App\Controller;
 
-use App\Dto\{UserCreateNanoDto,
-    UserDto,
-    UserListDto,
-    UserRegisterConfirmDto,
-    UserRegisterDto,
-    UserSignConfirmDto,
-    UserSignDto,
-    UserUpdateStatusDto};
+use App\Dto\{UserCreateDto, UserCreateNanoDto, UserListDto, UserUpdateDto, UserUpdateStatusDto};
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Conflict, Created, Forbidden, Ok, Token, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\UserResource;
 use App\Security\Voter\UserVoter;
 use App\Service\UserService;
@@ -29,12 +22,12 @@ class UserController extends AbstractController
     #[IsGranted(RoleEnum::ROLE_ADMINISTRATOR)]
     #[OA\Post(
         summary: 'Create user',
-        requestBody: new Body('UserDto'),
+        requestBody: new Body('UserCreateDto'),
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
         #[MapRequestPayload]
-        UserDto $dto,
+        UserCreateDto $dto,
         UserService $userService,
     ): JsonResponse {
         $userId = $userService->createUser($dto);
@@ -63,13 +56,13 @@ class UserController extends AbstractController
     #[IsGranted(UserVoter::USER, subject: 'id')]
     #[OA\Put(
         summary: 'Update user',
-        requestBody: new Body('UserDto'),
+        requestBody: new Body('UserUpdateDto'),
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         string $id,
         #[MapRequestPayload]
-        UserDto $dto,
+        UserUpdateDto $dto,
         UserService $userService,
     ): JsonResponse {
         $userId = $userService->updateUser($id, $dto);
@@ -114,17 +107,7 @@ class UserController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'List of users',
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: 'OK',
-                content: new OA\JsonContent(
-                    type: 'array',
-                    items: new OA\Items(ref: '#/components/schemas/UserResource'),
-                ),
-            ),
-            new BadRequest(),
-        ],
+        responses: [new Collection('UserResource'), new BadRequest()],
     )]
     final public function list(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -142,14 +125,7 @@ class UserController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of users',
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: 'OK',
-                content: new OA\JsonContent(ref: '#/components/schemas/UserResource'),
-            ),
-            new BadRequest(),
-        ],
+        responses: [new Item('UserResource'), new BadRequest()],
     )]
     final public function details(
         string $id,
@@ -160,105 +136,5 @@ class UserController extends AbstractController
         $data = UserResource::fromEntity($user);
 
         return ApiResponse::list($data);
-    }
-
-    #[Route('/api/users/registers', name: 'user_register', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
-    #[OA\Post(
-        summary: 'Register user',
-        requestBody: new Body('UserRegisterDto'),
-        responses: [new Created(), new BadRequest(), new Conflict()],
-    )]
-    final public function register(
-        #[MapRequestPayload]
-        UserRegisterDto $dto,
-        UserService $userService,
-    ): JsonResponse {
-        $userSignId = $userService->registerUser($dto);
-
-        return ApiResponse::created($userSignId);
-    }
-
-    #[Route('/api/users/registers/{id}/confirm', name: 'user_register_confirm', methods: ['PATCH'])]
-    #[IsGranted('IS_ANONYMOUS')]
-    #[OA\Patch(
-        summary: 'Confirm user register',
-        requestBody: new Body('UserRegisterConfirmDto'),
-        responses: [new Ok(), new BadRequest(), new Conflict()],
-    )]
-    final public function confirmRegister(
-        string $id,
-        #[MapRequestPayload]
-        UserRegisterConfirmDto $dto,
-        UserService $userService,
-    ): JsonResponse {
-        $userId = $userService->registerUserConfirm($id, $dto);
-
-        return ApiResponse::ok($userId);
-    }
-
-    #[Route('/api/users/registers/{id}/resend', name: 'user_register_resend', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
-    #[OA\Post(
-        summary: 'Resend user register',
-        responses: [new Ok(), new Conflict()],
-    )]
-    final public function resendRegister(
-        string $id,
-        UserService $userService,
-    ): JsonResponse {
-        $userId = $userService->registerUserResend($id);
-
-        return ApiResponse::ok($userId);
-    }
-
-    #[Route('/api/users/signs', name: 'user_sign', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
-    #[OA\Post(
-        summary: 'Sign user',
-        requestBody: new Body('UserSignDto'),
-        responses: [new Created(), new BadRequest(), new Conflict()],
-    )]
-    final public function sign(
-        #[MapRequestPayload]
-        UserSignDto $dto,
-        UserService $userService,
-    ): JsonResponse {
-        $userSignId = $userService->signUser($dto);
-
-        return ApiResponse::created($userSignId);
-    }
-
-    #[Route('/api/users/signs/{id}/confirm', name: 'user_sign_confirm', methods: ['PATCH'])]
-    #[IsGranted('IS_ANONYMOUS')]
-    #[OA\Patch(
-        summary: 'Confirm user sign',
-        requestBody: new Body('UserSignConfirmDto'),
-        responses: [new Token(), new BadRequest(), new Conflict()],
-    )]
-    final public function confirmSign(
-        string $id,
-        #[MapRequestPayload]
-        UserSignConfirmDto $dto,
-        UserService $userService,
-    ): JsonResponse {
-        $token = $userService->signUserConfirm($id, $dto);
-
-        return ApiResponse::token($token);
-    }
-
-    #[Route('/api/users/signs/{id}/resend', name: 'user_sign_resend', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
-    #[OA\Post(
-        summary: 'Resend user sign',
-        responses: [new Ok(), new Conflict()],
-    )]
-    final public function resendSign(
-        string $id,
-        UserService $userService,
-    ): JsonResponse {
-        $userId = $userService->signUserResend($id);
-
-        return ApiResponse::ok($userId);
     }
 }

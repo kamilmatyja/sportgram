@@ -32,7 +32,7 @@ class UserRepository extends ServiceEntityRepository
     final public function findByEmail(string $email): ?User
     {
         /** @var ?User $user */
-        $user = $this->findOneBy(['email' => $email, 'deleted_at' => null], ['created_at' => 'DESC']);
+        $user = $this->findOneBy(['email' => $email], ['created_at' => 'DESC']);
 
         return $user;
     }
