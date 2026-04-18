@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\{JsonResponse};
 use Symfony\Component\HttpKernel\Attribute\{MapQueryString, MapRequestPayload};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Uid\Uuid;
 
 class UserController extends AbstractController
 {
@@ -60,7 +61,7 @@ class UserController extends AbstractController
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
-        string $id,
+        Uuid $id,
         #[MapRequestPayload]
         UserUpdateDto $dto,
         UserService $userService,
@@ -78,7 +79,7 @@ class UserController extends AbstractController
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
-        string $id,
+        Uuid $id,
         #[MapRequestPayload]
         UserUpdateStatusDto $dto,
         UserService $userService,
@@ -95,7 +96,7 @@ class UserController extends AbstractController
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
-        string $id,
+        Uuid $id,
         UserService $userService,
     ): JsonResponse {
         $userId = $userService->delete($id);
@@ -129,7 +130,7 @@ class UserController extends AbstractController
         responses: [new Item('UserResource', ['disciplines' => 'DisciplineResource']), new BadRequest()],
     )]
     final public function details(
-        string $id,
+        Uuid $id,
         #[MapQueryString(validationFailedStatusCode: 400)]
         UserDetailsQueryDto $dto,
         UserService $service,

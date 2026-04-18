@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\{UserSign};
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class UserSignRepository extends ServiceEntityRepository
 {
@@ -20,15 +21,15 @@ class UserSignRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(string $id): ?UserSign
+    final public function findById(Uuid $userSignId): ?UserSign
     {
         /** @var ?UserSign $userSign */
-        $userSign = $this->find($id);
+        $userSign = $this->find($userSignId);
 
         return $userSign;
     }
 
-    final public function findLastByUserId(string $userId): ?UserSign
+    final public function findLastByUserId(Uuid $userId): ?UserSign
     {
         /** @var ?UserSign $userSign */
         $userSign = $this->findOneBy(['user' => $userId], ['created_at' => 'DESC']);

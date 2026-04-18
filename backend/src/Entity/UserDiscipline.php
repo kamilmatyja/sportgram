@@ -7,7 +7,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserDiscipline::class)]
 #[ORM\Table(name: 'user_disciplines')]
 #[ORM\HasLifecycleCallbacks]
 class UserDiscipline

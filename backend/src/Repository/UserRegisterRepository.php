@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\UserRegister;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class UserRegisterRepository extends ServiceEntityRepository
 {
@@ -20,7 +21,15 @@ class UserRegisterRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findLastByUserId(string $userId): ?UserRegister
+    final public function findById(Uuid $userRegisterId): ?UserRegister
+    {
+        /** @var ?UserRegister $userRegister */
+        $userRegister = $this->find($userRegisterId);
+
+        return $userRegister;
+    }
+
+    final public function findLastByUserId(Uuid $userId): ?UserRegister
     {
         /** @var ?UserRegister $userRegister */
         $userRegister = $this->findOneBy(['user' => $userId], ['created_at' => 'DESC']);

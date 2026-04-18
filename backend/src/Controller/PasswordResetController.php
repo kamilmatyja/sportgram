@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Dto\{UserCodeDto, UserEmailDto};
+use App\Dto\{UserEmailDto, UserPasswordDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Conflict, Created, Ok};
 use App\Service\PasswordResetService;
@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\{JsonResponse};
 use Symfony\Component\HttpKernel\Attribute\{MapRequestPayload};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Uid\Uuid;
 
 class PasswordResetController extends AbstractController
 {
@@ -36,13 +37,13 @@ class PasswordResetController extends AbstractController
     #[IsGranted('IS_ANONYMOUS')]
     #[OA\Patch(
         summary: 'Confirm reset user password',
-        requestBody: new Body('UserCodeDto'),
+        requestBody: new Body('UserPasswordDto'),
         responses: [new Ok(), new BadRequest(), new Conflict()],
     )]
     final public function confirm(
-        string $id,
+        Uuid $id,
         #[MapRequestPayload]
-        UserCodeDto $dto,
+        UserPasswordDto $dto,
         PasswordResetService $passwordResetService,
     ): JsonResponse {
         $userPasswordResetId = $passwordResetService->confirm($id, $dto);
@@ -57,7 +58,7 @@ class PasswordResetController extends AbstractController
         responses: [new Ok(), new Conflict()],
     )]
     final public function resend(
-        string $id,
+        Uuid $id,
         PasswordResetService $passwordResetService,
     ): JsonResponse {
         $userPasswordResetId = $passwordResetService->resend($id);

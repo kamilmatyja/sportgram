@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\UnauthorizedStatusEnum;
+use App\Repository\UserRegisterRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserRegisterRepository::class)]
 #[ORM\Table(name: 'user_registers')]
 #[ORM\HasLifecycleCallbacks]
 class UserRegister

@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\{JsonResponse};
 use Symfony\Component\HttpKernel\Attribute\{MapRequestPayload};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Uid\Uuid;
 
 class SignController extends AbstractController
 {
@@ -40,7 +41,7 @@ class SignController extends AbstractController
         responses: [new Token(), new BadRequest(), new Conflict()],
     )]
     final public function confirm(
-        string $id,
+        Uuid $id,
         #[MapRequestPayload]
         UserCodeDto $dto,
         SignService $signService,
@@ -57,11 +58,25 @@ class SignController extends AbstractController
         responses: [new Ok(), new Conflict()],
     )]
     final public function resend(
-        string $id,
+        Uuid $id,
         SignService $signService,
     ): JsonResponse {
         $userSignId = $signService->resend($id);
 
         return ApiResponse::ok($userSignId);
+    }
+
+    #[Route('/api/signs/{id}/refresh', name: 'user_sign_refresh', methods: ['POST'])]
+    #[OA\Post(
+        summary: 'Refresh sign user',
+        responses: [new Token(), new Conflict()],
+    )]
+    final public function refresh(
+        Uuid $id,
+        SignService $signService,
+    ): JsonResponse {
+        $token = $signService->refresh($id);
+
+        return ApiResponse::token($token);
     }
 }

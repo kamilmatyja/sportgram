@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\UnauthorizedStatusEnum;
+use App\Repository\UserPasswordResetRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserPasswordResetRepository::class)]
 #[ORM\Table(name: 'user_password_resets')]
 #[ORM\HasLifecycleCallbacks]
 class UserPasswordReset

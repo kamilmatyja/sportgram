@@ -6,6 +6,7 @@ use App\Dto\UserIndexDto;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class UserRepository extends ServiceEntityRepository
 {
@@ -21,21 +22,21 @@ class UserRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(string $id): ?User
+    final public function findById(Uuid $userId): ?User
     {
         /** @var ?User $user */
-        $user = $this->find($id);
+        $user = $this->find($userId);
 
         return $user;
     }
 
-    final public function findWithDisciplines(string $id): ?User
+    final public function findWithDisciplines(Uuid $userId): ?User
     {
         return $this->createQueryBuilder('u')
             ->leftJoin('u.disciplines', 'd')
             ->addSelect('d')
             ->where('u.id = :id')
-            ->setParameter('id', $id)
+            ->setParameter('id', $userId)
             ->getQuery()
             ->getOneOrNullResult();
     }

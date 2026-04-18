@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\UnauthorizedStatusEnum;
+use App\Repository\UserSignRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserSignRepository::class)]
 #[ORM\Table(name: 'user_signs')]
 #[ORM\HasLifecycleCallbacks]
 class UserSign

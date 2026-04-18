@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\{JsonResponse};
 use Symfony\Component\HttpKernel\Attribute\{MapRequestPayload};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Uid\Uuid;
 
 class RegisterController extends AbstractController
 {
@@ -40,7 +41,7 @@ class RegisterController extends AbstractController
         responses: [new Ok(), new BadRequest(), new Conflict()],
     )]
     final public function confirm(
-        string $id,
+        Uuid $id,
         #[MapRequestPayload]
         UserCodeDto $dto,
         RegisterService $registerService,
@@ -57,7 +58,7 @@ class RegisterController extends AbstractController
         responses: [new Ok(), new Conflict()],
     )]
     final public function resend(
-        string $id,
+        Uuid $id,
         RegisterService $registerService,
     ): JsonResponse {
         $userRegisterId = $registerService->resend($id);

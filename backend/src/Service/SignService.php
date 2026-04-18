@@ -55,12 +55,12 @@ readonly class SignService
             throw new ValidatorException('User account not confirmed.');
         }
 
-        $oldUserSign = $this->userSignRepository->findLastByUserId($user->id);
+        $latestUserSign = $this->userSignRepository->findLastByUserId($user->id);
 
-        if ($oldUserSign
-            && $oldUserSign->attempt >= 3
-            && $oldUserSign->status === UnauthorizedStatusEnum::Incorrect
-            && $oldUserSign->updatedAt->diff(new DateTimeImmutable())->days < 1) {
+        if ($latestUserSign
+            && $latestUserSign->attempt >= 3
+            && $latestUserSign->status === UnauthorizedStatusEnum::Incorrect
+            && $latestUserSign->updatedAt->diff(new DateTimeImmutable())->days < 1) {
             throw new ValidatorException('Too many attempts.');
         }
 
@@ -75,7 +75,7 @@ readonly class SignService
     /**
      * @throws ValidatorException
      */
-    final public function confirm(string $userSignId, UserCodeDto $dto): string
+    final public function confirm(Uuid $userSignId, UserCodeDto $dto): string
     {
         $userSign = $this->userSignRepository->findById($userSignId);
 
@@ -111,9 +111,9 @@ readonly class SignService
     /**
      * @throws TransportExceptionInterface
      */
-    final public function resend(string $id): Uuid
+    final public function resend(Uuid $userSignId): Uuid
     {
-        $userSign = $this->userSignRepository->findLastByUserId($id);
+        $userSign = $this->userSignRepository->findById($userSignId);
 
         if (! $userSign) {
             throw new ValidatorException('User sign not found.');
@@ -132,6 +132,26 @@ readonly class SignService
         $this->sendEmail($user, $userSign);
 
         return $userSign->id;
+    }
+
+    /**
+     * @throws ValidatorException
+     */
+    final public function refresh(Uuid $userSignId): string
+    {
+        $userSign = $this->userSignRepository->findById($userSignId);
+
+        if (! $userSign) {
+            throw new ValidatorException('User sign not found.');
+        }
+
+        if ($userSign->status !== UnauthorizedStatusEnum::Correct) {
+            throw new ValidatorException('Sign not confirmed.');
+        }
+
+        $user = $userSign->user;
+
+        return $this->jwtManager->create($user);
     }
 
     private function sendEmail(User $user, UserSign $userSign): void

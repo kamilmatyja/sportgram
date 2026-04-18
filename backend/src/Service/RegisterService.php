@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Dto\{UserCodeDto, UserEmailDto};
 use App\Entity\{User, UserRegister};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
-use App\Repository\{UserRegisterRepository, UserRepository, UserSignRepository};
+use App\Repository\{UserRegisterRepository, UserRepository};
 use DateTimeImmutable;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Uid\Uuid;
@@ -17,7 +17,6 @@ readonly class RegisterService
     public function __construct(
         private UserRepository $userRepository,
         private UserRegisterRepository $userRegisterRepository,
-        private UserSignRepository $userSignRepository,
         private EmailService $emailService,
         private TranslatorInterface $translator,
     ) {
@@ -38,7 +37,7 @@ readonly class RegisterService
             throw new ValidatorException('User is banned.');
         }
 
-        $userRegister = $this->userSignRepository->findLastByUserId($user->id);
+        $userRegister = $this->userRegisterRepository->findLastByUserId($user->id);
 
         if ($userRegister
             && $userRegister->attempt >= 3
@@ -53,9 +52,9 @@ readonly class RegisterService
     /**
      * @throws ValidatorException
      */
-    final public function confirm(string $id, UserCodeDto $dto): Uuid
+    final public function confirm(Uuid $userRegisterId, UserCodeDto $dto): Uuid
     {
-        $userRegister = $this->userRegisterRepository->findLastByUserId($id);
+        $userRegister = $this->userRegisterRepository->findById($userRegisterId);
 
         if (! $userRegister) {
             throw new ValidatorException('User register not found.');
@@ -87,9 +86,9 @@ readonly class RegisterService
     /**
      * @throws TransportExceptionInterface
      */
-    final public function resend(string $id): Uuid
+    final public function resend(Uuid $userRegisterId): Uuid
     {
-        $userRegister = $this->userRegisterRepository->findLastByUserId($id);
+        $userRegister = $this->userRegisterRepository->findById($userRegisterId);
 
         if (! $userRegister) {
             throw new ValidatorException('User register not found.');
@@ -110,7 +109,7 @@ readonly class RegisterService
         return $userRegister->id;
     }
 
-    public function sendEmail(User $user, UserRegister $userRegister): void
+    final public function sendEmail(User $user, UserRegister $userRegister): void
     {
         $locale = $user->language->getLocale();
         $subject = $this->translator->trans('register.code.subject', locale: $locale);

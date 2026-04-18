@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{UserCodeDto, UserEmailDto};
+use App\Dto\{UserEmailDto, UserPasswordDto};
 use App\Entity\{User, UserPasswordReset};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
 use App\Repository\{UserPasswordResetRepository, UserRegisterRepository, UserRepository};
@@ -33,7 +33,7 @@ readonly class PasswordResetService
     {
         $user = $this->userRepository->findByEmail($dto->email);
 
-        if (!$user) {
+        if (! $user) {
             throw new ValidatorException('User not found.');
         }
 
@@ -43,21 +43,24 @@ readonly class PasswordResetService
 
         $userRegister = $this->userRegisterRepository->findLastByUserId($user->id);
 
-        if (!$userRegister || $userRegister->status !== UnauthorizedStatusEnum::Correct) {
+        if (! $userRegister || $userRegister->status !== UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('User account not confirmed.');
         }
 
-        $latest = $this->userPasswordResetRepository->findLastByUserId($user->id);
+        $latestUserPasswordReset = $this->userPasswordResetRepository->findLastByUserId($user->id);
 
-        if ($latest
-            && $latest->attempt >= 3
-            && $latest->status === UnauthorizedStatusEnum::Incorrect
-            && $latest->updatedAt->diff(new DateTimeImmutable())->days < 1) {
+        if ($latestUserPasswordReset
+            && $latestUserPasswordReset->attempt >= 3
+            && $latestUserPasswordReset->status === UnauthorizedStatusEnum::Incorrect
+            && $latestUserPasswordReset->updatedAt->diff(new DateTimeImmutable())->days < 1) {
             throw new ValidatorException('Too many attempts.');
         }
 
         $userPasswordReset = new UserPasswordReset(
-            $user, random_int(100000, 999999), 0, UnauthorizedStatusEnum::NotSent
+            $user,
+            random_int(100000, 999999),
+            0,
+            UnauthorizedStatusEnum::NotSent,
         );
         $this->userPasswordResetRepository->save($userPasswordReset);
 
@@ -69,11 +72,11 @@ readonly class PasswordResetService
     /**
      * @throws ValidatorException
      */
-    final public function confirm(string $userPasswordResetId, UserCodeDto $dto): Uuid
+    final public function confirm(Uuid $userPasswordResetId, UserPasswordDto $dto): Uuid
     {
         $userPasswordReset = $this->userPasswordResetRepository->findById($userPasswordResetId);
 
-        if (!$userPasswordReset) {
+        if (! $userPasswordReset) {
             throw new ValidatorException('User password reset not found.');
         }
 
@@ -94,6 +97,10 @@ readonly class PasswordResetService
             throw new ValidatorException('Invalid code.');
         }
 
+        $user = $userPasswordReset->user;
+        $user->password = $dto->password;
+        $this->userRepository->save($user);
+
         $userPasswordReset->status = UnauthorizedStatusEnum::Correct;
         $this->userPasswordResetRepository->save($userPasswordReset);
 
@@ -103,11 +110,11 @@ readonly class PasswordResetService
     /**
      * @throws TransportExceptionInterface
      */
-    final public function resend(string $id): Uuid
+    final public function resend(Uuid $userPasswordResetId): Uuid
     {
-        $userPasswordReset = $this->userPasswordResetRepository->findLastByUserId($id);
+        $userPasswordReset = $this->userPasswordResetRepository->findById($userPasswordResetId);
 
-        if (!$userPasswordReset) {
+        if (! $userPasswordReset) {
             throw new ValidatorException('User password reset not found.');
         }
 

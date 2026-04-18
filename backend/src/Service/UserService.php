@@ -129,13 +129,13 @@ readonly class UserService
     /**
      * @throws DateMalformedStringException
      */
-    final public function update(string $id, UserUpdateDto $dto): Uuid
+    final public function update(Uuid $userId, UserUpdateDto $dto): Uuid
     {
         if (! $this->authorizationChecker->isGranted(UserRoleVoter::ASSIGN_ADMIN_ROLE, $dto)) {
             throw new ValidatorException('Role not allowed for this user.');
         }
 
-        $user = $this->userRepository->findById($id);
+        $user = $this->userRepository->findById($userId);
 
         if (! $user) {
             throw new ValidatorException('User not found.');
@@ -200,9 +200,9 @@ readonly class UserService
         return $user->id;
     }
 
-    final public function updateStatus(string $id, UserUpdateStatusDto $dto): Uuid
+    final public function updateStatus(Uuid $userId, UserUpdateStatusDto $dto): Uuid
     {
-        $user = $this->userRepository->findById($id);
+        $user = $this->userRepository->findById($userId);
 
         if (! $user) {
             throw new ValidatorException('User not found.');
@@ -214,7 +214,7 @@ readonly class UserService
         return $user->id;
     }
 
-    final public function delete(string $userId): Uuid
+    final public function delete(Uuid $userId): Uuid
     {
         $user = $this->userRepository->findById($userId);
         $user->softDelete();
@@ -228,7 +228,7 @@ readonly class UserService
         return $this->userRepository->findUsers($dto);
     }
 
-    final public function details(string $userId, UserDetailsQueryDto $dto): User
+    final public function details(Uuid $userId, UserDetailsQueryDto $dto): User
     {
         if ($dto->include === $dto::USER_DISCIPLINES) {
             $user = $this->userRepository->findWithDisciplines($userId);

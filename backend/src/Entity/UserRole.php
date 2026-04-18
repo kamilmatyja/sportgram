@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\RoleEnum;
+use App\Repository\UserRoleRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: UserRoleRepository::class)]
 #[ORM\Table(name: 'user_roles')]
 #[ORM\HasLifecycleCallbacks]
 class UserRole
