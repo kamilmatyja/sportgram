@@ -151,6 +151,10 @@ readonly class SignService
 
         $user = $userSign->user;
 
+        if ($user->status === UserStatusEnum::Banned) {
+            throw new ValidatorException('User is banned.');
+        }
+
         return $this->jwtManager->create($user);
     }
 
