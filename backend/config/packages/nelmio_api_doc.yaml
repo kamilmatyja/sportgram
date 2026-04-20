@@ -21,3 +21,4 @@ nelmio_api_doc:
     names:
       - { alias: UserResource, type: App\Resource\UserResource }
       - { alias: DisciplineResource, type: App\Resource\DisciplineResource }
+      - { alias: StoryResource, type: App\Resource\StoryResource }

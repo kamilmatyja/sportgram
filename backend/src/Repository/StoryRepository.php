@@ -2,9 +2,11 @@
 
 namespace App\Repository;
 
+use App\Dto\StoryIndexDto;
 use App\Entity\Story;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class StoryRepository extends ServiceEntityRepository
 {
@@ -18,5 +20,46 @@ class StoryRepository extends ServiceEntityRepository
         $em = $this->getEntityManager();
         $em->persist($story);
         $em->flush();
+    }
+
+    final public function findById(Uuid $storyId): ?Story
+    {
+        /** @var ?Story $story */
+        $story = $this->find($storyId);
+
+        return $story;
+    }
+
+    final public function findStories(StoryIndexDto $dto): array
+    {
+        $qb = $this->createQueryBuilder('s');
+
+        if ($dto->filter->userId) {
+            $qb->andWhere('s.user_id = :user_id')
+                ->setParameter('user_id', '%' . $dto->filter->userId . '%');
+        }
+
+        if ($dto->filter->text) {
+            $qb->andWhere('s.text LIKE :text')
+                ->setParameter('text', '%' . $dto->filter->text . '%');
+        }
+
+        if ($dto->filter->status !== null) {
+            $qb->andWhere('s.status = :status')
+                ->setParameter('status', $dto->filter->status);
+        }
+
+        if ($dto->sort) {
+            [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
+            $qb->orderBy('u.' . $field, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
+        }
+
+        // TODO - zawężyć o listę znajomych
+        // TODO - zawęzić o niewyświetlone
+
+        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
+            ->setMaxResults($dto->limit);
+
+        return $qb->getQuery()->getResult();
     }
 }

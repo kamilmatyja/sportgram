@@ -2,7 +2,7 @@
 
 namespace App\Dto;
 
-use App\Enum\{CountryEnum, GenderEnum};
+use App\Enum\{CountryEnum, GenderEnum, UserStatusEnum};
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -23,4 +23,8 @@ class UserFilterDto
     #[Assert\Choice(callback: [CountryEnum::class, 'values'])]
     #[OA\Property(example: 1)]
     public ?int $country = null;
+
+    #[Assert\Choice(callback: [UserStatusEnum::class, 'values'])]
+    #[OA\Property(example: 1)]
+    public ?int $status = null;
 }

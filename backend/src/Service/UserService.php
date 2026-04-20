@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserIndexDto, UserUpdateDto, UserUpdateStatusDto};
+use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserIndexDto, UserStatusDto, UserUpdateDto};
 use App\Entity\{User, UserDiscipline, UserRegister, UserRole};
 use App\Enum\{ColorEnum,
     CountryEnum,
@@ -200,7 +200,7 @@ readonly class UserService
         return $user->id;
     }
 
-    final public function updateStatus(Uuid $userId, UserUpdateStatusDto $dto): Uuid
+    final public function updateStatus(Uuid $userId, UserStatusDto $dto): Uuid
     {
         $user = $this->userRepository->findById($userId);
 
@@ -217,6 +217,11 @@ readonly class UserService
     final public function delete(Uuid $userId): Uuid
     {
         $user = $this->userRepository->findById($userId);
+
+        if (! $user) {
+            throw new ValidatorException('User not found.');
+        }
+
         $user->softDelete();
         $this->userRepository->save($user);
 

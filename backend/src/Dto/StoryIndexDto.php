@@ -5,7 +5,7 @@ namespace App\Dto;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class UserIndexDto
+class StoryIndexDto
 {
     #[Assert\Positive]
     #[Assert\Range(min: 1, max: 1000)]
@@ -16,15 +16,15 @@ class UserIndexDto
     #[OA\Property(example: 10)]
     public int $limit = 10;
 
-    #[Assert\Regex(pattern: '/^(firstName|lastName|gender|country|birthAt|status)(:(asc|desc))?$/')]
-    #[OA\Property(example: 'firstName:asc')]
+    #[Assert\Regex(pattern: '/^(text|status)(:(asc|desc))?$/')]
+    #[OA\Property(example: 'text:asc')]
     public ?string $sort = null;
 
     #[Assert\Valid]
-    public UserFilterDto $filter;
+    public StoryFilterDto $filter;
 
     public function __construct()
     {
-        $this->filter = new UserFilterDto();
+        $this->filter = new StoryFilterDto();
     }
 }

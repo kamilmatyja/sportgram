@@ -54,12 +54,12 @@ class UserRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('u');
 
         if ($dto->filter->firstName) {
-            $qb->andWhere('u.firstName LIKE :firstName')
+            $qb->andWhere('u.first_name LIKE :firstName')
                 ->setParameter('firstName', '%' . $dto->filter->firstName . '%');
         }
 
         if ($dto->filter->lastName) {
-            $qb->andWhere('u.lastName LIKE :lastName')
+            $qb->andWhere('u.last_name LIKE :lastName')
                 ->setParameter('lastName', '%' . $dto->filter->lastName . '%');
         }
 
@@ -71,6 +71,11 @@ class UserRepository extends ServiceEntityRepository
         if ($dto->filter->country !== null) {
             $qb->andWhere('u.country = :country')
                 ->setParameter('country', $dto->filter->country);
+        }
+
+        if ($dto->filter->status !== null) {
+            $qb->andWhere('u.status = :status')
+                ->setParameter('status', $dto->filter->status);
         }
 
         if ($dto->sort) {

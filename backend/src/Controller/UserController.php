@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserIndexDto, UserUpdateDto, UserUpdateStatusDto};
+use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserIndexDto, UserStatusDto, UserUpdateDto};
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Includes, Item, Ok, Unauthorized};
@@ -75,13 +75,13 @@ class UserController extends AbstractController
     #[IsGranted(RoleEnum::ROLE_ADMINISTRATOR)]
     #[OA\Patch(
         summary: 'Update user status',
-        requestBody: new Body('UserUpdateStatusDto'),
+        requestBody: new Body('UserStatusDto'),
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
         Uuid $id,
         #[MapRequestPayload]
-        UserUpdateStatusDto $dto,
+        UserStatusDto $dto,
         UserService $userService,
     ): JsonResponse {
         $userId = $userService->updateStatus($id, $dto);

@@ -2,15 +2,15 @@
 
 namespace App\Dto;
 
-use App\Enum\UserStatusEnum;
+use App\Enum\ElementStatusEnum;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[OA\Schema(schema: 'UserUpdateStatusDto')]
-class UserUpdateStatusDto
+#[OA\Schema(schema: 'ElementStatusDto')]
+class ElementStatusDto
 {
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [UserStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [ElementStatusEnum::class, 'values'])]
     #[OA\Property(example: 1)]
     public int $status;
 }
