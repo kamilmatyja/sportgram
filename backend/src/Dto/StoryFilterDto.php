@@ -12,7 +12,7 @@ class StoryFilterDto
     #[OA\Property(example: '123e4567-e89b-12d3-a456-426614174000')]
     public ?string $userId = null;
 
-    #[Assert\Length(min: 1, max: 64)]
+    #[Assert\Length(min: 1, max: 2048)]
     #[OA\Property(example: 'Jan')]
     public ?string $text = null;
 

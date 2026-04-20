@@ -108,7 +108,7 @@ class UserController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of users',
-        responses: [new Collection('UserResource'), new BadRequest()],
+        responses: [new Collection('UserResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -127,7 +127,7 @@ class UserController extends AbstractController
     #[OA\Get(
         summary: 'Details of users',
         parameters: [new Includes([UserDetailsQueryDto::USER_DISCIPLINES])],
-        responses: [new Item('UserResource', ['disciplines' => 'DisciplineResource']), new BadRequest()],
+        responses: [new Item('UserResource', ['disciplines' => 'DisciplineResource']), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

@@ -91,7 +91,7 @@ class StoryController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of stories',
-        responses: [new Collection('StoryResource'), new BadRequest()],
+        responses: [new Collection('StoryResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -109,7 +109,7 @@ class StoryController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of stories',
-        responses: [new Item('StoryResource'), new BadRequest()],
+        responses: [new Item('StoryResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
