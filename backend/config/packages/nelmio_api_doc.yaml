@@ -24,3 +24,4 @@ nelmio_api_doc:
       - { alias: StoryResource, type: App\Resource\StoryResource }
       - { alias: PushSubscriptionResource, type: App\Resource\PushSubscriptionResource }
       - { alias: NotificationResource, type: App\Resource\NotificationResource }
+      - { alias: FriendResource, type: App\Resource\FriendResource }

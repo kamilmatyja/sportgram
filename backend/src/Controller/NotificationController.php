@@ -18,7 +18,7 @@ use Symfony\Component\Uid\Uuid;
 
 class NotificationController extends AbstractController
 {
-    #[Route('/api/stories/{id}/status', name: 'notification_update_status', methods: ['PATCH'])]
+    #[Route('/api/notifications/{id}/status', name: 'notification_update_status', methods: ['PATCH'])]
     #[IsGranted(NotificationVoter::NOTIFICATION, subject: 'id')]
     #[OA\Patch(
         summary: 'Update notification status',

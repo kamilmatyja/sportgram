@@ -12,4 +12,9 @@ enum FriendStatusEnum: int
     case Accepted = 2;
     case Rejected = 3;
     case Blocked = 4;
+
+    public static function allowed(): array
+    {
+        return [self::Accepted->value, self::Rejected->value, self::Blocked->value];
+    }
 }
