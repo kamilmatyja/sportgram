@@ -16,7 +16,7 @@ class StoryIndexDto
     #[OA\Property(example: 10)]
     public int $limit = 10;
 
-    #[Assert\Regex(pattern: '/^(text|status)(:(asc|desc))?$/')]
+    #[Assert\Regex(pattern: '/^(text|status|createdAt)(:(asc|desc))?$/')]
     #[OA\Property(example: 'text:asc')]
     public ?string $sort = null;
 

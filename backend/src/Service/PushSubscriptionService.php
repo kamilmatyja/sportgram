@@ -75,4 +75,15 @@ readonly class PushSubscriptionService
 
         return $this->pushSubscriptionRepository->findPushSubscriptions($user->id, $dto);
     }
+
+    final public function details(Uuid $pushSubscriptionId): PushSubscription
+    {
+        $pushSubscription = $this->pushSubscriptionRepository->findById($pushSubscriptionId);
+
+        if (! $pushSubscription) {
+            throw new ValidatorException('Push subscription not found.');
+        }
+
+        return $pushSubscription;
+    }
 }

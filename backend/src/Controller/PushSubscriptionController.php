@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\PushSubscriptionResource;
 use App\Security\Voter\PushSubscriptionVoter;
 use App\Service\PushSubscriptionService;
@@ -82,6 +82,23 @@ class PushSubscriptionController extends AbstractController
         $pushSubscriptions = $service->index($dto);
 
         $data = PushSubscriptionResource::fromEntityCollection($pushSubscriptions);
+
+        return ApiResponse::elements($data);
+    }
+
+    #[Route('/api/push-subscriptions/{id}', name: 'push_subscription_details', methods: ['GET'])]
+    #[IsGranted(PushSubscriptionVoter::PUSH_SUBSCRIPTION, subject: 'id')]
+    #[OA\Get(
+        summary: 'Details of push subscription',
+        responses: [new Item('PushSubscriptionResource'), new BadRequest(), new Unauthorized()],
+    )]
+    final public function details(
+        Uuid $id,
+        PushSubscriptionService $service,
+    ): JsonResponse {
+        $notification = $service->details($id);
+
+        $data = PushSubscriptionResource::fromEntity($notification);
 
         return ApiResponse::elements($data);
     }

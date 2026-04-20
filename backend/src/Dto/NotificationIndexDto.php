@@ -5,7 +5,7 @@ namespace App\Dto;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-class PushSubscriptionIndexDto
+class NotificationIndexDto
 {
     #[Assert\Positive]
     #[Assert\Range(min: 1, max: 1000)]
@@ -16,15 +16,15 @@ class PushSubscriptionIndexDto
     #[OA\Property(example: 10)]
     public int $limit = 10;
 
-    #[Assert\Regex(pattern: '/^(endpoint|createdAt)(:(asc|desc))?$/')]
-    #[OA\Property(example: 'text:asc')]
+    #[Assert\Regex(pattern: '/^(text|status|createdAt)(:(asc|desc))?$/')]
+    #[OA\Property(example: 'createdAt:desc')]
     public ?string $sort = null;
 
     #[Assert\Valid]
-    public PushSubscriptionFilterDto $filter;
+    public NotificationFilterDto $filter;
 
     public function __construct()
     {
-        $this->filter = new PushSubscriptionFilterDto();
+        $this->filter = new NotificationFilterDto();
     }
 }

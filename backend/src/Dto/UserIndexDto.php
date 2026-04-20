@@ -16,7 +16,7 @@ class UserIndexDto
     #[OA\Property(example: 10)]
     public int $limit = 10;
 
-    #[Assert\Regex(pattern: '/^(firstName|lastName|gender|country|birthAt|status)(:(asc|desc))?$/')]
+    #[Assert\Regex(pattern: '/^(firstName|lastName|gender|country|birthAt|status|createdAt)(:(asc|desc))?$/')]
     #[OA\Property(example: 'firstName:asc')]
     public ?string $sort = null;
 

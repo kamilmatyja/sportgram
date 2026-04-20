@@ -80,12 +80,18 @@ class UserRepository extends ServiceEntityRepository
 
         if ($dto->sort) {
             [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-            $qb->orderBy('u.' . $field, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
+            $dbField = $this->camelCaseToSnakeCase($field);
+            $qb->orderBy('u.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
         }
 
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);
 
         return $qb->getQuery()->getResult();
+    }
+
+    private function camelCaseToSnakeCase(string $input): string
+    {
+        return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $input));
     }
 }

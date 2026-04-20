@@ -23,3 +23,4 @@ nelmio_api_doc:
       - { alias: DisciplineResource, type: App\Resource\DisciplineResource }
       - { alias: StoryResource, type: App\Resource\StoryResource }
       - { alias: PushSubscriptionResource, type: App\Resource\PushSubscriptionResource }
+      - { alias: NotificationResource, type: App\Resource\NotificationResource }
