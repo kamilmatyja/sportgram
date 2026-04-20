@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\ElementStatusEnum;
+use App\Repository\TrainingRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TrainingRepository::class)]
 #[ORM\Table(name: 'trainings')]
 #[ORM\HasLifecycleCallbacks]
 class Training

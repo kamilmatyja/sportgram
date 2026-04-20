@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
+use App\Repository\EventDisciplineDistanceRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: EventDisciplineDistanceRepository::class)]
 #[ORM\Table(name: 'event_discipline_distances')]
 #[ORM\HasLifecycleCallbacks]
 class EventDisciplineDistance

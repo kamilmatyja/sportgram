@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\ElementStatusEnum;
+use App\Repository\FeedCommentRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: FeedCommentRepository::class)]
 #[ORM\Table(name: 'feed_comments')]
 #[ORM\HasLifecycleCallbacks]
 class FeedComment

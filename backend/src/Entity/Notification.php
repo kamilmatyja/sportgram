@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\NotificationStatusEnum;
+use App\Repository\NotificationRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: NotificationRepository::class)]
 #[ORM\Table(name: 'notifications')]
 #[ORM\HasLifecycleCallbacks]
 class Notification

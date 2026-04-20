@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\{ColorEnum, ElementStatusEnum};
+use App\Repository\PageRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: PageRepository::class)]
 #[ORM\Table(name: 'pages')]
 #[ORM\HasLifecycleCallbacks]
 class Page

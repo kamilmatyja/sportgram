@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
+use App\Repository\ConversationActivityRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ConversationActivityRepository::class)]
 #[ORM\Table(name: 'conversation_activity')]
 #[ORM\HasLifecycleCallbacks]
 class ConversationActivity

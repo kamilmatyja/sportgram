@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\SaveStatusEnum;
+use App\Repository\GoalParticipantRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: GoalParticipantRepository::class)]
 #[ORM\Table(name: 'goal_participants')]
 #[ORM\HasLifecycleCallbacks]
 class GoalParticipant

@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\ConversationStatusEnum;
+use App\Repository\ConversationRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ConversationRepository::class)]
 #[ORM\Table(name: 'conversations')]
 #[ORM\HasLifecycleCallbacks]
 class Conversation

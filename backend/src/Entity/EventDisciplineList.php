@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\SaveStatusEnum;
+use App\Repository\EventDisciplineListRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: EventDisciplineListRepository::class)]
 #[ORM\Table(name: 'event_discipline_lists')]
 #[ORM\HasLifecycleCallbacks]
 class EventDisciplineList

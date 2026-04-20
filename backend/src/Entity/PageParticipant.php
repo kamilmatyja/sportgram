@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\SaveStatusEnum;
+use App\Repository\PageParticipantRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: PageParticipantRepository::class)]
 #[ORM\Table(name: 'page_participants')]
 #[ORM\HasLifecycleCallbacks]
 class PageParticipant

@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
+use App\Repository\TrainingDisciplineDistanceRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TrainingDisciplineDistanceRepository::class)]
 #[ORM\Table(name: 'training_discipline_distances')]
 #[ORM\HasLifecycleCallbacks]
 class TrainingDisciplineDistance

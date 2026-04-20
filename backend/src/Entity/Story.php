@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\ElementStatusEnum;
+use App\Repository\StoryRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: StoryRepository::class)]
 #[ORM\Table(name: 'stories')]
 #[ORM\HasLifecycleCallbacks]
 class Story

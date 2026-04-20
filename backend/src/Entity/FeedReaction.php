@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\{ElementStatusEnum, FeedReactionEnum};
+use App\Repository\FeedReactionRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: FeedReactionRepository::class)]
 #[ORM\Table(name: 'feed_reactions')]
 #[ORM\HasLifecycleCallbacks]
 class FeedReaction

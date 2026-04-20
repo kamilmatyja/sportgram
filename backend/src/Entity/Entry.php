@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\EntryTypeEnum;
+use App\Repository\EntryRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: EntryRepository::class)]
 #[ORM\Table(name: 'entries')]
 #[ORM\HasLifecycleCallbacks]
 class Entry

@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\FriendStatusEnum;
+use App\Repository\FriendRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: FriendRepository::class)]
 #[ORM\Table(name: 'friends')]
 #[ORM\HasLifecycleCallbacks]
 class Friend

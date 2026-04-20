@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\PageFollowStatusEnum;
+use App\Repository\PageFollowRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: PageFollowRepository::class)]
 #[ORM\Table(name: 'page_follows')]
 #[ORM\HasLifecycleCallbacks]
 class PageFollow

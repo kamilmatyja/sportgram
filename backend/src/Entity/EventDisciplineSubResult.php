@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
+use App\Repository\EventDisciplineSubResultRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: EventDisciplineSubResultRepository::class)]
 #[ORM\Table(name: 'event_discipline_sub_results')]
 #[ORM\HasLifecycleCallbacks]
 class EventDisciplineSubResult

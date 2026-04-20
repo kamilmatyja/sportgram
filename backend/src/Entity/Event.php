@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\ElementStatusEnum;
+use App\Repository\EventRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: EventRepository::class)]
 #[ORM\Table(name: 'events')]
 #[ORM\HasLifecycleCallbacks]
 class Event

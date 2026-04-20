@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\PushSubscriptionStatusEnum;
+use App\Repository\PushSubscriptionRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: PushSubscriptionRepository::class)]
 #[ORM\Table(name: 'push_subscriptions')]
 #[ORM\HasLifecycleCallbacks]
 class PushSubscription
