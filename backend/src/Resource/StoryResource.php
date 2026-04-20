@@ -19,8 +19,8 @@ use OpenApi\Attributes as OA;
     properties: [
         new OA\Property(property: 'id', type: 'string', example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'),
         new OA\Property(property: 'userId', type: 'string', example: '123e4567-e89b-12d3-a456-426614174000'),
-        new OA\Property(property: 'createdAt', type: 'string', format: 'date', example: '2024-01-01'),
-        new OA\Property(property: 'updatedAt', type: 'string', format: 'date', example: '2024-01-02'),
+        new OA\Property(property: 'createdAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
+        new OA\Property(property: 'updatedAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
         new OA\Property(property: 'text', type: 'string', example: 'Ala ma kota'),
         new OA\Property(property: 'photo', type: 'string', format: 'byte'),
         new OA\Property(property: 'status', type: 'integer', example: 1),
@@ -34,8 +34,8 @@ class StoryResource
         return [
             'id' => $story->id?->toString(),
             'userId' => $story->user->id?->toString(),
-            'createdAt' => $story->createdAt->format('Y-m-d'),
-            'updatedAt' => $story->updatedAt->format('Y-m-d'),
+            'createdAt' => $story->createdAt->format('Y-m-d\TH:i:s'),
+            'updatedAt' => $story->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $story->text,
             'photo' => $story->photo,
             'status' => $story->status,

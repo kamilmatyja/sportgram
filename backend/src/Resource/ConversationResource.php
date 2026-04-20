@@ -2,17 +2,18 @@
 
 namespace App\Resource;
 
-use App\Entity\Friend;
+use App\Entity\Conversation;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'FriendResource',
+    schema: 'ConversationResource',
     required: [
         'id',
         'senderUserId',
         'receiverUserId',
         'createdAt',
         'updatedAt',
+        'text',
         'status',
     ],
     properties: [
@@ -21,26 +22,28 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'receiverUserId', type: 'string', example: '123e4567-e89b-12d3-a456-426614174000'),
         new OA\Property(property: 'createdAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
         new OA\Property(property: 'updatedAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
+        new OA\Property(property: 'text', type: 'string', example: 'Hello!'),
         new OA\Property(property: 'status', type: 'integer', example: 1),
     ],
     type: 'object',
 )]
-class FriendResource
+class ConversationResource
 {
-    public static function fromEntity(Friend $friend): array
+    public static function fromEntity(Conversation $conversation): array
     {
         return [
-            'id' => $friend->id?->toString(),
-            'senderUserId' => $friend->senderUser->id?->toString(),
-            'receiverUserId' => $friend->receiverUser->id?->toString(),
-            'createdAt' => $friend->createdAt->format('Y-m-d\TH:i:s'),
-            'updatedAt' => $friend->updatedAt->format('Y-m-d\TH:i:s'),
-            'status' => $friend->status,
+            'id' => $conversation->id?->toString(),
+            'senderUserId' => $conversation->senderUser->id?->toString(),
+            'receiverUserId' => $conversation->receiverUser->id?->toString(),
+            'createdAt' => $conversation->createdAt->format('Y-m-d\TH:i:s'),
+            'updatedAt' => $conversation->updatedAt->format('Y-m-d\TH:i:s'),
+            'text' => $conversation->text,
+            'status' => $conversation->status,
         ];
     }
 
-    public static function fromEntityCollection(array $friends): array
+    public static function fromEntityCollection(array $conversations): array
     {
-        return array_map(fn (Friend $friend) => self::fromEntity($friend), $friends);
+        return array_map(fn (Conversation $conversation) => self::fromEntity($conversation), $conversations);
     }
 }

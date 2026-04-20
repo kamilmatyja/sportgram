@@ -30,9 +30,9 @@ use OpenApi\Attributes as OA;
     ],
     properties: [
         new OA\Property(property: 'id', type: 'string', example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'),
-        new OA\Property(property: 'createdAt', type: 'string', format: 'date', example: '2024-01-01'),
-        new OA\Property(property: 'updatedAt', type: 'string', format: 'date', example: '2024-01-02'),
-        new OA\Property(property: 'birthAt', type: 'string', format: 'date', example: '2000-01-01'),
+        new OA\Property(property: 'createdAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
+        new OA\Property(property: 'updatedAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
+        new OA\Property(property: 'birthAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
         new OA\Property(property: 'firstName', type: 'string', example: 'Jan'),
         new OA\Property(property: 'lastName', type: 'string', example: 'Kowalski'),
         new OA\Property(property: 'gender', type: 'integer', example: 1),
@@ -56,9 +56,9 @@ class UserResource
     {
         $data = [
             'id' => $user->id?->toString(),
-            'createdAt' => $user->createdAt->format('Y-m-d'),
-            'updatedAt' => $user->updatedAt->format('Y-m-d'),
-            'birthAt' => $user->birthAt->format('Y-m-d'),
+            'createdAt' => $user->createdAt->format('Y-m-d\TH:i:s'),
+            'updatedAt' => $user->updatedAt->format('Y-m-d\TH:i:s'),
+            'birthAt' => $user->birthAt->format('Y-m-d\TH:i:s'),
             'firstName' => $user->firstName,
             'lastName' => $user->lastName,
             'gender' => $user->gender->value,
