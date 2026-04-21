@@ -36,7 +36,7 @@ class StoryRepository extends ServiceEntityRepository
 
         if ($dto->filter->userId) {
             $qb->andWhere('s.user_id = :user_id')
-                ->setParameter('user_id', '%' . $dto->filter->userId . '%');
+                ->setParameter('user_id', $dto->filter->userId);
         }
 
         if ($dto->filter->text) {
@@ -44,7 +44,7 @@ class StoryRepository extends ServiceEntityRepository
                 ->setParameter('text', '%' . $dto->filter->text . '%');
         }
 
-        if ($dto->filter->status !== null) {
+        if ($dto->filter->status) {
             $qb->andWhere('s.status = :status')
                 ->setParameter('status', $dto->filter->status);
         }

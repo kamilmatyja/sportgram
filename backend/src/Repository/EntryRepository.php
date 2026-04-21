@@ -34,17 +34,17 @@ class EntryRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('e');
 
-        if ($dto->filter->userId !== null) {
+        if ($dto->filter->userId) {
             $qb->andWhere('e.user_id = :userId')
                 ->setParameter('userId', $dto->filter->userId);
         }
 
-        if ($dto->filter->entityId !== null) {
+        if ($dto->filter->entityId) {
             $qb->andWhere('e.entity_id = :entityId')
                 ->setParameter('entityId', $dto->filter->entityId);
         }
 
-        if ($dto->filter->type !== null) {
+        if ($dto->filter->type) {
             $qb->andWhere('e.type = :type')
                 ->setParameter('type', $dto->filter->type);
         }

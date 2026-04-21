@@ -99,16 +99,16 @@ readonly class GoalService
         $participantsToAdd = array_diff($dto->participants, $currentParticipants);
         $participantsToRemove = array_diff($currentParticipants, $dto->participants);
 
+        /** @var User $user */
+        $user = $this->security->getUser();
+
         /** @var GoalParticipant $participant */
         foreach ($goal->participants as $participant) {
-            if (in_array($participant->role->value, $participantsToRemove, true)) {
+            if ($participant->user->id->toString() !== $user->id->toString() && in_array($participant->user->id->toString(), $participantsToRemove, true)) {
                 $participant->softDelete();
                 $this->goalParticipantRepository->save($participant);
             }
         }
-
-        /** @var User $user */
-        $user = $this->security->getUser();
 
         /** @var string $userId */
         foreach ($participantsToAdd as $userId) {

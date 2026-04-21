@@ -36,19 +36,19 @@ class PushSubscriptionRepository extends ServiceEntityRepository
             ->andWhere('p.user_id = :user_id')
             ->setParameter('user_id', $userId);
 
-        if ($dto->filter->endpoint !== null) {
+        if ($dto->filter->endpoint) {
             $qb->andWhere('p.endpoint = :endpoint')
                 ->setParameter('endpoint', $dto->filter->endpoint);
         }
 
         if ($dto->filter->p256dh) {
-            $qb->andWhere('p.p256dh LIKE :p256dh')
-                ->setParameter('p256dh', '%' . $dto->filter->p256dh . '%');
+            $qb->andWhere('p.p256dh = :p256dh')
+                ->setParameter('p256dh', $dto->filter->p256dh);
         }
 
         if ($dto->filter->auth) {
             $qb->andWhere('p.auth = :auth')
-                ->setParameter('auth', '%' . $dto->filter->auth . '%');
+                ->setParameter('auth', $dto->filter->auth);
         }
 
         if ($dto->sort) {

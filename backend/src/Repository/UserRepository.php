@@ -63,17 +63,17 @@ class UserRepository extends ServiceEntityRepository
                 ->setParameter('lastName', '%' . $dto->filter->lastName . '%');
         }
 
-        if ($dto->filter->gender !== null) {
+        if ($dto->filter->gender) {
             $qb->andWhere('u.gender = :gender')
                 ->setParameter('gender', $dto->filter->gender);
         }
 
-        if ($dto->filter->country !== null) {
+        if ($dto->filter->country) {
             $qb->andWhere('u.country = :country')
                 ->setParameter('country', $dto->filter->country);
         }
 
-        if ($dto->filter->status !== null) {
+        if ($dto->filter->status) {
             $qb->andWhere('u.status = :status')
                 ->setParameter('status', $dto->filter->status);
         }

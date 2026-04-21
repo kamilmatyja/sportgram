@@ -44,7 +44,7 @@ class ConversationRepository extends ServiceEntityRepository
                 ->setParameter('userId', $dto->filter->userId);
         }
 
-        if ($dto->filter->status !== null) {
+        if ($dto->filter->status) {
             $qb->andWhere('c.status = :status')
                 ->setParameter('status', $dto->filter->status);
         }
