@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Page;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class PageRepository extends ServiceEntityRepository
 {
@@ -18,5 +19,13 @@ class PageRepository extends ServiceEntityRepository
         $em = $this->getEntityManager();
         $em->persist($page);
         $em->flush();
+    }
+
+    final public function findById(Uuid $id): ?Page
+    {
+        /** @var ?Page $page */
+        $page = $this->find($id);
+
+        return $page;
     }
 }

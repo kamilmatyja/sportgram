@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Feed;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class FeedRepository extends ServiceEntityRepository
 {
@@ -18,5 +19,13 @@ class FeedRepository extends ServiceEntityRepository
         $em = $this->getEntityManager();
         $em->persist($feed);
         $em->flush();
+    }
+
+    final public function findById(Uuid $id): ?Feed
+    {
+        /** @var ?Feed $feed */
+        $feed = $this->find($id);
+
+        return $feed;
     }
 }

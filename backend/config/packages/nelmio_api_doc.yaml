@@ -27,3 +27,4 @@ nelmio_api_doc:
       - { alias: FriendResource, type: App\Resource\FriendResource }
       - { alias: ConversationActivityResource, type: App\Resource\ConversationActivityResource }
       - { alias: ConversationResource, type: App\Resource\ConversationResource }
+      - { alias: EntryResource, type: App\Resource\EntryResource }

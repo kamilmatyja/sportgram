@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Training;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class TrainingRepository extends ServiceEntityRepository
 {
@@ -18,5 +19,13 @@ class TrainingRepository extends ServiceEntityRepository
         $em = $this->getEntityManager();
         $em->persist($training);
         $em->flush();
+    }
+
+    final public function findById(Uuid $id): ?Training
+    {
+        /** @var ?Training $training */
+        $training = $this->find($id);
+
+        return $training;
     }
 }

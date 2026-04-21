@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Goal;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class GoalRepository extends ServiceEntityRepository
 {
@@ -18,5 +19,13 @@ class GoalRepository extends ServiceEntityRepository
         $em = $this->getEntityManager();
         $em->persist($goal);
         $em->flush();
+    }
+
+    final public function findById(Uuid $id): ?Goal
+    {
+        /** @var ?Goal $goal */
+        $goal = $this->find($id);
+
+        return $goal;
     }
 }
