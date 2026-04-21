@@ -3,7 +3,6 @@
 namespace App\Security\Voter;
 
 use App\Entity\User;
-use App\Enum\RoleEnum;
 use App\Repository\FriendRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\{Vote, Voter};
@@ -32,10 +31,6 @@ class FriendVoter extends Voter
 
         if (! $user instanceof User) {
             return false;
-        }
-
-        if (in_array(RoleEnum::ROLE_ADMINISTRATOR, $user->getRoles(), true)) {
-            return true;
         }
 
         if (! $subject instanceof Uuid) {

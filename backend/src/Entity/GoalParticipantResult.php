@@ -23,7 +23,7 @@ class GoalParticipantResult
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: GoalParticipant::class)]
+    #[ORM\ManyToOne(targetEntity: GoalParticipant::class, inversedBy: 'results')]
     #[ORM\JoinColumn(name: 'goal_participant_id', referencedColumnName: 'id', nullable: false)]
     public GoalParticipant $goalParticipant {
         get {

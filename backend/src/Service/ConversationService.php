@@ -51,9 +51,9 @@ readonly class ConversationService
         return $conversation->id;
     }
 
-    final public function update(Uuid $id, ConversationUpdateDto $dto): Uuid
+    final public function update(Uuid $conversationId, ConversationUpdateDto $dto): Uuid
     {
-        $conversation = $this->conversationRepository->findById($id);
+        $conversation = $this->conversationRepository->findById($conversationId);
 
         if (! $conversation) {
             throw new ValidatorException('Conversation not found.');
@@ -65,9 +65,9 @@ readonly class ConversationService
         return $conversation->id;
     }
 
-    final public function updateStatus(Uuid $id, ConversationStatusDto $dto): Uuid
+    final public function updateStatus(Uuid $conversationId, ConversationStatusDto $dto): Uuid
     {
-        $conversation = $this->conversationRepository->findById($id);
+        $conversation = $this->conversationRepository->findById($conversationId);
 
         if (! $conversation) {
             throw new ValidatorException('Conversation not found.');
@@ -79,9 +79,9 @@ readonly class ConversationService
         return $conversation->id;
     }
 
-    final public function delete(Uuid $id): Uuid
+    final public function delete(Uuid $conversationId): Uuid
     {
-        $conversation = $this->conversationRepository->findById($id);
+        $conversation = $this->conversationRepository->findById($conversationId);
 
         if (! $conversation) {
             throw new ValidatorException('Conversation not found.');
@@ -98,9 +98,9 @@ readonly class ConversationService
         return $this->conversationRepository->findConversations($dto);
     }
 
-    final public function details(Uuid $id): Conversation
+    final public function details(Uuid $conversationId): Conversation
     {
-        $conversation = $this->conversationRepository->findById($id);
+        $conversation = $this->conversationRepository->findById($conversationId);
 
         if (! $conversation) {
             throw new ValidatorException('Conversation not found.');

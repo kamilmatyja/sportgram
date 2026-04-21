@@ -21,10 +21,10 @@ class FeedRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $id): ?Feed
+    final public function findById(Uuid $feedId): ?Feed
     {
         /** @var ?Feed $feed */
-        $feed = $this->find($id);
+        $feed = $this->find($feedId);
 
         return $feed;
     }

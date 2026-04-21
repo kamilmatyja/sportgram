@@ -3,22 +3,23 @@
 namespace App\Security\Voter;
 
 use App\Entity\User;
-use App\Repository\PushSubscriptionRepository;
+use App\Enum\RoleEnum;
+use App\Repository\GoalRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\{Vote, Voter};
 use Symfony\Component\Uid\Uuid;
 
-class PushSubscriptionVoter extends Voter
+class GoalVoter extends Voter
 {
-    public const string PUSH_SUBSCRIPTION = 'PUSH_SUBSCRIPTION';
+    public const string GOAL = 'GOAL';
 
-    public function __construct(private readonly PushSubscriptionRepository $pushSubscriptionRepository)
+    public function __construct(private readonly GoalRepository $goalRepository)
     {
     }
 
     final protected function supports(string $attribute, mixed $subject): bool
     {
-        return $attribute === self::PUSH_SUBSCRIPTION && $subject !== null;
+        return $attribute === self::GOAL && $subject !== null;
     }
 
     final protected function voteOnAttribute(
@@ -33,13 +34,17 @@ class PushSubscriptionVoter extends Voter
             return false;
         }
 
+        if (in_array(RoleEnum::ROLE_ADMINISTRATOR, $user->getRoles(), true)) {
+            return true;
+        }
+
         if (! $subject instanceof Uuid) {
             return false;
         }
 
-        $pushSubscription = $this->pushSubscriptionRepository->findById($subject);
+        $goal = $this->goalRepository->findById($subject);
 
-        if ($pushSubscription && $pushSubscription->user->id?->toString() === $user->id?->toString()) {
+        if ($goal && $goal->user->id?->toString() === $user->id?->toString()) {
             return true;
         }
 

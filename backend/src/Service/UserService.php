@@ -164,6 +164,7 @@ readonly class UserService
         $rolesToAdd = array_diff($dto->roles, $currentRoles);
         $rolesToRemove = array_diff($currentRoles, $dto->roles);
 
+        /** @var UserRole $role */
         foreach ($user->roles as $role) {
             if (in_array($role->role->value, $rolesToRemove, true)) {
                 $role->softDelete();
@@ -171,6 +172,7 @@ readonly class UserService
             }
         }
 
+        /** @var int $role */
         foreach ($rolesToAdd as $role) {
             $roleEntity = new UserRole($user, RoleEnum::from($role));
             $this->userRoleRepository->save($roleEntity);
@@ -183,6 +185,7 @@ readonly class UserService
         $disciplinesToAdd = array_diff($dto->disciplines ?? [], $currentDisciplines);
         $disciplinesToRemove = array_diff($currentDisciplines, $dto->disciplines ?? []);
 
+        /** @var UserDiscipline $discipline */
         foreach ($user->disciplines as $discipline) {
             if (in_array($discipline->discipline->value, $disciplinesToRemove, true)) {
                 $discipline->softDelete();
@@ -190,6 +193,7 @@ readonly class UserService
             }
         }
 
+        /** @var int $discipline */
         foreach ($disciplinesToAdd as $discipline) {
             $disciplineEntity = new UserDiscipline($user, DisciplineEnum::from($discipline));
             $this->userDisciplineRepository->save($disciplineEntity);

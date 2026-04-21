@@ -21,11 +21,35 @@ class GoalRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $id): ?Goal
+    final public function findById(Uuid $goalId): ?Goal
     {
         /** @var ?Goal $goal */
-        $goal = $this->find($id);
+        $goal = $this->find($goalId);
 
         return $goal;
+    }
+
+    final public function findWithParticipants(Uuid $goalId): ?Goal
+    {
+        return $this->createQueryBuilder('g')
+            ->leftJoin('g.participants', 'p')
+            ->addSelect('p')
+            ->where('g.id = :id')
+            ->setParameter('id', $goalId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    final public function findWithParticipantResults(Uuid $goalId): ?Goal
+    {
+        return $this->createQueryBuilder('g')
+            ->leftJoin('g.participants', 'p')
+            ->leftJoin('p.results', 'r')
+            ->addSelect('p')
+            ->addSelect('r')
+            ->where('g.id = :id')
+            ->setParameter('id', $goalId)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

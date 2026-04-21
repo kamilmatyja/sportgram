@@ -127,7 +127,7 @@ class UserController extends AbstractController
     #[OA\Get(
         summary: 'Details of users',
         parameters: [new Includes([UserDetailsQueryDto::USER_DISCIPLINES])],
-        responses: [new Item('UserResource', ['disciplines' => 'DisciplineResource']), new BadRequest(), new Unauthorized()],
+        responses: [new Item('UserResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

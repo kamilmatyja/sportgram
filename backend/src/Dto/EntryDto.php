@@ -20,7 +20,7 @@ class EntryDto
     public int $type;
 
     #[EntryEntityExists]
-    final public function getEntityValidationData(): array
+    protected function getEntityValidationData(): array
     {
         return [
             'entityId' => $this->entityId,

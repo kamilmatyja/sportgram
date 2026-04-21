@@ -21,10 +21,10 @@ class PageRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $id): ?Page
+    final public function findById(Uuid $pageId): ?Page
     {
         /** @var ?Page $page */
-        $page = $this->find($id);
+        $page = $this->find($pageId);
 
         return $page;
     }

@@ -35,9 +35,9 @@ readonly class EntryService
         return $this->entryRepository->findEntries($dto);
     }
 
-    final public function details(Uuid $id): Entry
+    final public function details(Uuid $entryId): Entry
     {
-        $entry = $this->entryRepository->findById($id);
+        $entry = $this->entryRepository->findById($entryId);
 
         if (! $entry) {
             throw new ValidatorException('Entry not found.');

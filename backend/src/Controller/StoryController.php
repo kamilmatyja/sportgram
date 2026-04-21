@@ -3,11 +3,10 @@
 namespace App\Controller;
 
 use App\Dto\{ElementStatusDto, StoryDto, StoryIndexDto};
-use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\StoryResource;
-use App\Security\Voter\StoryVoter;
+use App\Security\Voter\{StoryCreatorVoter, StoryVoter};
 use App\Service\StoryService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -37,7 +36,7 @@ class StoryController extends AbstractController
     }
 
     #[Route('/api/stories/{id}', name: 'story_update', methods: ['PUT'])]
-    #[IsGranted(StoryVoter::STORY, subject: 'id')]
+    #[IsGranted(StoryCreatorVoter::STORY_CREATOR, subject: 'id')]
     #[OA\Put(
         summary: 'Update story',
         requestBody: new Body('StoryDto'),
@@ -55,7 +54,7 @@ class StoryController extends AbstractController
     }
 
     #[Route('/api/stories/{id}/status', name: 'story_update_status', methods: ['PATCH'])]
-    #[IsGranted(RoleEnum::ROLE_ADMINISTRATOR)]
+    #[IsGranted(StoryVoter::STORY)]
     #[OA\Patch(
         summary: 'Update story status',
         requestBody: new Body('ElementStatusDto'),
@@ -73,7 +72,7 @@ class StoryController extends AbstractController
     }
 
     #[Route('/api/stories/{id}', name: 'story_delete', methods: ['DELETE'])]
-    #[IsGranted(StoryVoter::STORY, subject: 'id')]
+    #[IsGranted(StoryCreatorVoter::STORY_CREATOR, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete story',
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],

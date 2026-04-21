@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Enum\{DisciplineEnum, GoalStatusEnum};
 use App\Repository\GoalRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -116,6 +117,9 @@ class Goal
         }
     }
 
+    #[ORM\OneToMany(targetEntity: GoalParticipant::class, mappedBy: 'goal')]
+    public Collection $participants;
+
     public function __construct(
         Feed $feed,
         User $user,
@@ -138,6 +142,7 @@ class Goal
         $this->distance = $distance;
         $this->time = $time;
         $this->status = $status;
+        $this->participants = new ArrayCollection();
     }
 
     #[ORM\PrePersist]

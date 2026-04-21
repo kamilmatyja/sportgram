@@ -27,7 +27,7 @@ readonly class StoryService
             $user,
             $dto->text,
             $dto->photo,
-            ElementStatusEnum::from($dto->status),
+            ElementStatusEnum::Active,
         );
 
         $this->storyRepository->save($story);
@@ -45,7 +45,6 @@ readonly class StoryService
 
         $story->text = $dto->text;
         $story->photo = base64_decode($dto->photo, true);
-        $story->status = ElementStatusEnum::from($dto->status);
 
         $this->storyRepository->save($story);
 

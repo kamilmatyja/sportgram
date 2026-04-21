@@ -54,9 +54,9 @@ readonly class PushSubscriptionService
         return $pushSubscription->id;
     }
 
-    final public function delete(Uuid $id): Uuid
+    final public function delete(Uuid $pushSubscriptionId): Uuid
     {
-        $pushSubscription = $this->pushSubscriptionRepository->findById($id);
+        $pushSubscription = $this->pushSubscriptionRepository->findById($pushSubscriptionId);
 
         if (! $pushSubscription) {
             throw new ValidatorException('Push subscription not found.');

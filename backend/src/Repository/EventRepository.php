@@ -21,10 +21,10 @@ class EventRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $id): ?Event
+    final public function findById(Uuid $eventId): ?Event
     {
         /** @var ?Event $event */
-        $event = $this->find($id);
+        $event = $this->find($eventId);
 
         return $event;
     }

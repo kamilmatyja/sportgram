@@ -2,7 +2,6 @@
 
 namespace App\Dto;
 
-use App\Enum\ElementStatusEnum;
 use App\Validator\{Base64String};
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -19,9 +18,4 @@ class StoryDto
     #[Base64String]
     #[OA\Property(example: 'base64string')]
     public string $photo;
-
-    #[Assert\NotBlank]
-    #[Assert\Choice(callback: [ElementStatusEnum::class, 'allowed'])]
-    #[OA\Property(example: 1)]
-    public int $status;
 }

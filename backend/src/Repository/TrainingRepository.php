@@ -21,10 +21,10 @@ class TrainingRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $id): ?Training
+    final public function findById(Uuid $trainingId): ?Training
     {
         /** @var ?Training $training */
-        $training = $this->find($id);
+        $training = $this->find($trainingId);
 
         return $training;
     }

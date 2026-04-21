@@ -3,22 +3,22 @@
 namespace App\Security\Voter;
 
 use App\Entity\User;
-use App\Repository\PushSubscriptionRepository;
+use App\Repository\StoryRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\{Vote, Voter};
 use Symfony\Component\Uid\Uuid;
 
-class PushSubscriptionVoter extends Voter
+class StoryCreatorVoter extends Voter
 {
-    public const string PUSH_SUBSCRIPTION = 'PUSH_SUBSCRIPTION';
+    public const string STORY_CREATOR = 'STORY_CREATOR';
 
-    public function __construct(private readonly PushSubscriptionRepository $pushSubscriptionRepository)
+    public function __construct(private readonly StoryRepository $storyRepository)
     {
     }
 
     final protected function supports(string $attribute, mixed $subject): bool
     {
-        return $attribute === self::PUSH_SUBSCRIPTION && $subject !== null;
+        return $attribute === self::STORY_CREATOR && $subject !== null;
     }
 
     final protected function voteOnAttribute(
@@ -37,9 +37,9 @@ class PushSubscriptionVoter extends Voter
             return false;
         }
 
-        $pushSubscription = $this->pushSubscriptionRepository->findById($subject);
+        $story = $this->storyRepository->findById($subject);
 
-        if ($pushSubscription && $pushSubscription->user->id?->toString() === $user->id?->toString()) {
+        if ($story && $story->user->id?->toString() === $user->id?->toString()) {
             return true;
         }
 

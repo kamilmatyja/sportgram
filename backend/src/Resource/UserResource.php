@@ -47,6 +47,12 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'backgroundPhoto', type: 'string', format: 'byte'),
         new OA\Property(property: 'bio', type: 'string'),
         new OA\Property(property: 'status', type: 'integer', example: 1),
+        new OA\Property(property: 'roles', type: 'integer', example: 1),
+        new OA\Property(
+            property: 'disciplines',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/DisciplineResource'),
+        ),
     ],
     type: 'object',
 )]
