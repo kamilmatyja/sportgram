@@ -72,7 +72,7 @@ class PageController extends AbstractController
         ElementStatusDto $dto,
         PageService $service,
     ): JsonResponse {
-        $pageId = $service->patchStatus($id, $dto);
+        $pageId = $service->updateStatus($id, $dto);
 
         return ApiResponse::ok($pageId);
     }
@@ -142,7 +142,7 @@ class PageController extends AbstractController
         SaveStatusDto $dto,
         PageService $service,
     ): JsonResponse {
-        $pageParticipantId = $service->patchParticipantStatus($id, $dto);
+        $pageParticipantId = $service->updateParticipantStatus($id, $dto);
 
         return ApiResponse::ok($pageParticipantId);
     }
@@ -178,7 +178,7 @@ class PageController extends AbstractController
         PageFollowStatusDto $dto,
         PageService $service,
     ): JsonResponse {
-        $pageFollowId = $service->patchFollowStatus($id, $dto);
+        $pageFollowId = $service->updateFollowStatus($id, $dto);
 
         return ApiResponse::ok($pageFollowId);
     }

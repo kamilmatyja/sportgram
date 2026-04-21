@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Dto\PageIndexDto;
 use App\Entity\Page;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -27,5 +28,76 @@ class PageRepository extends ServiceEntityRepository
         $page = $this->find($pageId);
 
         return $page;
+    }
+
+    final public function findWithFollowsAndParticipants(Uuid $pageId): ?Page
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.follows', 'f')
+            ->leftJoin('p.participants', 'pa')
+            ->addSelect('f')
+            ->addSelect('pa')
+            ->where('p.id = :pageId')
+            ->setParameter('pageId', $pageId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    final public function findWithFollows(Uuid $pageId): ?Page
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.follows', 'f')
+            ->addSelect('f')
+            ->where('p.id = :pageId')
+            ->setParameter('pageId', $pageId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    final public function findWithParticipants(Uuid $pageId): ?Page
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.participants', 'pa')
+            ->addSelect('pa')
+            ->where('p.id = :pageId')
+            ->setParameter('pageId', $pageId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    final public function findPages(PageIndexDto $dto): array
+    {
+        $qb = $this->createQueryBuilder('p');
+
+        if ($dto->filter->userId) {
+            $qb->andWhere('p.user_id = :userId')
+                ->setParameter('userId', $dto->filter->userId);
+        }
+
+        if ($dto->filter->title) {
+            $qb->andWhere('p.title LIKE :title')
+                ->setParameter('title', '%' . $dto->filter->title . '%');
+        }
+
+        if ($dto->filter->status) {
+            $qb->andWhere('p.status = :status')
+                ->setParameter('status', $dto->filter->status);
+        }
+
+        if ($dto->sort) {
+            [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
+            $dbField = $this->camelCaseToSnakeCase($field);
+            $qb->orderBy('p.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
+        }
+
+        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
+            ->setMaxResults($dto->limit);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    private function camelCaseToSnakeCase(string $input): string
+    {
+        return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $input));
     }
 }
