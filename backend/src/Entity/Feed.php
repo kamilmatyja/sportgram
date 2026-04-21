@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Enum\ElementStatusEnum;
 use App\Repository\FeedRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -73,12 +74,20 @@ class Feed
         }
     }
 
+    #[ORM\OneToMany(targetEntity: FeedComment::class, mappedBy: 'feed')]
+    public Collection $comments;
+
+    #[ORM\OneToMany(targetEntity: FeedReaction::class, mappedBy: 'feed')]
+    public Collection $reactions;
+
     public function __construct(User $user, ?string $text, ?string $photo, ElementStatusEnum $status)
     {
         $this->user = $user;
         $this->text = $text;
         $this->photo = $photo;
         $this->status = $status;
+        $this->comments = new ArrayCollection();
+        $this->reactions = new ArrayCollection();
     }
 
     #[ORM\PrePersist]

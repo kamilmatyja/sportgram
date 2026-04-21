@@ -5,7 +5,12 @@ namespace App\Service;
 use App\Dto\{GoalDetailsQueryDto, GoalDto, GoalIndexDto, GoalStatusDto, SaveStatusDto};
 use App\Entity\{Feed, Goal, GoalParticipant, User};
 use App\Enum\{DisciplineEnum, ElementStatusEnum, GoalStatusEnum, SaveStatusEnum};
-use App\Repository\{FriendRepository, GoalParticipantRepository, GoalParticipantResultRepository, GoalRepository, UserRepository};
+use App\Repository\{FeedRepository,
+    FriendRepository,
+    GoalParticipantRepository,
+    GoalParticipantResultRepository,
+    GoalRepository,
+    UserRepository};
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -20,6 +25,7 @@ readonly class GoalService
         private GoalParticipantResultRepository $goalParticipantResultRepository,
         private UserRepository $userRepository,
         private FriendRepository $friendRepository,
+        private FeedRepository $feedRepository,
         private Security $security,
     ) {
     }
@@ -33,6 +39,8 @@ readonly class GoalService
         $user = $this->security->getUser();
 
         $feed = new Feed($user, null, null, ElementStatusEnum::Draft);
+
+        $this->feedRepository->save($feed);
 
         $goal = new Goal(
             $feed,

@@ -26,7 +26,7 @@ readonly class StoryService
         $story = new Story(
             $user,
             $dto->text,
-            $dto->photo,
+            base64_decode($dto->photo, true),
             ElementStatusEnum::Active,
         );
 

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\FeedComment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class FeedCommentRepository extends ServiceEntityRepository
 {
@@ -18,5 +19,13 @@ class FeedCommentRepository extends ServiceEntityRepository
         $em = $this->getEntityManager();
         $em->persist($feedComment);
         $em->flush();
+    }
+
+    final public function findById(Uuid $feedCommentId): ?FeedComment
+    {
+        /** @var ?FeedComment $feedComment */
+        $feedComment = $this->find($feedCommentId);
+
+        return $feedComment;
     }
 }

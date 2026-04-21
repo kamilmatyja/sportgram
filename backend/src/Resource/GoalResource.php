@@ -41,13 +41,13 @@ class GoalResource
     {
         $data = [
             'id' => $goal->id,
+            'createdAt' => $goal->createdAt->format('Y-m-d\TH:i:s'),
+            'updatedAt' => $goal->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $goal->text,
             'discipline' => $goal->discipline,
             'distance' => $goal->distance,
             'time' => $goal->time,
             'status' => $goal->status,
-            'createdAt' => $goal->createdAt->format(DATE_ATOM),
-            'updatedAt' => $goal->updatedAt->format(DATE_ATOM),
         ];
 
         if ($dto?->include === $dto::GOAL_PARTICIPANTS || $dto?->include === $dto::GOAL_PARTICIPANT_RESULTS) {

@@ -31,3 +31,6 @@ nelmio_api_doc:
       - { alias: GoalResource, type: App\Resource\GoalResource }
       - { alias: GoalParticipantResource, type: App\Resource\GoalParticipantResource }
       - { alias: GoalParticipantResultResource, type: App\Resource\GoalParticipantResultResource }
+      - { alias: FeedResource, type: App\Resource\FeedResource }
+      - { alias: FeedCommentResource, type: App\Resource\FeedCommentResource }
+      - { alias: FeedReactionResource, type: App\Resource\FeedReactionResource }

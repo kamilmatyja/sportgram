@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Resource;
+
+use App\Dto\FeedDetailsQueryDto;
+use App\Entity\{Feed, FeedComment, FeedReaction};
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: 'FeedResource',
+    required: [
+        'id',
+        'userId',
+        'createdAt',
+        'updatedAt',
+        'text',
+        'photo',
+        'status',
+    ],
+    properties: [
+        new OA\Property(property: 'id', type: 'string', example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'),
+        new OA\Property(property: 'userId', type: 'string', example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'),
+        new OA\Property(property: 'createdAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
+        new OA\Property(property: 'updatedAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
+        new OA\Property(property: 'text', type: 'string', example: 'Ala ma kota'),
+        new OA\Property(property: 'status', type: 'integer', example: 1),
+        new OA\Property(
+            property: 'comments',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/FeedCommentResource'),
+        ),
+        new OA\Property(
+            property: 'reactions',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/FeedReactionResource'),
+        ),
+    ],
+    type: 'object',
+)]
+class FeedResource
+{
+    public static function fromEntity(Feed $feed, ?FeedDetailsQueryDto $dto = null): array
+    {
+        $data = [
+            'id' => $feed->id,
+            'userId' => $feed->user->id,
+            'createdAt' => $feed->createdAt->format('Y-m-d\TH:i:s'),
+            'updatedAt' => $feed->updatedAt->format('Y-m-d\TH:i:s'),
+            'text' => $feed->text,
+            'status' => $feed->status,
+        ];
+
+        if ($dto?->include === $dto::FEED_COMMENTS) {
+            $data['comments'] = array_map(
+                fn (FeedComment $comment) => FeedCommentResource::fromEntity($comment),
+                $feed->comments->toArray(),
+            );
+        }
+
+        if ($dto?->include === $dto::FEED_REACTIONS) {
+            $data['reactions'] = array_map(
+                fn (FeedReaction $reaction) => FeedReactionResource::fromEntity($reaction),
+                $feed->reactions->toArray(),
+            );
+        }
+
+        return $data;
+    }
+
+    public static function fromEntityCollection(array $feeds): array
+    {
+        return array_map(fn (Feed $feed) => self::fromEntity($feed), $feeds);
+    }
+}

@@ -23,7 +23,7 @@ class FeedComment
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Feed::class)]
+    #[ORM\ManyToOne(targetEntity: Feed::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false)]
     public Feed $feed {
         get {
