@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Dto\FriendIndexDto;
 use App\Entity\Friend;
+use App\Enum\FriendStatusEnum;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
@@ -57,6 +58,56 @@ class FriendRepository extends ServiceEntityRepository
             ->setMaxResults($dto->limit);
 
         return $qb->getQuery()->getResult();
+    }
+
+    final public function isFriend(Uuid $userId1, Uuid $userId2): bool
+    {
+        $qb = $this->createQueryBuilder('f');
+        $qb->select('COUNT(f.id)')
+            ->where(
+                $qb->expr()->orX(
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('f.sender_user_id', ':userId1'),
+                        $qb->expr()->eq('f.receiver_user_id', ':userId2'),
+                    ),
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('f.sender_user_id', ':userId2'),
+                        $qb->expr()->eq('f.receiver_user_id', ':userId1'),
+                    ),
+                ),
+            )
+            ->andWhere('f.status = :status')
+            ->setParameter('userId1', $userId1)
+            ->setParameter('userId2', $userId2)
+            ->setParameter('status', FriendStatusEnum::Accepted->value);
+
+        $count = $qb->getQuery()->getSingleScalarResult();
+
+        return (int)$count > 0;
+    }
+
+    final public function hasRow(Uuid $userId1, Uuid $userId2): bool
+    {
+        $qb = $this->createQueryBuilder('f');
+        $qb->select('COUNT(f.id)')
+            ->where(
+                $qb->expr()->orX(
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('f.sender_user_id', ':userId1'),
+                        $qb->expr()->eq('f.receiver_user_id', ':userId2'),
+                    ),
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('f.sender_user_id', ':userId2'),
+                        $qb->expr()->eq('f.receiver_user_id', ':userId1'),
+                    ),
+                ),
+            )
+            ->setParameter('userId1', $userId1)
+            ->setParameter('userId2', $userId2);
+
+        $count = $qb->getQuery()->getSingleScalarResult();
+
+        return (int)$count > 0;
     }
 
     private function camelCaseToSnakeCase(string $input): string

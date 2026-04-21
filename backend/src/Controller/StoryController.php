@@ -20,7 +20,7 @@ use Symfony\Component\Uid\Uuid;
 class StoryController extends AbstractController
 {
     #[Route('/api/stories', name: 'story_create', methods: ['POST'])]
-    #[IsGranted(RoleEnum::ROLE_PARTICIPANT)]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create story',
         requestBody: new Body('StoryDto'),

@@ -24,10 +24,16 @@ readonly class FriendService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $receiver = $this->userRepository->findById(Uuid::fromString($dto->receiverUserId));
+        $receiverUserId = Uuid::fromString($dto->receiverUserId);
+
+        $receiver = $this->userRepository->findById($receiverUserId);
 
         if (! $receiver) {
             throw new ValidatorException('Receiver user not found.');
+        }
+
+        if ($this->friendRepository->hasRow($user->id, $receiverUserId)) {
+            throw new ValidatorException('User has friend relationship with this user.');
         }
 
         $friend = new Friend(

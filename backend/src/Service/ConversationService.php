@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Dto\{ConversationCreateDto, ConversationIndexDto, ConversationStatusDto, ConversationUpdateDto};
 use App\Entity\{Conversation, ConversationActivity, User};
 use App\Enum\ConversationStatusEnum;
-use App\Repository\{ConversationActivityRepository, ConversationRepository, UserRepository};
+use App\Repository\{ConversationActivityRepository, ConversationRepository, FriendRepository, UserRepository};
 use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
@@ -17,6 +17,7 @@ readonly class ConversationService
         private ConversationRepository $conversationRepository,
         private ConversationActivityRepository $activityRepository,
         private UserRepository $userRepository,
+        private FriendRepository $friendRepository,
         private Security $security,
     ) {
     }
@@ -26,10 +27,16 @@ readonly class ConversationService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $receiver = $this->userRepository->findById(Uuid::fromString($dto->receiverUserId));
+        $receiverUserId = Uuid::fromString($dto->receiverUserId);
+
+        $receiver = $this->userRepository->findById($receiverUserId);
 
         if (! $receiver) {
             throw new ValidatorException('Receiver user not found.');
+        }
+
+        if (! $this->friendRepository->isFriend($user->id, $receiverUserId)) {
+            throw new ValidatorException('User is not friend.');
         }
 
         $conversation = new Conversation(
@@ -104,14 +111,14 @@ readonly class ConversationService
 
     final public function updateActivityUpdatedAt(Uuid $userReceiverId): Uuid
     {
-        $conversationActivity = $this->activityRepository->findByReceiverUserId($userReceiverId);
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        $conversationActivity = $this->activityRepository->findByUserIds($user->id, $userReceiverId);
 
         if ($conversationActivity) {
             $conversationActivity->updatedAt = new DateTimeImmutable();
         } else {
-            /** @var User $user */
-            $user = $this->security->getUser();
-
             $receiver = $this->userRepository->findById($userReceiverId);
 
             if (! $receiver) {
@@ -126,9 +133,12 @@ readonly class ConversationService
         return $conversationActivity->id;
     }
 
-    final public function detailsActivity(Uuid $userSenderId): ConversationActivity
+    final public function detailsActivity(Uuid $senderUserId): ConversationActivity
     {
-        $conversationActivity = $this->activityRepository->findBySenderUserId($userSenderId);
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        $conversationActivity = $this->activityRepository->findByUserIds($senderUserId, $user->id);
 
         if (! $conversationActivity) {
             throw new ValidatorException('Conversation activity not found.');

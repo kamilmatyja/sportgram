@@ -21,18 +21,13 @@ class ConversationActivityRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findBySenderUserId(Uuid $userId): ?ConversationActivity
+    final public function findByUserIds(Uuid $senderUserId, Uuid $receiverUserId): ?ConversationActivity
     {
         /** @var ?ConversationActivity $conversationActivity */
-        $conversationActivity = $this->findOneBy(['sender_user_id' => $userId], ['created_at' => 'DESC']);
-
-        return $conversationActivity;
-    }
-
-    final public function findByReceiverUserId(Uuid $userId): ?ConversationActivity
-    {
-        /** @var ?ConversationActivity $conversationActivity */
-        $conversationActivity = $this->findOneBy(['receiver_user_id' => $userId], ['created_at' => 'DESC']);
+        $conversationActivity = $this->findOneBy(
+            ['sender_user_id' => $senderUserId, 'receiver_user_id' => $receiverUserId],
+            ['created_at' => 'DESC'],
+        );
 
         return $conversationActivity;
     }

@@ -6,7 +6,7 @@ use App\Dto\{FriendDto, FriendIndexDto, FriendStatusDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\FriendResource;
-use App\Security\Voter\FriendVoter;
+use App\Security\Voter\{FriendSenderVoter, FriendVoter};
 use App\Service\FriendService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -54,7 +54,7 @@ class FriendController extends AbstractController
     }
 
     #[Route('/api/friends/{id}', name: 'friend_delete', methods: ['DELETE'])]
-    #[IsGranted(FriendVoter::FRIEND, subject: 'id')]
+    #[IsGranted(FriendSenderVoter::FRIEND_SENDER, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete friend',
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
