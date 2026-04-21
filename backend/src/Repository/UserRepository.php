@@ -78,6 +78,11 @@ class UserRepository extends ServiceEntityRepository
                 ->setParameter('status', $dto->filter->status);
         }
 
+        if (! empty($dto->filter->userIds)) {
+            $qb->andWhere('u.id IN (:userIds)')
+                ->setParameter('userIds', $dto->filter->userIds);
+        }
+
         if ($dto->sort) {
             [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
             $dbField = $this->camelCaseToSnakeCase($field);

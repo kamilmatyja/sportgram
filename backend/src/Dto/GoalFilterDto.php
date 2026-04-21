@@ -8,9 +8,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class GoalFilterDto
 {
+    #[Assert\NotBlank]
     #[Assert\Uuid]
     #[OA\Property(example: '123e4567-e89b-12d3-a456-426655440000')]
-    public ?string $userId = null;
+    public string $userId;
 
     #[Assert\Length(min: 1, max: 2048)]
     #[OA\Property(example: 'Trening biegowy')]

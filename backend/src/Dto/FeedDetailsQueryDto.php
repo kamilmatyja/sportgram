@@ -12,7 +12,7 @@ class FeedDetailsQueryDto
 
     public const string FEED_REACTIONS = 'feedReactions';
 
-    #[Assert\Choice(choices: [self::FEED_COMMENTS, self::FEED_REACTIONS])]
-    #[OA\Property(description: 'Include related entities', example: self::FEED_COMMENTS)]
-    public ?string $include = null;
+    #[Assert\Choice(choices: [self::FEED_COMMENTS, self::FEED_REACTIONS], multiple: true)]
+    #[OA\Property(description: 'Include related entities', nullable: true)]
+    public array $include = [];
 }

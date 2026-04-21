@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{ElementStatusDto, FeedCommentDto, FeedDetailsQueryDto, FeedDto, FeedIndexDto, FeedReactionDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Includes, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\FeedResource;
 use App\Security\Voter\{FeedCommentCreatorVoter,
     FeedCommentVoter,
@@ -113,11 +113,6 @@ class FeedController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of feeds',
-        parameters: [
-            new Includes(
-                [FeedDetailsQueryDto::FEED_COMMENTS, FeedDetailsQueryDto::FEED_REACTIONS],
-            ),
-        ],
         responses: [new Item('FeedResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(

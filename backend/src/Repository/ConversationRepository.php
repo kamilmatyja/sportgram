@@ -30,18 +30,37 @@ class ConversationRepository extends ServiceEntityRepository
         return $conversation;
     }
 
-    final public function findConversations(ConversationIndexDto $dto): array
+    final public function findConversations(Uuid $userId, ConversationIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('c');
 
         if ($dto->filter->userId) {
             $qb->andWhere(
                 $qb->expr()->orX(
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('c.sender_user_id', ':userId1'),
+                        $qb->expr()->eq('c.receiver_user_id', ':userId2'),
+                    ),
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('c.sender_user_id', ':userId2'),
+                        $qb->expr()->eq('c.receiver_user_id', ':userId1'),
+                    ),
+                ),
+            )
+                ->setParameter('userId1', $userId)
+                ->setParameter('userId2', $dto->filter->userId);
+        } else {
+            $qb->select(
+                'c, DISTINCT CASE WHEN c.sender_user_id = :userId THEN c.receiver_user_id ELSE c.sender_user_id END AS HIDDEN other_user_id',
+            );
+            $qb->andWhere(
+                $qb->expr()->orX(
                     $qb->expr()->eq('c.sender_user_id', ':userId'),
                     $qb->expr()->eq('c.receiver_user_id', ':userId'),
                 ),
             )
-                ->setParameter('userId', $dto->filter->userId);
+                ->setParameter('userId', $userId);
+            $qb->groupBy('other_user_id');
         }
 
         if ($dto->filter->status) {

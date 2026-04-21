@@ -37,6 +37,11 @@ class StoryRepository extends ServiceEntityRepository
         if ($dto->filter->userId) {
             $qb->andWhere('s.user_id = :user_id')
                 ->setParameter('user_id', $dto->filter->userId);
+        } else {
+            $qb->select('s')
+                ->addSelect('MAX(s.created_at) AS HIDDEN max_created_at')
+                ->groupBy('s.user_id');
+            $qb->orderBy('max_created_at', 'DESC');
         }
 
         if ($dto->filter->text) {

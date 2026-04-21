@@ -58,11 +58,9 @@ class GoalRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('g');
 
-        if ($dto->filter->userId) {
-            $qb->leftJoin('g.participants', 'p')
-                ->andWhere('p.user = :userId')
-                ->setParameter('userId', $dto->filter->userId);
-        }
+        $qb->leftJoin('g.participants', 'p')
+            ->andWhere('p.user = :userId')
+            ->setParameter('userId', $dto->filter->userId);
 
         if ($dto->filter->text) {
             $qb->andWhere('g.text LIKE :text')

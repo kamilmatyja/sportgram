@@ -174,9 +174,9 @@ readonly class GoalService
 
     final public function details(Uuid $goalId, GoalDetailsQueryDto $dto): Goal
     {
-        if ($dto->include === $dto::GOAL_PARTICIPANTS) {
+        if (in_array($dto::GOAL_PARTICIPANTS, $dto->include)) {
             $goal = $this->goalRepository->findWithParticipants($goalId);
-        } elseif ($dto->include === $dto::GOAL_PARTICIPANT_RESULTS) {
+        } elseif (in_array($dto::GOAL_PARTICIPANT_RESULTS, $dto->include)) {
             $goal = $this->goalRepository->findWithParticipantResults($goalId);
         } else {
             $goal = $this->goalRepository->findById($goalId);

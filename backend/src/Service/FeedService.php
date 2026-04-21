@@ -84,9 +84,11 @@ readonly class FeedService
 
     final public function details(Uuid $feedId, FeedDetailsQueryDto $dto): Feed
     {
-        if ($dto->include === $dto::FEED_COMMENTS) {
+        if (in_array($dto::FEED_COMMENTS, $dto->include) && in_array($dto::FEED_REACTIONS, $dto->include)) {
+            $feed = $this->feedRepository->findWithCommentsAndReactions($feedId);
+        } elseif (in_array($dto::FEED_COMMENTS, $dto->include)) {
             $feed = $this->feedRepository->findWithComments($feedId);
-        } elseif ($dto->include === $dto::FEED_REACTIONS) {
+        } elseif (in_array($dto::FEED_REACTIONS, $dto->include)) {
             $feed = $this->feedRepository->findWithReactions($feedId);
         } else {
             $feed = $this->feedRepository->findById($feedId);

@@ -81,7 +81,7 @@ class UserResource
             'status' => $user->status,
         ];
 
-        if ($dto?->include === $dto::USER_DISCIPLINES) {
+        if (in_array($dto::USER_DISCIPLINES, $dto->include)) {
             $data['disciplines'] = array_map(
                 fn (UserDiscipline $discipline) => DisciplineResource::fromEntity($discipline),
                 $user->disciplines->toArray(),

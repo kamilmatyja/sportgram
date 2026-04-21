@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserIndexDto, UserStatusDto, UserUpdateDto};
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Includes, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\UserResource;
 use App\Security\Voter\UserVoter;
 use App\Service\UserService;
@@ -126,7 +126,6 @@ class UserController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of users',
-        parameters: [new Includes([UserDetailsQueryDto::USER_DISCIPLINES])],
         responses: [new Item('UserResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(

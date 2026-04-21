@@ -27,4 +27,13 @@ class UserFilterDto
     #[Assert\Choice(callback: [UserStatusEnum::class, 'values'])]
     #[OA\Property(example: 1)]
     public ?int $status = null;
+
+    #[Assert\All([
+        new Assert\NotBlank(),
+        new Assert\Uuid(),
+    ])]
+    #[Assert\Count(min: 1)]
+    #[Assert\Unique]
+    #[OA\Property(example: ['123e4567-e89b-12d3-a456-426614174000', '123e4567-e89b-12d3-a456-426614174000'])]
+    public ?array $userIds = null;
 }

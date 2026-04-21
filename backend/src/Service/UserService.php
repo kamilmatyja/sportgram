@@ -239,7 +239,7 @@ readonly class UserService
 
     final public function details(Uuid $userId, UserDetailsQueryDto $dto): User
     {
-        if ($dto->include === $dto::USER_DISCIPLINES) {
+        if (in_array($dto::USER_DISCIPLINES, $dto->include)) {
             $user = $this->userRepository->findWithDisciplines($userId);
         } else {
             $user = $this->userRepository->findById($userId);

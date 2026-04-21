@@ -95,7 +95,10 @@ readonly class ConversationService
 
     final public function index(ConversationIndexDto $dto): array
     {
-        return $this->conversationRepository->findConversations($dto);
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        return $this->conversationRepository->findConversations($user->id, $dto);
     }
 
     final public function details(Uuid $conversationId): Conversation

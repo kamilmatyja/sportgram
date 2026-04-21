@@ -30,6 +30,19 @@ class FeedRepository extends ServiceEntityRepository
         return $feed;
     }
 
+    final public function findWithCommentsAndReactions(Uuid $feedId): ?Feed
+    {
+        return $this->createQueryBuilder('f')
+            ->leftJoin('f.reactions', 'r')
+            ->leftJoin('f.comments', 'c')
+            ->addSelect('r')
+            ->addSelect('c')
+            ->where('f.id = :id')
+            ->setParameter('id', $feedId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     final public function findWithComments(Uuid $feedId): ?Feed
     {
         return $this->createQueryBuilder('f')

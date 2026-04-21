@@ -35,13 +35,13 @@ class FriendRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('f');
 
-        if ($dto->filter->userId) {
-            $qb->andWhere($qb->expr()->orX(
+        $qb->andWhere(
+            $qb->expr()->orX(
                 $qb->expr()->eq('f.sender_user_id', ':userId'),
                 $qb->expr()->eq('f.receiver_user_id', ':userId'),
-            ))
-                ->setParameter('userId', $dto->filter->userId);
-        }
+            ),
+        )
+            ->setParameter('userId', $dto->filter->userId);
 
         if ($dto->filter->status) {
             $qb->andWhere('f.status = :status')

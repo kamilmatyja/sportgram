@@ -10,7 +10,7 @@ class UserDetailsQueryDto
 {
     public const string USER_DISCIPLINES = 'userDisciplines';
 
-    #[Assert\Choice(choices: [self::USER_DISCIPLINES])]
-    #[OA\Property(description: 'Include related entities', example: self::USER_DISCIPLINES)]
-    public ?string $include = null;
+    #[Assert\Choice(choices: [self::USER_DISCIPLINES], multiple: true)]
+    #[OA\Property(description: 'Include related entities', nullable: true)]
+    public array $include = [];
 }

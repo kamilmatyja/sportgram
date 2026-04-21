@@ -44,7 +44,7 @@ class GoalParticipantResource
             'status' => $goalParticipant->status,
         ];
 
-        if ($dto?->include === $dto::GOAL_PARTICIPANT_RESULTS) {
+        if (in_array($dto::GOAL_PARTICIPANT_RESULTS, $dto->include)) {
             $data['results'] = array_map(
                 fn (GoalParticipantResult $result) => GoalParticipantResultResource::fromEntity($result),
                 $goalParticipant->results->toArray(),

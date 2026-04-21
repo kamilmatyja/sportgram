@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{GoalDetailsQueryDto, GoalDto, GoalIndexDto, GoalStatusDto, SaveStatusDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Includes, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\GoalResource;
 use App\Security\Voter\{GoalCreatorVoter, GoalParticipantResultVoter, GoalParticipantVoter, GoalVoter};
 use App\Service\GoalService;
@@ -108,11 +108,6 @@ class GoalController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of users',
-        parameters: [
-            new Includes(
-                [GoalDetailsQueryDto::GOAL_PARTICIPANTS, GoalDetailsQueryDto::GOAL_PARTICIPANT_RESULTS],
-            ),
-        ],
         responses: [new Item('GoalResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(

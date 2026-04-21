@@ -50,14 +50,14 @@ class FeedResource
             'status' => $feed->status,
         ];
 
-        if ($dto?->include === $dto::FEED_COMMENTS) {
+        if (in_array($dto::FEED_COMMENTS, $dto->include)) {
             $data['comments'] = array_map(
                 fn (FeedComment $comment) => FeedCommentResource::fromEntity($comment),
                 $feed->comments->toArray(),
             );
         }
 
-        if ($dto?->include === $dto::FEED_REACTIONS) {
+        if (in_array($dto::FEED_REACTIONS, $dto->include)) {
             $data['reactions'] = array_map(
                 fn (FeedReaction $reaction) => FeedReactionResource::fromEntity($reaction),
                 $feed->reactions->toArray(),
