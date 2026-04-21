@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\PageParticipant;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class PageParticipantRepository extends ServiceEntityRepository
 {
@@ -18,5 +19,13 @@ class PageParticipantRepository extends ServiceEntityRepository
         $em = $this->getEntityManager();
         $em->persist($pageParticipant);
         $em->flush();
+    }
+
+    final public function findById(Uuid $pageParticipantId): ?PageParticipant
+    {
+        /** @var ?PageParticipant $pageParticipant */
+        $pageParticipant = $this->find($pageParticipantId);
+
+        return $pageParticipant;
     }
 }

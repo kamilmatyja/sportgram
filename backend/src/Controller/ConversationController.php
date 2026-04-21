@@ -121,7 +121,7 @@ class ConversationController extends AbstractController
         return ApiResponse::elements($data);
     }
 
-    #[Route('/api/conversation-activities/users/{id}/updated-at', name: 'conversation_activity_update_updated_at', methods: ['PATCH'])]
+    #[Route('/api/conversation-activitiy-users/{id}/updated-at', name: 'conversation_activity_update_updated_at', methods: ['PATCH'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Patch(
         summary: 'Update conversation activity updated_at',
@@ -136,7 +136,7 @@ class ConversationController extends AbstractController
         return ApiResponse::ok($conversationActivityId);
     }
 
-    #[Route('/api/conversation-activities/users/{id}', name: 'conversation_activity_details', methods: ['GET'])]
+    #[Route('/api/conversation-activity-users/{id}', name: 'conversation_activity_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of conversation activity',

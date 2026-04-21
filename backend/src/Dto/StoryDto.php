@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class StoryDto
 {
     #[Assert\NotBlank]
-    #[Assert\Length(min: 3, max: 64)]
+    #[Assert\Length(min: 1, max: 2048)]
     #[OA\Property(example: 'Ala ma kota')]
     public string $text;
 

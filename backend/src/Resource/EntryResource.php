@@ -30,9 +30,9 @@ class EntryResource
     public static function fromEntity(Entry $entry): array
     {
         return [
-            'id' => $entry->id,
-            'userId' => $entry->user->id,
-            'entityId' => $entry->entityId,
+            'id' => $entry->id?->toString(),
+            'userId' => $entry->user->id?->toString(),
+            'entityId' => $entry->entityId->toString(),
             'createdAt' => $entry->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $entry->updatedAt->format('Y-m-d\TH:i:s'),
             'type' => $entry->type->value,

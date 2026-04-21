@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Enum\{ColorEnum, ElementStatusEnum};
 use App\Repository\PageRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -101,6 +102,12 @@ class Page
         }
     }
 
+    #[ORM\OneToMany(targetEntity: PageFollow::class, mappedBy: 'page')]
+    public Collection $follows;
+
+    #[ORM\OneToMany(targetEntity: PageParticipant::class, mappedBy: 'page')]
+    public Collection $participants;
+
     public function __construct(
         User $user,
         string $title,
@@ -119,6 +126,8 @@ class Page
         $this->backgroundPhoto = $backgroundPhoto;
         $this->color = $color;
         $this->status = $status;
+        $this->follows = new ArrayCollection();
+        $this->participants = new ArrayCollection();
     }
 
     #[ORM\PrePersist]

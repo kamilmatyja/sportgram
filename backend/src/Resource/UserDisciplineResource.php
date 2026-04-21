@@ -6,7 +6,7 @@ use App\Entity\UserDiscipline;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'DisciplineResource',
+    schema: 'UserDisciplineResource',
     required: ['id', 'userId', 'discipline'],
     properties: [
         new OA\Property(property: 'id', type: 'string', example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'),
@@ -15,7 +15,7 @@ use OpenApi\Attributes as OA;
     ],
     type: 'object',
 )]
-class DisciplineResource
+class UserDisciplineResource
 {
     public static function fromEntity(UserDiscipline $discipline): array
     {

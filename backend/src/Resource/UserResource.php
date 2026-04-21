@@ -3,7 +3,7 @@
 namespace App\Resource;
 
 use App\Dto\UserDetailsQueryDto;
-use App\Entity\{User, UserDiscipline};
+use App\Entity\{User, UserDiscipline, UserRole};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -47,11 +47,15 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'backgroundPhoto', type: 'string', format: 'byte'),
         new OA\Property(property: 'bio', type: 'string'),
         new OA\Property(property: 'status', type: 'integer', example: 1),
-        new OA\Property(property: 'roles', type: 'integer', example: 1),
         new OA\Property(
             property: 'disciplines',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/DisciplineResource'),
+            items: new OA\Items(ref: '#/components/schemas/UserDisciplineResource'),
+        ),
+        new OA\Property(
+            property: 'roles',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/UserRoleResource'),
         ),
     ],
     type: 'object',
@@ -78,13 +82,20 @@ class UserResource
             'profilePhoto' => $user->profilePhoto,
             'backgroundPhoto' => $user->backgroundPhoto,
             'bio' => $user->bio,
-            'status' => $user->status,
+            'status' => $user->status->value,
         ];
 
         if (in_array($dto::USER_DISCIPLINES, $dto->include)) {
             $data['disciplines'] = array_map(
-                fn (UserDiscipline $discipline) => DisciplineResource::fromEntity($discipline),
+                fn (UserDiscipline $discipline) => UserDisciplineResource::fromEntity($discipline),
                 $user->disciplines->toArray(),
+            );
+        }
+
+        if (in_array($dto::USER_ROLES, $dto->include)) {
+            $data['roles'] = array_map(
+                fn (UserRole $role) => UserRoleResource::fromEntity($role),
+                $user->roles->toArray(),
             );
         }
 

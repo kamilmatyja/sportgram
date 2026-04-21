@@ -32,13 +32,13 @@ class FeedCommentResource
     public static function fromEntity(FeedComment $feedComment): array
     {
         return [
-            'id' => $feedComment->id,
-            'feedId' => $feedComment->feed->id,
-            'userId' => $feedComment->user->id,
+            'id' => $feedComment->id?->toString(),
+            'feedId' => $feedComment->feed->id?->toString(),
+            'userId' => $feedComment->user->id?->toString(),
             'createdAt' => $feedComment->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $feedComment->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $feedComment->text,
-            'status' => $feedComment->status,
+            'status' => $feedComment->status->value,
         ];
     }
 }

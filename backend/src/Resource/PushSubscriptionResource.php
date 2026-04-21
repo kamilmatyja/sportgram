@@ -42,7 +42,7 @@ class PushSubscriptionResource
             'endpoint' => $pushSubscription->endpoint,
             'p256dh' => $pushSubscription->p256dh,
             'auth' => $pushSubscription->auth,
-            'status' => $pushSubscription->status,
+            'status' => $pushSubscription->status->value,
         ];
     }
 

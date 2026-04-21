@@ -30,11 +30,35 @@ class UserRepository extends ServiceEntityRepository
         return $user;
     }
 
+    final public function findWithDisciplinesAndRoles(Uuid $userId): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.disciplines', 'd')
+            ->leftJoin('u.roles', 'r')
+            ->addSelect('d')
+            ->addSelect('r')
+            ->where('u.id = :id')
+            ->setParameter('id', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     final public function findWithDisciplines(Uuid $userId): ?User
     {
         return $this->createQueryBuilder('u')
             ->leftJoin('u.disciplines', 'd')
             ->addSelect('d')
+            ->where('u.id = :id')
+            ->setParameter('id', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    final public function findWithRoles(Uuid $userId): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.roles', 'r')
+            ->addSelect('r')
             ->where('u.id = :id')
             ->setParameter('id', $userId)
             ->getQuery()

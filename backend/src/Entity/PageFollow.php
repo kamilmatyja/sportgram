@@ -23,7 +23,7 @@ class PageFollow
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Page::class)]
+    #[ORM\ManyToOne(targetEntity: Page::class, inversedBy: 'followers')]
     #[ORM\JoinColumn(name: 'page_id', referencedColumnName: 'id', nullable: false)]
     public Page $page {
         get {

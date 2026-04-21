@@ -37,7 +37,7 @@ class NotificationResource
             'updatedAt' => $notification->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $notification->text,
             'link' => $notification->link,
-            'status' => $notification->status,
+            'status' => $notification->status->value,
         ];
     }
 
