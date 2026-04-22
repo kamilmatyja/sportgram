@@ -2,9 +2,9 @@
 
 namespace App\Dto;
 
-use App\Entity\Goal;
+use App\Entity\{Goal, User};
 use App\Enum\DisciplineEnum;
-use App\Validator\UniqueField;
+use App\Validator\{EntityExistsField, UniqueField};
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -45,13 +45,13 @@ class GoalDto
     #[OA\Property(example: 3600)]
     public ?int $time;
 
-    #[Assert\NotBlank]
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),
+        new EntityExistsField(entity: User::class),
     ])]
     #[Assert\Count(min: 1)]
     #[Assert\Unique]
     #[OA\Property(example: ['123e4567-e89b-12d3-a456-426614174000', '123e4567-e89b-12d3-a456-426614174000'])]
-    public array $participants;
+    public array $participants = [];
 }

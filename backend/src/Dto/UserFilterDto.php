@@ -2,7 +2,9 @@
 
 namespace App\Dto;
 
+use App\Entity\User;
 use App\Enum\{CountryEnum, GenderEnum, UserStatusEnum};
+use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -31,6 +33,7 @@ class UserFilterDto
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),
+        new EntityExistsField(entity: User::class),
     ])]
     #[Assert\Count(min: 1)]
     #[Assert\Unique]

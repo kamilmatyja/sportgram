@@ -9,11 +9,12 @@ use App\Dto\{ElementStatusDto,
     PageFollowStatusDto,
     PageIndexDto,
     SaveStatusDto};
-use App\Entity\{Page, PageFollow, User};
+use App\Entity\{Page, PageFollow, PageParticipant, User};
 use App\Enum\{ColorEnum, ElementStatusEnum, PageFollowStatusEnum, SaveStatusEnum};
-use App\Repository\{PageFollowRepository, PageParticipantRepository, PageRepository};
+use App\Repository\{FriendRepository, PageFollowRepository, PageParticipantRepository, PageRepository, UserRepository};
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 readonly class PageService
 {
@@ -21,6 +22,8 @@ readonly class PageService
         private PageRepository $pageRepository,
         private PageParticipantRepository $pageParticipantRepository,
         private PageFollowRepository $pageFollowRepository,
+        private UserRepository $userRepository,
+        private FriendRepository $friendRepository,
         private Security $security,
     ) {
     }
@@ -43,6 +46,23 @@ readonly class PageService
 
         $this->pageRepository->save($page);
 
+        $pageParticipant = new PageParticipant($page, $user, SaveStatusEnum::Accepted);
+
+        $this->pageParticipantRepository->save($pageParticipant);
+
+        /** @var string $userId */
+        foreach ($dto->participants as $userId) {
+            $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
+
+            if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
+                throw new ValidatorException('User is not friend.');
+            }
+
+            $pageParticipant = new PageParticipant($page, $participantUser, SaveStatusEnum::Pending);
+
+            $this->pageParticipantRepository->save($pageParticipant);
+        }
+
         return $page->id;
     }
 
@@ -56,6 +76,37 @@ readonly class PageService
         $page->profilePhoto = base64_decode($dto->profilePhoto, true);
         $page->backgroundPhoto = base64_decode($dto->backgroundPhoto, true);
         $page->color = ColorEnum::from($dto->color);
+
+        $currentParticipants = array_map(
+            fn (PageParticipant $participant) => $participant->user->id->toString(),
+            $page->participants->toArray(),
+        );
+        $participantsToAdd = array_diff($dto->participants, $currentParticipants);
+        $participantsToRemove = array_diff($currentParticipants, $dto->participants);
+
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        /** @var PageParticipant $participant */
+        foreach ($page->participants as $participant) {
+            if ($participant->user->id->toString() !== $user->id->toString() && in_array($participant->user->id->toString(), $participantsToRemove, true)) {
+                $participant->softDelete();
+                $this->pageParticipantRepository->save($participant);
+            }
+        }
+
+        /** @var string $userId */
+        foreach ($participantsToAdd as $userId) {
+            $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
+
+            if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
+                throw new ValidatorException('User is not friend.');
+            }
+
+            $participantEntity = new PageParticipant($page, $participantUser, SaveStatusEnum::Pending);
+            $this->pageParticipantRepository->save($participantEntity);
+        }
+
         $this->pageRepository->save($page);
 
         return $page->id;

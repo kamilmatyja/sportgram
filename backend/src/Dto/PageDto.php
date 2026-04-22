@@ -2,9 +2,9 @@
 
 namespace App\Dto;
 
-use App\Entity\Page;
+use App\Entity\{Page, User};
 use App\Enum\{ColorEnum};
-use App\Validator\{Base64String, UniqueField};
+use App\Validator\{Base64String, EntityExistsField, UniqueField};
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -42,4 +42,14 @@ class PageDto
     #[Assert\Choice(callback: [ColorEnum::class, 'values'])]
     #[OA\Property(example: 1)]
     public int $color;
+
+    #[Assert\All([
+        new Assert\NotBlank(),
+        new Assert\Uuid(),
+        new EntityExistsField(entity: User::class),
+    ])]
+    #[Assert\Count(min: 1)]
+    #[Assert\Unique]
+    #[OA\Property(example: ['123e4567-e89b-12d3-a456-426614174000', '123e4567-e89b-12d3-a456-426614174000'])]
+    public array $participants = [];
 }
