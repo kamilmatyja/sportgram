@@ -134,7 +134,7 @@ class UserController extends AbstractController
         UserDetailsQueryDto $dto,
         UserService $service,
     ): JsonResponse {
-        $user = $service->details($id, $dto);
+        $user = $service->details($id);
 
         $data = UserResource::fromEntity($user, $dto);
 

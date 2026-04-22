@@ -44,7 +44,7 @@ class FeedCommentVoter extends Voter
 
         $feedComment = $this->feedCommentRepository->findById($subject);
 
-        if ($feedComment->user->id?->toString() === $user->id?->toString()) {
+        if ($feedComment->user->id->toString() === $user->id->toString()) {
             return true;
         }
 

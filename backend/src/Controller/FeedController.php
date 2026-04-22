@@ -121,7 +121,7 @@ class FeedController extends AbstractController
         FeedDetailsQueryDto $dto,
         FeedService $service,
     ): JsonResponse {
-        $feed = $service->details($id, $dto);
+        $feed = $service->details($id);
 
         $data = FeedResource::fromEntity($feed);
 

@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{ElementStatusDto, FeedCommentDto, FeedDetailsQueryDto, FeedDto, FeedIndexDto, FeedReactionDto};
+use App\Dto\{ElementStatusDto, FeedCommentDto, FeedDto, FeedIndexDto, FeedReactionDto};
 use App\Entity\{Feed, FeedComment, FeedReaction, User};
 use App\Enum\{ElementStatusEnum, FeedReactionEnum};
 use App\Repository\{FeedCommentRepository, FeedReactionRepository, FeedRepository, FriendRepository};
@@ -70,11 +70,9 @@ readonly class FeedService
         return $this->feedRepository->findFeeds($dto);
     }
 
-    final public function details(Uuid $feedId, FeedDetailsQueryDto $dto): Feed
+    final public function details(Uuid $feedId): Feed
     {
-        $feed = $this->feedRepository->findById($feedId);
-
-        return $feed;
+        return $this->feedRepository->findById($feedId);
     }
 
     final public function createComment(Uuid $feedId, FeedCommentDto $dto): Uuid

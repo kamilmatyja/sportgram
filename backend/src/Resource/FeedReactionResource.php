@@ -32,9 +32,9 @@ class FeedReactionResource
     public static function fromEntity(FeedReaction $feedReaction): array
     {
         return [
-            'id' => $feedReaction->id?->toString(),
-            'feedId' => $feedReaction->feed->id?->toString(),
-            'userId' => $feedReaction->user->id?->toString(),
+            'id' => $feedReaction->id->toString(),
+            'feedId' => $feedReaction->feed->id->toString(),
+            'userId' => $feedReaction->user->id->toString(),
             'createdAt' => $feedReaction->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $feedReaction->updatedAt->format('Y-m-d\TH:i:s'),
             'reaction' => $feedReaction->reaction->value,

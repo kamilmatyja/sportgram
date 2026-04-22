@@ -44,7 +44,7 @@ class FeedVoter extends Voter
 
         $feed = $this->feedRepository->findById($subject);
 
-        if ($feed->user->id?->toString() === $user->id?->toString()) {
+        if ($feed->user->id->toString() === $user->id->toString()) {
             return true;
         }
 

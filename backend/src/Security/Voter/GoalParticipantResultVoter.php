@@ -37,9 +37,9 @@ class GoalParticipantResultVoter extends Voter
             return false;
         }
 
-        $goal = $this->goalParticipantResultRepository->findById($subject);
+        $goalParticipantResult = $this->goalParticipantResultRepository->findById($subject);
 
-        if ($goal->goalParticipant->user->id?->toString() === $user->id?->toString()) {
+        if ($goalParticipantResult->goalParticipant->user->id->toString() === $user->id->toString()) {
             return true;
         }
 

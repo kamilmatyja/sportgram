@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Enum\ElementStatusEnum;
 use App\Repository\TrainingRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -109,6 +110,9 @@ class Training
         }
     }
 
+    #[ORM\OneToMany(targetEntity: TrainingParticipant::class, mappedBy: 'training')]
+    public Collection $participants;
+
     public function __construct(
         Feed $feed,
         User $user,
@@ -129,6 +133,7 @@ class Training
         $this->link = $link;
         $this->location = $location;
         $this->status = $status;
+        $this->participants = new ArrayCollection();
     }
 
     #[ORM\PrePersist]

@@ -36,9 +36,9 @@ class GoalParticipantResource
     public static function fromEntity(GoalParticipant $goalParticipant, ?GoalDetailsQueryDto $dto = null): array
     {
         $data = [
-            'id' => $goalParticipant->id?->toString(),
-            'goalId' => $goalParticipant->goal->id?->toString(),
-            'userId' => $goalParticipant->user->id?->toString(),
+            'id' => $goalParticipant->id->toString(),
+            'goalId' => $goalParticipant->goal->id->toString(),
+            'userId' => $goalParticipant->user->id->toString(),
             'createdAt' => $goalParticipant->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $goalParticipant->updatedAt->format('Y-m-d\TH:i:s'),
             'status' => $goalParticipant->status->value,

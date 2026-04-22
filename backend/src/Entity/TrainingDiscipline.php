@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Enum\DisciplineEnum;
 use App\Repository\TrainingDisciplineRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -23,7 +24,7 @@ class TrainingDiscipline
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: TrainingParticipant::class)]
+    #[ORM\ManyToOne(targetEntity: TrainingParticipant::class, inversedBy: 'disciplines')]
     #[ORM\JoinColumn(name: 'training_participant_id', referencedColumnName: 'id', nullable: false)]
     public TrainingParticipant $trainingParticipant {
         get {
@@ -59,10 +60,14 @@ class TrainingDiscipline
         }
     }
 
+    #[ORM\OneToMany(targetEntity: TrainingDisciplineDistance::class, mappedBy: 'trainingDiscipline')]
+    public Collection $distances;
+
     public function __construct(TrainingParticipant $trainingParticipant, DisciplineEnum $discipline)
     {
         $this->trainingParticipant = $trainingParticipant;
         $this->discipline = $discipline;
+        $this->distances = new ArrayCollection();
     }
 
     #[ORM\PrePersist]

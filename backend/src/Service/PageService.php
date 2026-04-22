@@ -2,13 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{ElementStatusDto,
-    PageDetailsQueryDto,
-    PageDto,
-    PageFollowIndexDto,
-    PageFollowStatusDto,
-    PageIndexDto,
-    SaveStatusDto};
+use App\Dto\{ElementStatusDto, PageDto, PageFollowIndexDto, PageFollowStatusDto, PageIndexDto, SaveStatusDto};
 use App\Entity\{Page, PageFollow, PageParticipant, User};
 use App\Enum\{ColorEnum, ElementStatusEnum, PageFollowStatusEnum, SaveStatusEnum};
 use App\Repository\{FriendRepository, PageFollowRepository, PageParticipantRepository, PageRepository, UserRepository};
@@ -77,34 +71,34 @@ readonly class PageService
         $page->backgroundPhoto = base64_decode($dto->backgroundPhoto, true);
         $page->color = ColorEnum::from($dto->color);
 
-        $currentParticipants = array_map(
-            fn (PageParticipant $participant) => $participant->user->id->toString(),
-            $page->participants->toArray(),
-        );
-        $participantsToAdd = array_diff($dto->participants, $currentParticipants);
-        $participantsToRemove = array_diff($currentParticipants, $dto->participants);
-
         /** @var User $user */
         $user = $this->security->getUser();
 
-        /** @var PageParticipant $participant */
+        $currentIds = array_map(
+            fn (PageParticipant $p) => $p->user->id->toString(),
+            $page->participants->toArray(),
+        );
+
+        $toAdd = array_diff($dto->participants, $currentIds);
+        $toRemove = array_diff($currentIds, $dto->participants);
+
         foreach ($page->participants as $participant) {
-            if ($participant->user->id->toString() !== $user->id->toString() && in_array($participant->user->id->toString(), $participantsToRemove, true)) {
+            $pid = $participant->user->id->toString();
+            if ($pid !== $user->id->toString() && in_array($pid, $toRemove, true)) {
                 $participant->softDelete();
                 $this->pageParticipantRepository->save($participant);
             }
         }
 
-        /** @var string $userId */
-        foreach ($participantsToAdd as $userId) {
+        foreach ($toAdd as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
-
             if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 
-            $participantEntity = new PageParticipant($page, $participantUser, SaveStatusEnum::Pending);
-            $this->pageParticipantRepository->save($participantEntity);
+            $this->pageParticipantRepository->save(
+                new PageParticipant($page, $participantUser, SaveStatusEnum::Pending),
+            );
         }
 
         $this->pageRepository->save($page);
@@ -137,11 +131,9 @@ readonly class PageService
         return $this->pageRepository->findPages($dto);
     }
 
-    final public function details(Uuid $pageId, PageDetailsQueryDto $dto): Page
+    final public function details(Uuid $pageId): Page
     {
-        $page = $this->pageRepository->findById($pageId);
-
-        return $page;
+        return $this->pageRepository->findById($pageId);
     }
 
     final public function updateParticipantStatus(Uuid $pageParticipantId, SaveStatusDto $dto): Uuid

@@ -40,7 +40,7 @@ class GoalResource
     public static function fromEntity(Goal $goal, ?GoalDetailsQueryDto $dto = null): array
     {
         $data = [
-            'id' => $goal->id?->toString(),
+            'id' => $goal->id->toString(),
             'createdAt' => $goal->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $goal->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $goal->text,
@@ -50,7 +50,7 @@ class GoalResource
             'status' => $goal->status->value,
         ];
 
-        if (in_array($dto::GOAL_PARTICIPANTS, $dto->include) || in_array($dto::GOAL_PARTICIPANT_RESULTS, $dto->include)) {
+        if (in_array($dto::GOAL_PARTICIPANTS, $dto->include)) {
             $data['participants'] = array_map(
                 fn (GoalParticipant $participant) => GoalParticipantResource::fromEntity($participant, $dto),
                 $goal->participants->toArray(),

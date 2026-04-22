@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{GoalDetailsQueryDto, GoalDto, GoalIndexDto, GoalStatusDto, SaveStatusDto};
+use App\Dto\{GoalDto, GoalIndexDto, GoalStatusDto, SaveStatusDto};
 use App\Entity\{Feed, Goal, GoalParticipant, User};
 use App\Enum\{DisciplineEnum, ElementStatusEnum, GoalStatusEnum, SaveStatusEnum};
 use App\Repository\{FeedRepository,
@@ -92,34 +92,34 @@ readonly class GoalService
         $goal->distance = $dto->distance;
         $goal->time = $dto->time;
 
-        $currentParticipants = array_map(
-            fn (GoalParticipant $participant) => $participant->user->id->toString(),
-            $goal->participants->toArray(),
-        );
-        $participantsToAdd = array_diff($dto->participants, $currentParticipants);
-        $participantsToRemove = array_diff($currentParticipants, $dto->participants);
-
         /** @var User $user */
         $user = $this->security->getUser();
 
-        /** @var GoalParticipant $participant */
+        $currentIds = array_map(
+            fn (GoalParticipant $p) => $p->user->id->toString(),
+            $goal->participants->toArray(),
+        );
+
+        $toAdd = array_diff($dto->participants, $currentIds);
+        $toRemove = array_diff($currentIds, $dto->participants);
+
         foreach ($goal->participants as $participant) {
-            if ($participant->user->id->toString() !== $user->id->toString() && in_array($participant->user->id->toString(), $participantsToRemove, true)) {
+            $pid = $participant->user->id->toString();
+            if ($pid !== $user->id->toString() && in_array($pid, $toRemove, true)) {
                 $participant->softDelete();
                 $this->goalParticipantRepository->save($participant);
             }
         }
 
-        /** @var string $userId */
-        foreach ($participantsToAdd as $userId) {
+        foreach ($toAdd as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
-
             if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 
-            $participantEntity = new GoalParticipant($goal, $participantUser, SaveStatusEnum::Pending);
-            $this->goalParticipantRepository->save($participantEntity);
+            $this->goalParticipantRepository->save(
+                new GoalParticipant($goal, $participantUser, SaveStatusEnum::Pending),
+            );
         }
 
         $this->goalRepository->save($goal);
@@ -152,11 +152,9 @@ readonly class GoalService
         return $this->goalRepository->findGoals($dto);
     }
 
-    final public function details(Uuid $goalId, GoalDetailsQueryDto $dto): Goal
+    final public function details(Uuid $goalId): Goal
     {
-        $goal = $this->goalRepository->findById($goalId);
-
-        return $goal;
+        return $this->goalRepository->findById($goalId);
     }
 
     final public function updateParticipantStatus(Uuid $goalParticipantId, SaveStatusDto $dto): Uuid

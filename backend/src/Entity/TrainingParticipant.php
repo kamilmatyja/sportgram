@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Enum\SaveStatusEnum;
 use App\Repository\TrainingParticipantRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -23,7 +24,7 @@ class TrainingParticipant
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Training::class)]
+    #[ORM\ManyToOne(targetEntity: Training::class, inversedBy: 'participants')]
     #[ORM\JoinColumn(name: 'training_id', referencedColumnName: 'id', nullable: false)]
     public Training $training {
         get {
@@ -67,11 +68,15 @@ class TrainingParticipant
         }
     }
 
+    #[ORM\OneToMany(targetEntity: TrainingDiscipline::class, mappedBy: 'trainingParticipant')]
+    public Collection $disciplines;
+
     public function __construct(Training $training, User $user, SaveStatusEnum $status)
     {
         $this->training = $training;
         $this->user = $user;
         $this->status = $status;
+        $this->disciplines = new ArrayCollection();
     }
 
     #[ORM\PrePersist]

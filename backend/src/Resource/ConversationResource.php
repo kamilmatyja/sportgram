@@ -32,9 +32,9 @@ class ConversationResource
     public static function fromEntity(Conversation $conversation): array
     {
         return [
-            'id' => $conversation->id?->toString(),
-            'senderUserId' => $conversation->senderUser->id?->toString(),
-            'receiverUserId' => $conversation->receiverUser->id?->toString(),
+            'id' => $conversation->id->toString(),
+            'senderUserId' => $conversation->senderUser->id->toString(),
+            'receiverUserId' => $conversation->receiverUser->id->toString(),
             'createdAt' => $conversation->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $conversation->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $conversation->text,

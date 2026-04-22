@@ -122,7 +122,7 @@ class PageController extends AbstractController
         PageDetailsQueryDto $dto,
         PageService $service,
     ): JsonResponse {
-        $page = $service->details($id, $dto);
+        $page = $service->details($id);
 
         $data = PageResource::fromEntity($page, $dto);
 

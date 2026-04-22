@@ -39,7 +39,7 @@ class PushSubscriptionVoter extends Voter
 
         $pushSubscription = $this->pushSubscriptionRepository->findById($subject);
 
-        if ($pushSubscription->user->id?->toString() === $user->id?->toString()) {
+        if ($pushSubscription->user->id->toString() === $user->id->toString()) {
             return true;
         }
 

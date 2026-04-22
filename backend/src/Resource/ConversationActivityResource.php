@@ -28,9 +28,9 @@ class ConversationActivityResource
     public static function fromEntity(ConversationActivity $activity): array
     {
         return [
-            'id' => $activity->id?->toString(),
-            'senderUserId' => $activity->senderUser->id?->toString(),
-            'receiverUserId' => $activity->receiverUser->id?->toString(),
+            'id' => $activity->id->toString(),
+            'senderUserId' => $activity->senderUser->id->toString(),
+            'receiverUserId' => $activity->receiverUser->id->toString(),
             'createdAt' => $activity->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $activity->updatedAt->format('Y-m-d\TH:i:s'),
         ];

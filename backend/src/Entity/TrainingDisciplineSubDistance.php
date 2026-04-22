@@ -22,7 +22,7 @@ class TrainingDisciplineSubDistance
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: TrainingDisciplineDistance::class)]
+    #[ORM\ManyToOne(targetEntity: TrainingDisciplineDistance::class, inversedBy: 'subDistances')]
     #[ORM\JoinColumn(name: 'training_discipline_distance_id', referencedColumnName: 'id', nullable: false)]
     public TrainingDisciplineDistance $trainingDisciplineDistance {
         get {

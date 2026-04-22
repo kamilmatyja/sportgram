@@ -65,7 +65,7 @@ class UserResource
     public static function fromEntity(User $user, ?UserDetailsQueryDto $dto = null): array
     {
         $data = [
-            'id' => $user->id?->toString(),
+            'id' => $user->id->toString(),
             'createdAt' => $user->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $user->updatedAt->format('Y-m-d\TH:i:s'),
             'birthAt' => $user->birthAt->format('Y-m-d\TH:i:s'),

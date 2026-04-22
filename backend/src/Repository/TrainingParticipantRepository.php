@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\TrainingParticipant;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class TrainingParticipantRepository extends BaseRepository
 {
@@ -17,5 +18,13 @@ class TrainingParticipantRepository extends BaseRepository
         $em = $this->getEntityManager();
         $em->persist($trainingParticipant);
         $em->flush();
+    }
+
+    final public function findById(Uuid $trainingParticipantId): TrainingParticipant
+    {
+        /** @var ?TrainingParticipant $trainingParticipant */
+        $trainingParticipant = $this->findOrFail($trainingParticipantId);
+
+        return $trainingParticipant;
     }
 }

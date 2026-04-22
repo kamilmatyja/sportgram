@@ -30,9 +30,9 @@ class FriendResource
     public static function fromEntity(Friend $friend): array
     {
         return [
-            'id' => $friend->id?->toString(),
-            'senderUserId' => $friend->senderUser->id?->toString(),
-            'receiverUserId' => $friend->receiverUser->id?->toString(),
+            'id' => $friend->id->toString(),
+            'senderUserId' => $friend->senderUser->id->toString(),
+            'receiverUserId' => $friend->receiverUser->id->toString(),
             'createdAt' => $friend->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $friend->updatedAt->format('Y-m-d\TH:i:s'),
             'status' => $friend->status->value,

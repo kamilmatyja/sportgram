@@ -32,8 +32,8 @@ class StoryResource
     public static function fromEntity(Story $story): array
     {
         return [
-            'id' => $story->id?->toString(),
-            'userId' => $story->user->id?->toString(),
+            'id' => $story->id->toString(),
+            'userId' => $story->user->id->toString(),
             'createdAt' => $story->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $story->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $story->text,

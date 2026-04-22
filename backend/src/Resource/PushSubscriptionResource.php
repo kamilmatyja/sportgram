@@ -35,8 +35,8 @@ class PushSubscriptionResource
     public static function fromEntity(PushSubscription $pushSubscription): array
     {
         return [
-            'id' => $pushSubscription->id?->toString(),
-            'userId' => $pushSubscription->user->id?->toString(),
+            'id' => $pushSubscription->id->toString(),
+            'userId' => $pushSubscription->user->id->toString(),
             'createdAt' => $pushSubscription->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $pushSubscription->updatedAt->format('Y-m-d\TH:i:s'),
             'endpoint' => $pushSubscription->endpoint,

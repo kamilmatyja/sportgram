@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Resource;
+
+use App\Dto\TrainingDetailsQueryDto;
+use App\Entity\{TrainingDisciplineDistance, TrainingDisciplineSubDistance};
+use OpenApi\Attributes as OA;
+
+#[OA\Schema(
+    schema: 'TrainingParticipantDisciplineDistanceResource',
+    required: [
+        'id',
+        'trainingDisciplineId',
+        'discipline',
+    ],
+    properties: [
+        new OA\Property(property: 'id', type: 'string', example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'),
+        new OA\Property(
+            property: 'trainingDisciplineId',
+            type: 'string',
+            example: '123e4567-e89b-12d3-a456-426614174000',
+        ),
+        new OA\Property(property: 'distance', type: 'integer', example: 1),
+        new OA\Property(property: 'time', type: 'integer', example: 1),
+        new OA\Property(
+            property: 'subDistances',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/TrainingParticipantDisciplineSubDistanceResource'),
+        ),
+    ],
+    type: 'object',
+)]
+class TrainingParticipantDisciplineDistanceResource
+{
+    public static function fromEntity(TrainingDisciplineDistance $distance, TrainingDetailsQueryDto $dto): array
+    {
+        $data = [
+            'id' => $distance->id->toString(),
+            'trainingDisciplineId' => $distance->trainingDiscipline->id->toString(),
+            'distance' => $distance->distance,
+            'time' => $distance->time,
+        ];
+
+        if (in_array($dto::TRAINING_PARTICIPANT_DISCIPLINES, $dto->include)) {
+            $data['subDistances'] = array_map(
+                fn (
+                    TrainingDisciplineSubDistance $subDistance,
+                ) => TrainingParticipantDisciplineSubDistanceResource::fromEntity($subDistance),
+                $distance->subDistances->toArray(),
+            );
+        }
+
+        return $data;
+    }
+}

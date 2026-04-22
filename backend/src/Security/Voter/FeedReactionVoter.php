@@ -44,7 +44,7 @@ class FeedReactionVoter extends Voter
 
         $feedReaction = $this->feedReactionRepository->findById($subject);
 
-        if ($feedReaction->user->id?->toString() === $user->id?->toString()) {
+        if ($feedReaction->user->id->toString() === $user->id->toString()) {
             return true;
         }
 

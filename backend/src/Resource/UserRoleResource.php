@@ -20,8 +20,8 @@ class UserRoleResource
     public static function fromEntity(UserRole $role): array
     {
         return [
-            'id' => $role->id?->toString(),
-            'userId' => $role->user->id?->toString(),
+            'id' => $role->id->toString(),
+            'userId' => $role->user->id->toString(),
             'role' => $role->role->value,
         ];
     }

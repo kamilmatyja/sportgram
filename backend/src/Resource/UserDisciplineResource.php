@@ -20,8 +20,8 @@ class UserDisciplineResource
     public static function fromEntity(UserDiscipline $discipline): array
     {
         return [
-            'id' => $discipline->id?->toString(),
-            'userId' => $discipline->user->id?->toString(),
+            'id' => $discipline->id->toString(),
+            'userId' => $discipline->user->id->toString(),
             'discipline' => $discipline->discipline->value,
         ];
     }

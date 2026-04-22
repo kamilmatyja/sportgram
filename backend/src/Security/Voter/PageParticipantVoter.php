@@ -39,7 +39,7 @@ class PageParticipantVoter extends Voter
 
         $pageParticipant = $this->pageParticipantRepository->findById($subject);
 
-        if ($pageParticipant->user->id?->toString() === $user->id?->toString()) {
+        if ($pageParticipant->user->id->toString() === $user->id->toString()) {
             return true;
         }
 

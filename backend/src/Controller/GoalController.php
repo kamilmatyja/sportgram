@@ -116,7 +116,7 @@ class GoalController extends AbstractController
         GoalDetailsQueryDto $dto,
         GoalService $service,
     ): JsonResponse {
-        $goal = $service->details($id, $dto);
+        $goal = $service->details($id);
 
         $data = GoalResource::fromEntity($goal, $dto);
 

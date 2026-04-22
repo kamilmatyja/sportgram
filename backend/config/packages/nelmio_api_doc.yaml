@@ -38,3 +38,11 @@ nelmio_api_doc:
       - { alias: PageResource, type: App\Resource\PageResource }
       - { alias: PageFollowResource, type: App\Resource\PageFollowResource }
       - { alias: PageParticipantResource, type: App\Resource\PageParticipantResource }
+      - { alias: TrainingResource, type: App\Resource\TrainingResource }
+      - { alias: TrainingParticipantResource, type: App\Resource\TrainingParticipantResource }
+      - { alias: TrainingParticipantDisciplineResource, type: App\Resource\TrainingParticipantDisciplineResource }
+      - { alias: TrainingParticipantDisciplineDistanceResource, type: App\Resource\TrainingParticipantDisciplineDistanceResource }
+      - { alias: TrainingParticipantDisciplineSubDistanceResource, type: App\Resource\TrainingParticipantDisciplineSubDistanceResource }
+      - { alias: TrainingDisciplineDto, type: App\Dto\TrainingDisciplineDto }
+      - { alias: TrainingDisciplineDistanceDto, type: App\Dto\TrainingDisciplineDistanceDto }
+      - { alias: TrainingDisciplineSubDistanceDto, type: App\Dto\TrainingDisciplineSubDistanceDto }

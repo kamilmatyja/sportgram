@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserIndexDto, UserStatusDto, UserUpdateDto};
+use App\Dto\{UserCreateDto, UserCreateNanoDto, UserIndexDto, UserStatusDto, UserUpdateDto};
 use App\Entity\{User, UserDiscipline, UserRegister, UserRole};
 use App\Enum\{ColorEnum,
     CountryEnum,
@@ -71,7 +71,7 @@ readonly class UserService
             $this->userRoleRepository->save($role);
         }
 
-        foreach ($dto->disciplines ?? [] as $discipline) {
+        foreach ($dto->disciplines as $discipline) {
             $discipline = new UserDiscipline($user, DisciplineEnum::from($discipline));
             $this->userDisciplineRepository->save($discipline);
         }
@@ -152,45 +152,30 @@ readonly class UserService
         $user->backgroundPhoto = base64_decode($dto->backgroundPhoto, true);
         $user->bio = $dto->bio;
 
-        if (! $dto->password) {
+        if (! empty($dto->password)) {
             $user->password = $this->hasher->hashPassword($user, $dto->password);
         }
 
-        $currentRoles = array_map(fn (UserRole $role) => $role->role->value, $user->roles->toArray());
-        $rolesToAdd = array_diff($dto->roles, $currentRoles);
-        $rolesToRemove = array_diff($currentRoles, $dto->roles);
-
         /** @var UserRole $role */
         foreach ($user->roles as $role) {
-            if (in_array($role->role->value, $rolesToRemove, true)) {
-                $role->softDelete();
-                $this->userRoleRepository->save($role);
-            }
+            $role->softDelete();
+            $this->userRoleRepository->save($role);
         }
 
         /** @var int $role */
-        foreach ($rolesToAdd as $role) {
+        foreach ($dto->roles as $role) {
             $roleEntity = new UserRole($user, RoleEnum::from($role));
             $this->userRoleRepository->save($roleEntity);
         }
 
-        $currentDisciplines = array_map(
-            fn (UserDiscipline $discipline) => $discipline->discipline->value,
-            $user->disciplines->toArray(),
-        );
-        $disciplinesToAdd = array_diff($dto->disciplines ?? [], $currentDisciplines);
-        $disciplinesToRemove = array_diff($currentDisciplines, $dto->disciplines ?? []);
-
         /** @var UserDiscipline $discipline */
         foreach ($user->disciplines as $discipline) {
-            if (in_array($discipline->discipline->value, $disciplinesToRemove, true)) {
-                $discipline->softDelete();
-                $this->userDisciplineRepository->save($discipline);
-            }
+            $discipline->softDelete();
+            $this->userDisciplineRepository->save($discipline);
         }
 
         /** @var int $discipline */
-        foreach ($disciplinesToAdd as $discipline) {
+        foreach ($dto->disciplines as $discipline) {
             $disciplineEntity = new UserDiscipline($user, DisciplineEnum::from($discipline));
             $this->userDisciplineRepository->save($disciplineEntity);
         }
@@ -225,10 +210,8 @@ readonly class UserService
         return $this->userRepository->findUsers($dto);
     }
 
-    final public function details(Uuid $userId, UserDetailsQueryDto $dto): User
+    final public function details(Uuid $userId): User
     {
-        $user = $this->userRepository->findById($userId);
-
-        return $user;
+        return $this->userRepository->findById($userId);
     }
 }

@@ -39,7 +39,7 @@ class NotificationVoter extends Voter
 
         $notification = $this->notificationRepository->findById($subject);
 
-        if ($notification->user->id?->toString() === $user->id?->toString()) {
+        if ($notification->user->id->toString() === $user->id->toString()) {
             return true;
         }
 

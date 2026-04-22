@@ -38,5 +38,5 @@ class UserFilterDto
     #[Assert\Count(min: 1)]
     #[Assert\Unique]
     #[OA\Property(example: ['123e4567-e89b-12d3-a456-426614174000', '123e4567-e89b-12d3-a456-426614174000'])]
-    public ?array $userIds = null;
+    public array $userIds = [];
 }
