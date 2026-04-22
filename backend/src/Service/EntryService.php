@@ -8,7 +8,6 @@ use App\Enum\EntryTypeEnum;
 use App\Repository\EntryRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
-use Symfony\Component\Validator\Exception\ValidatorException;
 
 readonly class EntryService
 {
@@ -37,12 +36,6 @@ readonly class EntryService
 
     final public function details(Uuid $entryId): Entry
     {
-        $entry = $this->entryRepository->findById($entryId);
-
-        if (! $entry) {
-            throw new ValidatorException('Entry not found.');
-        }
-
-        return $entry;
+        return $this->entryRepository->findById($entryId);
     }
 }

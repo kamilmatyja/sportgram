@@ -3,11 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Training;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class TrainingRepository extends ServiceEntityRepository
+class TrainingRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -21,10 +20,10 @@ class TrainingRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $trainingId): ?Training
+    final public function findById(Uuid $trainingId): Training
     {
         /** @var ?Training $training */
-        $training = $this->find($trainingId);
+        $training = $this->findOrFail($trainingId);
 
         return $training;
     }

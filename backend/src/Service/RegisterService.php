@@ -56,10 +56,6 @@ readonly class RegisterService
     {
         $userRegister = $this->userRegisterRepository->findById($userRegisterId);
 
-        if (! $userRegister) {
-            throw new ValidatorException('User register not found.');
-        }
-
         if ($userRegister->status === UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Code already used.');
         }
@@ -89,10 +85,6 @@ readonly class RegisterService
     final public function resend(Uuid $userRegisterId): Uuid
     {
         $userRegister = $this->userRegisterRepository->findById($userRegisterId);
-
-        if (! $userRegister) {
-            throw new ValidatorException('User register not found.');
-        }
 
         if ($userRegister->status === UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Code already used.');

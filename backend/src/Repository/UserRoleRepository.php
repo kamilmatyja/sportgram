@@ -3,10 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\UserRole;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class UserRoleRepository extends ServiceEntityRepository
+class UserRoleRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

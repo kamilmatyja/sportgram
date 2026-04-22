@@ -4,11 +4,10 @@ namespace App\Repository;
 
 use App\Dto\PushSubscriptionIndexDto;
 use App\Entity\PushSubscription;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class PushSubscriptionRepository extends ServiceEntityRepository
+class PushSubscriptionRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -22,10 +21,10 @@ class PushSubscriptionRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $pushSubscriptionId): ?PushSubscription
+    final public function findById(Uuid $pushSubscriptionId): PushSubscription
     {
         /** @var ?PushSubscription $pushSubscription */
-        $pushSubscription = $this->find($pushSubscriptionId);
+        $pushSubscription = $this->findOrFail($pushSubscriptionId);
 
         return $pushSubscription;
     }

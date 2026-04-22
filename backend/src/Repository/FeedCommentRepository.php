@@ -3,11 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\FeedComment;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class FeedCommentRepository extends ServiceEntityRepository
+class FeedCommentRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -21,10 +20,10 @@ class FeedCommentRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $feedCommentId): ?FeedComment
+    final public function findById(Uuid $feedCommentId): FeedComment
     {
         /** @var ?FeedComment $feedComment */
-        $feedComment = $this->find($feedCommentId);
+        $feedComment = $this->findOrFail($feedCommentId);
 
         return $feedComment;
     }

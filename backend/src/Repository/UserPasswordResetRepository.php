@@ -3,11 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\{UserPasswordReset};
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class UserPasswordResetRepository extends ServiceEntityRepository
+class UserPasswordResetRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -21,10 +20,10 @@ class UserPasswordResetRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $userPasswordResetId): ?UserPasswordReset
+    final public function findById(Uuid $userPasswordResetId): UserPasswordReset
     {
         /** @var ?UserPasswordReset $userPasswordReset */
-        $userPasswordReset = $this->find($userPasswordResetId);
+        $userPasswordReset = $this->findOrFail($userPasswordResetId);
 
         return $userPasswordReset;
     }

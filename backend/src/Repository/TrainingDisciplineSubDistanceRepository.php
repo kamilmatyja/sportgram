@@ -3,10 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\TrainingDisciplineSubDistance;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class TrainingDisciplineSubDistanceRepository extends ServiceEntityRepository
+class TrainingDisciplineSubDistanceRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

@@ -4,11 +4,10 @@ namespace App\Repository;
 
 use App\Dto\StoryIndexDto;
 use App\Entity\Story;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class StoryRepository extends ServiceEntityRepository
+class StoryRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -22,10 +21,10 @@ class StoryRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $storyId): ?Story
+    final public function findById(Uuid $storyId): Story
     {
         /** @var ?Story $story */
-        $story = $this->find($storyId);
+        $story = $this->findOrFail($storyId);
 
         return $story;
     }

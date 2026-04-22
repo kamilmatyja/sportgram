@@ -3,7 +3,15 @@
 namespace App\Validator;
 
 use App\Enum\EntryTypeEnum;
-use App\Repository\{ConversationRepository, EventRepository, FeedRepository, GoalRepository, PageRepository, StoryRepository, TrainingRepository, UserRepository};
+use App\Repository\{ConversationRepository,
+    EventRepository,
+    FeedRepository,
+    GoalRepository,
+    PageRepository,
+    StoryRepository,
+    TrainingRepository,
+    UserRepository};
+use Doctrine\ORM\EntityNotFoundException;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\{Constraint, ConstraintValidator};
 use Symfony\Component\Validator\Exception\{UnexpectedTypeException, UnexpectedValueException};
@@ -35,18 +43,18 @@ class EntryEntityExistsValidator extends ConstraintValidator
         $entityId = Uuid::fromString($value['entityId']);
         $type = EntryTypeEnum::from($value['type']);
 
-        $entityExists = match ($type) {
-            EntryTypeEnum::User => (bool) $this->userRepository->findById($entityId),
-            EntryTypeEnum::Story => (bool) $this->storyRepository->findById($entityId),
-            EntryTypeEnum::Conversation => (bool) $this->conversationRepository->findById($entityId),
-            EntryTypeEnum::Feed => (bool) $this->feedRepository->findById($entityId),
-            EntryTypeEnum::Goal => (bool) $this->goalRepository->findById($entityId),
-            EntryTypeEnum::Page => (bool) $this->pageRepository->findById($entityId),
-            EntryTypeEnum::Event => (bool) $this->eventRepository->findById($entityId),
-            EntryTypeEnum::Training => (bool) $this->trainingRepository->findById($entityId),
-        };
-
-        if (! $entityExists) {
+        try {
+            match ($type) {
+                EntryTypeEnum::User => $this->userRepository->findById($entityId),
+                EntryTypeEnum::Story => $this->storyRepository->findById($entityId),
+                EntryTypeEnum::Conversation => $this->conversationRepository->findById($entityId),
+                EntryTypeEnum::Feed => $this->feedRepository->findById($entityId),
+                EntryTypeEnum::Goal => $this->goalRepository->findById($entityId),
+                EntryTypeEnum::Page => $this->pageRepository->findById($entityId),
+                EntryTypeEnum::Event => $this->eventRepository->findById($entityId),
+                EntryTypeEnum::Training => $this->trainingRepository->findById($entityId),
+            };
+        } catch (EntityNotFoundException) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ entityId }}', $entityId)
                 ->setParameter('{{ type }}', $type->name)

@@ -44,7 +44,7 @@ readonly class PasswordResetService
         $userRegister = $this->userRegisterRepository->findLastByUserId($user->id);
 
         if (! $userRegister || $userRegister->status !== UnauthorizedStatusEnum::Correct) {
-            throw new ValidatorException('User account not confirmed.');
+            throw new ValidatorException('User account is not confirmed.');
         }
 
         $latestUserPasswordReset = $this->userPasswordResetRepository->findLastByUserId($user->id);
@@ -75,10 +75,6 @@ readonly class PasswordResetService
     final public function confirm(Uuid $userPasswordResetId, UserPasswordDto $dto): Uuid
     {
         $userPasswordReset = $this->userPasswordResetRepository->findById($userPasswordResetId);
-
-        if (! $userPasswordReset) {
-            throw new ValidatorException('User password reset not found.');
-        }
 
         if ($userPasswordReset->status === UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Code already used.');
@@ -113,10 +109,6 @@ readonly class PasswordResetService
     final public function resend(Uuid $userPasswordResetId): Uuid
     {
         $userPasswordReset = $this->userPasswordResetRepository->findById($userPasswordResetId);
-
-        if (! $userPasswordReset) {
-            throw new ValidatorException('User password reset not found.');
-        }
 
         if ($userPasswordReset->status === UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Code already used.');

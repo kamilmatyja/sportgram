@@ -39,7 +39,7 @@ class PageFollowVoter extends Voter
 
         $pageFollow = $this->pageFollowRepository->findById($subject);
 
-        if ($pageFollow && $pageFollow->user->id?->toString() === $user->id?->toString()) {
+        if ($pageFollow->user->id?->toString() === $user->id?->toString()) {
             return true;
         }
 

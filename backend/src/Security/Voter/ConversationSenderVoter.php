@@ -39,7 +39,7 @@ class ConversationSenderVoter extends Voter
 
         $conversation = $this->conversationRepository->findById($subject);
 
-        if ($conversation && $conversation->senderUser->id?->toString() === $user->id?->toString()) {
+        if ($conversation->senderUser->id?->toString() === $user->id?->toString()) {
             return true;
         }
 

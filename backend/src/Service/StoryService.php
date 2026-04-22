@@ -8,7 +8,6 @@ use App\Enum\{ElementStatusEnum};
 use App\Repository\{StoryRepository};
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
-use Symfony\Component\Validator\Exception\ValidatorException;
 
 readonly class StoryService
 {
@@ -39,10 +38,6 @@ readonly class StoryService
     {
         $story = $this->storyRepository->findById($storyId);
 
-        if (! $story) {
-            throw new ValidatorException('Story not found.');
-        }
-
         $story->text = $dto->text;
         $story->photo = base64_decode($dto->photo, true);
 
@@ -55,10 +50,6 @@ readonly class StoryService
     {
         $story = $this->storyRepository->findById($storyId);
 
-        if (! $story) {
-            throw new ValidatorException('Story not found.');
-        }
-
         $story->status = ElementStatusEnum::from($dto->status);
         $this->storyRepository->save($story);
 
@@ -68,10 +59,6 @@ readonly class StoryService
     final public function delete(Uuid $storyId): Uuid
     {
         $story = $this->storyRepository->findById($storyId);
-
-        if (! $story) {
-            throw new ValidatorException('Story not found.');
-        }
 
         $story->softDelete();
         $this->storyRepository->save($story);
@@ -87,10 +74,6 @@ readonly class StoryService
     final public function details(Uuid $storyId): Story
     {
         $story = $this->storyRepository->findById($storyId);
-
-        if (! $story) {
-            throw new ValidatorException('Story not found.');
-        }
 
         return $story;
     }

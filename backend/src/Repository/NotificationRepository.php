@@ -4,11 +4,10 @@ namespace App\Repository;
 
 use App\Dto\NotificationIndexDto;
 use App\Entity\Notification;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class NotificationRepository extends ServiceEntityRepository
+class NotificationRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -22,10 +21,10 @@ class NotificationRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $notificationId): ?Notification
+    final public function findById(Uuid $notificationId): Notification
     {
         /** @var ?Notification $notification */
-        $notification = $this->find($notificationId);
+        $notification = $this->findOrFail($notificationId);
 
         return $notification;
     }

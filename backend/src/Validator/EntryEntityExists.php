@@ -5,7 +5,7 @@ namespace App\Validator;
 use Attribute;
 use Symfony\Component\Validator\Constraint;
 
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
 class EntryEntityExists extends Constraint
 {
     public string $message = 'Entity for type {{ type }} and id {{ entityId }} does not exist.';

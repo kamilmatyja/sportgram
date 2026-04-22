@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\{Constraint, ConstraintValidator};
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
-class UniqueFieldValidator extends ConstraintValidator
+class EntityExistsValidator extends ConstraintValidator
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -25,9 +25,7 @@ class UniqueFieldValidator extends ConstraintValidator
 
         $repo = $this->em->getRepository($constraint->entity);
 
-        $found = $repo->findOneBy([
-            $constraint->field => $value,
-        ]);
+        $found = $repo->find($value);
 
         if (! $found) {
             $this->context

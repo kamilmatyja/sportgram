@@ -2,7 +2,9 @@
 
 namespace App\Dto;
 
+use App\Entity\User;
 use App\Enum\{DisciplineEnum, GoalStatusEnum};
+use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -10,6 +12,7 @@ class GoalFilterDto
 {
     #[Assert\NotBlank]
     #[Assert\Uuid]
+    #[EntityExistsField(entity: User::class)]
     #[OA\Property(example: '123e4567-e89b-12d3-a456-426655440000')]
     public string $userId;
 

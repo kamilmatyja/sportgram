@@ -31,10 +31,6 @@ readonly class ConversationService
 
         $receiver = $this->userRepository->findById($receiverUserId);
 
-        if (! $receiver) {
-            throw new ValidatorException('Receiver user not found.');
-        }
-
         if (! $this->friendRepository->isFriend($user->id, $receiverUserId)) {
             throw new ValidatorException('User is not friend.');
         }
@@ -55,10 +51,6 @@ readonly class ConversationService
     {
         $conversation = $this->conversationRepository->findById($conversationId);
 
-        if (! $conversation) {
-            throw new ValidatorException('Conversation not found.');
-        }
-
         $conversation->text = $dto->text;
         $this->conversationRepository->save($conversation);
 
@@ -69,10 +61,6 @@ readonly class ConversationService
     {
         $conversation = $this->conversationRepository->findById($conversationId);
 
-        if (! $conversation) {
-            throw new ValidatorException('Conversation not found.');
-        }
-
         $conversation->status = ConversationStatusEnum::from($dto->status);
         $this->conversationRepository->save($conversation);
 
@@ -82,10 +70,6 @@ readonly class ConversationService
     final public function delete(Uuid $conversationId): Uuid
     {
         $conversation = $this->conversationRepository->findById($conversationId);
-
-        if (! $conversation) {
-            throw new ValidatorException('Conversation not found.');
-        }
 
         $conversation->softDelete();
         $this->conversationRepository->save($conversation);
@@ -105,10 +89,6 @@ readonly class ConversationService
     {
         $conversation = $this->conversationRepository->findById($conversationId);
 
-        if (! $conversation) {
-            throw new ValidatorException('Conversation not found.');
-        }
-
         return $conversation;
     }
 
@@ -123,10 +103,6 @@ readonly class ConversationService
             $conversationActivity->updatedAt = new DateTimeImmutable();
         } else {
             $receiver = $this->userRepository->findById($userReceiverId);
-
-            if (! $receiver) {
-                throw new ValidatorException('Receiver user not found.');
-            }
 
             $conversationActivity = new ConversationActivity($user, $receiver);
         }

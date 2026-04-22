@@ -4,11 +4,10 @@ namespace App\Repository;
 
 use App\Dto\PageIndexDto;
 use App\Entity\Page;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class PageRepository extends ServiceEntityRepository
+class PageRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -22,47 +21,12 @@ class PageRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $pageId): ?Page
+    final public function findById(Uuid $pageId): Page
     {
         /** @var ?Page $page */
-        $page = $this->find($pageId);
+        $page = $this->findOrFail($pageId);
 
         return $page;
-    }
-
-    final public function findWithFollowsAndParticipants(Uuid $pageId): ?Page
-    {
-        return $this->createQueryBuilder('p')
-            ->leftJoin('p.follows', 'f')
-            ->leftJoin('p.participants', 'pa')
-            ->addSelect('f')
-            ->addSelect('pa')
-            ->where('p.id = :pageId')
-            ->setParameter('pageId', $pageId)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    final public function findWithFollows(Uuid $pageId): ?Page
-    {
-        return $this->createQueryBuilder('p')
-            ->leftJoin('p.follows', 'f')
-            ->addSelect('f')
-            ->where('p.id = :pageId')
-            ->setParameter('pageId', $pageId)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    final public function findWithParticipants(Uuid $pageId): ?Page
-    {
-        return $this->createQueryBuilder('p')
-            ->leftJoin('p.participants', 'pa')
-            ->addSelect('pa')
-            ->where('p.id = :pageId')
-            ->setParameter('pageId', $pageId)
-            ->getQuery()
-            ->getOneOrNullResult();
     }
 
     final public function findPages(PageIndexDto $dto): array

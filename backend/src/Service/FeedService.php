@@ -37,10 +37,6 @@ readonly class FeedService
     {
         $feed = $this->feedRepository->findById($feedId);
 
-        if (! $feed) {
-            throw new ValidatorException('Feed not found.');
-        }
-
         $feed->text = $dto->text;
         $feed->photo = base64_decode($dto->photo, true);
 
@@ -53,10 +49,6 @@ readonly class FeedService
     {
         $feed = $this->feedRepository->findById($feedId);
 
-        if (! $feed) {
-            throw new ValidatorException('Feed not found.');
-        }
-
         $feed->status = ElementStatusEnum::from($dto->status);
         $this->feedRepository->save($feed);
 
@@ -66,10 +58,6 @@ readonly class FeedService
     final public function delete(Uuid $feedId): Uuid
     {
         $feed = $this->feedRepository->findById($feedId);
-
-        if (! $feed) {
-            throw new ValidatorException('Feed not found.');
-        }
 
         $feed->softDelete();
         $this->feedRepository->save($feed);
@@ -84,19 +72,7 @@ readonly class FeedService
 
     final public function details(Uuid $feedId, FeedDetailsQueryDto $dto): Feed
     {
-        if (in_array($dto::FEED_COMMENTS, $dto->include) && in_array($dto::FEED_REACTIONS, $dto->include)) {
-            $feed = $this->feedRepository->findWithCommentsAndReactions($feedId);
-        } elseif (in_array($dto::FEED_COMMENTS, $dto->include)) {
-            $feed = $this->feedRepository->findWithComments($feedId);
-        } elseif (in_array($dto::FEED_REACTIONS, $dto->include)) {
-            $feed = $this->feedRepository->findWithReactions($feedId);
-        } else {
-            $feed = $this->feedRepository->findById($feedId);
-        }
-
-        if (! $feed) {
-            throw new ValidatorException('Feed not found.');
-        }
+        $feed = $this->feedRepository->findById($feedId);
 
         return $feed;
     }
@@ -107,10 +83,6 @@ readonly class FeedService
         $user = $this->security->getUser();
 
         $feed = $this->feedRepository->findById($feedId);
-
-        if (! $feed) {
-            throw new ValidatorException('Feed not found.');
-        }
 
         if ($this->friendRepository->isFriend($user->id, $feed->user->id) && ! $user->id->equals($feed->user->id)) {
             throw new ValidatorException('User is not friend.');
@@ -127,10 +99,6 @@ readonly class FeedService
     {
         $feedComment = $this->feedCommentRepository->findById($feedCommentId);
 
-        if (! $feedComment) {
-            throw new ValidatorException('Feed comment not found.');
-        }
-
         $feedComment->text = $dto->text;
 
         $this->feedCommentRepository->save($feedComment);
@@ -142,10 +110,6 @@ readonly class FeedService
     {
         $feedComment = $this->feedCommentRepository->findById($feedCommentId);
 
-        if (! $feedComment) {
-            throw new ValidatorException('Feed reaction not found.');
-        }
-
         $feedComment->status = ElementStatusEnum::from($dto->status);
         $this->feedCommentRepository->save($feedComment);
 
@@ -155,10 +119,6 @@ readonly class FeedService
     final public function deleteComment(Uuid $feedCommentId): Uuid
     {
         $feedComment = $this->feedCommentRepository->findById($feedCommentId);
-
-        if (! $feedComment) {
-            throw new ValidatorException('Feed reaction not found.');
-        }
 
         $feedComment->softDelete();
         $this->feedCommentRepository->save($feedComment);
@@ -172,10 +132,6 @@ readonly class FeedService
         $user = $this->security->getUser();
 
         $feed = $this->feedRepository->findById($feedId);
-
-        if (! $feed) {
-            throw new ValidatorException('Feed not found.');
-        }
 
         if ($this->friendRepository->isFriend($user->id, $feed->user->id) && ! $user->id->equals($feed->user->id)) {
             throw new ValidatorException('User is not friend.');
@@ -192,10 +148,6 @@ readonly class FeedService
     {
         $feedReaction = $this->feedReactionRepository->findById($feedReactionId);
 
-        if (! $feedReaction) {
-            throw new ValidatorException('Feed reaction not found.');
-        }
-
         $feedReaction->reaction = FeedReactionEnum::from($dto->type);
 
         $this->feedReactionRepository->save($feedReaction);
@@ -207,10 +159,6 @@ readonly class FeedService
     {
         $feedReaction = $this->feedReactionRepository->findById($feedReactionId);
 
-        if (! $feedReaction) {
-            throw new ValidatorException('Feed reaction not found.');
-        }
-
         $feedReaction->status = ElementStatusEnum::from($dto->status);
         $this->feedReactionRepository->save($feedReaction);
 
@@ -220,10 +168,6 @@ readonly class FeedService
     final public function deleteReaction(Uuid $feedReactionId): Uuid
     {
         $feedReaction = $this->feedReactionRepository->findById($feedReactionId);
-
-        if (! $feedReaction) {
-            throw new ValidatorException('Feed reaction not found.');
-        }
 
         $feedReaction->softDelete();
         $this->feedReactionRepository->save($feedReaction);

@@ -4,11 +4,10 @@ namespace App\Repository;
 
 use App\Dto\PageFollowIndexDto;
 use App\Entity\PageFollow;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class PageFollowRepository extends ServiceEntityRepository
+class PageFollowRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -22,10 +21,10 @@ class PageFollowRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $pageFollowId): ?PageFollow
+    final public function findById(Uuid $pageFollowId): PageFollow
     {
         /** @var ?PageFollow $pageFollow */
-        $pageFollow = $this->find($pageFollowId);
+        $pageFollow = $this->findOrFail($pageFollowId);
 
         return $pageFollow;
     }

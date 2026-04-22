@@ -3,11 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\UserRegister;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class UserRegisterRepository extends ServiceEntityRepository
+class UserRegisterRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -21,10 +20,10 @@ class UserRegisterRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $userRegisterId): ?UserRegister
+    final public function findById(Uuid $userRegisterId): UserRegister
     {
         /** @var ?UserRegister $userRegister */
-        $userRegister = $this->find($userRegisterId);
+        $userRegister = $this->findOrFail($userRegisterId);
 
         return $userRegister;
     }

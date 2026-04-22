@@ -3,11 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\{UserSign};
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class UserSignRepository extends ServiceEntityRepository
+class UserSignRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -21,10 +20,10 @@ class UserSignRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $userSignId): ?UserSign
+    final public function findById(Uuid $userSignId): UserSign
     {
         /** @var ?UserSign $userSign */
-        $userSign = $this->find($userSignId);
+        $userSign = $this->findOrFail($userSignId);
 
         return $userSign;
     }

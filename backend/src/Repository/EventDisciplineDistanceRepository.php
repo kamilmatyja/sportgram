@@ -3,10 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\EventDisciplineDistance;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class EventDisciplineDistanceRepository extends ServiceEntityRepository
+class EventDisciplineDistanceRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

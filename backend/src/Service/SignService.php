@@ -52,7 +52,7 @@ readonly class SignService
         $userRegister = $this->userRegisterRepository->findLastByUserId($user->id);
 
         if (! $userRegister || $userRegister->status !== UnauthorizedStatusEnum::Correct) {
-            throw new ValidatorException('User account not confirmed.');
+            throw new ValidatorException('User account is not confirmed.');
         }
 
         $latestUserSign = $this->userSignRepository->findLastByUserId($user->id);
@@ -78,10 +78,6 @@ readonly class SignService
     final public function confirm(Uuid $userSignId, UserCodeDto $dto): string
     {
         $userSign = $this->userSignRepository->findById($userSignId);
-
-        if (! $userSign) {
-            throw new ValidatorException('User sign not found.');
-        }
 
         if ($userSign->status === UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Code already used.');
@@ -115,10 +111,6 @@ readonly class SignService
     {
         $userSign = $this->userSignRepository->findById($userSignId);
 
-        if (! $userSign) {
-            throw new ValidatorException('User sign not found.');
-        }
-
         if ($userSign->status === UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Code already used.');
         }
@@ -140,10 +132,6 @@ readonly class SignService
     final public function refresh(Uuid $userSignId): string
     {
         $userSign = $this->userSignRepository->findById($userSignId);
-
-        if (! $userSign) {
-            throw new ValidatorException('User sign not found.');
-        }
 
         if ($userSign->status !== UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Sign not confirmed.');

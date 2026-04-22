@@ -3,11 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\GoalParticipantResult;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class GoalParticipantResultRepository extends ServiceEntityRepository
+class GoalParticipantResultRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -21,10 +20,10 @@ class GoalParticipantResultRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $goalParticipantResultId): ?GoalParticipantResult
+    final public function findById(Uuid $goalParticipantResultId): GoalParticipantResult
     {
         /** @var ?GoalParticipantResult $goalParticipantResult */
-        $goalParticipantResult = $this->find($goalParticipantResultId);
+        $goalParticipantResult = $this->findOrFail($goalParticipantResultId);
 
         return $goalParticipantResult;
     }

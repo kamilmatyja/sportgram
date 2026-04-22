@@ -39,7 +39,7 @@ class GoalParticipantResultVoter extends Voter
 
         $goal = $this->goalParticipantResultRepository->findById($subject);
 
-        if ($goal && $goal->goalParticipant->user->id?->toString() === $user->id?->toString()) {
+        if ($goal->goalParticipant->user->id?->toString() === $user->id?->toString()) {
             return true;
         }
 

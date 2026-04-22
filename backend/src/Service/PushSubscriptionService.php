@@ -8,7 +8,6 @@ use App\Enum\PushSubscriptionStatusEnum;
 use App\Repository\PushSubscriptionRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
-use Symfony\Component\Validator\Exception\ValidatorException;
 
 readonly class PushSubscriptionService
 {
@@ -41,10 +40,6 @@ readonly class PushSubscriptionService
     {
         $pushSubscription = $this->pushSubscriptionRepository->findById($pushSubscriptionId);
 
-        if (! $pushSubscription) {
-            throw new ValidatorException('Push subscription not found.');
-        }
-
         $pushSubscription->endpoint = $dto->endpoint;
         $pushSubscription->p256dh = $dto->p256dh;
         $pushSubscription->auth = $dto->auth;
@@ -57,10 +52,6 @@ readonly class PushSubscriptionService
     final public function delete(Uuid $pushSubscriptionId): Uuid
     {
         $pushSubscription = $this->pushSubscriptionRepository->findById($pushSubscriptionId);
-
-        if (! $pushSubscription) {
-            throw new ValidatorException('Push subscription not found.');
-        }
 
         $pushSubscription->softDelete();
         $this->pushSubscriptionRepository->save($pushSubscription);
@@ -79,10 +70,6 @@ readonly class PushSubscriptionService
     final public function details(Uuid $pushSubscriptionId): PushSubscription
     {
         $pushSubscription = $this->pushSubscriptionRepository->findById($pushSubscriptionId);
-
-        if (! $pushSubscription) {
-            throw new ValidatorException('Push subscription not found.');
-        }
 
         return $pushSubscription;
     }

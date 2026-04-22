@@ -5,11 +5,10 @@ namespace App\Repository;
 use App\Dto\FriendIndexDto;
 use App\Entity\Friend;
 use App\Enum\FriendStatusEnum;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class FriendRepository extends ServiceEntityRepository
+class FriendRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -23,10 +22,10 @@ class FriendRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $friendId): ?Friend
+    final public function findById(Uuid $friendId): Friend
     {
         /** @var ?Friend $friend */
-        $friend = $this->find($friendId);
+        $friend = $this->findOrFail($friendId);
 
         return $friend;
     }

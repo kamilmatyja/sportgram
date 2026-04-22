@@ -4,11 +4,10 @@ namespace App\Repository;
 
 use App\Dto\EntryIndexDto;
 use App\Entity\Entry;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class EntryRepository extends ServiceEntityRepository
+class EntryRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -22,10 +21,10 @@ class EntryRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $entryId): ?Entry
+    final public function findById(Uuid $entryId): Entry
     {
         /** @var ?Entry $entry */
-        $entry = $this->find($entryId);
+        $entry = $this->findOrFail($entryId);
 
         return $entry;
     }

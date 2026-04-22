@@ -4,11 +4,10 @@ namespace App\Repository;
 
 use App\Dto\ConversationIndexDto;
 use App\Entity\Conversation;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class ConversationRepository extends ServiceEntityRepository
+class ConversationRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -22,10 +21,10 @@ class ConversationRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $conversationId): ?Conversation
+    final public function findById(Uuid $conversationId): Conversation
     {
         /** @var ?Conversation $conversation */
-        $conversation = $this->find($conversationId);
+        $conversation = $this->findOrFail($conversationId);
 
         return $conversation;
     }

@@ -137,10 +137,6 @@ readonly class UserService
 
         $user = $this->userRepository->findById($userId);
 
-        if (! $user) {
-            throw new ValidatorException('User not found.');
-        }
-
         $user->birthAt = new DateTimeImmutable($dto->birthAt);
         $user->firstName = mb_ucfirst(mb_strtolower($dto->firstName));
         $user->lastName = mb_ucfirst(mb_strtolower($dto->lastName));
@@ -208,10 +204,6 @@ readonly class UserService
     {
         $user = $this->userRepository->findById($userId);
 
-        if (! $user) {
-            throw new ValidatorException('User not found.');
-        }
-
         $user->status = UserStatusEnum::from($dto->status);
         $this->userRepository->save($user);
 
@@ -221,10 +213,6 @@ readonly class UserService
     final public function delete(Uuid $userId): Uuid
     {
         $user = $this->userRepository->findById($userId);
-
-        if (! $user) {
-            throw new ValidatorException('User not found.');
-        }
 
         $user->softDelete();
         $this->userRepository->save($user);
@@ -239,19 +227,7 @@ readonly class UserService
 
     final public function details(Uuid $userId, UserDetailsQueryDto $dto): User
     {
-        if (in_array($dto::USER_DISCIPLINES, $dto->include) && in_array($dto::USER_ROLES, $dto->include)) {
-            $user = $this->userRepository->findWithDisciplinesAndRoles($userId);
-        } elseif (in_array($dto::USER_DISCIPLINES, $dto->include)) {
-            $user = $this->userRepository->findWithDisciplines($userId);
-        } elseif (in_array($dto::USER_ROLES, $dto->include)) {
-            $user = $this->userRepository->findWithRoles($userId);
-        } else {
-            $user = $this->userRepository->findById($userId);
-        }
-
-        if (! $user) {
-            throw new ValidatorException('User not found.');
-        }
+        $user = $this->userRepository->findById($userId);
 
         return $user;
     }

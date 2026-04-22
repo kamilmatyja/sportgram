@@ -4,11 +4,10 @@ namespace App\Repository;
 
 use App\Dto\FeedIndexDto;
 use App\Entity\Feed;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class FeedRepository extends ServiceEntityRepository
+class FeedRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -22,47 +21,12 @@ class FeedRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $feedId): ?Feed
+    final public function findById(Uuid $feedId): Feed
     {
         /** @var ?Feed $feed */
-        $feed = $this->find($feedId);
+        $feed = $this->findOrFail($feedId);
 
         return $feed;
-    }
-
-    final public function findWithCommentsAndReactions(Uuid $feedId): ?Feed
-    {
-        return $this->createQueryBuilder('f')
-            ->leftJoin('f.reactions', 'r')
-            ->leftJoin('f.comments', 'c')
-            ->addSelect('r')
-            ->addSelect('c')
-            ->where('f.id = :id')
-            ->setParameter('id', $feedId)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    final public function findWithComments(Uuid $feedId): ?Feed
-    {
-        return $this->createQueryBuilder('f')
-            ->leftJoin('f.comments', 'c')
-            ->addSelect('c')
-            ->where('f.id = :id')
-            ->setParameter('id', $feedId)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    final public function findWithReactions(Uuid $feedId): ?Feed
-    {
-        return $this->createQueryBuilder('f')
-            ->leftJoin('f.reactions', 'r')
-            ->addSelect('r')
-            ->where('f.id = :id')
-            ->setParameter('id', $feedId)
-            ->getQuery()
-            ->getOneOrNullResult();
     }
 
     final public function findFeeds(FeedIndexDto $dto): array

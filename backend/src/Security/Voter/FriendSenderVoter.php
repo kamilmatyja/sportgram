@@ -39,7 +39,7 @@ class FriendSenderVoter extends Voter
 
         $friend = $this->friendRepository->findById($subject);
 
-        if ($friend && $friend->senderUser->id?->toString() === $user->id?->toString()) {
+        if ($friend->senderUser->id?->toString() === $user->id?->toString()) {
             return true;
         }
 

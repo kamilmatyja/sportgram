@@ -3,11 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Event;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class EventRepository extends ServiceEntityRepository
+class EventRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -21,10 +20,10 @@ class EventRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $eventId): ?Event
+    final public function findById(Uuid $eventId): Event
     {
         /** @var ?Event $event */
-        $event = $this->find($eventId);
+        $event = $this->findOrFail($eventId);
 
         return $event;
     }

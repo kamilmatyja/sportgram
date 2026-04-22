@@ -3,10 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\EventDisciplineList;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class EventDisciplineListRepository extends ServiceEntityRepository
+class EventDisciplineListRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

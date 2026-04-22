@@ -3,10 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\EventDisciplineSubResult;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class EventDisciplineSubResultRepository extends ServiceEntityRepository
+class EventDisciplineSubResultRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

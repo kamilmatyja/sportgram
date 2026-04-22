@@ -65,12 +65,8 @@ readonly class GoalService
         foreach ($dto->participants as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if (! $participantUser) {
-                throw new ValidatorException('User not found: ' . $userId);
-            }
-
             if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
-                throw new ValidatorException('User is not friend: ' . $userId);
+                throw new ValidatorException('User is not friend.');
             }
 
             $goalParticipant = new GoalParticipant($goal, $participantUser, SaveStatusEnum::Pending);
@@ -87,10 +83,6 @@ readonly class GoalService
     final public function update(Uuid $goalId, GoalDto $dto): Uuid
     {
         $goal = $this->goalRepository->findById($goalId);
-
-        if (! $goal) {
-            throw new ValidatorException('Goal not found.');
-        }
 
         $goal->startedAt = new DateTimeImmutable($dto->startedAt);
         $goal->endedAt = new DateTimeImmutable($dto->endedAt);
@@ -122,12 +114,8 @@ readonly class GoalService
         foreach ($participantsToAdd as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if (! $participantUser) {
-                throw new ValidatorException('User not found: ' . $userId);
-            }
-
             if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
-                throw new ValidatorException('User is not friend: ' . $userId);
+                throw new ValidatorException('User is not friend.');
             }
 
             $participantEntity = new GoalParticipant($goal, $participantUser, SaveStatusEnum::Pending);
@@ -143,10 +131,6 @@ readonly class GoalService
     {
         $goal = $this->goalRepository->findById($goalId);
 
-        if (! $goal) {
-            throw new ValidatorException('Goal not found.');
-        }
-
         $goal->status = GoalStatusEnum::from($dto->status);
         $this->goalRepository->save($goal);
 
@@ -156,10 +140,6 @@ readonly class GoalService
     final public function delete(Uuid $goalId): Uuid
     {
         $goal = $this->goalRepository->findById($goalId);
-
-        if (! $goal) {
-            throw new ValidatorException('Goal not found.');
-        }
 
         $goal->softDelete();
         $this->goalRepository->save($goal);
@@ -174,17 +154,7 @@ readonly class GoalService
 
     final public function details(Uuid $goalId, GoalDetailsQueryDto $dto): Goal
     {
-        if (in_array($dto::GOAL_PARTICIPANTS, $dto->include)) {
-            $goal = $this->goalRepository->findWithParticipants($goalId);
-        } elseif (in_array($dto::GOAL_PARTICIPANT_RESULTS, $dto->include)) {
-            $goal = $this->goalRepository->findWithParticipantResults($goalId);
-        } else {
-            $goal = $this->goalRepository->findById($goalId);
-        }
-
-        if (! $goal) {
-            throw new ValidatorException('Goal not found.');
-        }
+        $goal = $this->goalRepository->findById($goalId);
 
         return $goal;
     }
@@ -192,10 +162,6 @@ readonly class GoalService
     final public function updateParticipantStatus(Uuid $goalParticipantId, SaveStatusDto $dto): Uuid
     {
         $goalParticipant = $this->goalParticipantRepository->findById($goalParticipantId);
-
-        if (! $goalParticipant) {
-            throw new ValidatorException('GoalParticipant not found.');
-        }
 
         $goalParticipant->status = SaveStatusEnum::from($dto->status);
         $this->goalParticipantRepository->save($goalParticipant);
@@ -206,10 +172,6 @@ readonly class GoalService
     final public function updateParticipantResultStatus(Uuid $goalParticipantResultId, SaveStatusDto $dto): Uuid
     {
         $goalParticipantResult = $this->goalParticipantResultRepository->findById($goalParticipantResultId);
-
-        if (! $goalParticipantResult) {
-            throw new ValidatorException('GoalParticipantResult not found.');
-        }
 
         $goalParticipantResult->status = SaveStatusEnum::from($dto->status);
         $this->goalParticipantResultRepository->save($goalParticipantResult);

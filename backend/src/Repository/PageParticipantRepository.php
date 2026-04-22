@@ -3,11 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\PageParticipant;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class PageParticipantRepository extends ServiceEntityRepository
+class PageParticipantRepository extends BaseRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -21,10 +20,10 @@ class PageParticipantRepository extends ServiceEntityRepository
         $em->flush();
     }
 
-    final public function findById(Uuid $pageParticipantId): ?PageParticipant
+    final public function findById(Uuid $pageParticipantId): PageParticipant
     {
         /** @var ?PageParticipant $pageParticipant */
-        $pageParticipant = $this->find($pageParticipantId);
+        $pageParticipant = $this->findOrFail($pageParticipantId);
 
         return $pageParticipant;
     }

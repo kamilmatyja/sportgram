@@ -28,12 +28,8 @@ readonly class FriendService
 
         $receiver = $this->userRepository->findById($receiverUserId);
 
-        if (! $receiver) {
-            throw new ValidatorException('Receiver user not found.');
-        }
-
         if ($this->friendRepository->hasRow($user->id, $receiverUserId)) {
-            throw new ValidatorException('User has friend relationship with this user.');
+            throw new ValidatorException('User already has friend relationship with this user.');
         }
 
         $friend = new Friend(
@@ -51,10 +47,6 @@ readonly class FriendService
     {
         $friend = $this->friendRepository->findById($friendId);
 
-        if (! $friend) {
-            throw new ValidatorException('Friend not found.');
-        }
-
         $friend->status = FriendStatusEnum::from($dto->status);
         $this->friendRepository->save($friend);
 
@@ -64,10 +56,6 @@ readonly class FriendService
     final public function delete(Uuid $friendId): Uuid
     {
         $friend = $this->friendRepository->findById($friendId);
-
-        if (! $friend) {
-            throw new ValidatorException('Friend not found.');
-        }
 
         $friend->softDelete();
         $this->friendRepository->save($friend);
@@ -83,10 +71,6 @@ readonly class FriendService
     final public function details(Uuid $friendId): Friend
     {
         $friend = $this->friendRepository->findById($friendId);
-
-        if (! $friend) {
-            throw new ValidatorException('Friend not found.');
-        }
 
         return $friend;
     }

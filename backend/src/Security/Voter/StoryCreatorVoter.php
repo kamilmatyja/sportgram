@@ -39,7 +39,7 @@ class StoryCreatorVoter extends Voter
 
         $story = $this->storyRepository->findById($subject);
 
-        if ($story && $story->user->id?->toString() === $user->id?->toString()) {
+        if ($story->user->id?->toString() === $user->id?->toString()) {
             return true;
         }
 
