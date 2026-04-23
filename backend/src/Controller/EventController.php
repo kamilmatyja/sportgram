@@ -2,11 +2,25 @@
 
 namespace App\Controller;
 
-use App\Dto\{ElementStatusDto, EventDetailsQueryDto, EventDto, EventIndexDto, EventListDto, EventResultDto};
+use App\Dto\{ElementStatusDto,
+    EventDetailsQueryDto,
+    EventDto,
+    EventIndexDto,
+    EventListDto,
+    EventListIndexDto,
+    EventResultDetailsQueryDto,
+    EventResultDto,
+    EventResultIndexDto,
+    SaveStatusDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\{EventDisciplineDistanceListResource, EventDisciplineDistanceResultResource, EventResource};
-use App\Security\Voter\{EventCreatorVoter, EventListCreatorVoter, EventListVoter, EventResultVoter, EventVoter};
+use App\Security\Voter\{EventCreatorVoter,
+    EventListCreatorVoter,
+    EventListVoter,
+    EventResultVoter,
+    EventUpdaterVoter,
+    EventVoter};
 use App\Service\EventService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,8 +32,8 @@ use Symfony\Component\Uid\Uuid;
 
 class EventController extends AbstractController
 {
-    #[Route('/api/events', name: 'event_create', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[Route('/api/event-pages/{id}', name: 'event_create', methods: ['POST'])]
+    #[IsGranted(EventCreatorVoter::EVENT_CREATOR, subject: 'id')]
     #[OA\Post(
         summary: 'Create event',
         requestBody: new Body('EventDto'),
@@ -27,17 +41,18 @@ class EventController extends AbstractController
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
+        Uuid $id,
         #[MapRequestPayload]
         EventDto $dto,
         EventService $service,
     ): JsonResponse {
-        $eventId = $service->create($dto);
+        $eventId = $service->create($id, $dto);
 
         return ApiResponse::created($eventId);
     }
 
     #[Route('/api/events/{id}', name: 'event_update', methods: ['PUT'])]
-    #[IsGranted(EventCreatorVoter::EVENT_CREATOR, subject: 'id')]
+    #[IsGranted(EventUpdaterVoter::EVENT_UPDATER, subject: 'id')]
     #[OA\Put(
         summary: 'Update event',
         requestBody: new Body('EventDto'),
@@ -75,7 +90,7 @@ class EventController extends AbstractController
     }
 
     #[Route('/api/events/{id}', name: 'event_delete', methods: ['DELETE'])]
-    #[IsGranted(EventCreatorVoter::EVENT_CREATOR, subject: 'id')]
+    #[IsGranted(EventUpdaterVoter::EVENT_UPDATER, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete event',
         tags: ['events'],
@@ -143,9 +158,9 @@ class EventController extends AbstractController
         EventListDto $dto,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineDistanceListId = $service->createList($id, $dto);
+        $eventDisciplineListId = $service->createList($id, $dto);
 
-        return ApiResponse::created($eventDisciplineDistanceListId);
+        return ApiResponse::created($eventDisciplineListId);
     }
 
     #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_list_update', methods: ['PUT'])]
@@ -162,28 +177,28 @@ class EventController extends AbstractController
         EventListDto $dto,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineDistanceListId = $service->updateList($id, $dto);
+        $eventDisciplineListId = $service->updateList($id, $dto);
 
-        return ApiResponse::ok($eventDisciplineDistanceListId);
+        return ApiResponse::ok($eventDisciplineListId);
     }
 
     #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_list_update_status', methods: ['PATCH'])]
     #[IsGranted(EventListVoter::EVENT_LIST, subject: 'id')]
     #[OA\Patch(
         summary: 'Update event discipline distance list status',
-        requestBody: new Body('ElementStatusDto'),
+        requestBody: new Body('SaveStatusDto'),
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateListStatus(
         Uuid $id,
         #[MapRequestPayload]
-        ElementStatusDto $dto,
+        SaveStatusDto $dto,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineDistanceListId = $service->updateListStatus($id, $dto);
+        $eventDisciplineListId = $service->updateListStatus($id, $dto);
 
-        return ApiResponse::ok($eventDisciplineDistanceListId);
+        return ApiResponse::ok($eventDisciplineListId);
     }
 
     #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_list_delete', methods: ['DELETE'])]
@@ -197,9 +212,9 @@ class EventController extends AbstractController
         Uuid $id,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineDistanceListId = $service->deleteList($id);
+        $eventDisciplineListId = $service->deleteList($id);
 
-        return ApiResponse::ok($eventDisciplineDistanceListId);
+        return ApiResponse::ok($eventDisciplineListId);
     }
 
     #[Route('/api/event-discipline-distances/{id}/list', name: 'event_discipline_distance_list_index', methods: ['GET'])]
@@ -211,9 +226,11 @@ class EventController extends AbstractController
     )]
     final public function indexList(
         Uuid $id,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        EventListIndexDto $dto,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineDistanceLists = $service->indexList($id);
+        $eventDisciplineDistanceLists = $service->indexList($id, $dto);
 
         $data = EventDisciplineDistanceListResource::fromEntityCollection($eventDisciplineDistanceLists);
 
@@ -252,9 +269,9 @@ class EventController extends AbstractController
         EventResultDto $dto,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineDistanceResultId = $service->createResult($id, $dto);
+        $eventDisciplineResultId = $service->createResult($id, $dto);
 
-        return ApiResponse::created($eventDisciplineDistanceResultId);
+        return ApiResponse::created($eventDisciplineResultId);
     }
 
     #[Route('/api/event-discipline-distance-results/{id}', name: 'event_discipline_distance_result_update', methods: ['PUT'])]
@@ -271,9 +288,9 @@ class EventController extends AbstractController
         EventResultDto $dto,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineDistanceResultId = $service->updateResult($id, $dto);
+        $eventDisciplineResultId = $service->updateResult($id, $dto);
 
-        return ApiResponse::ok($eventDisciplineDistanceResultId);
+        return ApiResponse::ok($eventDisciplineResultId);
     }
 
     #[Route('/api/event-discipline-distance-results/{id}', name: 'event_discipline_distance_result_delete', methods: ['DELETE'])]
@@ -287,9 +304,9 @@ class EventController extends AbstractController
         Uuid $id,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineDistanceResultId = $service->deleteResult($id);
+        $eventDisciplineResultId = $service->deleteResult($id);
 
-        return ApiResponse::ok($eventDisciplineDistanceResultId);
+        return ApiResponse::ok($eventDisciplineResultId);
     }
 
     #[Route('/api/event-discipline-distances/{id}/result', name: 'event_discipline_distance_result_index', methods: ['GET'])]
@@ -301,9 +318,11 @@ class EventController extends AbstractController
     )]
     final public function indexResult(
         Uuid $id,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        EventResultIndexDto $dto,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineDistanceResults = $service->indexResult();
+        $eventDisciplineDistanceResults = $service->indexResult($id, $dto);
 
         $data = EventDisciplineDistanceResultResource::fromEntityCollection($eventDisciplineDistanceResults);
 
@@ -319,11 +338,13 @@ class EventController extends AbstractController
     )]
     final public function detailsResult(
         Uuid $id,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        EventResultDetailsQueryDto $dto,
         EventService $service,
     ): JsonResponse {
         $eventDisciplineDistanceResult = $service->detailsResult($id);
 
-        $data = EventDisciplineDistanceResultResource::fromEntity($eventDisciplineDistanceResult);
+        $data = EventDisciplineDistanceResultResource::fromEntity($eventDisciplineDistanceResult, $dto);
 
         return ApiResponse::elements($data);
     }

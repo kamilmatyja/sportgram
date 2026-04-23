@@ -39,10 +39,10 @@ class GoalFilterDto
     #[Assert\Choice(callback: [DisciplineEnum::class, 'values'])]
     public ?int $discipline;
 
-    #[Assert\Range(min: 1, max: 9999999)]
+    #[Assert\Type('integer')]
     public ?int $distance;
 
-    #[Assert\Range(min: 1, max: 9999999)]
+    #[Assert\Type('integer')]
     public ?int $time;
 
     #[Assert\Choice(callback: [GoalStatusEnum::class, 'values'])]

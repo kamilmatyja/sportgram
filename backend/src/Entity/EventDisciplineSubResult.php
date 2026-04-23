@@ -22,7 +22,7 @@ class EventDisciplineSubResult
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: EventDisciplineSubDistance::class)]
+    #[ORM\ManyToOne(targetEntity: EventDisciplineSubDistance::class, inversedBy: 'subResults')]
     #[ORM\JoinColumn(name: 'event_discipline_sub_distance_id', referencedColumnName: 'id', nullable: false)]
     public EventDisciplineSubDistance $eventDisciplineSubDistance {
         get {

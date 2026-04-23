@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{ConversationCreateDto, ConversationIndexDto, ConversationStatusDto, ConversationUpdateDto};
+use App\Dto\{ConversationDto, ConversationIndexDto, ConversationStatusDto};
 use App\Entity\{Conversation, ConversationActivity, User};
 use App\Enum\ConversationStatusEnum;
 use App\Repository\{ConversationActivityRepository, ConversationRepository, FriendRepository, UserRepository};
@@ -22,12 +22,12 @@ readonly class ConversationService
     ) {
     }
 
-    final public function create(ConversationCreateDto $dto): Uuid
+    final public function create(Uuid $userId, ConversationDto $dto): Uuid
     {
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $receiverUserId = Uuid::fromString($dto->receiverUserId);
+        $receiverUserId = Uuid::fromString($userId);
 
         $receiver = $this->userRepository->findById($receiverUserId);
 
@@ -47,7 +47,7 @@ readonly class ConversationService
         return $conversation->id;
     }
 
-    final public function update(Uuid $conversationId, ConversationUpdateDto $dto): Uuid
+    final public function update(Uuid $conversationId, ConversationDto $dto): Uuid
     {
         $conversation = $this->conversationRepository->findById($conversationId);
 

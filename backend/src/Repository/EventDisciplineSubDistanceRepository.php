@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\EventDisciplineSubDistance;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class EventDisciplineSubDistanceRepository extends BaseRepository
 {
@@ -17,5 +18,13 @@ class EventDisciplineSubDistanceRepository extends BaseRepository
         $em = $this->getEntityManager();
         $em->persist($eventDisciplineSubDistance);
         $em->flush();
+    }
+
+    final public function findById(Uuid $eventDisciplineSubDistanceId): EventDisciplineSubDistance
+    {
+        /** @var EventDisciplineSubDistance $eventDisciplineSubDistance */
+        $eventDisciplineSubDistance = $this->findOrFail($eventDisciplineSubDistanceId);
+
+        return $eventDisciplineSubDistance;
     }
 }

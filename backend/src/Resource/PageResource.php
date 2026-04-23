@@ -32,8 +32,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'title', type: 'string', example: 'Page title'),
         new OA\Property(property: 'description', type: 'string', example: 'Page description'),
         new OA\Property(property: 'link', type: 'string', example: 'my-link'),
-        new OA\Property(property: 'profilePhoto', type: 'string', format: 'base64string'),
-        new OA\Property(property: 'backgroundPhoto', type: 'string', format: 'base64string'),
+        new OA\Property(property: 'profilePhoto', type: 'string', example: 'base64string'),
+        new OA\Property(property: 'backgroundPhoto', type: 'string', example: 'base64string'),
         new OA\Property(property: 'color', type: 'integer', example: 1),
         new OA\Property(property: 'status', type: 'integer', example: 1),
         new OA\Property(

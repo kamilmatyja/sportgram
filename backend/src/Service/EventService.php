@@ -2,10 +2,35 @@
 
 namespace App\Service;
 
-use App\Dto\{ElementStatusDto, EventDto, EventIndexDto, EventListDto, EventResultDto};
-use App\Entity\{Event, EventDisciplineList, EventDisciplineResult};
-use App\Enum\ElementStatusEnum;
-use App\Repository\{EventDisciplineListRepository, EventDisciplineResultRepository, EventRepository};
+use App\Dto\{ElementStatusDto,
+    EventDto,
+    EventIndexDto,
+    EventListDto,
+    EventListIndexDto,
+    EventResultDto,
+    EventResultIndexDto,
+    SaveStatusDto};
+use App\Entity\{Event,
+    EventDiscipline,
+    EventDisciplineDistance,
+    EventDisciplineList,
+    EventDisciplineResult,
+    EventDisciplineSubDistance,
+    EventDisciplineSubResult,
+    Feed,
+    User};
+use App\Enum\{DisciplineEnum, ElementStatusEnum, SaveStatusEnum};
+use App\Repository\{EventDisciplineDistanceRepository,
+    EventDisciplineListRepository,
+    EventDisciplineRepository,
+    EventDisciplineResultRepository,
+    EventDisciplineSubDistanceRepository,
+    EventDisciplineSubResultRepository,
+    EventRepository,
+    FeedRepository,
+    PageRepository,
+    UserRepository};
+use DateMalformedStringException;
 use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
@@ -14,16 +39,36 @@ readonly class EventService
 {
     public function __construct(
         private EventRepository $eventRepository,
+        private EventDisciplineRepository $eventDisciplineRepository,
+        private EventDisciplineDistanceRepository $eventDisciplineDistanceRepository,
+        private EventDisciplineSubDistanceRepository $eventDisciplineSubDistanceRepository,
         private EventDisciplineListRepository $eventDisciplineListRepository,
         private EventDisciplineResultRepository $eventDisciplineResultRepository,
+        private EventDisciplineSubResultRepository $eventDisciplineSubResultRepository,
+        private FeedRepository $feedRepository,
+        private PageRepository $pageRepository,
+        private UserRepository $userRepository,
         private Security $security,
     ) {
     }
 
-    final public function create(EventDto $dto): Uuid
+    /**
+     * @throws DateMalformedStringException
+     */
+    final public function create(Uuid $pageId, EventDto $dto): Uuid
     {
-        // TODO: Pobierz pageParticipant z kontekstu lub DTO
-        $pageParticipant = null; // <- poprawić na właściwy obiekt
+        $page = $this->pageRepository->findById($pageId);
+
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        $feed = new Feed($user, null, null, ElementStatusEnum::Draft);
+        $this->feedRepository->save($feed);
+
+        $pageParticipant = $page->participants->findFirst(
+            fn ($participant) => $participant->user->id->toString() === $user->id->toString(),
+        );
+
         $event = new Event(
             $pageParticipant,
             new DateTimeImmutable($dto->startedAt),
@@ -36,14 +81,40 @@ readonly class EventService
             $dto->location,
             ElementStatusEnum::Active,
         );
+
         $this->eventRepository->save($event);
+
+        foreach ($dto->disciplines as $discipline) {
+            $eventDiscipline = new EventDiscipline($event, DisciplineEnum::from($discipline->discipline));
+
+            $this->eventDisciplineRepository->save($eventDiscipline);
+
+            foreach ($discipline->distances as $distance) {
+                $eventDisciplineDistance = new EventDisciplineDistance($eventDiscipline, $distance->distance);
+
+                $this->eventDisciplineDistanceRepository->save($eventDisciplineDistance);
+
+                foreach ($distance->subDistances as $subDistance) {
+                    $eventDisciplineSubDistance = new EventDisciplineSubDistance(
+                        $eventDisciplineDistance,
+                        $subDistance->subDistance,
+                    );
+
+                    $this->eventDisciplineSubDistanceRepository->save($eventDisciplineSubDistance);
+                }
+            }
+        }
 
         return $event->id;
     }
 
-    final public function update(Uuid $id, EventDto $dto): Uuid
+    /**
+     * @throws DateMalformedStringException
+     */
+    final public function update(Uuid $eventId, EventDto $dto): Uuid
     {
-        $event = $this->eventRepository->findById($id);
+        $event = $this->eventRepository->findById($eventId);
+
         $event->startedAt = new DateTimeImmutable($dto->startedAt);
         $event->endedAt = new DateTimeImmutable($dto->endedAt);
         $event->title = $dto->title;
@@ -52,23 +123,65 @@ readonly class EventService
         $event->rules = $dto->rules;
         $event->photo = $dto->photo;
         $event->location = $dto->location;
+
+        /** @var EventDiscipline $discipline */
+        foreach ($event->disciplines as $discipline) {
+            $discipline->softDelete();
+            $this->eventDisciplineRepository->save($discipline);
+
+            /** @var EventDisciplineDistance $distance */
+            foreach ($discipline->distances as $distance) {
+                $distance->softDelete();
+                $this->eventDisciplineDistanceRepository->save($distance);
+
+                /** @var EventDisciplineSubDistance $subDistance */
+                foreach ($distance->subDistances as $subDistance) {
+                    $subDistance->softDelete();
+                    $this->eventDisciplineSubDistanceRepository->save($subDistance);
+                }
+            }
+        }
+
+        foreach ($dto->disciplines as $discipline) {
+            $eventDiscipline = new EventDiscipline($event, DisciplineEnum::from($discipline->discipline));
+
+            $this->eventDisciplineRepository->save($eventDiscipline);
+
+            foreach ($discipline->distances as $distance) {
+                $eventDisciplineDistance = new EventDisciplineDistance($eventDiscipline, $distance->distance);
+
+                $this->eventDisciplineDistanceRepository->save($eventDisciplineDistance);
+
+                foreach ($distance->subDistances as $subDistance) {
+                    $eventDisciplineSubDistance = new EventDisciplineSubDistance(
+                        $eventDisciplineDistance,
+                        $subDistance->subDistance,
+                    );
+
+                    $this->eventDisciplineSubDistanceRepository->save($eventDisciplineSubDistance);
+                }
+            }
+        }
+
         $this->eventRepository->save($event);
 
         return $event->id;
     }
 
-    final public function updateStatus(Uuid $id, ElementStatusDto $dto): Uuid
+    final public function updateStatus(Uuid $eventId, ElementStatusDto $dto): Uuid
     {
-        $event = $this->eventRepository->findById($id);
+        $event = $this->eventRepository->findById($eventId);
+
         $event->status = ElementStatusEnum::from($dto->status);
         $this->eventRepository->save($event);
 
         return $event->id;
     }
 
-    final public function delete(Uuid $id): Uuid
+    final public function delete(Uuid $eventId): Uuid
     {
-        $event = $this->eventRepository->findById($id);
+        $event = $this->eventRepository->findById($eventId);
+
         $event->softDelete();
         $this->eventRepository->save($event);
 
@@ -77,103 +190,159 @@ readonly class EventService
 
     final public function index(EventIndexDto $dto): array
     {
-        // TODO: Implement filtering, sorting, pagination
-        return $this->eventRepository->findAll();
+        return $this->eventRepository->findEvents($dto);
     }
 
-    final public function details(Uuid $id): Event
+    final public function details(Uuid $eventId): Event
     {
-        return $this->eventRepository->findById($id);
+        return $this->eventRepository->findById($eventId);
     }
 
-    // Event List CRUD
-    final public function createList(EventListDto $dto): Uuid
+    final public function createList(Uuid $eventDisciplineDistanceId, EventListDto $dto): Uuid
     {
-        // TODO: Pobierz eventDisciplineDistance, feed, user z kontekstu lub DTO
-        $eventDisciplineDistance = null;
-        $feed = null;
-        $user = null;
-        $list = new EventDisciplineList($eventDisciplineDistance, $feed, $user, SaveStatusEnum::Pending);
-        $this->eventDisciplineListRepository->save($list);
+        $eventDisciplineDistance = $this->eventDisciplineDistanceRepository->findById($eventDisciplineDistanceId);
 
-        return $list->id;
+        $user = $this->userRepository->findById(Uuid::fromString($dto->userId));
+
+        $feed = new Feed($user, null, null, ElementStatusEnum::Draft);
+
+        $this->feedRepository->save($feed);
+
+        $eventDisciplineList = new EventDisciplineList($eventDisciplineDistance, $feed, $user, SaveStatusEnum::Pending);
+
+        $this->eventDisciplineListRepository->save($eventDisciplineList);
+
+        return $eventDisciplineList->id;
     }
 
-    final public function updateList(Uuid $id, EventListDto $dto): Uuid
+    final public function updateList(Uuid $eventDisciplineListId, EventListDto $dto): Uuid
     {
-        $list = $this->eventDisciplineListRepository->findById($id);
-        // TODO: Zaktualizuj właściwości listy
-        $this->eventDisciplineListRepository->save($list);
+        $eventDisciplineList = $this->eventDisciplineListRepository->findById($eventDisciplineListId);
 
-        return $list->id;
+        $user = $this->userRepository->findById(Uuid::fromString($dto->userId));
+
+        $eventDisciplineList->user = $user;
+        $this->eventDisciplineListRepository->save($eventDisciplineList);
+
+        return $eventDisciplineList->id;
     }
 
-    final public function updateListStatus(Uuid $id, ElementStatusDto $dto): Uuid
+    final public function updateListStatus(Uuid $eventDisciplineListId, SaveStatusDto $dto): Uuid
     {
-        $list = $this->eventDisciplineListRepository->findById($id);
-        $list->status = SaveStatusEnum::from($dto->status);
-        $this->eventDisciplineListRepository->save($list);
+        $eventDisciplineList = $this->eventDisciplineListRepository->findById($eventDisciplineListId);
 
-        return $list->id;
+        $eventDisciplineList->status = SaveStatusEnum::from($dto->status);
+        $this->eventDisciplineListRepository->save($eventDisciplineList);
+
+        return $eventDisciplineList->id;
     }
 
-    final public function deleteList(Uuid $id): Uuid
+    final public function deleteList(Uuid $eventDisciplineListId): Uuid
     {
-        $list = $this->eventDisciplineListRepository->findById($id);
-        $list->softDelete();
-        $this->eventDisciplineListRepository->save($list);
+        $eventDisciplineList = $this->eventDisciplineListRepository->findById($eventDisciplineListId);
 
-        return $list->id;
+        $eventDisciplineList->softDelete();
+        $this->eventDisciplineListRepository->save($eventDisciplineList);
+
+        return $eventDisciplineList->id;
     }
 
-    final public function indexList(): array
+    final public function indexList(Uuid $eventDisciplineDistanceId, EventListIndexDto $dto): array
     {
-        return $this->eventDisciplineListRepository->findAll();
+        return $this->eventDisciplineListRepository->findLists($eventDisciplineDistanceId, $dto);
     }
 
-    final public function detailsList(Uuid $id): EventDisciplineList
+    final public function detailsList(Uuid $eventDisciplineListId): EventDisciplineList
     {
-        return $this->eventDisciplineListRepository->findById($id);
+        return $this->eventDisciplineListRepository->findById($eventDisciplineListId);
     }
 
-    // Event Results CRUD
-    final public function createResult(EventResultDto $dto): Uuid
+    final public function createResult(Uuid $eventDisciplineDistanceId, EventResultDto $dto): Uuid
     {
-        // TODO: Pobierz eventDisciplineDistance, feed, user z kontekstu lub DTO
-        $eventDisciplineDistance = null;
-        $feed = null;
-        $user = null;
-        $result = new EventDisciplineResult($eventDisciplineDistance, $feed, $user, (int)$dto->result);
-        $this->eventDisciplineResultRepository->save($result);
+        $eventDisciplineDistance = $this->eventDisciplineDistanceRepository->findById($eventDisciplineDistanceId);
 
-        return $result->id;
+        $user = $this->userRepository->findById(Uuid::fromString($dto->userId));
+
+        $feed = new Feed($user, null, null, ElementStatusEnum::Draft);
+
+        $this->feedRepository->save($feed);
+
+        $eventDisciplineResult = new EventDisciplineResult($eventDisciplineDistance, $feed, $user, $dto->time);
+
+        $this->eventDisciplineResultRepository->save($eventDisciplineResult);
+
+        foreach ($dto->subResults as $subResult) {
+            $eventDisciplineSubDistance = $this->eventDisciplineSubDistanceRepository->findById(
+                Uuid::fromString($subResult->eventDisciplineSubDistanceId),
+            );
+
+            $eventDisciplineSubResult = new EventDisciplineSubResult(
+                $eventDisciplineSubDistance,
+                $user,
+                $subResult->time,
+            );
+
+            $this->eventDisciplineSubResultRepository->save($eventDisciplineSubResult);
+        }
+
+        return $eventDisciplineResult->id;
     }
 
-    final public function updateResult(Uuid $id, EventResultDto $dto): Uuid
+    final public function updateResult(Uuid $eventDisciplineResultId, EventResultDto $dto): Uuid
     {
-        $result = $this->eventDisciplineResultRepository->findById($id);
-        $result->time = (int)$dto->result;
-        $this->eventDisciplineResultRepository->save($result);
+        $eventDisciplineResult = $this->eventDisciplineResultRepository->findById($eventDisciplineResultId);
 
-        return $result->id;
+        $user = $this->userRepository->findById(Uuid::fromString($dto->userId));
+
+        $eventDisciplineResult->user = $user;
+        $eventDisciplineResult->time = $dto->time;
+
+        /** @var EventDisciplineSubDistance $subDistance */
+        foreach ($eventDisciplineResult->eventDisciplineDistance->subDistances->toArray() as $subDistance) {
+            /** @var EventDisciplineSubResult $subResult */
+            foreach ($subDistance->subResults as $subResult) {
+                if ($subResult->user->id->toString() === $user->id->toString()) {
+                    $subResult->softDelete();
+                    $this->eventDisciplineSubResultRepository->save($subResult);
+                }
+            }
+        }
+
+        foreach ($dto->subResults as $subResult) {
+            $eventDisciplineSubDistance = $this->eventDisciplineSubDistanceRepository->findById(
+                Uuid::fromString($subResult->eventDisciplineSubDistanceId),
+            );
+            $eventDisciplineSubResult = new EventDisciplineSubResult(
+                $eventDisciplineSubDistance,
+                $user,
+                $subResult->time,
+            );
+
+            $this->eventDisciplineSubResultRepository->save($eventDisciplineSubResult);
+        }
+
+        $this->eventDisciplineResultRepository->save($eventDisciplineResult);
+
+        return $eventDisciplineResult->id;
     }
 
-    final public function deleteResult(Uuid $id): Uuid
+    final public function deleteResult(Uuid $eventDisciplineResultId): Uuid
     {
-        $result = $this->eventDisciplineResultRepository->findById($id);
-        $result->softDelete();
-        $this->eventDisciplineResultRepository->save($result);
+        $eventDisciplineResult = $this->eventDisciplineResultRepository->findById($eventDisciplineResultId);
 
-        return $result->id;
+        $eventDisciplineResult->softDelete();
+        $this->eventDisciplineResultRepository->save($eventDisciplineResult);
+
+        return $eventDisciplineResult->id;
     }
 
-    final public function indexResult(): array
+    final public function indexResult(Uuid $eventDisciplineDistanceId, EventResultIndexDto $dto): array
     {
-        return $this->eventDisciplineResultRepository->findAll();
+        return $this->eventDisciplineResultRepository->findResults($eventDisciplineDistanceId, $dto);
     }
 
-    final public function detailsResult(Uuid $id): EventDisciplineResult
+    final public function detailsResult(Uuid $eventDisciplineResultId): EventDisciplineResult
     {
-        return $this->eventDisciplineResultRepository->findById($id);
+        return $this->eventDisciplineResultRepository->findById($eventDisciplineResultId);
     }
 }

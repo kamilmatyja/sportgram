@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Enum\ElementStatusEnum;
 use App\Repository\EventRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -115,6 +116,9 @@ class Event
         }
     }
 
+    #[ORM\OneToMany(targetEntity: EventDiscipline::class, mappedBy: 'event')]
+    public Collection $disciplines;
+
     public function __construct(
         PageParticipant $pageParticipant,
         DateTimeImmutable $startedAt,
@@ -137,6 +141,7 @@ class Event
         $this->photo = $photo;
         $this->location = $location;
         $this->status = $status;
+        $this->disciplines = new ArrayCollection();
     }
 
     #[ORM\PrePersist]

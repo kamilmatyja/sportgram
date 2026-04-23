@@ -139,14 +139,17 @@ readonly class TrainingService
             fn (TrainingParticipant $participant) => $participant->user->id->toString() === $user->id->toString(),
         );
 
+        /** @var TrainingDiscipline $discipline */
         foreach ($trainingParticipant->disciplines as $discipline) {
             $discipline->softDelete();
             $this->trainingDisciplineRepository->save($discipline);
 
+            /** @var TrainingDisciplineDistance $distance */
             foreach ($discipline->distances as $distance) {
                 $distance->softDelete();
                 $this->trainingDisciplineDistanceRepository->save($distance);
 
+                /** @var TrainingDisciplineSubDistance $subDistance */
                 foreach ($distance->subDistances as $subDistance) {
                     $subDistance->softDelete();
                     $this->trainingDisciplineSubDistanceRepository->save($subDistance);

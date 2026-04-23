@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Enum\DisciplineEnum;
 use App\Repository\EventDisciplineRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -23,7 +24,7 @@ class EventDiscipline
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Event::class)]
+    #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'disciplines')]
     #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id', nullable: false)]
     public Event $event {
         get {
@@ -59,10 +60,14 @@ class EventDiscipline
         }
     }
 
+    #[ORM\OneToMany(targetEntity: EventDisciplineDistance::class, mappedBy: 'eventDiscipline')]
+    public Collection $distances;
+
     public function __construct(Event $event, DisciplineEnum $discipline)
     {
         $this->event = $event;
         $this->discipline = $discipline;
+        $this->distances = new ArrayCollection();
     }
 
     #[ORM\PrePersist]

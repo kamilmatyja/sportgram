@@ -3,22 +3,22 @@
 namespace App\Security\Voter;
 
 use App\Entity\User;
-use App\Repository\PageRepository;
+use App\Repository\EventRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\{Vote, Voter};
 use Symfony\Component\Uid\Uuid;
 
-class EventCreatorVoter extends Voter
+class EventUpdaterVoter extends Voter
 {
-    public const string EVENT_CREATOR = 'EVENT_CREATOR';
+    public const string EVENT_UPDATER = 'EVENT_UPDATER';
 
-    public function __construct(private readonly PageRepository $pageRepository)
+    public function __construct(private readonly EventRepository $eventRepository)
     {
     }
 
     final protected function supports(string $attribute, mixed $subject): bool
     {
-        return $attribute === self::EVENT_CREATOR && $subject !== null;
+        return $attribute === self::EVENT_UPDATER && $subject !== null;
     }
 
     final protected function voteOnAttribute(
@@ -37,13 +37,11 @@ class EventCreatorVoter extends Voter
             return false;
         }
 
-        $page = $this->pageRepository->findById($subject);
+        $event = $this->eventRepository->findById($subject);
 
-        $pageParticipant = $page->participants->findFirst(
-            fn ($participant) => $participant->user->id->toString() === $user->id->toString(),
-        );
+        $pageParticipant = $event->pageParticipant;
 
-        if ($pageParticipant) {
+        if ($pageParticipant->user->id->toString() === $user->id->toString()) {
             return true;
         }
 

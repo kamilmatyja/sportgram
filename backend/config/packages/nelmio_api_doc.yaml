@@ -59,9 +59,16 @@ nelmio_api_doc:
       - { alias: TrainingDisciplineDistanceDto, type: App\Dto\TrainingDisciplineDistanceDto }
       - { alias: TrainingDisciplineSubDistanceDto, type: App\Dto\TrainingDisciplineSubDistanceDto }
       - { alias: EventResource, type: App\Resource\EventResource }
+      - { alias: EventFilterDto, type: App\Dto\EventFilterDto }
+      - { alias: EventDisciplineDto, type: App\Dto\EventDisciplineDto }
       - { alias: EventDisciplineResource, type: App\Resource\EventDisciplineResource }
+      - { alias: EventDisciplineDistanceDto, type: App\Dto\EventDisciplineDistanceDto }
       - { alias: EventDisciplineDistanceResource, type: App\Resource\EventDisciplineDistanceResource }
+      - { alias: EventDisciplineSubDistanceDto, type: App\Dto\EventDisciplineSubDistanceDto }
       - { alias: EventDisciplineSubDistanceResource, type: App\Resource\EventDisciplineSubDistanceResource }
       - { alias: EventDisciplineDistanceListResource, type: App\Resource\EventDisciplineDistanceListResource }
+      - { alias: EventListFilterDto, type: App\Dto\EventListFilterDto }
       - { alias: EventDisciplineDistanceResultResource, type: App\Resource\EventDisciplineDistanceResultResource }
+      - { alias: EventResultFilterDto, type: App\Dto\EventResultFilterDto }
       - { alias: EventDisciplineDistanceSubResultResource, type: App\Resource\EventDisciplineDistanceSubResultResource }
+      - { alias: EventSubResultDto, type: App\Dto\EventSubResultDto }

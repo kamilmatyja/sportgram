@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Dto\{ConversationCreateDto, ConversationIndexDto, ConversationStatusDto, ConversationUpdateDto};
+use App\Dto\{ConversationDto, ConversationIndexDto, ConversationStatusDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\{ConversationActivityResource, ConversationResource};
@@ -18,20 +18,21 @@ use Symfony\Component\Uid\Uuid;
 
 class ConversationController extends AbstractController
 {
-    #[Route('/api/conversations', name: 'conversation_create', methods: ['POST'])]
+    #[Route('/api/conversation-users/{id}', name: 'conversation_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create conversation',
-        requestBody: new Body('ConversationCreateDto'),
+        requestBody: new Body('ConversationDto'),
         tags: ['conversations'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
+        Uuid $id,
         #[MapRequestPayload]
-        ConversationCreateDto $dto,
+        ConversationDto $dto,
         ConversationService $service,
     ): JsonResponse {
-        $conversationId = $service->create($dto);
+        $conversationId = $service->create($id, $dto);
 
         return ApiResponse::created($conversationId);
     }
@@ -40,14 +41,14 @@ class ConversationController extends AbstractController
     #[IsGranted(ConversationSenderVoter::CONVERSATION_SENDER, subject: 'id')]
     #[OA\Put(
         summary: 'Update conversation',
-        requestBody: new Body('ConversationUpdateDto'),
+        requestBody: new Body('ConversationDto'),
         tags: ['conversations'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         Uuid $id,
         #[MapRequestPayload]
-        ConversationUpdateDto $dto,
+        ConversationDto $dto,
         ConversationService $service,
     ): JsonResponse {
         $conversationId = $service->update($id, $dto);

@@ -6,6 +6,7 @@ use App\Entity\Event;
 use App\Validator\UniqueField;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\Type;
 
 #[OA\Schema(
     schema: 'EventDto',
@@ -15,10 +16,16 @@ use Symfony\Component\Validator\Constraints as Assert;
         new OA\Property(property: 'endedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'title', type: 'string', example: 'Event Title'),
         new OA\Property(property: 'description', type: 'string', example: 'Event Description'),
-        new OA\Property(property: 'link', type: 'string', example: 'event-link'),
+        new OA\Property(property: 'link', type: 'string', example: 'my-link'),
         new OA\Property(property: 'rules', type: 'string', example: 'Event Rules'),
         new OA\Property(property: 'photo', type: 'string', example: 'base64string'),
         new OA\Property(property: 'location', type: 'string', example: 'Event Location'),
+        new OA\Property(
+            property: 'disciplines',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/EventDisciplineDto'),
+            nullable: true,
+        ),
     ],
     type: 'object',
 )]
@@ -56,4 +63,9 @@ class EventDto
     #[Assert\NotBlank]
     #[Assert\Length(min: 5, max: 1024)]
     public string $location;
+
+    /** @var EventDisciplineDto[] */
+    #[Assert\Valid]
+    #[Type('array<App\Dto\EventDisciplineDto>')]
+    public array $disciplines = [];
 }

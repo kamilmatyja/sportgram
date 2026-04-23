@@ -3,32 +3,32 @@
 namespace App\Dto;
 
 use App\Entity\User;
+use App\Enum\SaveStatusEnum;
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'ConversationCreateDto',
-    required: ['receiverUserId', 'text'],
+    schema: 'EventListFilterDto',
+    required: [],
     properties: [
         new OA\Property(
-            property: 'receiverUserId',
+            property: 'userId',
             type: 'string',
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+            nullable: true,
         ),
-        new OA\Property(property: 'text', type: 'string', example: 'Hello, how are you?'),
+        new OA\Property(property: 'status', type: 'integer', example: 1, nullable: true),
     ],
     type: 'object',
 )]
-class ConversationCreateDto
+class EventListFilterDto
 {
-    #[Assert\NotBlank]
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    public string $receiverUserId;
+    public ?string $userId = null;
 
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 1, max: 2048)]
-    public string $text;
+    #[Assert\Choice(callback: [SaveStatusEnum::class, 'values'])]
+    public ?int $status = null;
 }

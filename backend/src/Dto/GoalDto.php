@@ -54,10 +54,10 @@ class GoalDto
     public int $discipline;
 
     #[Assert\NotBlank]
-    #[Assert\Range(min: 1, max: 9999999)]
+    #[Assert\Type('integer')]
     public int $distance;
 
-    #[Assert\Range(min: 1, max: 9999999)]
+    #[Assert\Type('integer')]
     public ?int $time;
 
     /** @var string[] */

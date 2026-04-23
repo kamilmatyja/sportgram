@@ -32,7 +32,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'text', type: 'string', example: 'Story text'),
-        new OA\Property(property: 'photo', type: 'string', format: 'base64string'),
+        new OA\Property(property: 'photo', type: 'string', example: 'base64string'),
         new OA\Property(property: 'status', type: 'integer', example: 1),
     ],
     type: 'object',

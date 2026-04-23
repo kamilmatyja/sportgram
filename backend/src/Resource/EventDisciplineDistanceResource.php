@@ -3,66 +3,65 @@
 namespace App\Resource;
 
 use App\Dto\EventDetailsQueryDto;
-use App\Entity\Event;
+use App\Entity\{EventDisciplineDistance, EventDisciplineSubDistance};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
     schema: 'EventDisciplineDistanceResource',
     required: [
         'id',
-        'pageParticipantId',
+        'eventDisciplineId',
         'createdAt',
         'updatedAt',
-        'startedAt',
-        'endedAt',
-        'title',
-        'description',
-        'link',
-        'rules',
-        'photo',
-        'location',
-        'status',
+        'distance',
     ],
     properties: [
-        new OA\Property(property: 'id', type: 'string', format: 'uuid'),
-        new OA\Property(property: 'pageParticipantId', type: 'string', format: 'uuid'),
-        new OA\Property(property: 'createdAt', type: 'string', format: 'date-time'),
-        new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time'),
-        new OA\Property(property: 'startedAt', type: 'string', format: 'date-time'),
-        new OA\Property(property: 'endedAt', type: 'string', format: 'date-time'),
-        new OA\Property(property: 'title', type: 'string'),
-        new OA\Property(property: 'description', type: 'string'),
-        new OA\Property(property: 'link', type: 'string'),
-        new OA\Property(property: 'rules', type: 'string'),
-        new OA\Property(property: 'photo', type: 'string'),
-        new OA\Property(property: 'location', type: 'string'),
-        new OA\Property(property: 'status', type: 'integer'),
+        new OA\Property(
+            property: 'id',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
+        new OA\Property(
+            property: 'eventDisciplineId',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
+        new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'distance', type: 'integer', example: 100),
+        new OA\Property(
+            property: 'subDistances',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/EventDisciplineSubDistanceResource'),
+        ),
     ],
     type: 'object',
 )]
 class EventDisciplineDistanceResource
 {
-    public static function fromEntity(Event $event, ?EventDetailsQueryDto $dto = null): array
-    {
-        return [
-            'id' => $event->id->toString(),
-            'pageParticipantId' => $event->pageParticipant->id->toString(),
-            'createdAt' => $event->createdAt->format('Y-m-d\TH:i:s'),
-            'updatedAt' => $event->updatedAt->format('Y-m-d\TH:i:s'),
-            'startedAt' => $event->startedAt->format('Y-m-d\TH:i:s'),
-            'endedAt' => $event->endedAt->format('Y-m-d\TH:i:s'),
-            'title' => $event->title,
-            'description' => $event->description,
-            'link' => $event->link,
-            'rules' => $event->rules,
-            'photo' => $event->photo,
-            'location' => $event->location,
-            'status' => $event->status->value,
+    public static function fromEntity(
+        EventDisciplineDistance $eventDisciplineDistance,
+        ?EventDetailsQueryDto $dto = null,
+    ): array {
+        $data = [
+            'id' => $eventDisciplineDistance->id->toString(),
+            'eventDisciplineId' => $eventDisciplineDistance->eventDiscipline->id->toString(),
+            'createdAt' => $eventDisciplineDistance->createdAt->format('Y-m-d\TH:i:s'),
+            'updatedAt' => $eventDisciplineDistance->updatedAt->format('Y-m-d\TH:i:s'),
+            'distance' => $eventDisciplineDistance->distance,
         ];
-    }
 
-    public static function fromEntityCollection(array $events): array
-    {
-        return array_map(fn (Event $event) => self::fromEntity($event), $events);
+        if (in_array($dto::EVENT_DISCIPLINE_SUB_DISTANCES, $dto->include)) {
+            $data['subDistances'] = array_map(
+                fn (EventDisciplineSubDistance $subDistance) => EventDisciplineSubDistanceResource::fromEntity(
+                    $subDistance,
+                ),
+                $eventDisciplineDistance->subDistances->toArray(),
+            );
+        }
+
+        return $data;
     }
 }

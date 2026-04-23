@@ -48,8 +48,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'country', type: 'integer', example: 1),
         new OA\Property(property: 'theme', type: 'integer', example: 1),
         new OA\Property(property: 'color', type: 'integer', example: 1),
-        new OA\Property(property: 'profilePhoto', type: 'string', format: 'base64string'),
-        new OA\Property(property: 'backgroundPhoto', type: 'string', format: 'base64string'),
+        new OA\Property(property: 'profilePhoto', type: 'string', example: 'base64string'),
+        new OA\Property(property: 'backgroundPhoto', type: 'string', example: 'base64string'),
         new OA\Property(property: 'bio', type: 'string', example: 'Example text'),
         new OA\Property(property: 'status', type: 'integer', example: 1),
         new OA\Property(

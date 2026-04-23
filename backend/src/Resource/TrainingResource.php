@@ -10,6 +10,7 @@ use OpenApi\Attributes as OA;
     schema: 'TrainingResource',
     required: [
         'id',
+        'feedId',
         'userId',
         'createdAt',
         'updatedAt',
@@ -24,6 +25,12 @@ use OpenApi\Attributes as OA;
     properties: [
         new OA\Property(
             property: 'Id',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
+        new OA\Property(
+            property: 'feedId',
             type: 'string',
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
@@ -57,6 +64,7 @@ class TrainingResource
     {
         $data = [
             'id' => $training->id->toString(),
+            'feedId' => $training->feed->id->toString(),
             'userId' => $training->user->id->toString(),
             'createdAt' => $training->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $training->updatedAt->format('Y-m-d\TH:i:s'),
