@@ -8,30 +8,43 @@ use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[OA\Schema(
+    schema: 'GoalFilterDto',
+    required: ['userId'],
+    properties: [
+        new OA\Property(
+            property: 'userId',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
+        new OA\Property(property: 'text', type: 'string', example: 'Running goal', nullable: true),
+        new OA\Property(property: 'discipline', type: 'integer', example: 1, nullable: true),
+        new OA\Property(property: 'distance', type: 'integer', example: 100, nullable: true),
+        new OA\Property(property: 'time', type: 'integer', example: 60, nullable: true),
+        new OA\Property(property: 'status', type: 'integer', example: 1, nullable: true),
+    ],
+    type: 'object',
+)]
 class GoalFilterDto
 {
     #[Assert\NotBlank]
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    #[OA\Property(example: '123e4567-e89b-12d3-a456-426655440000')]
     public string $userId;
 
     #[Assert\Length(min: 1, max: 2048)]
-    #[OA\Property(example: 'Trening biegowy')]
     public ?string $text;
 
     #[Assert\Choice(callback: [DisciplineEnum::class, 'values'])]
-    #[OA\Property(example: 1)]
     public ?int $discipline;
 
     #[Assert\Range(min: 1, max: 9999999)]
     public ?int $distance;
 
     #[Assert\Range(min: 1, max: 9999999)]
-    #[OA\Property(example: 3600)]
     public ?int $time;
 
     #[Assert\Choice(callback: [GoalStatusEnum::class, 'values'])]
-    #[OA\Property(example: 1)]
     public ?int $status = null;
 }

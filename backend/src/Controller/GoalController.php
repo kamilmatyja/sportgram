@@ -23,6 +23,7 @@ class GoalController extends AbstractController
     #[OA\Post(
         summary: 'Create goal',
         requestBody: new Body('GoalDto'),
+        tags: ['goals'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
@@ -40,6 +41,7 @@ class GoalController extends AbstractController
     #[OA\Put(
         summary: 'Update goal',
         requestBody: new Body('GoalDto'),
+        tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
@@ -58,6 +60,7 @@ class GoalController extends AbstractController
     #[OA\Patch(
         summary: 'Update goal status',
         requestBody: new Body('GoalStatusDto'),
+        tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
@@ -75,6 +78,7 @@ class GoalController extends AbstractController
     #[IsGranted(GoalCreatorVoter::GOAL_CREATOR, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete goal',
+        tags: ['goals'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
@@ -90,6 +94,7 @@ class GoalController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of goals',
+        tags: ['goals'],
         responses: [new Collection('GoalResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -108,6 +113,7 @@ class GoalController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of users',
+        tags: ['goals'],
         responses: [new Item('GoalResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
@@ -128,6 +134,7 @@ class GoalController extends AbstractController
     #[OA\Patch(
         summary: 'Update goal participant status',
         requestBody: new Body('SaveStatusDto'),
+        tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function participantUpdateStatus(
@@ -146,6 +153,7 @@ class GoalController extends AbstractController
     #[OA\Patch(
         summary: 'Update goal participant result status',
         requestBody: new Body('SaveStatusDto'),
+        tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function participantResultUpdateStatus(

@@ -48,11 +48,9 @@ class EntryRepository extends BaseRepository
                 ->setParameter('type', $dto->filter->type);
         }
 
-        if ($dto->sort) {
-            [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-            $dbField = $this->camelCaseToSnakeCase($field);
-            $qb->orderBy('e.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
-        }
+        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
+        $dbField = $this->camelCaseToSnakeCase($field);
+        $qb->orderBy('e.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
 
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);

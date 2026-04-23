@@ -21,6 +21,7 @@ class PasswordResetController extends AbstractController
     #[OA\Post(
         summary: 'Reset user password',
         requestBody: new Body('UserEmailDto'),
+        tags: ['password resets'],
         responses: [new Created(), new BadRequest(), new Conflict()],
     )]
     final public function passwordReset(
@@ -38,6 +39,7 @@ class PasswordResetController extends AbstractController
     #[OA\Patch(
         summary: 'Confirm reset user password',
         requestBody: new Body('UserPasswordDto'),
+        tags: ['password resets'],
         responses: [new Ok(), new BadRequest(), new Conflict()],
     )]
     final public function confirm(
@@ -55,6 +57,7 @@ class PasswordResetController extends AbstractController
     #[IsGranted('IS_ANONYMOUS')]
     #[OA\Post(
         summary: 'Resend reset user password',
+        tags: ['password resets'],
         responses: [new Ok(), new Conflict()],
     )]
     final public function resend(

@@ -23,6 +23,7 @@ class FriendController extends AbstractController
     #[OA\Post(
         summary: 'Create friend',
         requestBody: new Body('FriendDto'),
+        tags: ['friends'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
@@ -40,6 +41,7 @@ class FriendController extends AbstractController
     #[OA\Patch(
         summary: 'Update friend status',
         requestBody: new Body('FriendStatusDto'),
+        tags: ['friends'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
@@ -57,6 +59,7 @@ class FriendController extends AbstractController
     #[IsGranted(FriendSenderVoter::FRIEND_SENDER, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete friend',
+        tags: ['friends'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
@@ -72,6 +75,7 @@ class FriendController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of friends',
+        tags: ['friends'],
         responses: [new Collection('FriendResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -90,6 +94,7 @@ class FriendController extends AbstractController
     #[IsGranted(FriendVoter::FRIEND, subject: 'id')]
     #[OA\Get(
         summary: 'Details of friend',
+        tags: ['friends'],
         responses: [new Item('FriendResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(

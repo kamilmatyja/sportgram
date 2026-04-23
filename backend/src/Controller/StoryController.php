@@ -23,6 +23,7 @@ class StoryController extends AbstractController
     #[OA\Post(
         summary: 'Create story',
         requestBody: new Body('StoryDto'),
+        tags: ['stories'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
@@ -40,6 +41,7 @@ class StoryController extends AbstractController
     #[OA\Put(
         summary: 'Update story',
         requestBody: new Body('StoryDto'),
+        tags: ['stories'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
@@ -58,6 +60,7 @@ class StoryController extends AbstractController
     #[OA\Patch(
         summary: 'Update story status',
         requestBody: new Body('ElementStatusDto'),
+        tags: ['stories'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
@@ -75,6 +78,7 @@ class StoryController extends AbstractController
     #[IsGranted(StoryCreatorVoter::STORY_CREATOR, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete story',
+        tags: ['stories'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
@@ -90,6 +94,7 @@ class StoryController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of stories',
+        tags: ['stories'],
         responses: [new Collection('StoryResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -108,6 +113,7 @@ class StoryController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of stories',
+        tags: ['stories'],
         responses: [new Item('StoryResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(

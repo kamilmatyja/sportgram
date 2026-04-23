@@ -19,12 +19,17 @@ use OpenApi\Attributes as OA;
         'status',
     ],
     properties: [
-        new OA\Property(property: 'id', type: 'string', example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'),
-        new OA\Property(property: 'createdAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
-        new OA\Property(property: 'updatedAt', type: 'string', format: 'date', example: '2024-01-01T21:37:00'),
-        new OA\Property(property: 'text', type: 'string', example: 'Ala ma kota'),
+        new OA\Property(
+            property: 'Id',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
+        new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'text', type: 'string', example: 'Running goal'),
         new OA\Property(property: 'discipline', type: 'integer', example: 1),
-        new OA\Property(property: 'distance', type: 'integer', example: 1000),
+        new OA\Property(property: 'distance', type: 'integer', example: 100),
         new OA\Property(property: 'time', type: 'integer', example: 60),
         new OA\Property(property: 'status', type: 'integer', example: 1),
         new OA\Property(

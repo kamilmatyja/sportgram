@@ -23,6 +23,7 @@ class ConversationController extends AbstractController
     #[OA\Post(
         summary: 'Create conversation',
         requestBody: new Body('ConversationCreateDto'),
+        tags: ['conversations'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
@@ -40,6 +41,7 @@ class ConversationController extends AbstractController
     #[OA\Put(
         summary: 'Update conversation',
         requestBody: new Body('ConversationUpdateDto'),
+        tags: ['conversations'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
@@ -58,6 +60,7 @@ class ConversationController extends AbstractController
     #[OA\Patch(
         summary: 'Update conversation status',
         requestBody: new Body('ConversationStatusDto'),
+        tags: ['conversations'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
@@ -75,6 +78,7 @@ class ConversationController extends AbstractController
     #[IsGranted(ConversationSenderVoter::CONVERSATION_SENDER, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete conversation',
+        tags: ['conversations'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
@@ -90,6 +94,7 @@ class ConversationController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of conversations',
+        tags: ['conversations'],
         responses: [new Collection('ConversationResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -108,6 +113,7 @@ class ConversationController extends AbstractController
     #[IsGranted(ConversationVoter::CONVERSATION, subject: 'id')]
     #[OA\Get(
         summary: 'Details of conversation',
+        tags: ['conversations'],
         responses: [new Item('ConversationResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
@@ -125,6 +131,7 @@ class ConversationController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Patch(
         summary: 'Update conversation activity updated_at',
+        tags: ['conversations'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateActivityUpdatedAt(
@@ -140,6 +147,7 @@ class ConversationController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of conversation activity',
+        tags: ['conversations'],
         responses: [new Item('ConversationActivityResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function detailsActivity(

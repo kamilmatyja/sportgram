@@ -53,11 +53,9 @@ class StoryRepository extends BaseRepository
                 ->setParameter('status', $dto->filter->status);
         }
 
-        if ($dto->sort) {
-            [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-            $dbField = $this->camelCaseToSnakeCase($field);
-            $qb->orderBy('s.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
-        }
+        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
+        $dbField = $this->camelCaseToSnakeCase($field);
+        $qb->orderBy('s.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
 
         // TODO - zawęzić o listę znajomych
         // TODO - zawęzić o niewyświetlone

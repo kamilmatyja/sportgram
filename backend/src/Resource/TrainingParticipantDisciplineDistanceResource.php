@@ -14,14 +14,19 @@ use OpenApi\Attributes as OA;
         'discipline',
     ],
     properties: [
-        new OA\Property(property: 'id', type: 'string', example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'),
+        new OA\Property(
+            property: 'Id',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
         new OA\Property(
             property: 'trainingDisciplineId',
             type: 'string',
-            example: '123e4567-e89b-12d3-a456-426614174000',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
         ),
-        new OA\Property(property: 'distance', type: 'integer', example: 1),
-        new OA\Property(property: 'time', type: 'integer', example: 1),
+        new OA\Property(property: 'distance', type: 'integer', example: 100),
+        new OA\Property(property: 'time', type: 'integer', example: 60),
         new OA\Property(
             property: 'subDistances',
             type: 'array',

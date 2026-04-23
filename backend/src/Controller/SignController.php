@@ -21,6 +21,7 @@ class SignController extends AbstractController
     #[OA\Post(
         summary: 'Sign user',
         requestBody: new Body('UserSignDto'),
+        tags: ['signs'],
         responses: [new Created(), new BadRequest(), new Conflict()],
     )]
     final public function sign(
@@ -38,6 +39,7 @@ class SignController extends AbstractController
     #[OA\Patch(
         summary: 'Confirm sign user',
         requestBody: new Body('UserCodeDto'),
+        tags: ['signs'],
         responses: [new Token(), new BadRequest(), new Conflict()],
     )]
     final public function confirm(
@@ -55,6 +57,7 @@ class SignController extends AbstractController
     #[IsGranted('IS_ANONYMOUS')]
     #[OA\Post(
         summary: 'Resend sign user',
+        tags: ['signs'],
         responses: [new Ok(), new Conflict()],
     )]
     final public function resend(
@@ -69,6 +72,7 @@ class SignController extends AbstractController
     #[Route('/api/signs/{id}/refresh', name: 'user_sign_refresh', methods: ['POST'])]
     #[OA\Post(
         summary: 'Refresh sign user',
+        tags: ['signs'],
         responses: [new Token(), new Conflict()],
     )]
     final public function refresh(

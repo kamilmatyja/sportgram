@@ -67,11 +67,9 @@ class ConversationRepository extends BaseRepository
                 ->setParameter('status', $dto->filter->status);
         }
 
-        if ($dto->sort) {
-            [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-            $dbField = $this->camelCaseToSnakeCase($field);
-            $qb->orderBy('c.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
-        }
+        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
+        $dbField = $this->camelCaseToSnakeCase($field);
+        $qb->orderBy('c.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
 
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);

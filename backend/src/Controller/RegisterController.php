@@ -21,6 +21,7 @@ class RegisterController extends AbstractController
     #[OA\Post(
         summary: 'Register user',
         requestBody: new Body('UserEmailDto'),
+        tags: ['registers'],
         responses: [new Created(), new BadRequest(), new Conflict()],
     )]
     final public function register(
@@ -38,6 +39,7 @@ class RegisterController extends AbstractController
     #[OA\Patch(
         summary: 'Confirm register user',
         requestBody: new Body('UserCodeDto'),
+        tags: ['registers'],
         responses: [new Ok(), new BadRequest(), new Conflict()],
     )]
     final public function confirm(
@@ -55,6 +57,7 @@ class RegisterController extends AbstractController
     #[IsGranted('IS_ANONYMOUS')]
     #[OA\Post(
         summary: 'Resend register user',
+        tags: ['registers'],
         responses: [new Ok(), new Conflict()],
     )]
     final public function resend(

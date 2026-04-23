@@ -24,6 +24,7 @@ class UserController extends AbstractController
     #[OA\Post(
         summary: 'Create user',
         requestBody: new Body('UserCreateDto'),
+        tags: ['users'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
@@ -41,6 +42,7 @@ class UserController extends AbstractController
     #[OA\Post(
         summary: 'Create user nano',
         requestBody: new Body('UserCreateNanoDto'),
+        tags: ['users'],
         responses: [new Created(), new BadRequest()],
     )]
     final public function createNano(
@@ -58,6 +60,7 @@ class UserController extends AbstractController
     #[OA\Put(
         summary: 'Update user',
         requestBody: new Body('UserUpdateDto'),
+        tags: ['users'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
@@ -76,6 +79,7 @@ class UserController extends AbstractController
     #[OA\Patch(
         summary: 'Update user status',
         requestBody: new Body('UserStatusDto'),
+        tags: ['users'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
@@ -93,6 +97,7 @@ class UserController extends AbstractController
     #[IsGranted(UserVoter::USER, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete user',
+        tags: ['users'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
@@ -108,6 +113,7 @@ class UserController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of users',
+        tags: ['users'],
         responses: [new Collection('UserResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -126,6 +132,7 @@ class UserController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of users',
+        tags: ['users'],
         responses: [new Item('UserResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(

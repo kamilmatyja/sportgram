@@ -50,11 +50,9 @@ class PushSubscriptionRepository extends BaseRepository
                 ->setParameter('auth', $dto->filter->auth);
         }
 
-        if ($dto->sort) {
-            [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-            $dbField = $this->camelCaseToSnakeCase($field);
-            $qb->orderBy('p.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
-        }
+        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
+        $dbField = $this->camelCaseToSnakeCase($field);
+        $qb->orderBy('p.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
 
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);

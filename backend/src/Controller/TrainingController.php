@@ -23,6 +23,7 @@ class TrainingController extends AbstractController
     #[OA\Post(
         summary: 'Create training',
         requestBody: new Body('TrainingDto'),
+        tags: ['trainings'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
@@ -40,6 +41,7 @@ class TrainingController extends AbstractController
     #[OA\Put(
         summary: 'Update training',
         requestBody: new Body('TrainingDto'),
+        tags: ['trainings'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
@@ -58,6 +60,7 @@ class TrainingController extends AbstractController
     #[OA\Patch(
         summary: 'Update training status',
         requestBody: new Body('ElementStatusDto'),
+        tags: ['trainings'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
@@ -75,6 +78,7 @@ class TrainingController extends AbstractController
     #[IsGranted(TrainingCreatorVoter::TRAINING_CREATOR, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete training',
+        tags: ['trainings'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
@@ -90,6 +94,7 @@ class TrainingController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of trainings',
+        tags: ['trainings'],
         responses: [new Collection('TrainingResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -108,6 +113,7 @@ class TrainingController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of training',
+        tags: ['trainings'],
         responses: [new Item('TrainingResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
@@ -128,6 +134,7 @@ class TrainingController extends AbstractController
     #[OA\Patch(
         summary: 'Update training participant status',
         requestBody: new Body('SaveStatusDto'),
+        tags: ['trainings'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function participantUpdateStatus(

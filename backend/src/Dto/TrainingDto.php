@@ -6,47 +6,71 @@ use App\Entity\{Training, User};
 use App\Validator\{EntityExistsField, UniqueField};
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\Type;
 
-#[OA\Schema(schema: 'TrainingDto')]
+#[OA\Schema(
+    schema: 'TrainingDto',
+    required: ['startedAt', 'endedAt', 'title', 'description', 'link', 'location'],
+    properties: [
+        new OA\Property(property: 'startedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'endedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'title', type: 'string', example: 'Training Title'),
+        new OA\Property(property: 'description', type: 'string', example: 'Training Description'),
+        new OA\Property(property: 'link', type: 'string', example: 'my-link'),
+        new OA\Property(property: 'location', type: 'string', example: 'Training Location'),
+        new OA\Property(
+            property: 'disciplines',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/TrainingDisciplineDto'),
+            nullable: true,
+        ),
+        new OA\Property(
+            property: 'participants',
+            type: 'array',
+            items: new OA\Items(
+                type: 'string',
+                format: 'uuid',
+                example: '123e4567-e89b-12d3-a456-426614174000',
+            ),
+            nullable: true,
+        ),
+    ],
+    type: 'object',
+)]
 class TrainingDto
 {
     #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d\TH:i:s')]
-    #[OA\Property(example: '2026-04-22T10:00:00')]
     public string $startedAt;
 
     #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d\TH:i:s')]
-    #[OA\Property(example: '2026-04-22T12:00:00')]
     public string $endedAt;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 1, max: 256)]
-    #[OA\Property(example: 'Morning Run')]
     public string $title;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 1, max: 2048)]
-    #[OA\Property(example: 'A nice training session.')]
     public string $description;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 5, max: 64)]
     #[Assert\Regex(pattern: '/^[a-zA-Z0-9-]+$/')]
     #[UniqueField(entity: Training::class, field: 'link')]
-    #[OA\Property(example: 'morning-run')]
     public string $link;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 5, max: 1024)]
-    #[OA\Property(example: 'Central Park')]
-    public ?string $location = null;
+    public string $location;
 
     /** @var TrainingDisciplineDto[] */
     #[Assert\Valid]
-    #[OA\Property(type: 'array', items: new OA\Items(ref: '#/components/schemas/TrainingDisciplineDto'))]
+    #[Type('array<App\Dto\TrainingDisciplineDto>')]
     public array $disciplines = [];
 
+    /** @var string[] */
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),
@@ -54,6 +78,5 @@ class TrainingDto
     ])]
     #[Assert\Count(min: 1)]
     #[Assert\Unique]
-    #[OA\Property(example: ['123e4567-e89b-12d3-a456-426614174000', '123e4567-e89b-12d3-a456-426614174000'])]
     public array $participants = [];
 }

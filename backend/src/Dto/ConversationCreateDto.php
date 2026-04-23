@@ -7,17 +7,28 @@ use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[OA\Schema(schema: 'ConversationCreateDto')]
+#[OA\Schema(
+    schema: 'ConversationCreateDto',
+    required: ['receiverUserId', 'text'],
+    properties: [
+        new OA\Property(
+            property: 'receiverUserId',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
+        new OA\Property(property: 'text', type: 'string', example: 'Hello, how are you?'),
+    ],
+    type: 'object',
+)]
 class ConversationCreateDto
 {
     #[Assert\NotBlank]
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    #[OA\Property(example: '123e4567-e89b-12d3-a456-426614174000')]
     public string $receiverUserId;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 1, max: 2048)]
-    #[OA\Property(example: 'Hello!')]
     public string $text;
 }

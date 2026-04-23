@@ -5,20 +5,28 @@ namespace App\Dto;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[OA\Schema(
+    schema: 'StoryIndexDto',
+    required: [],
+    properties: [
+        new OA\Property(property: 'page', type: 'integer', example: 1, nullable: true),
+        new OA\Property(property: 'limit', type: 'integer', example: 10, nullable: true),
+        new OA\Property(property: 'sort', type: 'string', example: 'createdAt:desc', nullable: true),
+        new OA\Property(property: 'filter', ref: '#/components/schemas/StoryFilterDto', nullable: true),
+    ],
+    type: 'object',
+)]
 class StoryIndexDto
 {
     #[Assert\Positive]
     #[Assert\Range(min: 1, max: 1000)]
-    #[OA\Property(example: 1)]
     public int $page = 1;
 
     #[Assert\Range(min: 1, max: 100)]
-    #[OA\Property(example: 10)]
     public int $limit = 10;
 
     #[Assert\Regex(pattern: '/^(text|status|createdAt)(:(asc|desc))?$/')]
-    #[OA\Property(example: 'text:asc')]
-    public ?string $sort = null;
+    public string $sort = 'createdAt:desc';
 
     #[Assert\Valid]
     public StoryFilterDto $filter;

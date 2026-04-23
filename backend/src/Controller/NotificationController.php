@@ -23,6 +23,7 @@ class NotificationController extends AbstractController
     #[OA\Patch(
         summary: 'Update notification status',
         requestBody: new Body('NotificationStatusDto'),
+        tags: ['notifications'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
@@ -40,6 +41,7 @@ class NotificationController extends AbstractController
     #[IsGranted(NotificationVoter::NOTIFICATION, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete notification',
+        tags: ['notifications'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
@@ -55,6 +57,7 @@ class NotificationController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of notifications',
+        tags: ['notifications'],
         responses: [new Collection('NotificationResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -73,6 +76,7 @@ class NotificationController extends AbstractController
     #[IsGranted(NotificationVoter::NOTIFICATION, subject: 'id')]
     #[OA\Get(
         summary: 'Details of notification',
+        tags: ['notifications'],
         responses: [new Item('NotificationResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(

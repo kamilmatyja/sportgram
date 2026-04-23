@@ -23,6 +23,7 @@ class PushSubscriptionController extends AbstractController
     #[OA\Post(
         summary: 'Create push subscription',
         requestBody: new Body('PushSubscriptionDto'),
+        tags: ['push subscriptions'],
         responses: [new Created(), new BadRequest(), new Unauthorized()],
     )]
     final public function create(
@@ -40,6 +41,7 @@ class PushSubscriptionController extends AbstractController
     #[OA\Put(
         summary: 'Update push subscription',
         requestBody: new Body('PushSubscriptionDto'),
+        tags: ['push subscriptions'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
@@ -57,6 +59,7 @@ class PushSubscriptionController extends AbstractController
     #[IsGranted(PushSubscriptionVoter::PUSH_SUBSCRIPTION, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete push subscription',
+        tags: ['push subscriptions'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
@@ -72,6 +75,7 @@ class PushSubscriptionController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of push subscriptions',
+        tags: ['push subscriptions'],
         responses: [new Collection('PushSubscriptionResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -90,6 +94,7 @@ class PushSubscriptionController extends AbstractController
     #[IsGranted(PushSubscriptionVoter::PUSH_SUBSCRIPTION, subject: 'id')]
     #[OA\Get(
         summary: 'Details of push subscription',
+        tags: ['push subscriptions'],
         responses: [new Item('PushSubscriptionResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(

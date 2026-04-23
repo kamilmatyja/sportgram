@@ -6,11 +6,17 @@ use App\Enum\UserStatusEnum;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[OA\Schema(schema: 'UserStatusDto')]
+#[OA\Schema(
+    schema: 'UserStatusDto',
+    required: ['status'],
+    properties: [
+        new OA\Property(property: 'status', type: 'integer', example: 1),
+    ],
+    type: 'object',
+)]
 class UserStatusDto
 {
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [UserStatusEnum::class, 'values'])]
-    #[OA\Property(example: 1)]
     public int $status;
 }

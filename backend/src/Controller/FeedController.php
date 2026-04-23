@@ -28,6 +28,7 @@ class FeedController extends AbstractController
     #[OA\Post(
         summary: 'Create feed',
         requestBody: new Body('FeedDto'),
+        tags: ['feeds'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
@@ -45,6 +46,7 @@ class FeedController extends AbstractController
     #[OA\Put(
         summary: 'Update feed',
         requestBody: new Body('FeedDto'),
+        tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
@@ -63,6 +65,7 @@ class FeedController extends AbstractController
     #[OA\Patch(
         summary: 'Update feed status',
         requestBody: new Body('ElementStatusDto'),
+        tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
@@ -80,6 +83,7 @@ class FeedController extends AbstractController
     #[IsGranted(FeedCreatorVoter::FEED_CREATOR, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete feed',
+        tags: ['feeds'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
@@ -95,6 +99,7 @@ class FeedController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of feeds',
+        tags: ['feeds'],
         responses: [new Collection('FeedResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -113,6 +118,7 @@ class FeedController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of feeds',
+        tags: ['feeds'],
         responses: [new Item('FeedResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
@@ -123,7 +129,7 @@ class FeedController extends AbstractController
     ): JsonResponse {
         $feed = $service->details($id);
 
-        $data = FeedResource::fromEntity($feed);
+        $data = FeedResource::fromEntity($feed, $dto);
 
         return ApiResponse::elements($data);
     }
@@ -133,6 +139,7 @@ class FeedController extends AbstractController
     #[OA\Post(
         summary: 'Create feed comment',
         requestBody: new Body('FeedCommentDto'),
+        tags: ['feeds'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function createComment(
@@ -151,6 +158,7 @@ class FeedController extends AbstractController
     #[OA\Put(
         summary: 'Update feed comment',
         requestBody: new Body('FeedCommentDto'),
+        tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateComment(
@@ -169,6 +177,7 @@ class FeedController extends AbstractController
     #[OA\Patch(
         summary: 'Update feed comment status',
         requestBody: new Body('ElementStatusDto'),
+        tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateCommentStatus(
@@ -186,6 +195,7 @@ class FeedController extends AbstractController
     #[IsGranted(FeedCommentCreatorVoter::FEED_COMMENT_CREATOR, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete feed comment',
+        tags: ['feeds'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function deleteComment(
@@ -202,6 +212,7 @@ class FeedController extends AbstractController
     #[OA\Post(
         summary: 'Create feed reaction',
         requestBody: new Body('FeedReactionDto'),
+        tags: ['feeds'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function createReaction(
@@ -220,6 +231,7 @@ class FeedController extends AbstractController
     #[OA\Put(
         summary: 'Update feed reaction',
         requestBody: new Body('FeedReactionDto'),
+        tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateReaction(
@@ -238,6 +250,7 @@ class FeedController extends AbstractController
     #[OA\Patch(
         summary: 'Update feed reaction status',
         requestBody: new Body('ElementStatusDto'),
+        tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateReactionStatus(
@@ -255,6 +268,7 @@ class FeedController extends AbstractController
     #[IsGranted(FeedReactionCreatorVoter::FEED_REACTION_CREATOR, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete feed reaction',
+        tags: ['feeds'],
         responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function deleteReaction(

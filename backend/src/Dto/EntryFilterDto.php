@@ -8,18 +8,37 @@ use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[OA\Schema(
+    schema: 'EntryFilterDto',
+    required: [],
+    properties: [
+        new OA\Property(
+            property: 'userId',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+            nullable: true,
+        ),
+        new OA\Property(
+            property: 'entityId',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+            nullable: true,
+        ),
+        new OA\Property(property: 'type', type: 'integer', example: 1, nullable: true),
+    ],
+    type: 'object',
+)]
 class EntryFilterDto
 {
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    #[OA\Property(example: '123e4567-e89b-12d3-a456-426614174000')]
     public ?string $userId = null;
 
     #[Assert\Uuid]
-    #[OA\Property(example: '123e4567-e89b-12d3-a456-426614174000')]
     public ?string $entityId = null;
 
     #[Assert\Choice(callback: [EntryTypeEnum::class, 'values'])]
-    #[OA\Property(example: 1)]
     public ?int $type = null;
 }

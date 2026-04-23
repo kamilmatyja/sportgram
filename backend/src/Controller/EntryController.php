@@ -22,6 +22,7 @@ class EntryController extends AbstractController
     #[OA\Post(
         summary: 'Create entry',
         requestBody: new Body('EntryDto'),
+        tags: ['entries'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
@@ -38,6 +39,7 @@ class EntryController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of entries',
+        tags: ['entries'],
         responses: [new Collection('EntryResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -56,6 +58,7 @@ class EntryController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of entry',
+        tags: ['entries'],
         responses: [new Item('EntryResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(

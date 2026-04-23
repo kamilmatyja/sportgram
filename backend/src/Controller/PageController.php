@@ -29,6 +29,7 @@ class PageController extends AbstractController
     #[OA\Post(
         summary: 'Create page',
         requestBody: new Body('PageDto'),
+        tags: ['pages'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
@@ -46,6 +47,7 @@ class PageController extends AbstractController
     #[OA\Put(
         summary: 'Update page',
         requestBody: new Body('PageDto'),
+        tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
     )]
     final public function update(
@@ -64,6 +66,7 @@ class PageController extends AbstractController
     #[OA\Patch(
         summary: 'Patch page status',
         requestBody: new Body('ElementStatusDto'),
+        tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
     )]
     final public function patchStatus(
@@ -81,6 +84,7 @@ class PageController extends AbstractController
     #[IsGranted(PageCreatorVoter::PAGE_CREATOR, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete page',
+        tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
     )]
     final public function delete(
@@ -96,6 +100,7 @@ class PageController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of pages',
+        tags: ['pages'],
         responses: [new Collection('PageResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
@@ -114,6 +119,7 @@ class PageController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of page',
+        tags: ['pages'],
         responses: [new Item('PageResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
@@ -134,6 +140,7 @@ class PageController extends AbstractController
     #[OA\Patch(
         summary: 'Patch page participant status',
         requestBody: new Body('SaveStatusDto'),
+        tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
     )]
     final public function patchParticipantStatus(
@@ -152,6 +159,7 @@ class PageController extends AbstractController
     #[OA\Post(
         summary: 'Create page follow',
         requestBody: new Body('PageFollowStatusDto'),
+        tags: ['pages'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function createFollow(
@@ -170,6 +178,7 @@ class PageController extends AbstractController
     #[OA\Patch(
         summary: 'Patch page follow status',
         requestBody: new Body('PageFollowStatusDto'),
+        tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
     )]
     final public function patchFollowStatus(
@@ -187,6 +196,7 @@ class PageController extends AbstractController
     #[IsGranted(PageFollowVoter::PAGE_FOLLOW, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete page follow',
+        tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
     )]
     final public function deleteFollow(
@@ -202,6 +212,7 @@ class PageController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of page follows',
+        tags: ['pages'],
         responses: [new Collection('PageResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function indexFollows(
@@ -220,6 +231,7 @@ class PageController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Details of page follow',
+        tags: ['pages'],
         responses: [new Item('PageResource'), new BadRequest(), new Unauthorized()],
     )]
     final public function detailsFollow(
