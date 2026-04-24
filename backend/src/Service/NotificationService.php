@@ -46,8 +46,6 @@ readonly class NotificationService
 
     final public function details(Uuid $notificationId): Notification
     {
-        $notification = $this->notificationRepository->findById($notificationId);
-
-        return $notification;
+        return $this->notificationRepository->findById($notificationId);
     }
 }

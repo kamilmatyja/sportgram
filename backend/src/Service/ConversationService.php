@@ -86,9 +86,7 @@ readonly class ConversationService
 
     final public function details(Uuid $conversationId): Conversation
     {
-        $conversation = $this->conversationRepository->findById($conversationId);
-
-        return $conversation;
+        return $this->conversationRepository->findById($conversationId);
     }
 
     final public function updateActivityUpdatedAt(Uuid $userReceiverId): Uuid

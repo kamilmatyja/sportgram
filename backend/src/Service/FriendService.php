@@ -69,8 +69,6 @@ readonly class FriendService
 
     final public function details(Uuid $friendId): Friend
     {
-        $friend = $this->friendRepository->findById($friendId);
-
-        return $friend;
+        return $this->friendRepository->findById($friendId);
     }
 }

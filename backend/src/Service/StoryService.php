@@ -72,8 +72,6 @@ readonly class StoryService
 
     final public function details(Uuid $storyId): Story
     {
-        $story = $this->storyRepository->findById($storyId);
-
-        return $story;
+        return $this->storyRepository->findById($storyId);
     }
 }

@@ -8,7 +8,7 @@ use Symfony\Component\Uid\Uuid;
 
 abstract class BaseRepository extends ServiceEntityRepository
 {
-    public function findOrFail(Uuid $id): object
+    final public function findOrFail(Uuid $id): object
     {
         $entity = $this->find($id);
 

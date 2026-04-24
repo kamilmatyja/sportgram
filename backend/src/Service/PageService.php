@@ -187,8 +187,6 @@ readonly class PageService
 
     final public function detailsFollow(Uuid $pageFollowId): PageFollow
     {
-        $pageFollow = $this->pageFollowRepository->findById($pageFollowId);
-
-        return $pageFollow;
+        return $this->pageFollowRepository->findById($pageFollowId);
     }
 }

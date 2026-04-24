@@ -32,7 +32,7 @@ class EntryDto
     public int $type;
 
     #[EntryEntityExists]
-    protected function getEntityValidationData(): array
+    final protected function getEntityValidationData(): array
     {
         return [
             'entityId' => $this->entityId,

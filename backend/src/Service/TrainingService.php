@@ -126,15 +126,15 @@ readonly class TrainingService
         $training->location = $dto->location;
 
         foreach ($training->disciplines as $discipline) {
-            $this->trainingDisciplineRepository->delete($discipline);
-
             foreach ($discipline->distances as $distance) {
-                $this->trainingDisciplineDistanceRepository->delete($distance);
-
                 foreach ($distance->subDistances as $subDistance) {
                     $this->trainingDisciplineSubDistanceRepository->delete($subDistance);
                 }
+
+                $this->trainingDisciplineDistanceRepository->delete($distance);
             }
+
+            $this->trainingDisciplineRepository->delete($discipline);
         }
 
         foreach ($dto->disciplines as $discipline) {

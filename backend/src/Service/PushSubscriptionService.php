@@ -68,8 +68,6 @@ readonly class PushSubscriptionService
 
     final public function details(Uuid $pushSubscriptionId): PushSubscription
     {
-        $pushSubscription = $this->pushSubscriptionRepository->findById($pushSubscriptionId);
-
-        return $pushSubscription;
+        return $this->pushSubscriptionRepository->findById($pushSubscriptionId);
     }
 }

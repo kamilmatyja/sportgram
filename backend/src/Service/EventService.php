@@ -117,11 +117,7 @@ readonly class EventService
         $event->location = $dto->location;
 
         foreach ($event->disciplines as $discipline) {
-            $this->eventDisciplineRepository->delete($discipline);
-
             foreach ($discipline->distances as $distance) {
-                $this->eventDisciplineDistanceRepository->delete($distance);
-
                 if ($distance->lists->count() > 0) {
                     throw new ValidatorException('Cannot delete event discipline distance with lists.');
                 }
@@ -129,7 +125,11 @@ readonly class EventService
                 foreach ($distance->subDistances as $subDistance) {
                     $this->eventDisciplineSubDistanceRepository->delete($subDistance);
                 }
+
+                $this->eventDisciplineDistanceRepository->delete($distance);
             }
+
+            $this->eventDisciplineRepository->delete($discipline);
         }
 
         foreach ($dto->disciplines as $discipline) {
