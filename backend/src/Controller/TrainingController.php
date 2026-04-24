@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Dto\{ElementStatusDto, SaveStatusDto, TrainingDetailsQueryDto, TrainingDto, TrainingIndexDto};
+use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\TrainingResource;
@@ -19,7 +20,7 @@ use Symfony\Component\Uid\Uuid;
 class TrainingController extends AbstractController
 {
     #[Route('/api/trainings', name: 'training_create', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[IsGranted(RoleEnum::ROLE_PARTICIPANT)]
     #[OA\Post(
         summary: 'Create training',
         requestBody: new Body('TrainingDto'),

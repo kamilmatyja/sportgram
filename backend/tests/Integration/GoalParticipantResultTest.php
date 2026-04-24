@@ -14,8 +14,10 @@ class GoalParticipantResultTest extends TestCase
     {
         $goalParticipant = $this->createMock(GoalParticipant::class);
         $feed = $this->createMock(Feed::class);
+        $distance = 10000;
+        $time = 3600;
         $status = SaveStatusEnum::Pending;
-        $entity = new GoalParticipantResult($goalParticipant, $feed, $status);
+        $entity = new GoalParticipantResult($goalParticipant, $feed, $distance, $time, $status);
         $this->assertInstanceOf(GoalParticipantResult::class, $entity);
         $this->assertSame($goalParticipant, $entity->goalParticipant);
         $this->assertSame($feed, $entity->feed);

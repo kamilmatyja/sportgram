@@ -60,8 +60,7 @@ readonly class StoryService
     {
         $story = $this->storyRepository->findById($storyId);
 
-        $story->softDelete();
-        $this->storyRepository->save($story);
+        $this->storyRepository->delete($story);
 
         return $story->id;
     }

@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Enum\SaveStatusEnum;
 use App\Repository\PageParticipantRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -24,7 +25,7 @@ class PageParticipant
     }
 
     #[ORM\ManyToOne(targetEntity: Page::class, inversedBy: 'participants')]
-    #[ORM\JoinColumn(name: 'page_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'page_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Page $page {
         get {
             return $this->page;
@@ -32,7 +33,7 @@ class PageParticipant
     }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {
             return $this->user;
@@ -53,13 +54,6 @@ class PageParticipant
         }
     }
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
-        }
-    }
-
     #[ORM\Column(name: 'status', type: 'integer', enumType: SaveStatusEnum::class)]
     public SaveStatusEnum $status {
         get {
@@ -67,11 +61,16 @@ class PageParticipant
         }
     }
 
+    /** @var Event[] */
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'pageParticipant')]
+    public Collection $events;
+
     public function __construct(Page $page, User $user, SaveStatusEnum $status)
     {
         $this->page = $page;
         $this->user = $user;
         $this->status = $status;
+        $this->events = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -86,15 +85,5 @@ class PageParticipant
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

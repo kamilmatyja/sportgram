@@ -39,7 +39,7 @@ class EventResultVoter extends Voter
 
         $eventDisciplineResult = $this->eventDisciplineResultRepository->findById($subject);
 
-        $pageParticipant = $eventDisciplineResult->eventDisciplineDistance->eventDiscipline->event->pageParticipant;
+        $pageParticipant = $eventDisciplineResult->eventDisciplineList->eventDisciplineDistance->eventDiscipline->event->pageParticipant;
 
         if ($pageParticipant->user->id->toString() === $user->id->toString()) {
             return true;

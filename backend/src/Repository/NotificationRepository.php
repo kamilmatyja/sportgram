@@ -21,6 +21,13 @@ class NotificationRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(Notification $notification): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($notification);
+        $em->flush();
+    }
+
     final public function findById(Uuid $notificationId): Notification
     {
         /** @var ?Notification $notification */

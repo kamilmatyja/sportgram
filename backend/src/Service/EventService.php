@@ -2,14 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{ElementStatusDto,
-    EventDto,
-    EventIndexDto,
-    EventListDto,
-    EventListIndexDto,
-    EventResultDto,
-    EventResultIndexDto,
-    SaveStatusDto};
+use App\Dto\{ElementStatusDto, EventDto, EventIndexDto, EventListIndexDto, EventResultDto, SaveStatusDto};
 use App\Entity\{Event,
     EventDiscipline,
     EventDisciplineDistance,
@@ -28,12 +21,12 @@ use App\Repository\{EventDisciplineDistanceRepository,
     EventDisciplineSubResultRepository,
     EventRepository,
     FeedRepository,
-    PageRepository,
-    UserRepository};
+    PageRepository};
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 readonly class EventService
 {
@@ -47,7 +40,6 @@ readonly class EventService
         private EventDisciplineSubResultRepository $eventDisciplineSubResultRepository,
         private FeedRepository $feedRepository,
         private PageRepository $pageRepository,
-        private UserRepository $userRepository,
         private Security $security,
     ) {
     }
@@ -124,20 +116,18 @@ readonly class EventService
         $event->photo = $dto->photo;
         $event->location = $dto->location;
 
-        /** @var EventDiscipline $discipline */
         foreach ($event->disciplines as $discipline) {
-            $discipline->softDelete();
-            $this->eventDisciplineRepository->save($discipline);
+            $this->eventDisciplineRepository->delete($discipline);
 
-            /** @var EventDisciplineDistance $distance */
             foreach ($discipline->distances as $distance) {
-                $distance->softDelete();
-                $this->eventDisciplineDistanceRepository->save($distance);
+                $this->eventDisciplineDistanceRepository->delete($distance);
 
-                /** @var EventDisciplineSubDistance $subDistance */
+                if ($distance->lists->count() > 0) {
+                    throw new ValidatorException('Cannot delete event discipline distance with lists.');
+                }
+
                 foreach ($distance->subDistances as $subDistance) {
-                    $subDistance->softDelete();
-                    $this->eventDisciplineSubDistanceRepository->save($subDistance);
+                    $this->eventDisciplineSubDistanceRepository->delete($subDistance);
                 }
             }
         }
@@ -182,8 +172,15 @@ readonly class EventService
     {
         $event = $this->eventRepository->findById($eventId);
 
-        $event->softDelete();
-        $this->eventRepository->save($event);
+        foreach ($event->disciplines as $discipline) {
+            foreach ($discipline->distances as $distance) {
+                if ($distance->lists->count() > 0) {
+                    throw new ValidatorException('Cannot delete event with lists.');
+                }
+            }
+        }
+
+        $this->eventRepository->delete($event);
 
         return $event->id;
     }
@@ -198,11 +195,12 @@ readonly class EventService
         return $this->eventRepository->findById($eventId);
     }
 
-    final public function createList(Uuid $eventDisciplineDistanceId, EventListDto $dto): Uuid
+    final public function createList(Uuid $eventDisciplineDistanceId): Uuid
     {
         $eventDisciplineDistance = $this->eventDisciplineDistanceRepository->findById($eventDisciplineDistanceId);
 
-        $user = $this->userRepository->findById(Uuid::fromString($dto->userId));
+        /** @var User $user */
+        $user = $this->security->getUser();
 
         $feed = new Feed($user, null, null, ElementStatusEnum::Draft);
 
@@ -210,18 +208,6 @@ readonly class EventService
 
         $eventDisciplineList = new EventDisciplineList($eventDisciplineDistance, $feed, $user, SaveStatusEnum::Pending);
 
-        $this->eventDisciplineListRepository->save($eventDisciplineList);
-
-        return $eventDisciplineList->id;
-    }
-
-    final public function updateList(Uuid $eventDisciplineListId, EventListDto $dto): Uuid
-    {
-        $eventDisciplineList = $this->eventDisciplineListRepository->findById($eventDisciplineListId);
-
-        $user = $this->userRepository->findById(Uuid::fromString($dto->userId));
-
-        $eventDisciplineList->user = $user;
         $this->eventDisciplineListRepository->save($eventDisciplineList);
 
         return $eventDisciplineList->id;
@@ -241,8 +227,7 @@ readonly class EventService
     {
         $eventDisciplineList = $this->eventDisciplineListRepository->findById($eventDisciplineListId);
 
-        $eventDisciplineList->softDelete();
-        $this->eventDisciplineListRepository->save($eventDisciplineList);
+        $this->eventDisciplineListRepository->delete($eventDisciplineList);
 
         return $eventDisciplineList->id;
     }
@@ -257,17 +242,24 @@ readonly class EventService
         return $this->eventDisciplineListRepository->findById($eventDisciplineListId);
     }
 
-    final public function createResult(Uuid $eventDisciplineDistanceId, EventResultDto $dto): Uuid
+    final public function createResult(Uuid $eventDisciplineListId, EventResultDto $dto): Uuid
     {
-        $eventDisciplineDistance = $this->eventDisciplineDistanceRepository->findById($eventDisciplineDistanceId);
+        $eventDisciplineList = $this->eventDisciplineListRepository->findById($eventDisciplineListId);
 
-        $user = $this->userRepository->findById(Uuid::fromString($dto->userId));
+        if ($eventDisciplineList->status !== SaveStatusEnum::Accepted) {
+            throw new ValidatorException('Results can only be added to accepted lists.');
+        }
 
-        $feed = new Feed($user, null, null, ElementStatusEnum::Draft);
+        $feed = new Feed($eventDisciplineList->user, null, null, ElementStatusEnum::Draft);
 
         $this->feedRepository->save($feed);
 
-        $eventDisciplineResult = new EventDisciplineResult($eventDisciplineDistance, $feed, $user, $dto->time);
+        $eventDisciplineResult = new EventDisciplineResult(
+            $eventDisciplineList,
+            $feed,
+            $eventDisciplineList->user,
+            $dto->time,
+        );
 
         $this->eventDisciplineResultRepository->save($eventDisciplineResult);
 
@@ -278,7 +270,8 @@ readonly class EventService
 
             $eventDisciplineSubResult = new EventDisciplineSubResult(
                 $eventDisciplineSubDistance,
-                $user,
+                $eventDisciplineResult,
+                $eventDisciplineList->user,
                 $subResult->time,
             );
 
@@ -292,20 +285,10 @@ readonly class EventService
     {
         $eventDisciplineResult = $this->eventDisciplineResultRepository->findById($eventDisciplineResultId);
 
-        $user = $this->userRepository->findById(Uuid::fromString($dto->userId));
-
-        $eventDisciplineResult->user = $user;
         $eventDisciplineResult->time = $dto->time;
 
-        /** @var EventDisciplineSubDistance $subDistance */
-        foreach ($eventDisciplineResult->eventDisciplineDistance->subDistances->toArray() as $subDistance) {
-            /** @var EventDisciplineSubResult $subResult */
-            foreach ($subDistance->subResults as $subResult) {
-                if ($subResult->user->id->toString() === $user->id->toString()) {
-                    $subResult->softDelete();
-                    $this->eventDisciplineSubResultRepository->save($subResult);
-                }
-            }
+        foreach ($eventDisciplineResult->subResults as $subResult) {
+            $this->eventDisciplineSubResultRepository->delete($subResult);
         }
 
         foreach ($dto->subResults as $subResult) {
@@ -314,7 +297,8 @@ readonly class EventService
             );
             $eventDisciplineSubResult = new EventDisciplineSubResult(
                 $eventDisciplineSubDistance,
-                $user,
+                $eventDisciplineResult,
+                $eventDisciplineResult->user,
                 $subResult->time,
             );
 
@@ -330,19 +314,8 @@ readonly class EventService
     {
         $eventDisciplineResult = $this->eventDisciplineResultRepository->findById($eventDisciplineResultId);
 
-        $eventDisciplineResult->softDelete();
-        $this->eventDisciplineResultRepository->save($eventDisciplineResult);
+        $this->eventDisciplineResultRepository->delete($eventDisciplineResult);
 
         return $eventDisciplineResult->id;
-    }
-
-    final public function indexResult(Uuid $eventDisciplineDistanceId, EventResultIndexDto $dto): array
-    {
-        return $this->eventDisciplineResultRepository->findResults($eventDisciplineDistanceId, $dto);
-    }
-
-    final public function detailsResult(Uuid $eventDisciplineResultId): EventDisciplineResult
-    {
-        return $this->eventDisciplineResultRepository->findById($eventDisciplineResultId);
     }
 }

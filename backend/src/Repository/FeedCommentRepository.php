@@ -20,6 +20,13 @@ class FeedCommentRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(FeedComment $feedComment): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($feedComment);
+        $em->flush();
+    }
+
     final public function findById(Uuid $feedCommentId): FeedComment
     {
         /** @var ?FeedComment $feedComment */

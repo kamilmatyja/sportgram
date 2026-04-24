@@ -53,8 +53,7 @@ readonly class PushSubscriptionService
     {
         $pushSubscription = $this->pushSubscriptionRepository->findById($pushSubscriptionId);
 
-        $pushSubscription->softDelete();
-        $this->pushSubscriptionRepository->save($pushSubscription);
+        $this->pushSubscriptionRepository->delete($pushSubscription);
 
         return $pushSubscription->id;
     }

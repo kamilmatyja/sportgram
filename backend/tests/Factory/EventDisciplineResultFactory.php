@@ -11,7 +11,7 @@ final class EventDisciplineResultFactory extends BaseFactory
     public static function make(array $overrides = []): EventDisciplineResult
     {
         $defaults = [
-            'eventDisciplineDistance' => EventDisciplineDistanceFactory::make(),
+            'eventDisciplineList' => EventDisciplineListFactory::make(),
             'feed' => FeedFactory::make(),
             'user' => UserFactory::make(),
             'time' => self::randomInt(),
@@ -20,7 +20,7 @@ final class EventDisciplineResultFactory extends BaseFactory
         $data = array_replace($defaults, $overrides);
 
         return new EventDisciplineResult(
-            $data['eventDisciplineDistance'],
+            $data['eventDisciplineList'],
             $data['feed'],
             $data['user'],
             $data['time'],

@@ -156,25 +156,19 @@ readonly class UserService
             $user->password = $this->hasher->hashPassword($user, $dto->password);
         }
 
-        /** @var UserRole $role */
         foreach ($user->roles as $role) {
-            $role->softDelete();
-            $this->userRoleRepository->save($role);
+            $this->userRoleRepository->delete($role);
         }
 
-        /** @var int $role */
         foreach ($dto->roles as $role) {
             $roleEntity = new UserRole($user, RoleEnum::from($role));
             $this->userRoleRepository->save($roleEntity);
         }
 
-        /** @var UserDiscipline $discipline */
         foreach ($user->disciplines as $discipline) {
-            $discipline->softDelete();
-            $this->userDisciplineRepository->save($discipline);
+            $this->userDisciplineRepository->delete($discipline);
         }
 
-        /** @var int $discipline */
         foreach ($dto->disciplines as $discipline) {
             $disciplineEntity = new UserDiscipline($user, DisciplineEnum::from($discipline));
             $this->userDisciplineRepository->save($disciplineEntity);
@@ -199,8 +193,11 @@ readonly class UserService
     {
         $user = $this->userRepository->findById($userId);
 
-        $user->softDelete();
-        $this->userRepository->save($user);
+        if ($user->pages->count() > 0) {
+            throw new ValidatorException('Cannot delete user with pages.');
+        }
+
+        $this->userRepository->delete($user);
 
         return $user->id;
     }

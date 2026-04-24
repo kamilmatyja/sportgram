@@ -12,6 +12,7 @@ final class EventDisciplineSubResultFactory extends BaseFactory
     {
         $defaults = [
             'eventDisciplineSubDistance' => EventDisciplineSubDistanceFactory::make(),
+            'eventDisciplineResult' => EventDisciplineResultFactory::make(),
             'user' => UserFactory::make(),
             'time' => self::randomInt(),
         ];
@@ -20,6 +21,7 @@ final class EventDisciplineSubResultFactory extends BaseFactory
 
         return new EventDisciplineSubResult(
             $data['eventDisciplineSubDistance'],
+            $data['eventDisciplineResult'],
             $data['user'],
             $data['time'],
         );

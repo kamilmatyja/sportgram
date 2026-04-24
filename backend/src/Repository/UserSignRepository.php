@@ -20,6 +20,13 @@ class UserSignRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(UserSign $userSign): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($userSign);
+        $em->flush();
+    }
+
     final public function findById(Uuid $userSignId): UserSign
     {
         /** @var ?UserSign $userSign */

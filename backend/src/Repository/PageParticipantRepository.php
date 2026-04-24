@@ -20,6 +20,13 @@ class PageParticipantRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(PageParticipant $pageParticipant): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($pageParticipant);
+        $em->flush();
+    }
+
     final public function findById(Uuid $pageParticipantId): PageParticipant
     {
         /** @var ?PageParticipant $pageParticipant */

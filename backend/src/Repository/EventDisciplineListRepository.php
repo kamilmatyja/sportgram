@@ -21,6 +21,13 @@ class EventDisciplineListRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(EventDisciplineList $eventDisciplineList): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($eventDisciplineList);
+        $em->flush();
+    }
+
     final public function findById(Uuid $eventDisciplineListId): EventDisciplineList
     {
         /** @var EventDisciplineList $eventDisciplineList */

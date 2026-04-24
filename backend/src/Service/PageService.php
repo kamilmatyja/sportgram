@@ -40,15 +40,10 @@ readonly class PageService
 
         $this->pageRepository->save($page);
 
-        $pageParticipant = new PageParticipant($page, $user, SaveStatusEnum::Accepted);
-
-        $this->pageParticipantRepository->save($pageParticipant);
-
-        /** @var string $userId */
         foreach ($dto->participants as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if (! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 
@@ -83,16 +78,19 @@ readonly class PageService
         $toRemove = array_diff($currentIds, $dto->participants);
 
         foreach ($page->participants as $participant) {
-            $pid = $participant->user->id->toString();
-            if ($pid !== $user->id->toString() && in_array($pid, $toRemove, true)) {
-                $participant->softDelete();
-                $this->pageParticipantRepository->save($participant);
+            if (in_array($participant->user->id->toString(), $toRemove, true)) {
+                if ($participant->events->count() > 0) {
+                    throw new ValidatorException('Cannot delete page participant with events.');
+                }
+
+                $this->pageParticipantRepository->delete($participant);
             }
         }
 
         foreach ($toAdd as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
-            if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
+
+            if (! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 
@@ -120,8 +118,11 @@ readonly class PageService
     {
         $page = $this->pageRepository->findById($pageId);
 
-        $page->softDelete();
-        $this->pageRepository->save($page);
+        if ($page->participants->count() > 0) {
+            throw new ValidatorException('Cannot delete page with participants.');
+        }
+
+        $this->pageRepository->delete($page);
 
         return $page->id;
     }
@@ -174,8 +175,7 @@ readonly class PageService
     {
         $pageFollow = $this->pageFollowRepository->findById($pageFollowId);
 
-        $pageFollow->softDelete();
-        $this->pageFollowRepository->save($pageFollow);
+        $this->pageFollowRepository->delete($pageFollow);
 
         return $pageFollow->id;
     }

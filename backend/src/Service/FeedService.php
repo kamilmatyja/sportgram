@@ -59,8 +59,7 @@ readonly class FeedService
     {
         $feed = $this->feedRepository->findById($feedId);
 
-        $feed->softDelete();
-        $this->feedRepository->save($feed);
+        $this->feedRepository->delete($feed);
 
         return $feed->id;
     }
@@ -118,8 +117,7 @@ readonly class FeedService
     {
         $feedComment = $this->feedCommentRepository->findById($feedCommentId);
 
-        $feedComment->softDelete();
-        $this->feedCommentRepository->save($feedComment);
+        $this->feedCommentRepository->delete($feedComment);
 
         return $feedComment->id;
     }
@@ -167,8 +165,7 @@ readonly class FeedService
     {
         $feedReaction = $this->feedReactionRepository->findById($feedReactionId);
 
-        $feedReaction->softDelete();
-        $this->feedReactionRepository->save($feedReaction);
+        $this->feedReactionRepository->delete($feedReaction);
 
         return $feedReaction->id;
     }

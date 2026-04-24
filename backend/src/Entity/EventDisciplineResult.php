@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\EventDisciplineResultRepository;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -22,16 +23,16 @@ class EventDisciplineResult
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: EventDisciplineDistance::class)]
-    #[ORM\JoinColumn(name: 'event_discipline_distance_id', referencedColumnName: 'id', nullable: false)]
-    public EventDisciplineDistance $eventDisciplineDistance {
+    #[ORM\ManyToOne(targetEntity: EventDisciplineList::class, inversedBy: 'results')]
+    #[ORM\JoinColumn(name: 'event_discipline_list_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    public EventDisciplineList $eventDisciplineList {
         get {
-            return $this->eventDisciplineDistance;
+            return $this->eventDisciplineList;
         }
     }
 
     #[ORM\ManyToOne(targetEntity: Feed::class)]
-    #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Feed $feed {
         get {
             return $this->feed;
@@ -39,7 +40,7 @@ class EventDisciplineResult
     }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {
             return $this->user;
@@ -60,13 +61,6 @@ class EventDisciplineResult
         }
     }
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
-        }
-    }
-
     #[ORM\Column(name: 'time', type: 'integer')]
     public int $time {
         get {
@@ -74,12 +68,17 @@ class EventDisciplineResult
         }
     }
 
-    public function __construct(EventDisciplineDistance $eventDisciplineDistance, Feed $feed, User $user, int $time)
+    /** @var EventDisciplineSubResult[] */
+    #[ORM\OneToMany(targetEntity: EventDisciplineSubResult::class, mappedBy: 'eventDisciplineResult')]
+    public Collection $subResults;
+
+    public function __construct(EventDisciplineList $eventDisciplineList, Feed $feed, User $user, int $time)
     {
-        $this->eventDisciplineDistance = $eventDisciplineDistance;
+        $this->eventDisciplineList = $eventDisciplineList;
         $this->feed = $feed;
         $this->user = $user;
         $this->time = $time;
+        $this->subResults = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -94,15 +93,5 @@ class EventDisciplineResult
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

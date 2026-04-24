@@ -20,6 +20,13 @@ class TrainingParticipantRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(TrainingParticipant $trainingParticipant): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($trainingParticipant);
+        $em->flush();
+    }
+
     final public function findById(Uuid $trainingParticipantId): TrainingParticipant
     {
         /** @var ?TrainingParticipant $trainingParticipant */

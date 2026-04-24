@@ -21,6 +21,13 @@ class UserRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(User $user): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($user);
+        $em->flush();
+    }
+
     final public function findById(Uuid $userId): User
     {
         /** @var ?User $user */

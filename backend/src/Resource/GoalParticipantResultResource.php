@@ -36,6 +36,8 @@ use OpenApi\Attributes as OA;
         ),
         new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'distance', type: 'integer', example: 100),
+        new OA\Property(property: 'time', type: 'integer', example: 60),
         new OA\Property(property: 'status', type: 'integer', example: 1),
     ],
     type: 'object',
@@ -50,6 +52,8 @@ class GoalParticipantResultResource
             'feedId' => $goalParticipantResult->feed->id->toString(),
             'createdAt' => $goalParticipantResult->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $goalParticipantResult->updatedAt->format('Y-m-d\TH:i:s'),
+            'distance' => $goalParticipantResult->distance,
+            'time' => $goalParticipantResult->time,
             'status' => $goalParticipantResult->status->value,
         ];
     }

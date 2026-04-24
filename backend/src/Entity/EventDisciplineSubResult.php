@@ -22,16 +22,24 @@ class EventDisciplineSubResult
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: EventDisciplineSubDistance::class, inversedBy: 'subResults')]
-    #[ORM\JoinColumn(name: 'event_discipline_sub_distance_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\ManyToOne(targetEntity: EventDisciplineSubDistance::class)]
+    #[ORM\JoinColumn(name: 'event_discipline_sub_distance_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public EventDisciplineSubDistance $eventDisciplineSubDistance {
         get {
             return $this->eventDisciplineSubDistance;
         }
     }
 
+    #[ORM\ManyToOne(targetEntity: EventDisciplineResult::class, inversedBy: 'subResults')]
+    #[ORM\JoinColumn(name: 'event_discipline_result_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    public EventDisciplineResult $eventDisciplineResult {
+        get {
+            return $this->eventDisciplineResult;
+        }
+    }
+
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {
             return $this->user;
@@ -52,13 +60,6 @@ class EventDisciplineSubResult
         }
     }
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
-        }
-    }
-
     #[ORM\Column(name: 'time', type: 'integer')]
     public int $time {
         get {
@@ -66,9 +67,14 @@ class EventDisciplineSubResult
         }
     }
 
-    public function __construct(EventDisciplineSubDistance $eventDisciplineSubDistance, User $user, int $time)
-    {
+    public function __construct(
+        EventDisciplineSubDistance $eventDisciplineSubDistance,
+        EventDisciplineResult $eventDisciplineResult,
+        User $user,
+        int $time,
+    ) {
         $this->eventDisciplineSubDistance = $eventDisciplineSubDistance;
+        $this->eventDisciplineResult = $eventDisciplineResult;
         $this->user = $user;
         $this->time = $time;
     }
@@ -85,15 +91,5 @@ class EventDisciplineSubResult
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

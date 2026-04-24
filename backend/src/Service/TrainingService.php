@@ -66,13 +66,8 @@ readonly class TrainingService
 
         $this->trainingRepository->save($training);
 
-        $trainingParticipant = new TrainingParticipant($training, $user, SaveStatusEnum::Accepted);
-
         foreach ($dto->disciplines as $discipline) {
-            $trainingDiscipline = new TrainingDiscipline(
-                $trainingParticipant,
-                DisciplineEnum::from($discipline->discipline),
-            );
+            $trainingDiscipline = new TrainingDiscipline($training, DisciplineEnum::from($discipline->discipline));
 
             $this->trainingDisciplineRepository->save($trainingDiscipline);
 
@@ -101,11 +96,10 @@ readonly class TrainingService
             }
         }
 
-        /** @var string $userId */
         foreach ($dto->participants as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if (! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 
@@ -131,37 +125,20 @@ readonly class TrainingService
         $training->link = $dto->link;
         $training->location = $dto->location;
 
-        /** @var User $user */
-        $user = $this->security->getUser();
+        foreach ($training->disciplines as $discipline) {
+            $this->trainingDisciplineRepository->delete($discipline);
 
-        /** @var TrainingParticipant $trainingParticipant */
-        $trainingParticipant = $training->participants->findFirst(
-            fn (TrainingParticipant $participant) => $participant->user->id->toString() === $user->id->toString(),
-        );
-
-        /** @var TrainingDiscipline $discipline */
-        foreach ($trainingParticipant->disciplines as $discipline) {
-            $discipline->softDelete();
-            $this->trainingDisciplineRepository->save($discipline);
-
-            /** @var TrainingDisciplineDistance $distance */
             foreach ($discipline->distances as $distance) {
-                $distance->softDelete();
-                $this->trainingDisciplineDistanceRepository->save($distance);
+                $this->trainingDisciplineDistanceRepository->delete($distance);
 
-                /** @var TrainingDisciplineSubDistance $subDistance */
                 foreach ($distance->subDistances as $subDistance) {
-                    $subDistance->softDelete();
-                    $this->trainingDisciplineSubDistanceRepository->save($subDistance);
+                    $this->trainingDisciplineSubDistanceRepository->delete($subDistance);
                 }
             }
         }
 
         foreach ($dto->disciplines as $discipline) {
-            $trainingDiscipline = new TrainingDiscipline(
-                $trainingParticipant,
-                DisciplineEnum::from($discipline->discipline),
-            );
+            $trainingDiscipline = new TrainingDiscipline($training, DisciplineEnum::from($discipline->discipline));
 
             $this->trainingDisciplineRepository->save($trainingDiscipline);
 
@@ -199,16 +176,18 @@ readonly class TrainingService
         $toRemove = array_diff($currentIds, $dto->participants);
 
         foreach ($training->participants as $participant) {
-            $pid = $participant->user->id->toString();
-            if ($pid !== $user->id->toString() && in_array($pid, $toRemove, true)) {
-                $participant->softDelete();
-                $this->trainingParticipantRepository->save($participant);
+            if (in_array($participant->user->id->toString(), $toRemove, true)) {
+                $this->trainingParticipantRepository->delete($participant);
             }
         }
 
+        /** @var User $user */
+        $user = $this->security->getUser();
+
         foreach ($toAdd as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
-            if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
+
+            if (! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 
@@ -236,8 +215,11 @@ readonly class TrainingService
     {
         $training = $this->trainingRepository->findById($id);
 
-        $training->softDelete();
-        $this->trainingRepository->save($training);
+        if ($training->participants->count() > 0) {
+            throw new ValidatorException('Cannot delete training with participants.');
+        }
+
+        $this->trainingRepository->delete($training);
 
         return $training->id;
     }

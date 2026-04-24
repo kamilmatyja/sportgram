@@ -21,6 +21,13 @@ class EntryRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(Entry $entry): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($entry);
+        $em->flush();
+    }
+
     final public function findById(Uuid $entryId): Entry
     {
         /** @var ?Entry $entry */

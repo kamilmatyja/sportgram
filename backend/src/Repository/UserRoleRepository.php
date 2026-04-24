@@ -18,4 +18,11 @@ class UserRoleRepository extends BaseRepository
         $em->persist($userRole);
         $em->flush();
     }
+
+    final public function delete(UserRole $userRole): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($userRole);
+        $em->flush();
+    }
 }

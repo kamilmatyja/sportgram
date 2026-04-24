@@ -6,15 +6,14 @@ use App\Dto\{ElementStatusDto,
     EventDetailsQueryDto,
     EventDto,
     EventIndexDto,
-    EventListDto,
+    EventListDetailsQueryDto,
     EventListIndexDto,
-    EventResultDetailsQueryDto,
     EventResultDto,
-    EventResultIndexDto,
     SaveStatusDto};
+use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
-use App\Resource\{EventDisciplineDistanceListResource, EventDisciplineDistanceResultResource, EventResource};
+use App\Resource\{EventDisciplineDistanceListResource, EventResource};
 use App\Security\Voter\{EventCreatorVoter,
     EventListCreatorVoter,
     EventListVoter,
@@ -144,42 +143,20 @@ class EventController extends AbstractController
         return ApiResponse::elements($data);
     }
 
-    #[Route('/api/event-discipline-distances/{id}/list', name: 'event_discipline_distance_list_create', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[Route('/api/event-discipline-distances/{id}', name: 'event_discipline_distance_list_create', methods: ['POST'])]
+    #[IsGranted(RoleEnum::ROLE_PARTICIPANT)]
     #[OA\Post(
         summary: 'Create event discipline distance list',
-        requestBody: new Body('EventListDto'),
         tags: ['events'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
     final public function createList(
         Uuid $id,
-        #[MapRequestPayload]
-        EventListDto $dto,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineListId = $service->createList($id, $dto);
+        $eventDisciplineListId = $service->createList($id);
 
         return ApiResponse::created($eventDisciplineListId);
-    }
-
-    #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_list_update', methods: ['PUT'])]
-    #[IsGranted(EventListCreatorVoter::EVENT_LIST_CREATOR, subject: 'id')]
-    #[OA\Put(
-        summary: 'Update event discipline distance list',
-        requestBody: new Body('EventListDto'),
-        tags: ['events'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
-    )]
-    final public function updateList(
-        Uuid $id,
-        #[MapRequestPayload]
-        EventListDto $dto,
-        EventService $service,
-    ): JsonResponse {
-        $eventDisciplineListId = $service->updateList($id, $dto);
-
-        return ApiResponse::ok($eventDisciplineListId);
     }
 
     #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_list_update_status', methods: ['PATCH'])]
@@ -217,7 +194,7 @@ class EventController extends AbstractController
         return ApiResponse::ok($eventDisciplineListId);
     }
 
-    #[Route('/api/event-discipline-distances/{id}/list', name: 'event_discipline_distance_list_index', methods: ['GET'])]
+    #[Route('/api/event-discipline-distances/{id}', name: 'event_discipline_distance_list_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of event discipline distance lists',
@@ -246,17 +223,19 @@ class EventController extends AbstractController
     )]
     final public function detailsList(
         Uuid $id,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        EventListDetailsQueryDto $dto,
         EventService $service,
     ): JsonResponse {
         $eventDisciplineDistanceList = $service->detailsList($id);
 
-        $data = EventDisciplineDistanceListResource::fromEntity($eventDisciplineDistanceList);
+        $data = EventDisciplineDistanceListResource::fromEntity($eventDisciplineDistanceList, $dto);
 
         return ApiResponse::elements($data);
     }
 
-    #[Route('/api/event-discipline-distances/{id}/result', name: 'event_discipline_distance_result_create', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_result_create', methods: ['POST'])]
+    #[IsGranted(EventListCreatorVoter::EVENT_LIST_CREATOR, subject: 'id')]
     #[OA\Post(
         summary: 'Create event discipline distance result',
         requestBody: new Body('EventResultDto'),
@@ -307,45 +286,5 @@ class EventController extends AbstractController
         $eventDisciplineResultId = $service->deleteResult($id);
 
         return ApiResponse::ok($eventDisciplineResultId);
-    }
-
-    #[Route('/api/event-discipline-distances/{id}/result', name: 'event_discipline_distance_result_index', methods: ['GET'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    #[OA\Get(
-        summary: 'Index of event discipline distance results',
-        tags: ['events'],
-        responses: [new Collection('EventDisciplineDistanceResultResource'), new BadRequest(), new Unauthorized()],
-    )]
-    final public function indexResult(
-        Uuid $id,
-        #[MapQueryString(validationFailedStatusCode: 400)]
-        EventResultIndexDto $dto,
-        EventService $service,
-    ): JsonResponse {
-        $eventDisciplineDistanceResults = $service->indexResult($id, $dto);
-
-        $data = EventDisciplineDistanceResultResource::fromEntityCollection($eventDisciplineDistanceResults);
-
-        return ApiResponse::elements($data);
-    }
-
-    #[Route('/api/event-discipline-distance-results/{id}', name: 'event_discipline_distance_result_details', methods: ['GET'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    #[OA\Get(
-        summary: 'Details of event discipline distance result',
-        tags: ['events'],
-        responses: [new Item('EventDisciplineDistanceResultResource'), new BadRequest(), new Unauthorized()],
-    )]
-    final public function detailsResult(
-        Uuid $id,
-        #[MapQueryString(validationFailedStatusCode: 400)]
-        EventResultDetailsQueryDto $dto,
-        EventService $service,
-    ): JsonResponse {
-        $eventDisciplineDistanceResult = $service->detailsResult($id);
-
-        $data = EventDisciplineDistanceResultResource::fromEntity($eventDisciplineDistanceResult, $dto);
-
-        return ApiResponse::elements($data);
     }
 }

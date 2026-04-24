@@ -20,6 +20,13 @@ class UserRegisterRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(UserRegister $userRegister): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($userRegister);
+        $em->flush();
+    }
+
     final public function findById(Uuid $userRegisterId): UserRegister
     {
         /** @var ?UserRegister $userRegister */

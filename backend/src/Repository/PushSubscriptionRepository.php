@@ -21,6 +21,13 @@ class PushSubscriptionRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(PushSubscription $pushSubscription): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($pushSubscription);
+        $em->flush();
+    }
+
     final public function findById(Uuid $pushSubscriptionId): PushSubscription
     {
         /** @var ?PushSubscription $pushSubscription */

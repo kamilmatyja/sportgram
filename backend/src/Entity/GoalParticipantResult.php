@@ -24,7 +24,7 @@ class GoalParticipantResult
     }
 
     #[ORM\ManyToOne(targetEntity: GoalParticipant::class, inversedBy: 'results')]
-    #[ORM\JoinColumn(name: 'goal_participant_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'goal_participant_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public GoalParticipant $goalParticipant {
         get {
             return $this->goalParticipant;
@@ -32,7 +32,7 @@ class GoalParticipantResult
     }
 
     #[ORM\ManyToOne(targetEntity: Feed::class)]
-    #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Feed $feed {
         get {
             return $this->feed;
@@ -53,10 +53,17 @@ class GoalParticipantResult
         }
     }
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
+    #[ORM\Column(name: 'distance', type: 'integer')]
+    public int $distance {
         get {
-            return $this->deletedAt;
+            return $this->distance;
+        }
+    }
+
+    #[ORM\Column(name: 'time', type: 'integer')]
+    public int $time {
+        get {
+            return $this->time;
         }
     }
 
@@ -70,10 +77,14 @@ class GoalParticipantResult
     public function __construct(
         GoalParticipant $goalParticipant,
         Feed $feed,
+        int $distance,
+        int $time,
         SaveStatusEnum $status,
     ) {
         $this->goalParticipant = $goalParticipant;
         $this->feed = $feed;
+        $this->distance = $distance;
+        $this->time = $time;
         $this->status = $status;
     }
 
@@ -89,15 +100,5 @@ class GoalParticipantResult
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

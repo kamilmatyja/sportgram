@@ -24,7 +24,7 @@ class EventDisciplineDistance
     }
 
     #[ORM\ManyToOne(targetEntity: EventDiscipline::class, inversedBy: 'distances')]
-    #[ORM\JoinColumn(name: 'event_discipline_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'event_discipline_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public EventDiscipline $eventDiscipline {
         get {
             return $this->eventDiscipline;
@@ -45,13 +45,6 @@ class EventDisciplineDistance
         }
     }
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
-        }
-    }
-
     #[ORM\Column(name: 'distance', type: 'integer')]
     public int $distance {
         get {
@@ -59,14 +52,20 @@ class EventDisciplineDistance
         }
     }
 
+    /** @var EventDisciplineSubDistance[] */
     #[ORM\OneToMany(targetEntity: EventDisciplineSubDistance::class, mappedBy: 'eventDisciplineDistance')]
     public Collection $subDistances;
+
+    /** @var EventDisciplineList[] */
+    #[ORM\OneToMany(targetEntity: EventDisciplineList::class, mappedBy: 'eventDisciplineDistance')]
+    public Collection $lists;
 
     public function __construct(EventDiscipline $eventDiscipline, int $distance)
     {
         $this->eventDiscipline = $eventDiscipline;
         $this->distance = $distance;
         $this->subDistances = new ArrayCollection();
+        $this->lists = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -81,15 +80,5 @@ class EventDisciplineDistance
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

@@ -2,8 +2,7 @@
 
 namespace App\Resource;
 
-use App\Dto\TrainingDetailsQueryDto;
-use App\Entity\{TrainingDiscipline, TrainingParticipant};
+use App\Entity\{TrainingParticipant};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -38,19 +37,14 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'status', type: 'integer', example: 1),
-        new OA\Property(
-            property: 'disciplines',
-            type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/TrainingParticipantDisciplineResource'),
-        ),
     ],
     type: 'object',
 )]
 class TrainingParticipantResource
 {
-    public static function fromEntity(TrainingParticipant $trainingParticipant, TrainingDetailsQueryDto $dto): array
+    public static function fromEntity(TrainingParticipant $trainingParticipant): array
     {
-        $data = [
+        return [
             'id' => $trainingParticipant->id->toString(),
             'trainingId' => $trainingParticipant->training->id->toString(),
             'userId' => $trainingParticipant->user->id->toString(),
@@ -58,17 +52,5 @@ class TrainingParticipantResource
             'updatedAt' => $trainingParticipant->updatedAt->format('Y-m-d\TH:i:s'),
             'status' => $trainingParticipant->status->value,
         ];
-
-        if (in_array($dto::TRAINING_PARTICIPANT_DISCIPLINES, $dto->include)) {
-            $data['disciplines'] = array_map(
-                fn (TrainingDiscipline $discipline) => TrainingParticipantDisciplineResource::fromEntity(
-                    $discipline,
-                    $dto,
-                ),
-                $trainingParticipant->disciplines->toArray(),
-            );
-        }
-
-        return $data;
     }
 }

@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\EventDisciplineSubDistanceRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -24,7 +23,7 @@ class EventDisciplineSubDistance
     }
 
     #[ORM\ManyToOne(targetEntity: EventDisciplineDistance::class, inversedBy: 'subDistances')]
-    #[ORM\JoinColumn(name: 'event_discipline_distance_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'event_discipline_distance_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public EventDisciplineDistance $eventDisciplineDistance {
         get {
             return $this->eventDisciplineDistance;
@@ -45,13 +44,6 @@ class EventDisciplineSubDistance
         }
     }
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
-        }
-    }
-
     #[ORM\Column(name: 'sub_distance', type: 'integer')]
     public int $subDistance {
         get {
@@ -59,14 +51,10 @@ class EventDisciplineSubDistance
         }
     }
 
-    #[ORM\OneToMany(targetEntity: EventDisciplineSubResult::class, mappedBy: 'eventDisciplineSubDistance')]
-    public Collection $subResults;
-
     public function __construct(EventDisciplineDistance $eventDisciplineDistance, int $subDistance)
     {
         $this->eventDisciplineDistance = $eventDisciplineDistance;
         $this->subDistance = $subDistance;
-        $this->subResults = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -81,15 +69,5 @@ class EventDisciplineSubDistance
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

@@ -18,4 +18,11 @@ class UserDisciplineRepository extends BaseRepository
         $em->persist($userDiscipline);
         $em->flush();
     }
+
+    final public function delete(UserDiscipline $userDiscipline): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($userDiscipline);
+        $em->flush();
+    }
 }

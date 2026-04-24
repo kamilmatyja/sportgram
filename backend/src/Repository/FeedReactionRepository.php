@@ -20,6 +20,13 @@ class FeedReactionRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(FeedReaction $feedReaction): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($feedReaction);
+        $em->flush();
+    }
+
     final public function findById(Uuid $feedReactionId): FeedReaction
     {
         /** @var ?FeedReaction $feedReaction */

@@ -71,8 +71,7 @@ readonly class ConversationService
     {
         $conversation = $this->conversationRepository->findById($conversationId);
 
-        $conversation->softDelete();
-        $this->conversationRepository->save($conversation);
+        $this->conversationRepository->delete($conversation);
 
         return $conversation->id;
     }

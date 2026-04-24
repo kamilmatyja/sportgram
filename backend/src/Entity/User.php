@@ -39,13 +39,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
     }
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
-        }
-    }
-
     #[ORM\Column(name: 'birth_at', type: 'datetime_immutable')]
     public DateTimeImmutable $birthAt {
         get {
@@ -161,11 +154,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
     }
 
+    /** @var UserRole[] */
     #[ORM\OneToMany(targetEntity: UserRole::class, mappedBy: 'user')]
     public Collection $roles;
 
+    /** @var UserDiscipline[] */
     #[ORM\OneToMany(targetEntity: UserDiscipline::class, mappedBy: 'user')]
     public Collection $disciplines;
+
+    /** @var Page[] */
+    #[ORM\OneToMany(targetEntity: Page::class, mappedBy: 'user')]
+    public Collection $pages;
 
     public function __construct(
         DateTimeImmutable $birthAt,
@@ -201,6 +200,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->status = $status;
         $this->roles = new ArrayCollection();
         $this->disciplines = new ArrayCollection();
+        $this->pages = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -215,16 +215,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 
     final public function getUserIdentifier(): string

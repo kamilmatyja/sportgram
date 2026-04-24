@@ -21,6 +21,13 @@ class EventRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(Event $event): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($event);
+        $em->flush();
+    }
+
     final public function findById(Uuid $eventId): Event
     {
         /** @var ?Event $event */

@@ -20,6 +20,13 @@ class EventDisciplineDistanceRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(EventDisciplineDistance $eventDisciplineDistance): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($eventDisciplineDistance);
+        $em->flush();
+    }
+
     final public function findById(Uuid $eventDisciplineDistanceId): EventDisciplineDistance
     {
         /** @var ?EventDisciplineDistance $eventDisciplineDistance */

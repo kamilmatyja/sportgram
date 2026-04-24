@@ -24,7 +24,7 @@ class Conversation
     }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'sender_user_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'sender_user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $senderUser {
         get {
             return $this->senderUser;
@@ -32,7 +32,7 @@ class Conversation
     }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'receiver_user_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'receiver_user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $receiverUser {
         get {
             return $this->receiverUser;
@@ -50,13 +50,6 @@ class Conversation
     public DateTimeImmutable $updatedAt {
         get {
             return $this->updatedAt;
-        }
-    }
-
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
         }
     }
 
@@ -94,15 +87,5 @@ class Conversation
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

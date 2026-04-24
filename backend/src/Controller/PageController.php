@@ -9,6 +9,7 @@ use App\Dto\{ElementStatusDto,
     PageFollowStatusDto,
     PageIndexDto,
     SaveStatusDto};
+use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\{PageFollowResource, PageResource};
@@ -25,7 +26,7 @@ use Symfony\Component\Uid\Uuid;
 class PageController extends AbstractController
 {
     #[Route('/api/pages', name: 'page_create', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[IsGranted(RoleEnum::ROLE_ORGANIZER)]
     #[OA\Post(
         summary: 'Create page',
         requestBody: new Body('PageDto'),

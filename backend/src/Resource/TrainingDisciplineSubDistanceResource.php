@@ -6,7 +6,7 @@ use App\Entity\TrainingDisciplineSubDistance;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'TrainingParticipantDisciplineSubDistanceResource',
+    schema: 'TrainingDisciplineSubDistanceResource',
     required: [
         'id',
         'trainingDisciplineDistanceId',
@@ -34,7 +34,7 @@ use OpenApi\Attributes as OA;
     ],
     type: 'object',
 )]
-class TrainingParticipantDisciplineSubDistanceResource
+class TrainingDisciplineSubDistanceResource
 {
     public static function fromEntity(TrainingDisciplineSubDistance $subDistance): array
     {

@@ -24,11 +24,11 @@ class TrainingDiscipline
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: TrainingParticipant::class, inversedBy: 'disciplines')]
-    #[ORM\JoinColumn(name: 'training_participant_id', referencedColumnName: 'id', nullable: false)]
-    public TrainingParticipant $trainingParticipant {
+    #[ORM\ManyToOne(targetEntity: Training::class, inversedBy: 'disciplines')]
+    #[ORM\JoinColumn(name: 'training_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    public Training $training {
         get {
-            return $this->trainingParticipant;
+            return $this->training;
         }
     }
 
@@ -46,13 +46,6 @@ class TrainingDiscipline
         }
     }
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
-        }
-    }
-
     #[ORM\Column(name: 'discipline', type: 'integer', enumType: DisciplineEnum::class)]
     public DisciplineEnum $discipline {
         get {
@@ -60,12 +53,13 @@ class TrainingDiscipline
         }
     }
 
+    /** @var TrainingDisciplineDistance[] */
     #[ORM\OneToMany(targetEntity: TrainingDisciplineDistance::class, mappedBy: 'trainingDiscipline')]
     public Collection $distances;
 
-    public function __construct(TrainingParticipant $trainingParticipant, DisciplineEnum $discipline)
+    public function __construct(Training $training, DisciplineEnum $discipline)
     {
-        $this->trainingParticipant = $trainingParticipant;
+        $this->training = $training;
         $this->discipline = $discipline;
         $this->distances = new ArrayCollection();
     }
@@ -82,15 +76,5 @@ class TrainingDiscipline
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

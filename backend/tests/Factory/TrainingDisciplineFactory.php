@@ -12,14 +12,14 @@ final class TrainingDisciplineFactory extends BaseFactory
     public static function make(array $overrides = []): TrainingDiscipline
     {
         $defaults = [
-            'trainingParticipant' => TrainingParticipantFactory::make(),
+            'training' => TrainingFactory::make(),
             'discipline' => self::randomEnum(DisciplineEnum::class),
         ];
 
         $data = array_replace($defaults, $overrides);
 
         return new TrainingDiscipline(
-            $data['trainingParticipant'],
+            $data['training'],
             $data['discipline'],
         );
     }

@@ -3,7 +3,7 @@
 namespace App\Resource;
 
 use App\Dto\TrainingDetailsQueryDto;
-use App\Entity\{Training, TrainingParticipant};
+use App\Entity\{Training, TrainingDiscipline, TrainingParticipant};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -51,6 +51,11 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'location', type: 'string', example: 'Training location'),
         new OA\Property(property: 'status', type: 'integer', example: 1),
         new OA\Property(
+            property: 'disciplines',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/TrainingDisciplineResource'),
+        ),
+        new OA\Property(
             property: 'participants',
             type: 'array',
             items: new OA\Items(ref: '#/components/schemas/TrainingParticipantResource'),
@@ -77,9 +82,19 @@ class TrainingResource
             'status' => $training->status->value,
         ];
 
+        if (in_array($dto::TRAINING_DISCIPLINES, $dto->include)) {
+            $data['disciplines'] = array_map(
+                fn (TrainingDiscipline $discipline) => TrainingDisciplineResource::fromEntity(
+                    $discipline,
+                    $dto,
+                ),
+                $training->disciplines->toArray(),
+            );
+        }
+
         if (in_array($dto::TRAINING_PARTICIPANTS, $dto->include)) {
             $data['participants'] = array_map(
-                fn (TrainingParticipant $participant) => TrainingParticipantResource::fromEntity($participant, $dto),
+                fn (TrainingParticipant $participant) => TrainingParticipantResource::fromEntity($participant),
                 $training->participants->toArray(),
             );
         }

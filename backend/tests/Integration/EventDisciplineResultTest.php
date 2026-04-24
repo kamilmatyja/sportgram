@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Integration;
 
-use App\Entity\{EventDisciplineDistance, EventDisciplineResult, Feed, User};
+use App\Entity\{EventDisciplineList, EventDisciplineResult, Feed, User};
 use PHPUnit\Framework\TestCase;
 
 class EventDisciplineResultTest extends TestCase
 {
     final public function testEntityCanBeCreatedAndGettersWork(): void
     {
-        $distance = $this->createMock(EventDisciplineDistance::class);
+        $list = $this->createMock(EventDisciplineList::class);
         $feed = $this->createMock(Feed::class);
         $user = $this->createMock(User::class);
         $time = 123;
-        $entity = new EventDisciplineResult($distance, $feed, $user, $time);
+        $entity = new EventDisciplineResult($list, $feed, $user, $time);
         $this->assertInstanceOf(EventDisciplineResult::class, $entity);
-        $this->assertSame($distance, $entity->eventDisciplineDistance);
+        $this->assertSame($list, $entity->eventDisciplineList);
         $this->assertSame($feed, $entity->feed);
         $this->assertSame($user, $entity->user);
         $this->assertSame($time, $entity->time);

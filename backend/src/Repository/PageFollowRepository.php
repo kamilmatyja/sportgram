@@ -21,6 +21,13 @@ class PageFollowRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(PageFollow $pageFollow): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($pageFollow);
+        $em->flush();
+    }
+
     final public function findById(Uuid $pageFollowId): PageFollow
     {
         /** @var ?PageFollow $pageFollow */

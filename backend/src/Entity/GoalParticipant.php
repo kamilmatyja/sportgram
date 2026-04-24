@@ -25,7 +25,7 @@ class GoalParticipant
     }
 
     #[ORM\ManyToOne(targetEntity: Goal::class, inversedBy: 'participants')]
-    #[ORM\JoinColumn(name: 'goal_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'goal_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Goal $goal {
         get {
             return $this->goal;
@@ -33,7 +33,7 @@ class GoalParticipant
     }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {
             return $this->user;
@@ -54,13 +54,6 @@ class GoalParticipant
         }
     }
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
-        }
-    }
-
     #[ORM\Column(name: 'status', type: 'integer', enumType: SaveStatusEnum::class)]
     public SaveStatusEnum $status {
         get {
@@ -68,6 +61,7 @@ class GoalParticipant
         }
     }
 
+    /** @var GoalParticipantResult[] */
     #[ORM\OneToMany(targetEntity: GoalParticipantResult::class, mappedBy: 'participant')]
     public Collection $results;
 
@@ -91,15 +85,5 @@ class GoalParticipant
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

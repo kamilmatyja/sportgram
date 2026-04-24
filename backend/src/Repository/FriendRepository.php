@@ -22,6 +22,13 @@ class FriendRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(Friend $friend): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($friend);
+        $em->flush();
+    }
+
     final public function findById(Uuid $friendId): Friend
     {
         /** @var ?Friend $friend */

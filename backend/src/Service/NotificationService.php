@@ -31,8 +31,7 @@ readonly class NotificationService
     {
         $notification = $this->notificationRepository->findById($notificationId);
 
-        $notification->softDelete();
-        $this->notificationRepository->save($notification);
+        $this->notificationRepository->delete($notification);
 
         return $notification->id;
     }

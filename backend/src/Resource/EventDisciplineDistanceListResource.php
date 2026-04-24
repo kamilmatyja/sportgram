@@ -2,7 +2,8 @@
 
 namespace App\Resource;
 
-use App\Entity\EventDisciplineList;
+use App\Dto\EventListDetailsQueryDto;
+use App\Entity\{EventDisciplineList, EventDisciplineResult};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -44,14 +45,21 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'status', type: 'integer', example: 1),
+        new OA\Property(
+            property: 'results',
+            type: 'array',
+            items: new OA\Items(ref: '#/components/schemas/EventDisciplineDistanceResultResource'),
+        ),
     ],
     type: 'object',
 )]
 class EventDisciplineDistanceListResource
 {
-    public static function fromEntity(EventDisciplineList $eventDisciplineList): array
-    {
-        return [
+    public static function fromEntity(
+        EventDisciplineList $eventDisciplineList,
+        ?EventListDetailsQueryDto $dto = null,
+    ): array {
+        $data = [
             'id' => $eventDisciplineList->id->toString(),
             'eventDisciplineDistanceId' => $eventDisciplineList->eventDisciplineDistance->id->toString(),
             'feedId' => $eventDisciplineList->feed->id->toString(),
@@ -60,6 +68,15 @@ class EventDisciplineDistanceListResource
             'updatedAt' => $eventDisciplineList->updatedAt->format('Y-m-d\TH:i:s'),
             'status' => $eventDisciplineList->status->value,
         ];
+
+        if (in_array($dto::EVENT_LIST_RESULTS, $dto->include)) {
+            $data['results'] = array_map(
+                fn (EventDisciplineResult $result) => EventDisciplineDistanceResultResource::fromEntity($result, $dto),
+                $eventDisciplineList->results->toArray(),
+            );
+        }
+
+        return $data;
     }
 
     public static function fromEntityCollection(array $lists): array

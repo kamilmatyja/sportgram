@@ -24,7 +24,7 @@ class FeedComment
     }
 
     #[ORM\ManyToOne(targetEntity: Feed::class, inversedBy: 'comments')]
-    #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Feed $feed {
         get {
             return $this->feed;
@@ -32,7 +32,7 @@ class FeedComment
     }
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {
             return $this->user;
@@ -50,13 +50,6 @@ class FeedComment
     public DateTimeImmutable $updatedAt {
         get {
             return $this->updatedAt;
-        }
-    }
-
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
         }
     }
 
@@ -94,15 +87,5 @@ class FeedComment
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

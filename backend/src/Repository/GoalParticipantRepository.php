@@ -20,6 +20,13 @@ class GoalParticipantRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(GoalParticipant $goalParticipant): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($goalParticipant);
+        $em->flush();
+    }
+
     final public function findById(Uuid $goalParticipantId): GoalParticipant
     {
         /** @var ?GoalParticipant $goalParticipant */

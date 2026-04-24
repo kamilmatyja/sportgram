@@ -20,6 +20,13 @@ class UserPasswordResetRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(UserPasswordReset $userPasswordReset): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($userPasswordReset);
+        $em->flush();
+    }
+
     final public function findById(Uuid $userPasswordResetId): UserPasswordReset
     {
         /** @var ?UserPasswordReset $userPasswordReset */

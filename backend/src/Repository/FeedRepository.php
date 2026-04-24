@@ -21,6 +21,13 @@ class FeedRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(Feed $feed): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($feed);
+        $em->flush();
+    }
+
     final public function findById(Uuid $feedId): Feed
     {
         /** @var ?Feed $feed */

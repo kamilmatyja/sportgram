@@ -24,7 +24,7 @@ class TrainingDisciplineDistance
     }
 
     #[ORM\ManyToOne(targetEntity: TrainingDiscipline::class, inversedBy: 'distances')]
-    #[ORM\JoinColumn(name: 'training_discipline_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'training_discipline_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public TrainingDiscipline $trainingDiscipline {
         get {
             return $this->trainingDiscipline;
@@ -45,13 +45,6 @@ class TrainingDisciplineDistance
         }
     }
 
-    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $deletedAt = null {
-        get {
-            return $this->deletedAt;
-        }
-    }
-
     #[ORM\Column(name: 'distance', type: 'integer')]
     public int $distance {
         get {
@@ -66,6 +59,7 @@ class TrainingDisciplineDistance
         }
     }
 
+    /** @var TrainingDisciplineSubDistance[] */
     #[ORM\OneToMany(targetEntity: TrainingDisciplineSubDistance::class, mappedBy: 'trainingDisciplineDistance')]
     public Collection $subDistances;
 
@@ -89,15 +83,5 @@ class TrainingDisciplineDistance
     final public function onPreUpdate(): void
     {
         $this->updatedAt = new DateTimeImmutable();
-    }
-
-    final public function softDelete(): void
-    {
-        $this->deletedAt = new DateTimeImmutable();
-    }
-
-    final public function isDeleted(): bool
-    {
-        return $this->deletedAt !== null;
     }
 }

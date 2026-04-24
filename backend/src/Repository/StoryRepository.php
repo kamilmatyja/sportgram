@@ -21,6 +21,13 @@ class StoryRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(Story $story): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($story);
+        $em->flush();
+    }
+
     final public function findById(Uuid $storyId): Story
     {
         /** @var ?Story $story */

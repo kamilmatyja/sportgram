@@ -2,7 +2,7 @@
 
 namespace App\Resource;
 
-use App\Dto\EventResultDetailsQueryDto;
+use App\Dto\{EventListDetailsQueryDto};
 use App\Entity\{EventDisciplineResult, EventDisciplineSubResult};
 use OpenApi\Attributes as OA;
 
@@ -10,7 +10,7 @@ use OpenApi\Attributes as OA;
     schema: 'EventDisciplineDistanceResultResource',
     required: [
         'id',
-        'eventDisciplineDistanceId',
+        'eventDisciplineListId',
         'feedId',
         'userId',
         'createdAt',
@@ -25,7 +25,7 @@ use OpenApi\Attributes as OA;
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
         ),
         new OA\Property(
-            property: 'eventDisciplineDistanceId',
+            property: 'eventDisciplineListId',
             type: 'string',
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
@@ -57,13 +57,13 @@ class EventDisciplineDistanceResultResource
 {
     public static function fromEntity(
         EventDisciplineResult $eventDisciplineResult,
-        ?EventResultDetailsQueryDto $dto = null,
+        ?EventListDetailsQueryDto $dto = null,
     ): array {
         $userId = $eventDisciplineResult->user->id->toString();
 
         $data = [
             'id' => $eventDisciplineResult->id->toString(),
-            'eventDisciplineDistanceId' => $eventDisciplineResult->eventDisciplineDistance->id->toString(),
+            'eventDisciplineListId' => $eventDisciplineResult->eventDisciplineList->id->toString(),
             'feedId' => $eventDisciplineResult->feed->id->toString(),
             'userId' => $userId,
             'createdAt' => $eventDisciplineResult->createdAt->format('Y-m-d\TH:i:s'),
@@ -71,27 +71,15 @@ class EventDisciplineDistanceResultResource
             'time' => $eventDisciplineResult->time,
         ];
 
-        if (in_array($dto::EVENT_SUB_RESULTS, $dto->include)) {
-            $filteredSubResults = array_filter(
-                $eventDisciplineResult->eventDisciplineDistance->subDistances->toArray(),
-                function (EventDisciplineSubResult $subResult) use ($userId) {
-                    return $subResult->user->id->toString() === $userId;
-                },
-            );
-
+        if (in_array($dto::EVENT_LIST_SUB_RESULTS, $dto->include)) {
             $data['subResults'] = array_map(
                 fn (EventDisciplineSubResult $subResult) => EventDisciplineDistanceSubResultResource::fromEntity(
                     $subResult,
                 ),
-                $filteredSubResults,
+                $eventDisciplineResult->subResults->toArray(),
             );
         }
 
         return $data;
-    }
-
-    public static function fromEntityCollection(array $results): array
-    {
-        return array_map(fn (EventDisciplineResult $result) => self::fromEntity($result), $results);
     }
 }

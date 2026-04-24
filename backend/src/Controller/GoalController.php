@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Dto\{GoalDetailsQueryDto, GoalDto, GoalIndexDto, GoalStatusDto, SaveStatusDto};
+use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\GoalResource;
@@ -19,7 +20,7 @@ use Symfony\Component\Uid\Uuid;
 class GoalController extends AbstractController
 {
     #[Route('/api/goals', name: 'goal_create', methods: ['POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[IsGranted(RoleEnum::ROLE_PARTICIPANT)]
     #[OA\Post(
         summary: 'Create goal',
         requestBody: new Body('GoalDto'),

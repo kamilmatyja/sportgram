@@ -20,6 +20,13 @@ class EventDisciplineSubDistanceRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(EventDisciplineSubDistance $eventDisciplineSubDistance): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($eventDisciplineSubDistance);
+        $em->flush();
+    }
+
     final public function findById(Uuid $eventDisciplineSubDistanceId): EventDisciplineSubDistance
     {
         /** @var EventDisciplineSubDistance $eventDisciplineSubDistance */

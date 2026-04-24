@@ -57,15 +57,10 @@ readonly class GoalService
 
         $this->goalRepository->save($goal);
 
-        $goalParticipant = new GoalParticipant($goal, $user, SaveStatusEnum::Accepted);
-
-        $this->goalParticipantRepository->save($goalParticipant);
-
-        /** @var string $userId */
         foreach ($dto->participants as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if (! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 
@@ -104,16 +99,19 @@ readonly class GoalService
         $toRemove = array_diff($currentIds, $dto->participants);
 
         foreach ($goal->participants as $participant) {
-            $pid = $participant->user->id->toString();
-            if ($pid !== $user->id->toString() && in_array($pid, $toRemove, true)) {
-                $participant->softDelete();
-                $this->goalParticipantRepository->save($participant);
+            if (in_array($participant->user->id->toString(), $toRemove, true)) {
+                if ($participant->goalParticipantResults->count() > 0) {
+                    throw new ValidatorException('Cannot delete goal participant with results.');
+                }
+
+                $this->goalParticipantRepository->delete($participant);
             }
         }
 
         foreach ($toAdd as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
-            if ($this->friendRepository->isFriend($user->id, $participantUser->id)) {
+
+            if (! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 
@@ -141,8 +139,11 @@ readonly class GoalService
     {
         $goal = $this->goalRepository->findById($goalId);
 
-        $goal->softDelete();
-        $this->goalRepository->save($goal);
+        if ($goal->participants->count() > 0) {
+            throw new ValidatorException('Cannot delete goal with participants.');
+        }
+
+        $this->goalRepository->delete($goal);
 
         return $goal->id;
     }

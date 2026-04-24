@@ -18,4 +18,11 @@ class EventDisciplineRepository extends BaseRepository
         $em->persist($eventDiscipline);
         $em->flush();
     }
+
+    final public function delete(EventDiscipline $eventDiscipline): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($eventDiscipline);
+        $em->flush();
+    }
 }

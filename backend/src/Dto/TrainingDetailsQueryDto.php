@@ -9,26 +9,26 @@ use Symfony\Component\Validator\Constraints as Assert;
     schema: 'TrainingDetailsQueryDto',
     required: [],
     properties: [
-        new OA\Property(property: 'include', type: 'array', example: [self::TRAINING_PARTICIPANTS], nullable: true),
+        new OA\Property(property: 'include', type: 'array', example: [self::TRAINING_DISCIPLINES], nullable: true),
     ],
     type: 'object',
 )]
 class TrainingDetailsQueryDto
 {
+    public const string TRAINING_DISCIPLINES = 'trainingDisciplines';
+
+    public const string TRAINING_DISCIPLINE_DISTANCES = 'trainingDisciplineDistances';
+
+    public const string TRAINING_DISCIPLINE_SUB_DISTANCES = 'trainingDisciplineSubDistances';
+
     public const string TRAINING_PARTICIPANTS = 'trainingParticipants';
-
-    public const string TRAINING_PARTICIPANT_DISCIPLINES = 'trainingParticipantDisciplines';
-
-    public const string TRAINING_PARTICIPANT_DISCIPLINE_DISTANCES = 'trainingParticipantDisciplineDistances';
-
-    public const string TRAINING_PARTICIPANT_DISCIPLINE_SUB_DISTANCES = 'trainingParticipantDisciplineSubDistances';
 
     /** @var string[] */
     #[Assert\Choice(choices: [
+        self::TRAINING_DISCIPLINES,
+        self::TRAINING_DISCIPLINE_DISTANCES,
+        self::TRAINING_DISCIPLINE_SUB_DISTANCES,
         self::TRAINING_PARTICIPANTS,
-        self::TRAINING_PARTICIPANT_DISCIPLINES,
-        self::TRAINING_PARTICIPANT_DISCIPLINE_DISTANCES,
-        self::TRAINING_PARTICIPANT_DISCIPLINE_SUB_DISTANCES,
     ], multiple: true)]
     public array $include = [];
 }

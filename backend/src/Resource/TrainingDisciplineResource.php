@@ -7,7 +7,7 @@ use App\Entity\{TrainingDiscipline, TrainingDisciplineDistance};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'TrainingParticipantDisciplineResource',
+    schema: 'TrainingDisciplineResource',
     required: [
         'id',
         'trainingParticipantId',
@@ -29,24 +29,24 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'distances',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/TrainingParticipantDisciplineDistanceResource'),
+            items: new OA\Items(ref: '#/components/schemas/TrainingDisciplineDistanceResource'),
         ),
     ],
     type: 'object',
 )]
-class TrainingParticipantDisciplineResource
+class TrainingDisciplineResource
 {
     public static function fromEntity(TrainingDiscipline $discipline, TrainingDetailsQueryDto $dto): array
     {
         $data = [
             'id' => $discipline->id->toString(),
-            'trainingParticipantId' => $discipline->trainingParticipant->id->toString(),
+            'trainingParticipantId' => $discipline->training->id->toString(),
             'discipline' => $discipline->discipline->value,
         ];
 
-        if (in_array($dto::TRAINING_PARTICIPANT_DISCIPLINE_DISTANCES, $dto->include)) {
+        if (in_array($dto::TRAINING_DISCIPLINE_DISTANCES, $dto->include)) {
             $data['distances'] = array_map(
-                fn (TrainingDisciplineDistance $distance) => TrainingParticipantDisciplineDistanceResource::fromEntity(
+                fn (TrainingDisciplineDistance $distance) => TrainingDisciplineDistanceResource::fromEntity(
                     $distance,
                     $dto,
                 ),

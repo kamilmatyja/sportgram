@@ -21,6 +21,13 @@ class PageRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(Page $page): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($page);
+        $em->flush();
+    }
+
     final public function findById(Uuid $pageId): Page
     {
         /** @var ?Page $page */

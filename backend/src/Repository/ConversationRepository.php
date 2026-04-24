@@ -21,6 +21,13 @@ class ConversationRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(Conversation $conversation): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($conversation);
+        $em->flush();
+    }
+
     final public function findById(Uuid $conversationId): Conversation
     {
         /** @var ?Conversation $conversation */

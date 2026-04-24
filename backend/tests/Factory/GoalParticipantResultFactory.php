@@ -14,6 +14,8 @@ final class GoalParticipantResultFactory extends BaseFactory
         $defaults = [
             'goalParticipant' => GoalParticipantFactory::make(),
             'feed' => FeedFactory::make(),
+            'distance' => self::randomInt(),
+            'time' => self::randomInt(),
             'status' => self::randomEnum(SaveStatusEnum::class),
         ];
 
@@ -22,6 +24,8 @@ final class GoalParticipantResultFactory extends BaseFactory
         return new GoalParticipantResult(
             $data['goalParticipant'],
             $data['feed'],
+            $data['distance'],
+            $data['time'],
             $data['status'],
         );
     }

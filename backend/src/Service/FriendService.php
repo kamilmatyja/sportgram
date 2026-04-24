@@ -57,8 +57,7 @@ readonly class FriendService
     {
         $friend = $this->friendRepository->findById($friendId);
 
-        $friend->softDelete();
-        $this->friendRepository->save($friend);
+        $this->friendRepository->delete($friend);
 
         return $friend->id;
     }

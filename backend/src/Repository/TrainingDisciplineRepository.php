@@ -18,4 +18,11 @@ class TrainingDisciplineRepository extends BaseRepository
         $em->persist($trainingDiscipline);
         $em->flush();
     }
+
+    final public function delete(TrainingDiscipline $trainingDiscipline): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($trainingDiscipline);
+        $em->flush();
+    }
 }

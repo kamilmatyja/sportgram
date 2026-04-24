@@ -20,6 +20,13 @@ class ConversationActivityRepository extends BaseRepository
         $em->flush();
     }
 
+    final public function delete(ConversationActivity $conversationActivity): void
+    {
+        $em = $this->getEntityManager();
+        $em->remove($conversationActivity);
+        $em->flush();
+    }
+
     final public function findByUserIds(Uuid $senderUserId, Uuid $receiverUserId): ?ConversationActivity
     {
         /** @var ?ConversationActivity $conversationActivity */
