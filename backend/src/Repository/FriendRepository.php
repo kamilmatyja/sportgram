@@ -31,7 +31,7 @@ class FriendRepository extends BaseRepository
 
     final public function findById(Uuid $friendId): Friend
     {
-        /** @var ?Friend $friend */
+        /** @var Friend $friend */
         $friend = $this->findOrFail($friendId);
 
         return $friend;

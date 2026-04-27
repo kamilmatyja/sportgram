@@ -178,7 +178,7 @@ readonly class GoalService
 
         $this->goalRepository->delete($goal);
 
-        return $goal->id;
+        return $goalId;
     }
 
     final public function index(GoalIndexDto $dto): array

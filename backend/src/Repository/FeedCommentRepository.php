@@ -29,7 +29,7 @@ class FeedCommentRepository extends BaseRepository
 
     final public function findById(Uuid $feedCommentId): FeedComment
     {
-        /** @var ?FeedComment $feedComment */
+        /** @var FeedComment $feedComment */
         $feedComment = $this->findOrFail($feedCommentId);
 
         return $feedComment;

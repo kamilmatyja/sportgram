@@ -17,7 +17,7 @@ use Symfony\Component\Uid\Uuid;
 class SignController extends AbstractController
 {
     #[Route('/api/signs', name: 'user_sign', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
+    #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Sign user',
         requestBody: new Body('UserSignDto'),
@@ -35,7 +35,7 @@ class SignController extends AbstractController
     }
 
     #[Route('/api/signs/{id}/confirm', name: 'user_sign_confirm', methods: ['PATCH'])]
-    #[IsGranted('IS_ANONYMOUS')]
+    #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Patch(
         summary: 'Confirm sign user',
         requestBody: new Body('UserCodeDto'),
@@ -54,7 +54,7 @@ class SignController extends AbstractController
     }
 
     #[Route('/api/signs/{id}/resend', name: 'user_sign_resend', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
+    #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Resend sign user',
         tags: ['signs'],

@@ -157,7 +157,7 @@ readonly class PageService
 
         $this->pageRepository->delete($page);
 
-        return $page->id;
+        return $pageId;
     }
 
     final public function index(PageIndexDto $dto): array

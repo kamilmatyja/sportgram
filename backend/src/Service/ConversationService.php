@@ -85,7 +85,7 @@ readonly class ConversationService
 
         $this->conversationRepository->delete($conversation);
 
-        return $conversation->id;
+        return $conversationId;
     }
 
     final public function index(ConversationIndexDto $dto): array

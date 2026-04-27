@@ -29,8 +29,12 @@ class UserRoleVoter extends Voter
             return false;
         }
 
-        if (in_array(RoleEnum::ROLE_ADMINISTRATOR, $subject->roles, true)) {
+        if (in_array(RoleEnum::Administrator->value, $subject->roles, true)) {
             return in_array(RoleEnum::ROLE_ADMINISTRATOR, $user->getRoles(), true);
+        }
+
+        if (! $subject instanceof UserUpdateDto) {
+            return false;
         }
 
         return true;

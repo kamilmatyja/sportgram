@@ -31,7 +31,7 @@ class StoryRepository extends BaseRepository
 
     final public function findById(Uuid $storyId): Story
     {
-        /** @var ?Story $story */
+        /** @var Story $story */
         $story = $this->findOrFail($storyId);
 
         return $story;
@@ -42,18 +42,18 @@ class StoryRepository extends BaseRepository
         $qb = $this->createQueryBuilder('s');
 
         if ($dto->filter->userId) {
-            $qb->andWhere('s.user_id = :user_id')
+            $qb->andWhere('s.user = :user_id')
                 ->setParameter('user_id', $dto->filter->userId);
         } else {
             $qb->leftJoin(
                 'friends',
                 'fr',
                 '(
-                    (fr.sender_user_id = s.user_id AND fr.receiver_user_id = :userId)
-                    OR (fr.sender_user_id = :userId AND fr.receiver_user_id = s.user_id)
+                    (fr.sender_user = s.user_id AND fr.receiver_user = :userId)
+                    OR (fr.sender_user = :userId AND fr.receiver_user = s.user_id)
                 )',
             );
-            $qb->andWhere('(s.user_id = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')
+            $qb->andWhere('(s.user = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')
                 ->setParameter('userId', $userId)
                 ->setParameter('acceptedStatus', FriendStatusEnum::Accepted->value);
             $qb->select('s')

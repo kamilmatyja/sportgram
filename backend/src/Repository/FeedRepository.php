@@ -31,7 +31,7 @@ class FeedRepository extends BaseRepository
 
     final public function findById(Uuid $feedId): Feed
     {
-        /** @var ?Feed $feed */
+        /** @var Feed $feed */
         $feed = $this->findOrFail($feedId);
 
         return $feed;
@@ -42,18 +42,18 @@ class FeedRepository extends BaseRepository
         $qb = $this->createQueryBuilder('f');
 
         if ($dto->filter->userId) {
-            $qb->andWhere('f.user_id = :user_id')
+            $qb->andWhere('f.user = :user_id')
                 ->setParameter('user_id', $dto->filter->userId);
         } else {
             $qb->leftJoin(
                 'friends',
                 'fr',
                 '(
-                    (fr.sender_user_id = f.user_id AND fr.receiver_user_id = :userId)
-                    OR (fr.sender_user_id = :userId AND fr.receiver_user_id = f.user_id)
+                    (fr.sender_user = f.user_id AND fr.receiver_user = :userId)
+                    OR (fr.sender_user = :userId AND fr.receiver_user = f.user_id)
                 )',
             );
-            $qb->andWhere('(f.user_id = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')
+            $qb->andWhere('(f.user = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')
                 ->setParameter('userId', $userId)
                 ->setParameter('acceptedStatus', FriendStatusEnum::Accepted->value);
         }

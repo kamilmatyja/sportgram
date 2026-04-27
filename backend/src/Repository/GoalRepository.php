@@ -32,7 +32,7 @@ class GoalRepository extends BaseRepository
 
     final public function findById(Uuid $goalId): Goal
     {
-        /** @var ?Goal $goal */
+        /** @var Goal $goal */
         $goal = $this->findOrFail($goalId);
 
         return $goal;

@@ -200,7 +200,7 @@ readonly class EventService
 
         $this->eventRepository->delete($event);
 
-        return $event->id;
+        return $eventId;
     }
 
     final public function index(EventIndexDto $dto): array

@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Enum\RoleEnum;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\{Vote, Voter};
+use Symfony\Component\Uid\Uuid;
 
 class UserVoter extends Voter
 {
@@ -32,7 +33,11 @@ class UserVoter extends Voter
             return true;
         }
 
-        if ($user->id->toString() === $subject) {
+        if (! $subject instanceof Uuid) {
+            return false;
+        }
+
+        if ($user->id->toString() === $subject->toString()) {
             return true;
         }
 

@@ -30,7 +30,7 @@ class ConversationRepository extends BaseRepository
 
     final public function findById(Uuid $conversationId): Conversation
     {
-        /** @var ?Conversation $conversation */
+        /** @var Conversation $conversation */
         $conversation = $this->findOrFail($conversationId);
 
         return $conversation;
@@ -57,7 +57,7 @@ class ConversationRepository extends BaseRepository
                 ->setParameter('userId2', $dto->filter->userId);
         } else {
             $qb->select(
-                'c, DISTINCT CASE WHEN c.sender_user_id = :userId THEN c.receiver_user_id ELSE c.sender_user_id END AS HIDDEN other_user_id',
+                'c, DISTINCT CASE WHEN c.sender_user = :userId THEN c.receiver_user_id ELSE c.sender_user_id END AS HIDDEN other_user_id',
             );
             $qb->andWhere(
                 $qb->expr()->orX(

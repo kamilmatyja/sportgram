@@ -29,7 +29,7 @@ class UserRegisterRepository extends BaseRepository
 
     final public function findById(Uuid $userRegisterId): UserRegister
     {
-        /** @var ?UserRegister $userRegister */
+        /** @var UserRegister $userRegister */
         $userRegister = $this->findOrFail($userRegisterId);
 
         return $userRegister;

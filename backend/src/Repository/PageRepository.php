@@ -30,7 +30,7 @@ class PageRepository extends BaseRepository
 
     final public function findById(Uuid $pageId): Page
     {
-        /** @var ?Page $page */
+        /** @var Page $page */
         $page = $this->findOrFail($pageId);
 
         return $page;

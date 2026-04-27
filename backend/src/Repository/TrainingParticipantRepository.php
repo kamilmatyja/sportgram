@@ -29,7 +29,7 @@ class TrainingParticipantRepository extends BaseRepository
 
     final public function findById(Uuid $trainingParticipantId): TrainingParticipant
     {
-        /** @var ?TrainingParticipant $trainingParticipant */
+        /** @var TrainingParticipant $trainingParticipant */
         $trainingParticipant = $this->findOrFail($trainingParticipantId);
 
         return $trainingParticipant;

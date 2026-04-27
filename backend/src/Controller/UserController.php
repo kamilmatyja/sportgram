@@ -38,7 +38,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/api/users/nano', name: 'user_create_nano', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
+    #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Create user nano',
         requestBody: new Body('UserCreateNanoDto'),

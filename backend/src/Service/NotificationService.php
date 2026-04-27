@@ -33,7 +33,7 @@ readonly class NotificationService
 
         $this->notificationRepository->delete($notification);
 
-        return $notification->id;
+        return $notificationId;
     }
 
     final public function index(NotificationIndexDto $dto): array

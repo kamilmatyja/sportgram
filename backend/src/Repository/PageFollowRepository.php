@@ -30,7 +30,7 @@ class PageFollowRepository extends BaseRepository
 
     final public function findById(Uuid $pageFollowId): PageFollow
     {
-        /** @var ?PageFollow $pageFollow */
+        /** @var PageFollow $pageFollow */
         $pageFollow = $this->findOrFail($pageFollowId);
 
         return $pageFollow;
@@ -41,7 +41,7 @@ class PageFollowRepository extends BaseRepository
         $qb = $this->createQueryBuilder('p');
 
         if ($dto->filter->userId) {
-            $qb->andWhere('p.user_id = :userId')
+            $qb->andWhere('p.user = :userId')
                 ->setParameter('userId', $dto->filter->userId);
         }
 

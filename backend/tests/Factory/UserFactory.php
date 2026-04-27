@@ -31,7 +31,7 @@ final class UserFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        return new User(
+        $user = new User(
             $data['birthAt'],
             $data['firstName'],
             $data['lastName'],
@@ -48,5 +48,9 @@ final class UserFactory extends BaseFactory
             $data['bio'],
             $data['status'],
         );
+
+        $user->password = self::randomString('password');
+
+        return $user;
     }
 }

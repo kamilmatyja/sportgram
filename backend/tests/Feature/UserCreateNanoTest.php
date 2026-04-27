@@ -6,12 +6,11 @@ namespace Tests\Feature;
 
 use App\Enum\RoleEnum;
 
-class UserCreateTest extends ApiTestCase
+class UserCreateNanoTest extends ApiTestCase
 {
     final protected function setUp(): void
     {
         parent::setUp();
-
         $this->truncate('user_registers');
         $this->truncate('user_roles');
         $this->truncate('user_disciplines');
@@ -20,9 +19,7 @@ class UserCreateTest extends ApiTestCase
 
     final public function testEmptyPayload(): void
     {
-        $user = self::createUser(RoleEnum::Administrator);
-
-        $result = $this->post('/api/users', [], $user);
+        $result = $this->post('/api/users/nano', []);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -33,14 +30,7 @@ class UserCreateTest extends ApiTestCase
             'phone',
             'email',
             'password',
-            'link',
-            'language',
             'country',
-            'theme',
-            'color',
-            'profilePhoto',
-            'backgroundPhoto',
-            'bio',
             'roles',
         ];
         foreach ($expected as $field) {
@@ -53,8 +43,6 @@ class UserCreateTest extends ApiTestCase
 
     final public function testNullRequiredFields(): void
     {
-        $user = self::createUser(RoleEnum::Administrator);
-
         $data = [
             'birthAt' => null,
             'firstName' => null,
@@ -63,19 +51,10 @@ class UserCreateTest extends ApiTestCase
             'phone' => null,
             'email' => null,
             'password' => null,
-            'link' => null,
-            'language' => null,
             'country' => null,
-            'theme' => null,
-            'color' => null,
-            'profilePhoto' => null,
-            'backgroundPhoto' => null,
-            'bio' => null,
-            'status' => null,
             'roles' => null,
-            'disciplines' => null,
         ];
-        $result = $this->post('/api/users', $data, $user);
+        $result = $this->post('/api/users/nano', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -86,14 +65,7 @@ class UserCreateTest extends ApiTestCase
             'phone',
             'email',
             'password',
-            'link',
-            'language',
             'country',
-            'theme',
-            'color',
-            'profilePhoto',
-            'backgroundPhoto',
-            'bio',
             'roles',
         ];
         $typeErrors = [
@@ -104,14 +76,7 @@ class UserCreateTest extends ApiTestCase
             'phone' => 'This value should be of type int.',
             'email' => 'This value should be of type string.',
             'password' => 'This value should be of type string.',
-            'link' => 'This value should be of type string.',
-            'language' => 'This value should be of type int.',
             'country' => 'This value should be of type int.',
-            'theme' => 'This value should be of type int.',
-            'color' => 'This value should be of type int.',
-            'profilePhoto' => 'This value should be of type string.',
-            'backgroundPhoto' => 'This value should be of type string.',
-            'bio' => 'This value should be of type string.',
             'roles' => 'This value should be of type array.',
         ];
         foreach ($expected as $field) {
@@ -124,8 +89,6 @@ class UserCreateTest extends ApiTestCase
 
     final public function testDuplicate(): void
     {
-        $user = self::createUser(RoleEnum::Administrator);
-
         $data = [
             'birthAt' => '2000-01-01',
             'firstName' => 'Jan',
@@ -134,30 +97,19 @@ class UserCreateTest extends ApiTestCase
             'phone' => 123456789,
             'email' => 'jan.kowalski@example.com',
             'password' => 'tajnehaslo',
-            'link' => 'janek',
-            'language' => 2,
             'country' => 35,
-            'theme' => 1,
-            'color' => 3,
-            'profilePhoto' => base64_encode('hello'),
-            'backgroundPhoto' => base64_encode('hello'),
-            'bio' => 'Testowy użytkownik',
-            'status' => 1,
-            'roles' => [1, 2],
-            'disciplines' => [1, 2],
+            'roles' => [1],
         ];
-
-        $result1 = $this->post('/api/users', $data, $user);
+        $result1 = $this->post('/api/users/nano', $data);
         $this->assertEquals(201, $result1['status']);
         $this->assertArrayHasKey('id', $result1['json']);
 
-        $result2 = $this->post('/api/users', $data, $user);
+        $result2 = $this->post('/api/users/nano', $data);
         $this->assertEquals(400, $result2['status']);
         $this->assertArrayHasKey('errors', $result2['json']);
         $expected = [
             'phone',
             'email',
-            'link',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result2['json']['errors']);
@@ -167,49 +119,8 @@ class UserCreateTest extends ApiTestCase
         }
     }
 
-    final public function testInvalidBase64(): void
-    {
-        $user = self::createUser(RoleEnum::Administrator);
-
-        $data = [
-            'birthAt' => '2000-01-01',
-            'firstName' => 'Jan',
-            'lastName' => 'Kowalski',
-            'gender' => 1,
-            'phone' => 123456789,
-            'email' => 'unique@example.com',
-            'password' => 'tajnehaslo',
-            'link' => 'janek2',
-            'language' => 2,
-            'country' => 35,
-            'theme' => 1,
-            'color' => 3,
-            'profilePhoto' => 'not_base64',
-            'backgroundPhoto' => 'not_base64',
-            'bio' => 'Testowy użytkownik',
-            'status' => 1,
-            'roles' => [1, 2],
-            'disciplines' => [1, 2],
-        ];
-        $result = $this->post('/api/users', $data, $user);
-        $this->assertEquals(400, $result['status']);
-        $this->assertArrayHasKey('errors', $result['json']);
-        $expected = [
-            'profilePhoto',
-            'backgroundPhoto',
-        ];
-        foreach ($expected as $field) {
-            $this->assertArrayHasKey($field, $result['json']['errors']);
-            $this->assertEquals([
-                'This value should be a valid base64 string.',
-            ], $result['json']['errors'][$field]);
-        }
-    }
-
     final public function testInvalidTypes(): void
     {
-        $user = self::createUser(RoleEnum::Administrator);
-
         $data = [
             'birthAt' => '2000-01-01',
             'firstName' => 'Jan',
@@ -218,19 +129,10 @@ class UserCreateTest extends ApiTestCase
             'phone' => 'ala ma kota',
             'email' => 'unique@example.com',
             'password' => 'tajnehaslo',
-            'link' => 'janek2',
-            'language' => 2,
             'country' => 35,
-            'theme' => 1,
-            'color' => 3,
-            'profilePhoto' => base64_encode('hello'),
-            'backgroundPhoto' => base64_encode('hello'),
-            'bio' => 'Testowy użytkownik',
-            'status' => 1,
-            'roles' => [1, 2],
-            'disciplines' => [1, 2],
+            'roles' => [1],
         ];
-        $result = $this->post('/api/users', $data, $user);
+        $result = $this->post('/api/users/nano', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -246,8 +148,6 @@ class UserCreateTest extends ApiTestCase
 
     final public function testEmptyElements(): void
     {
-        $user = self::createUser(RoleEnum::Administrator);
-
         $data = [
             'birthAt' => '2000-01-01',
             'firstName' => 'Jan',
@@ -256,20 +156,10 @@ class UserCreateTest extends ApiTestCase
             'phone' => 123456789,
             'email' => 'jan.kowalski@example.com',
             'password' => 'tajnehaslo',
-            'link' => 'janek',
-            'language' => 2,
             'country' => 35,
-            'theme' => 1,
-            'color' => 3,
-            'profilePhoto' => base64_encode('hello'),
-            'backgroundPhoto' => base64_encode('hello'),
-            'bio' => 'Testowy użytkownik',
-            'status' => 1,
             'roles' => [],
-            'disciplines' => [],
         ];
-
-        $result = $this->post('/api/users', $data, $user);
+        $result = $this->post('/api/users/nano', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -286,8 +176,6 @@ class UserCreateTest extends ApiTestCase
 
     final public function testDuplicatesInElements(): void
     {
-        $user = self::createUser(RoleEnum::Administrator);
-
         $data = [
             'birthAt' => '2000-01-01',
             'firstName' => 'Jan',
@@ -296,25 +184,14 @@ class UserCreateTest extends ApiTestCase
             'phone' => 123456789,
             'email' => 'jan.kowalski@example.com',
             'password' => 'tajnehaslo',
-            'link' => 'janek',
-            'language' => 2,
             'country' => 35,
-            'theme' => 1,
-            'color' => 3,
-            'profilePhoto' => base64_encode('hello'),
-            'backgroundPhoto' => base64_encode('hello'),
-            'bio' => 'Testowy użytkownik',
-            'status' => 1,
-            'roles' => [1, 2, 1],
-            'disciplines' => [1, 2, 1],
+            'roles' => [1, 1],
         ];
-
-        $result = $this->post('/api/users', $data, $user);
+        $result = $this->post('/api/users/nano', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
             'roles',
-            'disciplines',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
@@ -326,8 +203,6 @@ class UserCreateTest extends ApiTestCase
 
     final public function testNotExistElements(): void
     {
-        $user = self::createUser(RoleEnum::Administrator);
-
         $data = [
             'birthAt' => '2000-01-01',
             'firstName' => 'Jan',
@@ -336,25 +211,14 @@ class UserCreateTest extends ApiTestCase
             'phone' => 123456789,
             'email' => 'jan.kowalski@example.com',
             'password' => 'tajnehaslo',
-            'link' => 'janek',
-            'language' => 2,
             'country' => 35,
-            'theme' => 1,
-            'color' => 3,
-            'profilePhoto' => base64_encode('hello'),
-            'backgroundPhoto' => base64_encode('hello'),
-            'bio' => 'Testowy użytkownik',
-            'status' => 1,
             'roles' => [4],
-            'disciplines' => [20],
         ];
-
-        $result = $this->post('/api/users', $data, $user);
+        $result = $this->post('/api/users/nano', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
             'roles[0]',
-            'disciplines[0]',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
@@ -366,8 +230,6 @@ class UserCreateTest extends ApiTestCase
 
     final public function testSuccess(): void
     {
-        $user = self::createUser(RoleEnum::Administrator);
-
         $data = [
             'birthAt' => '2000-01-01',
             'firstName' => 'Jan',
@@ -376,52 +238,15 @@ class UserCreateTest extends ApiTestCase
             'phone' => 123456789,
             'email' => 'jan.kowalski@example.com',
             'password' => 'tajnehaslo',
-            'link' => 'janek',
-            'language' => 2,
             'country' => 35,
-            'theme' => 1,
-            'color' => 3,
-            'profilePhoto' => base64_encode('hello'),
-            'backgroundPhoto' => base64_encode('hello'),
-            'bio' => 'Testowy użytkownik',
-            'status' => 1,
-            'roles' => [1, 2],
+            'roles' => [1],
         ];
-
-        $result = $this->post('/api/users', $data, $user);
+        $result = $this->post('/api/users/nano', $data);
         $this->assertEquals(201, $result['status']);
         $this->assertArrayHasKey('id', $result['json']);
     }
 
-    final public function testWithoutToken(): void
-    {
-        $data = [
-            'birthAt' => '2000-01-01',
-            'firstName' => 'Jan',
-            'lastName' => 'Kowalski',
-            'gender' => 1,
-            'phone' => 123456789,
-            'email' => 'jan.kowalski@example.com',
-            'password' => 'tajnehaslo',
-            'link' => 'janek',
-            'language' => 2,
-            'country' => 35,
-            'theme' => 1,
-            'color' => 3,
-            'profilePhoto' => base64_encode('hello'),
-            'backgroundPhoto' => base64_encode('hello'),
-            'bio' => 'Testowy użytkownik',
-            'status' => 1,
-            'roles' => [1, 2],
-        ];
-
-        $result = $this->post('/api/users', $data);
-        $this->assertEquals(401, $result['status']);
-        $this->assertArrayHasKey('error', $result['json']);
-        $this->assertEquals('Authentication required.', $result['json']['error']);
-    }
-
-    final public function testWithoutPermission(): void
+    final public function testWithToken(): void
     {
         $user = self::createUser(RoleEnum::Participant);
 
@@ -433,21 +258,31 @@ class UserCreateTest extends ApiTestCase
             'phone' => 123456789,
             'email' => 'jan.kowalski@example.com',
             'password' => 'tajnehaslo',
-            'link' => 'janek',
-            'language' => 2,
             'country' => 35,
-            'theme' => 1,
-            'color' => 3,
-            'profilePhoto' => base64_encode('hello'),
-            'backgroundPhoto' => base64_encode('hello'),
-            'bio' => 'Testowy użytkownik',
-            'status' => 1,
-            'roles' => [1, 2],
+            'roles' => [1],
         ];
+        $result = $this->post('/api/users/nano', $data, $user);
+        $this->assertEquals(201, $result['status']);
+        $this->assertArrayHasKey('id', $result['json']);
+    }
 
-        $result = $this->post('/api/users', $data, $user);
-        $this->assertEquals(403, $result['status']);
-        $this->assertArrayHasKey('error', $result['json']);
-        $this->assertEquals('Access Denied.', $result['json']['error']);
+    final public function testWithPermission(): void
+    {
+        $user = self::createUser(RoleEnum::Administrator);
+
+        $data = [
+            'birthAt' => '2000-01-01',
+            'firstName' => 'Jan',
+            'lastName' => 'Kowalski',
+            'gender' => 1,
+            'phone' => 123456789,
+            'email' => 'jan.kowalski@example.com',
+            'password' => 'tajnehaslo',
+            'country' => 35,
+            'roles' => [1],
+        ];
+        $result = $this->post('/api/users/nano', $data, $user);
+        $this->assertEquals(201, $result['status']);
+        $this->assertArrayHasKey('id', $result['json']);
     }
 }

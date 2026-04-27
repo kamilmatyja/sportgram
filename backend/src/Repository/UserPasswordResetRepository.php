@@ -29,7 +29,7 @@ class UserPasswordResetRepository extends BaseRepository
 
     final public function findById(Uuid $userPasswordResetId): UserPasswordReset
     {
-        /** @var ?UserPasswordReset $userPasswordReset */
+        /** @var UserPasswordReset $userPasswordReset */
         $userPasswordReset = $this->findOrFail($userPasswordResetId);
 
         return $userPasswordReset;

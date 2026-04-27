@@ -29,7 +29,7 @@ class PageParticipantRepository extends BaseRepository
 
     final public function findById(Uuid $pageParticipantId): PageParticipant
     {
-        /** @var ?PageParticipant $pageParticipant */
+        /** @var PageParticipant $pageParticipant */
         $pageParticipant = $this->findOrFail($pageParticipantId);
 
         return $pageParticipant;

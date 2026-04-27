@@ -30,7 +30,7 @@ class TrainingRepository extends BaseRepository
 
     final public function findById(Uuid $trainingId): Training
     {
-        /** @var ?Training $training */
+        /** @var Training $training */
         $training = $this->findOrFail($trainingId);
 
         return $training;

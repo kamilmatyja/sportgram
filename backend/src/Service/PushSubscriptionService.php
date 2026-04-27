@@ -55,7 +55,7 @@ readonly class PushSubscriptionService
 
         $this->pushSubscriptionRepository->delete($pushSubscription);
 
-        return $pushSubscription->id;
+        return $pushSubscriptionId;
     }
 
     final public function index(PushSubscriptionIndexDto $dto): array

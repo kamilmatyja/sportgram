@@ -17,7 +17,7 @@ use Symfony\Component\Uid\Uuid;
 class RegisterController extends AbstractController
 {
     #[Route('/api/registers', name: 'user_register', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
+    #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Register user',
         requestBody: new Body('UserEmailDto'),
@@ -35,7 +35,7 @@ class RegisterController extends AbstractController
     }
 
     #[Route('/api/registers/{id}/confirm', name: 'user_register_confirm', methods: ['PATCH'])]
-    #[IsGranted('IS_ANONYMOUS')]
+    #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Patch(
         summary: 'Confirm register user',
         requestBody: new Body('UserCodeDto'),
@@ -54,7 +54,7 @@ class RegisterController extends AbstractController
     }
 
     #[Route('/api/registers/{id}/resend', name: 'user_register_resend', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
+    #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Resend register user',
         tags: ['registers'],

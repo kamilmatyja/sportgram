@@ -73,7 +73,7 @@ readonly class FeedService
 
         $this->feedRepository->delete($feed);
 
-        return $feed->id;
+        return $feedId;
     }
 
     final public function index(FeedIndexDto $dto): array

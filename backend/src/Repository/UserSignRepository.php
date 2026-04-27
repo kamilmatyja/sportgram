@@ -29,7 +29,7 @@ class UserSignRepository extends BaseRepository
 
     final public function findById(Uuid $userSignId): UserSign
     {
-        /** @var ?UserSign $userSign */
+        /** @var UserSign $userSign */
         $userSign = $this->findOrFail($userSignId);
 
         return $userSign;

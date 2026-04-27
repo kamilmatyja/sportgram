@@ -29,7 +29,7 @@ class GoalParticipantResultRepository extends BaseRepository
 
     final public function findById(Uuid $goalParticipantResultId): GoalParticipantResult
     {
-        /** @var ?GoalParticipantResult $goalParticipantResult */
+        /** @var GoalParticipantResult $goalParticipantResult */
         $goalParticipantResult = $this->findOrFail($goalParticipantResultId);
 
         return $goalParticipantResult;

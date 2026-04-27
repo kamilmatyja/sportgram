@@ -74,7 +74,7 @@ readonly class StoryService
 
         $this->storyRepository->delete($story);
 
-        return $story->id;
+        return $storyId;
     }
 
     final public function index(StoryIndexDto $dto): array

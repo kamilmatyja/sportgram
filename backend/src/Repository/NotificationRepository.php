@@ -30,7 +30,7 @@ class NotificationRepository extends BaseRepository
 
     final public function findById(Uuid $notificationId): Notification
     {
-        /** @var ?Notification $notification */
+        /** @var Notification $notification */
         $notification = $this->findOrFail($notificationId);
 
         return $notification;

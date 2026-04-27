@@ -29,7 +29,7 @@ class FeedReactionRepository extends BaseRepository
 
     final public function findById(Uuid $feedReactionId): FeedReaction
     {
-        /** @var ?FeedReaction $feedReaction */
+        /** @var FeedReaction $feedReaction */
         $feedReaction = $this->findOrFail($feedReactionId);
 
         return $feedReaction;

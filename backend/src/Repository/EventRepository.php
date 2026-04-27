@@ -30,7 +30,7 @@ class EventRepository extends BaseRepository
 
     final public function findById(Uuid $eventId): Event
     {
-        /** @var ?Event $event */
+        /** @var Event $event */
         $event = $this->findOrFail($eventId);
 
         return $event;

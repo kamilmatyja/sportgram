@@ -208,7 +208,7 @@ readonly class UserService
 
         $this->userRepository->delete($user);
 
-        return $user->id;
+        return $userId;
     }
 
     final public function index(UserIndexDto $dto): array

@@ -91,7 +91,7 @@ readonly class FriendService
 
         $this->friendRepository->delete($friend);
 
-        return $friend->id;
+        return $friendId;
     }
 
     final public function index(FriendIndexDto $dto): array

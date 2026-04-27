@@ -30,7 +30,7 @@ class UserRepository extends BaseRepository
 
     final public function findById(Uuid $userId): User
     {
-        /** @var ?User $user */
+        /** @var User $user */
         $user = $this->findOrFail($userId);
 
         return $user;

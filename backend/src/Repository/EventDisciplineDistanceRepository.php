@@ -29,7 +29,7 @@ class EventDisciplineDistanceRepository extends BaseRepository
 
     final public function findById(Uuid $eventDisciplineDistanceId): EventDisciplineDistance
     {
-        /** @var ?EventDisciplineDistance $eventDisciplineDistance */
+        /** @var EventDisciplineDistance $eventDisciplineDistance */
         $eventDisciplineDistance = $this->findOrFail($eventDisciplineDistanceId);
 
         return $eventDisciplineDistance;

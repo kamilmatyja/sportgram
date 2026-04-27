@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Entity\User;
 use App\Enum\RoleEnum;
 use Doctrine\DBAL\{Connection, Exception};
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -44,14 +44,69 @@ abstract class ApiTestCase extends WebTestCase
         $this->jwtManager = $container->get(JWTTokenManagerInterface::class);
     }
 
-    protected function post(string $uri, array $data, ?RoleEnum $role = null): array
+    protected function post(string $uri, array $data, ?User $user = null): array
     {
         $headers = ['CONTENT_TYPE' => 'application/json'];
-        if ($role) {
-            $token = $this->getToken($role);
-            $headers['HTTP_Authorization'] = 'Bearer ' . $token;
+        if ($user) {
+            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
         }
         $this->client->request('POST', $uri, [], [], $headers, json_encode($data));
+
+        return [
+            'status' => $this->client->getResponse()->getStatusCode(),
+            'json' => json_decode($this->client->getResponse()->getContent(), true),
+        ];
+    }
+
+    protected function put(string $uri, array $data, ?User $user = null): array
+    {
+        $headers = ['CONTENT_TYPE' => 'application/json'];
+        if ($user) {
+            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
+        }
+        $this->client->request('PUT', $uri, [], [], $headers, json_encode($data));
+
+        return [
+            'status' => $this->client->getResponse()->getStatusCode(),
+            'json' => json_decode($this->client->getResponse()->getContent(), true),
+        ];
+    }
+
+    protected function patch(string $uri, array $data, ?User $user = null): array
+    {
+        $headers = ['CONTENT_TYPE' => 'application/json'];
+        if ($user) {
+            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
+        }
+        $this->client->request('PATCH', $uri, [], [], $headers, json_encode($data));
+
+        return [
+            'status' => $this->client->getResponse()->getStatusCode(),
+            'json' => json_decode($this->client->getResponse()->getContent(), true),
+        ];
+    }
+
+    protected function delete(string $uri, ?User $user = null): array
+    {
+        $headers = ['CONTENT_TYPE' => 'application/json'];
+        if ($user) {
+            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
+        }
+        $this->client->request('DELETE', $uri, [], [], $headers, json_encode($data));
+
+        return [
+            'status' => $this->client->getResponse()->getStatusCode(),
+            'json' => json_decode($this->client->getResponse()->getContent(), true),
+        ];
+    }
+
+    protected function get(string $uri, ?User $user = null): array
+    {
+        $headers = ['CONTENT_TYPE' => 'application/json'];
+        if ($user) {
+            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
+        }
+        $this->client->request('GET', $uri, [], [], $headers);
 
         return [
             'status' => $this->client->getResponse()->getStatusCode(),
@@ -67,22 +122,28 @@ abstract class ApiTestCase extends WebTestCase
         $this->connection->executeStatement($this->platform->getTruncateTableSQL($name, true));
     }
 
-    /**
-     * @throws ORMException
-     */
-    private function getToken(RoleEnum $role): string
+    protected function save(object $entity): void
+    {
+        $this->em->persist($entity);
+        $this->em->flush();
+    }
+
+    protected function createUser(RoleEnum $role): User
     {
         $user = UserFactory::make();
         $user->password = $this->passwordHasher->hashPassword($user, 'zaq1@WSX');
-        $this->em->persist($user);
-        $this->em->flush();
+        $this->save($user);
 
         $userRole = UserRoleFactory::make(['user' => $user, 'role' => $role]);
-        $this->em->persist($userRole);
-        $this->em->flush();
+        $this->save($userRole);
 
         $this->em->refresh($user);
 
+        return $user;
+    }
+
+    private function getToken(User $user): string
+    {
         return $this->jwtManager->create($user);
     }
 }

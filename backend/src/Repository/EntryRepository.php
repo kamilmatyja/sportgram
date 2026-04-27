@@ -30,7 +30,7 @@ class EntryRepository extends BaseRepository
 
     final public function findById(Uuid $entryId): Entry
     {
-        /** @var ?Entry $entry */
+        /** @var Entry $entry */
         $entry = $this->findOrFail($entryId);
 
         return $entry;
@@ -41,7 +41,7 @@ class EntryRepository extends BaseRepository
         $qb = $this->createQueryBuilder('e');
 
         if ($dto->filter->userId) {
-            $qb->andWhere('e.user_id = :userId')
+            $qb->andWhere('e.user = :userId')
                 ->setParameter('userId', $dto->filter->userId);
         }
 

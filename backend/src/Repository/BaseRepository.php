@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\EntityNotFoundException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Uid\Uuid;
 
 abstract class BaseRepository extends ServiceEntityRepository
@@ -13,7 +13,7 @@ abstract class BaseRepository extends ServiceEntityRepository
         $entity = $this->find($id);
 
         if (! $entity) {
-            throw new EntityNotFoundException(static::class . ' not found.');
+            throw new NotFoundHttpException('Element not found.');
         }
 
         return $entity;

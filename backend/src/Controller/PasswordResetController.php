@@ -17,7 +17,7 @@ use Symfony\Component\Uid\Uuid;
 class PasswordResetController extends AbstractController
 {
     #[Route('/api/password-resets', name: 'user_password_reset', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
+    #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Reset user password',
         requestBody: new Body('UserEmailDto'),
@@ -35,7 +35,7 @@ class PasswordResetController extends AbstractController
     }
 
     #[Route('/api/password-resets/{id}/confirm', name: 'user_password_reset_confirm', methods: ['PATCH'])]
-    #[IsGranted('IS_ANONYMOUS')]
+    #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Patch(
         summary: 'Confirm reset user password',
         requestBody: new Body('UserPasswordDto'),
@@ -54,7 +54,7 @@ class PasswordResetController extends AbstractController
     }
 
     #[Route('/api/password-resets/{id}/resend', name: 'user_password_reset_resend', methods: ['POST'])]
-    #[IsGranted('IS_ANONYMOUS')]
+    #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Resend reset user password',
         tags: ['password resets'],

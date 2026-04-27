@@ -143,9 +143,9 @@ readonly class TrainingService
     /**
      * @throws DateMalformedStringException
      */
-    final public function update(Uuid $id, TrainingDto $dto): Uuid
+    final public function update(Uuid $trainingId, TrainingDto $dto): Uuid
     {
-        $training = $this->trainingRepository->findById($id);
+        $training = $this->trainingRepository->findById($trainingId);
 
         $training->startedAt = new DateTimeImmutable($dto->startedAt);
         $training->endedAt = new DateTimeImmutable($dto->endedAt);
@@ -234,9 +234,9 @@ readonly class TrainingService
         return $training->id;
     }
 
-    final public function updateStatus(Uuid $id, ElementStatusDto $dto): Uuid
+    final public function updateStatus(Uuid $trainingId, ElementStatusDto $dto): Uuid
     {
-        $training = $this->trainingRepository->findById($id);
+        $training = $this->trainingRepository->findById($trainingId);
 
         $training->status = ElementStatusEnum::from($dto->status);
         $this->trainingRepository->save($training);
@@ -255,9 +255,9 @@ readonly class TrainingService
         return $training->id;
     }
 
-    final public function delete(Uuid $id): Uuid
+    final public function delete(Uuid $trainingId): Uuid
     {
-        $training = $this->trainingRepository->findById($id);
+        $training = $this->trainingRepository->findById($trainingId);
 
         if ($training->participants->count() > 0) {
             throw new ValidatorException('Cannot delete training with participants.');
@@ -265,7 +265,7 @@ readonly class TrainingService
 
         $this->trainingRepository->delete($training);
 
-        return $training->id;
+        return $trainingId;
     }
 
     final public function index(TrainingIndexDto $dto): array
@@ -273,9 +273,9 @@ readonly class TrainingService
         return $this->trainingRepository->findTrainings($dto);
     }
 
-    final public function details(Uuid $id): Training
+    final public function details(Uuid $trainingId): Training
     {
-        return $this->trainingRepository->findById($id);
+        return $this->trainingRepository->findById($trainingId);
     }
 
     final public function updateParticipantStatus(Uuid $participantId, SaveStatusDto $dto): Uuid

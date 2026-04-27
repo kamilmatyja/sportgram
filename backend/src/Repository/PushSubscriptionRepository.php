@@ -31,7 +31,7 @@ class PushSubscriptionRepository extends BaseRepository
 
     final public function findById(Uuid $pushSubscriptionId): PushSubscription
     {
-        /** @var ?PushSubscription $pushSubscription */
+        /** @var PushSubscription $pushSubscription */
         $pushSubscription = $this->findOrFail($pushSubscriptionId);
 
         return $pushSubscription;
@@ -40,7 +40,7 @@ class PushSubscriptionRepository extends BaseRepository
     final public function findActiveByUserId(Uuid $userId): array
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.user_id = :user_id')
+            ->andWhere('p.user = :user_id')
             ->andWhere('p.status = :status')
             ->setParameter('user_id', $userId)
             ->setParameter('status', PushSubscriptionStatusEnum::Active)
@@ -51,7 +51,7 @@ class PushSubscriptionRepository extends BaseRepository
     final public function findPushSubscriptions(Uuid $userId, PushSubscriptionIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('p')
-            ->andWhere('p.user_id = :user_id')
+            ->andWhere('p.user = :user_id')
             ->setParameter('user_id', $userId);
 
         if ($dto->filter->endpoint) {
