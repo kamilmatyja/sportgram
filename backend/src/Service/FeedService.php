@@ -172,7 +172,7 @@ readonly class FeedService
 
         $this->eventDispatcher->dispatch(
             new NotificationEvent(
-                $feedReaction->user,
+                $feed->user,
                 NotificationTypeEnum::FeedReaction,
                 $feed->text,
                 '/users/' . $feed->user->link,

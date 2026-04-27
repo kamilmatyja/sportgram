@@ -14,7 +14,7 @@ class ApiResponse extends JsonResponse
 
     public static function elements(array $data): self
     {
-        return new self(['data' => $data], self::HTTP_OK);
+        return new self($data, self::HTTP_OK);
     }
 
     public static function ok(Uuid $id): self

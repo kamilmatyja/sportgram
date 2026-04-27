@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Dto\PushSubscriptionIndexDto;
 use App\Entity\PushSubscription;
+use App\Enum\PushSubscriptionStatusEnum;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -34,6 +35,17 @@ class PushSubscriptionRepository extends BaseRepository
         $pushSubscription = $this->findOrFail($pushSubscriptionId);
 
         return $pushSubscription;
+    }
+
+    final public function findActiveByUserId(Uuid $userId): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.user_id = :user_id')
+            ->andWhere('p.status = :status')
+            ->setParameter('user_id', $userId)
+            ->setParameter('status', PushSubscriptionStatusEnum::Active)
+            ->getQuery()
+            ->getResult();
     }
 
     final public function findPushSubscriptions(Uuid $userId, PushSubscriptionIndexDto $dto): array

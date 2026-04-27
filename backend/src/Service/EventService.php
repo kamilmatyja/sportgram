@@ -263,6 +263,15 @@ readonly class EventService
             ),
         );
 
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $eventDisciplineList->user,
+                NotificationTypeEnum::EventListStatus,
+                $event->title,
+                '/events/' . $event->link . '/' . $eventDiscipline->discipline->value . '/' . $eventDisciplineDistance->distance . '/lists',
+            ),
+        );
+
         return $eventDisciplineList->id;
     }
 
@@ -329,7 +338,7 @@ readonly class EventService
 
         $this->eventDispatcher->dispatch(
             new NotificationEvent(
-                $event->pageParticipant->user,
+                $eventDisciplineList->user,
                 NotificationTypeEnum::EventResult,
                 $event->title,
                 '/events/' . $event->link . '/' . $eventDiscipline->discipline->value . '/' . $eventDisciplineDistance->distance . '/results',

@@ -154,9 +154,16 @@ readonly class GoalService
         $goal->status = GoalStatusEnum::from($dto->status);
         $this->goalRepository->save($goal);
 
-        $this->eventDispatcher->dispatch(
-            new NotificationEvent($goal->user, NotificationTypeEnum::GoalStatus, $goal->text, '/goals/' . $goal->link),
-        );
+        foreach ($goal->participants as $participant) {
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent(
+                    $participant,
+                    NotificationTypeEnum::GoalStatus,
+                    $goal->text,
+                    '/goals/' . $goal->link,
+                ),
+            );
+        }
 
         return $goal->id;
     }

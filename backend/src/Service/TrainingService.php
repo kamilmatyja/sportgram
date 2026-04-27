@@ -241,14 +241,16 @@ readonly class TrainingService
         $training->status = ElementStatusEnum::from($dto->status);
         $this->trainingRepository->save($training);
 
-        $this->eventDispatcher->dispatch(
-            new NotificationEvent(
-                $training->user,
-                NotificationTypeEnum::TrainingStatus,
-                $training->title,
-                '/trainings/' . $training->link,
-            ),
-        );
+        foreach ($training->participants as $participant) {
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent(
+                    $participant,
+                    NotificationTypeEnum::TrainingStatus,
+                    $training->title,
+                    '/trainings/' . $training->link,
+                ),
+            );
+        }
 
         return $training->id;
     }

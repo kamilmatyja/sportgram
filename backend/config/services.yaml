@@ -8,6 +8,9 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     MAILER_FROM: '%env(resolve:MAILER_FROM)%'
+    VAPID_SUBJECT: '%env(VAPID_SUBJECT)%'
+    VAPID_PUBLIC_KEY: '%env(VAPID_PUBLIC_KEY)%'
+    VAPID_PRIVATE_KEY: '%env(VAPID_PRIVATE_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -23,3 +26,8 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
     Symfony\Contracts\Translation\TranslatorInterface: '@translator'
+    App\Service\WebPushService:
+        arguments:
+            $vapidSubject: '%VAPID_SUBJECT%'
+            $vapidPublicKey: '%VAPID_PUBLIC_KEY%'
+            $vapidPrivateKey: '%VAPID_PRIVATE_KEY%'
