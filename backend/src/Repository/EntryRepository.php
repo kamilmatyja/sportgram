@@ -45,9 +45,9 @@ class EntryRepository extends BaseRepository
                 ->setParameter('userId', $dto->filter->userId);
         }
 
-        if ($dto->filter->entityId) {
-            $qb->andWhere('e.entity_id = :entityId')
-                ->setParameter('entityId', $dto->filter->entityId);
+        if (! empty($dto->filter->entityIds)) {
+            $qb->andWhere('e.entity_id IN (:entityIds)')
+                ->setParameter('entityIds', $dto->filter->entityIds);
         }
 
         if ($dto->filter->type) {

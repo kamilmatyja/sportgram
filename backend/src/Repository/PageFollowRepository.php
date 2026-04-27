@@ -45,6 +45,12 @@ class PageFollowRepository extends BaseRepository
                 ->setParameter('userId', $dto->filter->userId);
         }
 
+        if (! empty($dto->filter->pageIds)) {
+            $qb->leftJoin('e.pages', 'pa')
+                ->andWhere('p.page_id IN (:pageIds)')
+                ->setParameter('pageIds', $dto->filter->pageIds);
+        }
+
         if ($dto->filter->status) {
             $qb->andWhere('p.status = :status')
                 ->setParameter('status', $dto->filter->status);

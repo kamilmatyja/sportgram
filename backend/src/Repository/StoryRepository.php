@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Dto\StoryIndexDto;
 use App\Entity\Story;
+use App\Enum\FriendStatusEnum;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -36,7 +37,7 @@ class StoryRepository extends BaseRepository
         return $story;
     }
 
-    final public function findStories(StoryIndexDto $dto): array
+    final public function findStories(Uuid $userId, StoryIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('s');
 
@@ -44,6 +45,17 @@ class StoryRepository extends BaseRepository
             $qb->andWhere('s.user_id = :user_id')
                 ->setParameter('user_id', $dto->filter->userId);
         } else {
+            $qb->leftJoin(
+                'friends',
+                'fr',
+                '(
+                    (fr.sender_user_id = s.user_id AND fr.receiver_user_id = :userId)
+                    OR (fr.sender_user_id = :userId AND fr.receiver_user_id = s.user_id)
+                )',
+            );
+            $qb->andWhere('(s.user_id = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')
+                ->setParameter('userId', $userId)
+                ->setParameter('acceptedStatus', FriendStatusEnum::Accepted->value);
             $qb->select('s')
                 ->addSelect('MAX(s.created_at) AS HIDDEN max_created_at')
                 ->groupBy('s.user_id');
@@ -63,9 +75,6 @@ class StoryRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $dbField = $this->camelCaseToSnakeCase($field);
         $qb->orderBy('s.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
-
-        // TODO - zawęzić o listę znajomych
-        // TODO - zawęzić o niewyświetlone
 
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);

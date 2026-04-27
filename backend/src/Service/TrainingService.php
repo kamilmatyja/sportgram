@@ -96,10 +96,14 @@ readonly class TrainingService
             }
         }
 
+        if (! in_array($user->id->toString(), $dto->participants, true)) {
+            $dto->participants[] = $user->id->toString();
+        }
+
         foreach ($dto->participants as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if (! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if ($participantUser->id->toString() !== $user->id->toString() && $this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 
@@ -167,6 +171,10 @@ readonly class TrainingService
             }
         }
 
+        if (! in_array($training->user->id->toString(), $dto->participants, true)) {
+            $dto->participants[] = $training->user->id->toString();
+        }
+
         $currentIds = array_map(
             fn (TrainingParticipant $p) => $p->user->id->toString(),
             $training->participants->toArray(),
@@ -187,7 +195,7 @@ readonly class TrainingService
         foreach ($toAdd as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if (! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if ($participantUser->id->toString() !== $user->id->toString() && ! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 

@@ -13,10 +13,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     required: ['receiverUserId'],
     properties: [
         new OA\Property(
-            property: 'userId',
-            type: 'string',
-            format: 'uuid',
-            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+            property: 'userIds',
+            type: 'array',
+            items: new OA\Items(type: 'string', format: 'uuid'),
+            example: ['b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'],
         ),
         new OA\Property(property: 'status', type: 'integer', example: 1, nullable: true),
     ],
@@ -24,10 +24,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class FriendFilterDto
 {
+    /** @var string[] */
+
     #[Assert\NotBlank]
-    #[Assert\Uuid]
-    #[EntityExistsField(entity: User::class)]
-    public string $userId;
+    #[Assert\All([
+        new Assert\NotBlank(),
+        new Assert\Uuid(),
+        new EntityExistsField(entity: User::class),
+    ])]
+    #[Assert\Count(min: 1)]
+    #[Assert\Unique]
+    public array $userIds;
 
     #[Assert\Choice(callback: [FriendStatusEnum::class, 'values'])]
     public ?int $status = null;

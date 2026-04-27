@@ -67,7 +67,10 @@ readonly class StoryService
 
     final public function index(StoryIndexDto $dto): array
     {
-        return $this->storyRepository->findStories($dto);
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        return $this->storyRepository->findStories($user->id, $dto);
     }
 
     final public function details(Uuid $storyId): Story

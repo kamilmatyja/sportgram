@@ -57,10 +57,14 @@ readonly class GoalService
 
         $this->goalRepository->save($goal);
 
+        if (! in_array($user->id->toString(), $dto->participants, true)) {
+            $dto->participants[] = $user->id->toString();
+        }
+
         foreach ($dto->participants as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if (! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if ($participantUser->id->toString() !== $user->id->toString() && ! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 
@@ -90,6 +94,10 @@ readonly class GoalService
         /** @var User $user */
         $user = $this->security->getUser();
 
+        if (! in_array($user->id->toString(), $dto->participants, true)) {
+            $dto->participants[] = $user->id->toString();
+        }
+
         $currentIds = array_map(
             fn (GoalParticipant $p) => $p->user->id->toString(),
             $goal->participants->toArray(),
@@ -111,7 +119,7 @@ readonly class GoalService
         foreach ($toAdd as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if (! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if ($participantUser->id->toString() !== $user->id->toString() && ! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
                 throw new ValidatorException('User is not friend.');
             }
 

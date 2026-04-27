@@ -66,7 +66,10 @@ readonly class FeedService
 
     final public function index(FeedIndexDto $dto): array
     {
-        return $this->feedRepository->findFeeds($dto);
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        return $this->feedRepository->findFeeds($user->id, $dto);
     }
 
     final public function details(Uuid $feedId): Feed

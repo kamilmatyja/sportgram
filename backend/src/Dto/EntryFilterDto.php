@@ -20,10 +20,10 @@ use Symfony\Component\Validator\Constraints as Assert;
             nullable: true,
         ),
         new OA\Property(
-            property: 'entityId',
-            type: 'string',
-            format: 'uuid',
-            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+            property: 'entityIds',
+            type: 'array',
+            items: new OA\Items(type: 'string', format: 'uuid'),
+            example: ['b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'],
             nullable: true,
         ),
         new OA\Property(property: 'type', type: 'integer', example: 1, nullable: true),
@@ -36,8 +36,14 @@ class EntryFilterDto
     #[EntityExistsField(entity: User::class)]
     public ?string $userId = null;
 
-    #[Assert\Uuid]
-    public ?string $entityId = null;
+    /** @var string[] */
+    #[Assert\All([
+        new Assert\NotBlank(),
+        new Assert\Uuid(),
+    ])]
+    #[Assert\Count(min: 1)]
+    #[Assert\Unique]
+    public array $entityIds = [];
 
     #[Assert\Choice(callback: [EntryTypeEnum::class, 'values'])]
     public ?int $type = null;

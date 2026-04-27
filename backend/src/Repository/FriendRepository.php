@@ -43,11 +43,11 @@ class FriendRepository extends BaseRepository
 
         $qb->andWhere(
             $qb->expr()->orX(
-                $qb->expr()->eq('f.sender_user_id', ':userId'),
-                $qb->expr()->eq('f.receiver_user_id', ':userId'),
+                $qb->expr()->in('f.sender_user_id', ':userIds'),
+                $qb->expr()->in('f.receiver_user_id', ':userIds'),
             ),
         )
-            ->setParameter('userId', $dto->filter->userId);
+            ->setParameter('userIds', $dto->filter->userIds);
 
         if ($dto->filter->status) {
             $qb->andWhere('f.status = :status')
