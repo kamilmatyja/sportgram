@@ -57,7 +57,7 @@ class StatisticRepository
             ->from('(' . $baseSql . ')', 'stats');
 
         if (! empty($dto->filter->userIds)) {
-            $qb->andWhere('stats.user_id IN (:userIds)')
+            $qb->andWhere('stats.userId IN (:userIds)')
                 ->setParameter('userIds', $dto->filter->userIds);
         }
 
@@ -121,7 +121,7 @@ class StatisticRepository
             ->from('(' . $baseSql . ')', 'stats');
 
         if (! empty($dto->filter->userIds)) {
-            $qb->andWhere('stats.user_id IN (:userIds)')
+            $qb->andWhere('stats.userId IN (:userIds)')
                 ->setParameter('userIds', $dto->filter->userIds);
         }
 

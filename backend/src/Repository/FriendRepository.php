@@ -43,8 +43,8 @@ class FriendRepository extends BaseRepository
 
         $qb->andWhere(
             $qb->expr()->orX(
-                $qb->expr()->in('f.sender_user_id', ':userIds'),
-                $qb->expr()->in('f.receiver_user_id', ':userIds'),
+                $qb->expr()->in('f.senderUser', ':userIds'),
+                $qb->expr()->in('f.receiverUser', ':userIds'),
             ),
         )
             ->setParameter('userIds', $dto->filter->userIds);
@@ -70,12 +70,12 @@ class FriendRepository extends BaseRepository
             ->where(
                 $qb->expr()->orX(
                     $qb->expr()->andX(
-                        $qb->expr()->eq('f.sender_user_id', ':userId1'),
-                        $qb->expr()->eq('f.receiver_user_id', ':userId2'),
+                        $qb->expr()->eq('f.senderUser', ':userId1'),
+                        $qb->expr()->eq('f.receiverUser', ':userId2'),
                     ),
                     $qb->expr()->andX(
-                        $qb->expr()->eq('f.sender_user_id', ':userId2'),
-                        $qb->expr()->eq('f.receiver_user_id', ':userId1'),
+                        $qb->expr()->eq('f.senderUser', ':userId2'),
+                        $qb->expr()->eq('f.receiverUser', ':userId1'),
                     ),
                 ),
             )
@@ -96,12 +96,12 @@ class FriendRepository extends BaseRepository
             ->where(
                 $qb->expr()->orX(
                     $qb->expr()->andX(
-                        $qb->expr()->eq('f.sender_user_id', ':userId1'),
-                        $qb->expr()->eq('f.receiver_user_id', ':userId2'),
+                        $qb->expr()->eq('f.senderUser', ':userId1'),
+                        $qb->expr()->eq('f.receiverUser', ':userId2'),
                     ),
                     $qb->expr()->andX(
-                        $qb->expr()->eq('f.sender_user_id', ':userId2'),
-                        $qb->expr()->eq('f.receiver_user_id', ':userId1'),
+                        $qb->expr()->eq('f.senderUser', ':userId2'),
+                        $qb->expr()->eq('f.receiverUser', ':userId1'),
                     ),
                 ),
             )

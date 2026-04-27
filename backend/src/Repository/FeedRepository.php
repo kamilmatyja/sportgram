@@ -42,15 +42,15 @@ class FeedRepository extends BaseRepository
         $qb = $this->createQueryBuilder('f');
 
         if ($dto->filter->userId) {
-            $qb->andWhere('f.user = :user_id')
-                ->setParameter('user_id', $dto->filter->userId);
+            $qb->andWhere('f.user = :userId')
+                ->setParameter('userId', $dto->filter->userId);
         } else {
             $qb->leftJoin(
                 'friends',
                 'fr',
                 '(
-                    (fr.sender_user = f.user_id AND fr.receiver_user = :userId)
-                    OR (fr.sender_user = :userId AND fr.receiver_user = f.user_id)
+                    (fr.senderUser = f.userId AND fr.receiverUser = :userId)
+                    OR (fr.senderUser = :userId AND fr.receiverUser = f.userId)
                 )',
             );
             $qb->andWhere('(f.user = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')

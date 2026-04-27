@@ -42,24 +42,24 @@ class StoryRepository extends BaseRepository
         $qb = $this->createQueryBuilder('s');
 
         if ($dto->filter->userId) {
-            $qb->andWhere('s.user = :user_id')
-                ->setParameter('user_id', $dto->filter->userId);
+            $qb->andWhere('s.user = :userId')
+                ->setParameter('userId', $dto->filter->userId);
         } else {
             $qb->leftJoin(
                 'friends',
                 'fr',
                 '(
-                    (fr.sender_user = s.user_id AND fr.receiver_user = :userId)
-                    OR (fr.sender_user = :userId AND fr.receiver_user = s.user_id)
+                    (fr.senderUser = s.userId AND fr.receiverUser = :userId)
+                    OR (fr.senderUser = :userId AND fr.receiverUser = s.userId)
                 )',
             );
             $qb->andWhere('(s.user = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')
                 ->setParameter('userId', $userId)
                 ->setParameter('acceptedStatus', FriendStatusEnum::Accepted->value);
             $qb->select('s')
-                ->addSelect('MAX(s.created_at) AS HIDDEN max_created_at')
-                ->groupBy('s.user_id');
-            $qb->orderBy('max_created_at', 'DESC');
+                ->addSelect('MAX(s.createdAt) AS HIDDEN maxCreatedAt')
+                ->groupBy('s.userId');
+            $qb->orderBy('maxCreatedAt', 'DESC');
         }
 
         if ($dto->filter->text) {

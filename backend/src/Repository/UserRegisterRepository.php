@@ -38,7 +38,7 @@ class UserRegisterRepository extends BaseRepository
     final public function findLastByUserId(Uuid $userId): ?UserRegister
     {
         /** @var ?UserRegister $userRegister */
-        $userRegister = $this->findOneBy(['user' => $userId], ['created_at' => 'DESC']);
+        $userRegister = $this->findOneBy(['user' => $userId], ['createdAt' => 'DESC']);
 
         return $userRegister;
     }

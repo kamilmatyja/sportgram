@@ -38,7 +38,7 @@ class UserSignRepository extends BaseRepository
     final public function findLastByUserId(Uuid $userId): ?UserSign
     {
         /** @var ?UserSign $userSign */
-        $userSign = $this->findOneBy(['user' => $userId], ['created_at' => 'DESC']);
+        $userSign = $this->findOneBy(['user' => $userId], ['createdAt' => 'DESC']);
 
         return $userSign;
     }

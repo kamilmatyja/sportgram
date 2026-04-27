@@ -39,7 +39,7 @@ class UserRepository extends BaseRepository
     final public function findByEmail(string $email): ?User
     {
         /** @var ?User $user */
-        $user = $this->findOneBy(['email' => $email], ['created_at' => 'DESC']);
+        $user = $this->findOneBy(['email' => $email], ['createdAt' => 'DESC']);
 
         return $user;
     }

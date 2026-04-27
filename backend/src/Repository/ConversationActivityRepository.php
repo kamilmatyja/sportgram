@@ -31,8 +31,8 @@ class ConversationActivityRepository extends BaseRepository
     {
         /** @var ?ConversationActivity $conversationActivity */
         $conversationActivity = $this->findOneBy(
-            ['sender_user_id' => $senderUserId, 'receiver_user_id' => $receiverUserId],
-            ['created_at' => 'DESC'],
+            ['senderUser' => $senderUserId, 'receiverUser' => $receiverUserId],
+            ['createdAt' => 'DESC'],
         );
 
         return $conversationActivity;

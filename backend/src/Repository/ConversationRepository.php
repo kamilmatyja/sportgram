@@ -44,12 +44,12 @@ class ConversationRepository extends BaseRepository
             $qb->andWhere(
                 $qb->expr()->orX(
                     $qb->expr()->andX(
-                        $qb->expr()->eq('c.sender_user_id', ':userId1'),
-                        $qb->expr()->eq('c.receiver_user_id', ':userId2'),
+                        $qb->expr()->eq('c.senderUser', ':userId1'),
+                        $qb->expr()->eq('c.receiverUser', ':userId2'),
                     ),
                     $qb->expr()->andX(
-                        $qb->expr()->eq('c.sender_user_id', ':userId2'),
-                        $qb->expr()->eq('c.receiver_user_id', ':userId1'),
+                        $qb->expr()->eq('c.senderUser', ':userId2'),
+                        $qb->expr()->eq('c.receiverUser', ':userId1'),
                     ),
                 ),
             )
@@ -57,16 +57,16 @@ class ConversationRepository extends BaseRepository
                 ->setParameter('userId2', $dto->filter->userId);
         } else {
             $qb->select(
-                'c, DISTINCT CASE WHEN c.sender_user = :userId THEN c.receiver_user_id ELSE c.sender_user_id END AS HIDDEN other_user_id',
+                'c, DISTINCT CASE WHEN c.senderUser = :userId THEN c.receiverUser ELSE c.senderUser END AS HIDDEN otherUser',
             );
             $qb->andWhere(
                 $qb->expr()->orX(
-                    $qb->expr()->eq('c.sender_user_id', ':userId'),
-                    $qb->expr()->eq('c.receiver_user_id', ':userId'),
+                    $qb->expr()->eq('c.senderUser', ':userId'),
+                    $qb->expr()->eq('c.receiverUser', ':userId'),
                 ),
             )
                 ->setParameter('userId', $userId);
-            $qb->groupBy('other_user_id');
+            $qb->groupBy('otherUser');
         }
 
         if ($dto->filter->status) {

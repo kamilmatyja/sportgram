@@ -38,7 +38,7 @@ class UserPasswordResetRepository extends BaseRepository
     final public function findLastByUserId(Uuid $userId): ?UserPasswordReset
     {
         /** @var ?UserPasswordReset $userPasswordReset */
-        $userPasswordReset = $this->findOneBy(['user' => $userId], ['created_at' => 'DESC']);
+        $userPasswordReset = $this->findOneBy(['user' => $userId], ['createdAt' => 'DESC']);
 
         return $userPasswordReset;
     }

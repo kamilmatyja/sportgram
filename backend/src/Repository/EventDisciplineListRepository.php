@@ -40,7 +40,7 @@ class EventDisciplineListRepository extends BaseRepository
     {
         $qb = $this->createQueryBuilder('e');
 
-        $qb->andWhere('e.event_discipline_distance = :eventDisciplineDistanceId')
+        $qb->andWhere('e.eventDisciplineDistance = :eventDisciplineDistanceId')
             ->setParameter('eventDisciplineDistanceId', $eventDisciplineDistanceId);
 
         if ($dto->filter->userId) {
