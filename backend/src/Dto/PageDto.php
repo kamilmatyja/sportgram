@@ -62,7 +62,7 @@ class PageDto
         new Assert\Uuid(),
         new EntityExistsField(entity: User::class),
     ])]
-    #[Assert\Count(min: 1)]
+    #[Assert\Count(min: 0)]
     #[Assert\Unique]
     public array $participants = [];
 }

@@ -29,7 +29,7 @@ class UniqueFieldValidator extends ConstraintValidator
             $constraint->field => $value,
         ]);
 
-        if (! $found) {
+        if ($found) {
             $this->context
                 ->buildViolation($constraint->message)
                 ->addViolation();

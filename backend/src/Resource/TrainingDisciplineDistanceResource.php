@@ -11,7 +11,7 @@ use OpenApi\Attributes as OA;
     required: [
         'id',
         'trainingDisciplineId',
-        'discipline',
+        'distance',
     ],
     properties: [
         new OA\Property(

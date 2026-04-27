@@ -41,7 +41,7 @@ class EntryFilterDto
         new Assert\NotBlank(),
         new Assert\Uuid(),
     ])]
-    #[Assert\Count(min: 1)]
+    #[Assert\Count(min: 0)]
     #[Assert\Unique]
     public array $entityIds = [];
 

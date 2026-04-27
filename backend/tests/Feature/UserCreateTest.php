@@ -14,6 +14,7 @@ class UserCreateTest extends ApiTestCase
 
         $this->truncate('user_registers');
         $this->truncate('user_roles');
+        $this->truncate('user_disciplines');
         $this->truncate('users');
     }
 

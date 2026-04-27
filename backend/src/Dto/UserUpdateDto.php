@@ -129,7 +129,7 @@ class UserUpdateDto
         new Assert\NotBlank(),
         new Assert\Choice(callback: [DisciplineEnum::class, 'values']),
     ])]
-    #[Assert\Count(min: 1)]
+    #[Assert\Count(min: 0)]
     #[Assert\Unique]
     public array $disciplines = [];
 }

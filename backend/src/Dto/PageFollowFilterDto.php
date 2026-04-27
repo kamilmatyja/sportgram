@@ -42,7 +42,7 @@ class PageFollowFilterDto
         new Assert\Uuid(),
         new EntityExistsField(entity: Page::class),
     ])]
-    #[Assert\Count(min: 1)]
+    #[Assert\Count(min: 0)]
     #[Assert\Unique]
     public array $pageIds = [];
 
