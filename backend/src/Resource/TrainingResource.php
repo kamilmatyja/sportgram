@@ -82,7 +82,7 @@ class TrainingResource
             'status' => $training->status->value,
         ];
 
-        if (in_array($dto::TRAINING_DISCIPLINES, $dto->include)) {
+        if ($dto && in_array($dto::TRAINING_DISCIPLINES, $dto->include)) {
             $data['disciplines'] = array_map(
                 fn (TrainingDiscipline $discipline) => TrainingDisciplineResource::fromEntity(
                     $discipline,
@@ -92,7 +92,7 @@ class TrainingResource
             );
         }
 
-        if (in_array($dto::TRAINING_PARTICIPANTS, $dto->include)) {
+        if ($dto && in_array($dto::TRAINING_PARTICIPANTS, $dto->include)) {
             $data['participants'] = array_map(
                 fn (TrainingParticipant $participant) => TrainingParticipantResource::fromEntity($participant),
                 $training->participants->toArray(),

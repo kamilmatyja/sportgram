@@ -55,8 +55,7 @@ class FriendRepository extends BaseRepository
         }
 
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $dbField = $this->camelCaseToSnakeCase($field);
-        $qb->orderBy('f.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');
+        $qb->orderBy('f.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);
@@ -112,10 +111,5 @@ class FriendRepository extends BaseRepository
         $count = $qb->getQuery()->getSingleScalarResult();
 
         return (int)$count > 0;
-    }
-
-    private function camelCaseToSnakeCase(string $input): string
-    {
-        return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $input));
     }
 }

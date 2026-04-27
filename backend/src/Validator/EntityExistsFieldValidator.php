@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\{Constraint, ConstraintValidator};
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
-class EntityExistsValidator extends ConstraintValidator
+class EntityExistsFieldValidator extends ConstraintValidator
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -15,8 +15,8 @@ class EntityExistsValidator extends ConstraintValidator
 
     final public function validate($value, Constraint $constraint): void
     {
-        if (! $constraint instanceof UniqueField) {
-            throw new UnexpectedTypeException($constraint, UniqueField::class);
+        if (! $constraint instanceof EntityExistsField) {
+            throw new UnexpectedTypeException($constraint, EntityExistsField::class);
         }
 
         if ($value === null || $value === '') {

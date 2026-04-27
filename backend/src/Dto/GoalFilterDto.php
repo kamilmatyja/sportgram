@@ -35,19 +35,19 @@ class GoalFilterDto
     public string $userId;
 
     #[Assert\Length(min: 1, max: 64)]
-    public ?string $link;
+    public ?string $link = null;
 
     #[Assert\Length(min: 1, max: 2048)]
-    public ?string $text;
+    public ?string $text = null;
 
     #[Assert\Choice(callback: [DisciplineEnum::class, 'values'])]
-    public ?int $discipline;
+    public ?int $discipline = null;
 
     #[Assert\Type('integer')]
-    public ?int $distance;
+    public ?int $distance = null;
 
     #[Assert\Type('integer')]
-    public ?int $time;
+    public ?int $time = null;
 
     #[Assert\Choice(callback: [GoalStatusEnum::class, 'values'])]
     public ?int $status = null;

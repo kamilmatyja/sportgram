@@ -51,7 +51,7 @@ class EventDisciplineResource
             'discipline' => $eventDiscipline->discipline->value,
         ];
 
-        if (in_array($dto::EVENT_DISCIPLINE_DISTANCES, $dto->include)) {
+        if ($dto && in_array($dto::EVENT_DISCIPLINE_DISTANCES, $dto->include)) {
             $data['distances'] = array_map(
                 fn (EventDisciplineDistance $distance) => EventDisciplineDistanceResource::fromEntity($distance, $dto),
                 $eventDiscipline->distances->toArray(),

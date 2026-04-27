@@ -90,14 +90,14 @@ class UserResource
             'status' => $user->status->value,
         ];
 
-        if (in_array($dto::USER_DISCIPLINES, $dto->include)) {
+        if ($dto && in_array($dto::USER_DISCIPLINES, $dto->include)) {
             $data['disciplines'] = array_map(
                 fn (UserDiscipline $discipline) => UserDisciplineResource::fromEntity($discipline),
                 $user->disciplines->toArray(),
             );
         }
 
-        if (in_array($dto::USER_ROLES, $dto->include)) {
+        if ($dto && in_array($dto::USER_ROLES, $dto->include)) {
             $data['roles'] = array_map(
                 fn (UserRole $role) => UserRoleResource::fromEntity($role),
                 $user->roles->toArray(),

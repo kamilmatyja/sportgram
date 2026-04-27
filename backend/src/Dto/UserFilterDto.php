@@ -56,5 +56,5 @@ class UserFilterDto
     public array $userIds = [];
 
     #[Assert\Length(min: 1, max: 64)]
-    public ?string $link;
+    public ?string $link = null;
 }

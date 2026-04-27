@@ -75,7 +75,7 @@ class EventResource
             'status' => $event->status->value,
         ];
 
-        if (in_array($dto::EVENT_DISCIPLINES, $dto->include)) {
+        if ($dto && in_array($dto::EVENT_DISCIPLINES, $dto->include)) {
             $data['disciplines'] = array_map(
                 fn (EventDiscipline $discipline) => EventDisciplineResource::fromEntity($discipline, $dto),
                 $event->disciplines->toArray(),

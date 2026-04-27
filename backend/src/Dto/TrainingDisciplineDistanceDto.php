@@ -31,7 +31,7 @@ class TrainingDisciplineDistanceDto
 
     #[Assert\NotBlank]
     #[Assert\Type('integer')]
-    public ?int $time;
+    public ?int $time = null;
 
     /** @var TrainingDisciplineSubDistanceDto[] */
     #[Assert\Valid]

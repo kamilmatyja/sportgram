@@ -69,7 +69,7 @@ class EventDisciplineDistanceListResource
             'status' => $eventDisciplineList->status->value,
         ];
 
-        if (in_array($dto::EVENT_LIST_RESULTS, $dto->include)) {
+        if ($dto && in_array($dto::EVENT_LIST_RESULTS, $dto->include)) {
             $data['results'] = array_map(
                 fn (EventDisciplineResult $result) => EventDisciplineDistanceResultResource::fromEntity($result, $dto),
                 $eventDisciplineList->results->toArray(),

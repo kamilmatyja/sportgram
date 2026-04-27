@@ -65,14 +65,14 @@ class PageResource
             'status' => $page->status->value,
         ];
 
-        if (in_array($dto::PAGE_FOLLOWS, $dto->include)) {
+        if ($dto && in_array($dto::PAGE_FOLLOWS, $dto->include)) {
             $data['follows'] = array_map(
                 fn (PageFollow $follow) => PageFollowResource::fromEntity($follow),
                 $page->follows->toArray(),
             );
         }
 
-        if (in_array($dto::PAGE_PARTICIPANTS, $dto->include)) {
+        if ($dto && in_array($dto::PAGE_PARTICIPANTS, $dto->include)) {
             $data['participants'] = array_map(
                 fn (User $participant) => PageParticipantResource::fromEntity($participant),
                 $page->participants->toArray(),

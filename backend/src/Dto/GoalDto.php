@@ -58,7 +58,7 @@ class GoalDto
     public int $distance;
 
     #[Assert\Type('integer')]
-    public ?int $time;
+    public ?int $time = null;
 
     /** @var string[] */
     #[Assert\All([

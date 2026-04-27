@@ -71,7 +71,7 @@ class EventDisciplineDistanceResultResource
             'time' => $eventDisciplineResult->time,
         ];
 
-        if (in_array($dto::EVENT_LIST_SUB_RESULTS, $dto->include)) {
+        if ($dto && in_array($dto::EVENT_LIST_SUB_RESULTS, $dto->include)) {
             $data['subResults'] = array_map(
                 fn (EventDisciplineSubResult $subResult) => EventDisciplineDistanceSubResultResource::fromEntity(
                     $subResult,

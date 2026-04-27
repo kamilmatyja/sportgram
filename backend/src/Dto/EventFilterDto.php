@@ -43,10 +43,10 @@ class EventFilterDto
     public ?string $pageId = null;
 
     #[Assert\Length(min: 1, max: 64)]
-    public ?string $link;
+    public ?string $link = null;
 
     #[Assert\Length(min: 1, max: 2048)]
-    public ?string $title;
+    public ?string $title = null;
 
     #[Assert\Choice(callback: [ElementStatusEnum::class, 'values'])]
     public ?int $status = null;

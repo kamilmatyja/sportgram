@@ -128,9 +128,9 @@ abstract class ApiTestCase extends WebTestCase
         $this->em->flush();
     }
 
-    protected function createUser(RoleEnum $role): User
+    protected function createUser(RoleEnum $role, array $overrides = []): User
     {
-        $user = UserFactory::make();
+        $user = UserFactory::make($overrides);
         $user->password = $this->passwordHasher->hashPassword($user, 'zaq1@WSX');
         $this->save($user);
 

@@ -5,7 +5,9 @@ namespace App\EventSubscriber;
 use App\Http\ApiResponse;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
-use Symfony\Component\HttpKernel\Exception\{NotFoundHttpException, UnprocessableEntityHttpException};
+use Symfony\Component\HttpKernel\Exception\{BadRequestHttpException,
+    NotFoundHttpException,
+    UnprocessableEntityHttpException};
 use Symfony\Component\Validator\Exception\{ValidationFailedException, ValidatorException};
 use Throwable;
 
@@ -24,9 +26,7 @@ class ExceptionSubscriber implements EventSubscriberInterface
 
         $violations = null;
 
-        if ($e instanceof ValidationFailedException) {
-            $violations = $e->getViolations();
-        } elseif ($e instanceof UnprocessableEntityHttpException) {
+        if ($e instanceof ValidationFailedException || $e instanceof UnprocessableEntityHttpException || $e instanceof BadRequestHttpException) {
             $previous = $e->getPrevious();
 
             if ($previous instanceof ValidationFailedException) {
