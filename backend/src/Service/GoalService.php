@@ -4,7 +4,8 @@ namespace App\Service;
 
 use App\Dto\{GoalDto, GoalIndexDto, GoalStatusDto, SaveStatusDto};
 use App\Entity\{Feed, Goal, GoalParticipant, User};
-use App\Enum\{DisciplineEnum, ElementStatusEnum, GoalStatusEnum, SaveStatusEnum};
+use App\Enum\{DisciplineEnum, ElementStatusEnum, GoalStatusEnum, NotificationTypeEnum, SaveStatusEnum};
+use App\Event\NotificationEvent;
 use App\Repository\{FeedRepository,
     FriendRepository,
     GoalParticipantRepository,
@@ -14,6 +15,7 @@ use App\Repository\{FeedRepository,
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
@@ -26,6 +28,7 @@ readonly class GoalService
         private UserRepository $userRepository,
         private FriendRepository $friendRepository,
         private FeedRepository $feedRepository,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -71,6 +74,15 @@ readonly class GoalService
             $goalParticipant = new GoalParticipant($goal, $participantUser, SaveStatusEnum::Pending);
 
             $this->goalParticipantRepository->save($goalParticipant);
+
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent(
+                    $participantUser,
+                    NotificationTypeEnum::GoalParticipant,
+                    $goal->text,
+                    '/goals/' . $goal->link,
+                ),
+            );
         }
 
         return $goal->id;
@@ -140,6 +152,10 @@ readonly class GoalService
         $goal->status = GoalStatusEnum::from($dto->status);
         $this->goalRepository->save($goal);
 
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent($goal->user, NotificationTypeEnum::GoalStatus, $goal->text, '/goals/' . $goal->link),
+        );
+
         return $goal->id;
     }
 
@@ -173,6 +189,17 @@ readonly class GoalService
         $goalParticipant->status = SaveStatusEnum::from($dto->status);
         $this->goalParticipantRepository->save($goalParticipant);
 
+        $goal = $goalParticipant->goal;
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $goalParticipant->user,
+                NotificationTypeEnum::GoalParticipantStatus,
+                $goal->text,
+                '/goals/' . $goal->link,
+            ),
+        );
+
         return $goalParticipant->id;
     }
 
@@ -182,6 +209,17 @@ readonly class GoalService
 
         $goalParticipantResult->status = SaveStatusEnum::from($dto->status);
         $this->goalParticipantResultRepository->save($goalParticipantResult);
+
+        $goal = $goalParticipantResult->goalParticipant->goal;
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $goalParticipantResult->goalParticipant->user,
+                NotificationTypeEnum::GoalResultStatus,
+                $goal->text,
+                '/goals/' . $goal->link,
+            ),
+        );
 
         return $goalParticipantResult->id;
     }

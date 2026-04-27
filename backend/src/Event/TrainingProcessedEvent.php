@@ -2,15 +2,14 @@
 
 namespace App\Event;
 
-use App\Entity\TrainingDisciplineDistance;
-use App\Entity\User;
+use App\Entity\{TrainingDisciplineDistance, User};
 use Symfony\Contracts\EventDispatcher\Event;
 
 class TrainingProcessedEvent extends Event
 {
     public function __construct(
         private readonly User $user,
-        private readonly TrainingDisciplineDistance $result
+        private readonly TrainingDisciplineDistance $result,
     ) {
     }
 
@@ -24,4 +23,3 @@ class TrainingProcessedEvent extends Event
         return $this->result;
     }
 }
-

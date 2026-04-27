@@ -12,8 +12,8 @@ use App\Entity\{Event,
     EventDisciplineSubResult,
     Feed,
     User};
-use App\Enum\{DisciplineEnum, ElementStatusEnum, SaveStatusEnum};
-use App\Event\EventProcessedEvent;
+use App\Enum\{DisciplineEnum, ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
+use App\Event\{EventProcessedEvent, NotificationEvent};
 use App\Repository\{EventDisciplineDistanceRepository,
     EventDisciplineListRepository,
     EventDisciplineRepository,
@@ -100,6 +100,12 @@ readonly class EventService
             }
         }
 
+        foreach ($page->follows as $follow) {
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent($follow->user, NotificationTypeEnum::Event, $event->title, '/events/' . $event->link),
+            );
+        }
+
         return $event->id;
     }
 
@@ -168,6 +174,15 @@ readonly class EventService
         $event->status = ElementStatusEnum::from($dto->status);
         $this->eventRepository->save($event);
 
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $event->pageParticipant->user,
+                NotificationTypeEnum::EventStatus,
+                $event->title,
+                '/events/' . $event->link,
+            ),
+        );
+
         return $event->id;
     }
 
@@ -213,6 +228,18 @@ readonly class EventService
 
         $this->eventDisciplineListRepository->save($eventDisciplineList);
 
+        $eventDiscipline = $eventDisciplineDistance->eventDiscipline;
+        $event = $eventDiscipline->event;
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $event->pageParticipant->user,
+                NotificationTypeEnum::EventList,
+                $event->title,
+                '/events/' . $event->link . '/' . $eventDiscipline->discipline->value . '/' . $eventDisciplineDistance->distance . '/lists',
+            ),
+        );
+
         return $eventDisciplineList->id;
     }
 
@@ -222,6 +249,19 @@ readonly class EventService
 
         $eventDisciplineList->status = SaveStatusEnum::from($dto->status);
         $this->eventDisciplineListRepository->save($eventDisciplineList);
+
+        $eventDisciplineDistance = $eventDisciplineList->eventDisciplineDistance;
+        $eventDiscipline = $eventDisciplineDistance->eventDiscipline;
+        $event = $eventDiscipline->event;
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $event->pageParticipant->user,
+                NotificationTypeEnum::EventListStatus,
+                $event->title,
+                '/events/' . $event->link . '/' . $eventDiscipline->discipline->value . '/' . $eventDisciplineDistance->distance . '/lists',
+            ),
+        );
 
         return $eventDisciplineList->id;
     }
@@ -282,6 +322,19 @@ readonly class EventService
         }
 
         $this->eventDispatcher->dispatch(new EventProcessedEvent($eventDisciplineResult));
+
+        $eventDisciplineDistance = $eventDisciplineList->eventDisciplineDistance;
+        $eventDiscipline = $eventDisciplineDistance->eventDiscipline;
+        $event = $eventDiscipline->event;
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $event->pageParticipant->user,
+                NotificationTypeEnum::EventResult,
+                $event->title,
+                '/events/' . $event->link . '/' . $eventDiscipline->discipline->value . '/' . $eventDisciplineDistance->distance . '/results',
+            ),
+        );
 
         return $eventDisciplineResult->id;
     }

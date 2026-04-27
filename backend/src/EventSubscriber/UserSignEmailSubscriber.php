@@ -45,4 +45,3 @@ readonly class UserSignEmailSubscriber implements EventSubscriberInterface
         }
     }
 }
-

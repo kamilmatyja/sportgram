@@ -4,9 +4,11 @@ namespace App\Service;
 
 use App\Dto\{FriendDto, FriendIndexDto, FriendStatusDto};
 use App\Entity\{Friend, User};
-use App\Enum\FriendStatusEnum;
+use App\Enum\{FriendStatusEnum, NotificationTypeEnum};
+use App\Event\NotificationEvent;
 use App\Repository\{FriendRepository, UserRepository};
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
@@ -15,6 +17,7 @@ readonly class FriendService
     public function __construct(
         private FriendRepository $friendRepository,
         private UserRepository $userRepository,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -40,6 +43,15 @@ readonly class FriendService
 
         $this->friendRepository->save($friend);
 
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $receiver,
+                NotificationTypeEnum::Friend,
+                $user->firstName . ' ' . $user->lastName,
+                '/users/' . $user->link,
+            ),
+        );
+
         return $friend->id;
     }
 
@@ -49,6 +61,26 @@ readonly class FriendService
 
         $friend->status = FriendStatusEnum::from($dto->status);
         $this->friendRepository->save($friend);
+
+        $sender = $friend->senderUser;
+        $receiver = $friend->receiverUser;
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $sender,
+                NotificationTypeEnum::FriendStatus,
+                $receiver->firstName . ' ' . $receiver->lastName,
+                '/users/' . $receiver->link,
+            ),
+        );
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $receiver,
+                NotificationTypeEnum::FriendStatus,
+                $sender->firstName . ' ' . $sender->lastName,
+                '/users/' . $sender->link,
+            ),
+        );
 
         return $friend->id;
     }

@@ -2,15 +2,14 @@
 
 namespace App\Event;
 
-use App\Entity\User;
-use App\Entity\UserRegister;
+use App\Entity\{User, UserRegister};
 use Symfony\Contracts\EventDispatcher\Event;
 
 class UserRegisterEmailEvent extends Event
 {
     public function __construct(
         private readonly User $user,
-        private readonly UserRegister $userRegister
+        private readonly UserRegister $userRegister,
     ) {
     }
 
@@ -24,4 +23,3 @@ class UserRegisterEmailEvent extends Event
         return $this->userRegister;
     }
 }
-

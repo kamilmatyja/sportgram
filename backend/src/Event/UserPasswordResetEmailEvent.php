@@ -2,15 +2,14 @@
 
 namespace App\Event;
 
-use App\Entity\User;
-use App\Entity\UserPasswordReset;
+use App\Entity\{User, UserPasswordReset};
 use Symfony\Contracts\EventDispatcher\Event;
 
 class UserPasswordResetEmailEvent extends Event
 {
     public function __construct(
         private readonly User $user,
-        private readonly UserPasswordReset $userPasswordReset
+        private readonly UserPasswordReset $userPasswordReset,
     ) {
     }
 
@@ -24,4 +23,3 @@ class UserPasswordResetEmailEvent extends Event
         return $this->userPasswordReset;
     }
 }
-

@@ -4,9 +4,11 @@ namespace App\Service;
 
 use App\Dto\{ElementStatusDto, PageDto, PageFollowIndexDto, PageFollowStatusDto, PageIndexDto, SaveStatusDto};
 use App\Entity\{Page, PageFollow, PageParticipant, User};
-use App\Enum\{ColorEnum, ElementStatusEnum, PageFollowStatusEnum, SaveStatusEnum};
+use App\Enum\{ColorEnum, ElementStatusEnum, NotificationTypeEnum, PageFollowStatusEnum, SaveStatusEnum};
+use App\Event\NotificationEvent;
 use App\Repository\{FriendRepository, PageFollowRepository, PageParticipantRepository, PageRepository, UserRepository};
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
@@ -18,6 +20,7 @@ readonly class PageService
         private PageFollowRepository $pageFollowRepository,
         private UserRepository $userRepository,
         private FriendRepository $friendRepository,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -54,6 +57,15 @@ readonly class PageService
             $pageParticipant = new PageParticipant($page, $participantUser, SaveStatusEnum::Pending);
 
             $this->pageParticipantRepository->save($pageParticipant);
+
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent(
+                    $participantUser,
+                    NotificationTypeEnum::PageParticipant,
+                    $page->title,
+                    '/pages/' . $page->link,
+                ),
+            );
         }
 
         return $page->id;
@@ -119,6 +131,10 @@ readonly class PageService
         $page->status = ElementStatusEnum::from($dto->status);
         $this->pageRepository->save($page);
 
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent($page->user, NotificationTypeEnum::PageStatus, $page->title, '/pages/' . $page->link),
+        );
+
         return $page->id;
     }
 
@@ -152,6 +168,17 @@ readonly class PageService
         $pageParticipant->status = SaveStatusEnum::from($dto->status);
         $this->pageParticipantRepository->save($pageParticipant);
 
+        $page = $pageParticipant->page;
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $pageParticipant->user,
+                NotificationTypeEnum::PageParticipantStatus,
+                $page->title,
+                '/pages/' . $page->link,
+            ),
+        );
+
         return $pageParticipant->id;
     }
 
@@ -166,6 +193,10 @@ readonly class PageService
 
         $this->pageFollowRepository->save($pageFollow);
 
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent($page->user, NotificationTypeEnum::PageFollow, $page->title, '/pages/' . $page->link),
+        );
+
         return $pageFollow->id;
     }
 
@@ -175,6 +206,17 @@ readonly class PageService
 
         $pageFollow->status = PageFollowStatusEnum::from($dto->status);
         $this->pageFollowRepository->save($pageFollow);
+
+        $page = $pageFollow->page;
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $pageFollow->user,
+                NotificationTypeEnum::PageFollowStatus,
+                $page->title,
+                '/pages/' . $page->link,
+            ),
+        );
 
         return $pageFollow->id;
     }

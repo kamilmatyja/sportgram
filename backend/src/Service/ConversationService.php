@@ -4,12 +4,14 @@ namespace App\Service;
 
 use App\Dto\{ConversationDto, ConversationIndexDto, ConversationStatusDto};
 use App\Entity\{Conversation, ConversationActivity, User};
-use App\Enum\ConversationStatusEnum;
+use App\Enum\{ConversationStatusEnum, NotificationTypeEnum};
+use App\Event\NotificationEvent;
 use App\Repository\{ConversationActivityRepository, ConversationRepository, FriendRepository, UserRepository};
 use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 readonly class ConversationService
 {
@@ -18,6 +20,7 @@ readonly class ConversationService
         private ConversationActivityRepository $activityRepository,
         private UserRepository $userRepository,
         private FriendRepository $friendRepository,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -43,6 +46,15 @@ readonly class ConversationService
         );
 
         $this->conversationRepository->save($conversation);
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $receiver,
+                NotificationTypeEnum::Conversation,
+                $conversation->text,
+                '/users/' . $receiver->link . '/conversations',
+            ),
+        );
 
         return $conversation->id;
     }

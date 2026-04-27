@@ -4,15 +4,18 @@ namespace App\Service;
 
 use App\Dto\{ElementStatusDto, StoryDto, StoryIndexDto};
 use App\Entity\{Story, User};
-use App\Enum\{ElementStatusEnum};
+use App\Enum\{ElementStatusEnum, NotificationTypeEnum};
+use App\Event\NotificationEvent;
 use App\Repository\{StoryRepository};
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 
 readonly class StoryService
 {
     public function __construct(
         private StoryRepository $storyRepository,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -52,6 +55,15 @@ readonly class StoryService
 
         $story->status = ElementStatusEnum::from($dto->status);
         $this->storyRepository->save($story);
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $story->user,
+                NotificationTypeEnum::StoryStatus,
+                $story->text,
+                '/users/' . $story->user->link,
+            ),
+        );
 
         return $story->id;
     }

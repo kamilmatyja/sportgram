@@ -2,18 +2,12 @@
 
 namespace App\EventSubscriber;
 
-use App\Entity\Feed;
-use App\Entity\GoalParticipantResult;
-use App\Enum\ElementStatusEnum;
-use App\Enum\SaveStatusEnum;
-use App\Event\EventProcessedEvent;
-use App\Event\TrainingProcessedEvent;
-use App\Repository\FeedRepository;
-use App\Repository\GoalParticipantRepository;
-use App\Repository\GoalParticipantResultRepository;
-use App\Repository\GoalRepository;
+use App\Entity\{Feed, GoalParticipantResult};
+use App\Enum\{ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
+use App\Event\{EventProcessedEvent, NotificationEvent, TrainingProcessedEvent};
+use App\Repository\{FeedRepository, GoalParticipantRepository, GoalParticipantResultRepository, GoalRepository};
 use DateTimeImmutable;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\EventDispatcher\{EventDispatcherInterface, EventSubscriberInterface};
 
 readonly class GoalProgressSubscriber implements EventSubscriberInterface
 {
@@ -22,6 +16,7 @@ readonly class GoalProgressSubscriber implements EventSubscriberInterface
         private GoalParticipantRepository $goalParticipantRepository,
         private GoalParticipantResultRepository $goalParticipantResultRepository,
         private FeedRepository $feedRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -51,7 +46,7 @@ readonly class GoalProgressSubscriber implements EventSubscriberInterface
 
             $goalParticipant = $this->goalParticipantRepository->findByUserId($goal->id, $userId);
 
-            if (!$goalParticipant) {
+            if (! $goalParticipant) {
                 continue;
             }
 
@@ -67,6 +62,10 @@ readonly class GoalProgressSubscriber implements EventSubscriberInterface
             );
 
             $this->goalParticipantResultRepository->save($goalParticipantResult);
+
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent($user, NotificationTypeEnum::GoalResult, $goal->text, '/goals/' . $goal->link),
+            );
         }
     }
 
@@ -88,7 +87,7 @@ readonly class GoalProgressSubscriber implements EventSubscriberInterface
 
             $goalParticipant = $this->goalParticipantRepository->findByUserId($goal->id, $userId);
 
-            if (!$goalParticipant) {
+            if (! $goalParticipant) {
                 continue;
             }
 
@@ -104,7 +103,10 @@ readonly class GoalProgressSubscriber implements EventSubscriberInterface
             );
 
             $this->goalParticipantResultRepository->save($goalParticipantResult);
+
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent($user, NotificationTypeEnum::GoalResult, $goal->text, '/goals/' . $goal->link),
+            );
         }
     }
 }
-

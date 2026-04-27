@@ -8,7 +8,7 @@ use Symfony\Contracts\EventDispatcher\Event;
 class EventProcessedEvent extends Event
 {
     public function __construct(
-        private readonly EventDisciplineResult $result
+        private readonly EventDisciplineResult $result,
     ) {
     }
 
@@ -17,4 +17,3 @@ class EventProcessedEvent extends Event
         return $this->result;
     }
 }
-

@@ -10,8 +10,8 @@ use App\Entity\{Feed,
     TrainingDisciplineSubDistance,
     TrainingParticipant,
     User};
-use App\Enum\{DisciplineEnum, ElementStatusEnum, SaveStatusEnum};
-use App\Event\TrainingProcessedEvent;
+use App\Enum\{DisciplineEnum, ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
+use App\Event\{NotificationEvent, TrainingProcessedEvent};
 use App\Repository\{FeedRepository,
     FriendRepository,
     TrainingDisciplineDistanceRepository,
@@ -121,9 +121,18 @@ readonly class TrainingService
 
             foreach ($trainingDistances as $trainingDisciplineDistance) {
                 $this->eventDispatcher->dispatch(
-                    new TrainingProcessedEvent($participantUser, $trainingDisciplineDistance)
+                    new TrainingProcessedEvent($participantUser, $trainingDisciplineDistance),
                 );
             }
+
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent(
+                    $participantUser,
+                    NotificationTypeEnum::TrainingParticipant,
+                    $training->title,
+                    '/trainings/' . $training->link,
+                ),
+            );
         }
 
         return $training->id;
@@ -230,6 +239,15 @@ readonly class TrainingService
         $training->status = ElementStatusEnum::from($dto->status);
         $this->trainingRepository->save($training);
 
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $training->user,
+                NotificationTypeEnum::TrainingStatus,
+                $training->title,
+                '/trainings/' . $training->link,
+            ),
+        );
+
         return $training->id;
     }
 
@@ -262,6 +280,17 @@ readonly class TrainingService
 
         $trainingParticipant->status = SaveStatusEnum::from($dto->status);
         $this->trainingParticipantRepository->save($trainingParticipant);
+
+        $training = $trainingParticipant->training;
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $trainingParticipant->user,
+                NotificationTypeEnum::TrainingParticipantStatus,
+                $training->title,
+                '/trainings/' . $training->link,
+            ),
+        );
 
         return $trainingParticipant->id;
     }

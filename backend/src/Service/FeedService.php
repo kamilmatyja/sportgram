@@ -4,11 +4,13 @@ namespace App\Service;
 
 use App\Dto\{ElementStatusDto, FeedCommentDto, FeedDto, FeedIndexDto, FeedReactionDto};
 use App\Entity\{Feed, FeedComment, FeedReaction, User};
-use App\Enum\{ElementStatusEnum, FeedReactionEnum};
+use App\Enum\{ElementStatusEnum, FeedReactionEnum, NotificationTypeEnum};
+use App\Event\NotificationEvent;
 use App\Repository\{FeedCommentRepository, FeedReactionRepository, FeedRepository, FriendRepository};
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 readonly class FeedService
 {
@@ -17,6 +19,7 @@ readonly class FeedService
         private FeedCommentRepository $feedCommentRepository,
         private FeedReactionRepository $feedReactionRepository,
         private FriendRepository $friendRepository,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -51,6 +54,15 @@ readonly class FeedService
 
         $feed->status = ElementStatusEnum::from($dto->status);
         $this->feedRepository->save($feed);
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $feed->user,
+                NotificationTypeEnum::FeedStatus,
+                $feed->text,
+                '/users/' . $feed->user->link,
+            ),
+        );
 
         return $feed->id;
     }
@@ -92,6 +104,15 @@ readonly class FeedService
 
         $this->feedCommentRepository->save($feedComment);
 
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $feed->user,
+                NotificationTypeEnum::FeedComment,
+                $dto->text,
+                '/users/' . $feed->user->link,
+            ),
+        );
+
         return $feedComment->id;
     }
 
@@ -112,6 +133,15 @@ readonly class FeedService
 
         $feedComment->status = ElementStatusEnum::from($dto->status);
         $this->feedCommentRepository->save($feedComment);
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $feedComment->user,
+                NotificationTypeEnum::FeedCommentStatus,
+                $feedComment->text,
+                '/users/' . $feedComment->feed->user->link,
+            ),
+        );
 
         return $feedComment->id;
     }
@@ -140,6 +170,15 @@ readonly class FeedService
 
         $this->feedReactionRepository->save($feedReaction);
 
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $feedReaction->user,
+                NotificationTypeEnum::FeedReaction,
+                $feed->text,
+                '/users/' . $feed->user->link,
+            ),
+        );
+
         return $feedReaction->id;
     }
 
@@ -160,6 +199,15 @@ readonly class FeedService
 
         $feedReaction->status = ElementStatusEnum::from($dto->status);
         $this->feedReactionRepository->save($feedReaction);
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $feedReaction->user,
+                NotificationTypeEnum::FeedReactionStatus,
+                $feedReaction->feed->text,
+                '/users/' . $feedReaction->feed->user->link,
+            ),
+        );
 
         return $feedReaction->id;
     }

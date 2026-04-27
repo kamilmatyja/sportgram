@@ -9,11 +9,12 @@ use App\Enum\{ColorEnum,
     DisciplineEnum,
     GenderEnum,
     LanguageEnum,
+    NotificationTypeEnum,
     RoleEnum,
     ThemeEnum,
     UnauthorizedStatusEnum,
     UserStatusEnum};
-use App\Event\UserRegisterEmailEvent;
+use App\Event\{NotificationEvent, UserRegisterEmailEvent};
 use App\Repository\{UserDisciplineRepository, UserRegisterRepository, UserRepository, UserRoleRepository};
 use App\Security\Voter\UserRoleVoter;
 use DateMalformedStringException;
@@ -184,6 +185,15 @@ readonly class UserService
 
         $user->status = UserStatusEnum::from($dto->status);
         $this->userRepository->save($user);
+
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent(
+                $user,
+                NotificationTypeEnum::UserStatus,
+                $user->firstName . ' ' . $user->lastName,
+                '/users/' . $user->link,
+            ),
+        );
 
         return $user->id;
     }
