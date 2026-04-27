@@ -78,6 +78,11 @@ class UserRepository extends BaseRepository
                 ->setParameter('userIds', $dto->filter->userIds);
         }
 
+        if ($dto->filter->link) {
+            $qb->andWhere('u.link = :link')
+                ->setParameter('link', $dto->filter->link);
+        }
+
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $dbField = $this->camelCaseToSnakeCase($field);
         $qb->orderBy('u.' . $dbField, strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC');

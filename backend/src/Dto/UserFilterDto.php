@@ -24,6 +24,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             example: ['b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'],
             nullable: true,
         ),
+        new OA\Property(property: 'link', type: 'string', example: 'my-link', nullable: true),
     ],
     type: 'object',
 )]
@@ -53,4 +54,7 @@ class UserFilterDto
     #[Assert\Count(min: 1)]
     #[Assert\Unique]
     public array $userIds = [];
+
+    #[Assert\Length(min: 1, max: 64)]
+    public ?string $link;
 }

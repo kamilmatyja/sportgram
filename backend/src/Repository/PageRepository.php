@@ -46,6 +46,11 @@ class PageRepository extends BaseRepository
                 ->setParameter('userId', $dto->filter->userId);
         }
 
+        if ($dto->filter->link) {
+            $qb->andWhere('p.link = :link')
+                ->setParameter('link', $dto->filter->link);
+        }
+
         if ($dto->filter->title) {
             $qb->andWhere('p.title LIKE :title')
                 ->setParameter('title', '%' . $dto->filter->title . '%');

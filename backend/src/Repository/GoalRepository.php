@@ -65,6 +65,11 @@ class GoalRepository extends BaseRepository
             ->andWhere('p.user = :userId')
             ->setParameter('userId', $dto->filter->userId);
 
+        if ($dto->filter->link) {
+            $qb->andWhere('g.link = :link')
+                ->setParameter('link', $dto->filter->link);
+        }
+
         if ($dto->filter->text) {
             $qb->andWhere('g.text LIKE :text')
                 ->setParameter('text', '%' . $dto->filter->text . '%');

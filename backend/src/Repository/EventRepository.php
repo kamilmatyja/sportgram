@@ -52,6 +52,11 @@ class EventRepository extends BaseRepository
                 ->setParameter('pageId', $dto->filter->pageId);
         }
 
+        if ($dto->filter->link) {
+            $qb->andWhere('e.link = :link')
+                ->setParameter('link', $dto->filter->link);
+        }
+
         if ($dto->filter->title) {
             $qb->andWhere('e.title LIKE :title')
                 ->setParameter('title', '%' . $dto->filter->title . '%');

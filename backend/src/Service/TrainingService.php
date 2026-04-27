@@ -115,7 +115,9 @@ readonly class TrainingService
                 throw new ValidatorException('User is not friend.');
             }
 
-            $trainingParticipant = new TrainingParticipant($training, $participantUser, SaveStatusEnum::Pending);
+            $status = $userId === $user->id->toString() ? SaveStatusEnum::Accepted : SaveStatusEnum::Pending;
+
+            $trainingParticipant = new TrainingParticipant($training, $participantUser, $status);
 
             $this->trainingParticipantRepository->save($trainingParticipant);
 

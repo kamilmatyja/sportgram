@@ -54,7 +54,9 @@ readonly class PageService
                 throw new ValidatorException('User is not friend.');
             }
 
-            $pageParticipant = new PageParticipant($page, $participantUser, SaveStatusEnum::Pending);
+            $status = $userId === $user->id->toString() ? SaveStatusEnum::Accepted : SaveStatusEnum::Pending;
+
+            $pageParticipant = new PageParticipant($page, $participantUser, $status);
 
             $this->pageParticipantRepository->save($pageParticipant);
 

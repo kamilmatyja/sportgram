@@ -71,7 +71,9 @@ readonly class GoalService
                 throw new ValidatorException('User is not friend.');
             }
 
-            $goalParticipant = new GoalParticipant($goal, $participantUser, SaveStatusEnum::Pending);
+            $status = $userId === $user->id->toString() ? SaveStatusEnum::Accepted : SaveStatusEnum::Pending;
+
+            $goalParticipant = new GoalParticipant($goal, $participantUser, $status);
 
             $this->goalParticipantRepository->save($goalParticipant);
 

@@ -44,6 +44,11 @@ class TrainingRepository extends BaseRepository
             ->andWhere('p.user = :userId')
             ->setParameter('userId', $dto->filter->userId);
 
+        if ($dto->filter->link) {
+            $qb->andWhere('t.link = :link')
+                ->setParameter('link', $dto->filter->link);
+        }
+
         if ($dto->filter->title) {
             $qb->andWhere('t.title LIKE :title')
                 ->setParameter('title', '%' . $dto->filter->title . '%');
