@@ -11,6 +11,7 @@ use App\Entity\{Feed,
     TrainingParticipant,
     User};
 use App\Enum\{DisciplineEnum, ElementStatusEnum, SaveStatusEnum};
+use App\Event\TrainingProcessedEvent;
 use App\Repository\{FeedRepository,
     FriendRepository,
     TrainingDisciplineDistanceRepository,
@@ -22,6 +23,7 @@ use App\Repository\{FeedRepository,
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
@@ -36,6 +38,7 @@ readonly class TrainingService
         private UserRepository $userRepository,
         private FeedRepository $feedRepository,
         private FriendRepository $friendRepository,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -66,6 +69,9 @@ readonly class TrainingService
 
         $this->trainingRepository->save($training);
 
+        /** @var TrainingDisciplineDistance[] $trainingDistances */
+        $trainingDistances = [];
+
         foreach ($dto->disciplines as $discipline) {
             $trainingDiscipline = new TrainingDiscipline($training, DisciplineEnum::from($discipline->discipline));
 
@@ -93,6 +99,8 @@ readonly class TrainingService
 
                     $this->trainingDisciplineSubDistanceRepository->save($trainingDisciplineSubDistance);
                 }
+
+                $trainingDistances[] = $trainingDisciplineDistance;
             }
         }
 
@@ -110,6 +118,12 @@ readonly class TrainingService
             $trainingParticipant = new TrainingParticipant($training, $participantUser, SaveStatusEnum::Pending);
 
             $this->trainingParticipantRepository->save($trainingParticipant);
+
+            foreach ($trainingDistances as $trainingDisciplineDistance) {
+                $this->eventDispatcher->dispatch(
+                    new TrainingProcessedEvent($participantUser, $trainingDisciplineDistance)
+                );
+            }
         }
 
         return $training->id;

@@ -3,17 +3,17 @@
 namespace App\Service;
 
 use App\Dto\{UserCodeDto, UserSignDto};
-use App\Entity\{User, UserSign};
+use App\Entity\{UserSign};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
+use App\Event\UserSignEmailEvent;
 use App\Repository\{UserRegisterRepository, UserRepository, UserSignRepository};
 use DateTimeImmutable;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Random\RandomException;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class SignService
 {
@@ -22,16 +22,14 @@ readonly class SignService
         private UserRegisterRepository $userRegisterRepository,
         private UserSignRepository $userSignRepository,
         private UserPasswordHasherInterface $hasher,
-        private EmailService $emailService,
-        private TranslatorInterface $translator,
         private JWTTokenManagerInterface $jwtManager,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
     /**
      * @throws ValidatorException
      * @throws RandomException
-     * @throws TransportExceptionInterface
      */
     final public function sign(UserSignDto $dto): Uuid
     {
@@ -67,7 +65,7 @@ readonly class SignService
         $userSign = new UserSign($user, random_int(100000, 999999), 0, UnauthorizedStatusEnum::NotSent);
         $this->userSignRepository->save($userSign);
 
-        $this->sendEmail($user, $userSign);
+        $this->eventDispatcher->dispatch(new UserSignEmailEvent($user, $userSign));
 
         return $userSign->id;
     }
@@ -104,9 +102,6 @@ readonly class SignService
         return $this->jwtManager->create($user);
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     */
     final public function resend(Uuid $userSignId): Uuid
     {
         $userSign = $this->userSignRepository->findById($userSignId);
@@ -121,7 +116,7 @@ readonly class SignService
 
         $user = $userSign->user;
 
-        $this->sendEmail($user, $userSign);
+        $this->eventDispatcher->dispatch(new UserSignEmailEvent($user, $userSign));
 
         return $userSign->id;
     }
@@ -144,23 +139,5 @@ readonly class SignService
         }
 
         return $this->jwtManager->create($user);
-    }
-
-    private function sendEmail(User $user, UserSign $userSign): void
-    {
-        $locale = $user->language->getLocale();
-        $subject = $this->translator->trans('sign.code.subject', locale: $locale);
-        $body = $this->translator->trans(
-            'sign.code.body',
-            ['%code%' => $userSign->code],
-            locale: $locale,
-        );
-
-        try {
-            $this->emailService->send($user->email, $subject, $body);
-        } finally {
-            $userSign->status = UnauthorizedStatusEnum::Sent;
-            $this->userSignRepository->save($userSign);
-        }
     }
 }

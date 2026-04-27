@@ -13,6 +13,7 @@ use App\Entity\{Event,
     Feed,
     User};
 use App\Enum\{DisciplineEnum, ElementStatusEnum, SaveStatusEnum};
+use App\Event\EventProcessedEvent;
 use App\Repository\{EventDisciplineDistanceRepository,
     EventDisciplineListRepository,
     EventDisciplineRepository,
@@ -25,6 +26,7 @@ use App\Repository\{EventDisciplineDistanceRepository,
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
@@ -40,6 +42,7 @@ readonly class EventService
         private EventDisciplineSubResultRepository $eventDisciplineSubResultRepository,
         private FeedRepository $feedRepository,
         private PageRepository $pageRepository,
+        private EventDispatcherInterface $eventDispatcher,
         private Security $security,
     ) {
     }
@@ -277,6 +280,8 @@ readonly class EventService
 
             $this->eventDisciplineSubResultRepository->save($eventDisciplineSubResult);
         }
+
+        $this->eventDispatcher->dispatch(new EventProcessedEvent($eventDisciplineResult));
 
         return $eventDisciplineResult->id;
     }

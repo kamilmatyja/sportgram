@@ -3,15 +3,15 @@
 namespace App\Service;
 
 use App\Dto\{UserEmailDto, UserPasswordDto};
-use App\Entity\{User, UserPasswordReset};
+use App\Entity\{UserPasswordReset};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
+use App\Event\UserPasswordResetEmailEvent;
 use App\Repository\{UserPasswordResetRepository, UserRegisterRepository, UserRepository};
 use DateTimeImmutable;
 use Random\RandomException;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class PasswordResetService
 {
@@ -19,15 +19,13 @@ readonly class PasswordResetService
         private UserRepository $userRepository,
         private UserRegisterRepository $userRegisterRepository,
         private UserPasswordResetRepository $userPasswordResetRepository,
-        private EmailService $emailService,
-        private TranslatorInterface $translator,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
     /**
      * @throws ValidatorException
      * @throws RandomException
-     * @throws TransportExceptionInterface
      */
     final public function passwordReset(UserEmailDto $dto): Uuid
     {
@@ -64,7 +62,7 @@ readonly class PasswordResetService
         );
         $this->userPasswordResetRepository->save($userPasswordReset);
 
-        $this->sendEmail($user, $userPasswordReset);
+        $this->eventDispatcher->dispatch(new UserPasswordResetEmailEvent($user, $userPasswordReset));
 
         return $userPasswordReset->id;
     }
@@ -103,9 +101,6 @@ readonly class PasswordResetService
         return $userPasswordReset->id;
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     */
     final public function resend(Uuid $userPasswordResetId): Uuid
     {
         $userPasswordReset = $this->userPasswordResetRepository->findById($userPasswordResetId);
@@ -120,26 +115,8 @@ readonly class PasswordResetService
 
         $user = $userPasswordReset->user;
 
-        $this->sendEmail($user, $userPasswordReset);
+        $this->eventDispatcher->dispatch(new UserPasswordResetEmailEvent($user, $userPasswordReset));
 
         return $userPasswordReset->id;
-    }
-
-    private function sendEmail(User $user, UserPasswordReset $userPasswordReset): void
-    {
-        $locale = $user->language->getLocale();
-        $subject = $this->translator->trans('passwordReset.code.subject', locale: $locale);
-        $body = $this->translator->trans(
-            'passwordReset.code.body',
-            ['%code%' => $userPasswordReset->code],
-            locale: $locale,
-        );
-
-        try {
-            $this->emailService->send($user->email, $subject, $body);
-        } finally {
-            $userPasswordReset->status = UnauthorizedStatusEnum::Sent;
-            $this->userPasswordResetRepository->save($userPasswordReset);
-        }
     }
 }

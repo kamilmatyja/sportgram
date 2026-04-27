@@ -4,6 +4,8 @@ namespace App\Repository;
 
 use App\Dto\{GoalIndexDto};
 use App\Entity\Goal;
+use App\Enum\{DisciplineEnum, GoalStatusEnum};
+use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -34,6 +36,25 @@ class GoalRepository extends BaseRepository
         $goal = $this->findOrFail($goalId);
 
         return $goal;
+    }
+
+    final public function findActiveByDiscipline(
+        Uuid $userId,
+        DisciplineEnum $discipline,
+        DateTimeImmutable $date,
+    ): array {
+        $qb = $this->createQueryBuilder('g');
+        $qb->leftJoin('g.participants', 'p')
+            ->andWhere('p.user = :userId')
+            ->setParameter('userId', $userId);
+        $qb->andWhere('g.discipline = :discipline')
+            ->setParameter('discipline', $discipline);
+        $qb->andWhere('g.startedAt <= :now')
+            ->setParameter('now', $date);
+        $qb->andWhere('g.endedAt >= :now')
+            ->setParameter('now', $date);
+        $qb->andWhere('g.status = :status')
+            ->setParameter('status', GoalStatusEnum::Active);
     }
 
     final public function findGoals(GoalIndexDto $dto): array

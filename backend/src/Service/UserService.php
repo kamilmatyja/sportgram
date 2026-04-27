@@ -13,12 +13,13 @@ use App\Enum\{ColorEnum,
     ThemeEnum,
     UnauthorizedStatusEnum,
     UserStatusEnum};
+use App\Event\UserRegisterEmailEvent;
 use App\Repository\{UserDisciplineRepository, UserRegisterRepository, UserRepository, UserRoleRepository};
 use App\Security\Voter\UserRoleVoter;
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Random\RandomException;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Uid\Uuid;
@@ -33,14 +34,13 @@ readonly class UserService
         private UserRegisterRepository $userRegisterRepository,
         private UserPasswordHasherInterface $hasher,
         private AuthorizationCheckerInterface $authorizationChecker,
-        private RegisterService $registerService,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
     /**
      * @throws DateMalformedStringException
      * @throws RandomException
-     * @throws TransportExceptionInterface
      */
     final public function create(UserCreateDto $dto): Uuid
     {
@@ -79,7 +79,7 @@ readonly class UserService
         $userRegister = new UserRegister($user, random_int(100000, 999999), 0, UnauthorizedStatusEnum::NotSent);
         $this->userRegisterRepository->save($userRegister);
 
-        $this->registerService->sendEmail($user, $userRegister);
+        $this->eventDispatcher->dispatch(new UserRegisterEmailEvent($user, $userRegister));
 
         return $user->id;
     }
@@ -87,7 +87,6 @@ readonly class UserService
     /**
      * @throws DateMalformedStringException
      * @throws RandomException
-     * @throws TransportExceptionInterface
      */
     final public function createNano(UserCreateNanoDto $dto): Uuid
     {
@@ -121,7 +120,7 @@ readonly class UserService
         $userRegister = new UserRegister($user, random_int(100000, 999999), 0, UnauthorizedStatusEnum::NotSent);
         $this->userRegisterRepository->save($userRegister);
 
-        $this->registerService->sendEmail($user, $userRegister);
+        $this->eventDispatcher->dispatch(new UserRegisterEmailEvent($user, $userRegister));
 
         return $user->id;
     }

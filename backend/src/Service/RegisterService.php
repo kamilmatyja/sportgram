@@ -3,22 +3,20 @@
 namespace App\Service;
 
 use App\Dto\{UserCodeDto, UserEmailDto};
-use App\Entity\{User, UserRegister};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
+use App\Event\UserRegisterEmailEvent;
 use App\Repository\{UserRegisterRepository, UserRepository};
 use DateTimeImmutable;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class RegisterService
 {
     public function __construct(
         private UserRepository $userRepository,
         private UserRegisterRepository $userRegisterRepository,
-        private EmailService $emailService,
-        private TranslatorInterface $translator,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -79,9 +77,6 @@ readonly class RegisterService
         return $userRegister->id;
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     */
     final public function resend(Uuid $userRegisterId): Uuid
     {
         $userRegister = $this->userRegisterRepository->findById($userRegisterId);
@@ -96,26 +91,8 @@ readonly class RegisterService
 
         $user = $userRegister->user;
 
-        $this->sendEmail($user, $userRegister);
+        $this->eventDispatcher->dispatch(new UserRegisterEmailEvent($user, $userRegister));
 
         return $userRegister->id;
-    }
-
-    final public function sendEmail(User $user, UserRegister $userRegister): void
-    {
-        $locale = $user->language->getLocale();
-        $subject = $this->translator->trans('register.code.subject', locale: $locale);
-        $body = $this->translator->trans(
-            'register.code.body',
-            ['%code%' => $userRegister->code],
-            locale: $locale,
-        );
-
-        try {
-            $this->emailService->send($user->email, $subject, $body);
-        } finally {
-            $userRegister->status = UnauthorizedStatusEnum::Sent;
-            $this->userRegisterRepository->save($userRegister);
-        }
     }
 }

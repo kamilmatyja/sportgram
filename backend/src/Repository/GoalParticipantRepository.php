@@ -34,4 +34,12 @@ class GoalParticipantRepository extends BaseRepository
 
         return $goalParticipant;
     }
+
+    final public function findByUserId(Uuid $goalId, Uuid $userId): ?GoalParticipant
+    {
+        /** @var ?GoalParticipant $goalParticipant */
+        $goalParticipant = $this->findOneBy(['goal' => $goalId, 'user' => $userId]);
+
+        return $goalParticipant;
+    }
 }
