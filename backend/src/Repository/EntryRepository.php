@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Dto\EntryIndexDto;
+use App\Dto\{EntryCountIndexDto, EntryIndexDto};
 use App\Entity\Entry;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
@@ -62,5 +62,32 @@ class EntryRepository extends BaseRepository
             ->setMaxResults($dto->limit);
 
         return $qb->getQuery()->getResult();
+    }
+
+    final public function findCountEntries(EntryCountIndexDto $dto): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->select('e.type, e.entityId, COUNT(e.id) as count');
+
+        if (! empty($dto->filter->entityIds)) {
+            $qb->andWhere('e.entityId IN (:entityIds)')
+                ->setParameter('entityIds', $dto->filter->entityIds);
+        }
+
+        if ($dto->filter->type) {
+            $qb->andWhere('e.type = :type')
+                ->setParameter('type', $dto->filter->type);
+        }
+
+        $qb->groupBy('e.type')
+            ->addGroupBy('e.entityId');
+
+        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
+        $qb->orderBy('e.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
+
+        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
+            ->setMaxResults($dto->limit);
+
+        return $qb->getQuery()->getArrayResult();
     }
 }

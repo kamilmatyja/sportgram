@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
-use App\Dto\{EntryDto, EntryIndexDto};
+use App\Dto\{EntryCountIndexDto, EntryDto, EntryIndexDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Created, Forbidden, Item, Unauthorized};
-use App\Resource\EntryResource;
+use App\Resource\{EntryCountResource, EntryResource};
 use App\Service\EntryService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -68,6 +68,25 @@ class EntryController extends AbstractController
         $entry = $service->details($id);
 
         $data = EntryResource::fromEntity($entry);
+
+        return ApiResponse::elements($data);
+    }
+
+    #[Route('/api/entry-counts', name: 'entry_count_index', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[OA\Get(
+        summary: 'Index of entry counts',
+        tags: ['entries'],
+        responses: [new Collection('EntryCountResource'), new BadRequest(), new Unauthorized()],
+    )]
+    final public function indexCount(
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        EntryCountIndexDto $dto,
+        EntryService $service,
+    ): JsonResponse {
+        $entryCounts = $service->indexCount($dto);
+
+        $data = EntryCountResource::fromEntityCollection($entryCounts);
 
         return ApiResponse::elements($data);
     }

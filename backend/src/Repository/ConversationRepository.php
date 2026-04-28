@@ -40,30 +40,20 @@ class ConversationRepository extends BaseRepository
     {
         $qb = $this->createQueryBuilder('c');
 
-        if ($dto->filter->userId) {
-            $qb->andWhere(
-                $qb->expr()->orX(
-                    $qb->expr()->andX(
-                        $qb->expr()->eq('c.senderUser', ':userId1'),
-                        $qb->expr()->eq('c.receiverUser', ':userId2'),
-                    ),
-                    $qb->expr()->andX(
-                        $qb->expr()->eq('c.senderUser', ':userId2'),
-                        $qb->expr()->eq('c.receiverUser', ':userId1'),
-                    ),
+        $qb->andWhere(
+            $qb->expr()->orX(
+                $qb->expr()->andX(
+                    $qb->expr()->eq('c.senderUser', ':userId1'),
+                    $qb->expr()->eq('c.receiverUser', ':userId2'),
                 ),
-            )
-                ->setParameter('userId1', $userId)
-                ->setParameter('userId2', $dto->filter->userId);
-        } else {
-            $qb->andWhere(
-                $qb->expr()->orX(
-                    $qb->expr()->eq('c.senderUser', ':userId'),
-                    $qb->expr()->eq('c.receiverUser', ':userId'),
+                $qb->expr()->andX(
+                    $qb->expr()->eq('c.senderUser', ':userId2'),
+                    $qb->expr()->eq('c.receiverUser', ':userId1'),
                 ),
-            )
-                ->setParameter('userId', $userId);
-        }
+            ),
+        )
+            ->setParameter('userId1', $userId)
+            ->setParameter('userId2', $dto->filter->userId);
 
         if ($dto->filter->status) {
             $qb->andWhere('c.status = :status')

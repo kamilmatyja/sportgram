@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Dto\{ConversationDto, ConversationIndexDto, ConversationStatusDto};
+use App\Dto\{ConversationActivityIndexDto, ConversationDto, ConversationIndexDto, ConversationStatusDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\{ConversationActivityResource, ConversationResource};
@@ -145,6 +145,25 @@ class ConversationController extends AbstractController
         $conversationActivityId = $service->updateActivityUpdatedAt($id);
 
         return ApiResponse::ok($conversationActivityId);
+    }
+
+    #[Route('/api/conversation-activities', name: 'conversation_activity_index', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[OA\Get(
+        summary: 'Index of conversation activities',
+        tags: ['conversations'],
+        responses: [new Collection('ConversationActivityResource'), new BadRequest(), new Unauthorized()],
+    )]
+    final public function indexActivity(
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        ConversationActivityIndexDto $dto,
+        ConversationService $service,
+    ): JsonResponse {
+        $conversationActivities = $service->indexActivity($dto);
+
+        $data = ConversationActivityResource::fromEntityCollection($conversationActivities);
+
+        return ApiResponse::elements($data);
     }
 
     #[Route('/api/conversation-activity-users/{id}', name: 'conversation_activity_details', methods: ['GET'])]

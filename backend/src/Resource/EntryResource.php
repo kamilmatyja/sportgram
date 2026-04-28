@@ -9,11 +9,11 @@ use OpenApi\Attributes as OA;
     schema: 'EntryResource',
     required: [
         'id',
-        'senderUserId',
-        'receiverUserId',
+        'userId',
+        'entryId',
         'createdAt',
         'updatedAt',
-        'status',
+        'type',
     ],
     properties: [
         new OA\Property(

@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{ConversationDto, ConversationIndexDto, ConversationStatusDto};
+use App\Dto\{ConversationActivityIndexDto, ConversationDto, ConversationIndexDto, ConversationStatusDto};
 use App\Entity\{Conversation, ConversationActivity, User};
 use App\Enum\{ConversationStatusEnum, NotificationTypeEnum};
 use App\Event\NotificationEvent;
@@ -17,7 +17,7 @@ readonly class ConversationService
 {
     public function __construct(
         private ConversationRepository $conversationRepository,
-        private ConversationActivityRepository $activityRepository,
+        private ConversationActivityRepository $conversationActivityRepository,
         private UserRepository $userRepository,
         private FriendRepository $friendRepository,
         private EventDispatcherInterface $eventDispatcher,
@@ -106,7 +106,7 @@ readonly class ConversationService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $conversationActivity = $this->activityRepository->findByUserIds($user->id, $userReceiverId);
+        $conversationActivity = $this->conversationActivityRepository->findByUserIds($user->id, $userReceiverId);
 
         if ($conversationActivity) {
             $conversationActivity->updatedAt = new DateTimeImmutable();
@@ -116,9 +116,17 @@ readonly class ConversationService
             $conversationActivity = new ConversationActivity($user, $receiver);
         }
 
-        $this->activityRepository->save($conversationActivity);
+        $this->conversationActivityRepository->save($conversationActivity);
 
         return $conversationActivity->id;
+    }
+
+    final public function indexActivity(ConversationActivityIndexDto $dto): array
+    {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        return $this->conversationActivityRepository->findActivities($user->id, $dto);
     }
 
     final public function detailsActivity(Uuid $senderUserId): ConversationActivity
@@ -126,7 +134,7 @@ readonly class ConversationService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $conversationActivity = $this->activityRepository->findByUserIds($senderUserId, $user->id);
+        $conversationActivity = $this->conversationActivityRepository->findByUserIds($senderUserId, $user->id);
 
         if (! $conversationActivity) {
             throw new ValidatorException('Conversation activity not found.');

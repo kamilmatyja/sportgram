@@ -422,8 +422,9 @@ class UserUpdateTest extends ApiTestCase
             'disciplines' => [1],
         ];
         $result = $this->put("/api/users/{$user2->id->toString()}", $data, $user);
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
+        $this->assertEquals(403, $result['status']);
+        $this->assertArrayHasKey('error', $result['json']);
+        $this->assertEquals('Access Denied.', $result['json']['error']);
     }
 
     final public function testAnotherUser(): void
