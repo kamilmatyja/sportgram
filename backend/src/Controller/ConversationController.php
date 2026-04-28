@@ -6,7 +6,10 @@ use App\Dto\{ConversationDto, ConversationIndexDto, ConversationStatusDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
 use App\Resource\{ConversationActivityResource, ConversationResource};
-use App\Security\Voter\{ConversationSenderVoter, ConversationVoter};
+use App\Security\Voter\{ConversationActivityCreatorVoter,
+    ConversationActivityVoter,
+    ConversationSenderVoter,
+    ConversationVoter};
 use App\Service\ConversationService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -129,7 +132,7 @@ class ConversationController extends AbstractController
     }
 
     #[Route('/api/conversation-activitiy-users/{id}/updated-at', name: 'conversation_activity_update_updated_at', methods: ['PATCH'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[IsGranted(ConversationActivityCreatorVoter::CONVERSATION_ACTIVITY_CREATOR, subject: 'id')]
     #[OA\Patch(
         summary: 'Update conversation activity updated_at',
         tags: ['conversations'],
@@ -145,7 +148,7 @@ class ConversationController extends AbstractController
     }
 
     #[Route('/api/conversation-activity-users/{id}', name: 'conversation_activity_details', methods: ['GET'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[IsGranted(ConversationActivityVoter::CONVERSATION_ACTIVITY, subject: 'id')]
     #[OA\Get(
         summary: 'Details of conversation activity',
         tags: ['conversations'],

@@ -56,9 +56,6 @@ class ConversationRepository extends BaseRepository
                 ->setParameter('userId1', $userId)
                 ->setParameter('userId2', $dto->filter->userId);
         } else {
-            $qb->select(
-                'c, DISTINCT CASE WHEN c.senderUser = :userId THEN c.receiverUser ELSE c.senderUser END AS HIDDEN otherUser',
-            );
             $qb->andWhere(
                 $qb->expr()->orX(
                     $qb->expr()->eq('c.senderUser', ':userId'),
@@ -66,7 +63,6 @@ class ConversationRepository extends BaseRepository
                 ),
             )
                 ->setParameter('userId', $userId);
-            $qb->groupBy('otherUser');
         }
 
         if ($dto->filter->status) {
