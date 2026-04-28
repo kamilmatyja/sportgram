@@ -81,7 +81,7 @@ readonly class SignService
             throw new ValidatorException('Code already used.');
         }
 
-        if ($userSign->attempt > 3) {
+        if ($userSign->attempt >= 3) {
             throw new ValidatorException('Too many attempts.');
         }
 
@@ -110,7 +110,7 @@ readonly class SignService
             throw new ValidatorException('Code already used.');
         }
 
-        if ($userSign->attempt > 3) {
+        if ($userSign->attempt >= 3) {
             throw new ValidatorException('Too many attempts.');
         }
 

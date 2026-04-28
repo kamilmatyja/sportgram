@@ -1,0 +1,128 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature;
+
+use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
+use Symfony\Component\Uid\Uuid;
+use Tests\Factory\{UserFactory, UserRegisterFactory};
+
+class UserRegisterConfirmTest extends ApiTestCase
+{
+    final protected function setUp(): void
+    {
+        parent::setUp();
+        $this->truncate('user_registers');
+        $this->truncate('user_roles');
+        $this->truncate('user_disciplines');
+        $this->truncate('users');
+    }
+
+    final public function testEmptyPayload(): void
+    {
+        $user = UserFactory::make(['email' => 'confirm1@example.com', 'status' => UserStatusEnum::Accepted]);
+        $this->save($user);
+
+        $register = UserRegisterFactory::make(
+            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+        );
+        $this->save($register);
+
+        $result = $this->patch("/api/registers/{$register->id}/confirm", []);
+        $this->assertEquals(400, $result['status']);
+        $this->assertArrayHasKey('errors', $result['json']);
+        $this->assertArrayHasKey('code', $result['json']['errors']);
+        $this->assertEquals(['This value should not be blank.'], $result['json']['errors']['code']);
+    }
+
+    final public function testInvalidCodeType(): void
+    {
+        $user = UserFactory::make(['email' => 'confirm2@example.com', 'status' => UserStatusEnum::Accepted]);
+        $this->save($user);
+
+        $register = UserRegisterFactory::make(
+            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+        );
+        $this->save($register);
+
+        $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 'notanumber']);
+        $this->assertEquals(400, $result['status']);
+        $this->assertArrayHasKey('errors', $result['json']);
+        $this->assertArrayHasKey('code', $result['json']['errors']);
+        $this->assertEquals(['This value should be of type int.'], $result['json']['errors']['code']);
+    }
+
+    final public function testNotExistElement(): void
+    {
+        $uuid = Uuid::v4()->toString();
+
+        $result = $this->patch("/api/registers/{$uuid}/confirm", ['code' => 123456]);
+        $this->assertEquals(404, $result['status']);
+        $this->assertArrayHasKey('error', $result['json']);
+        $this->assertEquals('Element not found.', $result['json']['error']);
+    }
+
+    final public function testCodeAlreadyUsed(): void
+    {
+        $user = UserFactory::make(['email' => 'confirm3@example.com', 'status' => UserStatusEnum::Accepted]);
+        $this->save($user);
+
+        $register = UserRegisterFactory::make(
+            ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
+        );
+        $this->save($register);
+
+        $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 123456]);
+        $this->assertEquals(409, $result['status']);
+        $this->assertArrayHasKey('error', $result['json']);
+        $this->assertEquals('Code already used.', $result['json']['error']);
+    }
+
+    final public function testTooManyAttempts(): void
+    {
+        $user = UserFactory::make(['email' => 'confirm4@example.com', 'status' => UserStatusEnum::Accepted]);
+        $this->save($user);
+
+        $register = UserRegisterFactory::make(
+            ['user' => $user, 'code' => 123456, 'attempt' => 4, 'status' => UnauthorizedStatusEnum::Incorrect],
+        );
+        $this->save($register);
+
+        $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 123456]);
+        $this->assertEquals(409, $result['status']);
+        $this->assertArrayHasKey('error', $result['json']);
+        $this->assertEquals('Too many attempts.', $result['json']['error']);
+    }
+
+    final public function testInvalidCode(): void
+    {
+        $user = UserFactory::make(['email' => 'confirm5@example.com', 'status' => UserStatusEnum::Accepted]);
+        $this->save($user);
+
+        $register = UserRegisterFactory::make(
+            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+        );
+        $this->save($register);
+
+        $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 654321]);
+        $this->assertEquals(409, $result['status']);
+        $this->assertArrayHasKey('error', $result['json']);
+        $this->assertEquals('Invalid code.', $result['json']['error']);
+    }
+
+    final public function testSuccess(): void
+    {
+        $user = UserFactory::make(['email' => 'confirm6@example.com', 'status' => UserStatusEnum::Accepted]);
+        $this->save($user);
+
+        $register = UserRegisterFactory::make(
+            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+        );
+        $this->save($register);
+
+        $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 123456]);
+        $this->assertEquals(200, $result['status']);
+        $this->assertArrayHasKey('id', $result['json']);
+    }
+}

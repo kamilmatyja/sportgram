@@ -78,7 +78,7 @@ readonly class PasswordResetService
             throw new ValidatorException('Code already used.');
         }
 
-        if ($userPasswordReset->attempt > 3) {
+        if ($userPasswordReset->attempt >= 3) {
             throw new ValidatorException('Too many attempts.');
         }
 
@@ -109,7 +109,7 @@ readonly class PasswordResetService
             throw new ValidatorException('Code already used.');
         }
 
-        if ($userPasswordReset->attempt > 3) {
+        if ($userPasswordReset->attempt >= 3) {
             throw new ValidatorException('Too many attempts.');
         }
 
