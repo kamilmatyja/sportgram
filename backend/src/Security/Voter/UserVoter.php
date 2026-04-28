@@ -3,7 +3,6 @@
 namespace App\Security\Voter;
 
 use App\Entity\User;
-use App\Enum\RoleEnum;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\{Vote, Voter};
 use Symfony\Component\Uid\Uuid;
@@ -27,10 +26,6 @@ class UserVoter extends Voter
 
         if (! $user instanceof User) {
             return false;
-        }
-
-        if (in_array(RoleEnum::ROLE_ADMINISTRATOR, $user->getRoles(), true)) {
-            return true;
         }
 
         if (! $subject instanceof Uuid) {

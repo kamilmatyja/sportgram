@@ -61,8 +61,9 @@ class UserDeleteTest extends ApiTestCase
         $user2 = self::createUser(RoleEnum::Participant);
 
         $result = $this->delete("/api/users/{$user2->id->toString()}", $user);
-        $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
+        $this->assertEquals(403, $result['status']);
+        $this->assertArrayHasKey('error', $result['json']);
+        $this->assertEquals('Access Denied.', $result['json']['error']);
     }
 
     final public function testAnotherUser(): void
