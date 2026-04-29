@@ -30,6 +30,11 @@ abstract class BaseFactory
         return self::faker()->numberBetween(1, 2137);
     }
 
+    protected static function randomPhone(): int
+    {
+        return self::faker()->numberBetween(100000000, 999999999.);
+    }
+
     protected static function randomCode(): int
     {
         return self::faker()->numberBetween(100000, 999999);

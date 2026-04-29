@@ -571,4 +571,32 @@ class UserUpdateTest extends ApiTestCase
         $this->assertEquals(200, $result['status']);
         $this->assertArrayHasKey('id', $result['json']);
     }
+
+    final public function testUpdateWithOwnUniqueFields(): void
+    {
+        $user = self::createUser(RoleEnum::Participant);
+
+        $data = [
+            'birthAt' => '2000-01-01',
+            'firstName' => 'Jan',
+            'lastName' => 'Kowalski',
+            'gender' => 1,
+            'phone' => $user->phone,
+            'email' => $user->email,
+            'password' => 'tajnehaslo',
+            'link' => $user->link,
+            'language' => 2,
+            'country' => 35,
+            'theme' => 1,
+            'color' => 3,
+            'profilePhoto' => base64_encode('hello'),
+            'backgroundPhoto' => base64_encode('hello'),
+            'bio' => 'Testowy użytkownik',
+            'roles' => [1],
+            'disciplines' => [1],
+        ];
+        $result = $this->put("/api/users/{$user->id->toString()}", $data, $user);
+        $this->assertEquals(200, $result['status']);
+        $this->assertArrayNotHasKey('errors', $result['json']);
+    }
 }

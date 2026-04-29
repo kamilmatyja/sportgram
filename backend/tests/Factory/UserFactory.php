@@ -16,7 +16,7 @@ final class UserFactory extends BaseFactory
             'firstName' => self::randomName(),
             'lastName' => self::randomName(),
             'gender' => self::randomEnum(GenderEnum::class),
-            'phone' => self::randomInt(),
+            'phone' => self::randomPhone(),
             'email' => self::randomEmail(),
             'link' => self::randomString('link'),
             'language' => self::randomEnum(LanguageEnum::class),

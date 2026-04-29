@@ -31,3 +31,6 @@ services:
             $vapidSubject: '%VAPID_SUBJECT%'
             $vapidPublicKey: '%VAPID_PUBLIC_KEY%'
             $vapidPrivateKey: '%VAPID_PRIVATE_KEY%'
+    App\Validator\UniqueFieldValidator:
+        arguments:
+            $requestStack: '@request_stack'
