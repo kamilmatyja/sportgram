@@ -21,13 +21,11 @@ class UserRegisterConfirmTest extends ApiTestCase
 
     final public function testEmptyPayload(): void
     {
-        $user = UserFactory::make(['email' => 'confirm1@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'confirm1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($register);
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", []);
         $this->assertEquals(400, $result['status']);
@@ -38,13 +36,11 @@ class UserRegisterConfirmTest extends ApiTestCase
 
     final public function testInvalidCodeType(): void
     {
-        $user = UserFactory::make(['email' => 'confirm2@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'confirm2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($register);
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 'notanumber']);
         $this->assertEquals(400, $result['status']);
@@ -65,13 +61,11 @@ class UserRegisterConfirmTest extends ApiTestCase
 
     final public function testCodeAlreadyUsed(): void
     {
-        $user = UserFactory::make(['email' => 'confirm3@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'confirm3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
         );
-        $this->save($register);
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 123456]);
         $this->assertEquals(409, $result['status']);
@@ -81,13 +75,11 @@ class UserRegisterConfirmTest extends ApiTestCase
 
     final public function testTooManyAttempts(): void
     {
-        $user = UserFactory::make(['email' => 'confirm4@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'confirm4@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 4, 'status' => UnauthorizedStatusEnum::Incorrect],
         );
-        $this->save($register);
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 123456]);
         $this->assertEquals(409, $result['status']);
@@ -97,13 +89,11 @@ class UserRegisterConfirmTest extends ApiTestCase
 
     final public function testInvalidCode(): void
     {
-        $user = UserFactory::make(['email' => 'confirm5@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'confirm5@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($register);
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 654321]);
         $this->assertEquals(409, $result['status']);
@@ -113,13 +103,11 @@ class UserRegisterConfirmTest extends ApiTestCase
 
     final public function testSuccess(): void
     {
-        $user = UserFactory::make(['email' => 'confirm6@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'confirm6@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($register);
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 123456]);
         $this->assertEquals(200, $result['status']);

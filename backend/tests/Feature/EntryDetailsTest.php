@@ -28,8 +28,7 @@ class EntryDetailsTest extends ApiTestCase
             'user' => $user,
             'entityId' => $user->id,
             'type' => EntryTypeEnum::User,
-        ]);
-        $this->save($entry);
+        ], $this->em);
 
         $result = $this->get('/api/entries/' . $entry->id->toString());
         $this->assertEquals(401, $result['status']);
@@ -67,8 +66,7 @@ class EntryDetailsTest extends ApiTestCase
             'user' => $user,
             'entityId' => $user->id,
             'type' => EntryTypeEnum::User,
-        ]);
-        $this->save($entry);
+        ], $this->em);
 
         $result = $this->get('/api/entries/' . $entry->id->toString(), $user);
         $this->assertEquals(200, $result['status']);

@@ -33,15 +33,13 @@ class ConversationActivitiesIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $receiver = UserFactory::make();
-        $this->save($receiver);
+        $receiver = UserFactory::make(em: $this->em);
 
         for ($i = 0; $i < 3; ++$i) {
             $conversationActivity = ConversationActivityFactory::make([
                 'senderUser' => $user,
                 'receiverUser' => $receiver,
-            ]);
-            $this->save($conversationActivity);
+            ], $this->em);
         }
 
         $result = $this->get('/api/conversation-activities', $user);
@@ -54,15 +52,13 @@ class ConversationActivitiesIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $receiver = UserFactory::make();
-        $this->save($receiver);
+        $receiver = UserFactory::make(em: $this->em);
 
         for ($i = 0; $i < 15; ++$i) {
             $conversationActivity = ConversationActivityFactory::make([
                 'senderUser' => $user,
                 'receiverUser' => $receiver,
-            ]);
-            $this->save($conversationActivity);
+            ], $this->em);
         }
 
         $result = $this->get('/api/conversation-activities?page=2&limit=5', $user);
@@ -75,26 +71,21 @@ class ConversationActivitiesIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $receiver1 = UserFactory::make();
-        $receiver2 = UserFactory::make();
-        $this->save($receiver1);
-        $this->save($receiver2);
+        $receiver1 = UserFactory::make(em: $this->em);
+        $receiver2 = UserFactory::make(em: $this->em);
 
         $conversationActivity1 = ConversationActivityFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver1,
-        ]);
-        $this->save($conversationActivity1);
+        ], $this->em);
         $conversationActivity2 = ConversationActivityFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver2,
-        ]);
-        $this->save($conversationActivity2);
+        ], $this->em);
         $conversationActivity3 = ConversationActivityFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver2,
-        ]);
-        $this->save($conversationActivity3);
+        ], $this->em);
 
         $result = $this->get('/api/conversation-activities?filter[userId]=' . $receiver2->id->toString(), $user);
         $this->assertEquals(200, $result['status']);

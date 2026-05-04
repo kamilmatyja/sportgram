@@ -32,13 +32,11 @@ class UserPasswordResetResendTest extends ApiTestCase
 
     final public function testCodeAlreadyUsed(): void
     {
-        $user = UserFactory::make(['email' => 'resendpr1@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resendpr1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
         );
-        $this->save($reset);
 
         $result = $this->post("/api/password-resets/{$reset->id}/resend", []);
         $this->assertEquals(409, $result['status']);
@@ -48,13 +46,11 @@ class UserPasswordResetResendTest extends ApiTestCase
 
     final public function testTooManyAttempts(): void
     {
-        $user = UserFactory::make(['email' => 'resendpr2@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resendpr2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 3, 'status' => UnauthorizedStatusEnum::Incorrect],
         );
-        $this->save($reset);
 
         $result = $this->post("/api/password-resets/{$reset->id}/resend", []);
         $this->assertEquals(409, $result['status']);
@@ -64,13 +60,11 @@ class UserPasswordResetResendTest extends ApiTestCase
 
     final public function testSuccess(): void
     {
-        $user = UserFactory::make(['email' => 'resendpr3@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resendpr3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($reset);
 
         $result = $this->post("/api/password-resets/{$reset->id}/resend", []);
         $this->assertEquals(200, $result['status']);

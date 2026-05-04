@@ -33,16 +33,14 @@ class ConversationIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $receiver = UserFactory::make();
-        $this->save($receiver);
+        $receiver = UserFactory::make(em: $this->em);
 
         for ($i = 0; $i < 3; ++$i) {
             $conversation = ConversationFactory::make([
                 'senderUser' => $user,
                 'receiverUser' => $receiver,
                 'status' => ConversationStatusEnum::Sent,
-            ]);
-            $this->save($conversation);
+            ], $this->em);
         }
 
         $result = $this->get('/api/conversations?filter[userId]=' . $receiver->id->toString(), $user);
@@ -54,16 +52,14 @@ class ConversationIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $receiver = UserFactory::make();
-        $this->save($receiver);
+        $receiver = UserFactory::make(em: $this->em);
 
         for ($i = 0; $i < 15; ++$i) {
             $conversation = ConversationFactory::make([
                 'senderUser' => $user,
                 'receiverUser' => $receiver,
                 'status' => ConversationStatusEnum::Sent,
-            ]);
-            $this->save($conversation);
+            ], $this->em);
         }
 
         $result = $this->get('/api/conversations?page=2&limit=5&filter[userId]=' . $receiver->id->toString(), $user);
@@ -75,23 +71,19 @@ class ConversationIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $receiver1 = UserFactory::make();
-        $receiver2 = UserFactory::make();
-        $this->save($receiver1);
-        $this->save($receiver2);
+        $receiver1 = UserFactory::make(em: $this->em);
+        $receiver2 = UserFactory::make(em: $this->em);
 
         $conv1 = ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver1,
             'status' => ConversationStatusEnum::Sent,
-        ]);
+        ], $this->em);
         $conv2 = ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver2,
             'status' => ConversationStatusEnum::Read,
-        ]);
-        $this->save($conv1);
-        $this->save($conv2);
+        ], $this->em);
 
         $result = $this->get('/api/conversations?sort=status:desc&filter[userId]=' . $user->id->toString(), $user);
         $this->assertEquals(200, $result['status']);
@@ -103,21 +95,18 @@ class ConversationIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $receiver = UserFactory::make();
-        $this->save($receiver);
+        $receiver = UserFactory::make(em: $this->em);
 
         $conv1 = ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver,
             'status' => ConversationStatusEnum::Sent,
-        ]);
+        ], $this->em);
         $conv2 = ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver,
             'status' => ConversationStatusEnum::Read,
-        ]);
-        $this->save($conv1);
-        $this->save($conv2);
+        ], $this->em);
 
         $result = $this->get(
             '/api/conversations?filter[status]=' . ConversationStatusEnum::Read->value . '&filter[userId]=' . $receiver->id->toString(
@@ -132,26 +121,21 @@ class ConversationIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $receiver1 = UserFactory::make();
-        $receiver2 = UserFactory::make();
-        $this->save($receiver1);
-        $this->save($receiver2);
+        $receiver1 = UserFactory::make(em: $this->em);
+        $receiver2 = UserFactory::make(em: $this->em);
 
         $conversation1 = ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver1,
-        ]);
+        ], $this->em);
         $conversation2 = ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver2,
-        ]);
+        ], $this->em);
         $conversation3 = ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver2,
-        ]);
-        $this->save($conversation1);
-        $this->save($conversation2);
-        $this->save($conversation3);
+        ], $this->em);
 
         $result = $this->get('/api/conversations?filter[userId]=' . $receiver2->id->toString(), $user);
         $this->assertEquals(200, $result['status']);

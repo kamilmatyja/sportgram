@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Tests\Factory;
 
 use App\Entity\TrainingDisciplineSubDistance;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class TrainingDisciplineSubDistanceFactory extends BaseFactory
 {
-    public static function make(array $overrides = []): TrainingDisciplineSubDistance
+    public static function make(array $overrides = [], ?EntityManagerInterface $em = null): TrainingDisciplineSubDistance
     {
         $defaults = [
-            'trainingDisciplineDistance' => TrainingDisciplineDistanceFactory::make(),
+            'trainingDisciplineDistance' => TrainingDisciplineDistanceFactory::make(em: $em),
             'subDistance' => self::randomInt(),
             'time' => self::randomInt(),
             'lat' => self::randomInt(),
@@ -22,7 +23,7 @@ final class TrainingDisciplineSubDistanceFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        return new TrainingDisciplineSubDistance(
+        $object = new TrainingDisciplineSubDistance(
             $data['trainingDisciplineDistance'],
             $data['subDistance'],
             $data['time'],
@@ -31,5 +32,12 @@ final class TrainingDisciplineSubDistanceFactory extends BaseFactory
             $data['accuracy'],
             $data['speed'],
         );
+
+        if ($em) {
+            $em->persist($object);
+            $em->flush();
+        }
+
+        return $object;
     }
 }

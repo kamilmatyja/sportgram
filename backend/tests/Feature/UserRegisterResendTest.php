@@ -31,13 +31,11 @@ class UserRegisterResendTest extends ApiTestCase
 
     final public function testCodeAlreadyUsed(): void
     {
-        $user = UserFactory::make(['email' => 'resend1@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resend1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
         );
-        $this->save($register);
 
         $result = $this->post("/api/registers/{$register->id}/resend", []);
         $this->assertEquals(409, $result['status']);
@@ -47,13 +45,11 @@ class UserRegisterResendTest extends ApiTestCase
 
     final public function testTooManyAttempts(): void
     {
-        $user = UserFactory::make(['email' => 'resend2@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resend2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 4, 'status' => UnauthorizedStatusEnum::Incorrect],
         );
-        $this->save($register);
 
         $result = $this->post("/api/registers/{$register->id}/resend", []);
         $this->assertEquals(409, $result['status']);
@@ -63,13 +59,11 @@ class UserRegisterResendTest extends ApiTestCase
 
     final public function testSuccess(): void
     {
-        $user = UserFactory::make(['email' => 'resend3@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resend3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($register);
 
         $result = $this->post("/api/registers/{$register->id}/resend", []);
         $this->assertEquals(200, $result['status']);

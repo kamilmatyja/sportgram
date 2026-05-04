@@ -32,13 +32,11 @@ class UserSignResendTest extends ApiTestCase
 
     final public function testCodeAlreadyUsed(): void
     {
-        $user = UserFactory::make(['email' => 'resendsign1@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resendsign1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
         );
-        $this->save($sign);
 
         $result = $this->post("/api/signs/{$sign->id}/resend", []);
         $this->assertEquals(409, $result['status']);
@@ -48,13 +46,11 @@ class UserSignResendTest extends ApiTestCase
 
     final public function testTooManyAttempts(): void
     {
-        $user = UserFactory::make(['email' => 'resendsign2@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resendsign2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 3, 'status' => UnauthorizedStatusEnum::Incorrect],
         );
-        $this->save($sign);
 
         $result = $this->post("/api/signs/{$sign->id}/resend", []);
         $this->assertEquals(409, $result['status']);
@@ -64,13 +60,11 @@ class UserSignResendTest extends ApiTestCase
 
     final public function testSuccess(): void
     {
-        $user = UserFactory::make(['email' => 'resendsign3@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resendsign3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($sign);
 
         $result = $this->post("/api/signs/{$sign->id}/resend", []);
         $this->assertEquals(200, $result['status']);

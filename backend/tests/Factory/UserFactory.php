@@ -6,10 +6,11 @@ namespace Tests\Factory;
 
 use App\Entity\User;
 use App\Enum\{ColorEnum, CountryEnum, GenderEnum, LanguageEnum, ThemeEnum, UserStatusEnum};
+use Doctrine\ORM\EntityManagerInterface;
 
 final class UserFactory extends BaseFactory
 {
-    public static function make(array $overrides = []): User
+    public static function make(array $overrides = [], ?EntityManagerInterface $em = null): User
     {
         $defaults = [
             'birthAt' => self::randomData(),
@@ -31,7 +32,7 @@ final class UserFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        $user = new User(
+        $object = new User(
             $data['birthAt'],
             $data['firstName'],
             $data['lastName'],
@@ -49,8 +50,13 @@ final class UserFactory extends BaseFactory
             $data['status'],
         );
 
-        $user->password = self::randomString('password');
+        $object->password = self::randomString('password');
 
-        return $user;
+        if ($em) {
+            $em->persist($object);
+            $em->flush();
+        }
+
+        return $object;
     }
 }

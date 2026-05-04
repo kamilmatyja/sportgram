@@ -4,7 +4,6 @@ namespace App\Dto;
 
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Type;
 
 #[OA\Schema(
     schema: 'EventResultDto',
@@ -28,6 +27,11 @@ class EventResultDto
 
     /** @var EventSubResultDto[] */
     #[Assert\Valid]
-    #[Type('array<App\Dto\EventSubResultDto>')]
+    #[Assert\Type('array')]
     public array $subResults = [];
+
+    final public function addSubResult(EventSubResultDto $subResult): void
+    {
+        $this->subResults[] = $subResult;
+    }
 }

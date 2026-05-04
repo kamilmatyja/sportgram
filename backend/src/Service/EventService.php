@@ -11,6 +11,7 @@ use App\Entity\{Event,
     EventDisciplineSubDistance,
     EventDisciplineSubResult,
     Feed,
+    PageParticipant,
     User};
 use App\Enum\{DisciplineEnum, ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
 use App\Event\{EventProcessedEvent, NotificationEvent};
@@ -60,9 +61,7 @@ readonly class EventService
         $feed = new Feed($user, null, null, ElementStatusEnum::Draft);
         $this->feedRepository->save($feed);
 
-        $pageParticipant = $page->participants->findFirst(
-            fn ($participant) => $participant->user->id->toString() === $user->id->toString(),
-        );
+        $pageParticipant = $page->participants->filter(fn (PageParticipant $participant) => $participant->user->id === $user->id)->first();
 
         $event = new Event(
             $pageParticipant,

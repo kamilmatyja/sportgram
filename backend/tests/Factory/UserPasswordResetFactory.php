@@ -6,13 +6,14 @@ namespace Tests\Factory;
 
 use App\Entity\UserPasswordReset;
 use App\Enum\UnauthorizedStatusEnum;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class UserPasswordResetFactory extends BaseFactory
 {
-    public static function make(array $overrides = []): UserPasswordReset
+    public static function make(array $overrides = [], ?EntityManagerInterface $em = null): UserPasswordReset
     {
         $defaults = [
-            'user' => UserFactory::make(),
+            'user' => UserFactory::make(em: $em),
             'code' => self::randomCode(),
             'attempt' => self::randomInt(),
             'status' => self::randomEnum(UnauthorizedStatusEnum::class),
@@ -20,11 +21,18 @@ final class UserPasswordResetFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        return new UserPasswordReset(
+        $object = new UserPasswordReset(
             $data['user'],
             $data['code'],
             $data['attempt'],
             $data['status'],
         );
+
+        if ($em) {
+            $em->persist($object);
+            $em->flush();
+        }
+
+        return $object;
     }
 }

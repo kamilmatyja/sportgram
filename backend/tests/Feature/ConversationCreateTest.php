@@ -56,8 +56,7 @@ class ConversationCreateTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
-        $this->save($friend);
+        ], $this->em);
 
         $result = $this->post('/api/conversation-users/' . $user2->id->toString(), [], $user1);
         $this->assertEquals(400, $result['status']);
@@ -74,8 +73,7 @@ class ConversationCreateTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
-        $this->save($friend);
+        ], $this->em);
 
         $payload = ['text' => null];
 
@@ -108,8 +106,7 @@ class ConversationCreateTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
-        $this->save($friend);
+        ], $this->em);
 
         $payload = ['text' => 'Hello friend!'];
 

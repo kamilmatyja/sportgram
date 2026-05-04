@@ -19,7 +19,7 @@ abstract class ApiTestCase extends WebTestCase
 {
     private KernelBrowser $client;
 
-    private EntityManagerInterface $em;
+    protected EntityManagerInterface $em;
 
     private Connection $connection;
 
@@ -46,72 +46,37 @@ abstract class ApiTestCase extends WebTestCase
 
     protected function post(string $uri, array $data, ?User $user = null): array
     {
-        $headers = ['CONTENT_TYPE' => 'application/json'];
-        if ($user) {
-            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
-        }
-        $this->client->request('POST', $uri, [], [], $headers, json_encode($data));
+        $this->client->request('POST', $uri, [], [], $this->getHeaders($user), json_encode($data));
 
-        return [
-            'status' => $this->client->getResponse()->getStatusCode(),
-            'json' => json_decode($this->client->getResponse()->getContent(), true),
-        ];
+        return $this->getResponse();
     }
 
     protected function put(string $uri, array $data, ?User $user = null): array
     {
-        $headers = ['CONTENT_TYPE' => 'application/json'];
-        if ($user) {
-            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
-        }
-        $this->client->request('PUT', $uri, [], [], $headers, json_encode($data));
+        $this->client->request('PUT', $uri, [], [], $this->getHeaders($user), json_encode($data));
 
-        return [
-            'status' => $this->client->getResponse()->getStatusCode(),
-            'json' => json_decode($this->client->getResponse()->getContent(), true),
-        ];
+        return $this->getResponse();
     }
 
     protected function patch(string $uri, array $data, ?User $user = null): array
     {
-        $headers = ['CONTENT_TYPE' => 'application/json'];
-        if ($user) {
-            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
-        }
-        $this->client->request('PATCH', $uri, [], [], $headers, json_encode($data));
+        $this->client->request('PATCH', $uri, [], [], $this->getHeaders($user), json_encode($data));
 
-        return [
-            'status' => $this->client->getResponse()->getStatusCode(),
-            'json' => json_decode($this->client->getResponse()->getContent(), true),
-        ];
+        return $this->getResponse();
     }
 
     protected function delete(string $uri, ?User $user = null): array
     {
-        $headers = ['CONTENT_TYPE' => 'application/json'];
-        if ($user) {
-            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
-        }
-        $this->client->request('DELETE', $uri, [], [], $headers, json_encode($data));
+        $this->client->request('DELETE', $uri, [], [], $this->getHeaders($user));
 
-        return [
-            'status' => $this->client->getResponse()->getStatusCode(),
-            'json' => json_decode($this->client->getResponse()->getContent(), true),
-        ];
+        return $this->getResponse();
     }
 
     protected function get(string $uri, ?User $user = null): array
     {
-        $headers = ['CONTENT_TYPE' => 'application/json'];
-        if ($user) {
-            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
-        }
-        $this->client->request('GET', $uri, [], [], $headers);
+        $this->client->request('GET', $uri, [], [], $this->getHeaders($user));
 
-        return [
-            'status' => $this->client->getResponse()->getStatusCode(),
-            'json' => json_decode($this->client->getResponse()->getContent(), true),
-        ];
+        return $this->getResponse();
     }
 
     /**
@@ -122,28 +87,53 @@ abstract class ApiTestCase extends WebTestCase
         $this->connection->executeStatement($this->platform->getTruncateTableSQL($name, true));
     }
 
-    protected function save(object $entity): void
+    protected function createUser(RoleEnum $role, array $overrides = []): User
+    {
+        $user = UserFactory::make($overrides, $this->em);
+        $user->password = $this->passwordHasher->hashPassword($user, 'zaq1@WSX');
+        $this->save($user);
+
+        UserRoleFactory::make(['user' => $user, 'role' => $role], $this->em);
+
+        $this->refresh($user);
+
+        return $user;
+    }
+
+    private function save(object $entity): void
     {
         $this->em->persist($entity);
         $this->em->flush();
     }
 
-    protected function createUser(RoleEnum $role, array $overrides = []): User
+    private function refresh(object $entity): void
     {
-        $user = UserFactory::make($overrides);
-        $user->password = $this->passwordHasher->hashPassword($user, 'zaq1@WSX');
-        $this->save($user);
-
-        $userRole = UserRoleFactory::make(['user' => $user, 'role' => $role]);
-        $this->save($userRole);
-
-        $this->em->refresh($user);
-
-        return $user;
+        $this->em->refresh($entity);
     }
 
     private function getToken(User $user): string
     {
         return $this->jwtManager->create($user);
+    }
+
+    private function getHeaders(?User $user): array
+    {
+        $this->em->clear();
+
+        $headers = ['CONTENT_TYPE' => 'application/json'];
+
+        if ($user) {
+            $headers['HTTP_Authorization'] = 'Bearer ' . $this->getToken($user);
+        }
+
+        return $headers;
+    }
+
+    private function getResponse(): array
+    {
+        return [
+            'status' => $this->client->getResponse()->getStatusCode(),
+            'json' => json_decode($this->client->getResponse()->getContent(), true),
+        ];
     }
 }

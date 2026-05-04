@@ -23,8 +23,7 @@ class UserDeleteTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $page = PageFactory::make(['user' => $user]);
-        $this->save($page);
+        $page = PageFactory::make(['user' => $user], $this->em);
 
         $result = $this->delete("/api/users/{$user->id->toString()}", $user);
         $this->assertEquals(409, $result['status']);

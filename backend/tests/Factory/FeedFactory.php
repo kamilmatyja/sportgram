@@ -6,13 +6,14 @@ namespace Tests\Factory;
 
 use App\Entity\Feed;
 use App\Enum\ElementStatusEnum;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class FeedFactory extends BaseFactory
 {
-    public static function make(array $overrides = []): Feed
+    public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Feed
     {
         $defaults = [
-            'user' => UserFactory::make(),
+            'user' => UserFactory::make(em: $em),
             'text' => self::randomString('text'),
             'photo' => self::randoBinary(),
             'status' => self::randomEnum(ElementStatusEnum::class),
@@ -20,11 +21,18 @@ final class FeedFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        return new Feed(
+        $object = new Feed(
             $data['user'],
             $data['text'],
             $data['photo'],
             $data['status'],
         );
+
+        if ($em) {
+            $em->persist($object);
+            $em->flush();
+        }
+
+        return $object;
     }
 }

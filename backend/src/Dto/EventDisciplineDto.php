@@ -5,7 +5,6 @@ namespace App\Dto;
 use App\Enum\DisciplineEnum;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Type;
 
 #[OA\Schema(
     schema: 'EventDisciplineDto',
@@ -31,6 +30,11 @@ class EventDisciplineDto
 
     /** @var EventDisciplineDistanceDto[] */
     #[Assert\Valid]
-    #[Type('array<App\Dto\EventDisciplineDistanceDto>')]
+    #[Assert\Type('array')]
     public array $distances = [];
+
+    final public function addDistance(EventDisciplineDistanceDto $distance): void
+    {
+        $this->distances[] = $distance;
+    }
 }

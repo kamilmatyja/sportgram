@@ -6,7 +6,6 @@ use App\Entity\Event;
 use App\Validator\UniqueField;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Type;
 
 #[OA\Schema(
     schema: 'EventDto',
@@ -66,6 +65,11 @@ class EventDto
 
     /** @var EventDisciplineDto[] */
     #[Assert\Valid]
-    #[Type('array<App\Dto\EventDisciplineDto>')]
+    #[Assert\Type('array')]
     public array $disciplines = [];
+
+    final public function addDiscipline(EventDisciplineDto $discipline): void
+    {
+        $this->disciplines[] = $discipline;
+    }
 }

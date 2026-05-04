@@ -35,16 +35,14 @@ class UserSignRefreshTest extends ApiTestCase
         $user = UserFactory::make([
             'email' => 'bannedrefresh@example.com',
             'status' => UserStatusEnum::Banned,
-        ]);
-        $this->save($user);
+        ], $this->em);
 
         $sign = UserSignFactory::make([
             'user' => $user,
             'code' => 123456,
             'attempt' => 0,
             'status' => UnauthorizedStatusEnum::Correct,
-        ]);
-        $this->save($sign);
+        ], $this->em);
 
         $result = $this->post("/api/signs/{$sign->id}/refresh", []);
         $this->assertEquals(409, $result['status']);
@@ -54,16 +52,14 @@ class UserSignRefreshTest extends ApiTestCase
 
     final public function testSuccess(): void
     {
-        $user = UserFactory::make(['email' => 'refreshsign@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'refreshsign@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make([
             'user' => $user,
             'code' => 123456,
             'attempt' => 0,
             'status' => UnauthorizedStatusEnum::Correct,
-        ]);
-        $this->save($sign);
+        ], $this->em);
 
         $result = $this->post("/api/signs/{$sign->id}/refresh", []);
         $this->assertEquals(200, $result['status']);

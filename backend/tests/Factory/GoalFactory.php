@@ -6,14 +6,15 @@ namespace Tests\Factory;
 
 use App\Entity\Goal;
 use App\Enum\{DisciplineEnum, GoalStatusEnum};
+use Doctrine\ORM\EntityManagerInterface;
 
 final class GoalFactory extends BaseFactory
 {
-    public static function make(array $overrides = []): Goal
+    public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Goal
     {
         $defaults = [
-            'feed' => FeedFactory::make(),
-            'user' => UserFactory::make(),
+            'feed' => FeedFactory::make(em: $em),
+            'user' => UserFactory::make(em: $em),
             'startedAt' => self::randomData(),
             'endedAt' => self::randomData(),
             'text' => self::randomString('text'),
@@ -26,7 +27,7 @@ final class GoalFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        return new Goal(
+        $object = new Goal(
             $data['feed'],
             $data['user'],
             $data['startedAt'],
@@ -38,5 +39,12 @@ final class GoalFactory extends BaseFactory
             $data['time'],
             $data['status'],
         );
+
+        if ($em) {
+            $em->persist($object);
+            $em->flush();
+        }
+
+        return $object;
     }
 }

@@ -6,13 +6,14 @@ namespace Tests\Factory;
 
 use App\Entity\Event;
 use App\Enum\ElementStatusEnum;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class EventFactory extends BaseFactory
 {
-    public static function make(array $overrides = []): Event
+    public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Event
     {
         $defaults = [
-            'pageParticipant' => PageParticipantFactory::make(),
+            'pageParticipant' => PageParticipantFactory::make(em: $em),
             'startedAt' => self::randomData(),
             'endedAt' => self::randomData(),
             'title' => self::randomString('title'),
@@ -26,7 +27,7 @@ final class EventFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        return new Event(
+        $object = new Event(
             $data['pageParticipant'],
             $data['startedAt'],
             $data['endedAt'],
@@ -38,5 +39,12 @@ final class EventFactory extends BaseFactory
             $data['location'],
             $data['status'],
         );
+
+        if ($em) {
+            $em->persist($object);
+            $em->flush();
+        }
+
+        return $object;
     }
 }

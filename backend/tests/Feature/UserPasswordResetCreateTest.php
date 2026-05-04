@@ -54,8 +54,7 @@ class UserPasswordResetCreateTest extends ApiTestCase
         $user = UserFactory::make([
             'email' => 'bannedpr@example.com',
             'status' => UserStatusEnum::Banned,
-        ]);
-        $this->save($user);
+        ], $this->em);
 
         $result = $this->post('/api/password-resets', ['email' => 'bannedpr@example.com']);
         $this->assertEquals(409, $result['status']);
@@ -68,21 +67,18 @@ class UserPasswordResetCreateTest extends ApiTestCase
         $user = UserFactory::make([
             'email' => 'attemptspr@example.com',
             'status' => UserStatusEnum::Accepted,
-        ]);
-        $this->save($user);
+        ], $this->em);
 
         $userRegister = UserRegisterFactory::make([
             'user' => $user,
             'status' => UnauthorizedStatusEnum::Correct,
-        ]);
-        $this->save($userRegister);
+        ], $this->em);
 
         $reset = UserPasswordResetFactory::make([
             'user' => $user,
             'attempt' => 3,
             'status' => UnauthorizedStatusEnum::Incorrect,
-        ]);
-        $this->save($reset);
+        ], $this->em);
 
         $result = $this->post('/api/password-resets', ['email' => 'attemptspr@example.com']);
         $this->assertEquals(409, $result['status']);
@@ -95,8 +91,7 @@ class UserPasswordResetCreateTest extends ApiTestCase
         $user = UserFactory::make([
             'email' => 'notconfirmed@example.com',
             'status' => UserStatusEnum::Accepted,
-        ]);
-        $this->save($user);
+        ], $this->em);
 
         $result = $this->post('/api/password-resets', ['email' => 'notconfirmed@example.com']);
         $this->assertEquals(409, $result['status']);
@@ -109,14 +104,12 @@ class UserPasswordResetCreateTest extends ApiTestCase
         $user = UserFactory::make([
             'email' => 'successpr@example.com',
             'status' => UserStatusEnum::Accepted,
-        ]);
-        $this->save($user);
+        ], $this->em);
 
         $userRegister = UserRegisterFactory::make([
             'user' => $user,
             'status' => UnauthorizedStatusEnum::Correct,
-        ]);
-        $this->save($userRegister);
+        ], $this->em);
 
         $result = $this->post('/api/password-resets', ['email' => 'successpr@example.com']);
         $this->assertEquals(201, $result['status']);

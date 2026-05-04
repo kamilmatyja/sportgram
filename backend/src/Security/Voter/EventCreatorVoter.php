@@ -2,7 +2,7 @@
 
 namespace App\Security\Voter;
 
-use App\Entity\User;
+use App\Entity\{PageParticipant, User};
 use App\Repository\PageRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\{Vote, Voter};
@@ -39,11 +39,7 @@ class EventCreatorVoter extends Voter
 
         $page = $this->pageRepository->findById($subject);
 
-        $pageParticipant = $page->participants->findFirst(
-            fn ($participant) => $participant->user->id->toString() === $user->id->toString(),
-        );
-
-        if ($pageParticipant) {
+        if ($page->participants->filter(fn (PageParticipant $participant) => $participant->user->id === $user->id)->first()) {
             return true;
         }
 

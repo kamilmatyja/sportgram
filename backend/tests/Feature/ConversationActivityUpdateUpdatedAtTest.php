@@ -30,8 +30,7 @@ class ConversationActivityUpdateUpdatedAtTest extends ApiTestCase
         $conversationActivity = ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
-        ]);
-        $this->save($conversationActivity);
+        ], $this->em);
 
         $result = $this->patch('/api/conversation-activitiy-users/' . $user1->id->toString() . '/updated-at', []);
         $this->assertEquals(401, $result['status']);
@@ -48,8 +47,7 @@ class ConversationActivityUpdateUpdatedAtTest extends ApiTestCase
         $conversationActivity = ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
-        ]);
-        $this->save($conversationActivity);
+        ], $this->em);
 
         $result = $this->patch(
             '/api/conversation-activitiy-users/' . $user1->id->toString() . '/updated-at',
@@ -91,8 +89,7 @@ class ConversationActivityUpdateUpdatedAtTest extends ApiTestCase
         $conversationActivity = ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
-        ]);
-        $this->save($conversationActivity);
+        ], $this->em);
 
         $result = $this->patch(
             '/api/conversation-activitiy-users/' . $user1->id->toString() . '/updated-at',
@@ -111,8 +108,7 @@ class ConversationActivityUpdateUpdatedAtTest extends ApiTestCase
         $conversationActivity = ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
-        ]);
-        $this->save($conversationActivity);
+        ], $this->em);
 
         $result = $this->patch(
             '/api/conversation-activitiy-users/' . $user2->id->toString() . '/updated-at',

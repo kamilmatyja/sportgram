@@ -6,13 +6,14 @@ namespace Tests\Factory;
 
 use App\Entity\UserSign;
 use App\Enum\UnauthorizedStatusEnum;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class UserSignFactory extends BaseFactory
 {
-    public static function make(array $overrides = []): UserSign
+    public static function make(array $overrides = [], ?EntityManagerInterface $em = null): UserSign
     {
         $defaults = [
-            'user' => UserFactory::make(),
+            'user' => UserFactory::make(em: $em),
             'code' => self::randomCode(),
             'attempt' => self::randomInt(),
             'status' => self::randomEnum(UnauthorizedStatusEnum::class),
@@ -20,11 +21,18 @@ final class UserSignFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        return new UserSign(
+        $object = new UserSign(
             $data['user'],
             $data['code'],
             $data['attempt'],
             $data['status'],
         );
+
+        if ($em) {
+            $em->persist($object);
+            $em->flush();
+        }
+
+        return $object;
     }
 }

@@ -31,8 +31,7 @@ class ConversationDetailsTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $result = $this->get('/api/conversations/' . $conversation->id->toString());
         $this->assertEquals(401, $result['status']);
@@ -50,8 +49,7 @@ class ConversationDetailsTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $result = $this->get('/api/conversations/' . $conversation->id->toString(), $user3);
         $this->assertEquals(403, $result['status']);
@@ -89,8 +87,7 @@ class ConversationDetailsTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $result = $this->get('/api/conversations/' . $conversation->id->toString(), $user1);
         $this->assertEquals(200, $result['status']);

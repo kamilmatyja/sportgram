@@ -31,8 +31,7 @@ class ConversationDeleteTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $result = $this->delete('/api/conversations/' . $conversation->id->toString());
         $this->assertEquals(401, $result['status']);
@@ -49,15 +48,13 @@ class ConversationDeleteTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
-        $this->save($friend);
+        ], $this->em);
 
         $conversation = ConversationFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $result = $this->delete('/api/conversations/' . $conversation->id->toString(), $user2);
         $this->assertEquals(403, $result['status']);
@@ -73,15 +70,13 @@ class ConversationDeleteTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
-        $this->save($friend);
+        ], $this->em);
 
         $conversation = ConversationFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $result = $this->delete('/api/conversations/' . $conversation->id->toString(), $user2);
         $this->assertEquals(403, $result['status']);
@@ -109,15 +104,13 @@ class ConversationDeleteTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
-        $this->save($friend);
+        ], $this->em);
 
         $conversation = ConversationFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $result = $this->delete('/api/conversations/' . $conversation->id->toString(), $user1);
         $this->assertEquals(200, $result['status']);

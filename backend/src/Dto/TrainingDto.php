@@ -6,7 +6,6 @@ use App\Entity\{Training, User};
 use App\Validator\{EntityExistsField, UniqueField};
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Type;
 
 #[OA\Schema(
     schema: 'TrainingDto',
@@ -67,7 +66,7 @@ class TrainingDto
 
     /** @var TrainingDisciplineDto[] */
     #[Assert\Valid]
-    #[Type('array<App\Dto\TrainingDisciplineDto>')]
+    #[Assert\Type('array')]
     public array $disciplines = [];
 
     /** @var string[] */
@@ -79,4 +78,9 @@ class TrainingDto
     #[Assert\Count(min: 0)]
     #[Assert\Unique]
     public array $participants = [];
+
+    final public function addDiscipline(TrainingDisciplineDto $discipline): void
+    {
+        $this->disciplines[] = $discipline;
+    }
 }

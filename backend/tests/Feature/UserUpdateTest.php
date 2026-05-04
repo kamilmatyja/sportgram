@@ -126,8 +126,7 @@ class UserUpdateTest extends ApiTestCase
             'email' => 'duplicate@example.com',
             'phone' => 111222333,
             'link' => 'duplicate-link',
-        ]);
-        $this->save($duplicate);
+        ], $this->em);
 
         $data = [
             'birthAt' => '2000-01-01',

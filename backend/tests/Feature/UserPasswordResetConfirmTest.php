@@ -22,13 +22,11 @@ class UserPasswordResetConfirmTest extends ApiTestCase
 
     final public function testEmptyPayload(): void
     {
-        $user = UserFactory::make(['email' => 'resetc1@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resetc1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($reset);
 
         $result = $this->patch("/api/password-resets/{$reset->id}/confirm", []);
         $this->assertEquals(400, $result['status']);
@@ -41,13 +39,11 @@ class UserPasswordResetConfirmTest extends ApiTestCase
 
     final public function testInvalidCodeType(): void
     {
-        $user = UserFactory::make(['email' => 'resetc2@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resetc2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($reset);
 
         $result = $this->patch(
             "/api/password-resets/{$reset->id}/confirm",
@@ -74,13 +70,11 @@ class UserPasswordResetConfirmTest extends ApiTestCase
 
     final public function testCodeAlreadyUsed(): void
     {
-        $user = UserFactory::make(['email' => 'resetc3@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resetc3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
         );
-        $this->save($reset);
 
         $result = $this->patch(
             "/api/password-resets/{$reset->id}/confirm",
@@ -93,13 +87,11 @@ class UserPasswordResetConfirmTest extends ApiTestCase
 
     final public function testTooManyAttempts(): void
     {
-        $user = UserFactory::make(['email' => 'resetc4@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resetc4@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 3, 'status' => UnauthorizedStatusEnum::Incorrect],
         );
-        $this->save($reset);
 
         $result = $this->patch(
             "/api/password-resets/{$reset->id}/confirm",
@@ -112,13 +104,11 @@ class UserPasswordResetConfirmTest extends ApiTestCase
 
     final public function testInvalidCode(): void
     {
-        $user = UserFactory::make(['email' => 'resetc5@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resetc5@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($reset);
 
         $result = $this->patch(
             "/api/password-resets/{$reset->id}/confirm",
@@ -131,13 +121,11 @@ class UserPasswordResetConfirmTest extends ApiTestCase
 
     final public function testSuccess(): void
     {
-        $user = UserFactory::make(['email' => 'resetc6@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'resetc6@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($reset);
 
         $result = $this->patch(
             "/api/password-resets/{$reset->id}/confirm",

@@ -6,13 +6,14 @@ namespace Tests\Factory;
 
 use App\Entity\PushSubscription;
 use App\Enum\PushSubscriptionStatusEnum;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class PushSubscriptionFactory extends BaseFactory
 {
-    public static function make(array $overrides = []): PushSubscription
+    public static function make(array $overrides = [], ?EntityManagerInterface $em = null): PushSubscription
     {
         $defaults = [
-            'user' => UserFactory::make(),
+            'user' => UserFactory::make(em: $em),
             'endpoint' => self::randomString('endpoint'),
             'p256dh' => self::randomString('p256dh'),
             'auth' => self::randomString('auth'),
@@ -22,7 +23,7 @@ final class PushSubscriptionFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        return new PushSubscription(
+        $object = new PushSubscription(
             $data['user'],
             $data['endpoint'],
             $data['p256dh'],
@@ -30,5 +31,12 @@ final class PushSubscriptionFactory extends BaseFactory
             $data['userAgent'],
             $data['status'],
         );
+
+        if ($em) {
+            $em->persist($object);
+            $em->flush();
+        }
+
+        return $object;
     }
 }

@@ -4,7 +4,6 @@ namespace App\Dto;
 
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Constraints\Type;
 
 #[OA\Schema(
     schema: 'EventDisciplineDistanceDto',
@@ -30,6 +29,11 @@ class EventDisciplineDistanceDto
 
     /** @var EventDisciplineSubDistanceDto[] */
     #[Assert\Valid]
-    #[Type('array<App\Dto\EventDisciplineSubDistanceDto>')]
+    #[Assert\Type('array')]
     public array $subDistances = [];
+
+    final public function addSubDistance(EventDisciplineSubDistanceDto $subDistance): void
+    {
+        $this->subDistances[] = $subDistance;
+    }
 }

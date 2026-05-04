@@ -58,8 +58,7 @@ class UserRegisterCreateTest extends ApiTestCase
         $user = UserFactory::make([
             'email' => 'banned@example.com',
             'status' => UserStatusEnum::Banned,
-        ]);
-        $this->save($user);
+        ], $this->em);
 
         $result = $this->post('/api/registers', ['email' => 'banned@example.com']);
         $this->assertEquals(409, $result['status']);
@@ -72,15 +71,13 @@ class UserRegisterCreateTest extends ApiTestCase
         $user = UserFactory::make([
             'email' => 'attempts@example.com',
             'status' => UserStatusEnum::Accepted,
-        ]);
-        $this->save($user);
+        ], $this->em);
 
         $userRegister = UserRegisterFactory::make([
             'user' => $user,
             'attempt' => 3,
             'status' => UnauthorizedStatusEnum::Incorrect,
-        ]);
-        $this->save($userRegister);
+        ], $this->em);
 
         $result = $this->post('/api/registers', ['email' => 'attempts@example.com']);
         $this->assertEquals(409, $result['status']);
@@ -93,15 +90,13 @@ class UserRegisterCreateTest extends ApiTestCase
         $user = UserFactory::make([
             'email' => 'success@example.com',
             'status' => UserStatusEnum::Accepted,
-        ]);
-        $this->save($user);
+        ], $this->em);
 
         $userRegister = UserRegisterFactory::make([
             'user' => $user,
             'attempt' => 0,
             'status' => UnauthorizedStatusEnum::Sent,
-        ]);
-        $this->save($userRegister);
+        ], $this->em);
 
         $result = $this->post('/api/registers', ['email' => 'success@example.com']);
         $this->assertEquals(201, $result['status']);

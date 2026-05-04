@@ -30,8 +30,7 @@ class ConversationActivityDetailsTest extends ApiTestCase
         $conversationActivity = ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
-        ]);
-        $this->save($conversationActivity);
+        ], $this->em);
 
         $result = $this->get('/api/conversation-activity-users/' . $user1->id->toString());
         $this->assertEquals(401, $result['status']);
@@ -48,8 +47,7 @@ class ConversationActivityDetailsTest extends ApiTestCase
         $conversationActivity = ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
-        ]);
-        $this->save($conversationActivity);
+        ], $this->em);
 
         $result = $this->get('/api/conversation-activity-users/' . $user1->id->toString(), $user3);
         $this->assertEquals(403, $result['status']);
@@ -87,8 +85,7 @@ class ConversationActivityDetailsTest extends ApiTestCase
         $conversationActivity = ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
-        ]);
-        $this->save($conversationActivity);
+        ], $this->em);
 
         $result = $this->get('/api/conversation-activity-users/' . $user1->id->toString(), $user2);
         $this->assertEquals(200, $result['status']);

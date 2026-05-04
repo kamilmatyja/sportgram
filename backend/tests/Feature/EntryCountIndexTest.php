@@ -38,8 +38,7 @@ class EntryCountIndexTest extends ApiTestCase
                 'user' => $user,
                 'entityId' => $entityId,
                 'type' => EntryTypeEnum::Feed,
-            ]);
-            $this->save($entry);
+            ], $this->em);
         }
 
         $result = $this->get('/api/entry-counts', $user);
@@ -59,8 +58,7 @@ class EntryCountIndexTest extends ApiTestCase
                 'user' => $user,
                 'entityId' => Uuid::v4(),
                 'type' => EntryTypeEnum::Feed,
-            ]);
-            $this->save($entry);
+            ], $this->em);
         }
 
         $result = $this->get('/api/entry-counts?page=2&limit=5', $user);
@@ -76,14 +74,12 @@ class EntryCountIndexTest extends ApiTestCase
             'user' => $user,
             'entityId' => $user->id,
             'type' => EntryTypeEnum::User,
-        ]);
+        ], $this->em);
         $entry2 = EntryFactory::make([
             'user' => $user,
             'entityId' => Uuid::v4(),
             'type' => EntryTypeEnum::Feed,
-        ]);
-        $this->save($entry1);
-        $this->save($entry2);
+        ], $this->em);
 
         $result = $this->get('/api/entry-counts?sort=type:desc', $user);
         $this->assertEquals(200, $result['status']);
@@ -101,14 +97,12 @@ class EntryCountIndexTest extends ApiTestCase
             'user' => $user,
             'entityId' => $entityId1,
             'type' => EntryTypeEnum::Feed,
-        ]);
+        ], $this->em);
         $entry2 = EntryFactory::make([
             'user' => $user,
             'entityId' => $entityId2,
             'type' => EntryTypeEnum::Feed,
-        ]);
-        $this->save($entry1);
-        $this->save($entry2);
+        ], $this->em);
 
         $result = $this->get('/api/entry-counts?filter[entityIds][]=' . $entityId2->toString(), $user);
         $this->assertEquals(200, $result['status']);
@@ -124,14 +118,12 @@ class EntryCountIndexTest extends ApiTestCase
             'user' => $user,
             'entityId' => $user->id,
             'type' => EntryTypeEnum::User,
-        ]);
+        ], $this->em);
         $entry2 = EntryFactory::make([
             'user' => $user,
             'entityId' => Uuid::v4(),
             'type' => EntryTypeEnum::Feed,
-        ]);
-        $this->save($entry1);
-        $this->save($entry2);
+        ], $this->em);
 
         $result = $this->get('/api/entry-counts?filter[type]=' . EntryTypeEnum::Feed->value, $user);
         $this->assertEquals(200, $result['status']);

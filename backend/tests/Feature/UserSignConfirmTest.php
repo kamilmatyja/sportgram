@@ -22,13 +22,11 @@ class UserSignConfirmTest extends ApiTestCase
 
     final public function testEmptyPayload(): void
     {
-        $user = UserFactory::make(['email' => 'signc1@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'signc1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($sign);
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", []);
         $this->assertEquals(400, $result['status']);
@@ -39,13 +37,11 @@ class UserSignConfirmTest extends ApiTestCase
 
     final public function testInvalidCodeType(): void
     {
-        $user = UserFactory::make(['email' => 'signc2@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'signc2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($sign);
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", ['code' => 'notanumber']);
         $this->assertEquals(400, $result['status']);
@@ -66,13 +62,11 @@ class UserSignConfirmTest extends ApiTestCase
 
     final public function testCodeAlreadyUsed(): void
     {
-        $user = UserFactory::make(['email' => 'signc3@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'signc3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
         );
-        $this->save($sign);
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", ['code' => 123456]);
         $this->assertEquals(409, $result['status']);
@@ -82,13 +76,11 @@ class UserSignConfirmTest extends ApiTestCase
 
     final public function testTooManyAttempts(): void
     {
-        $user = UserFactory::make(['email' => 'signc4@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'signc4@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 3, 'status' => UnauthorizedStatusEnum::Incorrect],
         );
-        $this->save($sign);
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", ['code' => 123456]);
         $this->assertEquals(409, $result['status']);
@@ -98,13 +90,11 @@ class UserSignConfirmTest extends ApiTestCase
 
     final public function testInvalidCode(): void
     {
-        $user = UserFactory::make(['email' => 'signc5@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'signc5@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($sign);
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", ['code' => 654321]);
         $this->assertEquals(409, $result['status']);
@@ -114,13 +104,11 @@ class UserSignConfirmTest extends ApiTestCase
 
     final public function testSuccess(): void
     {
-        $user = UserFactory::make(['email' => 'signc6@example.com', 'status' => UserStatusEnum::Accepted]);
-        $this->save($user);
+        $user = UserFactory::make(['email' => 'signc6@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
             ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
         );
-        $this->save($sign);
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", ['code' => 123456]);
         $this->assertEquals(200, $result['status']);

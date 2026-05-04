@@ -37,8 +37,7 @@ class EntryIndexTest extends ApiTestCase
                 'user' => $user,
                 'entityId' => $user->id,
                 'type' => EntryTypeEnum::User,
-            ]);
-            $this->save($entry);
+            ], $this->em);
         }
 
         $result = $this->get('/api/entries', $user);
@@ -55,8 +54,7 @@ class EntryIndexTest extends ApiTestCase
                 'user' => $user,
                 'entityId' => $user->id,
                 'type' => EntryTypeEnum::User,
-            ]);
-            $this->save($entry);
+            ], $this->em);
         }
 
         $result = $this->get('/api/entries?page=2&limit=5', $user);
@@ -72,14 +70,12 @@ class EntryIndexTest extends ApiTestCase
             'user' => $user,
             'entityId' => $user->id,
             'type' => EntryTypeEnum::User,
-        ]);
+        ], $this->em);
         $entry2 = EntryFactory::make([
             'user' => $user,
             'entityId' => Uuid::v4(),
             'type' => EntryTypeEnum::Feed,
-        ]);
-        $this->save($entry1);
-        $this->save($entry2);
+        ], $this->em);
 
         $result = $this->get('/api/entries?sort=type:desc', $user);
         $this->assertEquals(200, $result['status']);
@@ -96,14 +92,12 @@ class EntryIndexTest extends ApiTestCase
             'user' => $user1,
             'entityId' => $user1->id,
             'type' => EntryTypeEnum::User,
-        ]);
+        ], $this->em);
         $entry2 = EntryFactory::make([
             'user' => $user2,
             'entityId' => $user2->id,
             'type' => EntryTypeEnum::User,
-        ]);
-        $this->save($entry1);
-        $this->save($entry2);
+        ], $this->em);
 
         $result = $this->get('/api/entries?filter[userId]=' . $user2->id->toString(), $user1);
         $this->assertEquals(200, $result['status']);
@@ -121,14 +115,12 @@ class EntryIndexTest extends ApiTestCase
             'user' => $user,
             'entityId' => $entityId1,
             'type' => EntryTypeEnum::Feed,
-        ]);
+        ], $this->em);
         $entry2 = EntryFactory::make([
             'user' => $user,
             'entityId' => $entityId2,
             'type' => EntryTypeEnum::Feed,
-        ]);
-        $this->save($entry1);
-        $this->save($entry2);
+        ], $this->em);
 
         $result = $this->get('/api/entries?filter[entityIds][]=' . $entityId2->toString(), $user);
         $this->assertEquals(200, $result['status']);
@@ -144,14 +136,12 @@ class EntryIndexTest extends ApiTestCase
             'user' => $user,
             'entityId' => $user->id,
             'type' => EntryTypeEnum::User,
-        ]);
+        ], $this->em);
         $entry2 = EntryFactory::make([
             'user' => $user,
             'entityId' => Uuid::v4(),
             'type' => EntryTypeEnum::Feed,
-        ]);
-        $this->save($entry1);
-        $this->save($entry2);
+        ], $this->em);
 
         $result = $this->get('/api/entries?filter[type]=' . EntryTypeEnum::Feed->value, $user);
         $this->assertEquals(200, $result['status']);

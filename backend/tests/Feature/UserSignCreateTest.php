@@ -60,7 +60,6 @@ class UserSignCreateTest extends ApiTestCase
             'email' => 'bannedsign@example.com',
             'status' => UserStatusEnum::Banned,
         ]);
-        $this->save($user);
 
         $result = $this->post('/api/signs', ['email' => 'bannedsign@example.com', 'password' => 'zaq1@WSX']);
         $this->assertEquals(409, $result['status']);
@@ -74,7 +73,6 @@ class UserSignCreateTest extends ApiTestCase
             'email' => 'notconfirmed-sign@example.com',
             'status' => UserStatusEnum::Accepted,
         ]);
-        $this->save($user);
 
         $result = $this->post('/api/signs', ['email' => 'notconfirmed-sign@example.com', 'password' => 'zaq1@WSX']);
         $this->assertEquals(409, $result['status']);
@@ -87,14 +85,12 @@ class UserSignCreateTest extends ApiTestCase
         $user = UserFactory::make([
             'email' => 'invalidpass@example.com',
             'status' => UserStatusEnum::Accepted,
-        ]);
-        $this->save($user);
+        ], $this->em);
 
         $userRegister = UserRegisterFactory::make([
             'user' => $user,
             'status' => UnauthorizedStatusEnum::Correct,
-        ]);
-        $this->save($userRegister);
+        ], $this->em);
 
         $result = $this->post('/api/signs', ['email' => 'invalidpass@example.com', 'password' => 'wrongpass']);
         $this->assertEquals(409, $result['status']);
@@ -108,13 +104,11 @@ class UserSignCreateTest extends ApiTestCase
             'email' => 'signsuccess@example.com',
             'status' => UserStatusEnum::Accepted,
         ]);
-        $this->save($user);
 
         $userRegister = UserRegisterFactory::make([
             'user' => $user,
             'status' => UnauthorizedStatusEnum::Correct,
-        ]);
-        $this->save($userRegister);
+        ], $this->em);
 
         $result = $this->post('/api/signs', ['email' => 'signsuccess@example.com', 'password' => 'zaq1@WSX']);
         $this->assertEquals(201, $result['status']);

@@ -31,8 +31,7 @@ class ConversationUpdateTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $payload = ['text' => 'update!'];
 
@@ -51,15 +50,13 @@ class ConversationUpdateTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
-        $this->save($friend);
+        ], $this->em);
 
         $conversation = ConversationFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $payload = ['text' => 'update!'];
 
@@ -77,15 +74,13 @@ class ConversationUpdateTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
+        ], $this->em);
 
-        $this->save($friend);
         $conversation = ConversationFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $payload = ['text' => 'update!'];
 
@@ -103,15 +98,13 @@ class ConversationUpdateTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
-        $this->save($friend);
+        ], $this->em);
 
         $conversation = ConversationFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $result = $this->put('/api/conversations/' . $conversation->id->toString(), [], $user1);
         $this->assertEquals(400, $result['status']);
@@ -128,15 +121,13 @@ class ConversationUpdateTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
-        $this->save($friend);
+        ], $this->em);
 
         $conversation = ConversationFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $payload = ['text' => null];
 
@@ -169,15 +160,13 @@ class ConversationUpdateTest extends ApiTestCase
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
-        ]);
-        $this->save($friend);
+        ], $this->em);
 
         $conversation = ConversationFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => ConversationStatusEnum::Sent,
-        ]);
-        $this->save($conversation);
+        ], $this->em);
 
         $payload = ['text' => 'updated text!'];
 

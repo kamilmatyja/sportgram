@@ -6,14 +6,15 @@ namespace Tests\Factory;
 
 use App\Entity\Training;
 use App\Enum\ElementStatusEnum;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class TrainingFactory extends BaseFactory
 {
-    public static function make(array $overrides = []): Training
+    public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Training
     {
         $defaults = [
-            'feed' => FeedFactory::make(),
-            'user' => UserFactory::make(),
+            'feed' => FeedFactory::make(em: $em),
+            'user' => UserFactory::make(em: $em),
             'startedAt' => self::randomData(),
             'endedAt' => self::randomData(),
             'title' => self::randomString('title'),
@@ -25,7 +26,7 @@ final class TrainingFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        return new Training(
+        $object = new Training(
             $data['feed'],
             $data['user'],
             $data['startedAt'],
@@ -36,5 +37,12 @@ final class TrainingFactory extends BaseFactory
             $data['location'],
             $data['status'],
         );
+
+        if ($em) {
+            $em->persist($object);
+            $em->flush();
+        }
+
+        return $object;
     }
 }

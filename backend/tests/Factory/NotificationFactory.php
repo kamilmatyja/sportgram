@@ -6,13 +6,14 @@ namespace Tests\Factory;
 
 use App\Entity\Notification;
 use App\Enum\NotificationStatusEnum;
+use Doctrine\ORM\EntityManagerInterface;
 
 final class NotificationFactory extends BaseFactory
 {
-    public static function make(array $overrides = []): Notification
+    public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Notification
     {
         $defaults = [
-            'user' => UserFactory::make(),
+            'user' => UserFactory::make(em: $em),
             'text' => self::randomString('text'),
             'link' => self::randomString('link'),
             'status' => self::randomEnum(NotificationStatusEnum::class),
@@ -20,11 +21,18 @@ final class NotificationFactory extends BaseFactory
 
         $data = array_replace($defaults, $overrides);
 
-        return new Notification(
+        $object = new Notification(
             $data['user'],
             $data['text'],
             $data['link'],
             $data['status'],
         );
+
+        if ($em) {
+            $em->persist($object);
+            $em->flush();
+        }
+
+        return $object;
     }
 }
