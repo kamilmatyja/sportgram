@@ -25,8 +25,8 @@ class EntryCountIndexDto
     #[Assert\Range(min: 1, max: 100)]
     public int $limit = 10;
 
-    #[Assert\Regex(pattern: '/^(type|createdAt)(:(asc|desc))?$/')]
-    public string $sort = 'createdAt:desc';
+    #[Assert\Regex(pattern: '/^(type|count)(:(asc|desc))?$/')]
+    public string $sort = 'count:desc';
 
     #[Assert\Valid]
     public EntryCountFilterDto $filter;

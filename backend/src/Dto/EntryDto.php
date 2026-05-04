@@ -25,11 +25,11 @@ class EntryDto
 {
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    public string $entityId;
+    public ?string $entityId = null;
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [EntryTypeEnum::class, 'values'])]
-    public int $type;
+    public ?int $type = null;
 
     #[EntryEntityExists]
     final protected function getEntityValidationData(): array

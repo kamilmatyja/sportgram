@@ -67,7 +67,7 @@ class EntryRepository extends BaseRepository
     final public function findCountEntries(EntryCountIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('e')
-            ->select('e.type, e.entityId, COUNT(e.id) as count');
+            ->select('e.type as type, e.entityId, COUNT(e.id) as count');
 
         if (! empty($dto->filter->entityIds)) {
             $qb->andWhere('e.entityId IN (:entityIds)')
@@ -83,7 +83,7 @@ class EntryRepository extends BaseRepository
             ->addGroupBy('e.entityId');
 
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('e.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
+        $qb->orderBy($field, $direction === 'desc' ? 'DESC' : 'ASC');
 
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);
