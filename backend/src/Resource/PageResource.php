@@ -3,7 +3,7 @@
 namespace App\Resource;
 
 use App\Dto\PageDetailsQueryDto;
-use App\Entity\{Page, PageFollow, User};
+use App\Entity\{Page, PageFollow, PageParticipant};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -74,7 +74,7 @@ class PageResource
 
         if ($dto && in_array($dto::PAGE_PARTICIPANTS, $dto->include)) {
             $data['participants'] = array_map(
-                fn (User $participant) => PageParticipantResource::fromEntity($participant),
+                fn (PageParticipant $participant) => PageParticipantResource::fromEntity($participant),
                 $page->participants->toArray(),
             );
         }

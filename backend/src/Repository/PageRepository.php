@@ -41,8 +41,8 @@ class PageRepository extends BaseRepository
         $qb = $this->createQueryBuilder('p');
 
         if ($dto->filter->userId) {
-            $qb->leftJoin('p.participants', 'p')
-                ->andWhere('p.user = :userId')
+            $qb->leftJoin('p.participants', 'pa')
+                ->andWhere('pa.user = :userId')
                 ->setParameter('userId', $dto->filter->userId);
         }
 

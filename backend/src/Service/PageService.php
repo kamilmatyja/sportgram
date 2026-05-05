@@ -209,7 +209,7 @@ readonly class PageService
         foreach ($page->participants as $participant) {
             $this->eventDispatcher->dispatch(
                 new NotificationEvent(
-                    $participant,
+                    $participant->user,
                     NotificationTypeEnum::PageFollow,
                     $page->title,
                     '/pages/' . $page->link,
