@@ -59,7 +59,7 @@ class PageUpdateTest extends ApiTestCase
             'profilePhoto' => base64_encode('photo'),
             'backgroundPhoto' => base64_encode('bg'),
             'color' => 1,
-            'participants' => [$owner->id->toString()], // Próba usunięcia participantUser
+            'participants' => [$owner->id->toString()],
         ];
 
         $result = $this->put("/api/pages/{$page->id->toString()}", $payload, $owner);

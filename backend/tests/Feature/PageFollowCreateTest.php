@@ -36,7 +36,6 @@ class PageFollowCreateTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
         $pageOwner = self::createUser(RoleEnum::Organizer);
         $page = PageFactory::make(['user' => $pageOwner], $this->em);
-        // Trzeba dodać participant'a bo event notyfikacji dispatchuje do $page->participants
         PageParticipantFactory::make(['page' => $page, 'user' => $pageOwner], $this->em);
 
         $result = $this->post(

@@ -56,12 +56,10 @@ class NotificationIndexTest extends ApiTestCase
             $this->em,
         );
 
-        // Filter text & status
         $result = $this->get('/api/notifications?filter[text]=essa&filter[status]=2', $user);
         $this->assertEquals(200, $result['status']);
         $this->assertCount(2, $result['json']);
 
-        // Sort by text desc
         $resultSort = $this->get('/api/notifications?filter[status]=2&sort=text:desc', $user);
         $this->assertEquals(200, $resultSort['status']);
         $this->assertEquals('New message', $resultSort['json'][0]['text']);
