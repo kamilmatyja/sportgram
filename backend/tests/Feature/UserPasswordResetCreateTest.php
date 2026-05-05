@@ -51,7 +51,7 @@ class UserPasswordResetCreateTest extends ApiTestCase
 
     final public function testUserBanned(): void
     {
-        $user = UserFactory::make([
+        UserFactory::make([
             'email' => 'bannedpr@example.com',
             'status' => UserStatusEnum::Banned,
         ], $this->em);
@@ -69,12 +69,12 @@ class UserPasswordResetCreateTest extends ApiTestCase
             'status' => UserStatusEnum::Accepted,
         ], $this->em);
 
-        $userRegister = UserRegisterFactory::make([
+        UserRegisterFactory::make([
             'user' => $user,
             'status' => UnauthorizedStatusEnum::Correct,
         ], $this->em);
 
-        $reset = UserPasswordResetFactory::make([
+        UserPasswordResetFactory::make([
             'user' => $user,
             'attempt' => 3,
             'status' => UnauthorizedStatusEnum::Incorrect,
@@ -88,7 +88,7 @@ class UserPasswordResetCreateTest extends ApiTestCase
 
     final public function testUserNotConfirmed(): void
     {
-        $user = UserFactory::make([
+        UserFactory::make([
             'email' => 'notconfirmed@example.com',
             'status' => UserStatusEnum::Accepted,
         ], $this->em);
@@ -106,7 +106,7 @@ class UserPasswordResetCreateTest extends ApiTestCase
             'status' => UserStatusEnum::Accepted,
         ], $this->em);
 
-        $userRegister = UserRegisterFactory::make([
+        UserRegisterFactory::make([
             'user' => $user,
             'status' => UnauthorizedStatusEnum::Correct,
         ], $this->em);

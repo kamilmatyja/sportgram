@@ -22,7 +22,7 @@ class EventDisciplineSubDistance
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: EventDisciplineDistance::class, inversedBy: 'subDistances')]
+    #[ORM\ManyToOne(targetEntity: EventDisciplineDistance::class, cascade: ['persist'], inversedBy: 'subDistances')]
     #[ORM\JoinColumn(name: 'event_discipline_distance_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public EventDisciplineDistance $eventDisciplineDistance {
         get {

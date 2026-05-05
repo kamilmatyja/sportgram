@@ -36,7 +36,7 @@ class ConversationIndexTest extends ApiTestCase
         $receiver = UserFactory::make(em: $this->em);
 
         for ($i = 0; $i < 3; ++$i) {
-            $conversation = ConversationFactory::make([
+            ConversationFactory::make([
                 'senderUser' => $user,
                 'receiverUser' => $receiver,
                 'status' => ConversationStatusEnum::Sent,
@@ -55,7 +55,7 @@ class ConversationIndexTest extends ApiTestCase
         $receiver = UserFactory::make(em: $this->em);
 
         for ($i = 0; $i < 15; ++$i) {
-            $conversation = ConversationFactory::make([
+            ConversationFactory::make([
                 'senderUser' => $user,
                 'receiverUser' => $receiver,
                 'status' => ConversationStatusEnum::Sent,
@@ -74,12 +74,12 @@ class ConversationIndexTest extends ApiTestCase
         $receiver1 = UserFactory::make(em: $this->em);
         $receiver2 = UserFactory::make(em: $this->em);
 
-        $conv1 = ConversationFactory::make([
+        ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver1,
             'status' => ConversationStatusEnum::Sent,
         ], $this->em);
-        $conv2 = ConversationFactory::make([
+        ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver2,
             'status' => ConversationStatusEnum::Read,
@@ -97,12 +97,12 @@ class ConversationIndexTest extends ApiTestCase
 
         $receiver = UserFactory::make(em: $this->em);
 
-        $conv1 = ConversationFactory::make([
+        ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver,
             'status' => ConversationStatusEnum::Sent,
         ], $this->em);
-        $conv2 = ConversationFactory::make([
+        ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver,
             'status' => ConversationStatusEnum::Read,
@@ -124,15 +124,15 @@ class ConversationIndexTest extends ApiTestCase
         $receiver1 = UserFactory::make(em: $this->em);
         $receiver2 = UserFactory::make(em: $this->em);
 
-        $conversation1 = ConversationFactory::make([
+        ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver1,
         ], $this->em);
-        $conversation2 = ConversationFactory::make([
+        ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver2,
         ], $this->em);
-        $conversation3 = ConversationFactory::make([
+        ConversationFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver2,
         ], $this->em);

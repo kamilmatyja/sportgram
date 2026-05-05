@@ -25,7 +25,13 @@ class UserPasswordResetConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resetc1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/password-resets/{$reset->id}/confirm", []);
@@ -42,7 +48,13 @@ class UserPasswordResetConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resetc2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch(
@@ -73,7 +85,13 @@ class UserPasswordResetConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resetc3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 1,
+                'status' => UnauthorizedStatusEnum::Correct,
+            ],
+            $this->em,
         );
 
         $result = $this->patch(
@@ -90,7 +108,13 @@ class UserPasswordResetConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resetc4@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 3, 'status' => UnauthorizedStatusEnum::Incorrect],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 3,
+                'status' => UnauthorizedStatusEnum::Incorrect,
+            ],
+            $this->em,
         );
 
         $result = $this->patch(
@@ -107,7 +131,13 @@ class UserPasswordResetConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resetc5@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch(
@@ -124,7 +154,13 @@ class UserPasswordResetConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resetc6@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch(

@@ -13,7 +13,7 @@ final class PageFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Page
     {
         $defaults = [
-            'user' => UserFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'title' => self::randomString('title'),
             'description' => self::randomString('description'),
             'link' => self::randomString('link'),

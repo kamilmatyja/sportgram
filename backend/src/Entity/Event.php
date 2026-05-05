@@ -24,7 +24,7 @@ class Event
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: PageParticipant::class, inversedBy: 'events')]
+    #[ORM\ManyToOne(targetEntity: PageParticipant::class, cascade: ['persist'], inversedBy: 'events')]
     #[ORM\JoinColumn(name: 'page_participant_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public PageParticipant $pageParticipant {
         get {

@@ -12,7 +12,7 @@ final class EventDisciplineDistanceFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): EventDisciplineDistance
     {
         $defaults = [
-            'eventDiscipline' => EventDisciplineFactory::make(em: $em),
+            'eventDiscipline' => $overrides['eventDiscipline'] ?? EventDisciplineFactory::make(em: $em),
             'distance' => self::randomInt(),
         ];
 

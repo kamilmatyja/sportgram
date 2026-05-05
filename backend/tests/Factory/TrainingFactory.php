@@ -13,8 +13,8 @@ final class TrainingFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Training
     {
         $defaults = [
-            'feed' => FeedFactory::make(em: $em),
-            'user' => UserFactory::make(em: $em),
+            'feed' => $overrides['feed'] ?? FeedFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'startedAt' => self::randomData(),
             'endedAt' => self::randomData(),
             'title' => self::randomString('title'),

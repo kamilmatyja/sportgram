@@ -13,8 +13,8 @@ final class PageParticipantFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): PageParticipant
     {
         $defaults = [
-            'page' => PageFactory::make(em: $em),
-            'user' => UserFactory::make(em: $em),
+            'page' => $overrides['page'] ?? PageFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'status' => self::randomEnum(SaveStatusEnum::class),
         ];
 

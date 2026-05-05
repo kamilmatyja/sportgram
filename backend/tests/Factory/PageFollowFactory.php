@@ -13,8 +13,8 @@ final class PageFollowFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): PageFollow
     {
         $defaults = [
-            'page' => PageFactory::make(em: $em),
-            'user' => UserFactory::make(em: $em),
+            'page' => $overrides['page'] ?? PageFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'status' => self::randomEnum(PageFollowStatusEnum::class),
         ];
 

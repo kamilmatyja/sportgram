@@ -13,7 +13,7 @@ final class EventFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Event
     {
         $defaults = [
-            'pageParticipant' => PageParticipantFactory::make(em: $em),
+            'pageParticipant' => $overrides['pageParticipant'] ?? PageParticipantFactory::make(em: $em),
             'startedAt' => self::randomData(),
             'endedAt' => self::randomData(),
             'title' => self::randomString('title'),

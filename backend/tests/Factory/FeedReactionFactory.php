@@ -13,8 +13,8 @@ final class FeedReactionFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): FeedReaction
     {
         $defaults = [
-            'feed' => FeedFactory::make(em: $em),
-            'user' => UserFactory::make(em: $em),
+            'feed' => $overrides['feed'] ?? FeedFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'reaction' => self::randomEnum(FeedReactionEnum::class),
             'status' => self::randomEnum(ElementStatusEnum::class),
         ];

@@ -34,7 +34,13 @@ class UserRegisterResendTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resend1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 1,
+                'status' => UnauthorizedStatusEnum::Correct,
+            ],
+            $this->em,
         );
 
         $result = $this->post("/api/registers/{$register->id}/resend", []);
@@ -48,7 +54,13 @@ class UserRegisterResendTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resend2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 4, 'status' => UnauthorizedStatusEnum::Incorrect],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 4,
+                'status' => UnauthorizedStatusEnum::Incorrect,
+            ],
+            $this->em,
         );
 
         $result = $this->post("/api/registers/{$register->id}/resend", []);
@@ -62,7 +74,13 @@ class UserRegisterResendTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resend3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 1,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->post("/api/registers/{$register->id}/resend", []);

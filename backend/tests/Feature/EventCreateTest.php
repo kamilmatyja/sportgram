@@ -52,7 +52,7 @@ class EventCreateTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
         $page = PageFactory::make(['user' => $user], $this->em);
 
-        $participant = PageParticipantFactory::make([
+        PageParticipantFactory::make([
             'page' => $page,
             'user' => $user,
             'status' => SaveStatusEnum::Accepted,
@@ -76,7 +76,7 @@ class EventCreateTest extends ApiTestCase
 
         $participant = PageParticipantFactory::make(['page' => $page, 'user' => $user], $this->em);
 
-        $existingEvent = EventFactory::make([
+        EventFactory::make([
             'pageParticipant' => $participant,
             'link' => 'duplicate-link',
         ], $this->em);
@@ -104,7 +104,7 @@ class EventCreateTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
         $page = PageFactory::make(['user' => $user], $this->em);
 
-        $participant = PageParticipantFactory::make(['page' => $page, 'user' => $user], $this->em);
+        PageParticipantFactory::make(['page' => $page, 'user' => $user], $this->em);
 
         $payload = [
             'startedAt' => '2025-01-01T10:00:00',

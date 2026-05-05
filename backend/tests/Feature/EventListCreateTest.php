@@ -6,7 +6,11 @@ namespace Tests\Feature;
 
 use App\Enum\RoleEnum;
 use Symfony\Component\Uid\Uuid;
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventFactory, PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventFactory,
+    PageFactory,
+    PageParticipantFactory};
 
 class EventListCreateTest extends ApiTestCase
 {
@@ -34,7 +38,6 @@ class EventListCreateTest extends ApiTestCase
 
     final public function testForbiddenRole(): void
     {
-        // endpoint requires ROLE_PARTICIPANT
         $admin = self::createUser(RoleEnum::Administrator);
         $id = Uuid::v4()->toString();
 

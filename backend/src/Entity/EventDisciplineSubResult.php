@@ -22,7 +22,7 @@ class EventDisciplineSubResult
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: EventDisciplineSubDistance::class)]
+    #[ORM\ManyToOne(targetEntity: EventDisciplineSubDistance::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'event_discipline_sub_distance_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public EventDisciplineSubDistance $eventDisciplineSubDistance {
         get {
@@ -30,7 +30,7 @@ class EventDisciplineSubResult
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: EventDisciplineResult::class, inversedBy: 'subResults')]
+    #[ORM\ManyToOne(targetEntity: EventDisciplineResult::class, cascade: ['persist'], inversedBy: 'subResults')]
     #[ORM\JoinColumn(name: 'event_discipline_result_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public EventDisciplineResult $eventDisciplineResult {
         get {
@@ -38,7 +38,7 @@ class EventDisciplineSubResult
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {

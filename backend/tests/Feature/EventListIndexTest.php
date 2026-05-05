@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\{RoleEnum, SaveStatusEnum};
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventDisciplineListFactory, EventFactory, PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventDisciplineListFactory,
+    EventFactory,
+    PageFactory,
+    PageParticipantFactory};
 
 class EventListIndexTest extends ApiTestCase
 {
@@ -35,17 +40,14 @@ class EventListIndexTest extends ApiTestCase
 
         $targetUser = self::createUser(RoleEnum::Participant);
 
-        // Tworzymy 3 listy dla różnych użytkowników, ale 2 dla targetUser (jedna Pending, jedna Accepted)
         EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $user, 'status' => SaveStatusEnum::Pending], $this->em);
         EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $targetUser, 'status' => SaveStatusEnum::Pending], $this->em);
         EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $targetUser, 'status' => SaveStatusEnum::Accepted], $this->em);
 
-        // Filtrujemy tylko dla targetUser
         $result = $this->get("/api/event-discipline-distances/{$distance->id->toString()}?filter[userId]={$targetUser->id->toString()}", $user);
         $this->assertEquals(200, $result['status']);
         $this->assertCount(2, $result['json']);
 
-        // Filtrujemy po statusie
         $resultStatus = $this->get("/api/event-discipline-distances/{$distance->id->toString()}?filter[userId]={$targetUser->id->toString()}&filter[status]=2", $user);
         $this->assertEquals(200, $resultStatus['status']);
         $this->assertCount(1, $resultStatus['json']);

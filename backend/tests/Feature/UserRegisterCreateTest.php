@@ -55,7 +55,7 @@ class UserRegisterCreateTest extends ApiTestCase
 
     final public function testUserBanned(): void
     {
-        $user = UserFactory::make([
+        UserFactory::make([
             'email' => 'banned@example.com',
             'status' => UserStatusEnum::Banned,
         ], $this->em);
@@ -73,7 +73,7 @@ class UserRegisterCreateTest extends ApiTestCase
             'status' => UserStatusEnum::Accepted,
         ], $this->em);
 
-        $userRegister = UserRegisterFactory::make([
+        UserRegisterFactory::make([
             'user' => $user,
             'attempt' => 3,
             'status' => UnauthorizedStatusEnum::Incorrect,
@@ -92,7 +92,7 @@ class UserRegisterCreateTest extends ApiTestCase
             'status' => UserStatusEnum::Accepted,
         ], $this->em);
 
-        $userRegister = UserRegisterFactory::make([
+        UserRegisterFactory::make([
             'user' => $user,
             'attempt' => 0,
             'status' => UnauthorizedStatusEnum::Sent,

@@ -24,7 +24,7 @@ class Page
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'pages')]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'], inversedBy: 'pages')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {

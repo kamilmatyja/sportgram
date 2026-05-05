@@ -9,6 +9,7 @@ use App\Enum\RoleEnum;
 use Doctrine\DBAL\{Connection, Exception};
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -44,35 +45,35 @@ abstract class ApiTestCase extends WebTestCase
         $this->jwtManager = $container->get(JWTTokenManagerInterface::class);
     }
 
-    protected function post(string $uri, array $data, ?User $user = null): array
+    final protected function post(string $uri, array $data, ?User $user = null): array
     {
         $this->client->request('POST', $uri, [], [], $this->getHeaders($user), json_encode($data));
 
         return $this->getResponse();
     }
 
-    protected function put(string $uri, array $data, ?User $user = null): array
+    final protected function put(string $uri, array $data, ?User $user = null): array
     {
         $this->client->request('PUT', $uri, [], [], $this->getHeaders($user), json_encode($data));
 
         return $this->getResponse();
     }
 
-    protected function patch(string $uri, array $data, ?User $user = null): array
+    final protected function patch(string $uri, array $data, ?User $user = null): array
     {
         $this->client->request('PATCH', $uri, [], [], $this->getHeaders($user), json_encode($data));
 
         return $this->getResponse();
     }
 
-    protected function delete(string $uri, ?User $user = null): array
+    final protected function delete(string $uri, ?User $user = null): array
     {
         $this->client->request('DELETE', $uri, [], [], $this->getHeaders($user));
 
         return $this->getResponse();
     }
 
-    protected function get(string $uri, ?User $user = null): array
+    final protected function get(string $uri, ?User $user = null): array
     {
         $this->client->request('GET', $uri, [], [], $this->getHeaders($user));
 
@@ -82,12 +83,12 @@ abstract class ApiTestCase extends WebTestCase
     /**
      * @throws Exception
      */
-    protected function truncate(string $name): void
+    final protected function truncate(string $name): void
     {
         $this->connection->executeStatement($this->platform->getTruncateTableSQL($name, true));
     }
 
-    protected function createUser(RoleEnum $role, array $overrides = []): User
+    final protected function createUser(RoleEnum $role, array $overrides = []): User
     {
         $user = UserFactory::make($overrides, $this->em);
         $user->password = $this->passwordHasher->hashPassword($user, 'zaq1@WSX');
@@ -106,6 +107,9 @@ abstract class ApiTestCase extends WebTestCase
         $this->em->flush();
     }
 
+    /**
+     * @throws ORMException
+     */
     private function refresh(object $entity): void
     {
         $this->em->refresh($entity);

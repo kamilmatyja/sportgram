@@ -280,7 +280,7 @@ readonly class EventService
 
         $this->eventDisciplineListRepository->delete($eventDisciplineList);
 
-        return $eventDisciplineList->id;
+        return $eventDisciplineListId;
     }
 
     final public function indexList(Uuid $eventDisciplineDistanceId, EventListIndexDto $dto): array
@@ -382,6 +382,6 @@ readonly class EventService
 
         $this->eventDisciplineResultRepository->delete($eventDisciplineResult);
 
-        return $eventDisciplineResult->id;
+        return $eventDisciplineResultId;
     }
 }

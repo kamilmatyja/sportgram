@@ -68,7 +68,7 @@ class EventRepository extends BaseRepository
         }
 
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('t.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
+        $qb->orderBy('e.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);

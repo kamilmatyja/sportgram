@@ -5,7 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\{RoleEnum, SaveStatusEnum};
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventDisciplineListFactory, EventDisciplineSubDistanceFactory, EventFactory, PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventDisciplineListFactory,
+    EventDisciplineSubDistanceFactory,
+    EventFactory,
+    PageFactory,
+    PageParticipantFactory};
 
 class EventResultCreateTest extends ApiTestCase
 {
@@ -41,7 +47,6 @@ class EventResultCreateTest extends ApiTestCase
 
         $payload = ['time' => 3600];
 
-        // Only event creator can create a result. List owner should get 403.
         $result = $this->post("/api/event-discipline-distance-lists/{$list->id->toString()}", $payload, $listOwner);
         $this->assertEquals(403, $result['status']);
     }
@@ -56,7 +61,7 @@ class EventResultCreateTest extends ApiTestCase
         $event = EventFactory::make(['pageParticipant' => $participant], $this->em);
         $discipline = EventDisciplineFactory::make(['event' => $event], $this->em);
         $distance = EventDisciplineDistanceFactory::make(['eventDiscipline' => $discipline], $this->em);
-        // List is Pending
+
         $list = EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $listOwner, 'status' => SaveStatusEnum::Pending], $this->em);
 
         $payload = ['time' => 3600];

@@ -6,7 +6,12 @@ namespace Tests\Feature;
 
 use App\Enum\{RoleEnum, SaveStatusEnum};
 use Symfony\Component\Uid\Uuid;
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventDisciplineListFactory, EventFactory, PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventDisciplineListFactory,
+    EventFactory,
+    PageFactory,
+    PageParticipantFactory};
 
 class EventListUpdateStatusTest extends ApiTestCase
 {
@@ -34,7 +39,6 @@ class EventListUpdateStatusTest extends ApiTestCase
 
     final public function testForbidden(): void
     {
-        // Neither event creator nor list creator
         $randomUser = self::createUser(RoleEnum::Participant);
         $listOwner = self::createUser(RoleEnum::Participant);
         $eventCreator = self::createUser(RoleEnum::Participant);

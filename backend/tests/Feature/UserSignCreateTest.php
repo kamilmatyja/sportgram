@@ -56,7 +56,7 @@ class UserSignCreateTest extends ApiTestCase
 
     final public function testUserBanned(): void
     {
-        $user = $this->createUser(RoleEnum::Participant, [
+        $this->createUser(RoleEnum::Participant, [
             'email' => 'bannedsign@example.com',
             'status' => UserStatusEnum::Banned,
         ]);
@@ -69,7 +69,7 @@ class UserSignCreateTest extends ApiTestCase
 
     final public function testUserNotConfirmed(): void
     {
-        $user = $this->createUser(RoleEnum::Participant, [
+        $this->createUser(RoleEnum::Participant, [
             'email' => 'notconfirmed-sign@example.com',
             'status' => UserStatusEnum::Accepted,
         ]);
@@ -87,7 +87,7 @@ class UserSignCreateTest extends ApiTestCase
             'status' => UserStatusEnum::Accepted,
         ], $this->em);
 
-        $userRegister = UserRegisterFactory::make([
+        UserRegisterFactory::make([
             'user' => $user,
             'status' => UnauthorizedStatusEnum::Correct,
         ], $this->em);
@@ -105,7 +105,7 @@ class UserSignCreateTest extends ApiTestCase
             'status' => UserStatusEnum::Accepted,
         ]);
 
-        $userRegister = UserRegisterFactory::make([
+        UserRegisterFactory::make([
             'user' => $user,
             'status' => UnauthorizedStatusEnum::Correct,
         ], $this->em);

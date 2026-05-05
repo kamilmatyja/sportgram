@@ -122,7 +122,7 @@ class UserUpdateTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $duplicate = UserFactory::make([
+        UserFactory::make([
             'email' => 'duplicate@example.com',
             'phone' => 111222333,
             'link' => 'duplicate-link',

@@ -35,7 +35,13 @@ class UserPasswordResetResendTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resendpr1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 1,
+                'status' => UnauthorizedStatusEnum::Correct,
+            ],
+            $this->em,
         );
 
         $result = $this->post("/api/password-resets/{$reset->id}/resend", []);
@@ -49,7 +55,13 @@ class UserPasswordResetResendTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resendpr2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 3, 'status' => UnauthorizedStatusEnum::Incorrect],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 3,
+                'status' => UnauthorizedStatusEnum::Incorrect,
+            ],
+            $this->em,
         );
 
         $result = $this->post("/api/password-resets/{$reset->id}/resend", []);
@@ -63,7 +75,13 @@ class UserPasswordResetResendTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'resendpr3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $reset = UserPasswordResetFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 1,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->post("/api/password-resets/{$reset->id}/resend", []);

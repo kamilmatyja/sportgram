@@ -23,7 +23,7 @@ class UserRole
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'roles')]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'], inversedBy: 'roles')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {

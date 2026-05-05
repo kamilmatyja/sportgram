@@ -13,8 +13,8 @@ final class GoalParticipantResultFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): GoalParticipantResult
     {
         $defaults = [
-            'goalParticipant' => GoalParticipantFactory::make(em: $em),
-            'feed' => FeedFactory::make(em: $em),
+            'goalParticipant' => $overrides['goalParticipant'] ?? GoalParticipantFactory::make(em: $em),
+            'feed' => $overrides['feed'] ?? FeedFactory::make(em: $em),
             'distance' => self::randomInt(),
             'time' => self::randomInt(),
             'status' => self::randomEnum(SaveStatusEnum::class),

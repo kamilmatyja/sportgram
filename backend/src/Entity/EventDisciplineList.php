@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\Enum\SaveStatusEnum;
 use App\Repository\EventDisciplineListRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\{ArrayCollection,Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -24,7 +24,7 @@ class EventDisciplineList
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: EventDisciplineDistance::class, inversedBy: 'lists')]
+    #[ORM\ManyToOne(targetEntity: EventDisciplineDistance::class, cascade: ['persist'], inversedBy: 'lists')]
     #[ORM\JoinColumn(name: 'event_discipline_distance_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public EventDisciplineDistance $eventDisciplineDistance {
         get {
@@ -32,7 +32,7 @@ class EventDisciplineList
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Feed::class)]
+    #[ORM\ManyToOne(targetEntity: Feed::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Feed $feed {
         get {
@@ -40,7 +40,7 @@ class EventDisciplineList
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {

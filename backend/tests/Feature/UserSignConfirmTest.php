@@ -25,7 +25,13 @@ class UserSignConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'signc1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", []);
@@ -40,7 +46,13 @@ class UserSignConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'signc2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", ['code' => 'notanumber']);
@@ -65,7 +77,13 @@ class UserSignConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'signc3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 1,
+                'status' => UnauthorizedStatusEnum::Correct,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", ['code' => 123456]);
@@ -79,7 +97,13 @@ class UserSignConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'signc4@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 3, 'status' => UnauthorizedStatusEnum::Incorrect],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 3,
+                'status' => UnauthorizedStatusEnum::Incorrect,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", ['code' => 123456]);
@@ -93,7 +117,13 @@ class UserSignConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'signc5@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", ['code' => 654321]);
@@ -107,7 +137,13 @@ class UserSignConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'signc6@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $sign = UserSignFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/signs/{$sign->id}/confirm", ['code' => 123456]);

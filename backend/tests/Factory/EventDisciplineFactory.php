@@ -13,7 +13,7 @@ final class EventDisciplineFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): EventDiscipline
     {
         $defaults = [
-            'event' => EventFactory::make(em: $em),
+            'event' => $overrides['event'] ?? EventFactory::make(em: $em),
             'discipline' => self::randomEnum(DisciplineEnum::class),
         ];
 

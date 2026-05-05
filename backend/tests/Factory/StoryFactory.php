@@ -13,7 +13,7 @@ final class StoryFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Story
     {
         $defaults = [
-            'user' => UserFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'text' => self::randomString('text'),
             'photo' => self::randoBinary(),
             'status' => self::randomEnum(ElementStatusEnum::class),

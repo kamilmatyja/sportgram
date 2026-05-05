@@ -13,8 +13,8 @@ final class TrainingParticipantFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): TrainingParticipant
     {
         $defaults = [
-            'training' => TrainingFactory::make(em: $em),
-            'user' => UserFactory::make(em: $em),
+            'training' => $overrides['training'] ?? TrainingFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'status' => self::randomEnum(SaveStatusEnum::class),
         ];
 

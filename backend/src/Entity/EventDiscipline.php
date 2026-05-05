@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\Enum\DisciplineEnum;
 use App\Repository\EventDisciplineRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\{ArrayCollection,Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -24,7 +24,7 @@ class EventDiscipline
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'disciplines')]
+    #[ORM\ManyToOne(targetEntity: Event::class, cascade: ['persist'], inversedBy: 'disciplines')]
     #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Event $event {
         get {

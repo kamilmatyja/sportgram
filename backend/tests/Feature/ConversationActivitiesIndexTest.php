@@ -36,7 +36,7 @@ class ConversationActivitiesIndexTest extends ApiTestCase
         $receiver = UserFactory::make(em: $this->em);
 
         for ($i = 0; $i < 3; ++$i) {
-            $conversationActivity = ConversationActivityFactory::make([
+            ConversationActivityFactory::make([
                 'senderUser' => $user,
                 'receiverUser' => $receiver,
             ], $this->em);
@@ -55,7 +55,7 @@ class ConversationActivitiesIndexTest extends ApiTestCase
         $receiver = UserFactory::make(em: $this->em);
 
         for ($i = 0; $i < 15; ++$i) {
-            $conversationActivity = ConversationActivityFactory::make([
+            ConversationActivityFactory::make([
                 'senderUser' => $user,
                 'receiverUser' => $receiver,
             ], $this->em);
@@ -74,15 +74,15 @@ class ConversationActivitiesIndexTest extends ApiTestCase
         $receiver1 = UserFactory::make(em: $this->em);
         $receiver2 = UserFactory::make(em: $this->em);
 
-        $conversationActivity1 = ConversationActivityFactory::make([
+        ConversationActivityFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver1,
         ], $this->em);
-        $conversationActivity2 = ConversationActivityFactory::make([
+        ConversationActivityFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver2,
         ], $this->em);
-        $conversationActivity3 = ConversationActivityFactory::make([
+        ConversationActivityFactory::make([
             'senderUser' => $user,
             'receiverUser' => $receiver2,
         ], $this->em);

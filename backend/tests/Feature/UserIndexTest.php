@@ -57,8 +57,8 @@ class UserIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant, ['firstName' => 'Adam']);
 
-        $u1 = UserFactory::make(['firstName' => 'Kamil'], $this->em);
-        $u2 = UserFactory::make(['firstName' => 'Janusz'], $this->em);
+        UserFactory::make(['firstName' => 'Kamil'], $this->em);
+        UserFactory::make(['firstName' => 'Janusz'], $this->em);
 
         $result = $this->get('/api/users?sort=firstName:asc', $user);
         $this->assertEquals(200, $result['status']);
@@ -70,8 +70,8 @@ class UserIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant, ['lastName' => 'Adamczyk']);
 
-        $u1 = UserFactory::make(['lastName' => 'Kowalski'], $this->em);
-        $u2 = UserFactory::make(['lastName' => 'Baran'], $this->em);
+        UserFactory::make(['lastName' => 'Kowalski'], $this->em);
+        UserFactory::make(['lastName' => 'Baran'], $this->em);
 
         $result = $this->get('/api/users?sort=lastName:asc', $user);
         $this->assertEquals(200, $result['status']);
@@ -83,8 +83,8 @@ class UserIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant, ['gender' => GenderEnum::Male]);
 
-        $u1 = UserFactory::make(['gender' => GenderEnum::Female], $this->em);
-        $u2 = UserFactory::make(['gender' => GenderEnum::Male], $this->em);
+        UserFactory::make(['gender' => GenderEnum::Female], $this->em);
+        UserFactory::make(['gender' => GenderEnum::Male], $this->em);
 
         $result = $this->get('/api/users?sort=gender:asc', $user);
         $this->assertEquals(200, $result['status']);
@@ -96,8 +96,8 @@ class UserIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant, ['country' => CountryEnum::Andorra]);
 
-        $u1 = UserFactory::make(['country' => CountryEnum::Austria], $this->em);
-        $u2 = UserFactory::make(['country' => CountryEnum::Albania], $this->em);
+        UserFactory::make(['country' => CountryEnum::Austria], $this->em);
+        UserFactory::make(['country' => CountryEnum::Albania], $this->em);
 
         $result = $this->get('/api/users?sort=country:asc', $user);
         $this->assertEquals(200, $result['status']);
@@ -109,23 +109,23 @@ class UserIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant, ['birthAt' => new DateTimeImmutable('2000-01-01')]);
 
-        $u1 = UserFactory::make(['birthAt' => new DateTimeImmutable('1990-01-01')], $this->em);
-        $u2 = UserFactory::make(['birthAt' => new DateTimeImmutable('2010-01-01')], $this->em);
+        UserFactory::make(['birthAt' => new DateTimeImmutable('1990-01-01')], $this->em);
+        UserFactory::make(['birthAt' => new DateTimeImmutable('2010-01-01')], $this->em);
 
         $result = $this->get('/api/users?sort=birthAt:asc', $user);
         $this->assertEquals(200, $result['status']);
         $births = array_column($result['json'], 'birthAt');
         array_slice($births, 0, 3)
-            |> (fn($x) => array_map(fn($d) => substr($d, 0, 10), $x))
-            |> (fn($x) => $this->assertEquals(['1990-01-01', '2000-01-01', '2010-01-01'], $x,));
+            |> (fn ($x) => array_map(fn ($d) => substr($d, 0, 10), $x))
+            |> (fn ($x) => $this->assertEquals(['1990-01-01', '2000-01-01', '2010-01-01'], $x));
     }
 
     final public function testSortStatus(): void
     {
         $user = self::createUser(RoleEnum::Participant, ['status' => UserStatusEnum::Accepted]);
 
-        $u1 = UserFactory::make(['status' => UserStatusEnum::Pending], $this->em);
-        $u2 = UserFactory::make(['status' => UserStatusEnum::Banned], $this->em);
+        UserFactory::make(['status' => UserStatusEnum::Pending], $this->em);
+        UserFactory::make(['status' => UserStatusEnum::Banned], $this->em);
 
         $result = $this->get('/api/users?sort=status:asc', $user);
         $this->assertEquals(200, $result['status']);
@@ -137,8 +137,8 @@ class UserIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant, ['firstName' => 'Bartek']);
 
-        $u1 = UserFactory::make(['firstName' => 'Adam'], $this->em);
-        $u2 = UserFactory::make(['firstName' => 'Bartek'], $this->em);
+        UserFactory::make(['firstName' => 'Adam'], $this->em);
+        UserFactory::make(['firstName' => 'Bartek'], $this->em);
 
         $result = $this->get('/api/users?filter[firstName]=Adam', $user);
         $this->assertEquals(200, $result['status']);
@@ -150,8 +150,8 @@ class UserIndexTest extends ApiTestCase
     final public function testFilterLastName(): void
     {
         $user = self::createUser(RoleEnum::Participant, ['lastName' => 'Kowalski']);
-        $u1 = UserFactory::make(['lastName' => 'Nowak'], $this->em);
-        $u2 = UserFactory::make(['lastName' => 'Kowalski'], $this->em);
+        UserFactory::make(['lastName' => 'Nowak'], $this->em);
+        UserFactory::make(['lastName' => 'Kowalski'], $this->em);
         $result = $this->get('/api/users?filter[lastName]=Nowak', $user);
         $this->assertEquals(200, $result['status']);
         $names = array_column($result['json'], 'lastName');
@@ -162,8 +162,8 @@ class UserIndexTest extends ApiTestCase
     final public function testFilterGender(): void
     {
         $user = self::createUser(RoleEnum::Participant, ['gender' => GenderEnum::Female]);
-        $u1 = UserFactory::make(['gender' => GenderEnum::Male], $this->em);
-        $u2 = UserFactory::make(['gender' => GenderEnum::Female], $this->em);
+        UserFactory::make(['gender' => GenderEnum::Male], $this->em);
+        UserFactory::make(['gender' => GenderEnum::Female], $this->em);
         $result = $this->get('/api/users?filter[gender]=1', $user);
         $this->assertEquals(200, $result['status']);
         $genders = array_column($result['json'], 'gender');
@@ -174,8 +174,8 @@ class UserIndexTest extends ApiTestCase
     final public function testFilterCountry(): void
     {
         $user = self::createUser(RoleEnum::Participant, ['country' => CountryEnum::Andorra]);
-        $u1 = UserFactory::make(['country' => CountryEnum::Andorra], $this->em);
-        $u2 = UserFactory::make(['country' => CountryEnum::Albania], $this->em);
+        UserFactory::make(['country' => CountryEnum::Andorra], $this->em);
+        UserFactory::make(['country' => CountryEnum::Albania], $this->em);
         $result = $this->get('/api/users?filter[country]=1', $user);
         $this->assertEquals(200, $result['status']);
         $countries = array_column($result['json'], 'country');
@@ -186,8 +186,8 @@ class UserIndexTest extends ApiTestCase
     final public function testFilterStatus(): void
     {
         $user = self::createUser(RoleEnum::Participant, ['status' => UserStatusEnum::Accepted]);
-        $u1 = UserFactory::make(['status' => UserStatusEnum::Pending], $this->em);
-        $u2 = UserFactory::make(['status' => UserStatusEnum::Accepted], $this->em);
+        UserFactory::make(['status' => UserStatusEnum::Pending], $this->em);
+        UserFactory::make(['status' => UserStatusEnum::Accepted], $this->em);
         $result = $this->get('/api/users?filter[status]=1', $user);
         $this->assertEquals(200, $result['status']);
         $statuses = array_column($result['json'], 'status');
@@ -215,8 +215,8 @@ class UserIndexTest extends ApiTestCase
     final public function testFilterLink(): void
     {
         $user = self::createUser(RoleEnum::Participant);
-        $u1 = UserFactory::make(['link' => 'test-link-1'], $this->em);
-        $u2 = UserFactory::make(['link' => 'test-link-2'], $this->em);
+        UserFactory::make(['link' => 'test-link-1'], $this->em);
+        UserFactory::make(['link' => 'test-link-2'], $this->em);
         $result = $this->get('/api/users?filter[link]=test-link-1', $user);
         $this->assertEquals(200, $result['status']);
         $links = array_column($result['json'], 'link');

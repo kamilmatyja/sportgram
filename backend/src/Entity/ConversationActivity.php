@@ -22,7 +22,7 @@ class ConversationActivity
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'sender_user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $senderUser {
         get {
@@ -30,7 +30,7 @@ class ConversationActivity
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'receiver_user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $receiverUser {
         get {

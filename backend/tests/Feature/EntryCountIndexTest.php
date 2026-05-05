@@ -34,7 +34,7 @@ class EntryCountIndexTest extends ApiTestCase
         $entityId = Uuid::v4();
 
         for ($i = 0; $i < 3; ++$i) {
-            $entry = EntryFactory::make([
+            EntryFactory::make([
                 'user' => $user,
                 'entityId' => $entityId,
                 'type' => EntryTypeEnum::Feed,
@@ -54,7 +54,7 @@ class EntryCountIndexTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
 
         for ($i = 0; $i < 15; ++$i) {
-            $entry = EntryFactory::make([
+            EntryFactory::make([
                 'user' => $user,
                 'entityId' => Uuid::v4(),
                 'type' => EntryTypeEnum::Feed,
@@ -70,12 +70,12 @@ class EntryCountIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $entry1 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => $user->id,
             'type' => EntryTypeEnum::User,
         ], $this->em);
-        $entry2 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => Uuid::v4(),
             'type' => EntryTypeEnum::Feed,
@@ -93,12 +93,12 @@ class EntryCountIndexTest extends ApiTestCase
         $entityId1 = Uuid::v4();
         $entityId2 = Uuid::v4();
 
-        $entry1 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => $entityId1,
             'type' => EntryTypeEnum::Feed,
         ], $this->em);
-        $entry2 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => $entityId2,
             'type' => EntryTypeEnum::Feed,
@@ -114,12 +114,12 @@ class EntryCountIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $entry1 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => $user->id,
             'type' => EntryTypeEnum::User,
         ], $this->em);
-        $entry2 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => Uuid::v4(),
             'type' => EntryTypeEnum::Feed,

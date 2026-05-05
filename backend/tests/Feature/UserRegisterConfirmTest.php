@@ -24,7 +24,13 @@ class UserRegisterConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'confirm1@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", []);
@@ -39,7 +45,13 @@ class UserRegisterConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'confirm2@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 'notanumber']);
@@ -64,7 +76,13 @@ class UserRegisterConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'confirm3@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 1, 'status' => UnauthorizedStatusEnum::Correct],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 1,
+                'status' => UnauthorizedStatusEnum::Correct,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 123456]);
@@ -78,7 +96,13 @@ class UserRegisterConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'confirm4@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 4, 'status' => UnauthorizedStatusEnum::Incorrect],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 4,
+                'status' => UnauthorizedStatusEnum::Incorrect,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 123456]);
@@ -92,7 +116,13 @@ class UserRegisterConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'confirm5@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 654321]);
@@ -106,7 +136,13 @@ class UserRegisterConfirmTest extends ApiTestCase
         $user = UserFactory::make(['email' => 'confirm6@example.com', 'status' => UserStatusEnum::Accepted], $this->em);
 
         $register = UserRegisterFactory::make(
-            ['user' => $user, 'code' => 123456, 'attempt' => 0, 'status' => UnauthorizedStatusEnum::Sent],
+            [
+                'user' => $user,
+                'code' => 123456,
+                'attempt' => 0,
+                'status' => UnauthorizedStatusEnum::Sent,
+            ],
+            $this->em,
         );
 
         $result = $this->patch("/api/registers/{$register->id}/confirm", ['code' => 123456]);

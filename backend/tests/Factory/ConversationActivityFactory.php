@@ -12,8 +12,8 @@ final class ConversationActivityFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): ConversationActivity
     {
         $defaults = [
-            'senderUser' => UserFactory::make(em: $em),
-            'receiverUser' => UserFactory::make(em: $em),
+            'senderUser' => $overrides['senderUser'] ?? UserFactory::make(em: $em),
+            'receiverUser' => $overrides['receiverUser'] ?? UserFactory::make(em: $em),
         ];
 
         $data = array_replace($defaults, $overrides);

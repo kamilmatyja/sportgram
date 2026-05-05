@@ -18,7 +18,7 @@ class EventTest extends TestCase
         $endedAt = new DateTimeImmutable('+1 hour');
         $title = 'Event title';
         $description = 'Event description';
-        $link = 'https://example.com';
+        $link = 'link';
         $rules = 'Event rules';
         $photo = 'binarydata';
         $location = 'Event location';

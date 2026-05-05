@@ -13,7 +13,7 @@ final class NotificationFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Notification
     {
         $defaults = [
-            'user' => UserFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'text' => self::randomString('text'),
             'link' => self::randomString('link'),
             'status' => self::randomEnum(NotificationStatusEnum::class),

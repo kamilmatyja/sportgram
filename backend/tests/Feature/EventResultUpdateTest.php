@@ -5,7 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\{RoleEnum, SaveStatusEnum};
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventDisciplineListFactory, EventDisciplineResultFactory, EventDisciplineSubDistanceFactory, EventDisciplineSubResultFactory, EventFactory, PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventDisciplineListFactory,
+    EventDisciplineResultFactory,
+    EventDisciplineSubDistanceFactory,
+    EventDisciplineSubResultFactory,
+    EventFactory,
+    PageFactory,
+    PageParticipantFactory};
 
 class EventResultUpdateTest extends ApiTestCase
 {
@@ -45,14 +53,13 @@ class EventResultUpdateTest extends ApiTestCase
 
         $resultEntity = EventDisciplineResultFactory::make(['eventDisciplineList' => $list, 'user' => $listOwner, 'time' => 3600]);
 
-        $subResultEntity = EventDisciplineSubResultFactory::make([
+        EventDisciplineSubResultFactory::make([
             'eventDisciplineSubDistance' => $subDistance1,
             'eventDisciplineResult' => $resultEntity,
             'user' => $listOwner,
             'time' => 1800,
         ], $this->em);
 
-        // Update time and replace sub-results
         $payload = [
             'time' => 3500,
             'subResults' => [

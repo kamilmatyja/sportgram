@@ -22,7 +22,7 @@ class UserDiscipline
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'disciplines')]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'], inversedBy: 'disciplines')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {

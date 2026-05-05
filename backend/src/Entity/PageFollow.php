@@ -23,7 +23,7 @@ class PageFollow
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Page::class, inversedBy: 'followers')]
+    #[ORM\ManyToOne(targetEntity: Page::class, cascade: ['persist'], inversedBy: 'followers')]
     #[ORM\JoinColumn(name: 'page_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Page $page {
         get {
@@ -31,7 +31,7 @@ class PageFollow
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {

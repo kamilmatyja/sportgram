@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\RoleEnum;
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventDisciplineListFactory, EventFactory, PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventDisciplineListFactory,
+    EventFactory,
+    PageFactory,
+    PageParticipantFactory};
 
 class EventDeleteTest extends ApiTestCase
 {
@@ -35,7 +40,7 @@ class EventDeleteTest extends ApiTestCase
 
         $distance = EventDisciplineDistanceFactory::make(['eventDiscipline' => $discipline], $this->em);
 
-        $list = EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $user], $this->em);
+        EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $user], $this->em);
 
         $result = $this->delete("/api/events/{$event->id->toString()}", $user);
 

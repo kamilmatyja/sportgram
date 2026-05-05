@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use App\Repository\EventDisciplineDistanceRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\{ArrayCollection,Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -23,7 +23,7 @@ class EventDisciplineDistance
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: EventDiscipline::class, inversedBy: 'distances')]
+    #[ORM\ManyToOne(targetEntity: EventDiscipline::class, cascade: ['persist'], inversedBy: 'distances')]
     #[ORM\JoinColumn(name: 'event_discipline_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public EventDiscipline $eventDiscipline {
         get {

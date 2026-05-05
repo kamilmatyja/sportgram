@@ -23,7 +23,7 @@ class Notification
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {
@@ -52,7 +52,7 @@ class Notification
         }
     }
 
-    #[ORM\Column(name: 'link', type: 'text', length: 128, unique: true, nullable: true)]
+    #[ORM\Column(name: 'link', type: 'text', length: 128, nullable: true)]
     public ?string $link = null {
         get {
             return $this->link;

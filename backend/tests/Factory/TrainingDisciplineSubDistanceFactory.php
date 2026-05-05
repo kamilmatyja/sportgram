@@ -12,7 +12,9 @@ final class TrainingDisciplineSubDistanceFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): TrainingDisciplineSubDistance
     {
         $defaults = [
-            'trainingDisciplineDistance' => TrainingDisciplineDistanceFactory::make(em: $em),
+            'trainingDisciplineDistance' => $overrides['trainingDisciplineDistance'] ?? TrainingDisciplineDistanceFactory::make(
+                em: $em,
+            ),
             'subDistance' => self::randomInt(),
             'time' => self::randomInt(),
             'lat' => self::randomInt(),

@@ -13,7 +13,7 @@ final class UserDisciplineFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): UserDiscipline
     {
         $defaults = [
-            'user' => UserFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'discipline' => self::randomEnum(DisciplineEnum::class),
         ];
 

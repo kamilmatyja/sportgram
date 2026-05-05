@@ -23,7 +23,7 @@ class GoalParticipantResult
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: GoalParticipant::class, inversedBy: 'results')]
+    #[ORM\ManyToOne(targetEntity: GoalParticipant::class, cascade: ['persist'], inversedBy: 'results')]
     #[ORM\JoinColumn(name: 'goal_participant_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public GoalParticipant $goalParticipant {
         get {
@@ -31,7 +31,7 @@ class GoalParticipantResult
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Feed::class)]
+    #[ORM\ManyToOne(targetEntity: Feed::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Feed $feed {
         get {

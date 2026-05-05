@@ -5,7 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\RoleEnum;
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventDisciplineListFactory, EventDisciplineResultFactory, EventDisciplineSubDistanceFactory, EventDisciplineSubResultFactory, EventFactory, PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventDisciplineListFactory,
+    EventDisciplineResultFactory,
+    EventDisciplineSubDistanceFactory,
+    EventDisciplineSubResultFactory,
+    EventFactory,
+    PageFactory,
+    PageParticipantFactory};
 
 class EventListDetailsTest extends ApiTestCase
 {
@@ -42,7 +50,7 @@ class EventListDetailsTest extends ApiTestCase
 
         $resultEntity = EventDisciplineResultFactory::make(['eventDisciplineList' => $list, 'user' => $user], $this->em);
 
-        $subResultEntity = EventDisciplineSubResultFactory::make([
+        EventDisciplineSubResultFactory::make([
             'eventDisciplineSubDistance' => $subDistance,
             'eventDisciplineResult' => $resultEntity,
             'user' => $user,

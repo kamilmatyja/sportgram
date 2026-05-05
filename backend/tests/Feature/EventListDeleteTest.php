@@ -6,7 +6,12 @@ namespace Tests\Feature;
 
 use App\Enum\RoleEnum;
 use Symfony\Component\Uid\Uuid;
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventDisciplineListFactory, EventFactory, PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventDisciplineListFactory,
+    EventFactory,
+    PageFactory,
+    PageParticipantFactory};
 
 class EventListDeleteTest extends ApiTestCase
 {
@@ -34,7 +39,6 @@ class EventListDeleteTest extends ApiTestCase
 
     final public function testForbiddenForListOwnerOnly(): void
     {
-        // EventListCreatorVoter allows ONLY the event creator to delete lists (not the list owner)
         $listOwner = self::createUser(RoleEnum::Participant);
         $eventCreator = self::createUser(RoleEnum::Participant);
 

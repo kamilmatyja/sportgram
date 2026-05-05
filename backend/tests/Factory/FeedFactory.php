@@ -13,7 +13,7 @@ final class FeedFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Feed
     {
         $defaults = [
-            'user' => UserFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'text' => self::randomString('text'),
             'photo' => self::randoBinary(),
             'status' => self::randomEnum(ElementStatusEnum::class),

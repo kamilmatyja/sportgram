@@ -13,7 +13,7 @@ final class UserRoleFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): UserRole
     {
         $defaults = [
-            'user' => UserFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'role' => self::randomEnum(RoleEnum::class),
         ];
 

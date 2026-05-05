@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\{RoleEnum};
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventDisciplineListFactory, EventFactory, PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventDisciplineListFactory,
+    EventFactory,
+    PageFactory,
+    PageParticipantFactory};
 
 class EventUpdateTest extends ApiTestCase
 {
@@ -50,8 +55,7 @@ class EventUpdateTest extends ApiTestCase
 
         $distance = EventDisciplineDistanceFactory::make(['eventDiscipline' => $discipline], $this->em);
 
-        // Add a list to the distance to prevent its deletion
-        $list = EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $user], $this->em);
+        EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $user], $this->em);
 
         $payload = [
             'startedAt' => '2025-01-01T10:00:00',
@@ -62,7 +66,7 @@ class EventUpdateTest extends ApiTestCase
             'rules' => 'Rules',
             'photo' => base64_encode('photo'),
             'location' => 'Warsaw',
-            'disciplines' => [], // Emptying disciplines should trigger deletion
+            'disciplines' => [],
         ];
 
         $result = $this->put("/api/events/{$event->id->toString()}", $payload, $user);

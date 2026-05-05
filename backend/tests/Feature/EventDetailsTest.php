@@ -6,7 +6,12 @@ namespace Tests\Feature;
 
 use App\Enum\RoleEnum;
 use Symfony\Component\Uid\Uuid;
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventDisciplineSubDistanceFactory, EventFactory, PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory,
+    EventDisciplineFactory,
+    EventDisciplineSubDistanceFactory,
+    EventFactory,
+    PageFactory,
+    PageParticipantFactory};
 
 class EventDetailsTest extends ApiTestCase
 {
@@ -53,7 +58,7 @@ class EventDetailsTest extends ApiTestCase
 
         $distance = EventDisciplineDistanceFactory::make(['eventDiscipline' => $discipline], $this->em);
 
-        $subDistance = EventDisciplineSubDistanceFactory::make(['eventDisciplineDistance' => $distance], $this->em);
+        EventDisciplineSubDistanceFactory::make(['eventDisciplineDistance' => $distance], $this->em);
 
         $url = "/api/events/{$event->id->toString()}?include[]=eventDisciplines&include[]=eventDisciplineDistances&include[]=eventDisciplineSubDistances";
 

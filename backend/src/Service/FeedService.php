@@ -152,7 +152,7 @@ readonly class FeedService
 
         $this->feedCommentRepository->delete($feedComment);
 
-        return $feedComment->id;
+        return $feedCommentId;
     }
 
     final public function createReaction(Uuid $feedId, FeedReactionDto $dto): Uuid
@@ -218,6 +218,6 @@ readonly class FeedService
 
         $this->feedReactionRepository->delete($feedReaction);
 
-        return $feedReaction->id;
+        return $feedReactionId;
     }
 }

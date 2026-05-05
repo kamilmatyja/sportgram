@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use App\Repository\TrainingDisciplineDistanceRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\{ArrayCollection,Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -23,7 +23,7 @@ class TrainingDisciplineDistance
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: TrainingDiscipline::class, inversedBy: 'distances')]
+    #[ORM\ManyToOne(targetEntity: TrainingDiscipline::class, cascade: ['persist'], inversedBy: 'distances')]
     #[ORM\JoinColumn(name: 'training_discipline_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public TrainingDiscipline $trainingDiscipline {
         get {

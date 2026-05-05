@@ -23,7 +23,7 @@ class TrainingParticipant
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Training::class, inversedBy: 'participants')]
+    #[ORM\ManyToOne(targetEntity: Training::class, cascade: ['persist'], inversedBy: 'participants')]
     #[ORM\JoinColumn(name: 'training_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Training $training {
         get {
@@ -31,7 +31,7 @@ class TrainingParticipant
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {

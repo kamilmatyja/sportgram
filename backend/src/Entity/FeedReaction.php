@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\{ElementStatusEnum, FeedReactionEnum};
+use App\Enum\{ElementStatusEnum,FeedReactionEnum};
 use App\Repository\FeedReactionRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -23,7 +23,7 @@ class FeedReaction
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Feed::class, inversedBy: 'reactions')]
+    #[ORM\ManyToOne(targetEntity: Feed::class, cascade: ['persist'], inversedBy: 'reactions')]
     #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Feed $feed {
         get {
@@ -31,7 +31,7 @@ class FeedReaction
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {

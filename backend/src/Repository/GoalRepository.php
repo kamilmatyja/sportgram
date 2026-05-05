@@ -55,6 +55,8 @@ class GoalRepository extends BaseRepository
             ->setParameter('now', $date);
         $qb->andWhere('g.status = :status')
             ->setParameter('status', GoalStatusEnum::Active);
+
+        return $qb->getQuery()->getResult();
     }
 
     final public function findGoals(GoalIndexDto $dto): array

@@ -12,9 +12,13 @@ final class EventDisciplineSubResultFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): EventDisciplineSubResult
     {
         $defaults = [
-            'eventDisciplineSubDistance' => EventDisciplineSubDistanceFactory::make(em: $em),
-            'eventDisciplineResult' => EventDisciplineResultFactory::make(em: $em),
-            'user' => UserFactory::make(em: $em),
+            'eventDisciplineSubDistance' => $overrides['eventDisciplineSubDistance'] ?? EventDisciplineSubDistanceFactory::make(
+                em: $em,
+            ),
+            'eventDisciplineResult' => $overrides['eventDisciplineResult'] ?? EventDisciplineResultFactory::make(
+                em: $em,
+            ),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'time' => self::randomInt(),
         ];
 

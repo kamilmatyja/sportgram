@@ -13,8 +13,8 @@ final class ConversationFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Conversation
     {
         $defaults = [
-            'senderUser' => UserFactory::make(em: $em),
-            'receiverUser' => UserFactory::make(em: $em),
+            'senderUser' => $overrides['senderUser'] ?? UserFactory::make(em: $em),
+            'receiverUser' => $overrides['receiverUser'] ?? UserFactory::make(em: $em),
             'text' => self::randomString('text'),
             'status' => self::randomEnum(ConversationStatusEnum::class),
         ];

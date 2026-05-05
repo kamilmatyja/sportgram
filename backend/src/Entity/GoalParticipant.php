@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\Enum\SaveStatusEnum;
 use App\Repository\GoalParticipantRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\{ArrayCollection,Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -24,7 +24,7 @@ class GoalParticipant
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Goal::class, inversedBy: 'participants')]
+    #[ORM\ManyToOne(targetEntity: Goal::class, cascade: ['persist'], inversedBy: 'participants')]
     #[ORM\JoinColumn(name: 'goal_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Goal $goal {
         get {
@@ -32,7 +32,7 @@ class GoalParticipant
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {

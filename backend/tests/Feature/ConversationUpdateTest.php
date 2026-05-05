@@ -46,7 +46,7 @@ class ConversationUpdateTest extends ApiTestCase
         $user1 = self::createUser(RoleEnum::Participant);
         $user2 = self::createUser(RoleEnum::Participant);
 
-        $friend = FriendFactory::make([
+        FriendFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
@@ -70,7 +70,7 @@ class ConversationUpdateTest extends ApiTestCase
         $user1 = self::createUser(RoleEnum::Participant);
         $user2 = self::createUser(RoleEnum::Administrator);
 
-        $friend = FriendFactory::make([
+        FriendFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
@@ -94,7 +94,7 @@ class ConversationUpdateTest extends ApiTestCase
         $user1 = self::createUser(RoleEnum::Participant);
         $user2 = self::createUser(RoleEnum::Participant);
 
-        $friend = FriendFactory::make([
+        FriendFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
@@ -117,7 +117,7 @@ class ConversationUpdateTest extends ApiTestCase
         $user1 = self::createUser(RoleEnum::Participant);
         $user2 = self::createUser(RoleEnum::Participant);
 
-        $friend = FriendFactory::make([
+        FriendFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,
@@ -156,7 +156,7 @@ class ConversationUpdateTest extends ApiTestCase
         $user1 = self::createUser(RoleEnum::Participant);
         $user2 = self::createUser(RoleEnum::Participant);
 
-        $friend = FriendFactory::make([
+        FriendFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
             'status' => FriendStatusEnum::Accepted,

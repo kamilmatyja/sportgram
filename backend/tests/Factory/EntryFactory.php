@@ -13,7 +13,7 @@ final class EntryFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): Entry
     {
         $defaults = [
-            'user' => UserFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'entityId' => self::randomId(),
             'type' => self::randomEnum(EntryTypeEnum::class),
         ];

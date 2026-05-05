@@ -13,7 +13,7 @@ final class PushSubscriptionFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): PushSubscription
     {
         $defaults = [
-            'user' => UserFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'endpoint' => self::randomString('endpoint'),
             'p256dh' => self::randomString('p256dh'),
             'auth' => self::randomString('auth'),

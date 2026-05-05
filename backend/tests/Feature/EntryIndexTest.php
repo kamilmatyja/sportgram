@@ -33,7 +33,7 @@ class EntryIndexTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
 
         for ($i = 0; $i < 3; ++$i) {
-            $entry = EntryFactory::make([
+            EntryFactory::make([
                 'user' => $user,
                 'entityId' => $user->id,
                 'type' => EntryTypeEnum::User,
@@ -50,7 +50,7 @@ class EntryIndexTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
 
         for ($i = 0; $i < 15; ++$i) {
-            $entry = EntryFactory::make([
+            EntryFactory::make([
                 'user' => $user,
                 'entityId' => $user->id,
                 'type' => EntryTypeEnum::User,
@@ -66,12 +66,12 @@ class EntryIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $entry1 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => $user->id,
             'type' => EntryTypeEnum::User,
         ], $this->em);
-        $entry2 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => Uuid::v4(),
             'type' => EntryTypeEnum::Feed,
@@ -88,12 +88,12 @@ class EntryIndexTest extends ApiTestCase
         $user1 = self::createUser(RoleEnum::Participant);
         $user2 = self::createUser(RoleEnum::Participant);
 
-        $entry1 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user1,
             'entityId' => $user1->id,
             'type' => EntryTypeEnum::User,
         ], $this->em);
-        $entry2 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user2,
             'entityId' => $user2->id,
             'type' => EntryTypeEnum::User,
@@ -111,12 +111,12 @@ class EntryIndexTest extends ApiTestCase
         $entityId1 = Uuid::v4();
         $entityId2 = Uuid::v4();
 
-        $entry1 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => $entityId1,
             'type' => EntryTypeEnum::Feed,
         ], $this->em);
-        $entry2 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => $entityId2,
             'type' => EntryTypeEnum::Feed,
@@ -132,12 +132,12 @@ class EntryIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $entry1 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => $user->id,
             'type' => EntryTypeEnum::User,
         ], $this->em);
-        $entry2 = EntryFactory::make([
+        EntryFactory::make([
             'user' => $user,
             'entityId' => Uuid::v4(),
             'type' => EntryTypeEnum::Feed,

@@ -27,7 +27,7 @@ class ConversationActivityDetailsTest extends ApiTestCase
         $user1 = self::createUser(RoleEnum::Participant);
         $user2 = self::createUser(RoleEnum::Participant);
 
-        $conversationActivity = ConversationActivityFactory::make([
+        ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
         ], $this->em);
@@ -44,7 +44,7 @@ class ConversationActivityDetailsTest extends ApiTestCase
         $user2 = self::createUser(RoleEnum::Participant);
         $user3 = self::createUser(RoleEnum::Participant);
 
-        $conversationActivity = ConversationActivityFactory::make([
+        ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
         ], $this->em);
@@ -82,7 +82,7 @@ class ConversationActivityDetailsTest extends ApiTestCase
         $user1 = self::createUser(RoleEnum::Participant);
         $user2 = self::createUser(RoleEnum::Participant);
 
-        $conversationActivity = ConversationActivityFactory::make([
+        ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
         ], $this->em);

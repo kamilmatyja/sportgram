@@ -13,7 +13,7 @@ final class UserSignFactory extends BaseFactory
     public static function make(array $overrides = [], ?EntityManagerInterface $em = null): UserSign
     {
         $defaults = [
-            'user' => UserFactory::make(em: $em),
+            'user' => $overrides['user'] ?? UserFactory::make(em: $em),
             'code' => self::randomCode(),
             'attempt' => self::randomInt(),
             'status' => self::randomEnum(UnauthorizedStatusEnum::class),

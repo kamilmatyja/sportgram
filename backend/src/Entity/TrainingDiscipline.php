@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\Enum\DisciplineEnum;
 use App\Repository\TrainingDisciplineRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\{ArrayCollection,Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -24,7 +24,7 @@ class TrainingDiscipline
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Training::class, inversedBy: 'disciplines')]
+    #[ORM\ManyToOne(targetEntity: Training::class, cascade: ['persist'], inversedBy: 'disciplines')]
     #[ORM\JoinColumn(name: 'training_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Training $training {
         get {

@@ -24,7 +24,7 @@ class Goal
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Feed::class)]
+    #[ORM\ManyToOne(targetEntity: Feed::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Feed $feed {
         get {
@@ -32,7 +32,7 @@ class Goal
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public User $user {
         get {

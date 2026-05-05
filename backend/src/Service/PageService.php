@@ -243,7 +243,7 @@ readonly class PageService
 
         $this->pageFollowRepository->delete($pageFollow);
 
-        return $pageFollow->id;
+        return $pageFollowId;
     }
 
     final public function indexFollows(PageFollowIndexDto $dto): array
