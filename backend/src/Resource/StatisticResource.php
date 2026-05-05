@@ -2,6 +2,7 @@
 
 namespace App\Resource;
 
+use DateTimeImmutable;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -29,8 +30,8 @@ class StatisticResource
 
         foreach ($records as $record) {
             $data[] = [
-                'userId' => $record['user_id'],
-                'createdAt' => $record['created_at'],
+                'userId' => $record['userid'],
+                'createdAt' => new DateTimeImmutable($record['createdat'])->format('Y-m-d\TH:i:s'),
                 'discipline' => $record['discipline'],
                 'distance' => $record['distance'],
                 'time' => $record['time'],

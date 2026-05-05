@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Dto\StatisticIndexDto;
-use Doctrine\DBAL\{Connection};
+use Doctrine\DBAL\{ArrayParameterType, Connection};
 use Doctrine\Persistence\ManagerRegistry;
 
 class StatisticRepository
@@ -18,19 +18,19 @@ class StatisticRepository
     final public function getRecords(StatisticIndexDto $dto): array
     {
         $baseSql = '
-        SELECT DISTINCT ON (user_id, discipline, distance)
-            user_id,
+        SELECT DISTINCT ON (userId, discipline, distance)
+            userId,
             discipline,
             distance,
             time,
-            created_at
+            createdAt
         FROM (
             SELECT 
-                u.id as user_id,
+                u.id as userId,
                 d.discipline,
                 t.distance,
                 t.time,
-                t.created_at
+                t.created_at as createdAt
             FROM training_discipline_distances t
             JOIN training_disciplines d ON t.training_discipline_id = d.id
             JOIN trainings tr ON d.training_id = tr.id
@@ -39,18 +39,18 @@ class StatisticRepository
             UNION ALL
 
             SELECT 
-                u.id as user_id,
+                u.id as userId,
                 ed.discipline,
                 edd.distance,
                 er.time,
-                er.created_at
+                er.created_at as createdAt
             FROM event_discipline_results er
             JOIN event_discipline_lists edl ON er.event_discipline_list_id = edl.id
             JOIN event_discipline_distances edd ON edl.event_discipline_distance_id = edd.id
             JOIN event_disciplines ed ON edd.event_discipline_id = ed.id
             JOIN users u ON er.user_id = u.id
         ) combined
-        ORDER BY user_id, discipline, distance, time, created_at';
+        ORDER BY userId, discipline, distance, time, createdAt';
 
         $qb = $this->connection->createQueryBuilder();
         $qb->select('*')
@@ -58,7 +58,7 @@ class StatisticRepository
 
         if (! empty($dto->filter->userIds)) {
             $qb->andWhere('stats.userId IN (:userIds)')
-                ->setParameter('userIds', $dto->filter->userIds);
+                ->setParameter('userIds', $dto->filter->userIds, ArrayParameterType::STRING);
         }
 
         if ($dto->filter->discipline) {
@@ -84,18 +84,18 @@ class StatisticRepository
     {
         $baseSql = '
         SELECT 
-            user_id,
+            userId,
             discipline,
             distance,
             time,
-            created_at
+            createdAt
         FROM (
             SELECT 
-                u.id as user_id,
+                u.id as userId,
                 d.discipline,
                 t.distance,
                 t.time,
-                t.created_at
+                t.created_at as createdAt
             FROM training_discipline_distances t
             JOIN training_disciplines d ON t.training_discipline_id = d.id
             JOIN trainings tr ON d.training_id = tr.id
@@ -104,11 +104,11 @@ class StatisticRepository
             UNION ALL
     
             SELECT 
-                u.id as user_id,
+                u.id as userId,
                 ed.discipline,
                 edd.distance,
                 er.time,
-                er.created_at
+                er.created_at as createdAt
             FROM event_discipline_results er
             JOIN event_discipline_lists edl ON er.event_discipline_list_id = edl.id
             JOIN event_discipline_distances edd ON edl.event_discipline_distance_id = edd.id
@@ -122,7 +122,7 @@ class StatisticRepository
 
         if (! empty($dto->filter->userIds)) {
             $qb->andWhere('stats.userId IN (:userIds)')
-                ->setParameter('userIds', $dto->filter->userIds);
+                ->setParameter('userIds', $dto->filter->userIds, ArrayParameterType::STRING);
         }
 
         if ($dto->filter->discipline) {
