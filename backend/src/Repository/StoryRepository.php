@@ -46,20 +46,14 @@ class StoryRepository extends BaseRepository
                 ->setParameter('userId', $dto->filter->userId);
         } else {
             $qb->leftJoin(
-                'friends',
+                'App\\Entity\\Friend',
                 'fr',
-                '(
-                    (fr.senderUser = s.userId AND fr.receiverUser = :userId)
-                    OR (fr.senderUser = :userId AND fr.receiverUser = s.userId)
-                )',
+                'WITH',
+                '((fr.senderUser = s.user AND fr.receiverUser = :userId) OR (fr.senderUser = :userId AND fr.receiverUser = s.user))',
             );
             $qb->andWhere('(s.user = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')
                 ->setParameter('userId', $userId)
                 ->setParameter('acceptedStatus', FriendStatusEnum::Accepted->value);
-            $qb->select('s')
-                ->addSelect('MAX(s.createdAt) AS HIDDEN maxCreatedAt')
-                ->groupBy('s.userId');
-            $qb->orderBy('maxCreatedAt', 'DESC');
         }
 
         if ($dto->filter->text) {

@@ -56,7 +56,7 @@ class StoryController extends AbstractController
     }
 
     #[Route('/api/stories/{id}/status', name: 'story_update_status', methods: ['PATCH'])]
-    #[IsGranted(StoryVoter::STORY)]
+    #[IsGranted(StoryVoter::STORY, subject: 'id')]
     #[OA\Patch(
         summary: 'Update story status',
         requestBody: new Body('ElementStatusDto'),
