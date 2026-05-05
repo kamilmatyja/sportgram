@@ -5,8 +5,10 @@ namespace App\EventSubscriber;
 use App\Entity\Notification;
 use App\Enum\NotificationStatusEnum;
 use App\Event\NotificationEvent;
+use ErrorException;
 use App\Repository\{NotificationRepository, PushSubscriptionRepository};
 use App\Service\WebPushService;
+use Random\RandomException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -27,6 +29,10 @@ readonly class NotificationSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @throws RandomException
+     * @throws ErrorException
+     */
     final public function onNotification(NotificationEvent $event): void
     {
         $locale = $event->getUser()->language->getLocale();

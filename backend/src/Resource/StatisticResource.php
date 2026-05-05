@@ -2,6 +2,7 @@
 
 namespace App\Resource;
 
+use DateMalformedStringException;
 use DateTimeImmutable;
 use OpenApi\Attributes as OA;
 
@@ -24,6 +25,9 @@ use OpenApi\Attributes as OA;
 )]
 class StatisticResource
 {
+    /**
+     * @throws DateMalformedStringException
+     */
     public static function fromEntityCollection(array $records): array
     {
         $data = [];

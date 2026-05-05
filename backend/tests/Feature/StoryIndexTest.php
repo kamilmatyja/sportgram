@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use DateTimeImmutable;
 use App\Enum\{ElementStatusEnum, FriendStatusEnum, RoleEnum};
 use Tests\Factory\{FriendFactory, StoryFactory};
 
@@ -30,8 +31,8 @@ class StoryIndexTest extends ApiTestCase
             $this->em,
         );
 
-        StoryFactory::make(['user' => $user, 'createdAt' => new \DateTimeImmutable('-1 hour')], $this->em);
-        StoryFactory::make(['user' => $user, 'createdAt' => new \DateTimeImmutable('now')], $this->em);
+        StoryFactory::make(['user' => $user, 'createdAt' => new DateTimeImmutable('-1 hour')], $this->em);
+        StoryFactory::make(['user' => $user, 'createdAt' => new DateTimeImmutable('now')], $this->em);
 
         StoryFactory::make(['user' => $friend], $this->em);
 

@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Dto\StatisticIndexDto;
-use Doctrine\DBAL\{ArrayParameterType, Connection};
+use Doctrine\DBAL\{ArrayParameterType, Connection, Exception};
 use Doctrine\Persistence\ManagerRegistry;
 
 class StatisticRepository
@@ -15,6 +15,9 @@ class StatisticRepository
         $this->connection = $registry->getManager()->getConnection();
     }
 
+    /**
+     * @throws Exception
+     */
     final public function getRecords(StatisticIndexDto $dto): array
     {
         $baseSql = '
@@ -80,6 +83,9 @@ class StatisticRepository
         return $qb->executeQuery()->fetchAllAssociative();
     }
 
+    /**
+     * @throws Exception
+     */
     final public function getProgress(StatisticIndexDto $dto): array
     {
         $baseSql = '

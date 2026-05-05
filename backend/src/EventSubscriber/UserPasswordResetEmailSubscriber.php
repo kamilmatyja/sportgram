@@ -7,6 +7,7 @@ use App\Event\UserPasswordResetEmailEvent;
 use App\Repository\UserPasswordResetRepository;
 use App\Service\EmailService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class UserPasswordResetEmailSubscriber implements EventSubscriberInterface
@@ -25,6 +26,9 @@ readonly class UserPasswordResetEmailSubscriber implements EventSubscriberInterf
         ];
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     */
     final public function onUserPasswordResetEmail(UserPasswordResetEmailEvent $event): void
     {
         $user = $event->getUser();

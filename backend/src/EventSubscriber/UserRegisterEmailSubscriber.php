@@ -7,6 +7,7 @@ use App\Event\UserRegisterEmailEvent;
 use App\Repository\UserRegisterRepository;
 use App\Service\EmailService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class UserRegisterEmailSubscriber implements EventSubscriberInterface
@@ -25,6 +26,9 @@ readonly class UserRegisterEmailSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     */
     final public function onUserRegisterEmail(UserRegisterEmailEvent $event): void
     {
         $user = $event->getUser();

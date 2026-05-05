@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\{RoleEnum};
+use Tests\Factory\TrainingFactory;
 use Tests\Factory\UserFactory;
 
 class TrainingCreateTest extends ApiTestCase
@@ -60,7 +61,7 @@ class TrainingCreateTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        \Tests\Factory\TrainingFactory::make(['user' => $user, 'link' => 'duplicate-link'], $this->em);
+        TrainingFactory::make(['user' => $user, 'link' => 'duplicate-link'], $this->em);
 
         $payload = [
             'startedAt' => '2025-01-01T10:00:00',

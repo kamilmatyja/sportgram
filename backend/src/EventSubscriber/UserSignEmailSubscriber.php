@@ -7,6 +7,7 @@ use App\Event\UserSignEmailEvent;
 use App\Repository\UserSignRepository;
 use App\Service\EmailService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 readonly class UserSignEmailSubscriber implements EventSubscriberInterface
@@ -25,6 +26,9 @@ readonly class UserSignEmailSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     */
     final public function onUserSignEmail(UserSignEmailEvent $event): void
     {
         $user = $event->getUser();
