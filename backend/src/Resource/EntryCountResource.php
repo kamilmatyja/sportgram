@@ -2,6 +2,7 @@
 
 namespace App\Resource;
 
+use App\Dto\EntryCountDto;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -25,18 +26,17 @@ use OpenApi\Attributes as OA;
 )]
 class EntryCountResource
 {
-    public static function fromEntityCollection(array $records): array
+    public static function fromEntity(EntryCountDto $entry): array
     {
-        $data = [];
+        return [
+            'entityId' => $entry->entityId->toString(),
+            'type' => $entry->type->value,
+            'count' => $entry->count,
+        ];
+    }
 
-        foreach ($records as $record) {
-            $data[] = [
-                'entityId' => $record['entityId'],
-                'type' => $record['type'],
-                'count' => $record['count'],
-            ];
-        }
-
-        return $data;
+    public static function fromEntityCollection(array $entries): array
+    {
+        return array_map(fn (EntryCountDto $entry) => self::fromEntity($entry), $entries);
     }
 }

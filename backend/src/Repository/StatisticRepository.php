@@ -2,9 +2,12 @@
 
 namespace App\Repository;
 
-use App\Dto\StatisticIndexDto;
+use App\Dto\{StatisticIndexDto, StatisticResultDto};
+use DateMalformedStringException;
+use DateTimeImmutable;
 use Doctrine\DBAL\{ArrayParameterType, Connection, Exception};
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 class StatisticRepository
 {
@@ -17,23 +20,24 @@ class StatisticRepository
 
     /**
      * @throws Exception
+     * @throws DateMalformedStringException
      */
     final public function getRecords(StatisticIndexDto $dto): array
     {
         $baseSql = '
-        SELECT DISTINCT ON (userId, discipline, distance)
-            userId,
+        SELECT DISTINCT ON ("userId", discipline, distance)
+            "userId",
             discipline,
             distance,
             time,
-            createdAt
+            "createdAt"
         FROM (
             SELECT 
-                u.id as userId,
+                u.id AS "userId",
                 d.discipline,
                 t.distance,
                 t.time,
-                t.created_at as createdAt
+                t.created_at AS "createdAt"
             FROM training_discipline_distances t
             JOIN training_disciplines d ON t.training_discipline_id = d.id
             JOIN trainings tr ON d.training_id = tr.id
@@ -42,25 +46,25 @@ class StatisticRepository
             UNION ALL
 
             SELECT 
-                u.id as userId,
+                u.id AS "userId",
                 ed.discipline,
                 edd.distance,
                 er.time,
-                er.created_at as createdAt
+                er.created_at AS "createdAt"
             FROM event_discipline_results er
             JOIN event_discipline_lists edl ON er.event_discipline_list_id = edl.id
             JOIN event_discipline_distances edd ON edl.event_discipline_distance_id = edd.id
             JOIN event_disciplines ed ON edd.event_discipline_id = ed.id
             JOIN users u ON er.user_id = u.id
         ) combined
-        ORDER BY userId, discipline, distance, time, createdAt';
+        ORDER BY "userId", discipline, distance, time, "createdAt"';
 
         $qb = $this->connection->createQueryBuilder();
         $qb->select('*')
             ->from('(' . $baseSql . ')', 'stats');
 
         if (! empty($dto->filter->userIds)) {
-            $qb->andWhere('stats.userId IN (:userIds)')
+            $qb->andWhere('stats."userId" IN (:userIds)')
                 ->setParameter('userIds', $dto->filter->userIds, ArrayParameterType::STRING);
         }
 
@@ -75,33 +79,42 @@ class StatisticRepository
         }
 
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('stats.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
+        $qb->orderBy('stats."' . $field . '"', $direction === 'desc' ? 'DESC' : 'ASC');
 
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);
 
-        return $qb->executeQuery()->fetchAllAssociative();
+        $rows = $qb->executeQuery()->fetchAllAssociative();
+
+        return array_map(fn (array $row) => new StatisticResultDto(
+            Uuid::fromString($row['userId']),
+            new DateTimeImmutable($row['createdAt']),
+            $row['discipline'],
+            $row['distance'],
+            $row['time'],
+        ), $rows);
     }
 
     /**
      * @throws Exception
+     * @throws DateMalformedStringException
      */
     final public function getProgress(StatisticIndexDto $dto): array
     {
         $baseSql = '
         SELECT 
-            userId,
+            "userId",
             discipline,
             distance,
             time,
-            createdAt
+            "createdAt"
         FROM (
             SELECT 
-                u.id as userId,
+                u.id AS "userId",
                 d.discipline,
                 t.distance,
                 t.time,
-                t.created_at as createdAt
+                t.created_at AS "createdAt"
             FROM training_discipline_distances t
             JOIN training_disciplines d ON t.training_discipline_id = d.id
             JOIN trainings tr ON d.training_id = tr.id
@@ -110,11 +123,11 @@ class StatisticRepository
             UNION ALL
     
             SELECT 
-                u.id as userId,
+                u.id AS "userId",
                 ed.discipline,
                 edd.distance,
                 er.time,
-                er.created_at as createdAt
+                er.created_at AS "createdAt"
             FROM event_discipline_results er
             JOIN event_discipline_lists edl ON er.event_discipline_list_id = edl.id
             JOIN event_discipline_distances edd ON edl.event_discipline_distance_id = edd.id
@@ -127,7 +140,7 @@ class StatisticRepository
             ->from('(' . $baseSql . ')', 'stats');
 
         if (! empty($dto->filter->userIds)) {
-            $qb->andWhere('stats.userId IN (:userIds)')
+            $qb->andWhere('stats."userId" IN (:userIds)')
                 ->setParameter('userIds', $dto->filter->userIds, ArrayParameterType::STRING);
         }
 
@@ -142,11 +155,19 @@ class StatisticRepository
         }
 
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('stats.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
+        $qb->orderBy('stats."' . $field . '"', $direction === 'desc' ? 'DESC' : 'ASC');
 
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);
 
-        return $qb->executeQuery()->fetchAllAssociative();
+        $rows = $qb->executeQuery()->fetchAllAssociative();
+
+        return array_map(fn (array $row) => new StatisticResultDto(
+            Uuid::fromString($row['userId']),
+            new DateTimeImmutable($row['createdAt']),
+            $row['discipline'],
+            $row['distance'],
+            $row['time'],
+        ), $rows);
     }
 }

@@ -2,8 +2,7 @@
 
 namespace App\Resource;
 
-use DateMalformedStringException;
-use DateTimeImmutable;
+use App\Dto\StatisticResultDto;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -25,23 +24,19 @@ use OpenApi\Attributes as OA;
 )]
 class StatisticResource
 {
-    /**
-     * @throws DateMalformedStringException
-     */
-    public static function fromEntityCollection(array $records): array
+    public static function fromEntity(StatisticResultDto $result): array
     {
-        $data = [];
+        return [
+            'userId' => $result->userId->toString(),
+            'createdAt' => $result->createdAt->format('Y-m-d\TH:i:s'),
+            'discipline' => $result->discipline,
+            'distance' => $result->distance,
+            'time' => $result->time,
+        ];
+    }
 
-        foreach ($records as $record) {
-            $data[] = [
-                'userId' => $record['userid'],
-                'createdAt' => new DateTimeImmutable($record['createdat'])->format('Y-m-d\TH:i:s'),
-                'discipline' => $record['discipline'],
-                'distance' => $record['distance'],
-                'time' => $record['time'],
-            ];
-        }
-
-        return $data;
+    public static function fromEntityCollection(array $results): array
+    {
+        return array_map(fn (StatisticResultDto $result) => self::fromEntity($result), $results);
     }
 }

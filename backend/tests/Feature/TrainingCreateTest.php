@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\{RoleEnum};
-use Tests\Factory\TrainingFactory;
-use Tests\Factory\UserFactory;
+use Tests\Factory\{TrainingFactory, UserFactory};
 
 class TrainingCreateTest extends ApiTestCase
 {

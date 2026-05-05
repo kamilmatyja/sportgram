@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use DateTimeImmutable;
 use App\Enum\{ElementStatusEnum, FriendStatusEnum, RoleEnum};
+use DateTimeImmutable;
 use Tests\Factory\{FriendFactory, StoryFactory};
 
 class StoryIndexTest extends ApiTestCase

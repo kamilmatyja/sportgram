@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Dto\{EntryCountIndexDto, EntryIndexDto};
+use App\Dto\{EntryCountDto, EntryCountIndexDto, EntryIndexDto};
 use App\Entity\Entry;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
@@ -88,6 +88,12 @@ class EntryRepository extends BaseRepository
         $qb->setFirstResult(($dto->page - 1) * $dto->limit)
             ->setMaxResults($dto->limit);
 
-        return $qb->getQuery()->getArrayResult();
+        $rows = $qb->getQuery()->getResult();
+
+        return array_map(fn (array $row) => new EntryCountDto(
+            Uuid::fromString($row['entityId']),
+            $row['type'],
+            $row['count'],
+        ), $rows);
     }
 }
