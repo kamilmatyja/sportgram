@@ -37,7 +37,6 @@ class StatisticProgressTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        // Parametr `userIds` w DTO dla StatisticFilterDto jest wymagany
         $result = $this->get('/api/statistics/progress', $user);
 
         $this->assertEquals(400, $result['status']);
@@ -49,7 +48,6 @@ class StatisticProgressTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
         $targetUser = UserFactory::make(em: $this->em);
 
-        // Progress zwraca wszystkie czasy historycznie (bez DISTINCT)
         $training = TrainingFactory::make(['user' => $targetUser, 'status' => ElementStatusEnum::Active], $this->em);
         $tDisc = TrainingDisciplineFactory::make(
             ['training' => $training, 'discipline' => DisciplineEnum::Cycling],
@@ -62,7 +60,7 @@ class StatisticProgressTest extends ApiTestCase
         TrainingDisciplineDistanceFactory::make(
             ['trainingDiscipline' => $tDisc, 'distance' => 500, 'time' => 180],
             $this->em,
-        ); // drugi trening taki sam, lepszy czas
+        );
 
         $result = $this->get(
             "/api/statistics/progress?filter[userIds][]={$targetUser->id->toString()}&filter[discipline]=" . DisciplineEnum::Cycling->value . "&filter[distance]=500&sort=time:desc",
@@ -71,10 +69,8 @@ class StatisticProgressTest extends ApiTestCase
 
         $this->assertEquals(200, $result['status']);
 
-        // Zwracamy wszystkie podejścia (w tym przypadku 2, bo to jest progress)
         $this->assertCount(2, $result['json']);
 
-        // Sprawdzamy sortowanie malejąco
         $this->assertEquals(200, $result['json'][0]['time']);
         $this->assertEquals(180, $result['json'][1]['time']);
     }

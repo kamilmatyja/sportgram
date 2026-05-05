@@ -30,19 +30,16 @@ class StoryIndexTest extends ApiTestCase
             $this->em,
         );
 
-        // Użytkownik ma dwa story, powinno zwrócić jego jako 1 najnowszy rekord (grupowanie po userId)
         StoryFactory::make(['user' => $user, 'createdAt' => new \DateTimeImmutable('-1 hour')], $this->em);
         StoryFactory::make(['user' => $user, 'createdAt' => new \DateTimeImmutable('now')], $this->em);
 
         StoryFactory::make(['user' => $friend], $this->em);
 
-        // Obce story - nie powinno się pokazać
         StoryFactory::make(['user' => $stranger], $this->em);
 
         $result = $this->get('/api/stories', $user);
 
         $this->assertEquals(200, $result['status']);
-        // 1 grupa z "user", 1 grupa z "friend" = w sumie 2 rekordy
         $this->assertCount(3, $result['json']);
     }
 
@@ -57,7 +54,6 @@ class StoryIndexTest extends ApiTestCase
         StoryFactory::make(['user' => $user, 'text' => 'Evening run', 'status' => ElementStatusEnum::Draft], $this->em);
         StoryFactory::make(['user' => $user, 'text' => 'Cycling', 'status' => ElementStatusEnum::Active], $this->em);
 
-        // Gdy filtrujemy po konkretnym userId, repository zdejmuje grupowanie i podaje po prostu wpisy usera:
         $result = $this->get("/api/stories?filter[userId]={$user->id->toString()}&filter[text]=run", $user);
         $this->assertEquals(200, $result['status']);
         $this->assertCount(2, $result['json']);
@@ -75,7 +71,6 @@ class StoryIndexTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        // Z racji że repository filtrując po userId nie grupuje, możemy przetestować paginację jego wpisów
         for ($i = 0; $i < 15; $i++) {
             StoryFactory::make(['user' => $user], $this->em);
         }

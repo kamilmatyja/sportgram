@@ -48,7 +48,6 @@ class StatisticRecordsTest extends ApiTestCase
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        // Parametr `userIds` w DTO dla StatisticFilterDto jest wymagany i nie może być pusty
         $result = $this->get('/api/statistics/records', $user);
 
         $this->assertEquals(400, $result['status']);
@@ -60,7 +59,6 @@ class StatisticRecordsTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
         $targetUser = UserFactory::make(em: $this->em);
 
-        // Dodajemy trening: Dyscyplina 1, Dystans 100, Czas 50
         $training = TrainingFactory::make(['user' => $targetUser, 'status' => ElementStatusEnum::Active], $this->em);
         $tDisc = TrainingDisciplineFactory::make(
             ['training' => $training, 'discipline' => DisciplineEnum::Running],
@@ -71,7 +69,6 @@ class StatisticRecordsTest extends ApiTestCase
             $this->em,
         );
 
-        // Dodajemy event_result: Dyscyplina 1, Dystans 100, Czas 40 (lepszy czas)
         $page = PageFactory::make(['user' => $user], $this->em);
         $pageParticipant = PageParticipantFactory::make(['page' => $page, 'user' => $targetUser], $this->em);
         $event = EventFactory::make(['pageParticipant' => $pageParticipant], $this->em);
@@ -86,7 +83,6 @@ class StatisticRecordsTest extends ApiTestCase
             $this->em,
         );
 
-        // Zapytanie o rekordy targetUser z filtrowaniem
         $result = $this->get(
             "/api/statistics/records?filter[userIds][]={$targetUser->id->toString()}&filter[discipline]=" . DisciplineEnum::Running->value . '&sort=time:asc',
             $user,
@@ -94,11 +90,9 @@ class StatisticRecordsTest extends ApiTestCase
 
         $this->assertEquals(200, $result['status']);
 
-        // Zgodnie z zapytaniem SQL dla 'records', otrzymujemy najlepszy czas (DISTINCT ON user, discipline, distance - sortowanie od najmniejszego czasu załatwiamy domyślnie lub w sort: time:asc)
         $this->assertIsArray($result['json']);
         $this->assertGreaterThanOrEqual(1, count($result['json']));
 
-        // Czas powinien być najlepszy z tych dwóch, czyli 40
         $this->assertEquals(40, $result['json'][0]['time']);
         $this->assertEquals(100, $result['json'][0]['distance']);
         $this->assertEquals(DisciplineEnum::Running->value, $result['json'][0]['discipline']);
@@ -109,7 +103,6 @@ class StatisticRecordsTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
         $targetUser = UserFactory::make(em: $this->em);
 
-        // Tworzymy kilkanaście osobnych wpisów dla paginacji (różne dystanse, by DISTINCT ON się nie nałożyło na jeden wiersz)
         for ($i = 1; $i <= 15; $i++) {
             $training = TrainingFactory::make(['user' => $targetUser], $this->em);
             $tDisc = TrainingDisciplineFactory::make(
