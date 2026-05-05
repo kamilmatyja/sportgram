@@ -38,6 +38,7 @@ class GoalRepository extends BaseRepository
         return $goal;
     }
 
+    /** @return Goal[] */
     final public function findActiveByDiscipline(
         Uuid $userId,
         DisciplineEnum $discipline,
@@ -59,6 +60,7 @@ class GoalRepository extends BaseRepository
         return $qb->getQuery()->getResult();
     }
 
+    /** @return Goal[] */
     final public function findGoals(GoalIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('g');

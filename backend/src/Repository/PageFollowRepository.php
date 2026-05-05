@@ -36,6 +36,7 @@ class PageFollowRepository extends BaseRepository
         return $pageFollow;
     }
 
+    /** @return PageFollow[] */
     final public function findPageFollows(PageFollowIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('p');

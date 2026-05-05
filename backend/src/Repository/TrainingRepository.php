@@ -36,6 +36,7 @@ class TrainingRepository extends BaseRepository
         return $training;
     }
 
+    /** @return Training[] */
     final public function findTrainings(TrainingIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('t');

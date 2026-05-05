@@ -19,6 +19,7 @@ readonly class UserPasswordResetEmailSubscriber implements EventSubscriberInterf
     ) {
     }
 
+    /** @return string[] */
     public static function getSubscribedEvents(): array
     {
         return [

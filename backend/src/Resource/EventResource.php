@@ -85,6 +85,7 @@ class EventResource
         return $data;
     }
 
+    /** @var $events Event[] */
     public static function fromEntityCollection(array $events): array
     {
         return array_map(fn (Event $event) => self::fromEntity($event), $events);

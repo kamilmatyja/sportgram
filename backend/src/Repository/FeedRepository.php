@@ -37,6 +37,7 @@ class FeedRepository extends BaseRepository
         return $feed;
     }
 
+    /** @return Feed[] */
     final public function findFeeds(Uuid $userId, FeedIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('f');

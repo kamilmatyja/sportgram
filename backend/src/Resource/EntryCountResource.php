@@ -35,6 +35,7 @@ class EntryCountResource
         ];
     }
 
+    /** @var $entries EntryCountDto[] */
     public static function fromEntityCollection(array $entries): array
     {
         return array_map(fn (EntryCountDto $entry) => self::fromEntity($entry), $entries);

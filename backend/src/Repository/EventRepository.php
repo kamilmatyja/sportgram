@@ -36,6 +36,7 @@ class EventRepository extends BaseRepository
         return $event;
     }
 
+    /** @return Event[] */
     final public function findEvents(EventIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('e');

@@ -54,6 +54,7 @@ class FriendResource
         ];
     }
 
+    /** @var $friends Friend[] */
     public static function fromEntityCollection(array $friends): array
     {
         return array_map(fn (Friend $friend) => self::fromEntity($friend), $friends);

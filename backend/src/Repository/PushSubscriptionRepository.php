@@ -37,6 +37,7 @@ class PushSubscriptionRepository extends BaseRepository
         return $pushSubscription;
     }
 
+    /** @return PushSubscription[] */
     final public function findActiveByUserId(Uuid $userId): array
     {
         return $this->createQueryBuilder('p')
@@ -48,6 +49,7 @@ class PushSubscriptionRepository extends BaseRepository
             ->getResult();
     }
 
+    /** @return PushSubscription[] */
     final public function findPushSubscriptions(Uuid $userId, PushSubscriptionIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('p')

@@ -16,38 +16,38 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class StatisticController extends AbstractController
 {
-    #[Route('/api/statistics/records', name: 'statistic_records', methods: ['GET'])]
+    #[Route('/api/statistics/records', name: 'statistic_record_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of statistic records',
         tags: ['statistics'],
         responses: [new Collection('StatisticResource'), new BadRequest(), new Unauthorized()],
     )]
-    final public function records(
+    final public function indexRecords(
         #[MapQueryString(validationFailedStatusCode: 400)]
         StatisticIndexDto $dto,
         StatisticService $statisticService,
     ): JsonResponse {
-        $statistics = $statisticService->getRecords($dto);
+        $statistics = $statisticService->indexRecords($dto);
 
         $data = StatisticResource::fromEntityCollection($statistics);
 
         return ApiResponse::elements($data);
     }
 
-    #[Route('/api/statistics/progress', name: 'statistic_progress', methods: ['GET'])]
+    #[Route('/api/statistics/progress', name: 'statistic_progres_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of statistic progress',
         tags: ['statistics'],
         responses: [new Collection('StatisticResource'), new BadRequest(), new Unauthorized()],
     )]
-    final public function progress(
+    final public function indexProgress(
         #[MapQueryString(validationFailedStatusCode: 400)]
         StatisticIndexDto $dto,
         StatisticService $statisticService,
     ): JsonResponse {
-        $statistics = $statisticService->getProgress($dto);
+        $statistics = $statisticService->indexProgress($dto);
 
         $data = StatisticResource::fromEntityCollection($statistics);
 

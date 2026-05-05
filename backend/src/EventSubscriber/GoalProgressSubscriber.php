@@ -20,6 +20,7 @@ readonly class GoalProgressSubscriber implements EventSubscriberInterface
     ) {
     }
 
+    /** @return string[] */
     public static function getSubscribedEvents(): array
     {
         return [

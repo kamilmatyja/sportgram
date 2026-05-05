@@ -77,6 +77,7 @@ class FeedResource
         return $data;
     }
 
+    /** @var $feeds Feed[] */
     public static function fromEntityCollection(array $feeds): array
     {
         return array_map(fn (Feed $feed) => self::fromEntity($feed), $feeds);

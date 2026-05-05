@@ -56,6 +56,7 @@ class PushSubscriptionResource
         ];
     }
 
+    /** @var $pushSubscriptions PushSubscription[] */
     public static function fromEntityCollection(array $pushSubscriptions): array
     {
         return array_map(

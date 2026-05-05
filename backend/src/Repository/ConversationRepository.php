@@ -36,6 +36,7 @@ class ConversationRepository extends BaseRepository
         return $conversation;
     }
 
+    /** @return Conversation[] */
     final public function findConversations(Uuid $userId, ConversationIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('c');

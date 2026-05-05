@@ -22,6 +22,7 @@ readonly class NotificationSubscriber implements EventSubscriberInterface
     ) {
     }
 
+    /** @return string[] */
     public static function getSubscribedEvents(): array
     {
         return [

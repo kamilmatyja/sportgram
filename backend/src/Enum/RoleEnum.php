@@ -27,6 +27,7 @@ enum RoleEnum: int
         };
     }
 
+    /** @return int[] */
     public static function nano(): array
     {
         return [self::Participant->value, self::Organizer->value];

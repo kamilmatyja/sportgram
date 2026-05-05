@@ -37,6 +37,7 @@ class FriendRepository extends BaseRepository
         return $friend;
     }
 
+    /** @return Friend[] */
     final public function findFriends(FriendIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('f');

@@ -164,6 +164,7 @@ readonly class PageService
         return $pageId;
     }
 
+    /** @return Page[] */
     final public function index(PageIndexDto $dto): array
     {
         return $this->pageRepository->findPages($dto);
@@ -250,6 +251,7 @@ readonly class PageService
         return $pageFollowId;
     }
 
+    /** @return PageFollow[] */
     final public function indexFollows(PageFollowIndexDto $dto): array
     {
         return $this->pageFollowRepository->findPageFollows($dto);

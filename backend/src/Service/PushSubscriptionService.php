@@ -58,6 +58,7 @@ readonly class PushSubscriptionService
         return $pushSubscriptionId;
     }
 
+    /** @return PushSubscription[] */
     final public function index(PushSubscriptionIndexDto $dto): array
     {
         /** @var User $user */

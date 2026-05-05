@@ -35,6 +35,7 @@ class StatisticResource
         ];
     }
 
+    /** @var $results StatisticResultDto[] */
     public static function fromEntityCollection(array $results): array
     {
         return array_map(fn (StatisticResultDto $result) => self::fromEntity($result), $results);

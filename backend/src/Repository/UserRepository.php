@@ -44,6 +44,7 @@ class UserRepository extends BaseRepository
         return $user;
     }
 
+    /** @return User[] */
     final public function findUsers(UserIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('u');

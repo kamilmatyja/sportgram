@@ -51,6 +51,7 @@ class NotificationResource
         ];
     }
 
+    /** @var $notifications Notification[] */
     public static function fromEntityCollection(array $notifications): array
     {
         return array_map(fn (Notification $notification) => self::fromEntity($notification), $notifications);

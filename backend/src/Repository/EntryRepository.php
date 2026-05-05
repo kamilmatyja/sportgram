@@ -36,6 +36,7 @@ class EntryRepository extends BaseRepository
         return $entry;
     }
 
+    /** @return Entry[] */
     final public function findEntries(EntryIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('e');
@@ -64,6 +65,7 @@ class EntryRepository extends BaseRepository
         return $qb->getQuery()->getResult();
     }
 
+    /** @return EntryCountDto[] */
     final public function findCountEntries(EntryCountIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('e')

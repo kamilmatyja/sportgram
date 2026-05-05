@@ -54,6 +54,7 @@ class PageFollowResource
         ];
     }
 
+    /** @var $pageFollows PageFollow[] */
     public static function fromEntityCollection(array $pageFollows): array
     {
         return array_map(fn (PageFollow $pageFollow) => self::fromEntity($pageFollow), $pageFollows);

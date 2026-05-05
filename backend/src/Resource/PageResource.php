@@ -82,6 +82,7 @@ class PageResource
         return $data;
     }
 
+    /** @var $pages Page[] */
     public static function fromEntityCollection(array $pages): array
     {
         return array_map(fn (Page $page) => self::fromEntity($page), $pages);

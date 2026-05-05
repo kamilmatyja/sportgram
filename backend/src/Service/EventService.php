@@ -202,6 +202,7 @@ readonly class EventService
         return $eventId;
     }
 
+    /** @return Event[] */
     final public function index(EventIndexDto $dto): array
     {
         return $this->eventRepository->findEvents($dto);
@@ -283,6 +284,7 @@ readonly class EventService
         return $eventDisciplineListId;
     }
 
+    /** @return EventDisciplineList[] */
     final public function indexList(Uuid $eventDisciplineDistanceId, EventListIndexDto $dto): array
     {
         return $this->eventDisciplineListRepository->findLists($eventDisciplineDistanceId, $dto);

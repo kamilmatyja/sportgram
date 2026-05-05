@@ -36,6 +36,7 @@ class PageRepository extends BaseRepository
         return $page;
     }
 
+    /** @return Page[] */
     final public function findPages(PageIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('p');

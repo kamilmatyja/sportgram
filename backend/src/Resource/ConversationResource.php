@@ -57,6 +57,7 @@ class ConversationResource
         ];
     }
 
+    /** @var $conversations Conversation[] */
     public static function fromEntityCollection(array $conversations): array
     {
         return array_map(fn (Conversation $conversation) => self::fromEntity($conversation), $conversations);

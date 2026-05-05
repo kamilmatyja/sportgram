@@ -19,10 +19,11 @@ class StatisticRepository
     }
 
     /**
+     * @return StatisticResultDto[]
      * @throws Exception
      * @throws DateMalformedStringException
      */
-    final public function getRecords(StatisticIndexDto $dto): array
+    final public function findRecords(StatisticIndexDto $dto): array
     {
         $baseSql = '
         SELECT DISTINCT ON ("userId", discipline, distance)
@@ -96,10 +97,11 @@ class StatisticRepository
     }
 
     /**
+     * @return StatisticResultDto[]
      * @throws Exception
      * @throws DateMalformedStringException
      */
-    final public function getProgress(StatisticIndexDto $dto): array
+    final public function findProgress(StatisticIndexDto $dto): array
     {
         $baseSql = '
         SELECT 

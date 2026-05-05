@@ -76,6 +76,7 @@ readonly class FeedService
         return $feedId;
     }
 
+    /** @return Feed[] */
     final public function index(FeedIndexDto $dto): array
     {
         /** @var User $user */

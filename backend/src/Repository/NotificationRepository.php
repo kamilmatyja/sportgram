@@ -36,6 +36,7 @@ class NotificationRepository extends BaseRepository
         return $notification;
     }
 
+    /** @return Notification[] */
     final public function findNotifications(Uuid $userId, NotificationIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('n')

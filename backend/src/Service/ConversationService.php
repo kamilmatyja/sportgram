@@ -88,6 +88,7 @@ readonly class ConversationService
         return $conversationId;
     }
 
+    /** @return Conversation[] */
     final public function index(ConversationIndexDto $dto): array
     {
         /** @var User $user */
@@ -121,6 +122,7 @@ readonly class ConversationService
         return $conversationActivity->id;
     }
 
+    /** @return ConversationActivity[] */
     final public function indexActivity(ConversationActivityIndexDto $dto): array
     {
         /** @var User $user */

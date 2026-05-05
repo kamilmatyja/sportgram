@@ -52,6 +52,7 @@ class StoryResource
         ];
     }
 
+    /** @var $stories Story[] */
     public static function fromEntityCollection(array $stories): array
     {
         return array_map(fn (Story $story) => self::fromEntity($story), $stories);

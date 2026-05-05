@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{StatisticIndexDto};
+use App\Dto\{StatisticIndexDto, StatisticResultDto};
 use App\Repository\StatisticRepository;
 use DateMalformedStringException;
 use Doctrine\DBAL\Exception;
@@ -15,20 +15,22 @@ readonly class StatisticService
     }
 
     /**
+     * @return StatisticResultDto[]
      * @throws DateMalformedStringException
      * @throws Exception
      */
-    final public function getRecords(StatisticIndexDto $dto): array
+    final public function indexRecords(StatisticIndexDto $dto): array
     {
-        return $this->statisticRepository->getRecords($dto);
+        return $this->statisticRepository->findRecords($dto);
     }
 
     /**
+     * @return StatisticResultDto[]
      * @throws DateMalformedStringException
      * @throws Exception
      */
-    final public function getProgress(StatisticIndexDto $dto): array
+    final public function indexProgress(StatisticIndexDto $dto): array
     {
-        return $this->statisticRepository->getProgress($dto);
+        return $this->statisticRepository->findProgress($dto);
     }
 }

@@ -102,6 +102,7 @@ class TrainingResource
         return $data;
     }
 
+    /** @var $trainings Training[] */
     public static function fromEntityCollection(array $trainings): array
     {
         return array_map(fn (Training $training) => self::fromEntity($training), $trainings);

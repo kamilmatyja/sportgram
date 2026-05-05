@@ -37,6 +37,7 @@ class StoryRepository extends BaseRepository
         return $story;
     }
 
+    /** @return Story[] */
     final public function findStories(Uuid $userId, StoryIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('s');

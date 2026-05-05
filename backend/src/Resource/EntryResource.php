@@ -54,6 +54,7 @@ class EntryResource
         ];
     }
 
+    /** @var $entries Entry[] */
     public static function fromEntityCollection(array $entries): array
     {
         return array_map(fn (Entry $entry) => self::fromEntity($entry), $entries);

@@ -272,6 +272,7 @@ readonly class TrainingService
         return $trainingId;
     }
 
+    /** @return Training[] */
     final public function index(TrainingIndexDto $dto): array
     {
         return $this->trainingRepository->findTrainings($dto);

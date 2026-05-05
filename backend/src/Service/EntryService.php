@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{EntryCountIndexDto, EntryDto, EntryIndexDto};
+use App\Dto\{EntryCountDto, EntryCountIndexDto, EntryDto, EntryIndexDto};
 use App\Entity\{Entry, User};
 use App\Enum\EntryTypeEnum;
 use App\Repository\EntryRepository;
@@ -29,6 +29,7 @@ readonly class EntryService
         return $entry->id;
     }
 
+    /** @return Entry[] */
     final public function index(EntryIndexDto $dto): array
     {
         return $this->entryRepository->findEntries($dto);
@@ -39,6 +40,7 @@ readonly class EntryService
         return $this->entryRepository->findById($entryId);
     }
 
+    /** @return EntryCountDto[] */
     final public function indexCount(EntryCountIndexDto $dto): array
     {
         return $this->entryRepository->findCountEntries($dto);

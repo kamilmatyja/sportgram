@@ -19,6 +19,7 @@ readonly class UserSignEmailSubscriber implements EventSubscriberInterface
     ) {
     }
 
+    /** @return string[] */
     public static function getSubscribedEvents(): array
     {
         return [

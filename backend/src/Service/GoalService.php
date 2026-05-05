@@ -185,6 +185,7 @@ readonly class GoalService
         return $goalId;
     }
 
+    /** @return Goal[] */
     final public function index(GoalIndexDto $dto): array
     {
         return $this->goalRepository->findGoals($dto);

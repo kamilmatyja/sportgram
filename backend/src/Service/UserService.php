@@ -211,6 +211,7 @@ readonly class UserService
         return $userId;
     }
 
+    /** @return User[] */
     final public function index(UserIndexDto $dto): array
     {
         return $this->userRepository->findUsers($dto);

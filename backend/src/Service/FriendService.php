@@ -94,6 +94,7 @@ readonly class FriendService
         return $friendId;
     }
 
+    /** @return Friend[] */
     final public function index(FriendIndexDto $dto): array
     {
         return $this->friendRepository->findFriends($dto);

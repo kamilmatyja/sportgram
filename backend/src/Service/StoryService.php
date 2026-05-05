@@ -77,6 +77,7 @@ readonly class StoryService
         return $storyId;
     }
 
+    /** @return Story[] */
     final public function index(StoryIndexDto $dto): array
     {
         /** @var User $user */

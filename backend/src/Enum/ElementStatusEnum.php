@@ -12,6 +12,7 @@ enum ElementStatusEnum: int
     case Active = 2;
     case Rejected = 3;
 
+    /** @return int[] */
     public static function allowed(): array
     {
         return [self::Draft->value, self::Active->value];

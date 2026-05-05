@@ -65,6 +65,7 @@ class GoalResource
         return $data;
     }
 
+    /** @var $goals Goal[] */
     public static function fromEntityCollection(array $goals): array
     {
         return array_map(fn (Goal $goal) => self::fromEntity($goal), $goals);

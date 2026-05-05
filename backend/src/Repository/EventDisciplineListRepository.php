@@ -36,6 +36,7 @@ class EventDisciplineListRepository extends BaseRepository
         return $eventDisciplineList;
     }
 
+    /** @return EventDisciplineList[] */
     final public function findLists(Uuid $eventDisciplineDistanceId, EventListIndexDto $dto): array
     {
         $qb = $this->createQueryBuilder('e');

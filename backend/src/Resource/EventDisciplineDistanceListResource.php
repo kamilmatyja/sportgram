@@ -79,6 +79,7 @@ class EventDisciplineDistanceListResource
         return $data;
     }
 
+    /** @var $lists EventDisciplineList[] */
     public static function fromEntityCollection(array $lists): array
     {
         return array_map(fn (EventDisciplineList $list) => self::fromEntity($list), $lists);

@@ -227,6 +227,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
+    /** @return string[] */
     final public function getRoles(): array
     {
         return array_map(

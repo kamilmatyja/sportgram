@@ -107,6 +107,7 @@ class UserResource
         return $data;
     }
 
+    /** @var $users User[] */
     public static function fromEntityCollection(array $users): array
     {
         return array_map(fn (User $user) => self::fromEntity($user), $users);

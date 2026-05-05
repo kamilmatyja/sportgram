@@ -36,6 +36,7 @@ readonly class NotificationService
         return $notificationId;
     }
 
+    /** @return Notification[] */
     final public function index(NotificationIndexDto $dto): array
     {
         /** @var User $user */
