@@ -6,7 +6,6 @@ use App\Entity\ConversationActivity;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'ConversationActivityResource',
     required: [
         'id',
         'senderUserId',
@@ -51,7 +50,7 @@ class ConversationActivityResource
         ];
     }
 
-    /** @var $activities ConversationActivity[] */
+    /** @param ConversationActivity[] $activities */
     public static function fromEntityCollection(array $activities): array
     {
         return array_map(fn (ConversationActivity $activity) => self::fromEntity($activity), $activities);

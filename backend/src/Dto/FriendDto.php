@@ -8,7 +8,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'FriendDto',
     required: ['receiverUserId'],
     properties: [
         new OA\Property(

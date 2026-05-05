@@ -22,7 +22,7 @@ class FriendController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create friend',
-        requestBody: new Body('FriendDto'),
+        requestBody: new Body(FriendDto::class),
         tags: ['friends'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -40,7 +40,7 @@ class FriendController extends AbstractController
     #[IsGranted(FriendVoter::FRIEND, subject: 'id')]
     #[OA\Patch(
         summary: 'Update friend status',
-        requestBody: new Body('FriendStatusDto'),
+        requestBody: new Body(FriendStatusDto::class),
         tags: ['friends'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -76,7 +76,7 @@ class FriendController extends AbstractController
     #[OA\Get(
         summary: 'Index of friends',
         tags: ['friends'],
-        responses: [new Collection('FriendResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(FriendResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -95,7 +95,7 @@ class FriendController extends AbstractController
     #[OA\Get(
         summary: 'Details of friend',
         tags: ['friends'],
-        responses: [new Item('FriendResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(FriendResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

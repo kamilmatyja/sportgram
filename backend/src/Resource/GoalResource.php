@@ -4,10 +4,10 @@ namespace App\Resource;
 
 use App\Dto\GoalDetailsQueryDto;
 use App\Entity\{Goal, GoalParticipant};
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'GoalResource',
     required: [
         'id',
         'createdAt',
@@ -35,7 +35,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'participants',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/GoalParticipantResource'),
+            items: new OA\Items(ref: new Model(type: GoalParticipantResource::class)),
         ),
     ],
     type: 'object',
@@ -65,7 +65,7 @@ class GoalResource
         return $data;
     }
 
-    /** @var $goals Goal[] */
+    /** @param Goal[] $goals */
     public static function fromEntityCollection(array $goals): array
     {
         return array_map(fn (Goal $goal) => self::fromEntity($goal), $goals);

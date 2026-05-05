@@ -6,7 +6,6 @@ use App\Entity\GoalParticipantResult;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'GoalParticipantResultResource',
     required: [
         'id',
         'goalParticipantId',

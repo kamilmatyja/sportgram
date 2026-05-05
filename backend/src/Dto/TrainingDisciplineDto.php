@@ -3,20 +3,18 @@
 namespace App\Dto;
 
 use App\Enum\DisciplineEnum;
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'TrainingDisciplineDto',
     required: ['discipline'],
     properties: [
         new OA\Property(property: 'discipline', type: 'integer', example: 1),
         new OA\Property(
             property: 'distances',
             type: 'array',
-            items: new OA\Items(
-                ref: '#/components/schemas/TrainingDisciplineDistanceDto',
-            ),
+            items: new OA\Items(ref: new Model(type: TrainingDisciplineDistanceDto::class)),
             nullable: true,
         ),
     ],

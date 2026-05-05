@@ -27,7 +27,7 @@ class FeedController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create feed',
-        requestBody: new Body('FeedDto'),
+        requestBody: new Body(FeedDto::class),
         tags: ['feeds'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -45,7 +45,7 @@ class FeedController extends AbstractController
     #[IsGranted(FeedCreatorVoter::FEED_CREATOR, subject: 'id')]
     #[OA\Put(
         summary: 'Update feed',
-        requestBody: new Body('FeedDto'),
+        requestBody: new Body(FeedDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -64,7 +64,7 @@ class FeedController extends AbstractController
     #[IsGranted(FeedVoter::FEED, subject: 'id')]
     #[OA\Patch(
         summary: 'Update feed status',
-        requestBody: new Body('ElementStatusDto'),
+        requestBody: new Body(ElementStatusDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -100,7 +100,7 @@ class FeedController extends AbstractController
     #[OA\Get(
         summary: 'Index of feeds',
         tags: ['feeds'],
-        responses: [new Collection('FeedResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(FeedResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -119,7 +119,7 @@ class FeedController extends AbstractController
     #[OA\Get(
         summary: 'Details of feeds',
         tags: ['feeds'],
-        responses: [new Item('FeedResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(FeedResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -138,7 +138,7 @@ class FeedController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create feed comment',
-        requestBody: new Body('FeedCommentDto'),
+        requestBody: new Body(FeedCommentDto::class),
         tags: ['feeds'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -157,7 +157,7 @@ class FeedController extends AbstractController
     #[IsGranted(FeedCommentCreatorVoter::FEED_COMMENT_CREATOR, subject: 'id')]
     #[OA\Put(
         summary: 'Update feed comment',
-        requestBody: new Body('FeedCommentDto'),
+        requestBody: new Body(FeedCommentDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -176,7 +176,7 @@ class FeedController extends AbstractController
     #[IsGranted(FeedCommentVoter::FEED_COMMENT, subject: 'id')]
     #[OA\Patch(
         summary: 'Update feed comment status',
-        requestBody: new Body('ElementStatusDto'),
+        requestBody: new Body(ElementStatusDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -211,7 +211,7 @@ class FeedController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create feed reaction',
-        requestBody: new Body('FeedReactionDto'),
+        requestBody: new Body(FeedReactionDto::class),
         tags: ['feeds'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -230,7 +230,7 @@ class FeedController extends AbstractController
     #[IsGranted(FeedReactionCreatorVoter::FEED_REACTION_CREATOR, subject: 'id')]
     #[OA\Put(
         summary: 'Update feed reaction',
-        requestBody: new Body('FeedReactionDto'),
+        requestBody: new Body(FeedReactionDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -249,7 +249,7 @@ class FeedController extends AbstractController
     #[IsGranted(FeedReactionVoter::FEED_REACTION, subject: 'id')]
     #[OA\Patch(
         summary: 'Update feed reaction status',
-        requestBody: new Body('ElementStatusDto'),
+        requestBody: new Body(ElementStatusDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]

@@ -20,7 +20,7 @@ class SignController extends AbstractController
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Sign user',
-        requestBody: new Body('UserSignDto'),
+        requestBody: new Body(UserSignDto::class),
         tags: ['signs'],
         responses: [new Created(), new BadRequest(), new Conflict()],
     )]
@@ -38,7 +38,7 @@ class SignController extends AbstractController
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Patch(
         summary: 'Confirm sign user',
-        requestBody: new Body('UserCodeDto'),
+        requestBody: new Body(UserCodeDto::class),
         tags: ['signs'],
         responses: [new Token(), new BadRequest(), new Conflict()],
     )]

@@ -7,7 +7,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'UserStatusDto',
     required: ['status'],
     properties: [
         new OA\Property(property: 'status', type: 'integer', example: 1),

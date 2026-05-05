@@ -4,10 +4,10 @@ namespace App\Resource;
 
 use App\Dto\TrainingDetailsQueryDto;
 use App\Entity\{TrainingDiscipline, TrainingDisciplineDistance};
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'TrainingDisciplineResource',
     required: [
         'id',
         'trainingParticipantId',
@@ -29,7 +29,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'distances',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/TrainingDisciplineDistanceResource'),
+            items: new OA\Items(ref: new Model(type: TrainingDisciplineDistanceResource::class)),
         ),
     ],
     type: 'object',

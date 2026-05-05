@@ -20,7 +20,7 @@ class RegisterController extends AbstractController
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Register user',
-        requestBody: new Body('UserEmailDto'),
+        requestBody: new Body(UserEmailDto::class),
         tags: ['registers'],
         responses: [new Created(), new BadRequest(), new Conflict()],
     )]
@@ -38,7 +38,7 @@ class RegisterController extends AbstractController
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Patch(
         summary: 'Confirm register user',
-        requestBody: new Body('UserCodeDto'),
+        requestBody: new Body(UserCodeDto::class),
         tags: ['registers'],
         responses: [new Ok(), new BadRequest(), new Conflict()],
     )]

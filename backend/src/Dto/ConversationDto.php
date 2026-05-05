@@ -6,7 +6,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'ConversationDto',
     required: ['text'],
     properties: [
         new OA\Property(property: 'text', type: 'string', example: 'Hello, how are you?'),

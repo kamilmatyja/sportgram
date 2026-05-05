@@ -7,7 +7,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'FeedReactionDto',
     required: ['type'],
     properties: [
         new OA\Property(property: 'type', type: 'integer', example: 1),

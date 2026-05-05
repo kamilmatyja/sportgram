@@ -29,7 +29,7 @@ class PageController extends AbstractController
     #[IsGranted(RoleEnum::ROLE_ORGANIZER)]
     #[OA\Post(
         summary: 'Create page',
-        requestBody: new Body('PageDto'),
+        requestBody: new Body(PageDto::class),
         tags: ['pages'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -47,7 +47,7 @@ class PageController extends AbstractController
     #[IsGranted(PageCreatorVoter::PAGE_CREATOR, subject: 'id')]
     #[OA\Put(
         summary: 'Update page',
-        requestBody: new Body('PageDto'),
+        requestBody: new Body(PageDto::class),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
     )]
@@ -66,7 +66,7 @@ class PageController extends AbstractController
     #[IsGranted(PageVoter::PAGE, subject: 'id')]
     #[OA\Patch(
         summary: 'Update page status',
-        requestBody: new Body('ElementStatusDto'),
+        requestBody: new Body(ElementStatusDto::class),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
     )]
@@ -102,7 +102,7 @@ class PageController extends AbstractController
     #[OA\Get(
         summary: 'Index of pages',
         tags: ['pages'],
-        responses: [new Collection('PageResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(PageResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -121,7 +121,7 @@ class PageController extends AbstractController
     #[OA\Get(
         summary: 'Details of page',
         tags: ['pages'],
-        responses: [new Item('PageResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(PageResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -140,7 +140,7 @@ class PageController extends AbstractController
     #[IsGranted(PageParticipantVoter::PAGE_PARTICIPANT, subject: 'id')]
     #[OA\Patch(
         summary: 'Update page participant status',
-        requestBody: new Body('SaveStatusDto'),
+        requestBody: new Body(SaveStatusDto::class),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
     )]
@@ -159,7 +159,7 @@ class PageController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create page follow',
-        requestBody: new Body('PageFollowStatusDto'),
+        requestBody: new Body(PageFollowStatusDto::class),
         tags: ['pages'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -178,7 +178,7 @@ class PageController extends AbstractController
     #[IsGranted(PageFollowVoter::PAGE_FOLLOW, subject: 'id')]
     #[OA\Patch(
         summary: 'Update page follow status',
-        requestBody: new Body('PageFollowStatusDto'),
+        requestBody: new Body(PageFollowStatusDto::class),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
     )]
@@ -214,7 +214,7 @@ class PageController extends AbstractController
     #[OA\Get(
         summary: 'Index of page follows',
         tags: ['pages'],
-        responses: [new Collection('PageResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(PageResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function indexFollows(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -233,7 +233,7 @@ class PageController extends AbstractController
     #[OA\Get(
         summary: 'Details of page follow',
         tags: ['pages'],
-        responses: [new Item('PageResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(PageResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function detailsFollow(
         Uuid $id,

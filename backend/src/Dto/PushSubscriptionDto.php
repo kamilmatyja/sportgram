@@ -7,7 +7,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'PushSubscriptionDto',
     required: ['endpoint', 'p256dh', 'auth', 'status'],
     properties: [
         new OA\Property(property: 'endpoint', type: 'string', example: 'endpoint-url'),

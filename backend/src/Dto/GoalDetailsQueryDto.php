@@ -6,7 +6,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'GoalDetailsQueryDto',
     required: [],
     properties: [
         new OA\Property(property: 'include', type: 'array', example: [self::GOAL_PARTICIPANTS], nullable: true),

@@ -6,7 +6,6 @@ use App\Entity\{Story};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'StoryResource',
     required: [
         'id',
         'userId',
@@ -52,7 +51,7 @@ class StoryResource
         ];
     }
 
-    /** @var $stories Story[] */
+    /** @param Story[] $stories */
     public static function fromEntityCollection(array $stories): array
     {
         return array_map(fn (Story $story) => self::fromEntity($story), $stories);

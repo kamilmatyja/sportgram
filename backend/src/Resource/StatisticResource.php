@@ -6,7 +6,6 @@ use App\Dto\StatisticResultDto;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'StatisticResource',
     required: ['userId', 'createdAt', 'discipline', 'distance', 'time'],
     properties: [
         new OA\Property(
@@ -35,7 +34,7 @@ class StatisticResource
         ];
     }
 
-    /** @var $results StatisticResultDto[] */
+    /** @param StatisticResultDto[] $results */
     public static function fromEntityCollection(array $results): array
     {
         return array_map(fn (StatisticResultDto $result) => self::fromEntity($result), $results);

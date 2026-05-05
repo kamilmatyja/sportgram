@@ -21,7 +21,7 @@ class StatisticController extends AbstractController
     #[OA\Get(
         summary: 'Index of statistic records',
         tags: ['statistics'],
-        responses: [new Collection('StatisticResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(StatisticResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function indexRecords(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -40,7 +40,7 @@ class StatisticController extends AbstractController
     #[OA\Get(
         summary: 'Index of statistic progress',
         tags: ['statistics'],
-        responses: [new Collection('StatisticResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(StatisticResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function indexProgress(
         #[MapQueryString(validationFailedStatusCode: 400)]

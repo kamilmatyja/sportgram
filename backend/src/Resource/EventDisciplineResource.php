@@ -4,10 +4,10 @@ namespace App\Resource;
 
 use App\Dto\EventDetailsQueryDto;
 use App\Entity\{EventDiscipline, EventDisciplineDistance};
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'EventDisciplineResource',
     required: [
         'id',
         'eventId',
@@ -34,7 +34,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'distances',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/EventDisciplineDistanceResource'),
+            items: new OA\Items(ref: new Model(type: EventDisciplineDistanceResource::class)),
         ),
     ],
     type: 'object',

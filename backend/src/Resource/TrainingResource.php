@@ -4,10 +4,10 @@ namespace App\Resource;
 
 use App\Dto\TrainingDetailsQueryDto;
 use App\Entity\{Training, TrainingDiscipline, TrainingParticipant};
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'TrainingResource',
     required: [
         'id',
         'feedId',
@@ -53,12 +53,12 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'disciplines',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/TrainingDisciplineResource'),
+            items: new OA\Items(ref: new Model(type: TrainingDisciplineResource::class)),
         ),
         new OA\Property(
             property: 'participants',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/TrainingParticipantResource'),
+            items: new OA\Items(ref: new Model(type: TrainingParticipantResource::class)),
         ),
     ],
     type: 'object',
@@ -102,7 +102,7 @@ class TrainingResource
         return $data;
     }
 
-    /** @var $trainings Training[] */
+    /** @param Training[] $trainings */
     public static function fromEntityCollection(array $trainings): array
     {
         return array_map(fn (Training $training) => self::fromEntity($training), $trainings);

@@ -4,10 +4,10 @@ namespace App\Resource;
 
 use App\Dto\PageDetailsQueryDto;
 use App\Entity\{Page, PageFollow, PageParticipant};
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'PageResource',
     required: [
         'id',
         'createdAt',
@@ -39,12 +39,12 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'follows',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/PageFollowResource'),
+            items: new OA\Items(ref: new Model(type: PageFollowResource::class)),
         ),
         new OA\Property(
             property: 'participants',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/PageParticipantResource'),
+            items: new OA\Items(ref: new Model(type: PageParticipantResource::class)),
         ),
     ],
     type: 'object',
@@ -82,7 +82,7 @@ class PageResource
         return $data;
     }
 
-    /** @var $pages Page[] */
+    /** @param Page[] $pages */
     public static function fromEntityCollection(array $pages): array
     {
         return array_map(fn (Page $page) => self::fromEntity($page), $pages);

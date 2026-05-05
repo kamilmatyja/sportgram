@@ -6,7 +6,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'UserPasswordDto',
     required: ['password', 'code'],
     properties: [
         new OA\Property(property: 'password', type: 'string', example: 'password123'),

@@ -4,10 +4,10 @@ namespace App\Resource;
 
 use App\Dto\EventListDetailsQueryDto;
 use App\Entity\{EventDisciplineList, EventDisciplineResult};
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'EventDisciplineDistanceListResource',
     required: [
         'id',
         'eventDisciplineDistanceId',
@@ -48,7 +48,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'results',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/EventDisciplineDistanceResultResource'),
+            items: new OA\Items(ref: new Model(type: EventDisciplineDistanceResultResource::class)),
         ),
     ],
     type: 'object',
@@ -79,7 +79,7 @@ class EventDisciplineDistanceListResource
         return $data;
     }
 
-    /** @var $lists EventDisciplineList[] */
+    /** @param EventDisciplineList[] $lists */
     public static function fromEntityCollection(array $lists): array
     {
         return array_map(fn (EventDisciplineList $list) => self::fromEntity($list), $lists);

@@ -9,7 +9,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'UserFilterDto',
     required: [],
     properties: [
         new OA\Property(property: 'firstName', type: 'string', example: 'Jan', nullable: true),

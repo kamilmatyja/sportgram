@@ -6,7 +6,6 @@ use App\Entity\FeedReaction;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'FeedReactionResource',
     required: [
         'id',
         'feedId',

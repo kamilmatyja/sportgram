@@ -6,7 +6,6 @@ use App\Entity\TrainingDisciplineSubDistance;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'TrainingDisciplineSubDistanceResource',
     required: [
         'id',
         'trainingDisciplineDistanceId',

@@ -6,7 +6,6 @@ use App\Entity\Entry;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'EntryResource',
     required: [
         'id',
         'userId',
@@ -54,7 +53,7 @@ class EntryResource
         ];
     }
 
-    /** @var $entries Entry[] */
+    /** @param Entry[] $entries */
     public static function fromEntityCollection(array $entries): array
     {
         return array_map(fn (Entry $entry) => self::fromEntity($entry), $entries);

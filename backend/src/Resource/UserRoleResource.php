@@ -6,7 +6,6 @@ use App\Entity\UserRole;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'UserRoleResource',
     required: ['id', 'userId', 'role'],
     properties: [
         new OA\Property(

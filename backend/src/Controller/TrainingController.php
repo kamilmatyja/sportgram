@@ -23,7 +23,7 @@ class TrainingController extends AbstractController
     #[IsGranted(RoleEnum::ROLE_PARTICIPANT)]
     #[OA\Post(
         summary: 'Create training',
-        requestBody: new Body('TrainingDto'),
+        requestBody: new Body(TrainingDto::class),
         tags: ['trainings'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -41,7 +41,7 @@ class TrainingController extends AbstractController
     #[IsGranted(TrainingCreatorVoter::TRAINING_CREATOR, subject: 'id')]
     #[OA\Put(
         summary: 'Update training',
-        requestBody: new Body('TrainingDto'),
+        requestBody: new Body(TrainingDto::class),
         tags: ['trainings'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -60,7 +60,7 @@ class TrainingController extends AbstractController
     #[IsGranted(TrainingVoter::TRAINING, subject: 'id')]
     #[OA\Patch(
         summary: 'Update training status',
-        requestBody: new Body('ElementStatusDto'),
+        requestBody: new Body(ElementStatusDto::class),
         tags: ['trainings'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -96,7 +96,7 @@ class TrainingController extends AbstractController
     #[OA\Get(
         summary: 'Index of trainings',
         tags: ['trainings'],
-        responses: [new Collection('TrainingResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(TrainingResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -115,7 +115,7 @@ class TrainingController extends AbstractController
     #[OA\Get(
         summary: 'Details of training',
         tags: ['trainings'],
-        responses: [new Item('TrainingResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(TrainingResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -134,7 +134,7 @@ class TrainingController extends AbstractController
     #[IsGranted(TrainingParticipantVoter::TRAINING_PARTICIPANT, subject: 'id')]
     #[OA\Patch(
         summary: 'Update training participant status',
-        requestBody: new Body('SaveStatusDto'),
+        requestBody: new Body(SaveStatusDto::class),
         tags: ['trainings'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]

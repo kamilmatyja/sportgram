@@ -4,10 +4,10 @@ namespace App\Resource;
 
 use App\Dto\EventDetailsQueryDto;
 use App\Entity\{Event, EventDiscipline};
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'EventResource',
     required: [
         'id',
         'pageParticipantId',
@@ -50,7 +50,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'disciplines',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/EventDisciplineResource'),
+            items: new OA\Items(ref: new Model(type: EventDisciplineResource::class)),
         ),
     ],
     type: 'object',
@@ -85,7 +85,7 @@ class EventResource
         return $data;
     }
 
-    /** @var $events Event[] */
+    /** @param Event[] $events */
     public static function fromEntityCollection(array $events): array
     {
         return array_map(fn (Event $event) => self::fromEntity($event), $events);

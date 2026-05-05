@@ -6,7 +6,6 @@ use App\Entity\{TrainingParticipant};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'TrainingParticipantResource',
     required: [
         'id',
         'trainingId',

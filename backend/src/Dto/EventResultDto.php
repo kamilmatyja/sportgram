@@ -2,18 +2,18 @@
 
 namespace App\Dto;
 
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'EventResultDto',
     required: ['userId', 'time'],
     properties: [
         new OA\Property(property: 'time', type: 'integer', example: 60),
         new OA\Property(
             property: 'subResults',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/EventSubResultDto'),
+            items: new OA\Items(ref: new Model(type: EventSubResultDto::class)),
             nullable: true,
         ),
     ],

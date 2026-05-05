@@ -6,7 +6,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'TrainingDisciplineSubDistanceDto',
     required: ['subDistance', 'time'],
     properties: [
         new OA\Property(property: 'subDistance', type: 'integer', example: 100),

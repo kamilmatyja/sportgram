@@ -9,7 +9,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'EventFilterDto',
     required: [],
     properties: [
         new OA\Property(

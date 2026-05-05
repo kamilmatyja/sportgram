@@ -6,7 +6,6 @@ use App\Entity\EventDisciplineSubDistance;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'EventDisciplineSubDistanceResource',
     required: [
         'id',
         'eventDisciplineDistanceId',

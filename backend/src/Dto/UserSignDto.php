@@ -6,7 +6,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'UserSignDto',
     required: ['email', 'password'],
     properties: [
         new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jan@kowalski.pl'),

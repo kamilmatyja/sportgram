@@ -6,7 +6,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'EventSubResultDto',
     required: ['eventDisciplineSubDistanceId', 'time'],
     properties: [
         new OA\Property(

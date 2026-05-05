@@ -22,7 +22,7 @@ class PushSubscriptionController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create push subscription',
-        requestBody: new Body('PushSubscriptionDto'),
+        requestBody: new Body(PushSubscriptionDto::class),
         tags: ['push subscriptions'],
         responses: [new Created(), new BadRequest(), new Unauthorized()],
     )]
@@ -40,7 +40,7 @@ class PushSubscriptionController extends AbstractController
     #[IsGranted(PushSubscriptionVoter::PUSH_SUBSCRIPTION, subject: 'id')]
     #[OA\Put(
         summary: 'Update push subscription',
-        requestBody: new Body('PushSubscriptionDto'),
+        requestBody: new Body(PushSubscriptionDto::class),
         tags: ['push subscriptions'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -76,7 +76,7 @@ class PushSubscriptionController extends AbstractController
     #[OA\Get(
         summary: 'Index of push subscriptions',
         tags: ['push subscriptions'],
-        responses: [new Collection('PushSubscriptionResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(PushSubscriptionResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -95,7 +95,7 @@ class PushSubscriptionController extends AbstractController
     #[OA\Get(
         summary: 'Details of push subscription',
         tags: ['push subscriptions'],
-        responses: [new Item('PushSubscriptionResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(PushSubscriptionResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

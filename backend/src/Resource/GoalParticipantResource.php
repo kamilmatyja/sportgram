@@ -4,10 +4,10 @@ namespace App\Resource;
 
 use App\Dto\GoalDetailsQueryDto;
 use App\Entity\{GoalParticipant, GoalParticipantResult};
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'GoalParticipantResource',
     required: [
         'id',
         'goalId',
@@ -41,7 +41,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'results',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/GoalParticipantResultResource'),
+            items: new OA\Items(ref: new Model(type: GoalParticipantResultResource::class)),
         ),
     ],
     type: 'object',

@@ -35,7 +35,7 @@ class EventController extends AbstractController
     #[IsGranted(EventCreatorVoter::EVENT_CREATOR, subject: 'id')]
     #[OA\Post(
         summary: 'Create event',
-        requestBody: new Body('EventDto'),
+        requestBody: new Body(EventDto::class),
         tags: ['events'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -54,7 +54,7 @@ class EventController extends AbstractController
     #[IsGranted(EventUpdaterVoter::EVENT_UPDATER, subject: 'id')]
     #[OA\Put(
         summary: 'Update event',
-        requestBody: new Body('EventDto'),
+        requestBody: new Body(EventDto::class),
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -73,7 +73,7 @@ class EventController extends AbstractController
     #[IsGranted(EventVoter::EVENT, subject: 'id')]
     #[OA\Patch(
         summary: 'Update event status',
-        requestBody: new Body('ElementStatusDto'),
+        requestBody: new Body(ElementStatusDto::class),
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -109,7 +109,7 @@ class EventController extends AbstractController
     #[OA\Get(
         summary: 'Index of events',
         tags: ['events'],
-        responses: [new Collection('EventResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(EventResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -128,7 +128,7 @@ class EventController extends AbstractController
     #[OA\Get(
         summary: 'Details of event',
         tags: ['events'],
-        responses: [new Item('EventResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(EventResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -163,7 +163,7 @@ class EventController extends AbstractController
     #[IsGranted(EventListVoter::EVENT_LIST, subject: 'id')]
     #[OA\Patch(
         summary: 'Update event discipline distance list status',
-        requestBody: new Body('SaveStatusDto'),
+        requestBody: new Body(SaveStatusDto::class),
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -199,7 +199,7 @@ class EventController extends AbstractController
     #[OA\Get(
         summary: 'Index of event discipline distance lists',
         tags: ['events'],
-        responses: [new Collection('EventDisciplineDistanceListResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(EventDisciplineDistanceListResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function indexList(
         Uuid $id,
@@ -219,7 +219,7 @@ class EventController extends AbstractController
     #[OA\Get(
         summary: 'Details of event discipline distance list',
         tags: ['events'],
-        responses: [new Item('EventDisciplineDistanceListResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(EventDisciplineDistanceListResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function detailsList(
         Uuid $id,
@@ -238,7 +238,7 @@ class EventController extends AbstractController
     #[IsGranted(EventListCreatorVoter::EVENT_LIST_CREATOR, subject: 'id')]
     #[OA\Post(
         summary: 'Create event discipline distance result',
-        requestBody: new Body('EventResultDto'),
+        requestBody: new Body(EventResultDto::class),
         tags: ['events'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -257,7 +257,7 @@ class EventController extends AbstractController
     #[IsGranted(EventResultVoter::EVENT_RESULT, subject: 'id')]
     #[OA\Put(
         summary: 'Update event discipline distance result',
-        requestBody: new Body('EventResultDto'),
+        requestBody: new Body(EventResultDto::class),
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]

@@ -4,10 +4,10 @@ namespace App\Resource;
 
 use App\Dto\UserDetailsQueryDto;
 use App\Entity\{User, UserDiscipline, UserRole};
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'UserResource',
     required: [
         'id',
         'createdAt',
@@ -55,12 +55,12 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'disciplines',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/UserDisciplineResource'),
+            items: new OA\Items(ref: new Model(type: UserDisciplineResource::class)),
         ),
         new OA\Property(
             property: 'roles',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/UserRoleResource'),
+            items: new OA\Items(ref: new Model(type: UserRoleResource::class)),
         ),
     ],
     type: 'object',
@@ -107,7 +107,7 @@ class UserResource
         return $data;
     }
 
-    /** @var $users User[] */
+    /** @param User[] $users */
     public static function fromEntityCollection(array $users): array
     {
         return array_map(fn (User $user) => self::fromEntity($user), $users);

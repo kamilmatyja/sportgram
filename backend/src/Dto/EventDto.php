@@ -4,11 +4,11 @@ namespace App\Dto;
 
 use App\Entity\Event;
 use App\Validator\UniqueField;
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'EventDto',
     required: ['startedAt', 'endedAt', 'title', 'description', 'link', 'rules', 'photo', 'location'],
     properties: [
         new OA\Property(property: 'startedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new OA\Property(
             property: 'disciplines',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/EventDisciplineDto'),
+            items: new OA\Items(ref: new Model(type: EventDisciplineDto::class)),
             nullable: true,
         ),
     ],

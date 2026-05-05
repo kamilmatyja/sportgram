@@ -21,7 +21,7 @@ class EntryController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create entry',
-        requestBody: new Body('EntryDto'),
+        requestBody: new Body(EntryDto::class),
         tags: ['entries'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -40,7 +40,7 @@ class EntryController extends AbstractController
     #[OA\Get(
         summary: 'Index of entries',
         tags: ['entries'],
-        responses: [new Collection('EntryResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(EntryResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -59,7 +59,7 @@ class EntryController extends AbstractController
     #[OA\Get(
         summary: 'Details of entry',
         tags: ['entries'],
-        responses: [new Item('EntryResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(EntryResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -77,7 +77,7 @@ class EntryController extends AbstractController
     #[OA\Get(
         summary: 'Index of entry counts',
         tags: ['entries'],
-        responses: [new Collection('EntryCountResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(EntryCountResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function indexCount(
         #[MapQueryString(validationFailedStatusCode: 400)]

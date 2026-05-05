@@ -3,6 +3,7 @@
 namespace App\OpenApi;
 
 use Attribute;
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
@@ -14,7 +15,7 @@ class Item extends OA\Response
             response: 200,
             description: 'OK',
             content: new OA\JsonContent(
-                ref: '#/components/schemas/' . $class,
+                ref: new Model(type: $class),
             ),
         );
     }

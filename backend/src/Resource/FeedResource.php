@@ -4,10 +4,10 @@ namespace App\Resource;
 
 use App\Dto\FeedDetailsQueryDto;
 use App\Entity\{Feed, FeedComment, FeedReaction};
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'FeedResource',
     required: [
         'id',
         'userId',
@@ -37,12 +37,12 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'comments',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/FeedCommentResource'),
+            items: new OA\Items(ref: new Model(type: FeedCommentResource::class)),
         ),
         new OA\Property(
             property: 'reactions',
             type: 'array',
-            items: new OA\Items(ref: '#/components/schemas/FeedReactionResource'),
+            items: new OA\Items(ref: new Model(type: FeedReactionResource::class)),
         ),
     ],
     type: 'object',
@@ -77,7 +77,7 @@ class FeedResource
         return $data;
     }
 
-    /** @var $feeds Feed[] */
+    /** @param Feed[] $feeds */
     public static function fromEntityCollection(array $feeds): array
     {
         return array_map(fn (Feed $feed) => self::fromEntity($feed), $feeds);

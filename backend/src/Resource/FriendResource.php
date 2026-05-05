@@ -6,7 +6,6 @@ use App\Entity\Friend;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'FriendResource',
     required: [
         'id',
         'senderUserId',
@@ -54,7 +53,7 @@ class FriendResource
         ];
     }
 
-    /** @var $friends Friend[] */
+    /** @param Friend[] $friends */
     public static function fromEntityCollection(array $friends): array
     {
         return array_map(fn (Friend $friend) => self::fromEntity($friend), $friends);

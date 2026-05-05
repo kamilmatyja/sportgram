@@ -25,7 +25,7 @@ class ConversationController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create conversation',
-        requestBody: new Body('ConversationDto'),
+        requestBody: new Body(ConversationDto::class),
         tags: ['conversations'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -44,7 +44,7 @@ class ConversationController extends AbstractController
     #[IsGranted(ConversationSenderVoter::CONVERSATION_SENDER, subject: 'id')]
     #[OA\Put(
         summary: 'Update conversation',
-        requestBody: new Body('ConversationDto'),
+        requestBody: new Body(ConversationDto::class),
         tags: ['conversations'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -63,7 +63,7 @@ class ConversationController extends AbstractController
     #[IsGranted(ConversationVoter::CONVERSATION, subject: 'id')]
     #[OA\Patch(
         summary: 'Update conversation status',
-        requestBody: new Body('ConversationStatusDto'),
+        requestBody: new Body(ConversationStatusDto::class),
         tags: ['conversations'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -99,7 +99,7 @@ class ConversationController extends AbstractController
     #[OA\Get(
         summary: 'Index of conversations',
         tags: ['conversations'],
-        responses: [new Collection('ConversationResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(ConversationResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -118,7 +118,7 @@ class ConversationController extends AbstractController
     #[OA\Get(
         summary: 'Details of conversation',
         tags: ['conversations'],
-        responses: [new Item('ConversationResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(ConversationResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -152,7 +152,7 @@ class ConversationController extends AbstractController
     #[OA\Get(
         summary: 'Index of conversation activities',
         tags: ['conversations'],
-        responses: [new Collection('ConversationActivityResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(ConversationActivityResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function indexActivity(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -171,7 +171,7 @@ class ConversationController extends AbstractController
     #[OA\Get(
         summary: 'Details of conversation activity',
         tags: ['conversations'],
-        responses: [new Item('ConversationActivityResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(ConversationActivityResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function detailsActivity(
         Uuid $id,

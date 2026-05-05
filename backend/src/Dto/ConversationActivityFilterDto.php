@@ -8,7 +8,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'ConversationActivityFilterDto',
     required: null,
     properties: [
         new OA\Property(

@@ -7,7 +7,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'FeedDto',
     required: ['text', 'photo'],
     properties: [
         new OA\Property(property: 'text', type: 'string', example: 'New post'),

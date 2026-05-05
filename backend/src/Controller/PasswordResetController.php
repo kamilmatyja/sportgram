@@ -20,7 +20,7 @@ class PasswordResetController extends AbstractController
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Reset user password',
-        requestBody: new Body('UserEmailDto'),
+        requestBody: new Body(UserEmailDto::class),
         tags: ['password resets'],
         responses: [new Created(), new BadRequest(), new Conflict()],
     )]
@@ -38,7 +38,7 @@ class PasswordResetController extends AbstractController
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Patch(
         summary: 'Confirm reset user password',
-        requestBody: new Body('UserPasswordDto'),
+        requestBody: new Body(UserPasswordDto::class),
         tags: ['password resets'],
         responses: [new Ok(), new BadRequest(), new Conflict()],
     )]

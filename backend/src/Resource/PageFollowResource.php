@@ -6,7 +6,6 @@ use App\Entity\{PageFollow};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'PageFollowResource',
     required: [
         'id',
         'pageId',
@@ -54,7 +53,7 @@ class PageFollowResource
         ];
     }
 
-    /** @var $pageFollows PageFollow[] */
+    /** @param PageFollow[] $pageFollows */
     public static function fromEntityCollection(array $pageFollows): array
     {
         return array_map(fn (PageFollow $pageFollow) => self::fromEntity($pageFollow), $pageFollows);

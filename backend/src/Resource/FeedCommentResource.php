@@ -6,7 +6,6 @@ use App\Entity\FeedComment;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'FeedCommentResource',
     required: [
         'id',
         'feedId',

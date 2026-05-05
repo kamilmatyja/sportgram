@@ -23,7 +23,7 @@ class GoalController extends AbstractController
     #[IsGranted(RoleEnum::ROLE_PARTICIPANT)]
     #[OA\Post(
         summary: 'Create goal',
-        requestBody: new Body('GoalDto'),
+        requestBody: new Body(GoalDto::class),
         tags: ['goals'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -41,7 +41,7 @@ class GoalController extends AbstractController
     #[IsGranted(GoalCreatorVoter::GOAL_CREATOR, subject: 'id')]
     #[OA\Put(
         summary: 'Update goal',
-        requestBody: new Body('GoalDto'),
+        requestBody: new Body(GoalDto::class),
         tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -60,7 +60,7 @@ class GoalController extends AbstractController
     #[IsGranted(GoalVoter::GOAL, subject: 'id')]
     #[OA\Patch(
         summary: 'Update goal status',
-        requestBody: new Body('GoalStatusDto'),
+        requestBody: new Body(GoalStatusDto::class),
         tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -96,7 +96,7 @@ class GoalController extends AbstractController
     #[OA\Get(
         summary: 'Index of goals',
         tags: ['goals'],
-        responses: [new Collection('GoalResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(GoalResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -115,7 +115,7 @@ class GoalController extends AbstractController
     #[OA\Get(
         summary: 'Details of users',
         tags: ['goals'],
-        responses: [new Item('GoalResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(GoalResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -134,7 +134,7 @@ class GoalController extends AbstractController
     #[IsGranted(GoalParticipantVoter::GOAL_PARTICIPANT, subject: 'id')]
     #[OA\Patch(
         summary: 'Update goal participant status',
-        requestBody: new Body('SaveStatusDto'),
+        requestBody: new Body(SaveStatusDto::class),
         tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -153,7 +153,7 @@ class GoalController extends AbstractController
     #[IsGranted(GoalParticipantResultVoter::GOAL_PARTICIPANT_RESULT, subject: 'id')]
     #[OA\Patch(
         summary: 'Update goal participant result status',
-        requestBody: new Body('SaveStatusDto'),
+        requestBody: new Body(SaveStatusDto::class),
         tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]

@@ -8,7 +8,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'EntryDto',
     required: ['entityId', 'type'],
     properties: [
         new OA\Property(

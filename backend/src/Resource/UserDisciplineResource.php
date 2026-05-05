@@ -6,7 +6,6 @@ use App\Entity\UserDiscipline;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'UserDisciplineResource',
     required: ['id', 'userId', 'discipline'],
     properties: [
         new OA\Property(

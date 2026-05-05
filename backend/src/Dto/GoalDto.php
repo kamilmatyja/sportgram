@@ -9,7 +9,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'GoalDto',
     required: ['startedAt', 'endedAt', 'text', 'link', 'discipline', 'distance'],
     properties: [
         new OA\Property(property: 'startedAt', type: 'date', example: '2000-01-01T21:37:00'),

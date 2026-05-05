@@ -6,7 +6,6 @@ use App\Entity\{PageParticipant};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'PageParticipantResource',
     required: [
         'id',
         'pageId',

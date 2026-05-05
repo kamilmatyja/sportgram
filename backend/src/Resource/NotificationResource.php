@@ -6,7 +6,6 @@ use App\Entity\Notification;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'NotificationResource',
     required: [
         'id',
         'userId',
@@ -51,7 +50,7 @@ class NotificationResource
         ];
     }
 
-    /** @var $notifications Notification[] */
+    /** @param Notification[] $notifications */
     public static function fromEntityCollection(array $notifications): array
     {
         return array_map(fn (Notification $notification) => self::fromEntity($notification), $notifications);

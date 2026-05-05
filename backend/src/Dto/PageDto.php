@@ -9,7 +9,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'PageDto',
     required: ['title', 'description', 'link', 'profilePhoto', 'backgroundPhoto', 'color'],
     properties: [
         new OA\Property(property: 'title', type: 'string', example: 'Page title'),

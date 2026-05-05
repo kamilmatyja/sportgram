@@ -22,7 +22,7 @@ class StoryController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Create story',
-        requestBody: new Body('StoryDto'),
+        requestBody: new Body(StoryDto::class),
         tags: ['stories'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -40,7 +40,7 @@ class StoryController extends AbstractController
     #[IsGranted(StoryCreatorVoter::STORY_CREATOR, subject: 'id')]
     #[OA\Put(
         summary: 'Update story',
-        requestBody: new Body('StoryDto'),
+        requestBody: new Body(StoryDto::class),
         tags: ['stories'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -59,7 +59,7 @@ class StoryController extends AbstractController
     #[IsGranted(StoryVoter::STORY, subject: 'id')]
     #[OA\Patch(
         summary: 'Update story status',
-        requestBody: new Body('ElementStatusDto'),
+        requestBody: new Body(ElementStatusDto::class),
         tags: ['stories'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -95,7 +95,7 @@ class StoryController extends AbstractController
     #[OA\Get(
         summary: 'Index of stories',
         tags: ['stories'],
-        responses: [new Collection('StoryResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(StoryResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -114,7 +114,7 @@ class StoryController extends AbstractController
     #[OA\Get(
         summary: 'Details of stories',
         tags: ['stories'],
-        responses: [new Item('StoryResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(StoryResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

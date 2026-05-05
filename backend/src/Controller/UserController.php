@@ -23,7 +23,7 @@ class UserController extends AbstractController
     #[IsGranted(RoleEnum::ROLE_ADMINISTRATOR)]
     #[OA\Post(
         summary: 'Create user',
-        requestBody: new Body('UserCreateDto'),
+        requestBody: new Body(UserCreateDto::class),
         tags: ['users'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
     )]
@@ -41,7 +41,7 @@ class UserController extends AbstractController
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Create user nano',
-        requestBody: new Body('UserCreateNanoDto'),
+        requestBody: new Body(UserCreateNanoDto::class),
         tags: ['users'],
         responses: [new Created(), new BadRequest()],
     )]
@@ -59,7 +59,7 @@ class UserController extends AbstractController
     #[IsGranted(UserVoter::USER, subject: 'id')]
     #[OA\Put(
         summary: 'Update user',
-        requestBody: new Body('UserUpdateDto'),
+        requestBody: new Body(UserUpdateDto::class),
         tags: ['users'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -78,7 +78,7 @@ class UserController extends AbstractController
     #[IsGranted(RoleEnum::ROLE_ADMINISTRATOR)]
     #[OA\Patch(
         summary: 'Update user status',
-        requestBody: new Body('UserStatusDto'),
+        requestBody: new Body(UserStatusDto::class),
         tags: ['users'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -114,7 +114,7 @@ class UserController extends AbstractController
     #[OA\Get(
         summary: 'Index of users',
         tags: ['users'],
-        responses: [new Collection('UserResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(UserResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -133,7 +133,7 @@ class UserController extends AbstractController
     #[OA\Get(
         summary: 'Details of users',
         tags: ['users'],
-        responses: [new Item('UserResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(UserResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

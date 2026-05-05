@@ -22,7 +22,7 @@ class NotificationController extends AbstractController
     #[IsGranted(NotificationVoter::NOTIFICATION, subject: 'id')]
     #[OA\Patch(
         summary: 'Update notification status',
-        requestBody: new Body('NotificationStatusDto'),
+        requestBody: new Body(NotificationStatusDto::class),
         tags: ['notifications'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
@@ -58,7 +58,7 @@ class NotificationController extends AbstractController
     #[OA\Get(
         summary: 'Index of notifications',
         tags: ['notifications'],
-        responses: [new Collection('NotificationResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(NotificationResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -77,7 +77,7 @@ class NotificationController extends AbstractController
     #[OA\Get(
         summary: 'Details of notification',
         tags: ['notifications'],
-        responses: [new Item('NotificationResource'), new BadRequest(), new Unauthorized()],
+        responses: [new Item(NotificationResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

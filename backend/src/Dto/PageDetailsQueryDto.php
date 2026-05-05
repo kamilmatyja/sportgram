@@ -6,7 +6,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'PageDetailsQueryDto',
     required: [],
     properties: [
         new OA\Property(property: 'include', type: 'array', example: [self::PAGE_PARTICIPANTS], nullable: true),

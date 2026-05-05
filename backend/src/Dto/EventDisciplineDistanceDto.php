@@ -2,20 +2,18 @@
 
 namespace App\Dto;
 
+use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    schema: 'EventDisciplineDistanceDto',
     required: ['distance'],
     properties: [
         new OA\Property(property: 'distance', type: 'integer', example: 100),
         new OA\Property(
             property: 'subDistances',
             type: 'array',
-            items: new OA\Items(
-                ref: '#/components/schemas/EventDisciplineSubDistanceDto',
-            ),
+            items: new OA\Items(ref: new Model(type: EventDisciplineSubDistanceDto::class)),
             nullable: true,
         ),
     ],

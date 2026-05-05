@@ -6,7 +6,6 @@ use App\Entity\{PushSubscription};
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
-    schema: 'PushSubscriptionResource',
     required: [
         'id',
         'userId',
@@ -56,7 +55,7 @@ class PushSubscriptionResource
         ];
     }
 
-    /** @var $pushSubscriptions PushSubscription[] */
+    /** @param PushSubscription[] $pushSubscriptions */
     public static function fromEntityCollection(array $pushSubscriptions): array
     {
         return array_map(
