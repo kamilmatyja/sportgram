@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\Enum\SaveStatusEnum;
 use App\Repository\GoalParticipantRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection,Collection};
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -62,7 +62,7 @@ class GoalParticipant
     }
 
     /** @var GoalParticipantResult[] */
-    #[ORM\OneToMany(targetEntity: GoalParticipantResult::class, mappedBy: 'participant')]
+    #[ORM\OneToMany(targetEntity: GoalParticipantResult::class, mappedBy: 'goalParticipant')]
     public Collection $results;
 
     public function __construct(Goal $goal, User $user, SaveStatusEnum $status)

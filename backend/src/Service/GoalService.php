@@ -124,7 +124,7 @@ readonly class GoalService
 
         foreach ($goal->participants as $participant) {
             if (in_array($participant->user->id->toString(), $toRemove, true)) {
-                if ($participant->goalParticipantResults->count() > 0) {
+                if ($participant->results->count() > 0) {
                     throw new ValidatorException('Cannot delete goal participant with results.');
                 }
 
