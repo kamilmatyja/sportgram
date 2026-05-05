@@ -67,7 +67,9 @@ readonly class GoalService
         foreach ($dto->participants as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if ($participantUser->id->toString() !== $user->id->toString() && ! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
+                $participantUser->id,
+            )) {
                 throw new ValidatorException('User is not friend.');
             }
 
@@ -133,7 +135,9 @@ readonly class GoalService
         foreach ($toAdd as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if ($participantUser->id->toString() !== $user->id->toString() && ! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
+                $participantUser->id,
+            )) {
                 throw new ValidatorException('User is not friend.');
             }
 

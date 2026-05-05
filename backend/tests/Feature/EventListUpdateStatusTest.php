@@ -33,7 +33,7 @@ class EventListUpdateStatusTest extends ApiTestCase
     final public function testUnauthorized(): void
     {
         $id = Uuid::v4()->toString();
-        $result = $this->patch("/api/event-discipline-distance-lists/{$id}", ['status' => 2]);
+        $result = $this->patch("/api/event-discipline-distance-lists/{$id}/status", ['status' => 2]);
         $this->assertEquals(401, $result['status']);
     }
 
@@ -50,7 +50,11 @@ class EventListUpdateStatusTest extends ApiTestCase
         $distance = EventDisciplineDistanceFactory::make(['eventDiscipline' => $discipline], $this->em);
         $list = EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $listOwner], $this->em);
 
-        $result = $this->patch("/api/event-discipline-distance-lists/{$list->id->toString()}", ['status' => 2], $randomUser);
+        $result = $this->patch(
+            "/api/event-discipline-distance-lists/{$list->id->toString()}/status",
+            ['status' => 2],
+            $randomUser,
+        );
         $this->assertEquals(403, $result['status']);
     }
 
@@ -65,7 +69,11 @@ class EventListUpdateStatusTest extends ApiTestCase
         $distance = EventDisciplineDistanceFactory::make(['eventDiscipline' => $discipline], $this->em);
         $list = EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $eventCreator], $this->em);
 
-        $result = $this->patch("/api/event-discipline-distance-lists/{$list->id->toString()}", ['status' => 999], $eventCreator);
+        $result = $this->patch(
+            "/api/event-discipline-distance-lists/{$list->id->toString()}/status",
+            ['status' => 999],
+            $eventCreator,
+        );
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('status', $result['json']['errors']);
     }
@@ -82,7 +90,11 @@ class EventListUpdateStatusTest extends ApiTestCase
         $distance = EventDisciplineDistanceFactory::make(['eventDiscipline' => $discipline], $this->em);
         $list = EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $listOwner, 'status' => SaveStatusEnum::Pending], $this->em);
 
-        $result = $this->patch("/api/event-discipline-distance-lists/{$list->id->toString()}", ['status' => 2], $eventCreator);
+        $result = $this->patch(
+            "/api/event-discipline-distance-lists/{$list->id->toString()}/status",
+            ['status' => 2],
+            $eventCreator,
+        );
         $this->assertEquals(200, $result['status']);
     }
 }

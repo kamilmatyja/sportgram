@@ -46,12 +46,10 @@ class FeedRepository extends BaseRepository
                 ->setParameter('userId', $dto->filter->userId);
         } else {
             $qb->leftJoin(
-                'friends',
+                'App\\Entity\\Friend',
                 'fr',
-                '(
-                    (fr.senderUser = f.userId AND fr.receiverUser = :userId)
-                    OR (fr.senderUser = :userId AND fr.receiverUser = f.userId)
-                )',
+                'WITH',
+                '((fr.senderUser = f.user AND fr.receiverUser = :userId) OR (fr.senderUser = :userId AND fr.receiverUser = f.user))',
             );
             $qb->andWhere('(f.user = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')
                 ->setParameter('userId', $userId)

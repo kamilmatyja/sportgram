@@ -159,7 +159,7 @@ class EventController extends AbstractController
         return ApiResponse::created($eventDisciplineListId);
     }
 
-    #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_list_update_status', methods: ['PATCH'])]
+    #[Route('/api/event-discipline-distance-lists/{id}/status', name: 'event_discipline_distance_list_update_status', methods: ['PATCH'])]
     #[IsGranted(EventListVoter::EVENT_LIST, subject: 'id')]
     #[OA\Patch(
         summary: 'Update event discipline distance list status',

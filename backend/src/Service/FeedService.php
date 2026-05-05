@@ -96,7 +96,7 @@ readonly class FeedService
 
         $feed = $this->feedRepository->findById($feedId);
 
-        if ($this->friendRepository->isFriend($user->id, $feed->user->id) && ! $user->id->equals($feed->user->id)) {
+        if (! $this->friendRepository->isFriend($user->id, $feed->user->id) && ! $user->id->equals($feed->user->id)) {
             throw new ValidatorException('User is not friend.');
         }
 
@@ -162,8 +162,12 @@ readonly class FeedService
 
         $feed = $this->feedRepository->findById($feedId);
 
-        if ($this->friendRepository->isFriend($user->id, $feed->user->id) && ! $user->id->equals($feed->user->id)) {
+        if (! $this->friendRepository->isFriend($user->id, $feed->user->id) && ! $user->id->equals($feed->user->id)) {
             throw new ValidatorException('User is not friend.');
+        }
+
+        if (! $feed->reactions->filter(fn (FeedReaction $reaction) => $reaction->user->id === $user->id)->isEmpty()) {
+            throw new ValidatorException('User already reacted to this feed.');
         }
 
         $feedReaction = new FeedReaction($feed, $user, FeedReactionEnum::from($dto->type), ElementStatusEnum::Active);

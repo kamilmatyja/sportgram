@@ -39,7 +39,9 @@ class EventCreatorVoter extends Voter
 
         $page = $this->pageRepository->findById($subject);
 
-        if ($page->participants->filter(fn (PageParticipant $participant) => $participant->user->id === $user->id)->first()) {
+        if (! $page->participants->filter(
+            fn (PageParticipant $participant) => $participant->user->id === $user->id,
+        )->isEmpty()) {
             return true;
         }
 

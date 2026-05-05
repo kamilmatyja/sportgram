@@ -50,7 +50,9 @@ readonly class PageService
         foreach ($dto->participants as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if ($participantUser->id->toString() !== $user->id->toString() && ! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
+                $participantUser->id,
+            )) {
                 throw new ValidatorException('User is not friend.');
             }
 
@@ -112,7 +114,9 @@ readonly class PageService
         foreach ($toAdd as $userId) {
             $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
 
-            if ($participantUser->id->toString() !== $user->id->toString() && ! $this->friendRepository->isFriend($user->id, $participantUser->id)) {
+            if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
+                $participantUser->id,
+            )) {
                 throw new ValidatorException('User is not friend.');
             }
 

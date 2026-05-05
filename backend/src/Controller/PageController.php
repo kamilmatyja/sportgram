@@ -65,7 +65,7 @@ class PageController extends AbstractController
     #[Route('/api/pages/{id}/status', name: 'page_patch_status', methods: ['PATCH'])]
     #[IsGranted(PageVoter::PAGE, subject: 'id')]
     #[OA\Patch(
-        summary: 'Patch page status',
+        summary: 'Update page status',
         requestBody: new Body('ElementStatusDto'),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
@@ -139,7 +139,7 @@ class PageController extends AbstractController
     #[Route('/api/page-participants/{id}/status', name: 'page_participant_patch_status', methods: ['PATCH'])]
     #[IsGranted(PageParticipantVoter::PAGE_PARTICIPANT, subject: 'id')]
     #[OA\Patch(
-        summary: 'Patch page participant status',
+        summary: 'Update page participant status',
         requestBody: new Body('SaveStatusDto'),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
@@ -177,7 +177,7 @@ class PageController extends AbstractController
     #[Route('/api/page-follows/{id}/status', name: 'page_follow_patch_status', methods: ['PATCH'])]
     #[IsGranted(PageFollowVoter::PAGE_FOLLOW, subject: 'id')]
     #[OA\Patch(
-        summary: 'Patch page follow status',
+        summary: 'Update page follow status',
         requestBody: new Body('PageFollowStatusDto'),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
