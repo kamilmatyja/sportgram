@@ -3,6 +3,7 @@
 namespace App\Validator;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\{Constraint, ConstraintValidator};
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
@@ -19,7 +20,7 @@ class EntityExistsFieldValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, EntityExistsField::class);
         }
 
-        if ($value === null || $value === '') {
+        if (! $value instanceof Uuid) {
             return;
         }
 
