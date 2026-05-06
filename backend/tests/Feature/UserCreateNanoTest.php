@@ -19,7 +19,7 @@ class UserCreateNanoTest extends ApiTestCase
 
     final public function testEmptyPayload(): void
     {
-        $result = $this->post('/api/users/nano', []);
+        $result = $this->post('/api/user-nano', []);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -54,7 +54,7 @@ class UserCreateNanoTest extends ApiTestCase
             'country' => null,
             'roles' => null,
         ];
-        $result = $this->post('/api/users/nano', $data);
+        $result = $this->post('/api/user-nano', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -100,11 +100,11 @@ class UserCreateNanoTest extends ApiTestCase
             'country' => 35,
             'roles' => [1],
         ];
-        $result1 = $this->post('/api/users/nano', $data);
+        $result1 = $this->post('/api/user-nano', $data);
         $this->assertEquals(201, $result1['status']);
         $this->assertArrayHasKey('id', $result1['json']);
 
-        $result2 = $this->post('/api/users/nano', $data);
+        $result2 = $this->post('/api/user-nano', $data);
         $this->assertEquals(400, $result2['status']);
         $this->assertArrayHasKey('errors', $result2['json']);
         $expected = [
@@ -132,7 +132,7 @@ class UserCreateNanoTest extends ApiTestCase
             'country' => 35,
             'roles' => [1],
         ];
-        $result = $this->post('/api/users/nano', $data);
+        $result = $this->post('/api/user-nano', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -159,7 +159,7 @@ class UserCreateNanoTest extends ApiTestCase
             'country' => 35,
             'roles' => [],
         ];
-        $result = $this->post('/api/users/nano', $data);
+        $result = $this->post('/api/user-nano', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -187,7 +187,7 @@ class UserCreateNanoTest extends ApiTestCase
             'country' => 35,
             'roles' => [1, 1],
         ];
-        $result = $this->post('/api/users/nano', $data);
+        $result = $this->post('/api/user-nano', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -214,7 +214,7 @@ class UserCreateNanoTest extends ApiTestCase
             'country' => 35,
             'roles' => [4],
         ];
-        $result = $this->post('/api/users/nano', $data);
+        $result = $this->post('/api/user-nano', $data);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
         $expected = [
@@ -241,7 +241,7 @@ class UserCreateNanoTest extends ApiTestCase
             'country' => 35,
             'roles' => [1],
         ];
-        $result = $this->post('/api/users/nano', $data);
+        $result = $this->post('/api/user-nano', $data);
         $this->assertEquals(201, $result['status']);
         $this->assertArrayHasKey('id', $result['json']);
     }
@@ -261,7 +261,7 @@ class UserCreateNanoTest extends ApiTestCase
             'country' => 35,
             'roles' => [1],
         ];
-        $result = $this->post('/api/users/nano', $data, $user);
+        $result = $this->post('/api/user-nano', $data, $user);
         $this->assertEquals(201, $result['status']);
         $this->assertArrayHasKey('id', $result['json']);
     }
@@ -281,7 +281,7 @@ class UserCreateNanoTest extends ApiTestCase
             'country' => 35,
             'roles' => [1],
         ];
-        $result = $this->post('/api/users/nano', $data, $user);
+        $result = $this->post('/api/user-nano', $data, $user);
         $this->assertEquals(201, $result['status']);
         $this->assertArrayHasKey('id', $result['json']);
     }

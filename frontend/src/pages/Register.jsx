@@ -1,0 +1,302 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
+
+export default function Register() {
+    const navigate = useNavigate();
+
+    const [step, setStep] = useState(1);
+    const [registerId, setRegisterId] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const [globalError, setGlobalError] = useState('');
+    const [resendSuccess, setResendSuccess] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState({});
+
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        phone: '',
+        birthAt: '',
+        gender: 1,
+        country: 35,
+    });
+
+    const [code, setCode] = useState('');
+
+    useEffect(() => {
+        const unconfirmedData = sessionStorage.getItem('sportgram_unconfirmed');
+        if (unconfirmedData) {
+            const parsedData = JSON.parse(unconfirmedData);
+            setFormData(prev => ({
+                ...prev,
+                email: parsedData.email,
+                password: parsedData.password || ''
+            }));
+            sessionStorage.removeItem('sportgram_unconfirmed');
+            requestRegisterCode(parsedData.email);
+            return;
+        }
+
+        const savedState = sessionStorage.getItem('sportgram_register_state');
+        if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            setStep(parsedState.step);
+            setRegisterId(parsedState.registerId);
+            setFormData(parsedState.formData);
+        }
+    }, []);
+
+    const requestRegisterCode = async (email) => {
+        setLoading(true);
+        setGlobalError('');
+        try {
+            const registerRes = await apiFetch('/api/registers', {
+                method: 'POST',
+                body: JSON.stringify({ email })
+            });
+
+            setRegisterId(registerRes.id);
+            setStep(2);
+
+            sessionStorage.setItem('sportgram_register_state', JSON.stringify({
+                step: 2,
+                registerId: registerRes.id,
+                formData: { ...formData, email }
+            }));
+        } catch (err) {
+            if (err.error) {
+                setGlobalError(err.error);
+            } else {
+                setGlobalError('Wystąpił błąd podczas żądania kodu.');
+            }
+            setStep(1);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleChange = (e) => {
+        setFormData({...formData, [e.target.name]: e.target.value});
+        setFieldErrors({...fieldErrors, [e.target.name]: null});
+    };
+
+    const handleRegisterSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setGlobalError('');
+        setFieldErrors({});
+
+        try {
+            await apiFetch('/api/user-nano', {
+                method: 'POST',
+                body: JSON.stringify({
+                    ...formData,
+                    gender: parseInt(formData.gender),
+                    phone: parseInt(formData.phone),
+                    country: parseInt(formData.country),
+                    roles: [1]
+                })
+            });
+
+            await requestRegisterCode(formData.email);
+        } catch (err) {
+            if (err.errors) {
+                setFieldErrors(err.errors);
+            } else if (err.error) {
+                setGlobalError(err.error);
+            } else {
+                setGlobalError('Wystąpił nieoczekiwany błąd.');
+            }
+            setLoading(false);
+        }
+    };
+
+    const handleCodeSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setGlobalError('');
+        setResendSuccess(false);
+
+        try {
+            await apiFetch(`/api/registers/${registerId}/confirm`, {
+                method: 'PATCH',
+                body: JSON.stringify({code: parseInt(code)})
+            });
+
+            sessionStorage.removeItem('sportgram_register_state');
+            sessionStorage.setItem('sportgram_auto_sign', JSON.stringify({
+                email: formData.email,
+                password: formData.password
+            }));
+
+            navigate('/sign');
+        } catch (err) {
+            if (err.errors && err.errors.code) {
+                setGlobalError(err.errors.code[0]);
+            } else if (err.error) {
+                setGlobalError(err.error);
+            } else {
+                setGlobalError('Błędny kod.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResendCode = async () => {
+        setLoading(true);
+        setGlobalError('');
+        setResendSuccess(false);
+
+        try {
+            await apiFetch(`/api/registers/${registerId}/resend`, { method: 'POST' });
+            setResendSuccess(true);
+        } catch (err) {
+            setGlobalError(err.error || 'Nie udało się wysłać kodu ponownie.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCancel = () => {
+        sessionStorage.removeItem('sportgram_register_state');
+        setStep(1);
+        setRegisterId(null);
+        setCode('');
+        setGlobalError('');
+        setResendSuccess(false);
+    };
+
+    const renderFieldError = (fieldName) => {
+        if (!fieldErrors[fieldName]) return null;
+        return <div className="invalid-feedback d-block">{fieldErrors[fieldName][0]}</div>;
+    };
+
+    return (
+        <div className="container mt-5">
+            <div className="row justify-content-center">
+                <div className="col-12 col-md-8 col-lg-6">
+                    <div className="card shadow-sm">
+                        <div className="card-body p-4">
+                            <h2 className="text-center mb-4">Rejestracja</h2>
+
+                            {globalError && (
+                                <div className="alert alert-danger" role="alert">
+                                    {globalError}
+                                </div>
+                            )}
+
+                            {resendSuccess && (
+                                <div className="alert alert-success" role="alert">
+                                    Kod został pomyślnie wysłany ponownie na Twój adres email.
+                                </div>
+                            )}
+
+                            {step === 1 && (
+                                <form onSubmit={handleRegisterSubmit}>
+                                    <div className="row">
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label">Imię</label>
+                                            <input type="text" name="firstName"
+                                                   className={`form-control ${fieldErrors.firstName ? 'is-invalid' : ''}`}
+                                                   value={formData.firstName} onChange={handleChange} required/>
+                                            {renderFieldError('firstName')}
+                                        </div>
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label">Nazwisko</label>
+                                            <input type="text" name="lastName"
+                                                   className={`form-control ${fieldErrors.lastName ? 'is-invalid' : ''}`}
+                                                   value={formData.lastName} onChange={handleChange} required/>
+                                            {renderFieldError('lastName')}
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label">Email</label>
+                                        <input type="email" name="email"
+                                               className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`}
+                                               value={formData.email} onChange={handleChange} required/>
+                                        {renderFieldError('email')}
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label">Hasło</label>
+                                        <input type="password" name="password"
+                                               className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
+                                               value={formData.password} onChange={handleChange} minLength={8}
+                                               required/>
+                                        {renderFieldError('password')}
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label">Telefon</label>
+                                            <input type="number" name="phone"
+                                                   className={`form-control ${fieldErrors.phone ? 'is-invalid' : ''}`}
+                                                   value={formData.phone} onChange={handleChange} required/>
+                                            {renderFieldError('phone')}
+                                        </div>
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label">Data urodzenia</label>
+                                            <input type="date" name="birthAt"
+                                                   className={`form-control ${fieldErrors.birthAt ? 'is-invalid' : ''}`}
+                                                   value={formData.birthAt} onChange={handleChange} required/>
+                                            {renderFieldError('birthAt')}
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="form-label">Płeć</label>
+                                        <select name="gender" className="form-select" value={formData.gender}
+                                                onChange={handleChange}>
+                                            <option value={1}>Mężczyzna</option>
+                                            <option value={2}>Kobieta</option>
+                                        </select>
+                                    </div>
+
+                                    <button type="submit" className="btn btn-primary w-100 py-2" disabled={loading}>
+                                        {loading ? 'Przetwarzanie...' : 'Zarejestruj się'}
+                                    </button>
+                                </form>
+                            )}
+
+                            {step === 2 && (
+                                <form onSubmit={handleCodeSubmit}>
+                                    <div className="alert alert-info">
+                                        Na Twój adres email został wysłany 6-cyfrowy kod rejestracji. Wpisz go poniżej.
+                                    </div>
+                                    <div className="mb-3">
+                                        <label className="form-label">Kod rejestracji</label>
+                                        <input type="number" className="form-control text-center fs-4 tracking-widest"
+                                               value={code} onChange={(e) => setCode(e.target.value)} min="100000"
+                                               max="999999" required autoFocus/>
+                                    </div>
+                                    <div className="d-flex flex-column gap-2">
+                                        <button type="submit" className="btn btn-success py-2" disabled={loading}>
+                                            {loading ? 'Sprawdzanie...' : 'Potwierdź konto'}
+                                        </button>
+                                        <button type="button" className="btn btn-outline-secondary py-2" onClick={handleResendCode} disabled={loading}>
+                                            Wyślij kod ponownie
+                                        </button>
+                                        <button type="button" className="btn btn-link text-muted mt-2" onClick={handleCancel} disabled={loading}>
+                                            Anuluj i wróć
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
+                        </div>
+                    </div>
+                    {step === 1 && (
+                        <div className="text-center mt-3">
+                            <Link to="/sign" className="text-decoration-none">Masz już konto? Zaloguj się</Link>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

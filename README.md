@@ -1,9 +1,10 @@
-# Sportgram starter
+# Sportgram
 
 Czysty szkielet projektu:
 - Backend: PHP 8.5 + Symfony 8.0 (REST API JSON)
 - DB: PostgreSQL 18.3
 - Frontend: React 19.2 (Vite)
+- Wygląd: Bootstrap 5.3
 - PWA: instalacja z przeglądarki (`manifest.webmanifest`) + Service Worker
 - Funkcje urządzenia: powiadomienia (`Notification API`) + kamera (`MediaDevices.getUserMedia`)
 
@@ -14,7 +15,7 @@ Czysty szkielet projektu:
 - `infra/` - Dockerfile PHP + konfiguracja Nginx
 - `docker-compose.yml` - środowisko lokalne (php, nginx, postgres)
 
-## Start (lokalnie)
+## Start
 
 1. Uruchom kontenery:
 
@@ -26,43 +27,95 @@ docker compose up -d --build
 
 ```bash
 docker compose exec php composer install
-docker compose exec php composer require symfony/routing symfony/validator
 ```
 
-3. Uruchom frontend:
+3. Przejdź do katalogu frontend:
 
 ```bash
 cd frontend
+```
+
+4. Zainstaluj zależności frontendu:
+
+```bash
 npm install
+```
+
+5. Uruchom frontend:
+
+```bash
 npm run dev
 ```
 
-4. Otwórz:
-- API: `http://localhost:8080/api/health`
+6. Otwórz:
+
+- API: `http://localhost:8080`
+- Dokumentacja API json `http://localhost:8080/api/doc.json`
+- Dokumentacja API swagger `http://localhost:8080/api/doc`
 - Frontend: `http://localhost:5173`
 
-## Uwaga o ikonach PWA
+7. Migracje:
 
-Starter zawiera gotowe ikony SVG:
-- `frontend/public/icon-192.svg`
-- `frontend/public/icon-512.svg`
+```bash
+docker compose exec php php bin/console doctrine:migrations:diff
+docker compose exec php php bin/console doctrine:migrations:migrate -n
+```
 
-## Kolejne kroki
+8. Testy:
 
-- Dodać encje i migracje (`php bin/console make:entity`, `make:migration`, `doctrine:migrations:migrate`)
-- Dodać autoryzację JWT do API
-- Podpiąć Web Push (VAPID) po stronie backendu
+```bash
+docker compose exec php vendor/bin/phpunit
+docker compose exec php bin/phpunit --coverage-html var/coverage
+docker compose exec php vendor/bin/phpunit tests/Factory/FactorySmokeTest.php --testdox
+```
 
-5. Uruchomienie testów
--  docker compose exec php vendor/bin/phpunit tests/Factory/FactorySmokeTest.php --testdox
+9. Formatowanie kodu:
 
-6. Tworzenie migracji
-- docker compose exec php php bin/console doctrine:migrations:diff
-- docker compose exec php php bin/console doctrine:migrations:migrate -n
+```bash
+docker compose exec php vendor/bin/php-cs-fixer fix
+```
 
-7. Swagger
-- http://localhost:8080/api/doc
-- http://localhost:8080/api/doc.json
+10. Ponowne uruchomienie:
 
-8. Cs fixer
-- docker compose exec php vendor/bin/php-cs-fixer fix
+```bash
+docker compose up -d
+cd frontend
+npm run dev
+```
+
+11. Podstrony:
+
+- / (strona główna, dla niezalogowanych pokazuje przyciski do logowania / rejestracji, a dla zalogowanych pokazuje
+  listy: stories / feeds)
+- /register (formularz rejestracji 2 krokowy - tylko dla niezalogowanych)
+- /sign (formularz logowania 2 krokowy - tylko dla niezalogowanych)
+- /password-reset (formularz resetowania hasła 2 krokowy - tylko dla niezalogowanych)
+- /users (lista użytkowników - tylko dla zalogowanych)
+- /users/{user-link} (profil użytkownika, pokazuje listy: stories / feeds, jeżeli user inny niż ja to pokazuje przycisk
+  znajomości - tylko dla zalogowanych)
+- /users/{user-link}/settings (ustawienia użytkownika, pokazuje formularz edycji danych - tylko dla zalogowanych)
+- /users/{user-link}/feeds (lista feeds użytkownika, pokazuje formularz dodawania feed - tylko dla zalogowanych)
+- /users/{user-link}/stories (lista stories użytkownika, pokazuje formularz dodawania story - tylko dla zalogowanych)
+- /users/{user-link}/friends (lista znajomych użytkownika, pokazuje liste friends - tylko dla zalogowanych)
+- /users/{user-link}/goals (lista celów użytkownika, pokazuje formularz dodawania celu - tylko dla roli Uczestnik)
+- /users/{user-link}/pages (lista stron użytkownika, pokazuje formularz dodawania strony - tylko dla roli Organizator)
+- /users/{user-link}/events (lista wydarzeń użytkownika, pokazuje formularz dodawania wydarzenia - tylko dla roli
+  Organizator)
+- /users/{user-link}/trainings (lista treningów użytkownika, pokazuje formularz dodawania treningu - tylko dla roli
+  Uczestnik)
+- /users/{user-link}/notifications (lista powiadomień użytkownika - tylko dla zalogowanych)
+- /users/{user-link}/push-subscriptions (lista przeglądarek do wysyłania powiadomień użytkownika - tylko dla
+  zalogowanych)
+- /users/{user-link}/conversations (lista wiadomości międdzy mną, a tym użytkownikiem jeżeli user inny niż ja, w
+  przeciwnym wypadku pokazuje liste aktywności - tylko dla zalogowanych)
+- /goals/{goal-link} (profil celu - tylko dla zalogowanych)
+- /trainings/{training-link} (profil treningu - tylko dla zalogowanych)
+- /pages ( lista stron, pokazuje przycisk obserwacji - tylko dla zalogowanych)
+- /pages/{page-link} (profil strony - tylko dla zalogowanych)
+- /events (lista wydarzeń - tylko dla zalogowanych)
+- /events/{event-link} (profil wydarzenia - tylko dla zalogowanych)
+- /events/{event-link}/{event-discipline}/{event-distance}/lists (lista zapisanych na dystans dyscypliny wydarzenia,
+  pokazuje przycisk zapisania się gdy user ma role Uczestnik - tylko dla zalogowanych)
+- /events/{event-link}/{event-discipline}/{event-distance}/results (lista wyników z dystansu dyscypliny wydarzenia,
+  pokazuje przycisk dodania wyniku gdy user ma role Organizator - tylko dla zalogowanych)
+- /statistics (statystyki - tylko dla zalogowanych)

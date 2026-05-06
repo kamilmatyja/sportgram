@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Dto\{UserEmailDto, UserPasswordDto};
 use App\Entity\{UserPasswordReset};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
@@ -19,6 +20,7 @@ readonly class PasswordResetService
         private UserRepository $userRepository,
         private UserRegisterRepository $userRegisterRepository,
         private UserPasswordResetRepository $userPasswordResetRepository,
+        private UserPasswordHasherInterface $hasher,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -92,7 +94,7 @@ readonly class PasswordResetService
         }
 
         $user = $userPasswordReset->user;
-        $user->password = $dto->password;
+        $user->password = $this->hasher->hashPassword($user, $dto->password);
         $this->userRepository->save($user);
 
         $userPasswordReset->status = UnauthorizedStatusEnum::Correct;

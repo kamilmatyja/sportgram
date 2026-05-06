@@ -1,97 +1,83 @@
-import { useEffect, useRef, useState } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Register from './pages/Register';
+import Sign from './pages/Sign';
+import PasswordReset from './pages/PasswordReset';
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? ''
+const ProtectedRoute = ({ children }) => {
+    const { isAuthenticated } = useAuth();
+    if (!isAuthenticated) return <Navigate to="/sign" replace />;
+    return children;
+};
+
+const GuestRoute = ({ children }) => {
+    const { isAuthenticated } = useAuth();
+    if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+    return children;
+};
+
+const MainPlaceholder = () => {
+    const { logout, token, signId } = useAuth();
+    return (
+        <div className="container mt-5 text-center">
+            <h1>Strona główna</h1>
+            <p className="small text-muted">Mój Sign ID: {signId}</p>
+            <p className="small text-muted text-break">Mój Token: {token}</p>
+            <button className="btn btn-danger mt-4" onClick={logout}>Wyloguj mnie całkowicie</button>
+        </div>
+    );
+};
+
+const AppRoutes = () => {
+    const { isAuthLoading } = useAuth();
+
+    if (isAuthLoading) {
+        return (
+            <div className="min-vh-100 d-flex justify-content-center align-items-center bg-light">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Sprawdzanie sesji...</span>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <Routes>
+            <Route path="/" element={<MainPlaceholder />} />
+
+            <Route path="/register" element={
+                <GuestRoute>
+                    <Register />
+                </GuestRoute>
+            } />
+            <Route path="/sign" element={
+                <GuestRoute>
+                    <Sign />
+                </GuestRoute>
+            } />
+            <Route path="/password-reset" element={
+                <GuestRoute>
+                    <PasswordReset />
+                </GuestRoute>
+            } />
+
+            <Route path="/users" element={
+                <ProtectedRoute>
+                    <Users />
+                </ProtectedRoute>
+            } />
+
+            <Route path="*" element={<h1 className="text-center mt-5">404 - Nie znaleziono</h1>} />
+        </Routes>
+    );
+};
 
 export default function App() {
-  const videoRef = useRef(null)
-  const [health, setHealth] = useState(null)
-  const [cameraError, setCameraError] = useState('')
-  const [installEvent, setInstallEvent] = useState(null)
-  const [isStandalone, setIsStandalone] = useState(false)
-
-  useEffect(() => {
-    fetch(`${API_BASE}/api/health`)
-      .then((res) => res.json())
-      .then(setHealth)
-      .catch(() => setHealth({ status: 'error', service: 'api unreachable' }))
-  }, [])
-
-  useEffect(() => {
-    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches)
-  }, [])
-
-  useEffect(() => {
-    const handler = (event) => {
-      event.preventDefault()
-      setInstallEvent(event)
-    }
-
-    window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
-  }, [])
-
-  const enableNotifications = async () => {
-    if (!('Notification' in window)) {
-      alert('Ta przeglądarka nie wspiera Notification API.')
-      return
-    }
-
-    const permission = await Notification.requestPermission()
-    alert(`Status powiadomień: ${permission}`)
-  }
-
-  const enableCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-      }
-    } catch (error) {
-      setCameraError('Brak dostępu do kamery lub użytkownik odmówił uprawnień.')
-      console.error(error)
-    }
-  }
-
-  const installApp = async () => {
-    if (isStandalone) {
-      alert('Aplikacja jest już zainstalowana.')
-      return
-    }
-
-    if (!installEvent) {
-      alert('Prompt instalacji nie jest dostępny. Użyj opcji \"Zainstaluj aplikację\" w menu przeglądarki.')
-      return
-    }
-
-    installEvent.prompt()
-    await installEvent.userChoice
-    setInstallEvent(null)
-  }
-
-  return (
-    <main className="app">
-      <h1>Sportgram</h1>
-      <p>React 19.2 + Symfony 8 API + PWA</p>
-
-      <section>
-        <h2>Health API</h2>
-        <pre>{JSON.stringify(health, null, 2)}</pre>
-      </section>
-
-      <section>
-        <h2>PWA / Urządzenie</h2>
-        <button onClick={installApp}>Zainstaluj aplikację</button>
-        <button onClick={enableNotifications}>Włącz powiadomienia</button>
-        <button onClick={enableCamera}>Włącz kamerę</button>
-        {cameraError ? <p className="error">{cameraError}</p> : null}
-        {!installEvent && !isStandalone ? (
-          <p>
-            Jeśli przycisk nie otwiera promptu, zainstaluj aplikację z menu przeglądarki
-            (np. Chrome: trzy kropki - Zainstaluj aplikację).
-          </p>
-        ) : null}
-        <video ref={videoRef} autoPlay playsInline muted className="camera" />
-      </section>
-    </main>
-  )
+    return (
+        <AuthProvider>
+            <div className="min-vh-100 bg-light">
+                <AppRoutes />
+            </div>
+        </AuthProvider>
+    );
 }

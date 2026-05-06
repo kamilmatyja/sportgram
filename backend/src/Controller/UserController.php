@@ -37,7 +37,7 @@ class UserController extends AbstractController
         return ApiResponse::created($userId);
     }
 
-    #[Route('/api/users/nano', name: 'user_create_nano', methods: ['POST'])]
+    #[Route('/api/user-nano', name: 'user_create_nano', methods: ['POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
         summary: 'Create user nano',
