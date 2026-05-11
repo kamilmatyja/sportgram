@@ -160,9 +160,6 @@ export default function PasswordReset() {
 
                             {step === 1 && (
                                 <form onSubmit={handleEmailSubmit}>
-                                    <div className="alert alert-light border">
-                                        Wpisz adres email powiązany ze swoim kontem, aby otrzymać kod pozwalający ustawić nowe hasło.
-                                    </div>
                                     <div className="mb-4">
                                         <label className="form-label">Email</label>
                                         <input type="email" name="email"
@@ -180,10 +177,10 @@ export default function PasswordReset() {
                             {step === 2 && (
                                 <form onSubmit={handleCodeSubmit}>
                                     <div className="alert alert-info">
-                                        Na Twój adres email został wysłany 6-cyfrowy kod resetowania hasła. Wpisz go poniżej.
+                                        Na Twój adres email został wysłany 6-cyfrowy kod, wpisz go poniżej.
                                     </div>
                                     <div className="mb-3">
-                                        <label className="form-label">Kod resetowania hasła</label>
+                                        <label className="form-label">Kod</label>
                                         <input type="number" name="code"
                                                className={`form-control text-center fs-4 tracking-widest ${fieldErrors.code ? 'is-invalid' : ''}`}
                                                value={formData.code} onChange={handleChange} min="100000"

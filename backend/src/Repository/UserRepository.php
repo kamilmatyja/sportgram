@@ -64,6 +64,11 @@ class UserRepository extends BaseRepository
                 ->setParameter('gender', $dto->filter->gender);
         }
 
+        if ($dto->filter->email) {
+            $qb->andWhere('u.email = :email')
+                ->setParameter('email', $dto->filter->email);
+        }
+
         if ($dto->filter->country) {
             $qb->andWhere('u.country = :country')
                 ->setParameter('country', $dto->filter->country);

@@ -117,7 +117,7 @@ class FeedController extends AbstractController
     #[Route('/api/feeds/{id}', name: 'feed_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of feeds',
+        summary: 'Details of feed',
         tags: ['feeds'],
         responses: [new Item(FeedResource::class), new BadRequest(), new Unauthorized()],
     )]

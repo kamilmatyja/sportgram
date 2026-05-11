@@ -211,10 +211,10 @@ export default function Sign() {
                             {step === 2 && (
                                 <form onSubmit={handleCodeSubmit}>
                                     <div className="alert alert-info">
-                                        Na Twój adres email został wysłany 6-cyfrowy kod logowania. Wpisz go poniżej.
+                                        Na Twój adres email został wysłany 6-cyfrowy kod, wpisz go poniżej.
                                     </div>
                                     <div className="mb-3">
-                                        <label className="form-label">Kod logowania</label>
+                                        <label className="form-label">Kod</label>
                                         <input type="number" className="form-control text-center fs-4 tracking-widest"
                                                value={code} onChange={(e) => setCode(e.target.value)} min="100000"
                                                max="999999" required autoFocus/>

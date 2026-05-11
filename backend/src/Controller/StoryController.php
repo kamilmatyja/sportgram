@@ -112,7 +112,7 @@ class StoryController extends AbstractController
     #[Route('/api/stories/{id}', name: 'story_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of stories',
+        summary: 'Details of story',
         tags: ['stories'],
         responses: [new Item(StoryResource::class), new BadRequest(), new Unauthorized()],
     )]

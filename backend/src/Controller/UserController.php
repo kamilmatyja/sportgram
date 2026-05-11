@@ -131,7 +131,7 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}', name: 'user_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of users',
+        summary: 'Details of user',
         tags: ['users'],
         responses: [new Item(UserResource::class), new BadRequest(), new Unauthorized()],
     )]

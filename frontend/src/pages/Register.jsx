@@ -2,6 +2,66 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiFetch } from '../utils/api';
 
+const countryOptions = [
+    { value: 1, label: 'Albania' },
+    { value: 2, label: 'Andorra' },
+    { value: 3, label: 'Austria' },
+    { value: 4, label: 'Belarus' },
+    { value: 5, label: 'Belgium' },
+    { value: 6, label: 'Bosnia and Herzegovina' },
+    { value: 7, label: 'Bulgaria' },
+    { value: 8, label: 'Croatia' },
+    { value: 9, label: 'Cyprus' },
+    { value: 10, label: 'Czech Republic' },
+    { value: 11, label: 'Denmark' },
+    { value: 12, label: 'Estonia' },
+    { value: 13, label: 'Finland' },
+    { value: 14, label: 'France' },
+    { value: 15, label: 'Georgia' },
+    { value: 16, label: 'Germany' },
+    { value: 17, label: 'Greece' },
+    { value: 18, label: 'Hungary' },
+    { value: 19, label: 'Iceland' },
+    { value: 20, label: 'Ireland' },
+    { value: 21, label: 'Italy' },
+    { value: 22, label: 'Kazakhstan' },
+    { value: 23, label: 'Kosovo' },
+    { value: 24, label: 'Latvia' },
+    { value: 25, label: 'Liechtenstein' },
+    { value: 26, label: 'Lithuania' },
+    { value: 27, label: 'Luxembourg' },
+    { value: 28, label: 'Malta' },
+    { value: 29, label: 'Moldova' },
+    { value: 30, label: 'Monaco' },
+    { value: 31, label: 'Montenegro' },
+    { value: 32, label: 'Netherlands' },
+    { value: 33, label: 'North Macedonia' },
+    { value: 34, label: 'Norway' },
+    { value: 35, label: 'Poland' },
+    { value: 36, label: 'Portugal' },
+    { value: 37, label: 'Romania' },
+    { value: 38, label: 'Russia' },
+    { value: 39, label: 'San Marino' },
+    { value: 40, label: 'Serbia' },
+    { value: 41, label: 'Slovakia' },
+    { value: 42, label: 'Slovenia' },
+    { value: 43, label: 'Spain' },
+    { value: 44, label: 'Sweden' },
+    { value: 45, label: 'Switzerland' },
+    { value: 46, label: 'Turkey' },
+    { value: 47, label: 'Ukraine' },
+    { value: 48, label: 'United Kingdom' },
+    { value: 49, label: 'Vatican City' },
+];
+const roleOptions = [
+    { value: 1, label: 'Uczestnik' },
+    { value: 2, label: 'Organizator' },
+];
+const genderOptions = [
+    { value: 1, label: 'Mężczyzna' },
+    { value: 2, label: 'Kobieta' },
+];
+
 export default function Register() {
     const navigate = useNavigate();
 
@@ -20,8 +80,9 @@ export default function Register() {
         password: '',
         phone: '',
         birthAt: '',
-        gender: 1,
-        country: 35,
+        gender: '',
+        country: '',
+        roles: [],
     });
 
     const [code, setCode] = useState('');
@@ -79,8 +140,14 @@ export default function Register() {
     };
 
     const handleChange = (e) => {
-        setFormData({...formData, [e.target.name]: e.target.value});
-        setFieldErrors({...fieldErrors, [e.target.name]: null});
+        if (e.target.name === 'roles') {
+            const selected = Array.from(e.target.selectedOptions, opt => opt.value);
+            setFormData({ ...formData, roles: selected });
+            setFieldErrors({ ...fieldErrors, roles: null });
+        } else {
+            setFormData({ ...formData, [e.target.name]: e.target.value });
+            setFieldErrors({ ...fieldErrors, [e.target.name]: null });
+        }
     };
 
     const handleRegisterSubmit = async (e) => {
@@ -97,7 +164,7 @@ export default function Register() {
                     gender: parseInt(formData.gender),
                     phone: parseInt(formData.phone),
                     country: parseInt(formData.country),
-                    roles: [1]
+                    roles: formData.roles.map(Number),
                 })
             });
 
@@ -250,11 +317,34 @@ export default function Register() {
 
                                     <div className="mb-4">
                                         <label className="form-label">Płeć</label>
-                                        <select name="gender" className="form-select" value={formData.gender}
-                                                onChange={handleChange}>
-                                            <option value={1}>Mężczyzna</option>
-                                            <option value={2}>Kobieta</option>
+                                        <select name="gender" className="form-select" value={formData.gender} onChange={handleChange} required>
+                                            <option value="">Wybierz płeć...</option>
+                                            {genderOptions.map(opt => (
+                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                            ))}
                                         </select>
+                                        {renderFieldError('gender')}
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label">Kraj</label>
+                                        <select name="country" className={`form-select ${fieldErrors.country ? 'is-invalid' : ''}`} value={formData.country} onChange={handleChange} required>
+                                            <option value="">Wybierz kraj...</option>
+                                            {countryOptions.map(opt => (
+                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                            ))}
+                                        </select>
+                                        {renderFieldError('country')}
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="form-label">Role</label>
+                                        <select name="roles" multiple className={`form-select ${fieldErrors.roles ? 'is-invalid' : ''}`} value={formData.roles} onChange={handleChange} required>
+                                            {roleOptions.map(opt => (
+                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                            ))}
+                                        </select>
+                                        {renderFieldError('roles')}
                                     </div>
 
                                     <button type="submit" className="btn btn-primary w-100 py-2" disabled={loading}>
@@ -266,10 +356,10 @@ export default function Register() {
                             {step === 2 && (
                                 <form onSubmit={handleCodeSubmit}>
                                     <div className="alert alert-info">
-                                        Na Twój adres email został wysłany 6-cyfrowy kod rejestracji. Wpisz go poniżej.
+                                        Na Twój adres email został wysłany 6-cyfrowy kod, wpisz go poniżej.
                                     </div>
                                     <div className="mb-3">
-                                        <label className="form-label">Kod rejestracji</label>
+                                        <label className="form-label">Kod</label>
                                         <input type="number" className="form-control text-center fs-4 tracking-widest"
                                                value={code} onChange={(e) => setCode(e.target.value)} min="100000"
                                                max="999999" required autoFocus/>

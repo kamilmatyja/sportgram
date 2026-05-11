@@ -113,7 +113,7 @@ class GoalController extends AbstractController
     #[Route('/api/goals/{id}', name: 'goal_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of users',
+        summary: 'Details of goal',
         tags: ['goals'],
         responses: [new Item(GoalResource::class), new BadRequest(), new Unauthorized()],
     )]
