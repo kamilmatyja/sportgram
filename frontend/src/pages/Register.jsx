@@ -14,7 +14,7 @@ import {PasswordResetService} from '../api/PasswordResetService';
 export default function Register() {
     const step = Number(sessionStorage.getItem('step')) || 1;
     const registerId = sessionStorage.getItem('register_id') || null;
-    const [registerFormData, setRegisterFormData] = useState({firstName: '', lastName: '', email: '', password: '', phone: '', birthAt: '', gender: '', country: '', roles: []});
+    const [registerFormData, setRegisterFormData] = useState({firstName: '', lastName: '', email: '', password: '', phone: '', birthAt: '', gender: 1, country: 1, roles: [1]});
     const [codeFormData, setCodeFormData] = useState({ code: '' });
 
     const [loading, setLoading] = useState(false);
