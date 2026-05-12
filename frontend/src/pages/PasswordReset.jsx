@@ -1,21 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PasswordResetService } from '../api/PasswordResetService';
 import { PasswordResetDto } from '../api/dto/PasswordResetDto';
 import { PasswordResetFormView } from '../components/PasswordResetFormView';
 import { PasswordResetVerificationFormView } from '../components/PasswordResetVerificationFormView';
 import { EmailDto } from '../api/dto/EmailDto';
+import {SignDto} from '../api/dto/SignDto';
+import {SignService} from '../api/SignService';
+import {RegisterService} from '../api/RegisterService';
 
 export default function PasswordReset() {
-    const [step, setStep] = useState(() => JSON.parse(sessionStorage.getItem('password_reset_step')) || 1);
-    const [passwordResetId, setPasswordResetId] = useState(() => sessionStorage.getItem('password_reset_id') || null);
-    const [passwordResetFormData, setPasswordResetFormData] = useState(() =>
-        JSON.parse(sessionStorage.getItem('password_reset_data')) || { email: '', password: '', rememberMe: false }
-    );
-    const [codeFormData, setCodeFormData] = useState(() =>
-        JSON.parse(sessionStorage.getItem('password_reset_code')) || { code: '' }
-    );
+    const step = Number(sessionStorage.getItem('step')) || 1;
+    const passwordResetId = sessionStorage.getItem('password_reset_id') || null;
+    const [passwordResetFormData, setPasswordResetFormData] = useState({email: ''});
+    const [codeFormData, setCodeFormData] = useState({ code: '', password: '' });
 
     const [loading, setLoading] = useState(false);
     const [globalError, setGlobalError] = useState('');
@@ -23,15 +21,9 @@ export default function PasswordReset() {
     const [resendSuccess, setResendSuccess] = useState(false);
 
     const navigate = useNavigate();
-    const { login } = useAuth();
     const passwordResetService = new PasswordResetService();
-
-    useEffect(() => {
-        sessionStorage.setItem('password_reset_step', JSON.stringify(step));
-        sessionStorage.setItem('password_reset_id', passwordResetId);
-        sessionStorage.setItem('password_reset_data', JSON.stringify(passwordResetFormData));
-        sessionStorage.setItem('password_reset_code', JSON.stringify(codeFormData));
-    }, [step, passwordResetId, passwordResetFormData, codeFormData]);
+    const signService = new SignService();
+    const registerService = new RegisterService();
 
     const handlePasswordResetSubmit = async (e) => {
         e.preventDefault();
@@ -42,10 +34,27 @@ export default function PasswordReset() {
         const dto = new EmailDto(passwordResetFormData.email);
         try {
             const res = await passwordResetService.passwordReset(dto);
-            setPasswordResetId(res.id);
-            setStep(2);
+
+            sessionStorage.setItem('step', '2');
+            sessionStorage.setItem('password_reset_id', res.id);
+            sessionStorage.setItem('email', passwordResetFormData.email);
         } catch (err) {
             if (err.errors) setFieldErrors(err.errors);
+            else if (err.error === 'User account is not confirmed.') {
+                try {
+                    const res = await registerService.register(dto);
+
+                    sessionStorage.setItem('step', '2');
+                    sessionStorage.setItem('register_id', res.id);
+                    sessionStorage.setItem('email', passwordResetFormData.email);
+                    sessionStorage.removeItem('password_reset_id');
+
+                    navigate('/register');
+                } catch (err) {
+                    if (err.errors) setFieldErrors(err.errors);
+                    else setGlobalError(err.error);
+                }
+            }
             else setGlobalError(err.error);
         } finally {
             setLoading(false);
@@ -60,9 +69,16 @@ export default function PasswordReset() {
 
         const dto = new PasswordResetDto(codeFormData.code, codeFormData.password);
         try {
-            const res = await passwordResetService.confirm(passwordResetId, dto);
-            login(res.token, passwordResetId, passwordResetFormData.rememberMe);
-            navigate('/');
+            await passwordResetService.confirm(passwordResetId, dto)
+
+            const signDto = new SignDto(sessionStorage.getItem('email'), codeFormData.password, false);
+            const res = await signService.sign(signDto);
+
+            sessionStorage.setItem('step', '2');
+            sessionStorage.setItem('sign_id', res.id);
+            sessionStorage.removeItem('password_reset_id');
+
+            navigate('/sign');
         } catch (err) {
             if (err.errors) setFieldErrors(err.errors);
             else setGlobalError(err.error);
@@ -87,6 +103,14 @@ export default function PasswordReset() {
         }
     };
 
+    const clearSessionDataAndGoToStep1 = () => {
+        sessionStorage.setItem('step', '1');
+        sessionStorage.removeItem('password_reset_id');
+        sessionStorage.removeItem('email');
+
+        navigate('/password-reset');
+    };
+
     const createHandler = (setter) => (e) => {
         const { name, value, type, checked } = e.target;
         setter(prev => ({
@@ -101,9 +125,9 @@ export default function PasswordReset() {
             handleChange={createHandler(setCodeFormData)}
             onSubmit={handleCodeSubmit}
             loading={loading}
-            onCancel={() => { setStep(1); setPasswordResetId(null); }}
             fieldErrors={fieldErrors}
             globalError={globalError}
+            onCancel={clearSessionDataAndGoToStep1}
             onResend={handleResend}
             resendSuccess={resendSuccess}
         />;

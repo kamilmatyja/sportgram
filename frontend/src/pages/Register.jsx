@@ -1,30 +1,21 @@
-import {useEffect, useState} from 'react';
+import { useState } from 'react';
 import {useNavigate} from 'react-router-dom';
 import {RegisterService} from '../api/RegisterService';
 import {UserService} from '../api/UserService';
 import {RegisterFormView} from '../components/RegisterFormView';
 import {VerificationFormView} from '../components/VerificationFormView';
-import {RegisterDto} from "../api/dto/RegisterDto.js";
-import {CodeDto} from "../api/dto/CodeDto.js";
-import {EmailDto} from "../api/dto/EmailDto.js";
+import {RegisterDto} from '../api/dto/RegisterDto';
+import {CodeDto} from '../api/dto/CodeDto';
+import {EmailDto} from '../api/dto/EmailDto';
+import {SignService} from '../api/SignService';
+import {SignDto} from '../api/dto/SignDto';
+import {PasswordResetService} from '../api/PasswordResetService';
 
 export default function Register() {
-    const [step, setStep] = useState(() => JSON.parse(sessionStorage.getItem('register_step')) || 1);
-    const [registerId, setRegisterId] = useState(() => sessionStorage.getItem('register_id') || null);
-    const [registerFormData, setRegisterFormData] = useState(() =>
-            JSON.parse(sessionStorage.getItem('register_data')) || {
-                firstName: '',
-                lastName: '',
-                email: '',
-                password: '',
-                phone: '',
-                birthAt: '',
-                gender: '',
-                country: '',
-                roles: []
-            }
-    );
-    const [codeFormData, setCodeFormData] = useState({code: ''});
+    const step = Number(sessionStorage.getItem('step')) || 1;
+    const registerId = sessionStorage.getItem('register_id') || null;
+    const [registerFormData, setRegisterFormData] = useState({firstName: '', lastName: '', email: '', password: '', phone: '', birthAt: '', gender: '', country: '', roles: []});
+    const [codeFormData, setCodeFormData] = useState({ code: '' });
 
     const [loading, setLoading] = useState(false);
     const [globalError, setGlobalError] = useState('');
@@ -34,12 +25,8 @@ export default function Register() {
     const navigate = useNavigate();
     const registerService = new RegisterService();
     const userServices = new UserService();
-
-    useEffect(() => {
-        sessionStorage.setItem('register_step', JSON.stringify(step));
-        sessionStorage.setItem('register_id', registerId);
-        sessionStorage.setItem('register_data', JSON.stringify(registerFormData));
-    }, [step, registerId, registerFormData]);
+    const signService = new SignService();
+    const passwordResetService = new PasswordResetService();
 
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
@@ -50,21 +37,19 @@ export default function Register() {
         const dto = new RegisterDto(registerFormData.birthAt, registerFormData.firstName, registerFormData.lastName, registerFormData.gender, registerFormData.phone, registerFormData.email, registerFormData.password, registerFormData.country, registerFormData.roles);
         try {
             await userServices.createNano(dto);
+
+            const emailDto = new EmailDto(registerFormData.email);
+            const res = await registerService.register(emailDto);
+
+            sessionStorage.setItem('step', '2');
+            sessionStorage.setItem('register_id', res.id);
+            sessionStorage.setItem('email', registerFormData.email);
+            sessionStorage.setItem('password', registerFormData.password);
         } catch (err) {
             if (err.errors) setFieldErrors(err.errors);
             else setGlobalError(err.error);
         } finally {
-            try {
-                const emailDto = new EmailDto(registerFormData.email);
-                const res = await registerService.register(emailDto);
-                setRegisterId(res.id);
-                setStep(2);
-            } catch (err) {
-                if (err.errors) setFieldErrors(err.errors);
-                else setGlobalError(err.error);
-            } finally {
-                setLoading(false);
-            }
+            setLoading(false);
         }
     };
 
@@ -77,10 +62,31 @@ export default function Register() {
         const dto = new CodeDto(codeFormData.code);
         try {
             await registerService.confirm(registerId, dto);
-            sessionStorage.clear();
-            navigate('/sign');
+
+            const email = sessionStorage.getItem('email');
+            const password = sessionStorage.getItem('password');
+
+            if (password) {
+                const signDto = new SignDto(email, password, false);
+                const res = await signService.sign(signDto);
+
+                sessionStorage.setItem('step', '2');
+                sessionStorage.setItem('sign_id', res.id);
+                sessionStorage.removeItem('register_id');
+
+                navigate('/sign');
+            } else {
+                const emailDto = new EmailDto(email);
+                const res = await passwordResetService.passwordReset(emailDto);
+
+                sessionStorage.setItem('step', '2');
+                sessionStorage.setItem('password_reset_id', res.id);
+                sessionStorage.removeItem('register_id');
+
+                navigate('/password-reset');
+            }
         } catch (err) {
-            setGlobalError(err.error || 'Błędny kod');
+            setGlobalError(err.error);
         } finally {
             setLoading(false);
         }
@@ -100,6 +106,15 @@ export default function Register() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const clearSessionDataAndGoToStep1 = () => {
+        sessionStorage.setItem('step', '1');
+        sessionStorage.removeItem('register_id');
+        sessionStorage.removeItem('email');
+        sessionStorage.removeItem('password');
+
+        navigate('/register');
     };
 
     const createHandler = (setter) => (e) => {
@@ -124,12 +139,9 @@ export default function Register() {
             handleChange={createHandler(setCodeFormData)}
             onSubmit={handleCodeSubmit}
             loading={loading}
-            onCancel={() => {
-                setStep(1);
-                setRegisterId(null);
-            }}
             fieldErrors={fieldErrors}
             globalError={globalError}
+            onCancel={clearSessionDataAndGoToStep1}
             onResend={handleResend}
             resendSuccess={resendSuccess}
         />;

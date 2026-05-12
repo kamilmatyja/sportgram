@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -6,18 +5,14 @@ import { SignService } from '../api/SignService';
 import { SignDto } from '../api/dto/SignDto';
 import { SignFormView } from '../components/SignFormView';
 import { VerificationFormView } from '../components/VerificationFormView';
-import { CodeDto } from '../api/dto/CodeDto.js';
-
+import { CodeDto } from '../api/dto/CodeDto';
+import {RegisterService} from '../api/RegisterService';
+import {EmailDto} from '../api/dto/EmailDto';
 
 export default function Sign() {
-    // Inicjalizacja tylko wymaganych danych
-    const [step, setStep] = useState(() => Number(sessionStorage.getItem('step')) || 1);
-    const [signId, setSignId] = useState(() => sessionStorage.getItem('sign_id') || null);
-    const [signFormData, setSignFormData] = useState(() => ({
-        email: sessionStorage.getItem('email') || '',
-        password: sessionStorage.getItem('password') || '',
-        rememberMe: false
-    }));
+    const step = Number(sessionStorage.getItem('step')) || 1;
+    const signId = sessionStorage.getItem('sign_id') || null;
+    const [signFormData, setSignFormData] = useState({email: '', password: '', rememberMe: false});
     const [codeFormData, setCodeFormData] = useState({ code: '' });
 
     const [loading, setLoading] = useState(false);
@@ -28,7 +23,7 @@ export default function Sign() {
     const navigate = useNavigate();
     const { login } = useAuth();
     const signService = new SignService();
-
+    const registerService = new RegisterService();
 
     const handleSignSubmit = async (e) => {
         e.preventDefault();
@@ -39,25 +34,36 @@ export default function Sign() {
         const dto = new SignDto(signFormData.email, signFormData.password, signFormData.rememberMe);
         try {
             const res = await signService.sign(dto);
-            setSignId(res.id);
-            setStep(2);
-            // Zapisz tylko wymagane dane do sessionStorage
+
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('sign_id', res.id);
             sessionStorage.setItem('email', signFormData.email);
             sessionStorage.setItem('password', signFormData.password);
-            // Usuń niepotrzebne dane
-            sessionStorage.removeItem('sign_data');
-            sessionStorage.removeItem('sign_code');
             sessionStorage.removeItem('token');
         } catch (err) {
             if (err.errors) setFieldErrors(err.errors);
+            else if (err.error === 'User account is not confirmed.') {
+                try {
+                    const emailDto = new EmailDto(signFormData.email);
+                    const res = await registerService.register(emailDto);
+
+                    sessionStorage.setItem('step', '2');
+                    sessionStorage.setItem('register_id', res.id);
+                    sessionStorage.setItem('email', signFormData.email);
+                    sessionStorage.setItem('password', signFormData.password);
+                    sessionStorage.removeItem('sign_id');
+
+                    navigate('/register');
+                } catch (err) {
+                    if (err.errors) setFieldErrors(err.errors);
+                    else setGlobalError(err.error);
+                }
+            }
             else setGlobalError(err.error);
         } finally {
             setLoading(false);
         }
     };
-
 
     const handleCodeSubmit = async (e) => {
         e.preventDefault();
@@ -68,11 +74,14 @@ export default function Sign() {
         const dto = new CodeDto(codeFormData.code);
         try {
             const res = await signService.confirm(signId, dto);
+
             login(res.token, signId, signFormData.rememberMe);
-            // Po udanym 2. kroku: zapisz token, usuń step i password
+
             sessionStorage.setItem('token', res.token);
             sessionStorage.removeItem('step');
-            sessionStorage.removeItem('password');
+            sessionStorage.removeItem('sign_id');
+            sessionStorage.removeItem('email');
+
             navigate('/');
         } catch (err) {
             if (err.errors) setFieldErrors(err.errors);
@@ -81,7 +90,6 @@ export default function Sign() {
             setLoading(false);
         }
     };
-
 
     const handleResend = async (e) => {
         e.preventDefault();
@@ -99,6 +107,15 @@ export default function Sign() {
         }
     };
 
+    const clearSessionDataAndGoToStep1 = () => {
+        sessionStorage.setItem('step', '1');
+        sessionStorage.removeItem('sign_id');
+        sessionStorage.removeItem('email');
+        sessionStorage.removeItem('password');
+        sessionStorage.removeItem('token');
+
+        navigate('/sign');
+    };
 
     const createHandler = (setter) => (e) => {
         const { name, value, type, checked } = e.target;
@@ -108,30 +125,15 @@ export default function Sign() {
         }));
     };
 
-    // Funkcja do czyszczenia danych logowania z sessionStorage
-    const clearSessionData = () => {
-        sessionStorage.removeItem('sign_id');
-        sessionStorage.removeItem('email');
-        sessionStorage.removeItem('password');
-        sessionStorage.removeItem('step');
-        sessionStorage.removeItem('token');
-    };
-
     if (step === 2) {
         return <VerificationFormView
             formData={codeFormData}
             handleChange={createHandler(setCodeFormData)}
             onSubmit={handleCodeSubmit}
             loading={loading}
-            onCancel={() => {
-                setStep(1);
-                setSignId(null);
-                setSignFormData({ email: '', password: '', rememberMe: false });
-                setCodeFormData({ code: '' });
-                clearSessionData();
-            }}
             fieldErrors={fieldErrors}
             globalError={globalError}
+            onCancel={clearSessionDataAndGoToStep1}
             onResend={handleResend}
             resendSuccess={resendSuccess}
         />;
