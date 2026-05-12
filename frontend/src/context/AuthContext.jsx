@@ -8,7 +8,7 @@ export function AuthProvider({ children }) {
     const navigate = useNavigate();
 
     const [token, setToken] = useState(sessionStorage.getItem('token') || localStorage.getItem('token'));
-    const [signId, setSignId] = useState(sessionStorage.getItem('signId') || localStorage.getItem('signId'));
+    const [signId, setSignId] = useState(sessionStorage.getItem('sign_id') || localStorage.getItem('sign_id'));
     const [isAuthLoading, setIsAuthLoading] = useState(true);
 
     useEffect(() => {
@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
         try {
             const res = await apiFetch(`/api/signs/${currentSignId}/refresh`, { method: 'POST' });
 
-            const isRemembered = !!localStorage.getItem('signId');
+            const isRemembered = !!localStorage.getItem('sign_id');
             const storage = isRemembered ? localStorage : sessionStorage;
 
             storage.setItem('token', res.token);
@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
         const storage = rememberMe ? localStorage : sessionStorage;
 
         storage.setItem('token', newToken);
-        storage.setItem('signId', newSignId);
+        storage.setItem('sign_id', newSignId);
 
         setToken(newToken);
         setSignId(newSignId);
@@ -58,13 +58,12 @@ export function AuthProvider({ children }) {
 
     const logout = () => {
         localStorage.removeItem('token');
-        localStorage.removeItem('signId');
+        localStorage.removeItem('sign_id');
         sessionStorage.removeItem('token');
-        sessionStorage.removeItem('signId');
-        sessionStorage.removeItem('sportgram_sign_state');
-        sessionStorage.removeItem('sportgram_register_state');
-        sessionStorage.removeItem('sportgram_auto_sign');
-        sessionStorage.removeItem('sportgram_unconfirmed');
+        sessionStorage.removeItem('sign_step');
+        sessionStorage.removeItem('sign_id');
+        sessionStorage.removeItem('sign_data');
+        sessionStorage.removeItem('sign_code');
 
         setToken(null);
         setSignId(null);

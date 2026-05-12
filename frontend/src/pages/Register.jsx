@@ -88,7 +88,7 @@ export default function Register() {
     const [code, setCode] = useState('');
 
     useEffect(() => {
-        const unconfirmedData = sessionStorage.getItem('sportgram_unconfirmed');
+        const unconfirmedData = sessionStorage.getItem('unconfirmed');
         if (unconfirmedData) {
             const parsedData = JSON.parse(unconfirmedData);
             setFormData(prev => ({
@@ -96,12 +96,12 @@ export default function Register() {
                 email: parsedData.email,
                 password: parsedData.password || ''
             }));
-            sessionStorage.removeItem('sportgram_unconfirmed');
+            sessionStorage.removeItem('unconfirmed');
             requestRegisterCode(parsedData.email);
             return;
         }
 
-        const savedState = sessionStorage.getItem('sportgram_register_state');
+        const savedState = sessionStorage.getItem('register_state');
         if (savedState) {
             const parsedState = JSON.parse(savedState);
             setStep(parsedState.step);
@@ -122,7 +122,7 @@ export default function Register() {
             setRegisterId(registerRes.id);
             setStep(2);
 
-            sessionStorage.setItem('sportgram_register_state', JSON.stringify({
+            sessionStorage.setItem('register_state', JSON.stringify({
                 step: 2,
                 registerId: registerRes.id,
                 formData: { ...formData, email }
@@ -193,8 +193,8 @@ export default function Register() {
                 body: JSON.stringify({code: parseInt(code)})
             });
 
-            sessionStorage.removeItem('sportgram_register_state');
-            sessionStorage.setItem('sportgram_auto_sign', JSON.stringify({
+            sessionStorage.removeItem('register_state');
+            sessionStorage.setItem('auto_sign', JSON.stringify({
                 email: formData.email,
                 password: formData.password
             }));
@@ -229,7 +229,7 @@ export default function Register() {
     };
 
     const handleCancel = () => {
-        sessionStorage.removeItem('sportgram_register_state');
+        sessionStorage.removeItem('register_state');
         setStep(1);
         setRegisterId(null);
         setCode('');

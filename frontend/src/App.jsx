@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Register from './pages/Register';
 import Sign from './pages/Sign';
 import PasswordReset from './pages/PasswordReset';
+import { useTheme } from './context/ThemeContext';
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticated } = useAuth();
@@ -18,12 +19,17 @@ const GuestRoute = ({ children }) => {
 
 const MainPlaceholder = () => {
     const { logout, token, signId } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     return (
         <div className="container mt-5 text-center">
             <h1>Strona główna</h1>
             <p className="small text-muted">Mój Sign ID: {signId}</p>
             <p className="small text-muted text-break">Mój Token: {token}</p>
             <button className="btn btn-danger mt-4" onClick={logout}>Wyloguj mnie całkowicie</button>
+
+            <button className="btn btn-outline-secondary" onClick={toggleTheme}>
+                {theme === 'light' ? '🌙' : '☀️'}
+            </button>
         </div>
     );
 };

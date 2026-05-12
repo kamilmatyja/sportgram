@@ -20,7 +20,7 @@ export default function PasswordReset() {
     });
 
     useEffect(() => {
-        const savedState = sessionStorage.getItem('sportgram_reset_state');
+        const savedState = sessionStorage.getItem('reset_state');
         if (savedState) {
             const parsedState = JSON.parse(savedState);
             setStep(parsedState.step);
@@ -49,7 +49,7 @@ export default function PasswordReset() {
             setResetId(res.id);
             setStep(2);
 
-            sessionStorage.setItem('sportgram_reset_state', JSON.stringify({
+            sessionStorage.setItem('reset_state', JSON.stringify({
                 step: 2,
                 resetId: res.id,
                 formData: { email: formData.email, password: '', code: '' }
@@ -57,7 +57,7 @@ export default function PasswordReset() {
 
         } catch (err) {
             if (err.error === 'User account is not confirmed.') {
-                sessionStorage.setItem('sportgram_unconfirmed', JSON.stringify({ email: formData.email }));
+                sessionStorage.setItem('unconfirmed', JSON.stringify({ email: formData.email }));
                 navigate('/register');
             } else if (err.errors) {
                 setFieldErrors(err.errors);
@@ -87,8 +87,8 @@ export default function PasswordReset() {
                 })
             });
 
-            sessionStorage.removeItem('sportgram_reset_state');
-            sessionStorage.setItem('sportgram_auto_sign', JSON.stringify({
+            sessionStorage.removeItem('reset_state');
+            sessionStorage.setItem('auto_sign', JSON.stringify({
                 email: formData.email,
                 password: formData.password
             }));
@@ -124,7 +124,7 @@ export default function PasswordReset() {
     };
 
     const handleCancel = () => {
-        sessionStorage.removeItem('sportgram_reset_state');
+        sessionStorage.removeItem('reset_state');
         setStep(1);
         setResetId(null);
         setFormData({ email: formData.email, password: '', code: '' });
