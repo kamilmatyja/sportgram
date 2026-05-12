@@ -1,4 +1,4 @@
-import { useTranslation } from '../../context/TranslationContext';
+import { useTranslation } from '../context/TranslationContext';
 
 export const SignFormView = ({ formData, handleChange, onSubmit, loading, fieldErrors, globalError }) => {
     const { t } = useTranslation();

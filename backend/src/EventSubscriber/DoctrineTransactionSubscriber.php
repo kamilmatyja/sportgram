@@ -2,6 +2,7 @@
 
 namespace App\EventSubscriber;
 
+use App\SaveValidationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\{ControllerEvent, ExceptionEvent, ResponseEvent};
@@ -37,7 +38,8 @@ readonly class DoctrineTransactionSubscriber implements EventSubscriberInterface
 
     final public function onKernelException(ExceptionEvent $event): void
     {
-        if ($this->em->getConnection()->isTransactionActive()) {
+        if ($this->em->getConnection()->isTransactionActive()
+            && !($event->getThrowable() instanceof SaveValidationException)) {
             $this->em->rollback();
         }
     }

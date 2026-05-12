@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\SaveValidationException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Dto\{UserEmailDto, UserPasswordDto};
 use App\Entity\{UserPasswordReset};
@@ -90,7 +91,7 @@ readonly class PasswordResetService
             $userPasswordReset->status = UnauthorizedStatusEnum::Incorrect;
             $this->userPasswordResetRepository->save($userPasswordReset);
 
-            throw new ValidatorException('Invalid code.');
+            throw new SaveValidationException('Invalid code.');
         }
 
         $user = $userPasswordReset->user;

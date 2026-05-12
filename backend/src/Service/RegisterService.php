@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\SaveValidationException;
 use App\Dto\{UserCodeDto, UserEmailDto};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
 use App\Event\UserRegisterEmailEvent;
@@ -70,7 +71,7 @@ readonly class RegisterService
             $userRegister->status = UnauthorizedStatusEnum::Incorrect;
             $this->userRegisterRepository->save($userRegister);
 
-            throw new ValidatorException('Invalid code.');
+            throw new SaveValidationException('Invalid code.');
         }
 
         $userRegister->status = UnauthorizedStatusEnum::Correct;

@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { SignService } from '../api/SignService';
 import { SignDto } from '../api/dto/SignDto';
-import { SignFormView } from '../components/sign/SignFormView';
-import { SignVerificationView } from '../components/sign/SignVerificationView.jsx';
+import { SignFormView } from '../components/SignFormView';
+import { VerificationView } from '../components/VerificationView';
 import { CodeDto } from '../api/dto/CodeDto.js';
 
 export default function Sign() {
@@ -96,7 +96,7 @@ export default function Sign() {
     };
 
     if (step === 2) {
-        return <SignVerificationView
+        return <VerificationView
             formData={codeFormData}
             handleChange={createHandler(setCodeFormData)}
             onSubmit={handleCodeSubmit}

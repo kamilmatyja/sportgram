@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\SaveValidationException;
 use App\Dto\{UserCodeDto, UserSignDto};
 use App\Entity\{UserSign};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
@@ -91,7 +92,7 @@ readonly class SignService
             $userSign->status = UnauthorizedStatusEnum::Incorrect;
             $this->userSignRepository->save($userSign);
 
-            throw new ValidatorException('Invalid code.');
+            throw new SaveValidationException('Invalid code.');
         }
 
         $userSign->status = UnauthorizedStatusEnum::Correct;

@@ -1,7 +1,7 @@
-import { useTranslation } from '../../context/TranslationContext';
-import { GenderEnum } from '../../enums/GenderEnum';
-import { CountryEnum } from '../../enums/CountryEnum';
-import { RoleEnum } from '../../enums/RoleEnum';
+import { useTranslation } from '../context/TranslationContext';
+import { GenderEnum } from '../enums/GenderEnum';
+import { CountryEnum } from '../enums/CountryEnum';
+import { RoleEnum } from '../enums/RoleEnum';
 
 export const RegisterFormView = ({ formData, handleChange, onSubmit, loading, fieldErrors, globalError }) => {
     const { t } = useTranslation();

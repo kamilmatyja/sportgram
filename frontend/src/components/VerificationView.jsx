@@ -1,7 +1,7 @@
 
-import { useTranslation } from '../../context/TranslationContext';
+import { useTranslation } from '../context/TranslationContext';
 
-export const SignVerificationView = ({ formData,
+export const VerificationView = ({ formData,
                                          handleChange,
                                          onSubmit,
                                          loading,

@@ -1,8 +1,8 @@
 import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {RegisterService} from '../api/RegisterService';
-import {RegisterFormView} from '../components/register/RegisterFormView';
-import {RegisterVerificationView} from '../components/register/RegisterVerificationView';
+import {RegisterFormView} from '../components/RegisterFormView';
+import {VerificationView} from '../components/VerificationView';
 import {RegisterDto} from "../api/dto/RegisterDto.js";
 import {CodeDto} from "../api/dto/CodeDto.js";
 
@@ -108,7 +108,7 @@ export default function Register() {
     };
 
     if (step === 2) {
-        return <RegisterVerificationView
+        return <VerificationView
             formData={codeFormData}
             handleChange={createHandler(setCodeFormData)}
             onSubmit={handleCodeSubmit}
