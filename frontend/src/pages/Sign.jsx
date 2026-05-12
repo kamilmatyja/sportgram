@@ -73,14 +73,14 @@ export default function Sign() {
 
         const dto = new CodeDto(codeFormData.code);
         try {
-            const res = await signService.confirm(signId, dto);
-
-            login(res.token, signId, signFormData.rememberMe);
+            const res = await signService.confirm(signId, dto)
 
             sessionStorage.setItem('token', res.token);
             sessionStorage.removeItem('step');
             sessionStorage.removeItem('sign_id');
             sessionStorage.removeItem('email');
+
+            login(res.token, signId, signFormData.rememberMe);
 
             navigate('/');
         } catch (err) {
