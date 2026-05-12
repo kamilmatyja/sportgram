@@ -1,4 +1,4 @@
-import { apiFetch } from '../utils/api';
+import {apiFetch} from '../utils/api';
 
 export class SignService {
     async sign(dto) {
@@ -17,6 +17,13 @@ export class SignService {
 
     async resend(id) {
         return await apiFetch(`/api/signs/${id}/resend`, {
+            method: 'POST'
+        });
+    }
+
+    async refresh(id) {
+
+        return await apiFetch(`/api/signs/${id}/refresh`, {
             method: 'POST'
         });
     }
