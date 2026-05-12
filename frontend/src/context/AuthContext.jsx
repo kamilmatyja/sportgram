@@ -57,13 +57,8 @@ export function AuthProvider({ children }) {
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('sign_id');
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('sign_step');
-        sessionStorage.removeItem('sign_id');
-        sessionStorage.removeItem('sign_data');
-        sessionStorage.removeItem('sign_code');
+        localStorage.clear();
+        localStorage.clear();
 
         setToken(null);
         setSignId(null);

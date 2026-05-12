@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children }) => {
 
 const GuestRoute = ({ children }) => {
     const { isAuthenticated } = useAuth();
-    if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+    if (isAuthenticated) return <Navigate to="/" replace />;
     return children;
 };
 

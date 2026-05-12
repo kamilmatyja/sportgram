@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { SignService } from '../api/SignService';
 import { SignDto } from '../api/dto/SignDto';
 import { SignFormView } from '../components/sign/SignFormView';
-import { VerificationFormView } from '../components/sign/VerificationFormView';
+import { SignVerificationView } from '../components/sign/SignVerificationView.jsx';
 import { CodeDto } from '../api/dto/CodeDto.js';
 
 export default function Sign() {
@@ -61,9 +61,7 @@ export default function Sign() {
         const dto = new CodeDto(codeFormData.code);
         try {
             const res = await signService.confirm(signId, dto);
-
             login(res.token, signId, signFormData.rememberMe);
-
             navigate('/');
         } catch (err) {
             if (err.errors) setFieldErrors(err.errors);
@@ -98,7 +96,7 @@ export default function Sign() {
     };
 
     if (step === 2) {
-        return <VerificationFormView
+        return <SignVerificationView
             formData={codeFormData}
             handleChange={createHandler(setCodeFormData)}
             onSubmit={handleCodeSubmit}
