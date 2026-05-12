@@ -2,7 +2,7 @@ import { apiFetch } from '../utils/api';
 
 export class RegisterService {
     async register(dto) {
-        return await apiFetch('/api/user-nano', {
+        return await apiFetch('/api/registers', {
             method: 'POST',
             body: JSON.stringify(dto)
         });

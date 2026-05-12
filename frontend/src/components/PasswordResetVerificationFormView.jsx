@@ -1,7 +1,7 @@
 
 import { useTranslation } from '../context/TranslationContext';
 
-export const VerificationView = ({ formData,
+export const PasswordResetVerificationFormView = ({ formData,
                                          handleChange,
                                          onSubmit,
                                          loading,
@@ -28,7 +28,7 @@ export const VerificationView = ({ formData,
                                 <input
                                     type="number"
                                     name="code"
-                                    className={`form-control text-center fs-4 ${fieldErrors.code ? 'is-invalid' : ''}`}
+                                    className={`form-control ${fieldErrors.code ? 'is-invalid' : ''}`}
                                     value={formData.code}
                                     onChange={handleChange}
                                     min="100000"
@@ -37,6 +37,12 @@ export const VerificationView = ({ formData,
                                     autoFocus
                                 />
                                 {fieldErrors.code && <div className="invalid-feedback">{fieldErrors.code[0]}</div>}
+                            </div>
+                            <div className="mb-3">
+                                <label className="form-label">{t('password')}</label>
+                                <input type="password" name="password" className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
+                                       value={formData.password} onChange={handleChange} minLength="8" maxLength="64" required/>
+                                {fieldErrors.password && <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
                             </div>
 
                             <div className="d-flex flex-column gap-2">

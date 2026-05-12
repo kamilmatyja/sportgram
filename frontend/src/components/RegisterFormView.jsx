@@ -18,7 +18,6 @@ export const RegisterFormView = ({ formData, handleChange, onSubmit, loading, fi
                         <div className="card-body p-4">
                             <h2 className="text-center mb-4">{t('register')}</h2>
                             {globalError && <div className="alert alert-danger">{globalError}</div>}
-
                             <form onSubmit={onSubmit}>
                                 <div className="row">
                                     <div className="col-md-6 mb-3">
@@ -32,19 +31,16 @@ export const RegisterFormView = ({ formData, handleChange, onSubmit, loading, fi
                                         {fieldErrors.lastName && <div className="invalid-feedback d-block">{fieldErrors.lastName}</div>}
                                     </div>
                                 </div>
-
                                 <div className="mb-3">
                                     <label className="form-label">{t('email')}</label>
                                     <input type="email" name="email" className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`} value={formData.email} onChange={handleChange} required />
                                     {fieldErrors.email && <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
                                 </div>
-
                                 <div className="mb-3">
                                     <label className="form-label">{t('password')}</label>
                                     <input type="password" name="password" className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`} value={formData.password} onChange={handleChange} required minLength="8" />
                                     {fieldErrors.password && <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
                                 </div>
-
                                 <div className="row">
                                     <div className="col-md-6 mb-3">
                                         <label className="form-label">{t('phone')}</label>
@@ -57,7 +53,6 @@ export const RegisterFormView = ({ formData, handleChange, onSubmit, loading, fi
                                         {fieldErrors.birthAt && <div className="invalid-feedback d-block">{fieldErrors.birthAt}</div>}
                                     </div>
                                 </div>
-
                                 <div className="mb-3">
                                     <label className="form-label">{t('gender')}</label>
                                     <select name="gender" className={`form-select ${fieldErrors.gender ? 'is-invalid' : ''}`} value={formData.gender} onChange={handleChange} required>
@@ -67,7 +62,6 @@ export const RegisterFormView = ({ formData, handleChange, onSubmit, loading, fi
                                     </select>
                                     {fieldErrors.gender && <div className="invalid-feedback d-block">{fieldErrors.gender}</div>}
                                 </div>
-
                                 <div className="mb-3">
                                     <label className="form-label">{t('country')}</label>
                                     <select name="country" className={`form-select ${fieldErrors.country ? 'is-invalid' : ''}`} value={formData.country} onChange={handleChange} required>
@@ -77,7 +71,6 @@ export const RegisterFormView = ({ formData, handleChange, onSubmit, loading, fi
                                     </select>
                                     {fieldErrors.country && <div className="invalid-feedback d-block">{fieldErrors.country}</div>}
                                 </div>
-
                                 <div className="mb-3">
                                     <label className="form-label">{t('role')}</label>
                                     <select name="roles" className={`form-select ${fieldErrors.roles ? 'is-invalid' : ''}`} value={formData.roles} onChange={handleChange} required multiple>
@@ -87,11 +80,13 @@ export const RegisterFormView = ({ formData, handleChange, onSubmit, loading, fi
                                     </select>
                                     {fieldErrors.roles && <div className="invalid-feedback d-block">{fieldErrors.roles}</div>}
                                 </div>
-
                                 <button type="submit" className="btn btn-primary w-100" disabled={loading}>
                                     {loading ? t('sending') : t('submitRegister')}
                                 </button>
                             </form>
+                            <div className="mt-3 text-center">
+                                <a href="/sign" className="btn btn-link">{t('sign')}</a>
+                            </div>
                         </div>
                     </div>
                 </div>

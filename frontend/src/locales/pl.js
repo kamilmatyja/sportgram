@@ -1,5 +1,5 @@
 export const pl = {
-    login: "Logowanie",
+    sign: "Logowanie",
     email: "Email",
     password: "Hasło",
     rememberMe: "Zapamiętaj mnie",
@@ -90,4 +90,6 @@ export const pl = {
     profilePhoto: "Zdjęcie profilowe (base64)",
     backgroundPhoto: "Zdjęcie w tle (base64)",
     bio: "Opis",
+    passwordReset: "Resetowanie hasła",
+    submitPasswordReset: "Zresetuj hasło",
 };
