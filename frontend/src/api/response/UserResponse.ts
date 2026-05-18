@@ -10,6 +10,7 @@ export interface UserResponse {
     birthAt: string;
     gender: number;
     country: number;
+    bio: string;
     status: number;
     createdAt: string;
     profilePhoto: string;

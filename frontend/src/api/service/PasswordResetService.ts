@@ -19,8 +19,6 @@ export class PasswordResetService {
     }
 
     async resend(id: string): Promise<IdResponse> {
-        return await apiFetch(`/api/password-resets/${id}/resend`, {
-            method: 'POST'
-        });
+        return await apiFetch(`/api/password-resets/${id}/resend`, {method: 'POST'});
     }
 }

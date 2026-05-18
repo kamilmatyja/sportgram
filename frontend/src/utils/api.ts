@@ -1,6 +1,6 @@
 const API_BASE: string = (import.meta.env.VITE_API_BASE as string) ?? '';
 
-export function buildAuthHeaders(additionalHeaders: Record<string, string> = {}): Record<string, string> {
+function buildAuthHeaders(additionalHeaders: Record<string, string> = {}): Record<string, string> {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

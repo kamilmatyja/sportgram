@@ -20,14 +20,10 @@ export class SignService {
     }
 
     async resend(id: string): Promise<IdResponse> {
-        return await apiFetch(`/api/signs/${id}/resend`, {
-            method: 'POST'
-        });
+        return await apiFetch(`/api/signs/${id}/resend`, {method: 'POST'});
     }
 
     async refresh(id: string): Promise<TokenResponse> {
-        return await apiFetch(`/api/signs/${id}/refresh`, {
-            method: 'POST'
-        });
+        return await apiFetch(`/api/signs/${id}/refresh`, {method: 'POST'});
     }
 }

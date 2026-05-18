@@ -1,4 +1,4 @@
-import {apiFetch, buildAuthHeaders} from '../../utils/api';
+import {apiFetch} from '../../utils/api';
 import {buildIndexParams, buildQueryString} from '../../utils/buildQueryString';
 import {RegisterDto} from '../dto/RegisterDto';
 import {UserIndexDto} from '../dto/UserIndexDto';
@@ -23,17 +23,8 @@ export class UserService {
 
     async index(dto: UserIndexDto): Promise<UserResponse[]> {
         const queryString = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? undefined);
-        const headers = buildAuthHeaders();
 
-        const response = await fetch(`/api/users?${queryString}`, {
-            method: 'GET',
-            headers
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw data;
-        }
+        const data = await apiFetch(`/api/users?${queryString}`, {method: 'GET'});
 
         return data as UserResponse[];
     }
@@ -41,8 +32,6 @@ export class UserService {
     async details(id: string, include: string[] = []): Promise<UserResponse> {
         const queryString = buildQueryString(include);
 
-        return await apiFetch(`/api/users/${id}${queryString}`, {
-            method: 'GET'
-        });
+        return await apiFetch(`/api/users/${id}${queryString}`, {method: 'GET'});
     }
 }

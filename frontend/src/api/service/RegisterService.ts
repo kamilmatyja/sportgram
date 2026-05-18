@@ -19,8 +19,6 @@ export class RegisterService {
     }
 
     async resend(id: string): Promise<IdResponse> {
-        return await apiFetch(`/api/registers/${id}/resend`, {
-            method: 'POST'
-        });
+        return await apiFetch(`/api/registers/${id}/resend`, {method: 'POST'});
     }
 }

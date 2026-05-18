@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Sign from './pages/Sign';
 import PasswordReset from './pages/PasswordReset';
 import Users from './pages/Users';
+import UserProfile from './pages/UserProfile';
 import {useTheme} from './context/ThemeContext';
 
 interface RouteProps {
@@ -86,6 +87,11 @@ const AppRoutes: React.FC = () => {
                     <Users />
                 </ProtectedRoute>
             } />
+            <Route path="/users/:link" element={
+                <ProtectedRoute>
+                    <UserProfile/>
+                </ProtectedRoute>
+            }/>
 
             <Route path="*" element={<h1 className="text-center mt-5">404 - Nie znaleziono</h1>} />
         </Routes>
