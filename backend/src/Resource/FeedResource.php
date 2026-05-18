@@ -33,6 +33,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'text', type: 'string', example: 'New post'),
+        new OA\Property(property: 'photo', type: 'string', example: 'base64string'),
         new OA\Property(property: 'status', type: 'integer', example: 1),
         new OA\Property(
             property: 'comments',
@@ -57,6 +58,7 @@ class FeedResource
             'createdAt' => $feed->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $feed->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $feed->text,
+            'photo' => base64_encode($feed->photo),
             'status' => $feed->status->value,
         ];
 

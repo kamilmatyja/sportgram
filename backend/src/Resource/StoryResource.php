@@ -46,7 +46,7 @@ class StoryResource
             'createdAt' => $story->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $story->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $story->text,
-            'photo' => $story->photo,
+            'photo' => base64_encode($story->photo),
             'status' => $story->status->value,
         ];
     }

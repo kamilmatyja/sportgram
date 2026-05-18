@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new OA\Property(property: 'firstName', type: 'string', example: 'Jan', nullable: true),
         new OA\Property(property: 'lastName', type: 'string', example: 'Kowalski', nullable: true),
         new OA\Property(property: 'gender', type: 'integer', example: 1, nullable: true),
-        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jan@kowalski.pl'),
+        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'jan@kowalski.pl', nullable: true),
         new OA\Property(property: 'country', type: 'integer', example: 1, nullable: true),
         new OA\Property(property: 'status', type: 'integer', example: 1, nullable: true),
         new OA\Property(
@@ -39,10 +39,9 @@ class UserFilterDto
     #[Assert\Choice(callback: [GenderEnum::class, 'values'])]
     public ?int $gender = null;
 
-    #[Assert\NotBlank]
     #[Assert\Email]
     #[Assert\Length(min: 5, max: 64)]
-    public string $email;
+    public ?string $email = null;
 
     #[Assert\Choice(callback: [CountryEnum::class, 'values'])]
     public ?int $country = null;

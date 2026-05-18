@@ -70,7 +70,7 @@ class EventResource
             'description' => $event->description,
             'link' => $event->link,
             'rules' => $event->rules,
-            'photo' => $event->photo,
+            'photo' => base64_encode($event->photo),
             'location' => $event->location,
             'status' => $event->status->value,
         ];

@@ -84,8 +84,8 @@ class UserResource
             'country' => $user->country->value,
             'theme' => $user->theme->value,
             'color' => $user->color->value,
-            'profilePhoto' => $user->profilePhoto,
-            'backgroundPhoto' => $user->backgroundPhoto,
+            'profilePhoto' => base64_encode($user->profilePhoto),
+            'backgroundPhoto' => base64_encode($user->backgroundPhoto),
             'bio' => $user->bio,
             'status' => $user->status->value,
         ];

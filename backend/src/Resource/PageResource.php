@@ -59,8 +59,8 @@ class PageResource
             'updatedAt' => $page->updatedAt->format('Y-m-d\TH:i:s'),
             'title' => $page->title,
             'description' => $page->description,
-            'profilePhoto' => $page->profilePhoto,
-            'backgroundPhoto' => $page->backgroundPhoto,
+            'profilePhoto' => base64_encode($page->profilePhoto),
+            'backgroundPhoto' => base64_encode($page->backgroundPhoto),
             'color' => $page->color->value,
             'status' => $page->status->value,
         ];

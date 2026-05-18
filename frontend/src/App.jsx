@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Register from './pages/Register';
 import Sign from './pages/Sign';
 import PasswordReset from './pages/PasswordReset';
+import Users from './pages/Users';
 import { useTheme } from './context/ThemeContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -69,7 +70,7 @@ const AppRoutes = () => {
 
             <Route path="/users" element={
                 <ProtectedRoute>
-                    {/*<Users />*/}
+                    <Users />
                 </ProtectedRoute>
             } />
 

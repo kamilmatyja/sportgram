@@ -7,4 +7,9 @@ export class UserService {
             body: JSON.stringify(dto)
         });
     }
+
+    static async getUsers(params) {
+        const query = params ? `?${params}` : '';
+        return await apiFetch(`/api/users${query}`);
+    }
 }
