@@ -112,5 +112,7 @@ export const en = {
     goToProfile: "Go to profile",
     prev: "Previous",
     next: "Next",
-    page: "Page"
+    page: "Page",
+    addUser: "Add user",
+    photosRequired: "Photos required",
 };

@@ -30,6 +30,8 @@ interface UsersViewProps {
     page: number;
     onPrevPage: () => void;
     onNextPage: () => void;
+    isAdmin?: boolean;
+    onAddUserClick?: () => void;
 }
 
 export default function UsersView({
@@ -44,13 +46,23 @@ export default function UsersView({
                                       error,
                                       page,
                                       onPrevPage,
-                                      onNextPage
+                                      onNextPage,
+                                      isAdmin,
+                                      onAddUserClick
                                   }: UsersViewProps) {
     const {t} = useTranslation();
 
     return (
         <div className="container mt-5">
-            <h2>{t('userTitle')}</h2>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <h2 className="mb-0">{t('userTitle')}</h2>
+                {isAdmin && (
+                    <button className="btn btn-success" onClick={onAddUserClick}>
+                        {t('addUser')}
+                    </button>
+                )}
+            </div>
+
             <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
                 <input name="firstName" placeholder={t('firstName')} value={filters.firstName} onChange={onFilterChange} className="form-control w-auto" />
                 <input name="lastName" placeholder={t('lastName')} value={filters.lastName} onChange={onFilterChange} className="form-control w-auto" />

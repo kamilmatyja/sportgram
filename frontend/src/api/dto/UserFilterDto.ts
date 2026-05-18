@@ -7,6 +7,7 @@ export class UserFilterDto {
     public status?: number;
     public userIds?: string[];
     public link?: string;
+    public signId?: string;
 
     constructor(
         firstName: string | null = null,
@@ -16,7 +17,8 @@ export class UserFilterDto {
         country: string | number | null = null,
         status: string | number | null = null,
         userIds: string[] | null = null,
-        link: string | null = null
+        link: string | null = null,
+        signId: string | null = null
     ) {
         if (firstName) this.firstName = firstName;
         if (lastName) this.lastName = lastName;
@@ -26,5 +28,6 @@ export class UserFilterDto {
         if (status) this.status = typeof status === 'string' ? parseInt(status, 10) : status;
         if (userIds) this.userIds = userIds;
         if (link) this.link = link;
+        if (signId) this.signId = signId;
     }
 }

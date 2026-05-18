@@ -165,6 +165,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** @var Page[] */
     #[ORM\OneToMany(targetEntity: Page::class, mappedBy: 'user')]
     public Collection $pages;
+    /** @var UserSign[] */
+    #[ORM\OneToMany(targetEntity: UserSign::class, mappedBy: 'user')]
+    public Collection $signs;
 
     public function __construct(
         DateTimeImmutable $birthAt,
@@ -201,6 +204,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->roles = new ArrayCollection();
         $this->disciplines = new ArrayCollection();
         $this->pages = new ArrayCollection();
+        $this->signs = new ArrayCollection();
     }
 
     #[ORM\PrePersist]

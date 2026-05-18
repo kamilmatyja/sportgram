@@ -12,7 +12,7 @@ class Base64StringValidator extends ConstraintValidator
             return;
         }
 
-        if (! preg_match('/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/', $value)) {
+        if (base64_decode($value, true) === false) {
             $this->context->buildViolation($constraint->message)->addViolation();
         }
     }

@@ -4,29 +4,41 @@ import {UserIndexDto} from '../api/dto/UserIndexDto';
 import {UserFilterDto} from '../api/dto/UserFilterDto';
 import UsersView from '../components/UsersView';
 import {UserResponse} from '../api/response/UserResponse';
+import {RoleEnum} from '../enums/RoleEnum';
+import {useCheckPermission} from '../utils/checkPermission';
+import {AddUserModal} from '../components/AddUserModal';
+import {UserCreateDto} from '../api/dto/UserCreateDto';
 
 export default function Users() {
+    const {check: checkPermission} = useCheckPermission();
+
     const [users, setUsers] = useState<UserResponse[]>([]);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const [showAddModal, setShowAddModal] = useState<boolean>(false);
+
     const [page, setPage] = useState<number>(1);
     const [limit, setLimit] = useState<number>(10);
     const [sort, setSort] = useState<string>('createdAt:desc');
     const [filters, setFilters] = useState({
-        firstName: '',
-        lastName: '',
-        gender: '',
-        email: '',
-        country: '',
-        status: '',
-        link: '',
+        firstName: '', lastName: '', gender: '', email: '', country: '', status: '', link: '',
     });
+
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     const userService = new UserService();
 
     useEffect(() => {
-        fetchUsers();
-    }, [page, limit, sort, filters]);
+        const check = async () => {
+            try {
+                const isAdmin = await checkPermission(RoleEnum.ADMINISTRATOR);
+                setIsAdmin(isAdmin);
+            } catch (err: any) {
+                setError(err.error);
+            }
+        };
+        check();
+    });
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -54,6 +66,10 @@ export default function Users() {
         }
     };
 
+    useEffect(() => {
+        fetchUsers();
+    }, [page, limit, sort, filters]);
+
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
         setPage(1);
@@ -76,20 +92,35 @@ export default function Users() {
         setPage(prev => prev + 1);
     };
 
+    const handleAddUserSubmit = async (dto: UserCreateDto) => {
+        await userService.create(dto);
+        fetchUsers();
+    };
+
     return (
-        <UsersView
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            sort={sort}
-            onSortChange={handleSortChange}
-            limit={limit}
-            onLimitChange={handleLimitChange}
-            users={users}
-            loading={loading}
-            error={error}
-            page={page}
-            onPrevPage={handlePrevPage}
-            onNextPage={handleNextPage}
-        />
+        <>
+            <UsersView
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                sort={sort}
+                onSortChange={handleSortChange}
+                limit={limit}
+                onLimitChange={handleLimitChange}
+                users={users}
+                loading={loading}
+                error={error}
+                page={page}
+                onPrevPage={handlePrevPage}
+                onNextPage={handleNextPage}
+                isAdmin={isAdmin}
+                onAddUserClick={() => setShowAddModal(true)}
+            />
+
+            <AddUserModal
+                show={showAddModal}
+                onClose={() => setShowAddModal(false)}
+                onSubmit={handleAddUserSubmit}
+            />
+        </>
     );
 }

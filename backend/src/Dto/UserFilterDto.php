@@ -26,6 +26,13 @@ use Symfony\Component\Validator\Constraints as Assert;
             nullable: true,
         ),
         new OA\Property(property: 'link', type: 'string', example: 'my-link', nullable: true),
+        new OA\Property(
+            property: 'signId',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+            nullable: true
+        ),
     ],
     type: 'object',
 )]

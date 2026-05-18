@@ -91,7 +91,7 @@ class UserRepository extends BaseRepository
 
         if ($dto->filter->signId) {
             $qb->leftJoin('u.signs', 's')
-                ->andWhere('s.signId = :signId')
+                ->andWhere('s.id = :signId')
                 ->setParameter('signId', $dto->filter->signId);
         }
 

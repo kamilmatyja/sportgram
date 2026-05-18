@@ -3,10 +3,18 @@ import {RegisterDto} from '../dto/RegisterDto';
 import {UserIndexDto} from '../dto/UserIndexDto';
 import {IdResponse} from '../response/IdResponse';
 import {UserResponse} from '../response/UserResponse';
+import {UserCreateDto} from "../dto/UserCreateDto.ts";
 
 export class UserService {
     async createNano(dto: RegisterDto): Promise<IdResponse> {
         return await apiFetch('/api/user-nano', {
+            method: 'POST',
+            body: JSON.stringify(dto)
+        });
+    }
+
+    async create(dto: UserCreateDto): Promise<IdResponse> {
+        return await apiFetch('/api/users', {
             method: 'POST',
             body: JSON.stringify(dto)
         });
@@ -50,5 +58,15 @@ export class UserService {
         }
 
         return data as UserResponse[];
+    }
+
+    async details(id: string, include: string[] = []): Promise<UserResponse> {
+        const params = new URLSearchParams();
+        include.forEach(inc => params.append('include[]', inc));
+        const queryString = params.toString() ? `?${params.toString()}` : '';
+
+        return await apiFetch(`/api/users/${id}${queryString}`, {
+            method: 'GET'
+        });
     }
 }

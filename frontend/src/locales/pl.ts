@@ -112,5 +112,7 @@ export const pl = {
     goToProfile: "Wejdź na profil",
     prev: "Poprzednia",
     next: "Następna",
-    page: "Strona"
+    page: "Strona",
+    addUser: "Dodaj użytkownika",
+    photosRequired: "Zdjęcia są wymagane",
 };
