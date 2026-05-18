@@ -3,6 +3,7 @@
 namespace App\Dto;
 
 use App\Entity\User;
+use App\Entity\UserSign;
 use App\Enum\{CountryEnum, GenderEnum, UserStatusEnum};
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
@@ -61,4 +62,8 @@ class UserFilterDto
 
     #[Assert\Length(min: 1, max: 64)]
     public ?string $link = null;
+
+    #[Assert\Uuid]
+    #[EntityExistsField(entity: UserSign::class)]
+    public ?string $signId = null;
 }

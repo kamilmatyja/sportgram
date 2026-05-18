@@ -89,6 +89,12 @@ class UserRepository extends BaseRepository
                 ->setParameter('link', $dto->filter->link);
         }
 
+        if ($dto->filter->signId) {
+            $qb->leftJoin('u.signs', 's')
+                ->andWhere('s.signId = :signId')
+                ->setParameter('signId', $dto->filter->signId);
+        }
+
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('u.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
