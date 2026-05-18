@@ -6,7 +6,7 @@
 # Backend
 /backend/vendor/
 /backend/var/
-/backend/.env.local
+/backend/.env
 
 # Frontend
 /frontend/node_modules/
