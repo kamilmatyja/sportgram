@@ -96,7 +96,7 @@ export default function UsersView({
                                     <td>{UserStatusEnum.getOptions(t).find(opt => String(opt.value) === String(u.status))?.label || u.status}</td>
                                     <td>{formatDate(u.createdAt)}</td>
                                     <td>
-                                        <a href={`/users/${u.id}`} className="btn btn-sm btn-outline-secondary">{t('goToProfile')}</a>
+                                        <a href={`/users/${u.link}`} className="btn btn-sm btn-outline-secondary">{t('goToProfile')}</a>
                                     </td>
                                 </tr>
                             ))}
