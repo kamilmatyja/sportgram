@@ -87,6 +87,7 @@ export const en = {
     selectTheme: "Select theme",
     color: "Color",
     selectColor: "Select color",
+    photo: "Photo",
     profilePhoto: "Profile photo",
     backgroundPhoto: "Background photo",
     bio: "Bio",
@@ -115,4 +116,23 @@ export const en = {
     page: "Page",
     addUser: "Add user",
     photosRequired: "Photos required",
+    languages: {
+        english: "English",
+        polish: "Polish"
+    },
+    themes: {
+        dark: "Dark",
+        light: "Light"
+    },
+    colors: {
+        red: "Red",
+        green: "Green",
+        blue: "Blue",
+        yellow: "Yellow",
+        gray: "Gray",
+        orange: "Orange",
+        brown: "Brown",
+        purple: "Purple",
+        pink: "Pink"
+    }
 };

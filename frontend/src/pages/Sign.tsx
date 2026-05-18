@@ -8,6 +8,7 @@ import {VerificationFormView} from '../components/VerificationFormView';
 import {CodeDto} from '../api/dto/CodeDto';
 import {RegisterService} from '../api/service/RegisterService';
 import {EmailDto} from '../api/dto/EmailDto';
+import {createFormHandler} from '../utils/formHandler';
 
 export default function Sign() {
     const step = Number(sessionStorage.getItem('step')) || 1;
@@ -124,19 +125,10 @@ export default function Sign() {
         navigate('/sign');
     };
 
-    const createHandler = <T, >(setter: React.Dispatch<React.SetStateAction<T>>) =>
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
-        setter(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
-
     if (step === 2) {
         return <VerificationFormView
             formData={codeFormData}
-            handleChange={createHandler(setCodeFormData)}
+            handleChange={createFormHandler(setCodeFormData)}
             onSubmit={handleCodeSubmit}
             loading={loading}
             fieldErrors={fieldErrors}
@@ -149,7 +141,7 @@ export default function Sign() {
 
     return <SignFormView
         formData={signFormData}
-        handleChange={createHandler(setSignFormData)}
+        handleChange={createFormHandler(setSignFormData)}
         onSubmit={handleSignSubmit}
         loading={loading}
         fieldErrors={fieldErrors}

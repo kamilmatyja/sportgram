@@ -20,7 +20,8 @@ export const TranslationProvider = ({children}: TranslationProviderProps) => {
     const [lang, setLang] = useState<string>(localStorage.getItem('lang') || 'pl');
 
     const t = (path: string): string => {
-        return path.split('.').reduce((obj: any, key: string) => obj?.[key], translations[lang]) || path;
+        const result = path.split('.').reduce((obj: any, key: string) => obj?.[key], translations[lang]);
+        return typeof result === 'string' ? result : path;
     };
 
     const setLanguage = (newLang: string) => {

@@ -8,6 +8,7 @@ import {EmailDto} from '../api/dto/EmailDto';
 import {SignDto} from '../api/dto/SignDto';
 import {SignService} from '../api/service/SignService';
 import {RegisterService} from '../api/service/RegisterService';
+import {createFormHandler} from '../utils/formHandler';
 
 export default function PasswordReset() {
     const step = Number(sessionStorage.getItem('step')) || 1;
@@ -119,21 +120,10 @@ export default function PasswordReset() {
         navigate('/password-reset');
     };
 
-    const createHandler = <T, >(setter: React.Dispatch<React.SetStateAction<T>>) =>
-        (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-            const target = e.target as HTMLInputElement;
-            const {name, value, type, checked} = target;
-
-            setter(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
-
     if (step === 2) {
         return <PasswordResetVerificationFormView
             formData={codeFormData}
-            handleChange={createHandler(setCodeFormData)}
+            handleChange={createFormHandler(setCodeFormData)}
             onSubmit={handleCodeSubmit}
             loading={loading}
             fieldErrors={fieldErrors}
@@ -146,7 +136,7 @@ export default function PasswordReset() {
 
     return <PasswordResetFormView
         formData={passwordResetFormData}
-        handleChange={createHandler(setPasswordResetFormData)}
+        handleChange={createFormHandler(setPasswordResetFormData)}
         onSubmit={handlePasswordResetSubmit}
         loading={loading}
         fieldErrors={fieldErrors}

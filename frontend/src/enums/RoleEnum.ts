@@ -5,10 +5,25 @@ export enum RoleEnum {
 }
 
 export namespace RoleEnum {
-    export const getNanoOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return [
-            {value: RoleEnum.PARTICIPANT, label: t('roles.participant')},
-            {value: RoleEnum.ORGANIZER, label: t('roles.organizer')},
-        ];
+    export const getOptions = (t: (key: string) => string): { value: number; label: string }[] => {
+        return Object.entries(RoleEnum)
+            .filter(([_, value]) => typeof value === 'number')
+            .map(([key, value]) => ({
+                value: value as number,
+                label: t(`roles.${key.toLowerCase()}`)
+            }));
+    };
+
+    export const getNanoOptions = (
+        t: (key: string) => string
+    ): { value: number; label: string }[] => {
+        return Object.entries(RoleEnum)
+            .filter(([key, value]) =>
+                typeof value === 'number' && key !== 'ADMINISTRATOR'
+            )
+            .map(([key, value]) => ({
+                value: value as number,
+                label: t(`roles.${key.toLowerCase()}`)
+            }));
     };
 }

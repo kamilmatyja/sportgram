@@ -97,7 +97,9 @@ export default function UsersView({
                     <option value="lastName:desc">{t('sortLastNameDesc')}</option>
                 </select>
                 <select value={limit} onChange={onLimitChange} className="form-select w-auto">
-                    {PaginationEnum.map(n => <option key={n} value={n}>{n} / {t('perPage')}</option>)}
+                    {PaginationEnum.getOptions(t).map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
                 </select>
             </div>
             <div className="mb-3" />
@@ -106,7 +108,7 @@ export default function UsersView({
                     <table className="table table-bordered table-hover">
                         <thead>
                         <tr>
-                            <th>{t('profilePhoto')}</th>
+                            <th>{t('photo')}</th>
                             <th>{t('firstName')}</th>
                             <th>{t('lastName')}</th>
                             <th>{t('email')}</th>
@@ -139,7 +141,11 @@ export default function UsersView({
                                 <td>{formatDate(u.createdAt)}</td>
                                 <td>
                                     <a href={`/users/${u.link}`}
-                                       className="btn btn-sm btn-outline-secondary">{t('goToProfile')}</a>
+                                       className="btn btn-sm btn-outline-secondary"
+                                       title={t('goToProfile')}>
+                                        <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                                        <span className="visually-hidden">{t('goToProfile')}</span>
+                                    </a>
                                 </td>
                             </tr>
                         ))}

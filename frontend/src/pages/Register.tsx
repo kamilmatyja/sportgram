@@ -10,6 +10,7 @@ import {EmailDto} from '../api/dto/EmailDto';
 import {SignService} from '../api/service/SignService';
 import {SignDto} from '../api/dto/SignDto';
 import {PasswordResetService} from '../api/service/PasswordResetService';
+import {createFormHandler} from '../utils/formHandler';
 
 export default function Register() {
     const step = Number(sessionStorage.getItem('step')) || 1;
@@ -136,32 +137,10 @@ export default function Register() {
         navigate('/register');
     };
 
-    const createHandler = <T, >(setter: React.Dispatch<React.SetStateAction<T>>) =>
-        (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-            const target = e.target as HTMLInputElement | HTMLSelectElement;
-            const name = target.name;
-
-            let newValue: any;
-            if (target.type === 'checkbox') {
-                newValue = (target as HTMLInputElement).checked;
-            } else if (target.multiple) {
-                newValue = Array.from((target as HTMLSelectElement).options)
-                    .filter(option => option.selected)
-                    .map(option => option.value);
-        } else {
-                newValue = target.value;
-        }
-
-            setter(prev => ({
-            ...prev,
-            [name]: newValue
-        }));
-    };
-
     if (step === 2) {
         return <VerificationFormView
             formData={codeFormData}
-            handleChange={createHandler(setCodeFormData)}
+            handleChange={createFormHandler(setCodeFormData)}
             onSubmit={handleCodeSubmit}
             loading={loading}
             fieldErrors={fieldErrors}
@@ -174,7 +153,7 @@ export default function Register() {
 
     return <RegisterFormView
         formData={registerFormData}
-        handleChange={createHandler(setRegisterFormData)}
+        handleChange={createFormHandler(setRegisterFormData)}
         onSubmit={handleRegisterSubmit}
         loading={loading}
         fieldErrors={fieldErrors}

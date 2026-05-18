@@ -87,6 +87,7 @@ export const pl = {
     selectTheme: "Wybierz motyw",
     color: "Kolor",
     selectColor: "Wybierz kolor",
+    photo: "Zdjęcie",
     profilePhoto: "Zdjęcie profilowe",
     backgroundPhoto: "Zdjęcie w tle",
     bio: "Opis",
@@ -115,4 +116,23 @@ export const pl = {
     page: "Strona",
     addUser: "Dodaj użytkownika",
     photosRequired: "Zdjęcia są wymagane",
+    languages: {
+        english: "Angielski",
+        polish: "Polski"
+    },
+    themes: {
+        dark: "Ciemny",
+        light: "Jasny"
+    },
+    colors: {
+        red: "Czerwony",
+        green: "Zielony",
+        blue: "Niebieski",
+        yellow: "Żółty",
+        gray: "Szary",
+        orange: "Pomarańczowy",
+        brown: "Brązowy",
+        purple: "Fioletowy",
+        pink: "Różowy"
+    }
 };
