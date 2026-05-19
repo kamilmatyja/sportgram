@@ -8,6 +8,7 @@ import {GenderEnum} from '../enums/GenderEnum';
 import {UserStatusEnum} from '../enums/UserStatusEnum';
 import {RoleEnum} from '../enums/RoleEnum';
 import {DisciplineEnum} from '../enums/DisciplineEnum';
+import {getAgeFromDate} from '../utils/dateFormat';
 import {FriendStatusEnum} from '../enums/FriendStatusEnum';
 
 interface UserProfileViewProps {
@@ -95,12 +96,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                     </li>
                                 )}
                                 {user.birthAt && (
-                                    <li><strong>{t('age')}:</strong> {(() => {
-                                        const dob = new Date(user.birthAt);
-                                        const ageDifMs = Date.now() - dob.getTime();
-                                        const ageDate = new Date(ageDifMs);
-                                        return Math.abs(ageDate.getUTCFullYear() - 1970);
-                                    })()}</li>
+                                    <li><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
                                 )}
                                 <li>
                                     <strong>{t('status')}:</strong> {UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}

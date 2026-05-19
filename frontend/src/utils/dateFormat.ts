@@ -1,3 +1,12 @@
+export function getAgeFromDate(dateStr?: string | null): number | undefined {
+    if (!dateStr) return undefined;
+    const dob = new Date(dateStr);
+    if (isNaN(dob.getTime())) return undefined;
+    const ageDifMs = Date.now() - dob.getTime();
+    const ageDate = new Date(ageDifMs);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+}
+
 export function formatDate(dateStr?: string | null): string {
     if (!dateStr) return '';
 
