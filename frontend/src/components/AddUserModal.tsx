@@ -118,6 +118,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('gender')}</label>
                                         <select name="gender" className="form-select" value={formData.gender}
                                                 onChange={handleChange} required>
+                                            <option value="">{t('gender')}</option>
                                             {GenderEnum.getOptions(t).map(opt => <option key={opt.value}
                                                                                          value={opt.value}>{opt.label}</option>)}
                                         </select>
@@ -126,6 +127,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('country')}</label>
                                         <select name="country" className="form-select" value={formData.country}
                                                 onChange={handleChange} required>
+                                            <option value="">{t('country')}</option>
                                             {CountryEnum.getOptions(t).map(opt => <option key={opt.value}
                                                                                           value={opt.value}>{opt.label}</option>)}
                                         </select>
@@ -136,6 +138,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('language')}</label>
                                         <select name="language" className="form-select" value={formData.language}
                                                 onChange={handleChange} required>
+                                            <option value="">{t('language')}</option>
                                             {LanguageEnum.getOptions(t).map(opt => <option key={opt.value}
                                                                                            value={opt.value}>{opt.label}</option>)}
                                         </select>
@@ -144,6 +147,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('theme')}</label>
                                         <select name="theme" className="form-select" value={formData.theme}
                                                 onChange={handleChange} required>
+                                            <option value="">{t('theme')}</option>
                                             {ThemeEnum.getOptions(t).map(opt => <option key={opt.value}
                                                                                         value={opt.value}>{opt.label}</option>)}
                                         </select>
@@ -154,6 +158,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('color')}</label>
                                         <select name="color" className="form-select" value={formData.color}
                                                 onChange={handleChange} required>
+                                            <option value="">{t('color')}</option>
                                             {ColorEnum.getOptions(t).map(opt => <option key={opt.value}
                                                                                         value={opt.value}>{opt.label}</option>)}
                                         </select>

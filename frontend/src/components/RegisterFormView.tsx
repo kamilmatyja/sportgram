@@ -94,6 +94,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                     <select name="gender"
                                             className={`form-select ${fieldErrors.gender ? 'is-invalid' : ''}`}
                                             value={formData.gender} onChange={handleChange} required>
+                                        <option value="">{t('gender')}</option>
                                         {genderOptions.map((opt: any) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
@@ -106,6 +107,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                     <select name="country"
                                             className={`form-select ${fieldErrors.country ? 'is-invalid' : ''}`}
                                             value={formData.country} onChange={handleChange} required>
+                                        <option value="">{t('country')}</option>
                                         {countryOptions.map((opt: any) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
