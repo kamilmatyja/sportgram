@@ -1,16 +1,8 @@
-export interface GoalFilterQuery {
-    userId?: string;
-    link?: string;
-    text?: string;
-    discipline?: number;
-    distance?: number;
-    time?: number;
-    status?: number;
-}
+import {GoalFilterQuery} from './GoalFilterQuery';
 
-export interface GoalIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: GoalFilterQuery | null;
+export class GoalIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: GoalFilterQuery | null = null;
 }

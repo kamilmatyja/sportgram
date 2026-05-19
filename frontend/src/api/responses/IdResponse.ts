@@ -1,4 +1,4 @@
-export interface IdResponse {
-    id: string;
+export class IdResponse {
+    id!: string;
 }
 

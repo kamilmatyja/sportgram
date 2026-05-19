@@ -1,7 +1,4 @@
-export interface EventSubResult {
-    eventDisciplineSubDistanceId: string;
-    time: number;
-}
+import {EventSubResult} from './EventSubResult';
 
 export class EventResultBody {
     public time: number;

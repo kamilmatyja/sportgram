@@ -1,11 +1,8 @@
-export interface NotificationFilterQuery {
-    text?: string;
-    status?: number;
-}
+import {NotificationFilterQuery} from './NotificationFilterQuery';
 
-export interface NotificationIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: NotificationFilterQuery | null;
+export class NotificationIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: NotificationFilterQuery | null = null;
 }

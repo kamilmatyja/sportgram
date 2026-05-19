@@ -1,11 +1,8 @@
-export interface EventListFilterQuery {
-    userId?: string;
-    status?: number;
-}
+import {EventListFilterQuery} from './EventListFilterQuery';
 
-export interface EventListIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: EventListFilterQuery | null;
+export class EventListIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: EventListFilterQuery | null = null;
 }

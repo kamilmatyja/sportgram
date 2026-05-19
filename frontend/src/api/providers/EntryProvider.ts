@@ -4,7 +4,7 @@ import {IdResponse} from '../responses/IdResponse';
 import {EntryResponse} from '../responses/EntryResponse';
 import {EntryCountResponse} from '../responses/EntryCountResponse';
 import {EntryBody} from '../body/EntryBody';
-import {EntryIndexQuery} from '../queries/EntryFilterQuery';
+import {EntryIndexQuery} from '../queries/EntryIndexQuery';
 import {EntryCountIndexQuery} from '../queries/EntryCountIndexQuery';
 
 export class EntryProvider {

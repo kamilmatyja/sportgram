@@ -1,11 +1,8 @@
-export interface FriendFilterQuery {
-    userIds?: string[];
-    status?: number;
-}
+import {FriendFilterQuery} from './FriendFilterQuery';
 
-export interface FriendIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: FriendFilterQuery | null;
+export class FriendIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: FriendFilterQuery | null = null;
 }

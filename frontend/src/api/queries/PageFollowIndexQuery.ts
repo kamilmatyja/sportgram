@@ -1,12 +1,8 @@
-export interface PageFollowFilterQuery {
-    userId?: string;
-    pageIds?: string[];
-    status?: number;
-}
+import {PageFollowFilterQuery} from './PageFollowFilterQuery';
 
-export interface PageFollowIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: PageFollowFilterQuery | null;
+export class PageFollowIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: PageFollowFilterQuery | null = null;
 }

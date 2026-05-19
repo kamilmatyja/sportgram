@@ -1,11 +1,8 @@
-export interface EntryCountFilterQuery {
-    entityIds?: string[];
-    type?: number;
-}
+import {EntryCountFilterQuery} from './EntryCountFilterQuery';
 
-export interface EntryCountIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: EntryCountFilterQuery | null;
+export class EntryCountIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: EntryCountFilterQuery | null = null;
 }

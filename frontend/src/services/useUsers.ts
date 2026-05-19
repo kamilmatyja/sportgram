@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {UserProvider} from '../api/providers/UserProvider';
-import type {UserFilterQuery, UserIndexQuery} from '../api/queries/UserIndexQuery';
+import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 import {UserResponse} from '../api/responses/UserResponse';
 import {RoleEnum} from '../enums/RoleEnum';
 import {useCheckPermission} from '../utils/checkPermission';
+import {UserFilterQuery} from '../api/queries/UserFilterQuery';
 
 export function useUsers() {
     const {check: checkPermission} = useCheckPermission();
@@ -38,23 +39,20 @@ export function useUsers() {
         setLoading(true);
         setError(null);
         try {
-            const filterDto: UserFilterQuery = {
-                firstName: filters.firstName || undefined,
-                lastName: filters.lastName || undefined,
-                gender: filters.gender ? Number(filters.gender) : undefined,
-                email: filters.email || undefined,
-                country: filters.country ? Number(filters.country) : undefined,
-                status: filters.status ? Number(filters.status) : undefined,
-                userIds: undefined,
-                link: filters.link || undefined
-            };
+            const filterDto = new UserFilterQuery();
+            filterDto.firstName = filters.firstName;
+            filterDto.lastName = filters.lastName;
+            filterDto.gender = filters.gender ? Number(filters.gender) : undefined;
+            filterDto.email = filters.email;
+            filterDto.country = filters.country ? Number(filters.country) : undefined;
+            filterDto.status = filters.status ? Number(filters.status) : undefined;
+            filterDto.link = filters.link;
 
-            const indexDto: UserIndexQuery = {
-                page,
-                limit,
-                sort,
-                filter: filterDto
-            };
+            const indexDto = new UserIndexQuery();
+            indexDto.page = page;
+            indexDto.limit = limit;
+            indexDto.sort = sort;
+            indexDto.filter = filterDto;
 
             const data = await userProvider.index(indexDto);
             setUsers(data);

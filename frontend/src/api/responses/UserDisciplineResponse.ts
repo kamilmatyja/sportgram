@@ -1,5 +1,5 @@
-export interface UserDisciplineResponse {
-    id: string;
-    userId: string;
-    discipline: number;
+export class UserDisciplineResponse {
+    id!: string;
+    userId!: string;
+    discipline!: number;
 }

@@ -1,16 +1,4 @@
-export interface EventSubDistance {
-    subDistance: number;
-}
-
-export interface EventDistance {
-    distance: number;
-    subDistances?: EventSubDistance[];
-}
-
-export interface EventDiscipline {
-    discipline: number;
-    distances?: EventDistance[];
-}
+import {EventDiscipline} from './EventDiscipline';
 
 export class EventBody {
     constructor(

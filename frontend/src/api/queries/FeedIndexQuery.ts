@@ -1,12 +1,8 @@
-export interface FeedFilterQuery {
-    userId?: string;
-    text?: string;
-    status?: number;
-}
+import {FeedFilterQuery} from './FeedFilterQuery';
 
-export interface FeedIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: FeedFilterQuery | null;
+export class FeedIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: FeedFilterQuery | null = null;
 }

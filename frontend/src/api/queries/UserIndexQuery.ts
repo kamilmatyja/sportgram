@@ -1,18 +1,8 @@
-export interface UserFilterQuery {
-    firstName?: string;
-    lastName?: string;
-    gender?: number;
-    email?: string;
-    country?: number;
-    status?: number;
-    userIds?: string[];
-    link?: string;
-    signId?: string;
-}
+import {UserFilterQuery} from './UserFilterQuery';
 
-export interface UserIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: UserFilterQuery | null;
+export class UserIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: UserFilterQuery | null = null;
 }

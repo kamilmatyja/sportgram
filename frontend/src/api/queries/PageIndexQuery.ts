@@ -1,13 +1,8 @@
-export interface PageFilterQuery {
-    userId?: string;
-    link?: string;
-    title?: string;
-    status?: number;
-}
+import {PageFilterQuery} from './PageFilterQuery';
 
-export interface PageIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: PageFilterQuery | null;
+export class PageIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: PageFilterQuery | null = null;
 }

@@ -1,5 +1,5 @@
-export interface UserRoleResponse {
-    id: string;
-    userId: string;
-    role: number;
+export class UserRoleResponse {
+    id!: string;
+    userId!: string;
+    role!: number;
 }

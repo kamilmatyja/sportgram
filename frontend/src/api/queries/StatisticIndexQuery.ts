@@ -1,12 +1,8 @@
-export interface StatisticFilterQuery {
-    userIds?: string[];
-    discipline?: number;
-    distance?: number;
-}
+import {StatisticFilterQuery} from './StatisticFilterQuery';
 
-export interface StatisticIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: StatisticFilterQuery | null;
+export class StatisticIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: StatisticFilterQuery | null = null;
 }

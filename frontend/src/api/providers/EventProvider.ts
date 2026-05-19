@@ -6,7 +6,7 @@ import {EventDisciplineDistanceListResponse} from '../responses/EventDisciplineD
 import {EventBody} from '../body/EventBody';
 import {EventResultBody} from '../body/EventResultBody';
 import {StatusBody} from '../body/StatusBody';
-import {EntryIndexQuery} from '../queries/EntryFilterQuery';
+import {EventIndexQuery} from '../queries/EventIndexQuery';
 import {EventListIndexQuery} from '../queries/EventListIndexQuery';
 
 export class EventProvider {
@@ -26,7 +26,7 @@ export class EventProvider {
         return await apiFetch(`/api/events/${id}`, {method: 'DELETE'});
     }
 
-    async index(dto: EntryIndexQuery): Promise<EventResponse[]> {
+    async index(dto: EventIndexQuery): Promise<EventResponse[]> {
         const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/events?${params.toString()}`, {method: 'GET'});
     }

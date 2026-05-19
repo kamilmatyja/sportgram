@@ -1,12 +1,8 @@
-export interface StoryFilterQuery {
-    userId?: string;
-    text?: string;
-    status?: number;
-}
+import {StoryFilterQuery} from './StoryFilterQuery';
 
-export interface StoryIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: StoryFilterQuery | null;
+export class StoryIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: StoryFilterQuery | null = null;
 }

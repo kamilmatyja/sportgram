@@ -1,12 +1,8 @@
-export interface PushSubscriptionFilterQuery {
-    endpoint?: string;
-    p256dh?: string;
-    auth?: string;
-}
+import {PushSubscriptionFilterQuery} from './PushSubscriptionFilterQuery';
 
-export interface PushSubscriptionIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: PushSubscriptionFilterQuery | null;
+export class PushSubscriptionIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: PushSubscriptionFilterQuery | null = null;
 }

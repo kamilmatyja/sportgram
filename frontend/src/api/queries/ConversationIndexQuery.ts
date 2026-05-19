@@ -1,11 +1,8 @@
-export interface ConversationFilterQuery {
-    userId?: string;
-    status?: number;
-}
+import {ConversationFilterQuery} from './ConversationFilterQuery';
 
-export interface ConversationIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: ConversationFilterQuery | null;
+export class ConversationIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: ConversationFilterQuery | null = null;
 }

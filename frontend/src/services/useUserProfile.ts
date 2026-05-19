@@ -8,8 +8,10 @@ import {FriendBody} from '../api/body/FriendBody';
 import {StatusBody} from '../api/body/StatusBody';
 import {RoleEnum} from '../enums/RoleEnum';
 import {useTranslation} from '../context/TranslationContext';
-import type {UserFilterQuery, UserIndexQuery} from '../api/queries/UserIndexQuery';
-import type {FriendFilterQuery, FriendIndexQuery} from '../api/queries/FriendIndexQuery';
+import {UserIndexQuery} from '../api/queries/UserIndexQuery';
+import {FriendIndexQuery} from '../api/queries/FriendIndexQuery';
+import {UserFilterQuery} from '../api/queries/UserFilterQuery';
+import {FriendFilterQuery} from '../api/queries/FriendFilterQuery';
 
 export function useUserProfile(link?: string) {
     const {t} = useTranslation();
@@ -43,8 +45,10 @@ export function useUserProfile(link?: string) {
                 const currentUsr = await getCurrentUser();
                 setCurrentUser(currentUsr);
 
-                const filterDto: UserFilterQuery = {link};
-                const indexDto: UserIndexQuery = {page: 1, limit: 1, sort: 'createdAt:desc', filter: filterDto};
+                const filterDto = new UserFilterQuery();
+                filterDto.link = link;
+                const indexDto = new UserIndexQuery();
+                indexDto.filter = filterDto;
                 const targetUsers = await userProvider.index(indexDto);
 
                 if (targetUsers.length === 0) {
@@ -57,8 +61,10 @@ export function useUserProfile(link?: string) {
                 setUser(fullProfileUser);
 
                 if (currentUsr && currentUsr.id !== profileUser.id) {
-                    const friendFilter: FriendFilterQuery = {userIds: [profileUser.id, currentUsr.id]};
-                    const friendIndexDto: FriendIndexQuery = {page: 1, limit: 1, filter: friendFilter};
+                    const friendFilter = new FriendFilterQuery();
+                    friendFilter.userIds = [profileUser.id, currentUsr.id];
+                    const friendIndexDto = new FriendIndexQuery();
+                    friendIndexDto.filter = friendFilter;
                     const friends = await friendProvider.index(friendIndexDto);
                     const relation = friends.find((f: FriendResponse) =>
                         (f.senderUserId === currentUsr.id && f.receiverUserId === profileUser.id) ||

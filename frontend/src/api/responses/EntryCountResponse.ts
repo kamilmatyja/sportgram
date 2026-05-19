@@ -1,5 +1,5 @@
-export interface EntryCountResponse {
-    entityId: string;
-    type: number;
-    count: number;
+export class EntryCountResponse {
+    entityId!: string;
+    type!: number;
+    count!: number;
 }

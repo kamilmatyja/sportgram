@@ -1,10 +1,8 @@
-export interface ConversationActivityFilterQuery {
-    userId?: string;
-}
+import {ConversationActivityFilterQuery} from './ConversationActivityFilterQuery';
 
-export interface ConversationActivityIndexQuery {
-    page?: number;
-    limit?: number;
-    sort?: string;
-    filter?: ConversationActivityFilterQuery | null;
+export class ConversationActivityIndexQuery {
+    page?: number = 1;
+    limit?: number = 10;
+    sort?: string = 'createdAt:desc';
+    filter?: ConversationActivityFilterQuery | null = null;
 }
