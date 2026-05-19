@@ -3,9 +3,10 @@ import {buildIndexParams} from '../../utils/buildQueryString';
 import {IdResponse} from '../responses/IdResponse';
 import {EntryResponse} from '../responses/EntryResponse';
 import {EntryCountResponse} from '../responses/EntryCountResponse';
+import {EntryBody} from '../body/EntryBody';
 
 export class EntryProvider {
-    async create(dto: any): Promise<IdResponse> {
+    async create(dto: EntryBody): Promise<IdResponse> {
         return await apiFetch('/api/entries', {method: 'POST', body: JSON.stringify(dto)});
     }
 

@@ -3,18 +3,20 @@ import {buildIndexParams} from '../../utils/buildQueryString';
 import {IdResponse} from '../responses/IdResponse';
 import {ConversationResponse} from '../responses/ConversationResponse';
 import {ConversationActivityResponse} from '../responses/ConversationActivityResponse';
+import {ConversationBody} from '../body/ConversationBody';
+import {StatusBody} from '../body/StatusBody';
 
 export class ConversationProvider {
-    async create(userId: string, dto: any): Promise<IdResponse> {
+    async create(userId: string, dto: ConversationBody): Promise<IdResponse> {
         return await apiFetch(`/api/conversation-users/${userId}`, {method: 'POST', body: JSON.stringify(dto)});
     }
 
-    async update(id: string, dto: any): Promise<IdResponse> {
+    async update(id: string, dto: ConversationBody): Promise<IdResponse> {
         return await apiFetch(`/api/conversations/${id}`, {method: 'PUT', body: JSON.stringify(dto)});
     }
 
-    async updateStatus(id: string, status: number): Promise<IdResponse> {
-        return await apiFetch(`/api/conversations/${id}/status`, {method: 'PATCH', body: JSON.stringify({status})});
+    async updateStatus(id: string, dto: StatusBody): Promise<IdResponse> {
+        return await apiFetch(`/api/conversations/${id}/status`, {method: 'PATCH', body: JSON.stringify(dto)});
     }
 
     async delete(id: string): Promise<IdResponse> {

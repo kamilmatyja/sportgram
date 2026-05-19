@@ -2,18 +2,20 @@ import {apiFetch} from '../../utils/api';
 import {buildIndexParams, buildQueryString} from '../../utils/buildQueryString';
 import {IdResponse} from '../responses/IdResponse';
 import {GoalResponse} from '../responses/GoalResponse';
+import {GoalBody} from '../body/GoalBody';
+import {StatusBody} from '../body/StatusBody';
 
 export class GoalProvider {
-    async create(dto: any): Promise<IdResponse> {
+    async create(dto: GoalBody): Promise<IdResponse> {
         return await apiFetch('/api/goals', {method: 'POST', body: JSON.stringify(dto)});
     }
 
-    async update(id: string, dto: any): Promise<IdResponse> {
+    async update(id: string, dto: GoalBody): Promise<IdResponse> {
         return await apiFetch(`/api/goals/${id}`, {method: 'PUT', body: JSON.stringify(dto)});
     }
 
-    async updateStatus(id: string, status: number): Promise<IdResponse> {
-        return await apiFetch(`/api/goals/${id}/status`, {method: 'PATCH', body: JSON.stringify({status})});
+    async updateStatus(id: string, dto: StatusBody): Promise<IdResponse> {
+        return await apiFetch(`/api/goals/${id}/status`, {method: 'PATCH', body: JSON.stringify(dto)});
     }
 
     async delete(id: string): Promise<IdResponse> {
@@ -30,17 +32,17 @@ export class GoalProvider {
         return await apiFetch(`/api/goals/${id}${query}`, {method: 'GET'});
     }
 
-    async updateParticipantStatus(participantId: string, status: number): Promise<IdResponse> {
+    async updateParticipantStatus(participantId: string, dto: StatusBody): Promise<IdResponse> {
         return await apiFetch(`/api/goal-participants/${participantId}/status`, {
             method: 'PATCH',
-            body: JSON.stringify({status})
+            body: JSON.stringify(dto)
         });
     }
 
-    async updateParticipantResultStatus(resultId: string, status: number): Promise<IdResponse> {
+    async updateParticipantResultStatus(resultId: string, dto: StatusBody): Promise<IdResponse> {
         return await apiFetch(`/api/goal-participant-results/${resultId}/status`, {
             method: 'PATCH',
-            body: JSON.stringify({status})
+            body: JSON.stringify(dto)
         });
     }
 }

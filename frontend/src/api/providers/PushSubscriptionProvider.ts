@@ -2,13 +2,14 @@ import {apiFetch} from '../../utils/api';
 import {buildIndexParams} from '../../utils/buildQueryString';
 import {IdResponse} from '../responses/IdResponse';
 import {PushSubscriptionResponse} from '../responses/PushSubscriptionResponse';
+import {PushSubscriptionBody} from '../body/PushSubscriptionBody';
 
 export class PushSubscriptionProvider {
-    async create(dto: any): Promise<IdResponse> {
+    async create(dto: PushSubscriptionBody): Promise<IdResponse> {
         return await apiFetch('/api/push-subscriptions', {method: 'POST', body: JSON.stringify(dto)});
     }
 
-    async update(id: string, dto: any): Promise<IdResponse> {
+    async update(id: string, dto: PushSubscriptionBody): Promise<IdResponse> {
         return await apiFetch(`/api/push-subscriptions/${id}`, {method: 'PUT', body: JSON.stringify(dto)});
     }
 

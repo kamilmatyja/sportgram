@@ -3,18 +3,21 @@ import {buildIndexParams, buildQueryString} from '../../utils/buildQueryString';
 import {IdResponse} from '../responses/IdResponse';
 import {EventResponse} from '../responses/EventResponse';
 import {EventDisciplineDistanceListResponse} from '../responses/EventDisciplineDistanceListResponse';
+import {EventBody} from '../body/EventBody';
+import {EventResultBody} from '../body/EventResultBody';
+import {StatusBody} from '../body/StatusBody';
 
 export class EventProvider {
-    async create(pageId: string, dto: any): Promise<IdResponse> {
+    async create(pageId: string, dto: EventBody): Promise<IdResponse> {
         return await apiFetch(`/api/event-pages/${pageId}`, {method: 'POST', body: JSON.stringify(dto)});
     }
 
-    async update(id: string, dto: any): Promise<IdResponse> {
+    async update(id: string, dto: EventBody): Promise<IdResponse> {
         return await apiFetch(`/api/events/${id}`, {method: 'PUT', body: JSON.stringify(dto)});
     }
 
-    async updateStatus(id: string, status: number): Promise<IdResponse> {
-        return await apiFetch(`/api/events/${id}/status`, {method: 'PATCH', body: JSON.stringify({status})});
+    async updateStatus(id: string, dto: StatusBody): Promise<IdResponse> {
+        return await apiFetch(`/api/events/${id}/status`, {method: 'PATCH', body: JSON.stringify(dto)});
     }
 
     async delete(id: string): Promise<IdResponse> {
@@ -35,10 +38,10 @@ export class EventProvider {
         return await apiFetch(`/api/event-discipline-distances/${distanceId}`, {method: 'POST'});
     }
 
-    async updateListStatus(listId: string, status: number): Promise<IdResponse> {
+    async updateListStatus(listId: string, dto: StatusBody): Promise<IdResponse> {
         return await apiFetch(`/api/event-discipline-distance-lists/${listId}/status`, {
             method: 'PATCH',
-            body: JSON.stringify({status})
+            body: JSON.stringify(dto)
         });
     }
 
@@ -56,14 +59,14 @@ export class EventProvider {
         return await apiFetch(`/api/event-discipline-distance-lists/${listId}${query}`, {method: 'GET'});
     }
 
-    async createResult(listId: string, dto: any): Promise<IdResponse> {
+    async createResult(listId: string, dto: EventResultBody): Promise<IdResponse> {
         return await apiFetch(`/api/event-discipline-distance-lists/${listId}`, {
             method: 'POST',
             body: JSON.stringify(dto)
         });
     }
 
-    async updateResult(resultId: string, dto: any): Promise<IdResponse> {
+    async updateResult(resultId: string, dto: EventResultBody): Promise<IdResponse> {
         return await apiFetch(`/api/event-discipline-distance-results/${resultId}`, {
             method: 'PUT',
             body: JSON.stringify(dto)

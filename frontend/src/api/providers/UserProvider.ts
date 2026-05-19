@@ -5,6 +5,8 @@ import {UserIndexQuery} from '../queries/UserIndexQuery.ts';
 import {IdResponse} from '../responses/IdResponse';
 import {UserResponse} from '../responses/UserResponse';
 import {UserCreateBody} from "../body/UserCreateBody.ts";
+import {UserUpdateBody} from '../body/UserUpdateBody.ts';
+import {StatusBody} from '../body/StatusBody.ts';
 
 export class UserProvider {
     async createNano(dto: RegisterBody): Promise<IdResponse> {
@@ -15,12 +17,12 @@ export class UserProvider {
         return await apiFetch('/api/users', {method: 'POST', body: JSON.stringify(dto)});
     }
 
-    async update(id: string, dto: any): Promise<IdResponse> {
+    async update(id: string, dto: UserUpdateBody): Promise<IdResponse> {
         return await apiFetch(`/api/users/${id}`, {method: 'PUT', body: JSON.stringify(dto)});
     }
 
-    async updateStatus(id: string, status: number): Promise<IdResponse> {
-        return await apiFetch(`/api/users/${id}/status`, {method: 'PATCH', body: JSON.stringify({status})});
+    async updateStatus(id: string, dto: StatusBody): Promise<IdResponse> {
+        return await apiFetch(`/api/users/${id}/status`, {method: 'PATCH', body: JSON.stringify(dto)});
     }
 
     async delete(id: string): Promise<IdResponse> {
