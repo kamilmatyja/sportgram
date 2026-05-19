@@ -1,11 +1,18 @@
-import {UserFilterQuery} from './UserFilterQuery.ts';
+export interface UserFilterQuery {
+    firstName?: string;
+    lastName?: string;
+    gender?: number;
+    email?: string;
+    country?: number;
+    status?: number;
+    userIds?: string[];
+    link?: string;
+    signId?: string;
+}
 
-export class UserIndexQuery {
-    constructor(
-        public page: number = 1,
-        public limit: number = 10,
-        public sort: string = 'createdAt:desc',
-        public filter: UserFilterQuery | null = null
-    ) {
-    }
+export interface UserIndexQuery {
+    page?: number;
+    limit?: number;
+    sort?: string;
+    filter?: UserFilterQuery | null;
 }

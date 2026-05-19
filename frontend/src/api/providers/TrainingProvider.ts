@@ -4,6 +4,7 @@ import {IdResponse} from '../responses/IdResponse';
 import {TrainingResponse} from '../responses/TrainingResponse';
 import {TrainingBody} from '../body/TrainingBody';
 import {StatusBody} from '../body/StatusBody';
+import {TrainingIndexQuery} from "../queries/TrainingIndexQuery.ts";
 
 export class TrainingProvider {
     async create(dto: TrainingBody): Promise<IdResponse> {
@@ -22,8 +23,8 @@ export class TrainingProvider {
         return await apiFetch(`/api/trainings/${id}`, {method: 'DELETE'});
     }
 
-    async index(page: number, limit: number, sort: string, filter: any = {}): Promise<TrainingResponse[]> {
-        const params = buildIndexParams(page, limit, sort, filter);
+    async index(dto: TrainingIndexQuery): Promise<TrainingResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/trainings?${params.toString()}`, {method: 'GET'});
     }
 

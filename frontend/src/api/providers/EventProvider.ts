@@ -6,6 +6,8 @@ import {EventDisciplineDistanceListResponse} from '../responses/EventDisciplineD
 import {EventBody} from '../body/EventBody';
 import {EventResultBody} from '../body/EventResultBody';
 import {StatusBody} from '../body/StatusBody';
+import {EntryIndexQuery} from "../queries/EntryFilterQuery.ts";
+import {EventListIndexQuery} from "../queries/EventListIndexQuery.ts";
 
 export class EventProvider {
     async create(pageId: string, dto: EventBody): Promise<IdResponse> {
@@ -24,8 +26,8 @@ export class EventProvider {
         return await apiFetch(`/api/events/${id}`, {method: 'DELETE'});
     }
 
-    async index(page: number, limit: number, sort: string, filter: any = {}): Promise<EventResponse[]> {
-        const params = buildIndexParams(page, limit, sort, filter);
+    async index(dto: EntryIndexQuery): Promise<EventResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/events?${params.toString()}`, {method: 'GET'});
     }
 
@@ -49,9 +51,9 @@ export class EventProvider {
         return await apiFetch(`/api/event-discipline-distance-lists/${listId}`, {method: 'DELETE'});
     }
 
-    async indexList(distanceId: string, page: number, limit: number, sort: string, filter: any = {}): Promise<EventDisciplineDistanceListResponse[]> {
-        const params = buildIndexParams(page, limit, sort, filter);
-        return await apiFetch(`/api/event-discipline-distances/${distanceId}?${params.toString()}`, {method: 'GET'});
+    async indexList(id: string, dto: EventListIndexQuery): Promise<EventDisciplineDistanceListResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
+        return await apiFetch(`/api/event-discipline-distances/${id}?${params.toString()}`, {method: 'GET'});
     }
 
     async detailsList(listId: string, include: string[] = []): Promise<EventDisciplineDistanceListResponse> {

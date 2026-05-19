@@ -5,6 +5,8 @@ import {PageResponse} from '../responses/PageResponse';
 import {PageFollowResponse} from '../responses/PageFollowResponse';
 import {PageBody} from '../body/PageBody';
 import {StatusBody} from '../body/StatusBody';
+import {PageIndexQuery} from "../queries/PageIndexQuery.ts";
+import {PageFollowIndexQuery} from "../queries/PageFollowIndexQuery.ts";
 
 export class PageProvider {
     async create(dto: PageBody): Promise<IdResponse> {
@@ -23,8 +25,8 @@ export class PageProvider {
         return await apiFetch(`/api/pages/${id}`, {method: 'DELETE'});
     }
 
-    async index(page: number, limit: number, sort: string, filter: any = {}): Promise<PageResponse[]> {
-        const params = buildIndexParams(page, limit, sort, filter);
+    async index(dto: PageIndexQuery): Promise<PageResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/pages?${params.toString()}`, {method: 'GET'});
     }
 
@@ -52,8 +54,8 @@ export class PageProvider {
         return await apiFetch(`/api/page-follows/${followId}`, {method: 'DELETE'});
     }
 
-    async indexFollows(page: number, limit: number, sort: string, filter: any = {}): Promise<PageFollowResponse[]> {
-        const params = buildIndexParams(page, limit, sort, filter);
+    async indexFollows(dto: PageFollowIndexQuery): Promise<PageFollowResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/page-follows?${params.toString()}`, {method: 'GET'});
     }
 

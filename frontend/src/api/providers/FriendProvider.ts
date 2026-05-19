@@ -4,6 +4,7 @@ import {FriendResponse} from '../responses/FriendResponse';
 import {IdResponse} from '../responses/IdResponse';
 import {FriendBody} from '../body/FriendBody';
 import {StatusBody} from '../body/StatusBody';
+import {FriendIndexQuery} from "../queries/FriendIndexQuery.ts";
 
 export class FriendProvider {
     async create(dto: FriendBody): Promise<IdResponse> {
@@ -18,9 +19,8 @@ export class FriendProvider {
         return await apiFetch(`/api/friends/${id}`, {method: 'DELETE'});
     }
 
-    async index(page: number, limit: number, userIds: string[]): Promise<FriendResponse[]> {
-        const params = buildIndexParams(page, limit, 'createdAt:desc', {userIds});
-
+    async index(dto: FriendIndexQuery): Promise<FriendResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/friends?${params.toString()}`, {method: 'GET'});
     }
 }

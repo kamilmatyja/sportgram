@@ -3,6 +3,7 @@ import {buildIndexParams} from '../../utils/buildQueryString';
 import {IdResponse} from '../responses/IdResponse';
 import {PushSubscriptionResponse} from '../responses/PushSubscriptionResponse';
 import {PushSubscriptionBody} from '../body/PushSubscriptionBody';
+import {PushSubscriptionIndexQuery} from "../queries/PushSubscriptionIndexQuery.ts";
 
 export class PushSubscriptionProvider {
     async create(dto: PushSubscriptionBody): Promise<IdResponse> {
@@ -17,8 +18,8 @@ export class PushSubscriptionProvider {
         return await apiFetch(`/api/push-subscriptions/${id}`, {method: 'DELETE'});
     }
 
-    async index(page: number, limit: number, sort: string, filter: any = {}): Promise<PushSubscriptionResponse[]> {
-        const params = buildIndexParams(page, limit, sort, filter);
+    async index(dto: PushSubscriptionIndexQuery): Promise<PushSubscriptionResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/push-subscriptions?${params.toString()}`, {method: 'GET'});
     }
 

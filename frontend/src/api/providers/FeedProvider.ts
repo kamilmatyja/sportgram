@@ -6,6 +6,7 @@ import {FeedBody} from '../body/FeedBody';
 import {FeedCommentBody} from '../body/FeedCommentBody';
 import {FeedReactionBody} from '../body/FeedReactionBody';
 import {StatusBody} from '../body/StatusBody';
+import {FeedIndexQuery} from "../queries/FeedIndexQuery.ts";
 
 export class FeedProvider {
     async create(dto: FeedBody): Promise<IdResponse> {
@@ -24,9 +25,8 @@ export class FeedProvider {
         return await apiFetch(`/api/feeds/${id}`, {method: 'DELETE'});
     }
 
-    async index(page: number, limit: number, userId?: string): Promise<FeedResponse[]> {
-        const filter = userId ? {userId, status: 2} : {status: 2};
-        const params = buildIndexParams(page, limit, 'createdAt:desc', filter);
+    async index(dto: FeedIndexQuery): Promise<FeedResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/feeds?${params.toString()}`, {method: 'GET'});
     }
 

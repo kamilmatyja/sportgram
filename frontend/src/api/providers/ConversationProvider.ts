@@ -5,6 +5,8 @@ import {ConversationResponse} from '../responses/ConversationResponse';
 import {ConversationActivityResponse} from '../responses/ConversationActivityResponse';
 import {ConversationBody} from '../body/ConversationBody';
 import {StatusBody} from '../body/StatusBody';
+import {ConversationIndexQuery} from "../queries/ConversationIndexQuery.ts";
+import {ConversationActivityIndexQuery} from "../queries/ConversationActivityIndexQuery.ts";
 
 export class ConversationProvider {
     async create(userId: string, dto: ConversationBody): Promise<IdResponse> {
@@ -23,8 +25,8 @@ export class ConversationProvider {
         return await apiFetch(`/api/conversations/${id}`, {method: 'DELETE'});
     }
 
-    async index(page: number, limit: number, sort: string, filter: any = {}): Promise<ConversationResponse[]> {
-        const params = buildIndexParams(page, limit, sort, filter);
+    async index(dto: ConversationIndexQuery): Promise<ConversationResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/conversations?${params.toString()}`, {method: 'GET'});
     }
 
@@ -36,8 +38,8 @@ export class ConversationProvider {
         return await apiFetch(`/api/conversation-activitiy-users/${userId}/updated-at`, {method: 'PATCH'});
     }
 
-    async indexActivity(page: number, limit: number, sort: string, filter: any = {}): Promise<ConversationActivityResponse[]> {
-        const params = buildIndexParams(page, limit, sort, filter);
+    async indexActivity(dto: ConversationActivityIndexQuery): Promise<ConversationActivityResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/conversation-activities?${params.toString()}`, {method: 'GET'});
     }
 

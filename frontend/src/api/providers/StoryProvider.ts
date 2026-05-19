@@ -4,6 +4,7 @@ import {StoryResponse} from '../responses/StoryResponse';
 import {IdResponse} from '../responses/IdResponse';
 import {StoryBody} from '../body/StoryBody';
 import {StatusBody} from '../body/StatusBody';
+import {StoryIndexQuery} from "../queries/StoryIndexQuery.ts";
 
 export class StoryProvider {
     async create(dto: StoryBody): Promise<IdResponse> {
@@ -22,8 +23,8 @@ export class StoryProvider {
         return await apiFetch(`/api/stories/${id}`, {method: 'DELETE'});
     }
 
-    async index(page: number, limit: number, sort: string = 'createdAt:desc', filter: any = {}): Promise<StoryResponse[]> {
-        const params = buildIndexParams(page, limit, sort, filter);
+    async index(dto: StoryIndexQuery): Promise<StoryResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/stories?${params.toString()}`, {method: 'GET'});
     }
 

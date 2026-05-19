@@ -4,6 +4,7 @@ import {IdResponse} from '../responses/IdResponse';
 import {GoalResponse} from '../responses/GoalResponse';
 import {GoalBody} from '../body/GoalBody';
 import {StatusBody} from '../body/StatusBody';
+import {GoalIndexQuery} from "../queries/GoalIndexQuery.ts";
 
 export class GoalProvider {
     async create(dto: GoalBody): Promise<IdResponse> {
@@ -22,8 +23,8 @@ export class GoalProvider {
         return await apiFetch(`/api/goals/${id}`, {method: 'DELETE'});
     }
 
-    async index(page: number, limit: number, sort: string, filter: any = {}): Promise<GoalResponse[]> {
-        const params = buildIndexParams(page, limit, sort, filter);
+    async index(dto: GoalIndexQuery): Promise<GoalResponse[]> {
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/goals?${params.toString()}`, {method: 'GET'});
     }
 
