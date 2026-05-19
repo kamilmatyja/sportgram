@@ -24,7 +24,7 @@ export const SignFormView: React.FC<SignFormViewProps> = ({
                                                               fieldErrors,
                                                               globalError
                                                           }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="container mt-5">
@@ -45,7 +45,8 @@ export const SignFormView: React.FC<SignFormViewProps> = ({
                                         onChange={handleChange}
                                         required
                                     />
-                                    {fieldErrors.email && <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
+                                    {fieldErrors.email &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">{t('password')}</label>
@@ -59,7 +60,8 @@ export const SignFormView: React.FC<SignFormViewProps> = ({
                                         maxLength={64}
                                         required
                                     />
-                                    {fieldErrors.password && <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
+                                    {fieldErrors.password &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
                                 </div>
                                 <div className="mb-3 form-check">
                                     <input

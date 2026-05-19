@@ -33,7 +33,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                                                       fieldErrors,
                                                                       globalError
                                                                   }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     const genderOptions = GenderEnum.getOptions(t);
     const countryOptions = CountryEnum.getOptions(t);
@@ -51,56 +51,78 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                 <div className="row">
                                     <div className="col-md-6 mb-3">
                                         <label className="form-label">{t('firstName')}</label>
-                                        <input name="firstName" className={`form-control ${fieldErrors.firstName ? 'is-invalid' : ''}`} value={formData.firstName} onChange={handleChange} required />
-                                        {fieldErrors.firstName && <div className="invalid-feedback d-block">{fieldErrors.firstName}</div>}
+                                        <input name="firstName"
+                                               className={`form-control ${fieldErrors.firstName ? 'is-invalid' : ''}`}
+                                               value={formData.firstName} onChange={handleChange} required/>
+                                        {fieldErrors.firstName &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.firstName}</div>}
                                     </div>
                                     <div className="col-md-6 mb-3">
                                         <label className="form-label">{t('lastName')}</label>
-                                        <input name="lastName" className={`form-control ${fieldErrors.lastName ? 'is-invalid' : ''}`} value={formData.lastName} onChange={handleChange} required />
-                                        {fieldErrors.lastName && <div className="invalid-feedback d-block">{fieldErrors.lastName}</div>}
+                                        <input name="lastName"
+                                               className={`form-control ${fieldErrors.lastName ? 'is-invalid' : ''}`}
+                                               value={formData.lastName} onChange={handleChange} required/>
+                                        {fieldErrors.lastName &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.lastName}</div>}
                                     </div>
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">{t('email')}</label>
-                                    <input type="email" name="email" className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`} value={formData.email} onChange={handleChange} required />
-                                    {fieldErrors.email && <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
+                                    <input type="email" name="email"
+                                           className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`}
+                                           value={formData.email} onChange={handleChange} required/>
+                                    {fieldErrors.email &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">{t('password')}</label>
                                     <input type="password" name="password"
                                            className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
                                            value={formData.password} onChange={handleChange} required minLength={8}/>
-                                    {fieldErrors.password && <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
+                                    {fieldErrors.password &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
                                 </div>
                                 <div className="row">
                                     <div className="col-md-6 mb-3">
                                         <label className="form-label">{t('phone')}</label>
-                                        <input type="number" name="phone" className={`form-control ${fieldErrors.phone ? 'is-invalid' : ''}`} value={formData.phone} onChange={handleChange} required />
-                                        {fieldErrors.phone && <div className="invalid-feedback d-block">{fieldErrors.phone}</div>}
+                                        <input type="number" name="phone"
+                                               className={`form-control ${fieldErrors.phone ? 'is-invalid' : ''}`}
+                                               value={formData.phone} onChange={handleChange} required/>
+                                        {fieldErrors.phone &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.phone}</div>}
                                     </div>
                                     <div className="col-md-6 mb-3">
                                         <label className="form-label">{t('birthAt')}</label>
-                                        <input type="date" name="birthAt" className={`form-control ${fieldErrors.birthAt ? 'is-invalid' : ''}`} value={formData.birthAt} onChange={handleChange} required />
-                                        {fieldErrors.birthAt && <div className="invalid-feedback d-block">{fieldErrors.birthAt}</div>}
+                                        <input type="date" name="birthAt"
+                                               className={`form-control ${fieldErrors.birthAt ? 'is-invalid' : ''}`}
+                                               value={formData.birthAt} onChange={handleChange} required/>
+                                        {fieldErrors.birthAt &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.birthAt}</div>}
                                     </div>
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">{t('gender')}</label>
-                                    <select name="gender" className={`form-select ${fieldErrors.gender ? 'is-invalid' : ''}`} value={formData.gender} onChange={handleChange} required>
+                                    <select name="gender"
+                                            className={`form-select ${fieldErrors.gender ? 'is-invalid' : ''}`}
+                                            value={formData.gender} onChange={handleChange} required>
                                         {genderOptions.map((opt: any) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
                                     </select>
-                                    {fieldErrors.gender && <div className="invalid-feedback d-block">{fieldErrors.gender}</div>}
+                                    {fieldErrors.gender &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.gender}</div>}
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">{t('country')}</label>
-                                    <select name="country" className={`form-select ${fieldErrors.country ? 'is-invalid' : ''}`} value={formData.country} onChange={handleChange} required>
+                                    <select name="country"
+                                            className={`form-select ${fieldErrors.country ? 'is-invalid' : ''}`}
+                                            value={formData.country} onChange={handleChange} required>
                                         {countryOptions.map((opt: any) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
                                     </select>
-                                    {fieldErrors.country && <div className="invalid-feedback d-block">{fieldErrors.country}</div>}
+                                    {fieldErrors.country &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.country}</div>}
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">{t('role')}</label>
@@ -112,7 +134,8 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
                                     </select>
-                                    {fieldErrors.roles && <div className="invalid-feedback d-block">{fieldErrors.roles}</div>}
+                                    {fieldErrors.roles &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.roles}</div>}
                                 </div>
                                 <button type="submit" className="btn btn-primary w-100" disabled={loading}>
                                     {loading ? t('sending') : t('submitRegister')}

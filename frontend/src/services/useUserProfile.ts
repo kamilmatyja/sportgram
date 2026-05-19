@@ -1,0 +1,129 @@
+import {useEffect, useState} from 'react';
+import {UserProvider} from '../api/providers/UserProvider';
+import {FriendProvider} from '../api/providers/FriendProvider';
+import {UserResponse} from '../api/responses/UserResponse';
+import {FriendResponse} from '../api/responses/FriendResponse';
+import {useCheckPermission} from '../utils/checkPermission';
+import {FriendBody} from '../api/body/FriendBody';
+import {StatusBody} from '../api/body/StatusBody';
+import {RoleEnum} from '../enums/RoleEnum';
+import {useTranslation} from '../context/TranslationContext';
+import type {UserFilterQuery, UserIndexQuery} from '../api/queries/UserIndexQuery';
+import type {FriendFilterQuery, FriendIndexQuery} from '../api/queries/FriendIndexQuery';
+
+export function useUserProfile(link?: string) {
+    const {t} = useTranslation();
+    const {getCurrentUser} = useCheckPermission();
+    const [user, setUser] = useState<UserResponse | null>(null);
+    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
+    const [friendship, setFriendship] = useState<FriendResponse | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [statusLoading, setStatusLoading] = useState(false);
+
+    const [selectedStatus, setSelectedStatus] = useState<number | null>(null);
+    const [selectedFriendStatus, setSelectedFriendStatus] = useState<number | null>(null);
+
+    const userProvider = new UserProvider();
+    const friendProvider = new FriendProvider();
+
+    useEffect(() => {
+        if (friendship) {
+            setSelectedFriendStatus(friendship.status);
+        } else {
+            setSelectedFriendStatus(null);
+        }
+    }, [friendship]);
+
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            try {
+                setLoading(true);
+
+                const currentUsr = await getCurrentUser();
+                setCurrentUser(currentUsr);
+
+                const filterDto: UserFilterQuery = {link};
+                const indexDto: UserIndexQuery = {page: 1, limit: 1, sort: 'createdAt:desc', filter: filterDto};
+                const targetUsers = await userProvider.index(indexDto);
+
+                if (targetUsers.length === 0) {
+                    setError(t('userNotFound'));
+                    return;
+                }
+
+                const profileUser = targetUsers[0];
+                const fullProfileUser = await userProvider.details(profileUser.id, ['userRoles', 'userDisciplines']);
+                setUser(fullProfileUser);
+
+                if (currentUsr && currentUsr.id !== profileUser.id) {
+                    const friendFilter: FriendFilterQuery = {userIds: [profileUser.id, currentUsr.id]};
+                    const friendIndexDto: FriendIndexQuery = {page: 1, limit: 1, filter: friendFilter};
+                    const friends = await friendProvider.index(friendIndexDto);
+                    const relation = friends.find((f: FriendResponse) =>
+                        (f.senderUserId === currentUsr.id && f.receiverUserId === profileUser.id) ||
+                        (f.senderUserId === profileUser.id && f.receiverUserId === currentUsr.id)
+                    );
+                    setFriendship(relation || null);
+                } else {
+                    setFriendship(null);
+                }
+            } catch (err: any) {
+                setError(err.error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (link) {
+            fetchProfileData();
+        }
+    }, [link]);
+
+    const handleAddFriend = async () => {
+        if (!user || !currentUser) return;
+        try {
+            await friendProvider.create(new FriendBody(user.id));
+            const friendFilter: FriendFilterQuery = {userIds: [user.id, currentUser.id]};
+            const friendIndexDto: FriendIndexQuery = {page: 1, limit: 1, filter: friendFilter};
+            const friends = await friendProvider.index(friendIndexDto);
+            setFriendship(friends[0] || null);
+        } catch (e: any) {
+            alert(e.error);
+        }
+    };
+
+    const handleUpdateFriendStatus = async (newStatus: number) => {
+        if (!friendship || !user) return;
+        try {
+            await friendProvider.updateStatus(friendship.id, new StatusBody(newStatus));
+            setFriendship({...friendship, status: newStatus});
+        } catch (e: any) {
+            alert(e.error);
+        }
+    };
+
+    const handleChangeUserStatus = async () => {
+        if (!user || selectedStatus === null) return;
+        setStatusLoading(true);
+        try {
+            await userProvider.updateStatus(user.id, new StatusBody(selectedStatus));
+            setUser({...user, status: selectedStatus});
+        } catch (e: any) {
+            alert(e.error);
+        } finally {
+            setStatusLoading(false);
+        }
+    };
+
+    const isMyProfile = Boolean(currentUser && user && currentUser.id === user.id);
+    const isAdmin = Boolean(currentUser && Array.isArray(currentUser.roles) && currentUser.roles.some((role: any) => role.role === RoleEnum.ADMINISTRATOR));
+
+    return {
+        user, currentUser, friendship, loading, error, statusLoading,
+        selectedStatus, setSelectedStatus,
+        selectedFriendStatus, setSelectedFriendStatus,
+        handleAddFriend, handleUpdateFriendStatus, handleChangeUserStatus,
+        isMyProfile, isAdmin
+    };
+}

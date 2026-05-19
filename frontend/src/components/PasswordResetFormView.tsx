@@ -22,7 +22,7 @@ export const PasswordResetFormView: React.FC<PasswordResetFormViewProps> = ({
                                                                                 fieldErrors,
                                                                                 globalError
                                                                             }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="container mt-5">
@@ -43,7 +43,8 @@ export const PasswordResetFormView: React.FC<PasswordResetFormViewProps> = ({
                                         onChange={handleChange}
                                         required
                                     />
-                                    {fieldErrors.email && <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
+                                    {fieldErrors.email &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
                                 </div>
                                 <button type="submit" className="btn btn-primary w-100" disabled={loading}>
                                     {loading ? t('sending') : t('submitPasswordReset')}

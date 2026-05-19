@@ -29,7 +29,7 @@ export const PasswordResetVerificationFormView: React.FC<PasswordResetVerificati
                                                                                                         onResend,
                                                                                                         resendSuccess
                                                                                                     }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="container mt-5">

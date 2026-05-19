@@ -10,8 +10,8 @@ export function useCheckPermission() {
 
     const check = async (role: RoleEnum): Promise<boolean> => {
         if (!signId) return false;
-        const filter = { signId };
-        const indexDto: UserIndexQuery = { page: 1, limit: 1, sort: 'createdAt:desc', filter };
+        const filter = {signId};
+        const indexDto: UserIndexQuery = {page: 1, limit: 1, sort: 'createdAt:desc', filter};
         const currentUserArr = await userProvider.index(indexDto);
         if (currentUserArr.length === 0) return false;
         const myId = currentUserArr[0].id;
@@ -19,10 +19,10 @@ export function useCheckPermission() {
         return details.roles?.some((r: any) => r.role === role) ?? false;
     };
 
-    const getCurrentUser = async (): Promise<UserResponse|null> => {
+    const getCurrentUser = async (): Promise<UserResponse | null> => {
         if (!signId) return null;
-        const filter = { signId };
-        const indexDto: UserIndexQuery = { page: 1, limit: 1, sort: 'createdAt:desc', filter };
+        const filter = {signId};
+        const indexDto: UserIndexQuery = {page: 1, limit: 1, sort: 'createdAt:desc', filter};
         const currentUserArr = await userProvider.index(indexDto);
         const currentUser = currentUserArr[0];
         return await userProvider.details(currentUser.id, ['userRoles', 'userDisciplines']);

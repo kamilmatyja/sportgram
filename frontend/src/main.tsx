@@ -9,7 +9,7 @@ import {ThemeProvider} from './context/ThemeContext';
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch((error) => {
+        navigator.serviceWorker.register('/src/sw.ts', {type: 'module'}).catch((error) => {
             console.error('SW registration failed:', error);
         });
     });

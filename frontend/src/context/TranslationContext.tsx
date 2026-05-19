@@ -30,7 +30,7 @@ export const TranslationProvider = ({children}: TranslationProviderProps) => {
     };
 
     return (
-        <TranslationContext.Provider value={{ t, lang, setLanguage }}>
+        <TranslationContext.Provider value={{t, lang, setLanguage}}>
             {children}
         </TranslationContext.Provider>
     );

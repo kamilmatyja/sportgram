@@ -28,7 +28,7 @@ export const VerificationFormView: React.FC<VerificationFormViewProps> = ({
                                                                               onResend,
                                                                               resendSuccess
                                                                           }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="container mt-5">

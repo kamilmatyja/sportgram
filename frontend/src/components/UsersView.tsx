@@ -64,10 +64,14 @@ export default function UsersView({
             </div>
 
             <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                <input name="firstName" placeholder={t('firstName')} value={filters.firstName} onChange={onFilterChange} className="form-control w-auto" />
-                <input name="lastName" placeholder={t('lastName')} value={filters.lastName} onChange={onFilterChange} className="form-control w-auto" />
-                <input name="email" placeholder={t('email')} value={filters.email} onChange={onFilterChange} className="form-control w-auto" />
-                <input name="link" placeholder={t('link')} value={filters.link} onChange={onFilterChange} className="form-control w-auto" />
+                <input name="firstName" placeholder={t('firstName')} value={filters.firstName} onChange={onFilterChange}
+                       className="form-control w-auto"/>
+                <input name="lastName" placeholder={t('lastName')} value={filters.lastName} onChange={onFilterChange}
+                       className="form-control w-auto"/>
+                <input name="email" placeholder={t('email')} value={filters.email} onChange={onFilterChange}
+                       className="form-control w-auto"/>
+                <input name="link" placeholder={t('link')} value={filters.link} onChange={onFilterChange}
+                       className="form-control w-auto"/>
                 <select name="gender" value={filters.gender} onChange={onFilterChange} className="form-select w-auto">
                     <option value="">{t('gender')}</option>
                     {GenderEnum.getOptions(t).map(opt => (
@@ -102,7 +106,7 @@ export default function UsersView({
                     ))}
                 </select>
             </div>
-            <div className="mb-3" />
+            <div className="mb-3"/>
             {loading ? <div>{t('loading')}</div> : error ? <div className="text-danger">{error}</div> : (
                 <>
                     <table className="table table-bordered table-hover">
@@ -152,9 +156,11 @@ export default function UsersView({
                         </tbody>
                     </table>
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <button className="btn btn-outline-primary mx-2" disabled={page === 1} onClick={onPrevPage}>{t('prev')}</button>
+                        <button className="btn btn-outline-primary mx-2" disabled={page === 1}
+                                onClick={onPrevPage}>{t('prev')}</button>
                         <span>{t('page')} {page}</span>
-                        <button className="btn btn-outline-primary mx-2" disabled={users.length < limit} onClick={onNextPage}>{t('next')}</button>
+                        <button className="btn btn-outline-primary mx-2" disabled={users.length < limit}
+                                onClick={onNextPage}>{t('next')}</button>
                     </div>
                 </>
             )}

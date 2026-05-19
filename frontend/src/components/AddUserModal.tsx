@@ -1,80 +1,36 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {useTranslation} from '../context/TranslationContext';
-import {UserCreateBody} from '../api/body/UserCreateBody';
 import {GenderEnum} from '../enums/GenderEnum';
 import {CountryEnum} from '../enums/CountryEnum';
 import {RoleEnum} from '../enums/RoleEnum';
 import {LanguageEnum} from '../enums/LanguageEnum';
 import {ThemeEnum} from '../enums/ThemeEnum';
 import {ColorEnum} from '../enums/ColorEnum';
-import {createFormHandler} from '../utils/formHandler';
 
 interface AddUserModalProps {
     show: boolean;
-    onClose: () => void;
-    onSubmit: (dto: UserCreateBody) => Promise<void>;
+    closeModal: () => void;
+    loading: boolean;
+    globalError: string;
+    fieldErrors: Record<string, string | string[]>;
+    formData: any;
+    handleChange: (e: React.ChangeEvent<any>) => void;
+    handleSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
 }
 
-export const AddUserModal: React.FC<AddUserModalProps> = ({show, onClose, onSubmit}) => {
+export const AddUserModal: React.FC<AddUserModalProps> = ({
+                                                              show,
+                                                              closeModal,
+                                                              loading,
+                                                              globalError,
+                                                              fieldErrors,
+                                                              formData,
+                                                              handleChange,
+                                                              handleSubmit
+                                                          }) => {
     const {t} = useTranslation();
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
-
-    const [formData, setFormData] = useState({
-        firstName: '', lastName: '', email: '', password: '',
-        phone: '', birthAt: '', link: '', bio: '',
-        gender: 1, country: 1, language: 1, theme: 1, color: 1,
-        roles: [] as number[],
-        profilePhoto: '',
-        backgroundPhoto: '',
-    });
 
     if (!show) return null;
-
-    const handleChange = createFormHandler(setFormData);
-
-    const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-
-        if (!formData.profilePhoto || !formData.backgroundPhoto) {
-            setGlobalError(t('photosRequired'));
-            setLoading(false);
-            return;
-        }
-
-        const dto = new UserCreateBody(
-            formData.birthAt,
-            formData.firstName,
-            formData.lastName,
-            Number(formData.gender),
-            Number(formData.phone),
-            formData.email,
-            formData.password,
-            formData.link,
-            Number(formData.language),
-            Number(formData.country),
-            Number(formData.theme),
-            Number(formData.color),
-            formData.profilePhoto,
-            formData.backgroundPhoto,
-            formData.bio,
-            formData.roles
-        );
-
-        try {
-            await onSubmit(dto);
-            onClose();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <>
@@ -84,7 +40,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({show, onClose, onSubm
                         <form onSubmit={handleSubmit}>
                             <div className="modal-header">
                                 <h5 className="modal-title">{t('addUser')}</h5>
-                                <button type="button" className="btn-close" onClick={onClose}></button>
+                                <button type="button" className="btn-close" onClick={closeModal}></button>
                             </div>
                             <div className="modal-body">
                                 {globalError && <div className="alert alert-danger">{globalError}</div>}
@@ -169,7 +125,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({show, onClose, onSubm
                                         <select name="country" className="form-select" value={formData.country}
                                                 onChange={handleChange} required>
                                             {CountryEnum.getOptions(t).map(opt => <option key={opt.value}
-                                                                                      value={opt.value}>{opt.label}</option>)}
+                                                                                          value={opt.value}>{opt.label}</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -237,7 +193,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({show, onClose, onSubm
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary"
-                                        onClick={onClose}>{t('cancel')}</button>
+                                        onClick={closeModal}>{t('cancel')}</button>
                                 <button type="submit" className="btn btn-success" disabled={loading}>
                                     {loading ? t('sending') : t('addUser')}
                                 </button>

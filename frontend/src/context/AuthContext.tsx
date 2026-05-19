@@ -77,11 +77,11 @@ export function AuthProvider({children}: AuthProviderProps) {
         setToken(null);
         setSignId(null);
 
-        navigate('/sign', { replace: true });
+        navigate('/sign', {replace: true});
     };
 
     return (
-        <AuthContext.Provider value={{ token, signId, login, logout, isAuthLoading, isAuthenticated: !!token }}>
+        <AuthContext.Provider value={{token, signId, login, logout, isAuthLoading, isAuthenticated: !!token}}>
             {children}
         </AuthContext.Provider>
     );
