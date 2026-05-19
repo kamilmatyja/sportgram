@@ -5,18 +5,20 @@ import {FriendProvider} from '../api/providers/FriendProvider';
 import {UserResponse} from '../api/responses/UserResponse';
 import {FriendResponse} from '../api/responses/FriendResponse';
 import {useTranslation} from '../context/TranslationContext';
-import {UserIndexQuery} from '../api/queries/UserIndexQuery.ts';
-import {UserFilterQuery} from '../api/queries/UserFilterQuery.ts';
+import type {UserFilterQuery, UserIndexQuery} from '../api/queries/UserIndexQuery';
 import {FriendStatusEnum} from '../enums/FriendStatusEnum';
 import {RoleEnum} from '../enums/RoleEnum';
 import {ColorEnum} from '../enums/ColorEnum';
 import {UserRoleResponse} from '../api/responses/UserRoleResponse';
 import {GenderEnum} from '../enums/GenderEnum';
 import {CountryEnum} from '../enums/CountryEnum';
-import {UserStatusEnum} from "../enums/UserStatusEnum.ts";
-import {UserDisciplineResponse} from "../api/responses/UserDisciplineResponse.ts";
-import {DisciplineEnum} from "../enums/DisciplineEnum.ts";
+import {UserStatusEnum} from '../enums/UserStatusEnum';
+import {UserDisciplineResponse} from '../api/responses/UserDisciplineResponse';
+import {DisciplineEnum} from '../enums/DisciplineEnum';
 import {useCheckPermission} from '../utils/checkPermission';
+import {FriendBody} from '../api/body/FriendBody';
+import {StatusBody} from '../api/body/StatusBody';
+import type {FriendIndexQuery, FriendFilterQuery} from '../api/queries/FriendIndexQuery';
 
 export default function UserProfile() {
     const {link} = useParams<{ link: string }>();
@@ -54,7 +56,23 @@ export default function UserProfile() {
                 const currentUser = await getCurrentUser();
                 setCurrentUser(currentUser);
 
-                const targetUsers = await userProvider.index(new UserIndexQuery(1, 1, 'createdAt:desc', new UserFilterQuery(null, null, null, null, null, null, null, link)));
+                const filterDto: UserFilterQuery = {
+                    firstName: undefined,
+                    lastName: undefined,
+                    gender: undefined,
+                    email: undefined,
+                    country: undefined,
+                    status: undefined,
+                    userIds: undefined,
+                    link: link
+                };
+                const indexDto: UserIndexQuery = {
+                    page: 1,
+                    limit: 1,
+                    sort: 'createdAt:desc',
+                    filter: filterDto
+                };
+                const targetUsers = await userProvider.index(indexDto);
 
                 if (targetUsers.length === 0) {
                     setError(t('userNotFound'));
@@ -66,7 +84,9 @@ export default function UserProfile() {
                 setUser(fullProfileUser);
 
                 if (currentUser && currentUser.id !== profileUser.id) {
-                    const friends = await friendProvider.index(1, 1, [profileUser.id, currentUser.id]);
+                    const friendFilter: FriendFilterQuery = { userIds: [profileUser.id, currentUser.id] };
+                    const friendIndexDto: FriendIndexQuery = { page: 1, limit: 1, filter: friendFilter };
+                    const friends = await friendProvider.index(friendIndexDto);
                     const relation = friends.find((f: FriendResponse) =>
                         (f.senderUserId === currentUser.id && f.receiverUserId === profileUser.id) ||
                         (f.senderUserId === profileUser.id && f.receiverUserId === currentUser.id)
@@ -91,8 +111,10 @@ export default function UserProfile() {
     const handleAddFriend = async () => {
         if (!user || !currentUser) return;
         try {
-            await friendProvider.create(user.id);
-            const friends = await friendProvider.index(1, 1, [user.id, currentUser.id]);
+            await friendProvider.create(new FriendBody(user.id));
+            const friendFilter: FriendFilterQuery = { userIds: [user.id, currentUser.id] };
+            const friendIndexDto: FriendIndexQuery = { page: 1, limit: 1, filter: friendFilter };
+            const friends = await friendProvider.index(friendIndexDto);
             setFriendship(friends[0] || null);
         } catch (e: any) {
             alert(e.error);
@@ -102,7 +124,7 @@ export default function UserProfile() {
     const handleUpdateFriendStatus = async (newStatus: number) => {
         if (!friendship || !user) return;
         try {
-            await friendProvider.updateStatus(friendship.id, newStatus);
+            await friendProvider.updateStatus(friendship.id, new StatusBody(newStatus));
             setFriendship({...friendship, status: newStatus});
         } catch (e: any) {
             alert(e.error);
@@ -115,7 +137,7 @@ export default function UserProfile() {
         if (!user || selectedStatus === null) return;
         setStatusLoading(true);
         try {
-            await userProvider.updateStatus(user.id, selectedStatus);
+            await userProvider.updateStatus(user.id, new StatusBody(selectedStatus));
             setUser({...user, status: selectedStatus});
         } catch (e: any) {
             alert(e.error);

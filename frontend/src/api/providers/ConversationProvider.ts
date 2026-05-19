@@ -5,8 +5,8 @@ import {ConversationResponse} from '../responses/ConversationResponse';
 import {ConversationActivityResponse} from '../responses/ConversationActivityResponse';
 import {ConversationBody} from '../body/ConversationBody';
 import {StatusBody} from '../body/StatusBody';
-import {ConversationIndexQuery} from "../queries/ConversationIndexQuery.ts";
-import {ConversationActivityIndexQuery} from "../queries/ConversationActivityIndexQuery.ts";
+import {ConversationIndexQuery} from '../queries/ConversationIndexQuery';
+import {ConversationActivityIndexQuery} from '../queries/ConversationActivityIndexQuery';
 
 export class ConversationProvider {
     async create(userId: string, dto: ConversationBody): Promise<IdResponse> {

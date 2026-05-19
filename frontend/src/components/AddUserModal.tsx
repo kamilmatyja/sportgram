@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {useTranslation} from '../context/TranslationContext';
-import {UserCreateBody} from '../api/body/UserCreateBody.ts';
+import {UserCreateBody} from '../api/body/UserCreateBody';
 import {GenderEnum} from '../enums/GenderEnum';
 import {CountryEnum} from '../enums/CountryEnum';
 import {RoleEnum} from '../enums/RoleEnum';

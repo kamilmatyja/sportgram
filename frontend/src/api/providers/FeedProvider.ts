@@ -6,7 +6,7 @@ import {FeedBody} from '../body/FeedBody';
 import {FeedCommentBody} from '../body/FeedCommentBody';
 import {FeedReactionBody} from '../body/FeedReactionBody';
 import {StatusBody} from '../body/StatusBody';
-import {FeedIndexQuery} from "../queries/FeedIndexQuery.ts";
+import {FeedIndexQuery} from '../queries/FeedIndexQuery';
 
 export class FeedProvider {
     async create(dto: FeedBody): Promise<IdResponse> {

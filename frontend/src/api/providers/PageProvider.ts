@@ -5,8 +5,8 @@ import {PageResponse} from '../responses/PageResponse';
 import {PageFollowResponse} from '../responses/PageFollowResponse';
 import {PageBody} from '../body/PageBody';
 import {StatusBody} from '../body/StatusBody';
-import {PageIndexQuery} from "../queries/PageIndexQuery.ts";
-import {PageFollowIndexQuery} from "../queries/PageFollowIndexQuery.ts";
+import {PageIndexQuery} from '../queries/PageIndexQuery';
+import {PageFollowIndexQuery} from '../queries/PageFollowIndexQuery';
 
 export class PageProvider {
     async create(dto: PageBody): Promise<IdResponse> {

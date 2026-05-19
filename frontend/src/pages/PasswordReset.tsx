@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {PasswordResetProvider} from '../api/providers/PasswordResetProvider';
-import {PasswordResetBody} from '../api/body/PasswordResetBody.ts';
+import {PasswordResetBody} from '../api/body/PasswordResetBody';
 import {PasswordResetFormView} from '../components/PasswordResetFormView';
 import {PasswordResetVerificationFormView} from '../components/PasswordResetVerificationFormView';
-import {EmailBody} from '../api/body/EmailBody.ts';
-import {SignBody} from '../api/body/SignBody.ts';
+import {EmailBody} from '../api/body/EmailBody';
+import {SignBody} from '../api/body/SignBody';
 import {SignProvider} from '../api/providers/SignProvider';
 import {RegisterProvider} from '../api/providers/RegisterProvider';
 import {createFormHandler} from '../utils/formHandler';

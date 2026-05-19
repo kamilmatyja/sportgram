@@ -3,7 +3,7 @@ import {buildIndexParams} from '../../utils/buildQueryString';
 import {IdResponse} from '../responses/IdResponse';
 import {NotificationResponse} from '../responses/NotificationResponse';
 import {StatusBody} from '../body/StatusBody';
-import {NotificationIndexQuery} from "../queries/NotificationIndexQuery.ts";
+import {NotificationIndexQuery} from '../queries/NotificationIndexQuery';
 
 export class NotificationProvider {
     async updateStatus(id: string, dto: StatusBody): Promise<IdResponse> {

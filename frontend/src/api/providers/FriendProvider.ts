@@ -4,7 +4,7 @@ import {FriendResponse} from '../responses/FriendResponse';
 import {IdResponse} from '../responses/IdResponse';
 import {FriendBody} from '../body/FriendBody';
 import {StatusBody} from '../body/StatusBody';
-import {FriendIndexQuery} from "../queries/FriendIndexQuery.ts";
+import {FriendIndexQuery} from '../queries/FriendIndexQuery';
 
 export class FriendProvider {
     async create(dto: FriendBody): Promise<IdResponse> {

@@ -2,12 +2,12 @@ import React, {useState} from 'react';
 import {useAuth} from '../context/AuthContext';
 import {useNavigate} from 'react-router-dom';
 import {SignProvider} from '../api/providers/SignProvider';
-import {SignBody} from '../api/body/SignBody.ts';
+import {SignBody} from '../api/body/SignBody';
 import {SignFormView} from '../components/SignFormView';
 import {VerificationFormView} from '../components/VerificationFormView';
-import {CodeBody} from '../api/body/CodeBody.ts';
+import {CodeBody} from '../api/body/CodeBody';
 import {RegisterProvider} from '../api/providers/RegisterProvider';
-import {EmailBody} from '../api/body/EmailBody.ts';
+import {EmailBody} from '../api/body/EmailBody';
 import {createFormHandler} from '../utils/formHandler';
 
 export default function Sign() {

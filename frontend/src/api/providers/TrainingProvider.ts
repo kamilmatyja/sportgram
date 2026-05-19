@@ -4,7 +4,7 @@ import {IdResponse} from '../responses/IdResponse';
 import {TrainingResponse} from '../responses/TrainingResponse';
 import {TrainingBody} from '../body/TrainingBody';
 import {StatusBody} from '../body/StatusBody';
-import {TrainingIndexQuery} from "../queries/TrainingIndexQuery.ts";
+import {TrainingIndexQuery} from '../queries/TrainingIndexQuery';
 
 export class TrainingProvider {
     async create(dto: TrainingBody): Promise<IdResponse> {

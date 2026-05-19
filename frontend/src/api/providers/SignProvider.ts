@@ -1,6 +1,6 @@
 import {apiFetch} from '../../utils/api';
-import {SignBody} from '../body/SignBody.ts';
-import {CodeBody} from '../body/CodeBody.ts';
+import {SignBody} from '../body/SignBody';
+import {CodeBody} from '../body/CodeBody';
 import {IdResponse} from '../responses/IdResponse';
 import {TokenResponse} from '../responses/TokenResponse';
 

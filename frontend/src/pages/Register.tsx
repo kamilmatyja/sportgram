@@ -4,11 +4,11 @@ import {RegisterProvider} from '../api/providers/RegisterProvider';
 import {UserProvider} from '../api/providers/UserProvider';
 import {RegisterFormView} from '../components/RegisterFormView';
 import {VerificationFormView} from '../components/VerificationFormView';
-import {RegisterBody} from '../api/body/RegisterBody.ts';
-import {CodeBody} from '../api/body/CodeBody.ts';
-import {EmailBody} from '../api/body/EmailBody.ts';
+import {RegisterBody} from '../api/body/RegisterBody';
+import {CodeBody} from '../api/body/CodeBody';
+import {EmailBody} from '../api/body/EmailBody';
 import {SignProvider} from '../api/providers/SignProvider';
-import {SignBody} from '../api/body/SignBody.ts';
+import {SignBody} from '../api/body/SignBody';
 import {PasswordResetProvider} from '../api/providers/PasswordResetProvider';
 import {createFormHandler} from '../utils/formHandler';
 

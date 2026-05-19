@@ -4,8 +4,8 @@ import {IdResponse} from '../responses/IdResponse';
 import {EntryResponse} from '../responses/EntryResponse';
 import {EntryCountResponse} from '../responses/EntryCountResponse';
 import {EntryBody} from '../body/EntryBody';
-import {EntryIndexQuery} from "../queries/EntryFilterQuery.ts";
-import {EntryCountIndexQuery} from "../queries/EntryCountIndexQuery.ts";
+import {EntryIndexQuery} from '../queries/EntryFilterQuery';
+import {EntryCountIndexQuery} from '../queries/EntryCountIndexQuery';
 
 export class EntryProvider {
     async create(dto: EntryBody): Promise<IdResponse> {

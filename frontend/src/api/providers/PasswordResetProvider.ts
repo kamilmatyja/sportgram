@@ -1,6 +1,6 @@
 import {apiFetch} from '../../utils/api';
-import {EmailBody} from '../body/EmailBody.ts';
-import {PasswordResetBody} from '../body/PasswordResetBody.ts';
+import {EmailBody} from '../body/EmailBody';
+import {PasswordResetBody} from '../body/PasswordResetBody';
 import {IdResponse} from '../responses/IdResponse';
 
 export class PasswordResetProvider {

@@ -6,8 +6,8 @@ import {EventDisciplineDistanceListResponse} from '../responses/EventDisciplineD
 import {EventBody} from '../body/EventBody';
 import {EventResultBody} from '../body/EventResultBody';
 import {StatusBody} from '../body/StatusBody';
-import {EntryIndexQuery} from "../queries/EntryFilterQuery.ts";
-import {EventListIndexQuery} from "../queries/EventListIndexQuery.ts";
+import {EntryIndexQuery} from '../queries/EntryFilterQuery';
+import {EventListIndexQuery} from '../queries/EventListIndexQuery';
 
 export class EventProvider {
     async create(pageId: string, dto: EventBody): Promise<IdResponse> {

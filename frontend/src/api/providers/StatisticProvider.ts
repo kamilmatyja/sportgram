@@ -1,7 +1,7 @@
 import {apiFetch} from '../../utils/api';
 import {buildIndexParams} from '../../utils/buildQueryString';
 import {StatisticResponse} from '../responses/StatisticResponse';
-import {StatisticIndexQuery} from "../queries/StatisticIndexQuery.ts";
+import {StatisticIndexQuery} from '../queries/StatisticIndexQuery';
 
 export class StatisticProvider {
     async indexRecords(dto: StatisticIndexQuery): Promise<StatisticResponse[]> {

@@ -1,12 +1,12 @@
 import {apiFetch} from '../../utils/api';
 import {buildIndexParams, buildQueryString} from '../../utils/buildQueryString';
-import {RegisterBody} from '../body/RegisterBody.ts';
-import {UserIndexQuery} from '../queries/UserIndexQuery.ts';
+import {RegisterBody} from '../body/RegisterBody';
+import {UserIndexQuery} from '../queries/UserIndexQuery';
 import {IdResponse} from '../responses/IdResponse';
 import {UserResponse} from '../responses/UserResponse';
-import {UserCreateBody} from "../body/UserCreateBody.ts";
-import {UserUpdateBody} from '../body/UserUpdateBody.ts';
-import {StatusBody} from '../body/StatusBody.ts';
+import {UserCreateBody} from '../body/UserCreateBody';
+import {UserUpdateBody} from '../body/UserUpdateBody';
+import {StatusBody} from '../body/StatusBody';
 
 export class UserProvider {
     async createNano(dto: RegisterBody): Promise<IdResponse> {

@@ -1,6 +1,6 @@
 import {apiFetch} from '../../utils/api';
-import {EmailBody} from '../body/EmailBody.ts';
-import {CodeBody} from '../body/CodeBody.ts';
+import {EmailBody} from '../body/EmailBody';
+import {CodeBody} from '../body/CodeBody';
 import {IdResponse} from '../responses/IdResponse';
 
 export class RegisterProvider {

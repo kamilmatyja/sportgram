@@ -3,7 +3,7 @@ import {buildIndexParams} from '../../utils/buildQueryString';
 import {IdResponse} from '../responses/IdResponse';
 import {PushSubscriptionResponse} from '../responses/PushSubscriptionResponse';
 import {PushSubscriptionBody} from '../body/PushSubscriptionBody';
-import {PushSubscriptionIndexQuery} from "../queries/PushSubscriptionIndexQuery.ts";
+import {PushSubscriptionIndexQuery} from '../queries/PushSubscriptionIndexQuery';
 
 export class PushSubscriptionProvider {
     async create(dto: PushSubscriptionBody): Promise<IdResponse> {

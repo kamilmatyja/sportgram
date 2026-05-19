@@ -4,7 +4,7 @@ import {StoryResponse} from '../responses/StoryResponse';
 import {IdResponse} from '../responses/IdResponse';
 import {StoryBody} from '../body/StoryBody';
 import {StatusBody} from '../body/StatusBody';
-import {StoryIndexQuery} from "../queries/StoryIndexQuery.ts";
+import {StoryIndexQuery} from '../queries/StoryIndexQuery';
 
 export class StoryProvider {
     async create(dto: StoryBody): Promise<IdResponse> {

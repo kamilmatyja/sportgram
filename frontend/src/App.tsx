@@ -11,7 +11,7 @@ import UserSettings from './pages/UserSettings';
 import UserFeeds from './pages/UserFeeds';
 import UserStories from './pages/UserStories';
 import UserFriends from './pages/UserFriends';
-import UserGoals from './pages/UserGoals.tsx';
+import UserGoals from './pages/UserGoals';
 import UserPages from './pages/UserPages';
 import UserEvents from './pages/UserEvents';
 import UserTrainings from './pages/UserTrainings';

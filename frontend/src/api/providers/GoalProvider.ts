@@ -4,7 +4,7 @@ import {IdResponse} from '../responses/IdResponse';
 import {GoalResponse} from '../responses/GoalResponse';
 import {GoalBody} from '../body/GoalBody';
 import {StatusBody} from '../body/StatusBody';
-import {GoalIndexQuery} from "../queries/GoalIndexQuery.ts";
+import {GoalIndexQuery} from '../queries/GoalIndexQuery';
 
 export class GoalProvider {
     async create(dto: GoalBody): Promise<IdResponse> {
