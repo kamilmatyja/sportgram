@@ -2,12 +2,12 @@ import React, {useState} from 'react';
 import {useAuth} from '../context/AuthContext';
 import {useNavigate} from 'react-router-dom';
 import {SignProvider} from '../api/providers/SignProvider';
-import {SignDto} from '../api/dto/SignDto';
+import {SignBody} from '../api/body/SignBody.ts';
 import {SignFormView} from '../components/SignFormView';
 import {VerificationFormView} from '../components/VerificationFormView';
-import {CodeDto} from '../api/dto/CodeDto';
+import {CodeBody} from '../api/body/CodeBody.ts';
 import {RegisterProvider} from '../api/providers/RegisterProvider';
-import {EmailDto} from '../api/dto/EmailDto';
+import {EmailBody} from '../api/body/EmailBody.ts';
 import {createFormHandler} from '../utils/formHandler';
 
 export default function Sign() {
@@ -33,7 +33,7 @@ export default function Sign() {
         setGlobalError('');
         setFieldErrors({});
 
-        const dto = new SignDto(signFormData.email, signFormData.password, signFormData.rememberMe);
+        const dto = new SignBody(signFormData.email, signFormData.password, signFormData.rememberMe);
         try {
             const res = await signProvider.sign(dto);
 
@@ -47,7 +47,7 @@ export default function Sign() {
                 setFieldErrors(err.errors);
             } else if (err.error === 'User account is not confirmed.') {
                 try {
-                    const emailDto = new EmailDto(signFormData.email);
+                    const emailDto = new EmailBody(signFormData.email);
                     const res = await registerProvider.register(emailDto);
 
                     sessionStorage.setItem('step', '2');
@@ -77,7 +77,7 @@ export default function Sign() {
 
         if (!signId) return;
 
-        const dto = new CodeDto(codeFormData.code);
+        const dto = new CodeBody(codeFormData.code);
         try {
             const res = await signProvider.confirm(signId, dto);
 

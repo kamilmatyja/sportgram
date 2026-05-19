@@ -1,17 +1,17 @@
 import {apiFetch} from '../../utils/api';
-import {EmailDto} from '../dto/EmailDto';
-import {CodeDto} from '../dto/CodeDto';
+import {EmailBody} from '../body/EmailBody.ts';
+import {CodeBody} from '../body/CodeBody.ts';
 import {IdResponse} from '../responses/IdResponse';
 
 export class RegisterProvider {
-    async register(dto: EmailDto): Promise<IdResponse> {
+    async register(dto: EmailBody): Promise<IdResponse> {
         return await apiFetch('/api/registers', {
             method: 'POST',
             body: JSON.stringify(dto)
         });
     }
 
-    async confirm(id: string, dto: CodeDto): Promise<IdResponse> {
+    async confirm(id: string, dto: CodeBody): Promise<IdResponse> {
         return await apiFetch(`/api/registers/${id}/confirm`, {
             method: 'PATCH',
             body: JSON.stringify(dto)

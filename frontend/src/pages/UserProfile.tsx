@@ -5,8 +5,8 @@ import {FriendProvider} from '../api/providers/FriendProvider';
 import {UserResponse} from '../api/responses/UserResponse';
 import {FriendResponse} from '../api/responses/FriendResponse';
 import {useTranslation} from '../context/TranslationContext';
-import {UserIndexDto} from '../api/dto/UserIndexDto';
-import {UserFilterDto} from '../api/dto/UserFilterDto';
+import {UserIndexQuery} from '../api/queries/UserIndexQuery.ts';
+import {UserFilterQuery} from '../api/queries/UserFilterQuery.ts';
 import {FriendStatusEnum} from '../enums/FriendStatusEnum';
 import {RoleEnum} from '../enums/RoleEnum';
 import {ColorEnum} from '../enums/ColorEnum';
@@ -54,7 +54,7 @@ export default function UserProfile() {
                 const currentUser = await getCurrentUser();
                 setCurrentUser(currentUser);
 
-                const targetUsers = await userProvider.index(new UserIndexDto(1, 1, 'createdAt:desc', new UserFilterDto(null, null, null, null, null, null, null, link)));
+                const targetUsers = await userProvider.index(new UserIndexQuery(1, 1, 'createdAt:desc', new UserFilterQuery(null, null, null, null, null, null, null, link)));
 
                 if (targetUsers.length === 0) {
                     setError(t('userNotFound'));

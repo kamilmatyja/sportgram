@@ -1,4 +1,4 @@
-export class SignDto {
+export class SignBody {
     public rememberMe: boolean;
 
     constructor(

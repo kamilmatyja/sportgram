@@ -1,4 +1,4 @@
-export class RegisterDto {
+export class RegisterBody {
     public gender: number;
     public phone: number;
     public country: number;

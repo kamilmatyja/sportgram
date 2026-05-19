@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {useTranslation} from '../context/TranslationContext';
-import {UserCreateDto} from '../api/dto/UserCreateDto';
+import {UserCreateBody} from '../api/body/UserCreateBody.ts';
 import {GenderEnum} from '../enums/GenderEnum';
 import {CountryEnum} from '../enums/CountryEnum';
 import {RoleEnum} from '../enums/RoleEnum';
@@ -12,7 +12,7 @@ import {createFormHandler} from '../utils/formHandler';
 interface AddUserModalProps {
     show: boolean;
     onClose: () => void;
-    onSubmit: (dto: UserCreateDto) => Promise<void>;
+    onSubmit: (dto: UserCreateBody) => Promise<void>;
 }
 
 export const AddUserModal: React.FC<AddUserModalProps> = ({show, onClose, onSubmit}) => {
@@ -46,7 +46,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({show, onClose, onSubm
             return;
         }
 
-        const dto = new UserCreateDto(
+        const dto = new UserCreateBody(
             formData.birthAt,
             formData.firstName,
             formData.lastName,

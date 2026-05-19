@@ -1,4 +1,4 @@
-export class CodeDto {
+export class CodeBody {
     public code: number;
 
     constructor(code: string | number) {

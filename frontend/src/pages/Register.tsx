@@ -4,11 +4,11 @@ import {RegisterProvider} from '../api/providers/RegisterProvider';
 import {UserProvider} from '../api/providers/UserProvider';
 import {RegisterFormView} from '../components/RegisterFormView';
 import {VerificationFormView} from '../components/VerificationFormView';
-import {RegisterDto} from '../api/dto/RegisterDto';
-import {CodeDto} from '../api/dto/CodeDto';
-import {EmailDto} from '../api/dto/EmailDto';
+import {RegisterBody} from '../api/body/RegisterBody.ts';
+import {CodeBody} from '../api/body/CodeBody.ts';
+import {EmailBody} from '../api/body/EmailBody.ts';
 import {SignProvider} from '../api/providers/SignProvider';
-import {SignDto} from '../api/dto/SignDto';
+import {SignBody} from '../api/body/SignBody.ts';
 import {PasswordResetProvider} from '../api/providers/PasswordResetProvider';
 import {createFormHandler} from '../utils/formHandler';
 
@@ -39,7 +39,7 @@ export default function Register() {
         setGlobalError('');
         setFieldErrors({});
 
-        const dto = new RegisterDto(
+        const dto = new RegisterBody(
             registerFormData.birthAt,
             registerFormData.firstName,
             registerFormData.lastName,
@@ -54,7 +54,7 @@ export default function Register() {
         try {
             await userProviders.createNano(dto);
 
-            const emailDto = new EmailDto(registerFormData.email);
+            const emailDto = new EmailBody(registerFormData.email);
             const res = await registerProvider.register(emailDto);
 
             sessionStorage.setItem('step', '2');
@@ -77,7 +77,7 @@ export default function Register() {
 
         if (!registerId) return;
 
-        const dto = new CodeDto(codeFormData.code);
+        const dto = new CodeBody(codeFormData.code);
         try {
             await registerProvider.confirm(registerId, dto);
 
@@ -85,7 +85,7 @@ export default function Register() {
             const password = sessionStorage.getItem('password') || '';
 
             if (password) {
-                const signDto = new SignDto(email, password, false);
+                const signDto = new SignBody(email, password, false);
                 const res = await signProvider.sign(signDto);
 
                 sessionStorage.setItem('step', '2');
@@ -94,7 +94,7 @@ export default function Register() {
 
                 navigate('/sign');
             } else {
-                const emailDto = new EmailDto(email);
+                const emailDto = new EmailBody(email);
                 const res = await passwordResetProvider.passwordReset(emailDto);
 
                 sessionStorage.setItem('step', '2');

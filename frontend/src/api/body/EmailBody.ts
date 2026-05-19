@@ -1,4 +1,4 @@
-export class EmailDto {
+export class EmailBody {
     constructor(public email: string) {
     }
 }

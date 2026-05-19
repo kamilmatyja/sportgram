@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {PasswordResetProvider} from '../api/providers/PasswordResetProvider';
-import {PasswordResetDto} from '../api/dto/PasswordResetDto';
+import {PasswordResetBody} from '../api/body/PasswordResetBody.ts';
 import {PasswordResetFormView} from '../components/PasswordResetFormView';
 import {PasswordResetVerificationFormView} from '../components/PasswordResetVerificationFormView';
-import {EmailDto} from '../api/dto/EmailDto';
-import {SignDto} from '../api/dto/SignDto';
+import {EmailBody} from '../api/body/EmailBody.ts';
+import {SignBody} from '../api/body/SignBody.ts';
 import {SignProvider} from '../api/providers/SignProvider';
 import {RegisterProvider} from '../api/providers/RegisterProvider';
 import {createFormHandler} from '../utils/formHandler';
@@ -33,7 +33,7 @@ export default function PasswordReset() {
         setGlobalError('');
         setFieldErrors({});
 
-        const dto = new EmailDto(passwordResetFormData.email);
+        const dto = new EmailBody(passwordResetFormData.email);
         try {
             const res = await passwordResetProvider.passwordReset(dto);
 
@@ -73,12 +73,12 @@ export default function PasswordReset() {
 
         if (!passwordResetId) return;
 
-        const dto = new PasswordResetDto(codeFormData.code, codeFormData.password);
+        const dto = new PasswordResetBody(codeFormData.code, codeFormData.password);
         try {
             await passwordResetProvider.confirm(passwordResetId, dto);
 
             const email = sessionStorage.getItem('email') || '';
-            const signDto = new SignDto(email, codeFormData.password, false);
+            const signDto = new SignBody(email, codeFormData.password, false);
             const res = await signProvider.sign(signDto);
 
             sessionStorage.setItem('step', '2');

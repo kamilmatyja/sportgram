@@ -1,11 +1,11 @@
-import {UserFilterDto} from './UserFilterDto';
+import {UserFilterQuery} from './UserFilterQuery.ts';
 
-export class UserIndexDto {
+export class UserIndexQuery {
     constructor(
         public page: number = 1,
         public limit: number = 10,
         public sort: string = 'createdAt:desc',
-        public filter: UserFilterDto | null = null
+        public filter: UserFilterQuery | null = null
     ) {
     }
 }

@@ -1,4 +1,4 @@
-export class UserFilterDto {
+export class UserFilterQuery {
     public firstName?: string;
     public lastName?: string;
     public gender?: number;

@@ -1,18 +1,18 @@
 import {apiFetch} from '../../utils/api';
-import {SignDto} from '../dto/SignDto';
-import {CodeDto} from '../dto/CodeDto';
+import {SignBody} from '../body/SignBody.ts';
+import {CodeBody} from '../body/CodeBody.ts';
 import {IdResponse} from '../responses/IdResponse';
 import {TokenResponse} from '../responses/TokenResponse';
 
 export class SignProvider {
-    async sign(dto: SignDto): Promise<IdResponse> {
+    async sign(dto: SignBody): Promise<IdResponse> {
         return await apiFetch('/api/signs', {
             method: 'POST',
             body: JSON.stringify(dto)
         });
     }
 
-    async confirm(id: string, dto: CodeDto): Promise<TokenResponse> {
+    async confirm(id: string, dto: CodeBody): Promise<TokenResponse> {
         return await apiFetch(`/api/signs/${id}/confirm`, {
             method: 'PATCH',
             body: JSON.stringify(dto)

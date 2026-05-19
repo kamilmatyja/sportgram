@@ -1,4 +1,4 @@
-export class PasswordResetDto {
+export class PasswordResetBody {
     public code: number;
 
     constructor(

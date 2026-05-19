@@ -1,17 +1,17 @@
 import {apiFetch} from '../../utils/api';
 import {buildIndexParams, buildQueryString} from '../../utils/buildQueryString';
-import {RegisterDto} from '../dto/RegisterDto';
-import {UserIndexDto} from '../dto/UserIndexDto';
+import {RegisterBody} from '../body/RegisterBody.ts';
+import {UserIndexQuery} from '../queries/UserIndexQuery.ts';
 import {IdResponse} from '../responses/IdResponse';
 import {UserResponse} from '../responses/UserResponse';
-import {UserCreateDto} from "../dto/UserCreateDto";
+import {UserCreateBody} from "../body/UserCreateBody.ts";
 
 export class UserProvider {
-    async createNano(dto: RegisterDto): Promise<IdResponse> {
+    async createNano(dto: RegisterBody): Promise<IdResponse> {
         return await apiFetch('/api/user-nano', {method: 'POST', body: JSON.stringify(dto)});
     }
 
-    async create(dto: UserCreateDto): Promise<IdResponse> {
+    async create(dto: UserCreateBody): Promise<IdResponse> {
         return await apiFetch('/api/users', {method: 'POST', body: JSON.stringify(dto)});
     }
 
@@ -27,7 +27,7 @@ export class UserProvider {
         return await apiFetch(`/api/users/${id}`, {method: 'DELETE'});
     }
 
-    async index(dto: UserIndexDto): Promise<UserResponse[]> {
+    async index(dto: UserIndexQuery): Promise<UserResponse[]> {
         const queryString = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/users?${queryString}`, {method: 'GET'});
     }

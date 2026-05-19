@@ -1,4 +1,4 @@
-export class UserCreateDto {
+export class UserCreateBody {
     constructor(
         public birthAt: string,
         public firstName: string,

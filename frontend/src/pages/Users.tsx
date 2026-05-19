@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import {UserProvider} from '../api/providers/UserProvider';
-import {UserIndexDto} from '../api/dto/UserIndexDto';
-import {UserFilterDto} from '../api/dto/UserFilterDto';
+import {UserIndexQuery} from '../api/queries/UserIndexQuery.ts';
+import {UserFilterQuery} from '../api/queries/UserFilterQuery.ts';
 import UsersView from '../components/UsersView';
 import {UserResponse} from '../api/responses/UserResponse';
 import {RoleEnum} from '../enums/RoleEnum';
 import {useCheckPermission} from '../utils/checkPermission';
 import {AddUserModal} from '../components/AddUserModal';
-import {UserCreateDto} from '../api/dto/UserCreateDto';
+import {UserCreateBody} from '../api/body/UserCreateBody.ts';
 
 export default function Users() {
     const {check: checkPermission} = useCheckPermission();
@@ -44,7 +44,7 @@ export default function Users() {
         setLoading(true);
         setError(null);
         try {
-            const filterDto = new UserFilterDto(
+            const filterDto = new UserFilterQuery(
                 filters.firstName || null,
                 filters.lastName || null,
                 filters.gender ? Number(filters.gender) : null,
@@ -55,7 +55,7 @@ export default function Users() {
                 filters.link || null
             );
 
-            const indexDto = new UserIndexDto(page, limit, sort, filterDto);
+            const indexDto = new UserIndexQuery(page, limit, sort, filterDto);
 
             const data = await userProvider.index(indexDto);
             setUsers(data);
@@ -92,7 +92,7 @@ export default function Users() {
         setPage(prev => prev + 1);
     };
 
-    const handleAddUserSubmit = async (dto: UserCreateDto) => {
+    const handleAddUserSubmit = async (dto: UserCreateBody) => {
         await userProvider.create(dto);
         fetchUsers();
     };
