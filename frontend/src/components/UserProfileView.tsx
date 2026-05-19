@@ -74,63 +74,68 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                             <p className="text-muted mb-2">@{user.link}</p>
                             <p className="mb-0">{user.bio}</p>
                             <ul className="list-unstyled mt-2 mb-2">
-                                {user.email && (
-                                    <li><strong>{t('email')}:</strong> {user.email}</li>
-                                )}
-                                {user.phone && (
-                                    <li><strong>{t('phone')}:</strong> {user.phone}</li>
-                                )}
-                                {user.country && (
-                                    <li>
-                                        <strong>{t('country')}:</strong> {CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}
-                                    </li>
-                                )}
-                                {user.gender && (
-                                    <li>
-                                        <strong>{t('gender')}:</strong> {GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}
-                                    </li>
-                                )}
-                                {user.birthAt && (
-                                    <li><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
-                                )}
-                                <li className="d-flex align-items-center flex-wrap gap-2">
-                                    <strong>{t('userStatus')}:</strong>
-                                    <span>
-                                        {UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}
-                                        {isAdmin && (
-                                        ', ' + t('changeStatus') + ': '
+                                {!isMyProfile && friendship?.status !== FriendStatusEnum.BLOCKED && (
+                                    <>
+                                        {user.email && (
+                                            <li><strong>{t('email')}:</strong> {user.email}</li>
                                         )}
-                                    </span>
-                                    {isAdmin && !isMyProfile && UserStatusEnum.getOptions(t)
-                                        .filter(opt => opt.value !== user.status)
-                                        .map(opt => (
-                                            <button
-                                                key={opt.value}
-                                                className="btn btn-xs btn-outline-warning ms-2 py-0 px-2"
-                                                onClick={() => handleChangeUserStatus(opt.value)}
-                                                disabled={statusLoading}
-                                            >
-                                                {statusLoading ? t('loading') : opt.label}
-                                            </button>
-                                        ))
-                                    }
-                                </li>
-                                <li className="d-flex align-items-center flex-wrap gap-2">
-                                    <strong>{t('role')}:</strong>
-                                    {user.roles && user.roles.length > 0 && user.roles.map((role: any) => (
-                                        <span key={role.id} className="badge profile-theme-bg">
-                                        {RoleEnum.getOptions(t).find(opt => opt.value === role.role)?.label || role.role}
-                                    </span>
-                                    ))}
-                                </li>
-                                <li className="d-flex align-items-center flex-wrap gap-2">
-                                    <strong>{t('discipline')}:</strong>
-                                    {user.disciplines && user.disciplines.length > 0 && user.disciplines.map((disc: any) => (
-                                        <span key={disc.id} className="badge bg-light text-dark border border-1 profile-theme-border">
-                                        {DisciplineEnum.getOptions(t).find(opt => opt.value === disc.discipline)?.label || disc.discipline}
-                                    </span>
-                                    ))}
-                                </li>
+                                        {user.phone && (
+                                            <li><strong>{t('phone')}:</strong> {user.phone}</li>
+                                        )}
+                                        {user.country && (
+                                            <li>
+                                                <strong>{t('country')}:</strong> {CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}
+                                            </li>
+                                        )}
+                                        {user.gender && (
+                                            <li>
+                                                <strong>{t('gender')}:</strong> {GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}
+                                            </li>
+                                        )}
+                                        {user.birthAt && (
+                                            <li><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
+                                        )}
+                                        <li className="d-flex align-items-center flex-wrap gap-2">
+                                            <strong>{t('userStatus')}:</strong>
+                                            <span>
+                                                {UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}
+                                                {isAdmin && (
+                                                    ', ' + t('changeStatus') + ': '
+                                                )}
+                                            </span>
+                                            {isAdmin && !isMyProfile && UserStatusEnum.getNanoOptions(t)
+                                                .filter(opt => opt.value !== user.status)
+                                                .map(opt => (
+                                                    <button
+                                                        key={opt.value}
+                                                        className="btn btn-xs btn-outline-warning ms-2 py-0 px-2"
+                                                        onClick={() => handleChangeUserStatus(opt.value)}
+                                                        disabled={statusLoading}
+                                                    >
+                                                        {statusLoading ? t('loading') : opt.label}
+                                                    </button>
+                                                ))
+                                            }
+                                        </li>
+                                        <li className="d-flex align-items-center flex-wrap gap-2">
+                                            <strong>{t('role')}:</strong>
+                                            {user.roles && user.roles.length > 0 && user.roles.map((role: any) => (
+                                                <span key={role.id} className="badge profile-theme-bg">
+                                                {RoleEnum.getOptions(t).find(opt => opt.value === role.role)?.label || role.role}
+                                            </span>
+                                            ))}
+                                        </li>
+                                        <li className="d-flex align-items-center flex-wrap gap-2">
+                                            <strong>{t('discipline')}:</strong>
+                                            {user.disciplines && user.disciplines.length > 0 && user.disciplines.map((disc: any) => (
+                                                <span key={disc.id}
+                                                      className="badge bg-light text-dark border border-1 profile-theme-border">
+                                                {DisciplineEnum.getOptions(t).find(opt => opt.value === disc.discipline)?.label || disc.discipline}
+                                            </span>
+                                            ))}
+                                        </li>
+                                    </>
+                                )}
                                 {!isMyProfile && !friendship && (
                                     <li className="d-flex align-items-center flex-wrap gap-2">
                                         <strong>{t('friendshipStatus')}:</strong>
@@ -152,7 +157,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                         <>
                                             {(currentUser && (friendship.senderUserId === currentUser.id || friendship.receiverUserId === currentUser.id)) && (
                                                 <>
-                                                    {FriendStatusEnum.getOptions(t).map(opt => (
+                                                    {FriendStatusEnum.getNanoOptions(t).map(opt => (
                                                         opt.value !== friendship.status && (
                                                             <button
                                                                 key={opt.value}
@@ -175,45 +180,49 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             </div>
 
             <div className="d-flex flex-wrap gap-2 mb-3 overflow-x-auto">
-                {isMyProfile && (
-                    <a href={`/users/${user.link}/settings`} className="btn btn-outline-primary">
-                        <i className="bi bi-gear me-1"></i> {t('settings')}
-                    </a>
+                {!isMyProfile && friendship?.status !== FriendStatusEnum.BLOCKED && (
+                    <>
+                        {isMyProfile && (
+                            <a href={`/users/${user.link}/settings`} className="btn btn-outline-primary">
+                                <i className="bi bi-gear me-1"></i> {t('settings')}
+                            </a>
+                        )}
+                        <a href={`/users/${user.link}/feeds`} className="btn btn-outline-primary">
+                            <i className="bi bi-list-ul me-1"></i> {t('feeds')}
+                        </a>
+                        <a href={`/users/${user.link}/stories`} className="btn btn-outline-primary">
+                            <i className="bi bi-collection-play me-1"></i> {t('stories')}
+                        </a>
+                        <a href={`/users/${user.link}/friends`} className="btn btn-outline-primary">
+                            <i className="bi bi-people me-1"></i> {t('friends')}
+                        </a>
+                        <a href={`/users/${user.link}/goals`} className="btn btn-outline-primary">
+                            <i className="bi bi-bullseye me-1"></i> {t('goals')}
+                        </a>
+                        <a href={`/users/${user.link}/pages`} className="btn btn-outline-primary">
+                            <i className="bi bi-file-earmark-text me-1"></i> {t('pages')}
+                        </a>
+                        <a href={`/users/${user.link}/events`} className="btn btn-outline-primary">
+                            <i className="bi bi-calendar-event me-1"></i> {t('events')}
+                        </a>
+                        <a href={`/users/${user.link}/trainings`} className="btn btn-outline-primary">
+                            <i className="bi bi-bar-chart-steps me-1"></i> {t('trainings')}
+                        </a>
+                        {isMyProfile && (
+                            <a href={`/users/${user.link}/notifications`} className="btn btn-outline-primary">
+                                <i className="bi bi-bell me-1"></i> {t('notifications')}
+                            </a>
+                        )}
+                        {isMyProfile && (
+                            <a href={`/users/${user.link}/push-subscriptions`} className="btn btn-outline-primary">
+                                <i className="bi bi-broadcast-pin me-1"></i> {t('pushSubscriptions')}
+                            </a>
+                        )}
+                        <a href={`/users/${user.link}/conversations`} className="btn btn-outline-primary">
+                            <i className="bi bi-chat-dots me-1"></i> {t('conversations')}
+                        </a>
+                    </>
                 )}
-                <a href={`/users/${user.link}/feeds`} className="btn btn-outline-primary">
-                    <i className="bi bi-list-ul me-1"></i> {t('feeds')}
-                </a>
-                <a href={`/users/${user.link}/stories`} className="btn btn-outline-primary">
-                    <i className="bi bi-collection-play me-1"></i> {t('stories')}
-                </a>
-                <a href={`/users/${user.link}/friends`} className="btn btn-outline-primary">
-                    <i className="bi bi-people me-1"></i> {t('friends')}
-                </a>
-                <a href={`/users/${user.link}/goals`} className="btn btn-outline-primary">
-                    <i className="bi bi-bullseye me-1"></i> {t('goals')}
-                </a>
-                <a href={`/users/${user.link}/pages`} className="btn btn-outline-primary">
-                    <i className="bi bi-file-earmark-text me-1"></i> {t('pages')}
-                </a>
-                <a href={`/users/${user.link}/events`} className="btn btn-outline-primary">
-                    <i className="bi bi-calendar-event me-1"></i> {t('events')}
-                </a>
-                <a href={`/users/${user.link}/trainings`} className="btn btn-outline-primary">
-                    <i className="bi bi-bar-chart-steps me-1"></i> {t('trainings')}
-                </a>
-                {isMyProfile && (
-                    <a href={`/users/${user.link}/notifications`} className="btn btn-outline-primary">
-                        <i className="bi bi-bell me-1"></i> {t('notifications')}
-                    </a>
-                )}
-                {isMyProfile && (
-                    <a href={`/users/${user.link}/push-subscriptions`} className="btn btn-outline-primary">
-                        <i className="bi bi-broadcast-pin me-1"></i> {t('pushSubscriptions')}
-                    </a>
-                )}
-                <a href={`/users/${user.link}/conversations`} className="btn btn-outline-primary">
-                    <i className="bi bi-chat-dots me-1"></i> {t('conversations')}
-                </a>
             </div>
         </div>
     );

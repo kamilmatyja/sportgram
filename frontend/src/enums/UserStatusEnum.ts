@@ -13,4 +13,17 @@ export namespace UserStatusEnum {
                 label: t(`userStatuses.${key.toLowerCase()}`)
             }));
     };
+
+    export const getNanoOptions = (
+        t: (key: string) => string
+    ): { value: number; label: string }[] => {
+        return Object.entries(UserStatusEnum)
+            .filter(([key, value]) =>
+                typeof value === 'number' && key !== 'PENDING'
+            )
+            .map(([key, value]) => ({
+                value: value as number,
+                label: t(`userStatuses.${key.toLowerCase()}`)
+            }));
+    };
 }
