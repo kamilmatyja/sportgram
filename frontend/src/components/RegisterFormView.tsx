@@ -3,21 +3,10 @@ import {useTranslation} from '../context/TranslationContext';
 import {GenderEnum} from '../enums/GenderEnum';
 import {CountryEnum} from '../enums/CountryEnum';
 import {RoleEnum} from '../enums/RoleEnum';
-
-interface RegisterFormData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    phone: string | number;
-    birthAt: string;
-    gender: number | string;
-    country: number | string;
-    roles: (number | string)[];
-}
+import {RegisterBody} from '../api/body/RegisterBody';
 
 interface RegisterFormViewProps {
-    formData: RegisterFormData;
+    formData: Partial<RegisterBody>;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     loading: boolean;
@@ -126,10 +115,14 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                 </div>
                                 <div className="mb-3">
                                     <label className="form-label">{t('role')}</label>
-                                    <select name="roles"
-                                            className={`form-select ${fieldErrors.roles ? 'is-invalid' : ''}`}
-                                            value={formData.roles as string[]} onChange={handleChange} required
-                                            multiple>
+                                    <select
+                                        name="roles"
+                                        className={`form-select ${fieldErrors.roles ? 'is-invalid' : ''}`}
+                                        value={formData.roles ? formData.roles.map(String) : []}
+                                        onChange={handleChange}
+                                        required
+                                        multiple
+                                    >
                                         {roleOptions.map((opt: any) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}

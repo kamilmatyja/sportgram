@@ -6,19 +6,10 @@ import {PaginationEnum} from '../enums/PaginationEnum';
 import {formatDate} from '../utils/dateFormat';
 import {UserResponse} from '../api/responses/UserResponse';
 import {useTranslation} from '../context/TranslationContext';
-
-export interface UserFilters {
-    firstName: string;
-    lastName: string;
-    gender: string;
-    email: string;
-    country: string;
-    status: string;
-    link: string;
-}
+import {UserFilterQuery} from '../api/queries/UserFilterQuery';
 
 interface UsersViewProps {
-    filters: UserFilters;
+    filters: UserFilterQuery;
     onFilterChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     sort: string;
     onSortChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;

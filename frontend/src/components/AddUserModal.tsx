@@ -6,6 +6,7 @@ import {RoleEnum} from '../enums/RoleEnum';
 import {LanguageEnum} from '../enums/LanguageEnum';
 import {ThemeEnum} from '../enums/ThemeEnum';
 import {ColorEnum} from '../enums/ColorEnum';
+import {UserCreateBody} from '../api/body/UserCreateBody';
 
 interface AddUserModalProps {
     show: boolean;
@@ -13,7 +14,7 @@ interface AddUserModalProps {
     loading: boolean;
     globalError: string;
     fieldErrors: Record<string, string | string[]>;
-    formData: any;
+    formData: Partial<UserCreateBody>;
     handleChange: (e: React.ChangeEvent<any>) => void;
     handleSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
 }

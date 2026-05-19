@@ -1,12 +1,9 @@
 import React from 'react';
 import {useTranslation} from '../context/TranslationContext';
-
-interface VerificationFormData {
-    code: string | number;
-}
+import {CodeBody} from '../api/body/CodeBody';
 
 interface VerificationFormViewProps {
-    formData: VerificationFormData;
+    formData: Partial<CodeBody>;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     loading: boolean;

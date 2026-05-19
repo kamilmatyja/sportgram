@@ -1,12 +1,9 @@
 import React from 'react';
 import {useTranslation} from '../context/TranslationContext';
-
-interface PasswordResetFormData {
-    email: string;
-}
+import {EmailBody} from '../api/body/EmailBody';
 
 interface PasswordResetFormViewProps {
-    formData: PasswordResetFormData;
+    formData: Partial<EmailBody>;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     loading: boolean;

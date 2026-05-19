@@ -1,14 +1,9 @@
 import React from 'react';
 import {useTranslation} from '../context/TranslationContext';
-
-export interface SignFormData {
-    email: string;
-    password: string;
-    rememberMe: boolean;
-}
+import {SignBody} from '../api/body/SignBody';
 
 interface SignFormViewProps {
-    formData: SignFormData;
+    formData: Partial<SignBody>;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     loading: boolean;
