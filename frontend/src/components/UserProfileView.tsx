@@ -18,13 +18,9 @@ interface UserProfileViewProps {
     loading: boolean;
     error: string | null;
     statusLoading: boolean;
-    selectedStatus: number | null;
-    setSelectedStatus: (status: number) => void;
-    selectedFriendStatus: number | null;
-    setSelectedFriendStatus: (status: number) => void;
     handleAddFriend: () => void;
     handleUpdateFriendStatus: (status: number) => void;
-    handleChangeUserStatus: () => void;
+    handleChangeUserStatus: (status: number) => void;
     isMyProfile: boolean;
     isAdmin: boolean;
 }
@@ -36,10 +32,6 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                                                     loading,
                                                                     error,
                                                                     statusLoading,
-                                                                    selectedStatus,
-                                                                    setSelectedStatus,
-                                                                    selectedFriendStatus,
-                                                                    setSelectedFriendStatus,
                                                                     handleAddFriend,
                                                                     handleUpdateFriendStatus,
                                                                     handleChangeUserStatus,
@@ -85,6 +77,9 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                 {user.email && (
                                     <li><strong>{t('email')}:</strong> {user.email}</li>
                                 )}
+                                {user.phone && (
+                                    <li><strong>{t('phone')}:</strong> {user.phone}</li>
+                                )}
                                 {user.country && (
                                     <li>
                                         <strong>{t('country')}:</strong> {CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}
@@ -98,90 +93,82 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                 {user.birthAt && (
                                     <li><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
                                 )}
-                                <li>
-                                    <strong>{t('status')}:</strong> {UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}
+                                <li className="d-flex align-items-center flex-wrap gap-2">
+                                    <strong>{t('userStatus')}:</strong>
+                                    <span>
+                                        {UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}
+                                        {isAdmin && (
+                                        ', ' + t('changeStatus') + ': '
+                                        )}
+                                    </span>
+                                    {isAdmin && !isMyProfile && UserStatusEnum.getOptions(t)
+                                        .filter(opt => opt.value !== user.status)
+                                        .map(opt => (
+                                            <button
+                                                key={opt.value}
+                                                className="btn btn-xs btn-outline-warning ms-2 py-0 px-2"
+                                                onClick={() => handleChangeUserStatus(opt.value)}
+                                                disabled={statusLoading}
+                                            >
+                                                {statusLoading ? t('loading') : opt.label}
+                                            </button>
+                                        ))
+                                    }
                                 </li>
-                            </ul>
-                            <div className="mt-2 d-flex flex-wrap gap-2">
-                                {user.roles && user.roles.length > 0 && user.roles.map((role: any) => (
-                                    <span key={role.id} className="badge profile-theme-bg">
+                                <li className="d-flex align-items-center flex-wrap gap-2">
+                                    <strong>{t('role')}:</strong>
+                                    {user.roles && user.roles.length > 0 && user.roles.map((role: any) => (
+                                        <span key={role.id} className="badge profile-theme-bg">
                                         {RoleEnum.getOptions(t).find(opt => opt.value === role.role)?.label || role.role}
                                     </span>
-                                ))}
-                                {user.disciplines && user.disciplines.length > 0 && user.disciplines.map((disc: any) => (
-                                    <span key={disc.id} className="badge bg-light text-dark border border-1 profile-theme-border">
+                                    ))}
+                                </li>
+                                <li className="d-flex align-items-center flex-wrap gap-2">
+                                    <strong>{t('discipline')}:</strong>
+                                    {user.disciplines && user.disciplines.length > 0 && user.disciplines.map((disc: any) => (
+                                        <span key={disc.id} className="badge bg-light text-dark border border-1 profile-theme-border">
                                         {DisciplineEnum.getOptions(t).find(opt => opt.value === disc.discipline)?.label || disc.discipline}
                                     </span>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="text-end">
-                            {isAdmin && !isMyProfile && (
-                                <div className="mb-2">
-                                    <select
-                                        className="form-select mb-1 d-inline-block custom-select-md"
-                                        value={selectedStatus === null ? user.status : selectedStatus}
-                                        onChange={e => setSelectedStatus(Number(e.target.value))}
-                                        disabled={statusLoading}
-                                    >
-                                        {UserStatusEnum.getOptions(t).map(opt => (
-                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                        ))}
-                                    </select>
-                                    <button
-                                        className="btn btn-warning ms-2"
-                                        onClick={handleChangeUserStatus}
-                                        disabled={statusLoading || (selectedStatus === null || selectedStatus === user.status)}
-                                    >
-                                        {statusLoading ? t('loading') : t('changeStatus')}
-                                    </button>
-                                </div>
-                            )}
-                            {!isMyProfile && (
-                                <>
-                                    {!friendship && (
-                                        <button className="btn btn-primary" onClick={handleAddFriend}>
-                                            <i className="bi bi-person-plus me-2"></i>{t('addFriend')}
+                                    ))}
+                                </li>
+                                {!isMyProfile && !friendship && (
+                                    <li className="d-flex align-items-center flex-wrap gap-2">
+                                        <strong>{t('friendshipStatus')}:</strong>
+                                        <button
+                                            className="btn btn-xs btn-outline-primary ms-2 py-0 px-2"
+                                            onClick={handleAddFriend}
+                                        >
+                                            {t('addFriend')}
                                         </button>
-                                    )}
-                                    {friendship && (
-                                        <div>
-                                            <span className="badge bg-info text-dark mb-2">
-                                                {t('friendshipStatus')}: {FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label || friendship.status}
-                                            </span>
+                                    </li>
+                                )}
+                                {!isMyProfile && friendship && (
+                                    <li className="d-flex align-items-center flex-wrap gap-2">
+                                        <strong>{t('friendshipStatus')}:</strong>
+                                        <span>
+                                            {FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label || friendship.status}
+                                            {', ' + t('changeStatus') + ': '}
+                                        </span>
+                                        <>
                                             {(currentUser && (friendship.senderUserId === currentUser.id || friendship.receiverUserId === currentUser.id)) && (
-                                                <form
-                                                    className="d-inline-flex align-items-center ms-2"
-                                                    onSubmit={e => {
-                                                        e.preventDefault();
-                                                        if (selectedFriendStatus !== null && selectedFriendStatus !== friendship.status) {
-                                                            handleUpdateFriendStatus(selectedFriendStatus);
-                                                        }
-                                                    }}
-                                                >
-                                                    <select
-                                                        className="form-select form-select-sm me-2 custom-select-sm"
-                                                        value={typeof selectedFriendStatus === 'number' ? selectedFriendStatus : friendship.status}
-                                                        onChange={e => setSelectedFriendStatus(Number(e.target.value))}
-                                                    >
-                                                        {FriendStatusEnum.getOptions(t).map(opt => (
-                                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                                        ))}
-                                                    </select>
-                                                    <button
-                                                        type="submit"
-                                                        className="btn btn-sm btn-warning"
-                                                        disabled={selectedFriendStatus === null || selectedFriendStatus === friendship.status}
-                                                    >
-                                                        {t('changeStatus')}
-                                                    </button>
-                                                </form>
+                                                <>
+                                                    {FriendStatusEnum.getOptions(t).map(opt => (
+                                                        opt.value !== friendship.status && (
+                                                            <button
+                                                                key={opt.value}
+                                                                className="btn btn-xs btn-outline-primary ms-2 py-0 px-2"
+                                                                onClick={() => handleUpdateFriendStatus(opt.value)}
+                                                            >
+                                                                {opt.label}
+                                                            </button>
+                                                        )
+                                                    ))}
+                                                </>
                                             )}
-                                        </div>
-                                    )}
-                                </>
-                            )}
+                                        </>
+                                    </li>
+                                )}
+                            </ul>
                         </div>
                     </div>
                 </div>

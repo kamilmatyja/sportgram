@@ -11,7 +11,7 @@ import {useTranslation} from '../context/TranslationContext';
 import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 import {FriendIndexQuery} from '../api/queries/FriendIndexQuery';
 import {UserFilterQuery} from '../api/queries/UserFilterQuery';
-import {FriendFilterQuery} from '../api/queries/FriendFilterQuery';
+import {FriendFilterQuery} from "../api/queries/FriendFilterQuery.ts";
 
 export function useUserProfile(link?: string) {
     const {t} = useTranslation();
@@ -23,19 +23,8 @@ export function useUserProfile(link?: string) {
     const [error, setError] = useState<string | null>(null);
     const [statusLoading, setStatusLoading] = useState(false);
 
-    const [selectedStatus, setSelectedStatus] = useState<number | null>(null);
-    const [selectedFriendStatus, setSelectedFriendStatus] = useState<number | null>(null);
-
     const userProvider = new UserProvider();
     const friendProvider = new FriendProvider();
-
-    useEffect(() => {
-        if (friendship) {
-            setSelectedFriendStatus(friendship.status);
-        } else {
-            setSelectedFriendStatus(null);
-        }
-    }, [friendship]);
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -109,12 +98,12 @@ export function useUserProfile(link?: string) {
         }
     };
 
-    const handleChangeUserStatus = async () => {
-        if (!user || selectedStatus === null) return;
+    const handleChangeUserStatus = async (newStatus: number) => {
+        if (!user) return;
         setStatusLoading(true);
         try {
-            await userProvider.updateStatus(user.id, new StatusBody(selectedStatus));
-            setUser({...user, status: selectedStatus});
+            await userProvider.updateStatus(user.id, new StatusBody(newStatus));
+            setUser({...user, status: newStatus});
         } catch (e: any) {
             alert(e.error);
         } finally {
@@ -127,8 +116,6 @@ export function useUserProfile(link?: string) {
 
     return {
         user, currentUser, friendship, loading, error, statusLoading,
-        selectedStatus, setSelectedStatus,
-        selectedFriendStatus, setSelectedFriendStatus,
         handleAddFriend, handleUpdateFriendStatus, handleChangeUserStatus,
         isMyProfile, isAdmin
     };

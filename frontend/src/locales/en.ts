@@ -68,7 +68,7 @@ export const en = {
         united_kingdom: "United Kingdom",
         vatican_city: "Vatican City"
     },
-    role: "Role",
+    role: "Roles",
     roles: {
         participant: "Participant",
         organizer: "Organizer",
@@ -136,6 +136,7 @@ export const en = {
         purple: "Purple",
         pink: "Pink"
     },
+    userStatus: "User status",
     friends: {
         pending: "Pending",
         accepted: "Accepted",
@@ -145,6 +146,7 @@ export const en = {
     friendshipStatus: "Friendship Status",
     addFriend: "Add Friend",
     changeStatus: "Change Status",
+    discipline: "Disciplines",
     disciplines: {
         running: "Running",
         cycling: "Cycling",
