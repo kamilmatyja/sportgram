@@ -135,5 +135,127 @@ export const en = {
         brown: "Brown",
         purple: "Purple",
         pink: "Pink"
-    }
+    },
+    friends: {
+        pending: "Pending",
+        accepted: "Accepted",
+        rejected: "Rejected",
+        blocked: "Blocked"
+    },
+    friendshipStatus: "Friendship Status",
+    addFriend: "Add Friend",
+    changeStatus: "Change Status",
+    disciplines: {
+        running: "Running",
+        cycling: "Cycling",
+        inline_skating: "Inline skating",
+        ice_skating: "Ice skating",
+        swimming: "Swimming",
+        rowing: "Rowing",
+        canoeing: "Canoeing",
+        cross_country_skiing: "Cross-country skiing",
+        snowboarding: "Snowboarding",
+        skateboarding: "Skateboarding"
+    },
+    conversationStatuses: {
+        sent: "Sent",
+        read: "Read"
+    },
+    elementStatuses: {
+        draft: "Draft",
+        active: "Active",
+        rejected: "Rejected"
+    },
+    entryTypes: {
+        user: "User",
+        story: "Story",
+        conversation: "Conversation",
+        feed: "Feed",
+        goal: "Goal",
+        page: "Page",
+        event: "Event",
+        training: "Training"
+    },
+    feedReactions: {
+        like: "Like",
+        love: "Love",
+        haha: "Haha",
+        wow: "Wow",
+        sad: "Sad",
+        angry: "Angry"
+    },
+    goalStatuses: {
+        draft: "Draft",
+        active: "Active",
+        completed: "Completed",
+        rejected: "Rejected"
+    },
+    notificationStatuses: {
+        not_sent: "Not sent",
+        sent: "Sent",
+        read: "Read"
+    },
+    notificationTypes: {
+        conversation: "Conversation",
+        event: "Event",
+        event_status: "Event status",
+        event_list: "Event list",
+        event_list_status: "Event list status",
+        event_result: "Event result",
+        feed_status: "Feed status",
+        feed_comment: "Feed comment",
+        feed_comment_status: "Feed comment status",
+        feed_reaction: "Feed reaction",
+        feed_reaction_status: "Feed reaction status",
+        friend: "Friend",
+        friend_status: "Friend status",
+        goal_participant: "Goal participant",
+        goal_participant_status: "Goal participant status",
+        goal_result: "Goal result",
+        goal_result_status: "Goal result status",
+        goal_status: "Goal status",
+        page_participant: "Page participant",
+        page_participant_status: "Page participant status",
+        page_follow: "Page follow",
+        page_follow_status: "Page follow status",
+        page_status: "Page status",
+        story_status: "Story status",
+        training_participant: "Training participant",
+        training_participant_status: "Training participant status",
+        training_status: "Training status",
+        user_status: "User status"
+    },
+    pageFollowStatuses: {
+        pending: "Pending",
+        accepted: "Accepted",
+        rejected: "Rejected",
+        unfollowed: "Unfollowed"
+    },
+    pushSubscriptionStatuses: {
+        active: "Active",
+        inactive: "Inactive",
+        revoked: "Revoked"
+    },
+    saveStatuses: {
+        pending: "Pending",
+        accepted: "Accepted",
+        rejected: "Rejected"
+    },
+    unauthorizedStatuses: {
+        not_sent: "Not sent",
+        sent: "Sent",
+        correct: "Correct",
+        incorrect: "Incorrect"
+    },
+    settings: "Settings",
+    feeds: "Feeds",
+    stories: "Stories",
+    goals: "Goals",
+    pages: "Pages",
+    events: "Events",
+    trainings: "Trainings",
+    notifications: "Notifications",
+    pushSubscriptions: "Push Subscriptions",
+    conversations: "Conversations",
+    age: "Age",
 };

@@ -135,5 +135,127 @@ export const pl = {
         brown: "Brązowy",
         purple: "Fioletowy",
         pink: "Różowy"
-    }
+    },
+    friends: {
+        pending: "Oczekujący",
+        accepted: "Zaakceptowany",
+        rejected: "Odrzucony",
+        blocked: "Zablokowany"
+    },
+    friendshipStatus: "Status znajomości",
+    addFriend: "Dodaj do znajomych",
+    changeStatus: "Zmień status",
+    disciplines: {
+        running: "Bieganie",
+        cycling: "Jazda na rowerze",
+        inline_skating: "Jazda na rolkach",
+        ice_skating: "Łyżwiarstwo",
+        swimming: "Pływanie",
+        rowing: "Wioślarstwo",
+        canoeing: "Kajakarstwo",
+        cross_country_skiing: "Biegi narciarskie",
+        snowboarding: "Snowboard",
+        skateboarding: "Deskorolka"
+    },
+    conversationStatuses: {
+        sent: "Wysłano",
+        read: "Przeczytano"
+    },
+    elementStatuses: {
+        draft: "Szkic",
+        active: "Aktywny",
+        rejected: "Odrzucony"
+    },
+    entryTypes: {
+        user: "Użytkownik",
+        story: "Relacja",
+        conversation: "Wiadomość",
+        feed: "Wpis",
+        goal: "Cel",
+        page: "Strona",
+        event: "Wydarzenie",
+        training: "Trening"
+    },
+    feedReactions: {
+        like: "Lubię to",
+        love: "Super",
+        haha: "Haha",
+        wow: "Wow",
+        sad: "Przykro mi",
+        angry: "Wrr"
+    },
+    goalStatuses: {
+        draft: "Szkic",
+        active: "Aktywny",
+        completed: "Zakończony",
+        rejected: "Odrzucony"
+    },
+    notificationStatuses: {
+        not_sent: "Nie wysłano",
+        sent: "Wysłano",
+        read: "Przeczytano"
+    },
+    notificationTypes: {
+        conversation: "Wiadomość",
+        event: "Wydarzenie",
+        event_status: "Status wydarzenia",
+        event_list: "Lista startowa wydarzenia",
+        event_list_status: "Status listy startowej",
+        event_result: "Wynik wydarzenia",
+        feed_status: "Status wpisu",
+        feed_comment: "Komentarz do wpisu",
+        feed_comment_status: "Status komentarza do wpisu",
+        feed_reaction: "Reakcja na wpis",
+        feed_reaction_status: "Status reakcji na wpis",
+        friend: "Znajomy",
+        friend_status: "Status znajomości",
+        goal_participant: "Uczestnik celu",
+        goal_participant_status: "Status uczestnika celu",
+        goal_result: "Wynik celu",
+        goal_result_status: "Status wyniku celu",
+        goal_status: "Status celu",
+        page_participant: "Uczestnik strony",
+        page_participant_status: "Status uczestnika strony",
+        page_follow: "Obserwacja strony",
+        page_follow_status: "Status obserwacji strony",
+        page_status: "Status strony",
+        story_status: "Status relacji",
+        training_participant: "Uczestnik treningu",
+        training_participant_status: "Status uczestnika treningu",
+        training_status: "Status treningu",
+        user_status: "Status użytkownika"
+    },
+    pageFollowStatuses: {
+        pending: "Oczekujący",
+        accepted: "Zaakceptowany",
+        rejected: "Odrzucony",
+        unfollowed: "Nieobserwowany"
+    },
+    pushSubscriptionStatuses: {
+        active: "Aktywna",
+        inactive: "Nieaktywna",
+        revoked: "Cofnięta"
+    },
+    saveStatuses: {
+        pending: "Oczekujący",
+        accepted: "Zaakceptowany",
+        rejected: "Odrzucony"
+    },
+    unauthorizedStatuses: {
+        not_sent: "Nie wysłano",
+        sent: "Wysłano",
+        correct: "Poprawny",
+        incorrect: "Niepoprawny"
+    },
+    settings: "Ustawienia",
+    feeds: "Wpisy",
+    stories: "Relacje",
+    goals: "Cele",
+    pages: "Strony",
+    events: "Wydarzenia",
+    trainings: "Treningi",
+    notifications: "Powiadomienia",
+    pushSubscriptions: "Przeglądarki Push",
+    conversations: "Wiadomości",
+    age: "Wiek",
 };
