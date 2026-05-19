@@ -14,9 +14,7 @@ export function useUsers() {
     const [page, setPage] = useState<number>(1);
     const [limit, setLimit] = useState<number>(10);
     const [sort, setSort] = useState<string>('createdAt:desc');
-    const [filters, setFilters] = useState({
-        firstName: '', lastName: '', gender: '', email: '', country: '', status: '', link: '',
-    });
+    const [filters, setFilters] = useState(new UserFilterQuery());
 
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);

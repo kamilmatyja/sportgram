@@ -7,6 +7,7 @@ import {LanguageEnum} from '../enums/LanguageEnum';
 import {ThemeEnum} from '../enums/ThemeEnum';
 import {ColorEnum} from '../enums/ColorEnum';
 import {UserCreateBody} from '../api/body/UserCreateBody';
+import {DisciplineEnum} from "../enums/DisciplineEnum.ts";
 
 interface AddUserModalProps {
     show: boolean;
@@ -167,6 +168,22 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                             ))}
                                         </select>
                                     </div>
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">{t('discipline')}</label>
+                                    <select
+                                        name="disciplines"
+                                        className={`form-select ${fieldErrors.disciplines ? 'is-invalid' : ''}`}
+                                        value={Array.isArray(formData.disciplines) ? formData.disciplines.map(String) : []}
+                                        onChange={handleChange}
+                                        multiple
+                                    >
+                                        {DisciplineEnum.getOptions(t).map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+                                    {fieldErrors.disciplines &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.disciplines}</div>}
                                 </div>
 
                                 <div className="mb-3">

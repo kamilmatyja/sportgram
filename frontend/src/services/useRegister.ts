@@ -13,11 +13,8 @@ import {createFormHandler} from '../utils/formHandler';
 export function useRegister() {
     const step = Number(sessionStorage.getItem('step')) || 1;
     const registerId = sessionStorage.getItem('register_id') || null;
-    const [registerFormData, setRegisterFormData] = useState({
-        firstName: '', lastName: '', email: '', password: '',
-        phone: '' as string | number, birthAt: '', gender: 1, country: 1, roles: [1]
-    });
-    const [codeFormData, setCodeFormData] = useState({code: '' as string | number});
+    const [registerFormData, setRegisterFormData] = useState(new RegisterBody('', '', '', 0, 0, '', '', '', []));
+    const [codeFormData, setCodeFormData] = useState(new CodeBody(''));
 
     const [loading, setLoading] = useState<boolean>(false);
     const [globalError, setGlobalError] = useState<string>('');

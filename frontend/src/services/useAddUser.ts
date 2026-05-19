@@ -10,13 +10,7 @@ export function useAddUser(onSuccess: () => void) {
     const [loading, setLoading] = useState(false);
     const [globalError, setGlobalError] = useState('');
     const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
-    const [formData, setFormData] = useState({
-        firstName: '', lastName: '', email: '', password: '',
-        phone: '', birthAt: '', link: '', bio: '',
-        gender: 1, country: 1, language: 1, theme: 1, color: 1,
-        roles: [] as number[],
-        profilePhoto: '', backgroundPhoto: '',
-    });
+    const [formData, setFormData] = useState(new UserCreateBody('', '', '', 0, 0, '', '', '', 0, 0, 0, 0, '', '', '', [], []));
 
     const userProvider = new UserProvider();
     const handleChange = createFormHandler(setFormData);
@@ -52,7 +46,8 @@ export function useAddUser(onSuccess: () => void) {
             formData.profilePhoto,
             formData.backgroundPhoto,
             formData.bio,
-            formData.roles
+            formData.roles,
+            formData.disciplines,
         );
 
         try {

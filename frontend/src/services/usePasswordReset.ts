@@ -11,8 +11,8 @@ import {createFormHandler} from '../utils/formHandler';
 export function usePasswordReset() {
     const step = Number(sessionStorage.getItem('step')) || 1;
     const passwordResetId = sessionStorage.getItem('password_reset_id') || null;
-    const [passwordResetFormData, setPasswordResetFormData] = useState({email: ''});
-    const [codeFormData, setCodeFormData] = useState({code: '' as string | number, password: ''});
+    const [passwordResetFormData, setPasswordResetFormData] = useState(new EmailBody(''));
+    const [codeFormData, setCodeFormData] = useState(new PasswordResetBody('', ''));
 
     const [loading, setLoading] = useState<boolean>(false);
     const [globalError, setGlobalError] = useState<string>('');
