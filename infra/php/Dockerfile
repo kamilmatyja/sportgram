@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     curl \
-    && docker-php-ext-install pdo pdo_pgsql zip \
+    libgmp-dev \
+    && docker-php-ext-install pdo pdo_pgsql zip bcmath gmp \
     && rm -rf /var/lib/apt/lists/* \
     && pecl install pcov \
     && docker-php-ext-enable pcov

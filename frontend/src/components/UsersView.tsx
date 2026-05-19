@@ -4,7 +4,7 @@ import {CountryEnum} from '../enums/CountryEnum';
 import {UserStatusEnum} from '../enums/UserStatusEnum';
 import {PaginationEnum} from '../enums/PaginationEnum';
 import {formatDate} from '../utils/dateFormat';
-import {UserResponse} from '../api/response/UserResponse';
+import {UserResponse} from '../api/responses/UserResponse';
 import {useTranslation} from '../context/TranslationContext';
 
 export interface UserFilters {

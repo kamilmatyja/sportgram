@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {PasswordResetService} from '../api/service/PasswordResetService';
+import {PasswordResetProvider} from '../api/providers/PasswordResetProvider';
 import {PasswordResetDto} from '../api/dto/PasswordResetDto';
 import {PasswordResetFormView} from '../components/PasswordResetFormView';
 import {PasswordResetVerificationFormView} from '../components/PasswordResetVerificationFormView';
 import {EmailDto} from '../api/dto/EmailDto';
 import {SignDto} from '../api/dto/SignDto';
-import {SignService} from '../api/service/SignService';
-import {RegisterService} from '../api/service/RegisterService';
+import {SignProvider} from '../api/providers/SignProvider';
+import {RegisterProvider} from '../api/providers/RegisterProvider';
 import {createFormHandler} from '../utils/formHandler';
 
 export default function PasswordReset() {
@@ -23,9 +23,9 @@ export default function PasswordReset() {
     const [resendSuccess, setResendSuccess] = useState<boolean>(false);
 
     const navigate = useNavigate();
-    const passwordResetService = new PasswordResetService();
-    const signService = new SignService();
-    const registerService = new RegisterService();
+    const passwordResetProvider = new PasswordResetProvider();
+    const signProvider = new SignProvider();
+    const registerProvider = new RegisterProvider();
 
     const handlePasswordResetSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -35,7 +35,7 @@ export default function PasswordReset() {
 
         const dto = new EmailDto(passwordResetFormData.email);
         try {
-            const res = await passwordResetService.passwordReset(dto);
+            const res = await passwordResetProvider.passwordReset(dto);
 
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('password_reset_id', res.id);
@@ -45,7 +45,7 @@ export default function PasswordReset() {
                 setFieldErrors(err.errors);
             } else if (err.error === 'User account is not confirmed.') {
                 try {
-                    const res = await registerService.register(dto);
+                    const res = await registerProvider.register(dto);
 
                     sessionStorage.setItem('step', '2');
                     sessionStorage.setItem('register_id', res.id);
@@ -75,11 +75,11 @@ export default function PasswordReset() {
 
         const dto = new PasswordResetDto(codeFormData.code, codeFormData.password);
         try {
-            await passwordResetService.confirm(passwordResetId, dto);
+            await passwordResetProvider.confirm(passwordResetId, dto);
 
             const email = sessionStorage.getItem('email') || '';
             const signDto = new SignDto(email, codeFormData.password, false);
-            const res = await signService.sign(signDto);
+            const res = await signProvider.sign(signDto);
 
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('sign_id', res.id);
@@ -103,7 +103,7 @@ export default function PasswordReset() {
         setFieldErrors({});
 
         try {
-            await passwordResetService.resend(passwordResetId);
+            await passwordResetProvider.resend(passwordResetId);
             setResendSuccess(true);
         } catch (err: any) {
             setGlobalError(err.error);

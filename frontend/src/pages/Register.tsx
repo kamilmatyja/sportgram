@@ -1,15 +1,15 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {RegisterService} from '../api/service/RegisterService';
-import {UserService} from '../api/service/UserService';
+import {RegisterProvider} from '../api/providers/RegisterProvider';
+import {UserProvider} from '../api/providers/UserProvider';
 import {RegisterFormView} from '../components/RegisterFormView';
 import {VerificationFormView} from '../components/VerificationFormView';
 import {RegisterDto} from '../api/dto/RegisterDto';
 import {CodeDto} from '../api/dto/CodeDto';
 import {EmailDto} from '../api/dto/EmailDto';
-import {SignService} from '../api/service/SignService';
+import {SignProvider} from '../api/providers/SignProvider';
 import {SignDto} from '../api/dto/SignDto';
-import {PasswordResetService} from '../api/service/PasswordResetService';
+import {PasswordResetProvider} from '../api/providers/PasswordResetProvider';
 import {createFormHandler} from '../utils/formHandler';
 
 export default function Register() {
@@ -28,10 +28,10 @@ export default function Register() {
     const [resendSuccess, setResendSuccess] = useState<boolean>(false);
 
     const navigate = useNavigate();
-    const registerService = new RegisterService();
-    const userServices = new UserService();
-    const signService = new SignService();
-    const passwordResetService = new PasswordResetService();
+    const registerProvider = new RegisterProvider();
+    const userProviders = new UserProvider();
+    const signProvider = new SignProvider();
+    const passwordResetProvider = new PasswordResetProvider();
 
     const handleRegisterSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -52,10 +52,10 @@ export default function Register() {
         );
 
         try {
-            await userServices.createNano(dto);
+            await userProviders.createNano(dto);
 
             const emailDto = new EmailDto(registerFormData.email);
-            const res = await registerService.register(emailDto);
+            const res = await registerProvider.register(emailDto);
 
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('register_id', res.id);
@@ -79,14 +79,14 @@ export default function Register() {
 
         const dto = new CodeDto(codeFormData.code);
         try {
-            await registerService.confirm(registerId, dto);
+            await registerProvider.confirm(registerId, dto);
 
             const email = sessionStorage.getItem('email') || '';
             const password = sessionStorage.getItem('password') || '';
 
             if (password) {
                 const signDto = new SignDto(email, password, false);
-                const res = await signService.sign(signDto);
+                const res = await signProvider.sign(signDto);
 
                 sessionStorage.setItem('step', '2');
                 sessionStorage.setItem('sign_id', res.id);
@@ -95,7 +95,7 @@ export default function Register() {
                 navigate('/sign');
             } else {
                 const emailDto = new EmailDto(email);
-                const res = await passwordResetService.passwordReset(emailDto);
+                const res = await passwordResetProvider.passwordReset(emailDto);
 
                 sessionStorage.setItem('step', '2');
                 sessionStorage.setItem('password_reset_id', res.id);
@@ -119,7 +119,7 @@ export default function Register() {
         setFieldErrors({});
 
         try {
-            await registerService.resend(registerId);
+            await registerProvider.resend(registerId);
             setResendSuccess(true);
         } catch (err: any) {
             setGlobalError(err.error);

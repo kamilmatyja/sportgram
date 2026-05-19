@@ -1,9 +1,9 @@
 import {apiFetch} from '../../utils/api';
 import {EmailDto} from '../dto/EmailDto';
 import {CodeDto} from '../dto/CodeDto';
-import {IdResponse} from '../response/IdResponse';
+import {IdResponse} from '../responses/IdResponse';
 
-export class RegisterService {
+export class RegisterProvider {
     async register(dto: EmailDto): Promise<IdResponse> {
         return await apiFetch('/api/registers', {
             method: 'POST',

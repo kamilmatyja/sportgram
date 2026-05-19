@@ -91,7 +91,7 @@ npm run dev
 - /sign (formularz logowania 2 krokowy - tylko dla niezalogowanych)
 - /password-reset (formularz resetowania hasła 2 krokowy - tylko dla niezalogowanych)
 - /users (lista użytkowników - tylko dla zalogowanych)
-- /users/{user-link} (profil użytkownika, pokazuje listy: stories / feeds, jeżeli user inny niż ja to pokazuje przycisk
+- /users/{user-link} (profil użytkownika, jeżeli user inny niż ja to pokazuje przycisk
   znajomości - tylko dla zalogowanych)
 - /users/{user-link}/settings (ustawienia użytkownika, pokazuje formularz edycji danych - tylko dla zalogowanych)
 - /users/{user-link}/feeds (lista feeds użytkownika, pokazuje formularz dodawania feed - tylko dla zalogowanych)

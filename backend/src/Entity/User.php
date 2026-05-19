@@ -165,6 +165,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** @var Page[] */
     #[ORM\OneToMany(targetEntity: Page::class, mappedBy: 'user')]
     public Collection $pages;
+
     /** @var UserSign[] */
     #[ORM\OneToMany(targetEntity: UserSign::class, mappedBy: 'user')]
     public Collection $signs;

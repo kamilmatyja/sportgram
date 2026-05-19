@@ -1,6 +1,6 @@
 import {createContext, ReactNode, useContext, useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {SignService} from '../api/service/SignService';
+import {SignProvider} from '../api/providers/SignProvider';
 
 interface AuthContextType {
     token: string | null;
@@ -24,7 +24,7 @@ export function AuthProvider({children}: AuthProviderProps) {
     const [signId, setSignId] = useState<string | null>(sessionStorage.getItem('sign_id') || localStorage.getItem('sign_id'));
     const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
 
-    const signService = new SignService();
+    const signProvider = new SignProvider();
 
     useEffect(() => {
         if (signId) {
@@ -46,7 +46,7 @@ export function AuthProvider({children}: AuthProviderProps) {
 
     const refreshAuthToken = async (currentSignId: string) => {
         try {
-            const res = await signService.refresh(currentSignId);
+            const res = await signProvider.refresh(currentSignId);
 
             const isRemembered = !!localStorage.getItem('sign_id');
             const storage = isRemembered ? localStorage : sessionStorage;

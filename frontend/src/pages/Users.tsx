@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import {UserService} from '../api/service/UserService';
+import {UserProvider} from '../api/providers/UserProvider';
 import {UserIndexDto} from '../api/dto/UserIndexDto';
 import {UserFilterDto} from '../api/dto/UserFilterDto';
 import UsersView from '../components/UsersView';
-import {UserResponse} from '../api/response/UserResponse';
+import {UserResponse} from '../api/responses/UserResponse';
 import {RoleEnum} from '../enums/RoleEnum';
 import {useCheckPermission} from '../utils/checkPermission';
 import {AddUserModal} from '../components/AddUserModal';
@@ -26,7 +26,7 @@ export default function Users() {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const userService = new UserService();
+    const userProvider = new UserProvider();
 
     useEffect(() => {
         const check = async () => {
@@ -57,7 +57,7 @@ export default function Users() {
 
             const indexDto = new UserIndexDto(page, limit, sort, filterDto);
 
-            const data = await userService.index(indexDto);
+            const data = await userProvider.index(indexDto);
             setUsers(data);
         } catch (err: any) {
             setError(err.error);
@@ -93,7 +93,7 @@ export default function Users() {
     };
 
     const handleAddUserSubmit = async (dto: UserCreateDto) => {
-        await userService.create(dto);
+        await userProvider.create(dto);
         fetchUsers();
     };
 

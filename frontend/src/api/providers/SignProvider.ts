@@ -1,10 +1,10 @@
 import {apiFetch} from '../../utils/api';
 import {SignDto} from '../dto/SignDto';
 import {CodeDto} from '../dto/CodeDto';
-import {IdResponse} from '../response/IdResponse';
-import {TokenResponse} from '../response/TokenResponse';
+import {IdResponse} from '../responses/IdResponse';
+import {TokenResponse} from '../responses/TokenResponse';
 
-export class SignService {
+export class SignProvider {
     async sign(dto: SignDto): Promise<IdResponse> {
         return await apiFetch('/api/signs', {
             method: 'POST',

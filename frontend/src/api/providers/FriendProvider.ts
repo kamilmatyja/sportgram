@@ -1,11 +1,11 @@
 import {apiFetch} from '../../utils/api';
 import {buildIndexParams} from '../../utils/buildQueryString';
-import {FriendResponse} from '../response/FriendResponse';
-import {IdResponse} from '../response/IdResponse';
+import {FriendResponse} from '../responses/FriendResponse';
+import {IdResponse} from '../responses/IdResponse';
 
-export class FriendService {
-    async index(userIds: string[]): Promise<FriendResponse[]> {
-        const params = buildIndexParams(1, 100, 'createdAt:desc', {userIds});
+export class FriendProvider {
+    async index(page: number, limit: number, userIds: string[]): Promise<FriendResponse[]> {
+        const params = buildIndexParams(page, limit, 'createdAt:desc', {userIds});
 
         return await apiFetch(`/api/friends?${params.toString()}`, {method: 'GET'});
     }

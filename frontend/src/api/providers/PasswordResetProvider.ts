@@ -1,9 +1,9 @@
 import {apiFetch} from '../../utils/api';
 import {EmailDto} from '../dto/EmailDto';
 import {PasswordResetDto} from '../dto/PasswordResetDto';
-import {IdResponse} from '../response/IdResponse';
+import {IdResponse} from '../responses/IdResponse';
 
-export class PasswordResetService {
+export class PasswordResetProvider {
     async passwordReset(dto: EmailDto): Promise<IdResponse> {
         return await apiFetch('/api/password-resets', {
             method: 'POST',

@@ -101,6 +101,7 @@ export const en = {
     status: "Status",
     userTitle: "User list",
     loading: "Loading...",
+    noUser: "No user found",
     noUsers: "No users found",
     sortCreatedDesc: "Created date 9-0",
     sortCreatedAsc: "Created date 0-9",

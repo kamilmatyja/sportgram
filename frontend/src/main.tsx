@@ -7,9 +7,9 @@ import App from './App';
 import {TranslationProvider} from './context/TranslationContext';
 import {ThemeProvider} from './context/ThemeContext';
 
-if ('serviceWorker' in navigator) {
+if ('ProviderWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch((error) => {
+        navigator.ProviderWorker.register('/sw.js').catch((error) => {
             console.error('SW registration failed:', error);
         });
     });
