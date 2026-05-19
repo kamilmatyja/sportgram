@@ -1,0 +1,36 @@
+:root {
+    --theme-color: #007bff;
+}
+
+.profile-theme-text {
+    color: var(--theme-color) !important;
+}
+
+.profile-theme-bg {
+    background-color: var(--theme-color) !important;
+    color: #fff !important;
+}
+
+.profile-theme-border {
+    border-color: var(--theme-color) !important;
+}
+
+.profile-bg-container {
+    height: 200px;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    top: -60px;
+    left: 20px;
+    z-index: 1;
+}
+
+.custom-select-md {
+    max-width: 200px;
+}
+
+.custom-select-sm {
+    max-width: 160px;
+}
