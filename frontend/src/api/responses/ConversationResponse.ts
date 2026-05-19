@@ -1,9 +1,9 @@
-export interface StoryResponse {
+export interface ConversationResponse {
     id: string;
-    userId: string;
+    senderUserId: string;
+    receiverUserId: string;
     createdAt: string;
     updatedAt: string;
     text: string;
-    photo: string;
     status: number;
 }

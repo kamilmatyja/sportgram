@@ -1,9 +1,9 @@
-export interface StoryResponse {
+export interface FeedCommentResponse {
     id: string;
+    feedId: string;
     userId: string;
     createdAt: string;
     updatedAt: string;
     text: string;
-    photo: string;
     status: number;
 }

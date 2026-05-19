@@ -1,9 +1,9 @@
-export interface StoryResponse {
+export interface NotificationResponse {
     id: string;
     userId: string;
     createdAt: string;
     updatedAt: string;
     text: string;
-    photo: string;
+    link: string | null;
     status: number;
 }

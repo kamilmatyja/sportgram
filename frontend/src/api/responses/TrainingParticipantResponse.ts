@@ -1,9 +1,8 @@
-export interface StoryResponse {
+export interface TrainingParticipantResponse {
     id: string;
+    trainingId: string;
     userId: string;
     createdAt: string;
     updatedAt: string;
-    text: string;
-    photo: string;
     status: number;
 }
