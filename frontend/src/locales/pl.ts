@@ -111,7 +111,7 @@ export const pl = {
     sortLastNameDesc: "Nazwisko Z-A",
     perPage: "strona",
     createdAt: "Data utworzenia",
-    goToProfile: "Wejdź na profil",
+    profile: "Profil",
     prev: "Poprzednia",
     next: "Następna",
     page: "Strona",

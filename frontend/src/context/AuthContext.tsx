@@ -21,7 +21,7 @@ export function AuthProvider({children}: AuthProviderProps) {
     const navigate = useNavigate();
 
     const [token, setToken] = useState<string | null>(sessionStorage.getItem('token') || localStorage.getItem('token'));
-    const [signId, setSignId] = useState<string | null>(sessionStorage.getItem('sign_id') || localStorage.getItem('sign_id'));
+    const [signId, setSignId] = useState<string | null>(sessionStorage.getItem('success_sign_id') || localStorage.getItem('success_sign_id'));
     const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
 
     const signProvider = new SignProvider();
@@ -48,7 +48,7 @@ export function AuthProvider({children}: AuthProviderProps) {
         try {
             const res = await signProvider.refresh(currentSignId);
 
-            const isRemembered = !!localStorage.getItem('sign_id');
+            const isRemembered = !!localStorage.getItem('success_sign_id');
             const storage = isRemembered ? localStorage : sessionStorage;
 
             storage.setItem('token', res.token);
@@ -64,7 +64,7 @@ export function AuthProvider({children}: AuthProviderProps) {
         const storage = rememberMe ? localStorage : sessionStorage;
 
         storage.setItem('token', newToken);
-        storage.setItem('sign_id', newSignId);
+        storage.setItem('success_sign_id', newSignId);
 
         setToken(newToken);
         setSignId(newSignId);

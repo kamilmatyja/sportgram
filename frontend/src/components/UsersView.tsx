@@ -137,9 +137,9 @@ export default function UsersView({
                                 <td>
                                     <a href={`/users/${u.link}`}
                                        className="btn btn-sm btn-outline-secondary"
-                                       title={t('goToProfile')}>
+                                       title={t('profile')}>
                                         <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-                                        <span className="visually-hidden">{t('goToProfile')}</span>
+                                        <span className="visually-hidden">{t('profile')}</span>
                                     </a>
                                 </td>
                             </tr>

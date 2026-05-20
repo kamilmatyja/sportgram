@@ -74,6 +74,7 @@ export function useSign() {
         try {
             const res = await signProvider.confirm(signId, codeFormData);
             sessionStorage.setItem('token', res.token);
+            sessionStorage.setItem('success_sign_id', res.token);
             sessionStorage.removeItem('step');
             sessionStorage.removeItem('sign_id');
             sessionStorage.removeItem('email');
