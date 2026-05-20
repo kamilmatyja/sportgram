@@ -15,7 +15,6 @@ export function useFeedModals(onSuccess: () => void) {
     const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
 
     const [formData, setFormData] = useState(new FeedBody('', ''));
-    const [statusData, setStatusData] = useState(new StatusBody(''));
 
     const feedProvider = new FeedProvider();
 
@@ -25,6 +24,7 @@ export function useFeedModals(onSuccess: () => void) {
         setFieldErrors({});
         setShowAdd(true);
     };
+
     const closeAddModal = () => setShowAdd(false);
 
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -46,12 +46,12 @@ export function useFeedModals(onSuccess: () => void) {
 
     const openManageModal = (feed: FeedResponse) => {
         setCurrentFeed(feed);
-        setFormData(formData);
-        setStatusData(new StatusBody(feed.status));
+        setFormData(new FeedBody(feed.text, ''));
         setGlobalError('');
         setFieldErrors({});
         setShowManage(true);
     };
+
     const closeManageModal = () => setShowManage(false);
 
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -61,6 +61,7 @@ export function useFeedModals(onSuccess: () => void) {
         setGlobalError('');
         setFieldErrors({});
         try {
+            formData.photo = formData.photo ? formData.photo : currentFeed.photo;
             await feedProvider.update(currentFeed.id, formData);
             closeManageModal();
             onSuccess();
@@ -72,12 +73,12 @@ export function useFeedModals(onSuccess: () => void) {
         }
     };
 
-    const handleStatusSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleStatusSubmit = async (newStatus: number) => {
         if (!currentFeed) return;
         setLoading(true);
+        setGlobalError('');
         try {
-            await feedProvider.updateStatus(currentFeed.id, statusData);
+            await feedProvider.updateStatus(currentFeed.id, new StatusBody(newStatus));
             closeManageModal();
             onSuccess();
         } catch (err: any) {
@@ -90,6 +91,7 @@ export function useFeedModals(onSuccess: () => void) {
     const handleDelete = async () => {
         if (!currentFeed) return;
         setLoading(true);
+        setGlobalError('');
         try {
             await feedProvider.delete(currentFeed.id);
             closeManageModal();
@@ -102,11 +104,10 @@ export function useFeedModals(onSuccess: () => void) {
     };
 
     const handleChange = createFormHandler(setFormData);
-    const handleStatusChange = createFormHandler(setStatusData);
 
     return {
         showAdd, openAddModal, closeAddModal, handleAddSubmit,
         showManage, openManageModal, closeManageModal, currentFeed, handleEditSubmit, handleStatusSubmit, handleDelete,
-        formData, statusData, handleStatusChange, handleChange, loading, globalError, fieldErrors
+        formData, handleChange, loading, globalError, fieldErrors
     };
 }

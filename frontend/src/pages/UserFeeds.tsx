@@ -56,9 +56,7 @@ export default function UserFeeds() {
                 globalError={modalsService.globalError}
                 fieldErrors={modalsService.fieldErrors}
                 formData={modalsService.formData}
-                statusData={modalsService.statusData}
                 handleChange={modalsService.handleChange}
-                handleStatusChange={modalsService.handleStatusChange}
                 handleEditSubmit={modalsService.handleEditSubmit}
                 handleStatusSubmit={modalsService.handleStatusSubmit}
                 handleDelete={modalsService.handleDelete}

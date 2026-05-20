@@ -3,9 +3,8 @@ import {useTranslation} from '../context/TranslationContext';
 import {FeedBody} from '../api/body/FeedBody';
 import {FeedResponse} from '../api/responses/FeedResponse';
 import {ElementStatusEnum} from '../enums/ElementStatusEnum';
-import {StatusBody} from '../api/body/StatusBody';
-import {UserResponse} from "../api/responses/UserResponse.ts";
-import {ColorEnum} from "../enums/ColorEnum.ts";
+import {UserResponse} from '../api/responses/UserResponse';
+import {ColorEnum} from '../enums/ColorEnum';
 
 interface ManageFeedModalProps {
     user: UserResponse | null;
@@ -18,11 +17,9 @@ interface ManageFeedModalProps {
     globalError: string;
     fieldErrors: Record<string, string | string[]>;
     formData: FeedBody;
-    statusData: StatusBody;
     handleChange: (e: React.ChangeEvent<any>) => void;
-    handleStatusChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     handleEditSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
-    handleStatusSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
+    handleStatusSubmit: (newStatus: number) => void;
     handleDelete: () => void;
 }
 
@@ -37,9 +34,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                                                     globalError,
                                                                     fieldErrors,
                                                                     formData,
-                                                                    statusData,
                                                                     handleChange,
-                                                                    handleStatusChange,
                                                                     handleEditSubmit,
                                                                     handleStatusSubmit,
                                                                     handleDelete
@@ -62,12 +57,12 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form onSubmit={handleEditSubmit} className="mb-4 pb-4 border-bottom">
+                                <form id="edit-feed-form" onSubmit={handleEditSubmit} className="mb-4 border-bottom">
                                     <div className="mb-3">
                                         <label className="form-label">{t('text')}</label>
                                         <textarea name="text"
                                                   className={`form-control ${fieldErrors.text ? 'is-invalid' : ''}`}
-                                                  value={formData.text} onChange={handleChange} required rows={3}/>
+                                                  value={formData.text || ''} onChange={handleChange} required rows={3}/>
                                         {fieldErrors.text &&
                                             <div className="invalid-feedback d-block">{fieldErrors.text}</div>}
                                     </div>
@@ -80,33 +75,45 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                         {fieldErrors.photo &&
                                             <div className="invalid-feedback d-block">{fieldErrors.photo}</div>}
                                     </div>
-                                    <button type="submit" className="btn btn-profile-primary"
-                                            disabled={loading}>{loading ? t('sending') : t('saveChanges')}</button>
                                 </form>
                             )}
 
                             {(isMyProfile || isAdmin) && (
-                                <form onSubmit={handleStatusSubmit} className="mb-4 pb-4 border-bottom">
-                                    <h6>{t('changeStatus')}</h6>
-                                    <div className="d-flex gap-2 align-items-center">
-                                        <select className="form-select w-auto" value={statusData.status || ''}
-                                                onChange={handleStatusChange} required>
-                                            {ElementStatusEnum.getOptions(t).map(opt => (
-                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                            ))}
-                                        </select>
-                                        <button type="submit" className="btn btn-warning"
-                                                disabled={loading}>{loading ? t('sending') : t('changeStatus')}</button>
-                                    </div>
-                                </form>
+                                <div className="d-flex flex-wrap gap-2 align-items-center">
+                                    <strong>{t('status')}:</strong>
+                                    <span className="me-2">
+                                            {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}
+                                        </span>
+                                    {ElementStatusEnum.getOptions(t)
+                                        .filter(opt => opt.value !== feed.status)
+                                        .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
+                                        .map(opt => (
+                                            <button
+                                                key={opt.value}
+                                                type="button"
+                                                className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                                disabled={loading}
+                                                onClick={() => handleStatusSubmit(opt.value)}
+                                            >
+                                                {loading ? t('loading') : opt.label}
+                                            </button>
+                                        ))}
+                                </div>
                             )}
                         </div>
                         <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary"
-                                    onClick={closeModal}>{t('cancel')}</button>
+                            <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={loading}>
+                                {t('cancel')}
+                            </button>
                             {isMyProfile && (
-                                <button type="button" className="btn btn-danger" onClick={handleDelete}
-                                        disabled={loading}>{loading ? t('sending') : t('delete')}</button>
+                                <>
+                                    <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={loading}>
+                                        {loading ? t('sending') : t('delete')}
+                                    </button>
+                                    <button type="submit" form="edit-feed-form" className="btn btn-profile-primary" disabled={loading}>
+                                        {loading ? t('sending') : t('saveChanges')}
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>

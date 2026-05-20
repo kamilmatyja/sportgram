@@ -49,8 +49,6 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                                                             }) => {
     const { t } = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center"><div className="spinner-border" /></div>;
-
     if (error || !user) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
     const hexColor = ColorEnum.getHex(user.color);
