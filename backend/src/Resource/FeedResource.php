@@ -45,6 +45,31 @@ use OpenApi\Attributes as OA;
             type: 'array',
             items: new OA\Items(ref: new Model(type: FeedReactionResource::class)),
         ),
+        new OA\Property(
+            property: 'eventDisciplineList',
+            ref: new Model(type: EventDisciplineDistanceListResource::class),
+            nullable: true,
+        ),
+        new OA\Property(
+            property: 'eventDisciplineResult',
+            ref: new Model(type: EventDisciplineDistanceResultResource::class),
+            nullable: true,
+        ),
+        new OA\Property(
+            property: 'goal',
+            ref: new Model(type: GoalResource::class),
+            nullable: true,
+        ),
+        new OA\Property(
+            property: 'goalParticipantResult',
+            ref: new Model(type: GoalParticipantResultResource::class),
+            nullable: true,
+        ),
+        new OA\Property(
+            property: 'training',
+            ref: new Model(type: TrainingResource::class),
+            nullable: true,
+        ),
     ],
     type: 'object',
 )]
@@ -74,6 +99,32 @@ class FeedResource
                 fn (FeedReaction $reaction) => FeedReactionResource::fromEntity($reaction),
                 $feed->reactions->toArray(),
             );
+        }
+
+        if ($dto && in_array($dto::EVENT_DISCIPLINE_LIST, $dto->include)) {
+            $data['eventDisciplineList'] = $feed->eventDisciplineList ? EventDisciplineDistanceListResource::fromEntity(
+                $feed->eventDisciplineList
+            ) : null;
+        }
+
+        if ($dto && in_array($dto::EVENT_DISCIPLINE_RESULT, $dto->include)) {
+            $data['eventDisciplineResult'] = $feed->eventDisciplineResult ? EventDisciplineDistanceResultResource::fromEntity(
+                $feed->eventDisciplineResult
+            ) : null;
+        }
+
+        if ($dto && in_array($dto::GOAL, $dto->include)) {
+            $data['goal'] = $feed->goal ? GoalResource::fromEntity($feed->goal) : null;
+        }
+
+        if ($dto && in_array($dto::GOAL_PARTICIPANT_RESULT, $dto->include)) {
+            $data['goalParticipantResult'] = $feed->goalParticipantResult ? GoalParticipantResultResource::fromEntity(
+                $feed->goalParticipantResult
+            ) : null;
+        }
+
+        if ($dto && in_array($dto::TRAINING, $dto->include)) {
+            $data['training'] = $feed->training ? TrainingResource::fromEntity($feed->training) : null;
         }
 
         return $data;

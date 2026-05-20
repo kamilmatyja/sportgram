@@ -275,4 +275,13 @@ export const pl = {
     error: "Wystąpił błąd",
     userNotFound: "Nie znaleziono użytkownika",
     accessDenied: "Brak dostępu",
+    type: "Typ",
+    feedTypes: {
+        eventDisciplineList: "Zapis na wydarzenie",
+        eventDisciplineResult: "Wynik z wydarzenia",
+        goal: "Stworzenie celu",
+        goalParticipantResult: "Wynik w celu",
+        training: "Trening",
+        regular: "Zwykły wpis"
+    }
 };

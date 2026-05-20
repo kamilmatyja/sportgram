@@ -24,7 +24,7 @@ class Goal
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Feed::class, cascade: ['persist'])]
+    #[ORM\OneToOne(targetEntity: Feed::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Feed $feed {
         get {

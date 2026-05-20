@@ -75,6 +75,21 @@ class Feed
     #[ORM\OneToMany(targetEntity: FeedReaction::class, mappedBy: 'feed')]
     public Collection $reactions;
 
+    #[ORM\OneToOne(targetEntity: EventDisciplineList::class, mappedBy: 'feed')]
+    public ?EventDisciplineList $eventDisciplineList = null;
+
+    #[ORM\OneToOne(targetEntity: EventDisciplineResult::class, mappedBy: 'feed')]
+    public ?EventDisciplineResult $eventDisciplineResult = null;
+
+    #[ORM\OneToOne(targetEntity: Goal::class, mappedBy: 'feed')]
+    public ?Goal $goal = null;
+
+    #[ORM\OneToOne(targetEntity: GoalParticipantResult::class, mappedBy: 'feed')]
+    public ?GoalParticipantResult $goalParticipantResult = null;
+
+    #[ORM\OneToOne(targetEntity: Training::class, mappedBy: 'feed')]
+    public ?Training $training = null;
+
     public function __construct(User $user, ?string $text, ?string $photo, ElementStatusEnum $status)
     {
         $this->user = $user;

@@ -47,11 +47,24 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                                                                 onAddClick,
                                                                 onManageClick
                                                             }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
+
+    if (loading) return <div className="container mt-5 text-center">
+        <div className="spinner-border"/>
+    </div>;
 
     if (error || !user) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
     const hexColor = ColorEnum.getHex(user.color);
+
+    const getFeedTypeLabel = (feed: FeedResponse) => {
+        if (feed.eventDisciplineList) return t('feedTypes.eventDisciplineList');
+        if (feed.eventDisciplineResult) return t('feedTypes.eventDisciplineResult');
+        if (feed.goal) return t('feedTypes.goal');
+        if (feed.goalParticipantResult) return t('feedTypes.goalParticipantResult');
+        if (feed.training) return t('feedTypes.training');
+        return t('feedTypes.regular');
+    };
 
     return (
         <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
@@ -121,6 +134,7 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                                     <thead className="table-light">
                                     <tr>
                                         <th>{t('photo')}</th>
+                                        <th>{t('type')}</th>
                                         <th>{t('text')}</th>
                                         <th>{t('status')}</th>
                                         <th>{t('createdAt')}</th>
@@ -130,7 +144,7 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                                     <tbody>
                                     {feeds.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="text-center text-muted">{t('noFeeds')}</td>
+                                            <td colSpan={6} className="text-center text-muted">{t('noFeeds')}</td>
                                         </tr>
                                     ) : feeds.map(feed => (
                                         <tr key={feed.id}>
@@ -142,12 +156,18 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                                                     <span className="text-muted">-</span>
                                                 )}
                                             </td>
+                                            <td>
+                                                <span className="badge bg-light text-dark border border-1 profile-theme-border">
+                                                    {getFeedTypeLabel(feed)}
+                                                </span>
+                                            </td>
                                             <td className="text-truncate feed-text-cell">{feed.text}</td>
                                             <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}</td>
                                             <td>{formatDate(feed.createdAt)}</td>
                                             <td className="text-end">
                                                 {(isMyProfile || isAdmin) && (
-                                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
+                                                    <button className="btn btn-sm btn-profile-outline-primary"
+                                                            title={t('manage')}
                                                             onClick={() => onManageClick(feed)}>
                                                         <i className="bi bi-gear" aria-hidden="true"></i>
                                                         <span className="visually-hidden">{t('manage')}</span>

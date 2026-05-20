@@ -43,6 +43,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     if (loading) return <div className="container mt-5 text-center">
         <div className="spinner-border"/>
     </div>;
+
     if (error || !user) return <div className="container mt-5 alert alert-danger">{error || t('userNotFound')}</div>;
 
     const hexColor = ColorEnum.getHex(user.color);
@@ -50,10 +51,11 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
     return (
         <div
             className="container mt-4 mb-5"
-            style={{ '--theme-color': hexColor } as React.CSSProperties}
+            style={{'--theme-color': hexColor} as React.CSSProperties}
         >
             <div className="card shadow-sm mb-4">
-                <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+                <div
+                    className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
                     <img
                         src={`data:image/webp;base64,${user.backgroundPhoto}`}
                         alt="Background"
@@ -78,8 +80,12 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                     <>
                                         <li><strong>{t('email')}:</strong> {user.email}</li>
                                         <li><strong>{t('phone')}:</strong> {user.phone}</li>
-                                        <li><strong>{t('country')}:</strong> {CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}</li>
-                                        <li><strong>{t('gender')}:</strong> {GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}</li>
+                                        <li>
+                                            <strong>{t('country')}:</strong> {CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}
+                                        </li>
+                                        <li>
+                                            <strong>{t('gender')}:</strong> {GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}
+                                        </li>
                                         <li><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
                                         <li className="d-flex align-items-center flex-wrap gap-2">
                                             <strong>{t('userStatus')}:</strong>
@@ -88,17 +94,17 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                                 <>
                                                     <strong>{t('changeStatus')}: </strong>
                                                     {UserStatusEnum.getNanoOptions(t)
-                                                    .filter(opt => opt.value !== user.status)
-                                                    .map(opt => (
-                                                        <button
-                                                            key={opt.value}
-                                                            className="btn btn-xs btn-profile-outline-warning py-0 px-2"
-                                                            onClick={() => handleChangeUserStatus(opt.value)}
-                                                            disabled={statusLoading}
-                                                        >
-                                                            {statusLoading ? t('loading') : opt.label}
-                                                        </button>
-                                                    ))}
+                                                        .filter(opt => opt.value !== user.status)
+                                                        .map(opt => (
+                                                            <button
+                                                                key={opt.value}
+                                                                className="btn btn-xs btn-profile-outline-warning py-0 px-2"
+                                                                onClick={() => handleChangeUserStatus(opt.value)}
+                                                                disabled={statusLoading}
+                                                            >
+                                                                {statusLoading ? t('loading') : opt.label}
+                                                            </button>
+                                                        ))}
                                                 </>
                                             )}
                                         </li>

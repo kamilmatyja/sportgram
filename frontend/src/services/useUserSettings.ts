@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { UserProvider } from '../api/providers/UserProvider';
-import { UserUpdateBody } from '../api/body/UserUpdateBody';
-import { useCheckPermission } from '../utils/checkPermission';
-import { createFormHandler } from '../utils/formHandler';
-import { UserFilterQuery } from '../api/queries/UserFilterQuery';
-import { UserResponse } from '../api/responses/UserResponse';
-import { UserIndexQuery } from '../api/queries/UserIndexQuery';
+import React, {useEffect, useState} from 'react';
+import {UserProvider} from '../api/providers/UserProvider';
+import {UserUpdateBody} from '../api/body/UserUpdateBody';
+import {useCheckPermission} from '../utils/checkPermission';
+import {createFormHandler} from '../utils/formHandler';
+import {UserFilterQuery} from '../api/queries/UserFilterQuery';
+import {UserResponse} from '../api/responses/UserResponse';
+import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 
 export function useUserSettings(link?: string) {
-    const { getCurrentUser } = useCheckPermission();
+    const {getCurrentUser} = useCheckPermission();
     const userProvider = new UserProvider();
 
     const [user, setUser] = useState<UserResponse | null>(null);
@@ -95,7 +95,7 @@ export function useUserSettings(link?: string) {
         try {
             await userProvider.update(user.id, formData);
             setSuccessMsg('settingsUpdated');
-            setUser({ ...user, ...formData } as any);
+            setUser({...user, ...formData} as any);
         } catch (err: any) {
             if (err.errors) setFieldErrors(err.errors);
             else setGlobalError(err.error);

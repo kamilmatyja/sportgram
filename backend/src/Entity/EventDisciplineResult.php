@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use App\Repository\EventDisciplineResultRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection,Collection};
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -31,7 +31,7 @@ class EventDisciplineResult
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Feed::class, cascade: ['persist'])]
+    #[ORM\OneToOne(targetEntity: Feed::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Feed $feed {
         get {

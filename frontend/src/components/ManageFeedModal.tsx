@@ -62,7 +62,8 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                         <label className="form-label">{t('text')}</label>
                                         <textarea name="text"
                                                   className={`form-control ${fieldErrors.text ? 'is-invalid' : ''}`}
-                                                  value={formData.text || ''} onChange={handleChange} required rows={3}/>
+                                                  value={formData.text || ''} onChange={handleChange} required
+                                                  rows={3}/>
                                         {fieldErrors.text &&
                                             <div className="invalid-feedback d-block">{fieldErrors.text}</div>}
                                     </div>
@@ -107,10 +108,12 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                             </button>
                             {isMyProfile && (
                                 <>
-                                    <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={loading}>
+                                    <button type="button" className="btn btn-danger" onClick={handleDelete}
+                                            disabled={loading}>
                                         {loading ? t('sending') : t('delete')}
                                     </button>
-                                    <button type="submit" form="edit-feed-form" className="btn btn-profile-primary" disabled={loading}>
+                                    <button type="submit" form="edit-feed-form" className="btn btn-profile-primary"
+                                            disabled={loading}>
                                         {loading ? t('sending') : t('saveChanges')}
                                     </button>
                                 </>

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {UserProvider} from '../api/providers/UserProvider';
 import {FeedProvider} from '../api/providers/FeedProvider';
 import {FriendProvider} from '../api/providers/FriendProvider';
@@ -50,7 +50,18 @@ export function useUserFeeds(link?: string) {
             indexDto.filter = filterDto;
 
             const data = await feedProvider.index(indexDto);
-            setFeeds(data);
+
+            const detailedFeeds = await Promise.all(data.map(async (feed) => {
+                return await feedProvider.details(feed.id, [
+                    'eventDisciplineList',
+                    'eventDisciplineResult',
+                    'goal',
+                    'goalParticipantResult',
+                    'training'
+                ]);
+            }));
+
+            setFeeds(detailedFeeds);
         } catch (err: any) {
             setError(err.error);
         } finally {

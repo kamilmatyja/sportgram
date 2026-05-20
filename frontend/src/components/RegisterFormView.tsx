@@ -67,7 +67,8 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                     <label className="form-label">{t('password')}</label>
                                     <input type="password" name="password"
                                            className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
-                                           value={formData.password || ''} onChange={handleChange} required minLength={8}/>
+                                           value={formData.password || ''} onChange={handleChange} required
+                                           minLength={8}/>
                                     {fieldErrors.password &&
                                         <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
                                 </div>
