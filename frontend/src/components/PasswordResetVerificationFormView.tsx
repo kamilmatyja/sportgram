@@ -3,7 +3,7 @@ import {useTranslation} from '../context/TranslationContext';
 import {PasswordResetBody} from '../api/body/PasswordResetBody';
 
 interface PasswordResetVerificationFormViewProps {
-    formData: Partial<PasswordResetBody>;
+    formData: PasswordResetBody;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     loading: boolean;
@@ -44,7 +44,7 @@ export const PasswordResetVerificationFormView: React.FC<PasswordResetVerificati
                                         type="number"
                                         name="code"
                                         className={`form-control ${fieldErrors.code ? 'is-invalid' : ''}`}
-                                        value={formData.code}
+                                        value={formData.code || ''}
                                         onChange={handleChange}
                                         min="100000"
                                         max="999999"
@@ -60,7 +60,7 @@ export const PasswordResetVerificationFormView: React.FC<PasswordResetVerificati
                                         type="password"
                                         name="password"
                                         className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
-                                        value={formData.password}
+                                        value={formData.password || ''}
                                         onChange={handleChange}
                                         minLength={8}
                                         maxLength={64}

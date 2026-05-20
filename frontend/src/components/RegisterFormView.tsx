@@ -6,7 +6,7 @@ import {RoleEnum} from '../enums/RoleEnum';
 import {RegisterBody} from '../api/body/RegisterBody';
 
 interface RegisterFormViewProps {
-    formData: Partial<RegisterBody>;
+    formData: RegisterBody;
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     loading: boolean;
@@ -42,7 +42,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                         <label className="form-label">{t('firstName')}</label>
                                         <input name="firstName"
                                                className={`form-control ${fieldErrors.firstName ? 'is-invalid' : ''}`}
-                                               value={formData.firstName} onChange={handleChange} required/>
+                                               value={formData.firstName || ''} onChange={handleChange} required/>
                                         {fieldErrors.firstName &&
                                             <div className="invalid-feedback d-block">{fieldErrors.firstName}</div>}
                                     </div>
@@ -50,7 +50,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                         <label className="form-label">{t('lastName')}</label>
                                         <input name="lastName"
                                                className={`form-control ${fieldErrors.lastName ? 'is-invalid' : ''}`}
-                                               value={formData.lastName} onChange={handleChange} required/>
+                                               value={formData.lastName || ''} onChange={handleChange} required/>
                                         {fieldErrors.lastName &&
                                             <div className="invalid-feedback d-block">{fieldErrors.lastName}</div>}
                                     </div>
@@ -59,7 +59,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                     <label className="form-label">{t('email')}</label>
                                     <input type="email" name="email"
                                            className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`}
-                                           value={formData.email} onChange={handleChange} required/>
+                                           value={formData.email || ''} onChange={handleChange} required/>
                                     {fieldErrors.email &&
                                         <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
                                 </div>
@@ -67,7 +67,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                     <label className="form-label">{t('password')}</label>
                                     <input type="password" name="password"
                                            className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
-                                           value={formData.password} onChange={handleChange} required minLength={8}/>
+                                           value={formData.password || ''} onChange={handleChange} required minLength={8}/>
                                     {fieldErrors.password &&
                                         <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
                                 </div>
@@ -76,7 +76,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                         <label className="form-label">{t('phone')}</label>
                                         <input type="number" name="phone"
                                                className={`form-control ${fieldErrors.phone ? 'is-invalid' : ''}`}
-                                               value={formData.phone} onChange={handleChange} required/>
+                                               value={formData.phone || ''} onChange={handleChange} required/>
                                         {fieldErrors.phone &&
                                             <div className="invalid-feedback d-block">{fieldErrors.phone}</div>}
                                     </div>
@@ -84,7 +84,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                         <label className="form-label">{t('birthAt')}</label>
                                         <input type="date" name="birthAt"
                                                className={`form-control ${fieldErrors.birthAt ? 'is-invalid' : ''}`}
-                                               value={formData.birthAt} onChange={handleChange} required/>
+                                               value={formData.birthAt || ''} onChange={handleChange} required/>
                                         {fieldErrors.birthAt &&
                                             <div className="invalid-feedback d-block">{fieldErrors.birthAt}</div>}
                                     </div>
@@ -93,7 +93,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                     <label className="form-label">{t('gender')}</label>
                                     <select name="gender"
                                             className={`form-select ${fieldErrors.gender ? 'is-invalid' : ''}`}
-                                            value={formData.gender} onChange={handleChange} required>
+                                            value={formData.gender || ''} onChange={handleChange} required>
                                         <option value="">{t('gender')}</option>
                                         {genderOptions.map((opt: any) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -106,7 +106,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                     <label className="form-label">{t('country')}</label>
                                     <select name="country"
                                             className={`form-select ${fieldErrors.country ? 'is-invalid' : ''}`}
-                                            value={formData.country} onChange={handleChange} required>
+                                            value={formData.country || ''} onChange={handleChange} required>
                                         <option value="">{t('country')}</option>
                                         {countryOptions.map((opt: any) => (
                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -120,7 +120,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                     <select
                                         name="roles"
                                         className={`form-select ${fieldErrors.roles ? 'is-invalid' : ''}`}
-                                        value={formData.roles ? formData.roles.map(String) : []}
+                                        value={Array.isArray(formData.roles) ? formData.roles.map(String) : []}
                                         onChange={handleChange}
                                         required
                                         multiple

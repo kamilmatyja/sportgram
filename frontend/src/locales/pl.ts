@@ -260,4 +260,8 @@ export const pl = {
     pushSubscriptions: "Przeglądarki Push",
     conversations: "Wiadomości",
     age: "Wiek",
+    unauthorizedEdit: "Nie masz uprawnień do edycji.",
+    settingsUpdated: "Ustawienia zostały pomyślnie zaktualizowane!",
+    saveChanges: "Zapisz zmiany",
+    passwordOptional: "Pozostaw puste, jeśli nie chcesz zmieniać hasła",
 };

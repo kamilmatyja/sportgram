@@ -30,9 +30,8 @@ export function usePasswordReset() {
         setGlobalError('');
         setFieldErrors({});
 
-        const dto = new EmailBody(passwordResetFormData.email);
         try {
-            const res = await passwordResetProvider.passwordReset(dto);
+            const res = await passwordResetProvider.passwordReset(passwordResetFormData);
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('password_reset_id', res.id);
             sessionStorage.setItem('email', passwordResetFormData.email);
@@ -41,7 +40,7 @@ export function usePasswordReset() {
                 setFieldErrors(err.errors);
             } else if (err.error === 'User account is not confirmed.') {
                 try {
-                    const res = await registerProvider.register(dto);
+                    const res = await registerProvider.register(passwordResetFormData);
                     sessionStorage.setItem('step', '2');
                     sessionStorage.setItem('register_id', res.id);
                     sessionStorage.setItem('email', passwordResetFormData.email);
@@ -67,12 +66,11 @@ export function usePasswordReset() {
 
         if (!passwordResetId) return;
 
-        const dto = new PasswordResetBody(codeFormData.code, codeFormData.password);
         try {
-            await passwordResetProvider.confirm(passwordResetId, dto);
+            await passwordResetProvider.confirm(passwordResetId, codeFormData);
             const email = sessionStorage.getItem('email') || '';
-            const signDto = new SignBody(email, codeFormData.password, false);
-            const res = await signProvider.sign(signDto);
+            const dto = new SignBody(email, codeFormData.password, false);
+            const res = await signProvider.sign(dto);
 
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('sign_id', res.id);

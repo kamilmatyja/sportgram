@@ -260,4 +260,8 @@ export const en = {
     pushSubscriptions: "Push Subscriptions",
     conversations: "Conversations",
     age: "Age",
+    unauthorizedEdit: "You are not authorized to edit.",
+    settingsUpdated: "Settings have been successfully updated!",
+    saveChanges: "Save changes",
+    passwordOptional: "Leave blank if you don't want to change the password",
 };

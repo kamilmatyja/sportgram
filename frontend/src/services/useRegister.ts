@@ -33,16 +33,10 @@ export function useRegister() {
         setGlobalError('');
         setFieldErrors({});
 
-        const dto = new RegisterBody(
-            registerFormData.birthAt, registerFormData.firstName, registerFormData.lastName,
-            registerFormData.gender, registerFormData.phone, registerFormData.email,
-            registerFormData.password, registerFormData.country, registerFormData.roles
-        );
-
         try {
-            await userProviders.createNano(dto);
-            const emailDto = new EmailBody(registerFormData.email);
-            const res = await registerProvider.register(emailDto);
+            await userProviders.createNano(registerFormData);
+            const dto = new EmailBody(registerFormData.email);
+            const res = await registerProvider.register(dto);
 
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('register_id', res.id);
@@ -64,24 +58,23 @@ export function useRegister() {
 
         if (!registerId) return;
 
-        const dto = new CodeBody(codeFormData.code);
         try {
-            await registerProvider.confirm(registerId, dto);
+            await registerProvider.confirm(registerId, codeFormData);
 
             const email = sessionStorage.getItem('email') || '';
             const password = sessionStorage.getItem('password') || '';
 
             if (password) {
-                const signDto = new SignBody(email, password, false);
-                const res = await signProvider.sign(signDto);
+                const dto = new SignBody(email, password, false);
+                const res = await signProvider.sign(dto);
 
                 sessionStorage.setItem('step', '2');
                 sessionStorage.setItem('sign_id', res.id);
                 sessionStorage.removeItem('register_id');
                 navigate('/sign');
             } else {
-                const emailDto = new EmailBody(email);
-                const res = await passwordResetProvider.passwordReset(emailDto);
+                const dto = new EmailBody(email);
+                const res = await passwordResetProvider.passwordReset(dto);
 
                 sessionStorage.setItem('step', '2');
                 sessionStorage.setItem('password_reset_id', res.id);

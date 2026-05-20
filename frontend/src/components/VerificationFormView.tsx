@@ -3,7 +3,7 @@ import {useTranslation} from '../context/TranslationContext';
 import {CodeBody} from '../api/body/CodeBody';
 
 interface VerificationFormViewProps {
-    formData: Partial<CodeBody>;
+    formData: CodeBody;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     loading: boolean;
@@ -44,7 +44,7 @@ export const VerificationFormView: React.FC<VerificationFormViewProps> = ({
                                         type="number"
                                         name="code"
                                         className={`form-control ${fieldErrors.code ? 'is-invalid' : ''}`}
-                                        value={formData.code}
+                                        value={formData.code || ''}
                                         onChange={handleChange}
                                         min="100000"
                                         max="999999"

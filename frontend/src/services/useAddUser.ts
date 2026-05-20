@@ -30,28 +30,8 @@ export function useAddUser(onSuccess: () => void) {
             return;
         }
 
-        const dto = new UserCreateBody(
-            formData.birthAt,
-            formData.firstName,
-            formData.lastName,
-            Number(formData.gender),
-            Number(formData.phone),
-            formData.email,
-            formData.password,
-            formData.link,
-            Number(formData.language),
-            Number(formData.country),
-            Number(formData.theme),
-            Number(formData.color),
-            formData.profilePhoto,
-            formData.backgroundPhoto,
-            formData.bio,
-            formData.roles,
-            formData.disciplines,
-        );
-
         try {
-            await userProvider.create(dto);
+            await userProvider.create(formData);
             closeModal();
             onSuccess();
         } catch (err: any) {

@@ -15,7 +15,7 @@ interface AddUserModalProps {
     loading: boolean;
     globalError: string;
     fieldErrors: Record<string, string | string[]>;
-    formData: Partial<UserCreateBody>;
+    formData: UserCreateBody;
     handleChange: (e: React.ChangeEvent<any>) => void;
     handleSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
 }
@@ -52,7 +52,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('firstName')}</label>
                                         <input name="firstName"
                                                className={`form-control ${fieldErrors.firstName ? 'is-invalid' : ''}`}
-                                               value={formData.firstName} onChange={handleChange} required/>
+                                               value={formData.firstName || ''} onChange={handleChange} required/>
                                         {fieldErrors.firstName &&
                                             <div className="invalid-feedback d-block">{fieldErrors.firstName}</div>}
                                     </div>
@@ -60,7 +60,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('lastName')}</label>
                                         <input name="lastName"
                                                className={`form-control ${fieldErrors.lastName ? 'is-invalid' : ''}`}
-                                               value={formData.lastName} onChange={handleChange} required/>
+                                               value={formData.lastName || ''} onChange={handleChange} required/>
                                         {fieldErrors.lastName &&
                                             <div className="invalid-feedback d-block">{fieldErrors.lastName}</div>}
                                     </div>
@@ -71,7 +71,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('email')}</label>
                                         <input type="email" name="email"
                                                className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`}
-                                               value={formData.email} onChange={handleChange} required/>
+                                               value={formData.email || ''} onChange={handleChange} required/>
                                         {fieldErrors.email &&
                                             <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
                                     </div>
@@ -79,7 +79,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('password')}</label>
                                         <input type="password" name="password"
                                                className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
-                                               value={formData.password} onChange={handleChange} required
+                                               value={formData.password || ''} onChange={handleChange} required
                                                minLength={8}/>
                                         {fieldErrors.password &&
                                             <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
@@ -91,7 +91,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('phone')}</label>
                                         <input type="number" name="phone"
                                                className={`form-control ${fieldErrors.phone ? 'is-invalid' : ''}`}
-                                               value={formData.phone} onChange={handleChange} required/>
+                                               value={formData.phone || ''} onChange={handleChange} required/>
                                         {fieldErrors.phone &&
                                             <div className="invalid-feedback d-block">{fieldErrors.phone}</div>}
                                     </div>
@@ -99,7 +99,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('birthAt')}</label>
                                         <input type="date" name="birthAt"
                                                className={`form-control ${fieldErrors.birthAt ? 'is-invalid' : ''}`}
-                                               value={formData.birthAt} onChange={handleChange} required/>
+                                               value={formData.birthAt || ''} onChange={handleChange} required/>
                                         {fieldErrors.birthAt &&
                                             <div className="invalid-feedback d-block">{fieldErrors.birthAt}</div>}
                                     </div>
@@ -107,7 +107,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                         <label className="form-label">{t('link')}</label>
                                         <input type="text" name="link"
                                                className={`form-control ${fieldErrors.link ? 'is-invalid' : ''}`}
-                                               value={formData.link} onChange={handleChange} required/>
+                                               value={formData.link || ''} onChange={handleChange} required/>
                                         {fieldErrors.link &&
                                             <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
                                     </div>
@@ -116,7 +116,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                 <div className="row">
                                     <div className="col-md-6 mb-3">
                                         <label className="form-label">{t('gender')}</label>
-                                        <select name="gender" className="form-select" value={formData.gender}
+                                        <select name="gender" className="form-select" value={formData.gender || ''}
                                                 onChange={handleChange} required>
                                             <option value="">{t('gender')}</option>
                                             {GenderEnum.getOptions(t).map(opt => <option key={opt.value}
@@ -125,7 +125,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                     </div>
                                     <div className="col-md-6 mb-3">
                                         <label className="form-label">{t('country')}</label>
-                                        <select name="country" className="form-select" value={formData.country}
+                                        <select name="country" className="form-select" value={formData.country || ''}
                                                 onChange={handleChange} required>
                                             <option value="">{t('country')}</option>
                                             {CountryEnum.getOptions(t).map(opt => <option key={opt.value}
@@ -136,7 +136,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                 <div className="row">
                                     <div className="col-md-6 mb-3">
                                         <label className="form-label">{t('language')}</label>
-                                        <select name="language" className="form-select" value={formData.language}
+                                        <select name="language" className="form-select" value={formData.language || ''}
                                                 onChange={handleChange} required>
                                             <option value="">{t('language')}</option>
                                             {LanguageEnum.getOptions(t).map(opt => <option key={opt.value}
@@ -145,7 +145,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                     </div>
                                     <div className="col-md-6 mb-3">
                                         <label className="form-label">{t('theme')}</label>
-                                        <select name="theme" className="form-select" value={formData.theme}
+                                        <select name="theme" className="form-select" value={formData.theme || ''}
                                                 onChange={handleChange} required>
                                             <option value="">{t('theme')}</option>
                                             {ThemeEnum.getOptions(t).map(opt => <option key={opt.value}
@@ -156,7 +156,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                 <div className="row">
                                     <div className="col-md-6 mb-3">
                                         <label className="form-label">{t('color')}</label>
-                                        <select name="color" className="form-select" value={formData.color}
+                                        <select name="color" className="form-select" value={formData.color || ''}
                                                 onChange={handleChange} required>
                                             <option value="">{t('color')}</option>
                                             {ColorEnum.getOptions(t).map(opt => <option key={opt.value}
@@ -195,7 +195,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                                     <label className="form-label">{t('bio')}</label>
                                     <textarea name="bio"
                                               className={`form-control ${fieldErrors.bio ? 'is-invalid' : ''}`}
-                                              value={formData.bio} onChange={handleChange} required/>
+                                              value={formData.bio || ''} onChange={handleChange} required/>
                                     {fieldErrors.bio &&
                                         <div className="invalid-feedback d-block">{fieldErrors.bio}</div>}
                                 </div>

@@ -3,7 +3,7 @@ import {useTranslation} from '../context/TranslationContext';
 import {EmailBody} from '../api/body/EmailBody';
 
 interface PasswordResetFormViewProps {
-    formData: Partial<EmailBody>;
+    formData: EmailBody;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     loading: boolean;
@@ -36,7 +36,7 @@ export const PasswordResetFormView: React.FC<PasswordResetFormViewProps> = ({
                                         type="email"
                                         name="email"
                                         className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`}
-                                        value={formData.email}
+                                        value={formData.email || ''}
                                         onChange={handleChange}
                                         required
                                     />

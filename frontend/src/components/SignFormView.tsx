@@ -3,7 +3,7 @@ import {useTranslation} from '../context/TranslationContext';
 import {SignBody} from '../api/body/SignBody';
 
 interface SignFormViewProps {
-    formData: Partial<SignBody>;
+    formData: SignBody;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     loading: boolean;
@@ -36,7 +36,7 @@ export const SignFormView: React.FC<SignFormViewProps> = ({
                                         name="email"
                                         type="email"
                                         className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`}
-                                        value={formData.email}
+                                        value={formData.email || ''}
                                         onChange={handleChange}
                                         required
                                     />
@@ -49,7 +49,7 @@ export const SignFormView: React.FC<SignFormViewProps> = ({
                                         type="password"
                                         name="password"
                                         className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
-                                        value={formData.password}
+                                        value={formData.password || ''}
                                         onChange={handleChange}
                                         minLength={8}
                                         maxLength={64}
@@ -64,7 +64,7 @@ export const SignFormView: React.FC<SignFormViewProps> = ({
                                         name="rememberMe"
                                         className="form-check-input"
                                         id="rememberMe"
-                                        checked={formData.rememberMe}
+                                        checked={formData.rememberMe || false}
                                         onChange={handleChange}
                                     />
                                     <label className="form-check-label" htmlFor="rememberMe">{t('rememberMe')}</label>

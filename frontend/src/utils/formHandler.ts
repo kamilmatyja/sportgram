@@ -20,7 +20,11 @@ export function createFormHandler<T>(setter: React.Dispatch<React.SetStateAction
             newValue = Array.from(options).filter((o: any) => o.selected).map((o: any) => o.value);
             newValue = newValue.map((v: string) => Number(v));
         } else {
-            newValue = value;
+            if (typeof value === 'string' && /^\d+$/.test(value)) {
+                newValue = Number(value);
+            } else {
+                newValue = value;
+            }
         }
         setter((prev: any) => ({...prev, [name]: newValue}));
     };

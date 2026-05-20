@@ -31,9 +31,8 @@ export function useSign() {
         setGlobalError('');
         setFieldErrors({});
 
-        const dto = new SignBody(signFormData.email, signFormData.password, signFormData.rememberMe);
         try {
-            const res = await signProvider.sign(dto);
+            const res = await signProvider.sign(signFormData);
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('sign_id', res.id);
             sessionStorage.setItem('email', signFormData.email);
@@ -44,8 +43,8 @@ export function useSign() {
                 setFieldErrors(err.errors);
             } else if (err.error === 'User account is not confirmed.') {
                 try {
-                    const emailDto = new EmailBody(signFormData.email);
-                    const res = await registerProvider.register(emailDto);
+                    const dto = new EmailBody(signFormData.email);
+                    const res = await registerProvider.register(dto);
                     sessionStorage.setItem('step', '2');
                     sessionStorage.setItem('register_id', res.id);
                     sessionStorage.setItem('email', signFormData.email);
@@ -71,9 +70,9 @@ export function useSign() {
         setFieldErrors({});
 
         if (!signId) return;
-        const dto = new CodeBody(codeFormData.code);
+
         try {
-            const res = await signProvider.confirm(signId, dto);
+            const res = await signProvider.confirm(signId, codeFormData);
             sessionStorage.setItem('token', res.token);
             sessionStorage.removeItem('step');
             sessionStorage.removeItem('sign_id');
