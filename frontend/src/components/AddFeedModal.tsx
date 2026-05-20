@@ -1,8 +1,11 @@
 import React from 'react';
 import {useTranslation} from '../context/TranslationContext';
 import {FeedBody} from '../api/body/FeedBody';
+import {ColorEnum} from "../enums/ColorEnum.ts";
+import {UserResponse} from "../api/responses/UserResponse.ts";
 
 interface AddFeedModalProps {
+    user: UserResponse | null;
     show: boolean;
     closeModal: () => void;
     loading: boolean;
@@ -14,6 +17,7 @@ interface AddFeedModalProps {
 }
 
 export const AddFeedModal: React.FC<AddFeedModalProps> = ({
+                                                              user,
                                                               show,
                                                               closeModal,
                                                               loading,
@@ -24,11 +28,13 @@ export const AddFeedModal: React.FC<AddFeedModalProps> = ({
                                                               handleSubmit
                                                           }) => {
     const {t} = useTranslation();
-    if (!show) return null;
+    if (!show || !user) return null;
+
+    const hexColor = ColorEnum.getHex(user.color);
 
     return (
         <>
-            <div className="modal d-block" tabIndex={-1}>
+            <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <form onSubmit={handleSubmit}>
@@ -58,8 +64,9 @@ export const AddFeedModal: React.FC<AddFeedModalProps> = ({
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary"
                                         onClick={closeModal}>{t('cancel')}</button>
-                                <button type="submit" className="btn btn-profile-primary"
-                                        disabled={loading}>{loading ? t('sending') : t('saveChanges')}</button>
+                                <button type="submit" className="btn btn-profile-primary" disabled={loading}>
+                                    {loading ? t('sending') : t('addFeed')}
+                                </button>
                             </div>
                         </form>
                     </div>

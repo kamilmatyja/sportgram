@@ -14,7 +14,7 @@ export default function UserFeeds() {
     return (
         <>
             <UserFeedsView
-                targetUser={feedsService.targetUser}
+                user={feedsService.targetUser}
                 feeds={feedsService.feeds}
                 isMyProfile={feedsService.isMyProfile}
                 isAdmin={feedsService.isAdmin}
@@ -34,6 +34,7 @@ export default function UserFeeds() {
             />
 
             <AddFeedModal
+                user={feedsService.targetUser}
                 show={modalsService.showAdd}
                 closeModal={modalsService.closeAddModal}
                 loading={modalsService.loading}
@@ -45,6 +46,7 @@ export default function UserFeeds() {
             />
 
             <ManageFeedModal
+                user={feedsService.targetUser}
                 show={modalsService.showManage}
                 feed={modalsService.currentFeed}
                 isMyProfile={feedsService.isMyProfile}

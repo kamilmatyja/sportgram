@@ -9,7 +9,7 @@ import {ColorEnum} from '../enums/ColorEnum';
 import {formatDate} from '../utils/dateFormat';
 
 interface UserFeedsViewProps {
-    targetUser: UserResponse | null;
+    user: UserResponse | null;
     feeds: FeedResponse[];
     isMyProfile: boolean;
     isAdmin: boolean;
@@ -29,7 +29,7 @@ interface UserFeedsViewProps {
 }
 
 export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
-                                                                targetUser,
+                                                                user,
                                                                 feeds,
                                                                 isMyProfile,
                                                                 isAdmin,
@@ -47,37 +47,36 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                                                                 onAddClick,
                                                                 onManageClick
                                                             }) => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
-    if (error) return <div className="container mt-5 alert alert-danger">{t(error)}</div>;
-    if (loading && !targetUser) return <div className="container mt-5 text-center">
-        <div className="spinner-border"/>
-    </div>;
+    if (loading) return <div className="container mt-5 text-center"><div className="spinner-border" /></div>;
 
-    const hexColor = targetUser ? ColorEnum.getHex(targetUser.color) : '#0d6efd';
+    if (error || !user) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
+
+    const hexColor = ColorEnum.getHex(user.color);
 
     return (
         <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
-            {targetUser && (
+            {user && (
                 <>
                     <div className="card shadow-sm mb-4">
                         <div
                             className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
-                            <img src={`data:image/webp;base64,${targetUser.backgroundPhoto}`} alt="Background"
+                            <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background"
                                  className="w-100 h-100 object-fit-cover"/>
                         </div>
                         <div className="card-body position-relative pt-5">
-                            <img src={`data:image/webp;base64,${targetUser.profilePhoto}`} alt="Profile"
+                            <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile"
                                  className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                             <div className="mt-3">
-                                <h2 className="mb-0 profile-theme-text">{targetUser.firstName} {targetUser.lastName}</h2>
-                                <p className="text-muted mb-0">@{targetUser.link}</p>
+                                <h2 className="mb-0 profile-theme-text">{user.firstName} {user.lastName}</h2>
+                                <p className="text-muted mb-0">@{user.link}</p>
                             </div>
                         </div>
                     </div>
                     <div className="d-flex flex-wrap gap-2 mb-3 overflow-x-auto">
-                        <a href={`/users/${targetUser.link}`} className="btn btn-profile-outline-primary">
-                            <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i> {t('profile')}
+                        <a href={`/users/${user.link}`} className="btn btn-profile-outline-primary">
+                            <i className="bi bi-arrow-left me-1"></i> {t('profile')}
                         </a>
                     </div>
                 </>
@@ -150,9 +149,10 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                                             <td>{formatDate(feed.createdAt)}</td>
                                             <td className="text-end">
                                                 {(isMyProfile || isAdmin) && (
-                                                    <button className="btn btn-sm btn-profile-outline-primary"
+                                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
                                                             onClick={() => onManageClick(feed)}>
-                                                        <i className="bi bi-gear" aria-hidden="true"></i> {t('manage')}
+                                                        <i className="bi bi-gear" aria-hidden="true"></i>
+                                                        <span className="visually-hidden">{t('manage')}</span>
                                                     </button>
                                                 )}
                                             </td>
