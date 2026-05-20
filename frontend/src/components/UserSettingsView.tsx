@@ -1,13 +1,13 @@
 import React from 'react';
-import { useTranslation } from '../context/TranslationContext';
-import { UserResponse } from '../api/responses/UserResponse';
-import { UserUpdateBody } from '../api/body/UserUpdateBody';
-import { ColorEnum } from '../enums/ColorEnum';
-import { CountryEnum } from '../enums/CountryEnum';
-import { GenderEnum } from '../enums/GenderEnum';
-import { LanguageEnum } from '../enums/LanguageEnum';
-import { ThemeEnum } from '../enums/ThemeEnum';
-import { DisciplineEnum } from '../enums/DisciplineEnum';
+import {useTranslation} from '../context/TranslationContext';
+import {UserResponse} from '../api/responses/UserResponse';
+import {UserUpdateBody} from '../api/body/UserUpdateBody';
+import {ColorEnum} from '../enums/ColorEnum';
+import {CountryEnum} from '../enums/CountryEnum';
+import {GenderEnum} from '../enums/GenderEnum';
+import {LanguageEnum} from '../enums/LanguageEnum';
+import {ThemeEnum} from '../enums/ThemeEnum';
+import {DisciplineEnum} from '../enums/DisciplineEnum';
 
 interface UserSettingsViewProps {
     user: UserResponse | null;
@@ -48,8 +48,8 @@ export const UserSettingsView: React.FC<UserSettingsViewProps> = ({
                 </div>
             </div>
             <div className="d-flex flex-wrap gap-2 mb-3 overflow-x-auto">
-                <a href={`/users/${user.link}`} className="btn btn-outline-primary">
-                    <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i> {t('profile')}
+                <a href={`/users/${user.link}`} className="btn btn-profile-outline-primary">
+                    <i className="bi bi-arrow-left me-1"></i> {t('profile')}
                 </a>
             </div>
             <div className="card shadow-sm">
@@ -166,17 +166,19 @@ export const UserSettingsView: React.FC<UserSettingsViewProps> = ({
                             <div className="col-md-6 mb-3">
                                 <label className="form-label">{t('profilePhoto')}</label>
                                 <input type="file" accept="image/*" className={`form-control ${fieldErrors.profilePhoto ? 'is-invalid' : ''}`} name="profilePhoto" onChange={handleChange} />
+                                <div className="form-text">{t('photoOptional')}</div>
                                 {fieldErrors.profilePhoto && <div className="invalid-feedback d-block">{fieldErrors.profilePhoto}</div>}
                             </div>
                             <div className="col-md-6 mb-3">
                                 <label className="form-label">{t('backgroundPhoto')}</label>
                                 <input type="file" accept="image/*" className={`form-control ${fieldErrors.backgroundPhoto ? 'is-invalid' : ''}`} name="backgroundPhoto" onChange={handleChange} />
+                                <div className="form-text">{t('photoOptional')}</div>
                                 {fieldErrors.backgroundPhoto && <div className="invalid-feedback d-block">{fieldErrors.backgroundPhoto}</div>}
                             </div>
                         </div>
 
                         <div className="d-flex justify-content-end mt-4">
-                            <button type="submit" className="btn btn-outline-primary" disabled={submitLoading}>
+                            <button type="submit" className="btn btn-profile-primary" disabled={submitLoading}>
                                 {submitLoading ? t('sending') : t('saveChanges')}
                             </button>
                         </div>

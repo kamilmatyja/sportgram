@@ -217,7 +217,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary"
                                         onClick={closeModal}>{t('cancel')}</button>
-                                <button type="submit" className="btn btn-success" disabled={loading}>
+                                <button type="submit" className="btn btn-primary" disabled={loading}>
                                     {loading ? t('sending') : t('addUser')}
                                 </button>
                             </div>

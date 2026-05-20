@@ -48,7 +48,7 @@ export default function UsersView({
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h2 className="mb-0">{t('userTitle')}</h2>
                 {isAdmin && (
-                    <button className="btn btn-success" onClick={onAddUserClick}>
+                    <button className="btn btn-primary" onClick={onAddUserClick}>
                         {t('addUser')}
                     </button>
                 )}
@@ -81,9 +81,7 @@ export default function UsersView({
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                 </select>
-            </div>
-            <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                <select value={sort} onChange={onSortChange} className="form-select w-auto">
+                <select value={sort} onChange={onSortChange} className="form-select w-auto ms-auto">
                     <option value="createdAt:desc">{t('sortCreatedDesc')}</option>
                     <option value="createdAt:asc">{t('sortCreatedAsc')}</option>
                     <option value="firstName:asc">{t('sortFirstNameAsc')}</option>
@@ -137,7 +135,7 @@ export default function UsersView({
                                     <td>{formatDate(u.createdAt)}</td>
                                     <td>
                                         <a href={`/users/${u.link}`}
-                                           className="btn btn-sm btn-outline-secondary"
+                                           className="btn btn-sm btn-outline-primary"
                                            title={t('profile')}>
                                             <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i>
                                             <span className="visually-hidden">{t('profile')}</span>

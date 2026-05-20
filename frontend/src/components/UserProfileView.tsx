@@ -92,7 +92,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                                     .map(opt => (
                                                         <button
                                                             key={opt.value}
-                                                            className="btn btn-xs btn-outline-warning py-0 px-2"
+                                                            className="btn btn-xs btn-profile-outline-warning py-0 px-2"
                                                             onClick={() => handleChangeUserStatus(opt.value)}
                                                             disabled={statusLoading}
                                                         >
@@ -125,7 +125,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                     <li className="d-flex align-items-center flex-wrap gap-2">
                                         <strong>{t('friendshipStatus')}:</strong>
                                         <button
-                                            className="btn btn-xs btn-outline-primary py-0 px-2"
+                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
                                             onClick={handleAddFriend}
                                         >
                                             {t('addFriend')}
@@ -144,7 +144,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                                         opt.value !== friendship.status && (
                                                             <button
                                                                 key={opt.value}
-                                                                className="btn btn-xs btn-outline-primary py-0 px-2"
+                                                                className="btn btn-xs btn-profile-outline-primary py-0 px-2"
                                                                 onClick={() => handleUpdateFriendStatus(opt.value)}
                                                             >
                                                                 {opt.label}
@@ -166,42 +166,43 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 {(isMyProfile || isAdmin || friendship?.status === FriendStatusEnum.ACCEPTED) && (
                     <>
                         {isMyProfile && (
-                            <a href={`/users/${user.link}/settings`} className="btn btn-outline-primary">
+                            <a href={`/users/${user.link}/settings`} className="btn btn-profile-outline-primary">
                                 <i className="bi bi-gear me-1"></i> {t('settings')}
                             </a>
                         )}
-                        <a href={`/users/${user.link}/feeds`} className="btn btn-outline-primary">
+                        <a href={`/users/${user.link}/feeds`} className="btn btn-profile-outline-primary">
                             <i className="bi bi-list-ul me-1"></i> {t('feeds')}
                         </a>
-                        <a href={`/users/${user.link}/stories`} className="btn btn-outline-primary">
+                        <a href={`/users/${user.link}/stories`} className="btn btn-profile-outline-primary">
                             <i className="bi bi-collection-play me-1"></i> {t('stories')}
                         </a>
-                        <a href={`/users/${user.link}/friends`} className="btn btn-outline-primary">
+                        <a href={`/users/${user.link}/friends`} className="btn btn-profile-outline-primary">
                             <i className="bi bi-people me-1"></i> {t('friends')}
                         </a>
-                        <a href={`/users/${user.link}/goals`} className="btn btn-outline-primary">
+                        <a href={`/users/${user.link}/goals`} className="btn btn-profile-outline-primary">
                             <i className="bi bi-bullseye me-1"></i> {t('goals')}
                         </a>
-                        <a href={`/users/${user.link}/pages`} className="btn btn-outline-primary">
+                        <a href={`/users/${user.link}/pages`} className="btn btn-profile-outline-primary">
                             <i className="bi bi-file-earmark-text me-1"></i> {t('pages')}
                         </a>
-                        <a href={`/users/${user.link}/events`} className="btn btn-outline-primary">
+                        <a href={`/users/${user.link}/events`} className="btn btn-profile-outline-primary">
                             <i className="bi bi-calendar-event me-1"></i> {t('events')}
                         </a>
-                        <a href={`/users/${user.link}/trainings`} className="btn btn-outline-primary">
+                        <a href={`/users/${user.link}/trainings`} className="btn btn-profile-outline-primary">
                             <i className="bi bi-bar-chart-steps me-1"></i> {t('trainings')}
                         </a>
                         {isMyProfile && (
-                            <a href={`/users/${user.link}/notifications`} className="btn btn-outline-primary">
+                            <a href={`/users/${user.link}/notifications`} className="btn btn-profile-outline-primary">
                                 <i className="bi bi-bell me-1"></i> {t('notifications')}
                             </a>
                         )}
                         {isMyProfile && (
-                            <a href={`/users/${user.link}/push-subscriptions`} className="btn btn-outline-primary">
+                            <a href={`/users/${user.link}/push-subscriptions`}
+                               className="btn btn-profile-outline-primary">
                                 <i className="bi bi-broadcast-pin me-1"></i> {t('pushSubscriptions')}
                             </a>
                         )}
-                        <a href={`/users/${user.link}/conversations`} className="btn btn-outline-primary">
+                        <a href={`/users/${user.link}/conversations`} className="btn btn-profile-outline-primary">
                             <i className="bi bi-chat-dots me-1"></i> {t('conversations')}
                         </a>
                     </>
