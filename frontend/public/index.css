@@ -2,6 +2,10 @@
     --theme-color: #007bff;
 }
 
+html, body {
+    overflow-x: hidden;
+}
+
 .profile-theme-text {
     color: var(--theme-color) !important;
 }
@@ -36,4 +40,10 @@
     --bs-btn-active-border-color: var(--theme-color);
     --bs-btn-disabled-color: var(--theme-color);
     --bs-btn-disabled-border-color: var(--theme-color);
+}
+
+.table-responsive-custom {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
 }

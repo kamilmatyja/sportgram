@@ -100,52 +100,54 @@ export default function UsersView({
             <div className="mb-3"/>
             {loading ? <div>{t('loading')}</div> : error ? <div className="text-danger">{error}</div> : (
                 <>
-                    <table className="table table-bordered table-hover">
-                        <thead>
-                        <tr>
-                            <th>{t('photo')}</th>
-                            <th>{t('firstName')}</th>
-                            <th>{t('lastName')}</th>
-                            <th>{t('email')}</th>
-                            <th>{t('gender')}</th>
-                            <th>{t('country')}</th>
-                            <th>{t('status')}</th>
-                            <th>{t('createdAt')}</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {users.length === 0 ? <tr>
-                            <td colSpan={9}>{t('noUsers')}</td>
-                        </tr> : users.map(u => (
-                            <tr key={u.id}>
-                                <td>
-                                    {u.profilePhoto ? (
-                                        <img src={`data:image/webp;base64,${u.profilePhoto}`} alt="avatar"
-                                             className="rounded-circle" width={40} height={40}/>
-                                    ) : (
-                                        <span className="text-muted">-</span>
-                                    )}
-                                </td>
-                                <td>{u.firstName}</td>
-                                <td>{u.lastName}</td>
-                                <td>{u.email}</td>
-                                <td>{GenderEnum.getOptions(t).find(opt => String(opt.value) === String(u.gender))?.label || u.gender}</td>
-                                <td>{CountryEnum.getOptions(t).find(opt => String(opt.value) === String(u.country))?.label || u.country}</td>
-                                <td>{UserStatusEnum.getOptions(t).find(opt => String(opt.value) === String(u.status))?.label || u.status}</td>
-                                <td>{formatDate(u.createdAt)}</td>
-                                <td>
-                                    <a href={`/users/${u.link}`}
-                                       className="btn btn-sm btn-outline-secondary"
-                                       title={t('profile')}>
-                                        <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-                                        <span className="visually-hidden">{t('profile')}</span>
-                                    </a>
-                                </td>
+                    <div className="table-responsive-custom">
+                        <table className="table table-bordered table-hover">
+                            <thead>
+                            <tr>
+                                <th>{t('photo')}</th>
+                                <th>{t('firstName')}</th>
+                                <th>{t('lastName')}</th>
+                                <th>{t('email')}</th>
+                                <th>{t('gender')}</th>
+                                <th>{t('country')}</th>
+                                <th>{t('status')}</th>
+                                <th>{t('createdAt')}</th>
+                                <th></th>
                             </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                            {users.length === 0 ? <tr>
+                                <td colSpan={9}>{t('noUsers')}</td>
+                            </tr> : users.map(u => (
+                                <tr key={u.id}>
+                                    <td>
+                                        {u.profilePhoto ? (
+                                            <img src={`data:image/webp;base64,${u.profilePhoto}`} alt="avatar"
+                                                 className="rounded-circle" width={40} height={40}/>
+                                        ) : (
+                                            <span className="text-muted">-</span>
+                                        )}
+                                    </td>
+                                    <td>{u.firstName}</td>
+                                    <td>{u.lastName}</td>
+                                    <td>{u.email}</td>
+                                    <td>{GenderEnum.getOptions(t).find(opt => String(opt.value) === String(u.gender))?.label || u.gender}</td>
+                                    <td>{CountryEnum.getOptions(t).find(opt => String(opt.value) === String(u.country))?.label || u.country}</td>
+                                    <td>{UserStatusEnum.getOptions(t).find(opt => String(opt.value) === String(u.status))?.label || u.status}</td>
+                                    <td>{formatDate(u.createdAt)}</td>
+                                    <td>
+                                        <a href={`/users/${u.link}`}
+                                           className="btn btn-sm btn-outline-secondary"
+                                           title={t('profile')}>
+                                            <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                                            <span className="visually-hidden">{t('profile')}</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
                     <div className="d-flex justify-content-between align-items-center mb-3">
                         <button className="btn btn-outline-primary mx-2" disabled={page === 1}
                                 onClick={onPrevPage}>{t('prev')}</button>
