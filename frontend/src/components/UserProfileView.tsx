@@ -74,48 +74,33 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                             <p className="text-muted mb-2">@{user.link}</p>
                             <p className="mb-0">{user.bio}</p>
                             <ul className="list-unstyled mt-2 mb-2">
-                                {!isMyProfile && friendship?.status !== FriendStatusEnum.BLOCKED && (
+                                {(isMyProfile || isAdmin || friendship?.status === FriendStatusEnum.ACCEPTED) && (
                                     <>
-                                        {user.email && (
-                                            <li><strong>{t('email')}:</strong> {user.email}</li>
-                                        )}
-                                        {user.phone && (
-                                            <li><strong>{t('phone')}:</strong> {user.phone}</li>
-                                        )}
-                                        {user.country && (
-                                            <li>
-                                                <strong>{t('country')}:</strong> {CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}
-                                            </li>
-                                        )}
-                                        {user.gender && (
-                                            <li>
-                                                <strong>{t('gender')}:</strong> {GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}
-                                            </li>
-                                        )}
-                                        {user.birthAt && (
-                                            <li><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
-                                        )}
+                                        <li><strong>{t('email')}:</strong> {user.email}</li>
+                                        <li><strong>{t('phone')}:</strong> {user.phone}</li>
+                                        <li><strong>{t('country')}:</strong> {CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}</li>
+                                        <li><strong>{t('gender')}:</strong> {GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}</li>
+                                        <li><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
                                         <li className="d-flex align-items-center flex-wrap gap-2">
                                             <strong>{t('userStatus')}:</strong>
-                                            <span>
-                                                {UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}
-                                                {isAdmin && (
-                                                    ', ' + t('changeStatus') + ': '
-                                                )}
-                                            </span>
-                                            {isAdmin && !isMyProfile && UserStatusEnum.getNanoOptions(t)
-                                                .filter(opt => opt.value !== user.status)
-                                                .map(opt => (
-                                                    <button
-                                                        key={opt.value}
-                                                        className="btn btn-xs btn-outline-warning ms-2 py-0 px-2"
-                                                        onClick={() => handleChangeUserStatus(opt.value)}
-                                                        disabled={statusLoading}
-                                                    >
-                                                        {statusLoading ? t('loading') : opt.label}
-                                                    </button>
-                                                ))
-                                            }
+                                            <span>{UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}</span>
+                                            {!isMyProfile && isAdmin && (
+                                                <>
+                                                    <strong>{t('changeStatus')}: </strong>
+                                                    {UserStatusEnum.getNanoOptions(t)
+                                                    .filter(opt => opt.value !== user.status)
+                                                    .map(opt => (
+                                                        <button
+                                                            key={opt.value}
+                                                            className="btn btn-xs btn-outline-warning py-0 px-2"
+                                                            onClick={() => handleChangeUserStatus(opt.value)}
+                                                            disabled={statusLoading}
+                                                        >
+                                                            {statusLoading ? t('loading') : opt.label}
+                                                        </button>
+                                                    ))}
+                                                </>
+                                            )}
                                         </li>
                                         <li className="d-flex align-items-center flex-wrap gap-2">
                                             <strong>{t('role')}:</strong>
@@ -140,7 +125,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                     <li className="d-flex align-items-center flex-wrap gap-2">
                                         <strong>{t('friendshipStatus')}:</strong>
                                         <button
-                                            className="btn btn-xs btn-outline-primary ms-2 py-0 px-2"
+                                            className="btn btn-xs btn-outline-primary py-0 px-2"
                                             onClick={handleAddFriend}
                                         >
                                             {t('addFriend')}
@@ -150,18 +135,16 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                 {!isMyProfile && friendship && (
                                     <li className="d-flex align-items-center flex-wrap gap-2">
                                         <strong>{t('friendshipStatus')}:</strong>
-                                        <span>
-                                            {FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label || friendship.status}
-                                            {', ' + t('changeStatus') + ': '}
-                                        </span>
+                                        <span>{FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label || friendship.status}</span>
                                         <>
-                                            {(currentUser && (friendship.senderUserId === currentUser.id || friendship.receiverUserId === currentUser.id)) && (
+                                            {(friendship.senderUserId === currentUser?.id || friendship.receiverUserId === currentUser?.id) && (
                                                 <>
+                                                    <strong>{t('changeStatus')}: </strong>
                                                     {FriendStatusEnum.getNanoOptions(t).map(opt => (
                                                         opt.value !== friendship.status && (
                                                             <button
                                                                 key={opt.value}
-                                                                className="btn btn-xs btn-outline-primary ms-2 py-0 px-2"
+                                                                className="btn btn-xs btn-outline-primary py-0 px-2"
                                                                 onClick={() => handleUpdateFriendStatus(opt.value)}
                                                             >
                                                                 {opt.label}
@@ -180,7 +163,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             </div>
 
             <div className="d-flex flex-wrap gap-2 mb-3 overflow-x-auto">
-                {!isMyProfile && friendship?.status !== FriendStatusEnum.BLOCKED && (
+                {(isMyProfile || isAdmin || friendship?.status === FriendStatusEnum.ACCEPTED) && (
                     <>
                         {isMyProfile && (
                             <a href={`/users/${user.link}/settings`} className="btn btn-outline-primary">
