@@ -1,20 +1,22 @@
-import React, {useEffect, useState} from 'react';
 import {UserProvider} from '../api/providers/UserProvider';
 import {FriendProvider} from '../api/providers/FriendProvider';
-import {FriendResponse} from '../api/responses/FriendResponse';
-import {UserResponse} from '../api/responses/UserResponse';
-import {FriendFilterQuery} from '../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../api/queries/FriendIndexQuery';
 import {UserFilterQuery} from '../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 import {useCheckPermission} from '../utils/checkPermission';
-import {FriendStatusEnum} from '../enums/FriendStatusEnum';
-import {RoleEnum} from '../enums/RoleEnum';
+import {UserResponse} from "../api/responses/UserResponse.ts";
+import {useEffect, useState} from "react";
+import {FriendResponse} from "../api/responses/FriendResponse.ts";
+import {FriendFilterQuery} from "../api/queries/FriendFilterQuery.ts";
+import {RoleEnum} from "../enums/RoleEnum.ts";
+import {FriendStatusEnum} from "../enums/FriendStatusEnum.ts";
 
 export function useUserFriends(link?: string) {
     const {getCurrentUser} = useCheckPermission();
 
     const [friends, setFriends] = useState<FriendResponse[]>([]);
+    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
+
     const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -46,6 +48,30 @@ export function useUserFriends(link?: string) {
 
             const data = await friendProvider.index(indexDto);
             setFriends(data);
+
+            const userIdsToFetch = Array.from(
+                new Set(data.flatMap(f => [f.senderUserId, f.receiverUserId]))
+            );
+
+            if (userIdsToFetch.length > 0) {
+                const uFilter = new UserFilterQuery();
+                uFilter.userIds = userIdsToFetch;
+                const uIndexDto = new UserIndexQuery();
+                uIndexDto.filter = uFilter;
+                uIndexDto.limit = userIdsToFetch.length;
+
+                const usersData = await userProvider.index(uIndexDto);
+
+                const usersMap = usersData.reduce((acc, curr) => {
+                    acc[curr.id] = curr;
+                    return acc;
+                }, {} as Record<string, UserResponse>);
+
+                setRelatedUsers(usersMap);
+            } else {
+                setRelatedUsers({});
+            }
+
         } catch (err: any) {
             setError(err.error);
         } finally {
@@ -138,7 +164,7 @@ export function useUserFriends(link?: string) {
     };
 
     return {
-        friends, targetUser, isMyProfile, isAdmin, page, limit, sort, filters, loading, error,
+        friends, relatedUsers, targetUser, isMyProfile, isAdmin, page, limit, sort, filters, loading, error,
         handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshFriends
     };
 }

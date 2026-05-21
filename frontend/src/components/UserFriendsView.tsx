@@ -11,6 +11,7 @@ import {formatDate} from '../utils/dateFormat';
 interface UserFriendsViewProps {
     user: UserResponse | null;
     friends: FriendResponse[];
+    relatedUsers: Record<string, UserResponse>;
     isMyProfile: boolean;
     isAdmin: boolean;
     loading: boolean;
@@ -31,6 +32,7 @@ interface UserFriendsViewProps {
 export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                                                                     user,
                                                                     friends,
+                                                                    relatedUsers,
                                                                     isMyProfile,
                                                                     isAdmin,
                                                                     loading,
@@ -112,8 +114,8 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                                 <table className="table table-bordered table-hover align-middle">
                                     <thead className="table-light">
                                     <tr>
-                                        <th>Sender ID</th>
-                                        <th>Receiver ID</th>
+                                        <th>{t('sender')}</th>
+                                        <th>{t('receiver')}</th>
                                         <th>{t('status')}</th>
                                         <th>{t('createdAt')}</th>
                                         <th></th>
@@ -122,24 +124,29 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                                     <tbody>
                                     {friends.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="text-center text-muted">{t('noUsers') || 'Brak znajomych'}</td>
+                                            <td colSpan={5} className="text-center text-muted">{t('noUsers')}</td>
                                         </tr>
-                                    ) : friends.map(friend => (
-                                        <tr key={friend.id}>
-                                            <td>{friend.senderUserId}</td>
-                                            <td>{friend.receiverUserId}</td>
-                                            <td>{FriendStatusEnum.getOptions(t).find(opt => String(opt.value) === String(friend.status))?.label || friend.status}</td>
-                                            <td>{formatDate(friend.createdAt)}</td>
-                                            <td className="text-end">
-                                                {(isMyProfile || isAdmin) && (
-                                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(friend)}>
-                                                        <i className="bi bi-gear" aria-hidden="true"></i>
-                                                        <span className="visually-hidden">{t('manage')}</span>
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    ) : friends.map(friend => {
+                                        const sender = relatedUsers[friend.senderUserId];
+                                        const receiver = relatedUsers[friend.receiverUserId];
+
+                                        return (
+                                            <tr key={friend.id}>
+                                                <td>{sender ? `${sender.firstName} ${sender.lastName}` : friend.senderUserId}</td>
+                                                <td>{receiver ? `${receiver.firstName} ${receiver.lastName}` : friend.receiverUserId}</td>
+                                                <td>{FriendStatusEnum.getOptions(t).find(opt => String(opt.value) === String(friend.status))?.label || friend.status}</td>
+                                                <td>{formatDate(friend.createdAt)}</td>
+                                                <td className="text-end">
+                                                    {(isMyProfile || isAdmin) && (
+                                                        <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(friend)}>
+                                                            <i className="bi bi-gear" aria-hidden="true"></i>
+                                                            <span className="visually-hidden">{t('manage')}</span>
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                     </tbody>
                                 </table>
                             </div>

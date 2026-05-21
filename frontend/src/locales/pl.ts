@@ -290,4 +290,6 @@ export const pl = {
     friend: "Znajomi",
     selectUser: "Wybierz użytkownika...",
     friendsList: "Lista znajomych",
+    sender: "Wysyłający",
+    receiver: "Odbierający"
 };

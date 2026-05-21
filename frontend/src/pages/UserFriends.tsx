@@ -16,6 +16,7 @@ export default function UserFriends() {
             <UserFriendsView
                 user={friendsService.targetUser}
                 friends={friendsService.friends}
+                relatedUsers={friendsService.relatedUsers}
                 isMyProfile={friendsService.isMyProfile}
                 isAdmin={friendsService.isAdmin}
                 loading={friendsService.loading}

@@ -290,4 +290,6 @@ export const en = {
     friend: "Friend",
     selectUser: "Select user...",
     friendsList: "Friends list",
+    sender: "Sender",
+    receiver: "Receiver",
 };
