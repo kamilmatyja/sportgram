@@ -148,7 +148,6 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                                 </option>
                                             ))}
                                         </select>
-                                        <div className="form-text">{t('participantsHint')}</div>
                                         {fieldErrors.participants && <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
                                     </div>
                                 </form>
