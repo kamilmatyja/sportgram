@@ -183,7 +183,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                             <i className="bi bi-collection-play me-1"></i> {t('stories')}
                         </a>
                         <a href={`/users/${user.link}/friends`} className="btn btn-profile-outline-primary">
-                            <i className="bi bi-people me-1"></i> {t('friends')}
+                            <i className="bi bi-people me-1"></i> {t('friend')}
                         </a>
                         <a href={`/users/${user.link}/goals`} className="btn btn-profile-outline-primary">
                             <i className="bi bi-bullseye me-1"></i> {t('goals')}

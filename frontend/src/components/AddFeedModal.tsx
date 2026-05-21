@@ -1,8 +1,8 @@
 import React from 'react';
 import {useTranslation} from '../context/TranslationContext';
 import {FeedBody} from '../api/body/FeedBody';
-import {ColorEnum} from "../enums/ColorEnum.ts";
-import {UserResponse} from "../api/responses/UserResponse.ts";
+import {ColorEnum} from '../enums/ColorEnum';
+import {UserResponse} from '../api/responses/UserResponse';
 
 interface AddFeedModalProps {
     user: UserResponse | null;

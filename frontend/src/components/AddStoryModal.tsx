@@ -1,8 +1,8 @@
 import React from 'react';
 import {useTranslation} from '../context/TranslationContext';
 import {StoryBody} from '../api/body/StoryBody';
-import {ColorEnum} from "../enums/ColorEnum";
-import {UserResponse} from "../api/responses/UserResponse";
+import {ColorEnum} from '../enums/ColorEnum';
+import {UserResponse} from '../api/responses/UserResponse';
 
 interface AddStoryModalProps {
     user: UserResponse | null;

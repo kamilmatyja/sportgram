@@ -19,7 +19,7 @@ export function useFeedModals(onSuccess: () => void) {
     const feedProvider = new FeedProvider();
 
     const openAddModal = () => {
-        setFormData(formData);
+        setFormData(new FeedBody('', ''));
         setGlobalError('');
         setFieldErrors({});
         setShowAdd(true);

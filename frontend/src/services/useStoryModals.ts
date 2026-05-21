@@ -19,7 +19,7 @@ export function useStoryModals(onSuccess: () => void) {
     const storyProvider = new StoryProvider();
 
     const openAddModal = () => {
-        setFormData(formData);
+        setFormData(new StoryBody('', ''));
         setGlobalError('');
         setFieldErrors({});
         setShowAdd(true);

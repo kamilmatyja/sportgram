@@ -7,7 +7,7 @@ import {LanguageEnum} from '../enums/LanguageEnum';
 import {ThemeEnum} from '../enums/ThemeEnum';
 import {ColorEnum} from '../enums/ColorEnum';
 import {UserCreateBody} from '../api/body/UserCreateBody';
-import {DisciplineEnum} from "../enums/DisciplineEnum.ts";
+import {DisciplineEnum} from '../enums/DisciplineEnum';
 
 interface AddUserModalProps {
     show: boolean;

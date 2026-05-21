@@ -286,5 +286,8 @@ export const en = {
         goalParticipantResult: "Goal result",
         training: "Training",
         regular: "Regular feed"
-    }
+    },
+    friend: "Friend",
+    selectUser: "Select user...",
+    friendsList: "Friends list",
 };

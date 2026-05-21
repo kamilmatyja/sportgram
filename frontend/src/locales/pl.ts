@@ -144,7 +144,7 @@ export const pl = {
         blocked: "Zablokowany"
     },
     friendshipStatus: "Status znajomości",
-    addFriend: "Dodaj do znajomych",
+    addFriend: "Dodaj znajomego",
     changeStatus: "Zmień status",
     discipline: "Dyscypliny",
     disciplines: {
@@ -286,5 +286,8 @@ export const pl = {
         goalParticipantResult: "Wynik w celu",
         training: "Trening",
         regular: "Zwykły wpis"
-    }
+    },
+    friend: "Znajomi",
+    selectUser: "Wybierz użytkownika...",
+    friendsList: "Lista znajomych",
 };

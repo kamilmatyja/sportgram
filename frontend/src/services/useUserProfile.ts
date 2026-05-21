@@ -11,7 +11,7 @@ import {useTranslation} from '../context/TranslationContext';
 import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 import {FriendIndexQuery} from '../api/queries/FriendIndexQuery';
 import {UserFilterQuery} from '../api/queries/UserFilterQuery';
-import {FriendFilterQuery} from "../api/queries/FriendFilterQuery.ts";
+import {FriendFilterQuery} from '../api/queries/FriendFilterQuery';
 
 export function useUserProfile(link?: string) {
     const {t} = useTranslation();
