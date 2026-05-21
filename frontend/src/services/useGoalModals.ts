@@ -1,0 +1,199 @@
+import React, {useState} from 'react';
+import {GoalProvider} from '../api/providers/GoalProvider';
+import {UserProvider} from '../api/providers/UserProvider';
+import {FriendProvider} from '../api/providers/FriendProvider';
+import {GoalBody} from '../api/body/GoalBody';
+import {StatusBody} from '../api/body/StatusBody';
+import {GoalResponse} from '../api/responses/GoalResponse';
+import {UserResponse} from '../api/responses/UserResponse';
+import {createFormHandler} from '../utils/formHandler';
+import {useCheckPermission} from '../utils/checkPermission';
+import {UserIndexQuery} from "../api/queries/UserIndexQuery.ts";
+import {FriendFilterQuery} from "../api/queries/FriendFilterQuery.ts";
+import {FriendIndexQuery} from "../api/queries/FriendIndexQuery.ts";
+
+export function useGoalModals(onSuccess: () => void) {
+    const [showAdd, setShowAdd] = useState(false);
+    const [showManage, setShowManage] = useState(false);
+    const [showDetails, setShowDetails] = useState(false);
+
+    const [currentGoal, setCurrentGoal] = useState<GoalResponse | null>(null);
+    const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
+
+    const [loading, setLoading] = useState(false);
+    const [globalError, setGlobalError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
+
+    const [formData, setFormData] = useState(new GoalBody('', '', '', '', 0, 0, null, []));
+
+    const goalProvider = new GoalProvider();
+    const userProvider = new UserProvider();
+    const friendProvider = new FriendProvider();
+    const {getCurrentUser} = useCheckPermission();
+
+    const openAddModal = async () => {
+        setFormData(new GoalBody('', '', '', '', 0, 0, null, []));
+        setGlobalError('');
+        setFieldErrors({});
+        setLoading(true);
+
+        try {
+            const currentUser = await getCurrentUser();
+            if (currentUser) {
+                const uIndexDto = new UserIndexQuery();
+                uIndexDto.limit = 100;
+                const allUsers = await userProvider.index(uIndexDto);
+                const fFilterDto = new FriendFilterQuery();
+                fFilterDto.userIds = [currentUser.id];
+                const fIndexDto = new FriendIndexQuery();
+                fIndexDto.limit = 100;
+                fIndexDto.filter = fFilterDto;
+                const myFriends = await friendProvider.index(fIndexDto);
+
+                const friendIds = new Set<string>();
+                myFriends.forEach(f => {
+                    friendIds.add(f.senderUserId);
+                    friendIds.add(f.receiverUserId);
+                });
+
+                setAvailableUsers(allUsers.filter(u => u.id !== currentUser.id && !friendIds.has(u.id)));
+            }
+        } catch (e: any) {
+            setGlobalError(e.error);
+        } finally {
+            setLoading(false);
+            setShowAdd(true);
+        }
+    };
+
+    const closeAddModal = () => setShowAdd(false);
+
+    const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setLoading(true);
+        setGlobalError('');
+        setFieldErrors({});
+        try {
+            await goalProvider.create(formData);
+            closeAddModal();
+            onSuccess();
+        } catch (err: any) {
+            if (err.errors) setFieldErrors(err.errors);
+            else setGlobalError(err.error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const openManageModal = (goal: GoalResponse) => {
+        setCurrentGoal(goal);
+        setFormData(new GoalBody(
+            goal.startedAt ? goal.startedAt.substring(0, 16) : '',
+            goal.endedAt ? goal.endedAt.substring(0, 16) : '',
+            goal.text,
+            goal.link,
+            goal.discipline,
+            goal.distance,
+            goal.time,
+            goal.participants.map(p => p.userId)
+        ));
+        setGlobalError('');
+        setFieldErrors({});
+        setShowManage(true);
+    };
+
+    const closeManageModal = () => setShowManage(false);
+
+    const openDetailsModal = (goal: GoalResponse) => {
+        setCurrentGoal(goal);
+        setShowDetails(true);
+    };
+
+    const closeDetailsModal = () => setShowDetails(false);
+
+    const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!currentGoal) return;
+        setLoading(true);
+        setGlobalError('');
+        setFieldErrors({});
+        try {
+            await goalProvider.update(currentGoal.id, formData);
+            closeManageModal();
+            onSuccess();
+        } catch (err: any) {
+            if (err.errors) setFieldErrors(err.errors);
+            else setGlobalError(err.error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleStatusSubmit = async (newStatus: number) => {
+        if (!currentGoal) return;
+        setLoading(true);
+        setGlobalError('');
+        try {
+            await goalProvider.updateStatus(currentGoal.id, new StatusBody(newStatus));
+            closeManageModal();
+            onSuccess();
+        } catch (err: any) {
+            setGlobalError(err.error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleParticipantStatusSubmit = async (participantId: string, newStatus: number) => {
+        setLoading(true);
+        setGlobalError('');
+        try {
+            await goalProvider.updateParticipantStatus(participantId, new StatusBody(newStatus));
+            closeManageModal();
+            onSuccess();
+        } catch (err: any) {
+            setGlobalError(err.error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleParticipantResultStatusSubmit = async (resultId: string, newStatus: number) => {
+        setLoading(true);
+        setGlobalError('');
+        try {
+            await goalProvider.updateParticipantResultStatus(resultId, new StatusBody(newStatus));
+            closeManageModal();
+            onSuccess();
+        } catch (err: any) {
+            setGlobalError(err.error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!currentGoal) return;
+        setLoading(true);
+        setGlobalError('');
+        try {
+            await goalProvider.delete(currentGoal.id);
+            closeManageModal();
+            onSuccess();
+        } catch (err: any) {
+            setGlobalError(err.error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleChange = createFormHandler(setFormData);
+
+    return {
+        showAdd, openAddModal, closeAddModal, handleAddSubmit, availableUsers,
+        showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
+        handleParticipantStatusSubmit, handleParticipantResultStatusSubmit,
+        showDetails, openDetailsModal, closeDetailsModal,
+        currentGoal, formData, handleChange, loading, globalError, fieldErrors
+    };
+}

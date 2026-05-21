@@ -161,7 +161,7 @@ readonly class GoalService
         foreach ($goal->participants as $participant) {
             $this->eventDispatcher->dispatch(
                 new NotificationEvent(
-                    $participant,
+                    $participant->user,
                     NotificationTypeEnum::GoalStatus,
                     $goal->text,
                     '/goals/' . $goal->link,

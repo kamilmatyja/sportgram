@@ -31,11 +31,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class GoalDto
 {
     #[Assert\NotBlank]
-    #[Assert\DateTime(format: 'Y-m-d\TH:i:s')]
+    #[Assert\DateTime(format: 'Y-m-d\TH:i')]
     public string $startedAt;
 
     #[Assert\NotBlank]
-    #[Assert\DateTime(format: 'Y-m-d\TH:i:s')]
+    #[Assert\DateTime(format: 'Y-m-d\TH:i')]
     public string $endedAt;
 
     #[Assert\NotBlank]

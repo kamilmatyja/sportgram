@@ -10,12 +10,13 @@ use OpenApi\Attributes as OA;
 #[OA\Schema(
     required: [
         'id',
+        'userId',
         'createdAt',
         'updatedAt',
         'text',
+        'link',
         'discipline',
         'distance',
-        'time',
         'status',
     ],
     properties: [
@@ -25,9 +26,18 @@ use OpenApi\Attributes as OA;
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
         ),
+        new OA\Property(
+            property: 'userId',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
         new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'startedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'endedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'text', type: 'string', example: 'Running goal'),
+        new OA\Property(property: 'link', type: 'string', example: 'my-link'),
         new OA\Property(property: 'discipline', type: 'integer', example: 1),
         new OA\Property(property: 'distance', type: 'integer', example: 100),
         new OA\Property(property: 'time', type: 'integer', example: 60),
@@ -46,9 +56,13 @@ class GoalResource
     {
         $data = [
             'id' => $goal->id->toString(),
+            'userId' => $goal->user->id->toString(),
             'createdAt' => $goal->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $goal->updatedAt->format('Y-m-d\TH:i:s'),
+            'startedAt' => $goal->startedAt?->format('Y-m-d\TH:i:s'),
+            'endedAt' => $goal->endedAt?->format('Y-m-d\TH:i:s'),
             'text' => $goal->text,
+            'link' => $goal->link,
             'discipline' => $goal->discipline->value,
             'distance' => $goal->distance,
             'time' => $goal->time,

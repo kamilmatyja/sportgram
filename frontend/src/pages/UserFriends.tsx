@@ -18,7 +18,6 @@ export default function UserFriends() {
                 friends={friendsService.friends}
                 relatedUsers={friendsService.relatedUsers}
                 isMyProfile={friendsService.isMyProfile}
-                isAdmin={friendsService.isAdmin}
                 loading={friendsService.loading}
                 error={friendsService.error}
                 page={friendsService.page}

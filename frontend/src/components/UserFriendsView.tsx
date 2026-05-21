@@ -13,7 +13,6 @@ interface UserFriendsViewProps {
     friends: FriendResponse[];
     relatedUsers: Record<string, UserResponse>;
     isMyProfile: boolean;
-    isAdmin: boolean;
     loading: boolean;
     error: string | null;
     page: number;
@@ -34,7 +33,6 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                                                                     friends,
                                                                     relatedUsers,
                                                                     isMyProfile,
-                                                                    isAdmin,
                                                                     loading,
                                                                     error,
                                                                     page,
@@ -137,7 +135,7 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                                                 <td>{FriendStatusEnum.getOptions(t).find(opt => String(opt.value) === String(friend.status))?.label || friend.status}</td>
                                                 <td>{formatDate(friend.createdAt)}</td>
                                                 <td className="text-end">
-                                                    {(isMyProfile || isAdmin) && (
+                                                    {isMyProfile && (
                                                         <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(friend)}>
                                                             <i className="bi bi-gear" aria-hidden="true"></i>
                                                             <span className="visually-hidden">{t('manage')}</span>
