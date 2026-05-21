@@ -19,6 +19,7 @@ export default function UserGoals() {
                 goals={goalsService.goals}
                 isMyProfile={goalsService.isMyProfile}
                 isAdmin={goalsService.isAdmin}
+                isParticipant={goalsService.isParticipant}
                 loading={goalsService.loading}
                 error={goalsService.error}
                 page={goalsService.page}
@@ -45,6 +46,7 @@ export default function UserGoals() {
                 fieldErrors={modalsService.fieldErrors}
                 formData={modalsService.formData}
                 handleChange={modalsService.handleChange}
+                handleParticipantsChange={modalsService.handleParticipantsChange}
                 handleSubmit={modalsService.handleAddSubmit}
             />
 
@@ -69,6 +71,7 @@ export default function UserGoals() {
             />
 
             <DetailsGoalModal
+                relatedUsers={goalsService.relatedUsers}
                 user={goalsService.targetUser}
                 show={modalsService.showDetails}
                 goal={modalsService.currentGoal}

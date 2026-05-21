@@ -103,18 +103,13 @@ export function useUserFeeds(link?: string) {
 
                 if (!isOwner && !adminCheck) {
                     const fFilter = new FriendFilterQuery();
+                    fFilter.status = FriendStatusEnum.ACCEPTED;
                     fFilter.userIds = [tUser.id, currentUsr.id];
                     const fIndexDto = new FriendIndexQuery();
                     fIndexDto.filter = fFilter;
                     const friends = await friendProvider.index(fIndexDto);
 
-                    const relation = friends.find((f) =>
-                        ((f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id) ||
-                            (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id)) &&
-                        f.status === FriendStatusEnum.ACCEPTED
-                    );
-
-                    if (!relation) {
+                    if (friends.length < 1) {
                         setError('accessDenied');
                         setLoading(false);
                         return;

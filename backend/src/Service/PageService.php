@@ -140,7 +140,7 @@ readonly class PageService
         foreach ($page->participants as $participant) {
             $this->eventDispatcher->dispatch(
                 new NotificationEvent(
-                    $participant,
+                    $participant->user,
                     NotificationTypeEnum::PageStatus,
                     $page->title,
                     '/pages/' . $page->link,
@@ -155,8 +155,10 @@ readonly class PageService
     {
         $page = $this->pageRepository->findById($pageId);
 
-        if ($page->participants->count() > 0) {
-            throw new ValidatorException('Cannot delete page with participants.');
+        foreach ($page->participants as $participant) {
+            if ($participant->events->count() > 0) {
+                throw new ValidatorException('Cannot delete page with participant events.');
+            }
         }
 
         $this->pageRepository->delete($page);

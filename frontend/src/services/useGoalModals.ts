@@ -11,6 +11,8 @@ import {useCheckPermission} from '../utils/checkPermission';
 import {UserIndexQuery} from "../api/queries/UserIndexQuery.ts";
 import {FriendFilterQuery} from "../api/queries/FriendFilterQuery.ts";
 import {FriendIndexQuery} from "../api/queries/FriendIndexQuery.ts";
+import {FriendStatusEnum} from "../enums/FriendStatusEnum.ts";
+import {UserFilterQuery} from "../api/queries/UserFilterQuery.ts";
 
 export function useGoalModals(onSuccess: () => void) {
     const [showAdd, setShowAdd] = useState(false);
@@ -24,7 +26,7 @@ export function useGoalModals(onSuccess: () => void) {
     const [globalError, setGlobalError] = useState('');
     const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
 
-    const [formData, setFormData] = useState(new GoalBody('', '', '', '', 0, 0, null, []));
+    const [formData, setFormData] = useState(new GoalBody(null, null, '', '', 0, 0, null, []));
 
     const goalProvider = new GoalProvider();
     const userProvider = new UserProvider();
@@ -32,7 +34,7 @@ export function useGoalModals(onSuccess: () => void) {
     const {getCurrentUser} = useCheckPermission();
 
     const openAddModal = async () => {
-        setFormData(new GoalBody('', '', '', '', 0, 0, null, []));
+        setFormData(new GoalBody(null, null, '', '', 0, 0, null, []));
         setGlobalError('');
         setFieldErrors({});
         setLoading(true);
@@ -40,23 +42,31 @@ export function useGoalModals(onSuccess: () => void) {
         try {
             const currentUser = await getCurrentUser();
             if (currentUser) {
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.limit = 100;
-                const allUsers = await userProvider.index(uIndexDto);
                 const fFilterDto = new FriendFilterQuery();
+                fFilterDto.status = FriendStatusEnum.ACCEPTED;
                 fFilterDto.userIds = [currentUser.id];
                 const fIndexDto = new FriendIndexQuery();
                 fIndexDto.limit = 100;
                 fIndexDto.filter = fFilterDto;
                 const myFriends = await friendProvider.index(fIndexDto);
 
-                const friendIds = new Set<string>();
+                const acceptedFriendIds = new Set<string>();
                 myFriends.forEach(f => {
-                    friendIds.add(f.senderUserId);
-                    friendIds.add(f.receiverUserId);
+                    if (f.senderUserId !== currentUser.id) acceptedFriendIds.add(f.senderUserId);
+                    if (f.receiverUserId !== currentUser.id) acceptedFriendIds.add(f.receiverUserId);
                 });
 
-                setAvailableUsers(allUsers.filter(u => u.id !== currentUser.id && !friendIds.has(u.id)));
+                if (acceptedFriendIds.size > 0) {
+                    const uFilter = new UserFilterQuery();
+                    uFilter.userIds = Array.from(acceptedFriendIds);
+                    const uIndexDto = new UserIndexQuery();
+                    uIndexDto.filter = uFilter;
+
+                    const acceptedFriendsUsers = await userProvider.index(uIndexDto);
+                    setAvailableUsers(acceptedFriendsUsers);
+                } else {
+                    setAvailableUsers([]);
+                }
             }
         } catch (e: any) {
             setGlobalError(e.error);
@@ -88,8 +98,8 @@ export function useGoalModals(onSuccess: () => void) {
     const openManageModal = (goal: GoalResponse) => {
         setCurrentGoal(goal);
         setFormData(new GoalBody(
-            goal.startedAt ? goal.startedAt.substring(0, 16) : '',
-            goal.endedAt ? goal.endedAt.substring(0, 16) : '',
+            goal.startedAt ? goal.startedAt.substring(0, 16) : null,
+            goal.endedAt ? goal.endedAt.substring(0, 16) : null,
             goal.text,
             goal.link,
             goal.discipline,
@@ -189,11 +199,16 @@ export function useGoalModals(onSuccess: () => void) {
 
     const handleChange = createFormHandler(setFormData);
 
+    const handleParticipantsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+        setFormData(prev => ({ ...prev, participants: selected }));
+    };
+
     return {
         showAdd, openAddModal, closeAddModal, handleAddSubmit, availableUsers,
         showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
         handleParticipantStatusSubmit, handleParticipantResultStatusSubmit,
         showDetails, openDetailsModal, closeDetailsModal,
-        currentGoal, formData, handleChange, loading, globalError, fieldErrors
+        currentGoal, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
     };
 }

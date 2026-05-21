@@ -9,6 +9,7 @@ import {ColorEnum} from '../enums/ColorEnum';
 import {formatDate} from '../utils/dateFormat';
 
 interface DetailsGoalModalProps {
+    relatedUsers: Record<string, UserResponse>;
     user: UserResponse | null;
     show: boolean;
     goal: GoalResponse | null;
@@ -16,6 +17,7 @@ interface DetailsGoalModalProps {
 }
 
 export const DetailsGoalModal: React.FC<DetailsGoalModalProps> = ({
+                                                                      relatedUsers,
                                                                       user,
                                                                       show,
                                                                       goal,
@@ -54,20 +56,25 @@ export const DetailsGoalModal: React.FC<DetailsGoalModalProps> = ({
                                 <p className="text-muted">{t('noParticipants')}</p>
                             ) : (
                                 <ul className="list-group list-group-flush">
-                                    {goal.participants.map(p => (
-                                        <li key={p.id} className="list-group-item">
-                                            <div><strong>{t('user')}:</strong> {p.userId} | <strong>{t('status')}:</strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(p.status))?.label || p.status}</div>
-                                            {p.results && p.results.length > 0 && (
-                                                <ul className="mt-2 text-muted small">
-                                                    {p.results.map(r => (
-                                                        <li key={r.id}>
-                                                            {t('distance')}: {r.distance}, {t('time')}: {r.time}, {t('status')}: {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(r.status))?.label || r.status}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </li>
-                                    ))}
+                                    {goal.participants.map(p => {
+                                        const participantUser = relatedUsers[p.userId];
+                                        const userLabel = participantUser ? `${participantUser.firstName} ${participantUser.lastName} (@${participantUser.link})` : p.userId;
+
+                                        return (
+                                            <li key={p.id} className="list-group-item">
+                                                <div><strong>{t('user')}:</strong> {userLabel} | <strong>{t('status')}:</strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(p.status))?.label || p.status}</div>
+                                                {p.results && p.results.length > 0 && (
+                                                    <ul className="mt-2 text-muted small">
+                                                        {p.results.map(r => (
+                                                            <li key={r.id}>
+                                                                {t('distance')}: {r.distance}, {t('time')}: {r.time}, {t('status')}: {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(r.status))?.label || r.status}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                )}
+                                            </li>
+                                        )
+                                    })}
                                 </ul>
                             )}
                         </div>

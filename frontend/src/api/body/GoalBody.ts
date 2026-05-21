@@ -4,8 +4,8 @@ export class GoalBody {
     public time: number | null;
 
     constructor(
-        public startedAt: string,
-        public endedAt: string,
+        public startedAt: string | null,
+        public endedAt: string | null,
         public text: string,
         public link: string,
         discipline: string | number,

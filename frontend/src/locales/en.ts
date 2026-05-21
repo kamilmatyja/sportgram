@@ -302,4 +302,6 @@ export const en = {
     manageParticipantStatus: "Manage your participation status",
     manageResultStatus: "Manage your results statuses",
     close: "Close",
+    selectOption: "Select",
+    user: "User",
 };

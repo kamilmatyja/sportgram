@@ -307,4 +307,6 @@ export const pl = {
     time: "Czas",
     startedAt: "Początek",
     endedAt: "Koniec",
+    selectOption: "Wybierz",
+    user: "Użytkownik",
 };

@@ -248,7 +248,7 @@ readonly class TrainingService
         foreach ($training->participants as $participant) {
             $this->eventDispatcher->dispatch(
                 new NotificationEvent(
-                    $participant,
+                    $participant->user,
                     NotificationTypeEnum::TrainingStatus,
                     $training->title,
                     '/trainings/' . $training->link,
@@ -261,10 +261,15 @@ readonly class TrainingService
 
     final public function delete(Uuid $trainingId): Uuid
     {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
         $training = $this->trainingRepository->findById($trainingId);
 
-        if ($training->participants->count() > 0) {
-            throw new ValidatorException('Cannot delete training with participants.');
+        foreach ($training->participants as $participant) {
+            if (! $participant->user->id->equals($user->id)) {
+                throw new ValidatorException('Cannot delete training with participants.');
+            }
         }
 
         $this->trainingRepository->delete($training);

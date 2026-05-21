@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {UserProvider} from '../api/providers/UserProvider';
-import {FriendProvider} from '../api/providers/FriendProvider';
 import {GoalProvider} from '../api/providers/GoalProvider';
 import {GoalResponse} from '../api/responses/GoalResponse';
 import {UserResponse} from '../api/responses/UserResponse';
@@ -8,20 +7,19 @@ import {GoalFilterQuery} from '../api/queries/GoalFilterQuery';
 import {GoalIndexQuery} from '../api/queries/GoalIndexQuery';
 import {UserFilterQuery} from '../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../api/queries/UserIndexQuery';
-import {FriendFilterQuery} from '../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../api/queries/FriendIndexQuery';
 import {useCheckPermission} from '../utils/checkPermission';
-import {FriendStatusEnum} from '../enums/FriendStatusEnum';
 import {RoleEnum} from '../enums/RoleEnum';
 
 export function useUserGoals(link?: string) {
     const {getCurrentUser} = useCheckPermission();
 
     const [goals, setGoals] = useState<GoalResponse[]>([]);
+    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
     const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const [isParticipant, setIsParticipant] = useState<boolean>(false);
 
     const [page, setPage] = useState<number>(1);
     const [limit, setLimit] = useState<number>(10);
@@ -32,7 +30,6 @@ export function useUserGoals(link?: string) {
     const [error, setError] = useState<string | null>(null);
 
     const userProvider = new UserProvider();
-    const friendProvider = new FriendProvider();
     const goalProvider = new GoalProvider();
 
     const fetchGoals = async (userId: string) => {
@@ -63,6 +60,24 @@ export function useUserGoals(link?: string) {
             }));
 
             setGoals(detailedGoals);
+
+            const userIdsToFetch = Array.from(
+                new Set(detailedGoals.flatMap(g => g.participants.map(p => p.userId)))
+            );
+
+            if (userIdsToFetch.length > 0) {
+                const uFilter = new UserFilterQuery();
+                uFilter.userIds = userIdsToFetch;
+                const uIndexDto = new UserIndexQuery();
+                uIndexDto.filter = uFilter;
+                uIndexDto.limit = userIdsToFetch.length;
+                const usersData = await userProvider.index(uIndexDto);
+                const usersMap = usersData.reduce((acc, curr) => {
+                    acc[curr.id] = curr;
+                    return acc;
+                }, {} as Record<string, UserResponse>);
+                setRelatedUsers(usersMap);
+            }
         } catch (err: any) {
             setError(err.error);
         } finally {
@@ -85,6 +100,9 @@ export function useUserGoals(link?: string) {
                 const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
                 setIsAdmin(adminCheck);
 
+                const participantCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.PARTICIPANT) ?? false;
+                setIsParticipant(participantCheck);
+
                 const uFilter = new UserFilterQuery();
                 uFilter.link = link;
                 const uIndexDto = new UserIndexQuery();
@@ -102,26 +120,6 @@ export function useUserGoals(link?: string) {
 
                 const isOwner = currentUsr.id === tUser.id;
                 setIsMyProfile(isOwner);
-
-                if (!isOwner && !adminCheck) {
-                    const fFilter = new FriendFilterQuery();
-                    fFilter.userIds = [tUser.id, currentUsr.id];
-                    const fIndexDto = new FriendIndexQuery();
-                    fIndexDto.filter = fFilter;
-                    const friends = await friendProvider.index(fIndexDto);
-
-                    const relation = friends.find((f) =>
-                        ((f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id) ||
-                            (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id)) &&
-                        f.status === FriendStatusEnum.ACCEPTED
-                    );
-
-                    if (!relation) {
-                        setError('accessDenied');
-                        setLoading(false);
-                        return;
-                    }
-                }
 
                 await fetchGoals(tUser.id);
             } catch (err: any) {
@@ -156,7 +154,7 @@ export function useUserGoals(link?: string) {
     };
 
     return {
-        goals, targetUser, currentUser, isMyProfile, isAdmin, page, limit, sort, filters, loading, error,
+        goals, relatedUsers, targetUser, currentUser, isMyProfile, isAdmin, isParticipant, page, limit, sort, filters, loading, error,
         handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshGoals
     };
 }

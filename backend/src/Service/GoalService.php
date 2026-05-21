@@ -176,8 +176,10 @@ readonly class GoalService
     {
         $goal = $this->goalRepository->findById($goalId);
 
-        if ($goal->participants->count() > 0) {
-            throw new ValidatorException('Cannot delete goal with participants.');
+        foreach ($goal->participants as $participant) {
+            if ($participant->results->count() > 0) {
+                throw new ValidatorException('Cannot delete goal with participant results.');
+            }
         }
 
         $this->goalRepository->delete($goal);

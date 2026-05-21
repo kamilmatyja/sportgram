@@ -73,14 +73,14 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                             <label className="form-label">{t('startedAt')}</label>
                                             <input type="datetime-local" name="startedAt"
                                                    className={`form-control ${fieldErrors.startedAt ? 'is-invalid' : ''}`}
-                                                   value={formData.startedAt} onChange={handleChange}/>
+                                                   value={formData.startedAt || ''} onChange={handleChange}/>
                                             {fieldErrors.startedAt && <div className="invalid-feedback d-block">{fieldErrors.startedAt}</div>}
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label">{t('endedAt')}</label>
                                             <input type="datetime-local" name="endedAt"
                                                    className={`form-control ${fieldErrors.endedAt ? 'is-invalid' : ''}`}
-                                                   value={formData.endedAt} onChange={handleChange}/>
+                                                   value={formData.endedAt || ''} onChange={handleChange}/>
                                             {fieldErrors.endedAt && <div className="invalid-feedback d-block">{fieldErrors.endedAt}</div>}
                                         </div>
                                     </div>

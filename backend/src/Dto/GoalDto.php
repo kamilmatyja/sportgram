@@ -9,10 +9,10 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    required: ['startedAt', 'endedAt', 'text', 'link', 'discipline', 'distance'],
+    required: ['text', 'link', 'discipline', 'distance'],
     properties: [
-        new OA\Property(property: 'startedAt', type: 'date', example: '2000-01-01T21:37:00'),
-        new OA\Property(property: 'endedAt', type: 'date', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'startedAt', type: 'date', example: '2000-01-01T21:37', nullable: true),
+        new OA\Property(property: 'endedAt', type: 'date', example: '2000-01-01T21:37', nullable: true),
         new OA\Property(property: 'text', type: 'string', example: 'Running goal'),
         new OA\Property(property: 'link', type: 'string', example: 'my-link'),
         new OA\Property(property: 'discipline', type: 'integer', example: 1),
@@ -30,13 +30,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class GoalDto
 {
-    #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d\TH:i')]
-    public string $startedAt;
+    public ?string $startedAt = null;
 
-    #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d\TH:i')]
-    public string $endedAt;
+    public ?string $endedAt = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 1, max: 2048)]

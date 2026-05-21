@@ -15,6 +15,7 @@ interface AddGoalModalProps {
     fieldErrors: Record<string, string | string[]>;
     formData: GoalBody;
     handleChange: (e: React.ChangeEvent<any>) => void;
+    handleParticipantsChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     handleSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
 }
 
@@ -28,6 +29,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                                               fieldErrors,
                                                               formData,
                                                               handleChange,
+                                                              handleParticipantsChange,
                                                               handleSubmit
                                                           }) => {
     const {t} = useTranslation();
@@ -53,14 +55,14 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                         <label className="form-label">{t('startedAt')}</label>
                                         <input type="datetime-local" name="startedAt"
                                                className={`form-control ${fieldErrors.startedAt ? 'is-invalid' : ''}`}
-                                               value={formData.startedAt} onChange={handleChange} required/>
+                                               value={formData.startedAt || ''} onChange={handleChange}/>
                                         {fieldErrors.startedAt && <div className="invalid-feedback d-block">{fieldErrors.startedAt}</div>}
                                     </div>
                                     <div className="col-md-6">
                                         <label className="form-label">{t('endedAt')}</label>
                                         <input type="datetime-local" name="endedAt"
                                                className={`form-control ${fieldErrors.endedAt ? 'is-invalid' : ''}`}
-                                               value={formData.endedAt} onChange={handleChange} required/>
+                                               value={formData.endedAt || ''} onChange={handleChange}/>
                                         {fieldErrors.endedAt && <div className="invalid-feedback d-block">{fieldErrors.endedAt}</div>}
                                     </div>
                                 </div>
@@ -115,8 +117,8 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                     <select
                                         name="participants"
                                         className={`form-select ${fieldErrors.participants ? 'is-invalid' : ''}`}
-                                        value={Array.isArray(formData.participants) ? formData.participants.map(String) : []}
-                                        onChange={handleChange}
+                                        value={Array.isArray(formData.participants) ? formData.participants : []}
+                                        onChange={handleParticipantsChange}
                                         multiple
                                     >
                                         {availableUsers.map(u => (
