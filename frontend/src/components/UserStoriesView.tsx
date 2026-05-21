@@ -1,16 +1,16 @@
 import React from 'react';
 import {useTranslation} from '../context/TranslationContext';
-import {FeedResponse} from '../api/responses/FeedResponse';
+import {StoryResponse} from '../api/responses/StoryResponse';
 import {UserResponse} from '../api/responses/UserResponse';
-import {FeedFilterQuery} from '../api/queries/FeedFilterQuery';
+import {StoryFilterQuery} from '../api/queries/StoryFilterQuery';
 import {ElementStatusEnum} from '../enums/ElementStatusEnum';
 import {PaginationEnum} from '../enums/PaginationEnum';
 import {ColorEnum} from '../enums/ColorEnum';
 import {formatDate} from '../utils/dateFormat';
 
-interface UserFeedsViewProps {
+interface UserStoriesViewProps {
     user: UserResponse | null;
-    feeds: FeedResponse[];
+    stories: StoryResponse[];
     isMyProfile: boolean;
     isAdmin: boolean;
     loading: boolean;
@@ -18,35 +18,35 @@ interface UserFeedsViewProps {
     page: number;
     limit: number;
     sort: string;
-    filters: FeedFilterQuery;
+    filters: StoryFilterQuery;
     onFilterChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     onSortChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     onLimitChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     onPrevPage: () => void;
     onNextPage: () => void;
     onAddClick: () => void;
-    onManageClick: (feed: FeedResponse) => void;
+    onManageClick: (story: StoryResponse) => void;
 }
 
-export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
-                                                                user,
-                                                                feeds,
-                                                                isMyProfile,
-                                                                isAdmin,
-                                                                loading,
-                                                                error,
-                                                                page,
-                                                                limit,
-                                                                sort,
-                                                                filters,
-                                                                onFilterChange,
-                                                                onSortChange,
-                                                                onLimitChange,
-                                                                onPrevPage,
-                                                                onNextPage,
-                                                                onAddClick,
-                                                                onManageClick
-                                                            }) => {
+export const UserStoriesView: React.FC<UserStoriesViewProps> = ({
+                                                                    user,
+                                                                    stories,
+                                                                    isMyProfile,
+                                                                    isAdmin,
+                                                                    loading,
+                                                                    error,
+                                                                    page,
+                                                                    limit,
+                                                                    sort,
+                                                                    filters,
+                                                                    onFilterChange,
+                                                                    onSortChange,
+                                                                    onLimitChange,
+                                                                    onPrevPage,
+                                                                    onNextPage,
+                                                                    onAddClick,
+                                                                    onManageClick
+                                                                }) => {
     const {t} = useTranslation();
 
     if (loading) return <div className="container mt-5 text-center">
@@ -57,26 +57,14 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
 
     const hexColor = ColorEnum.getHex(user.color);
 
-    const getFeedTypeLabel = (feed: FeedResponse) => {
-        if (feed.eventDisciplineList) return t('feedTypes.eventDisciplineList');
-        if (feed.eventDisciplineResult) return t('feedTypes.eventDisciplineResult');
-        if (feed.goal) return t('feedTypes.goal');
-        if (feed.goalParticipantResult) return t('feedTypes.goalParticipantResult');
-        if (feed.training) return t('feedTypes.training');
-        return t('feedTypes.regular');
-    };
-
     return (
         <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
             <div className="card shadow-sm mb-4">
-                <div
-                    className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
-                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background"
-                         className="w-100 h-100 object-fit-cover"/>
+                <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover"/>
                 </div>
                 <div className="card-body position-relative pt-5">
-                    <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile"
-                         className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
+                    <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile" className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                     <div className="mt-3">
                         <h2 className="mb-0 profile-theme-text">{user.firstName} {user.lastName}</h2>
                         <p className="text-muted mb-0">@{user.link}</p>
@@ -92,19 +80,17 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
             <div className="card shadow-sm">
                 <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h4 className="mb-0">{t('feeds')}</h4>
+                        <h4 className="mb-0">{t('stories')}</h4>
                         {isMyProfile && (
                             <button className="btn btn-profile-primary" onClick={onAddClick}>
-                                {t('addFeed')}
+                                {t('addStory')}
                             </button>
                         )}
                     </div>
 
                     <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                        <input name="text" placeholder={t('text')} value={filters.text || ''} onChange={onFilterChange}
-                               className="form-control w-auto"/>
-                        <select name="status" value={filters.status || ''} onChange={onFilterChange}
-                                className="form-select w-auto">
+                        <input name="text" placeholder={t('text')} value={filters.text || ''} onChange={onFilterChange} className="form-control w-auto"/>
+                        <select name="status" value={filters.status || ''} onChange={onFilterChange} className="form-select w-auto">
                             <option value="">{t('status')}</option>
                             {ElementStatusEnum.getOptions(t).map(opt => (
                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -121,16 +107,13 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                         </select>
                     </div>
 
-                    {loading && feeds.length === 0 ? <div className="text-center">
-                        <div className="spinner-border"/>
-                    </div> : (
+                    {loading && stories.length === 0 ? <div className="text-center"><div className="spinner-border"/></div> : (
                         <>
                             <div className="table-responsive-custom">
                                 <table className="table table-bordered table-hover align-middle">
                                     <thead className="table-light">
                                     <tr>
                                         <th>{t('photo')}</th>
-                                        <th>{t('type')}</th>
                                         <th>{t('text')}</th>
                                         <th>{t('status')}</th>
                                         <th>{t('createdAt')}</th>
@@ -138,33 +121,25 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {feeds.length === 0 ? (
+                                    {stories.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="text-center text-muted">{t('noFeeds')}</td>
+                                            <td colSpan={5} className="text-center text-muted">{t('noStories')}</td>
                                         </tr>
-                                    ) : feeds.map(feed => (
-                                        <tr key={feed.id}>
+                                    ) : stories.map(story => (
+                                        <tr key={story.id}>
                                             <td className="text-center align-middle feed-photo-cell">
-                                                {feed.photo ? (
-                                                    <img src={`data:image/webp;base64,${feed.photo}`} alt="feed"
-                                                         className="rounded img-fluid feed-photo"/>
+                                                {story.photo ? (
+                                                    <img src={`data:image/webp;base64,${story.photo}`} alt="story" className="rounded img-fluid feed-photo"/>
                                                 ) : (
                                                     <span className="text-muted">-</span>
                                                 )}
                                             </td>
-                                            <td>
-                                                <span className="badge bg-light text-dark border border-1 profile-theme-border">
-                                                    {getFeedTypeLabel(feed)}
-                                                </span>
-                                            </td>
-                                            <td className="text-truncate feed-text-cell">{feed.text}</td>
-                                            <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}</td>
-                                            <td>{formatDate(feed.createdAt)}</td>
+                                            <td className="text-truncate feed-text-cell">{story.text}</td>
+                                            <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(story.status))?.label || story.status}</td>
+                                            <td>{formatDate(story.createdAt)}</td>
                                             <td className="text-end">
                                                 {(isMyProfile || isAdmin) && (
-                                                    <button className="btn btn-sm btn-profile-outline-primary"
-                                                            title={t('manage')}
-                                                            onClick={() => onManageClick(feed)}>
+                                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(story)}>
                                                         <i className="bi bi-gear" aria-hidden="true"></i>
                                                         <span className="visually-hidden">{t('manage')}</span>
                                                     </button>
@@ -176,11 +151,9 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                                 </table>
                             </div>
                             <div className="d-flex justify-content-between align-items-center mb-3">
-                                <button className="btn btn-profile-outline-primary mx-2" disabled={page === 1}
-                                        onClick={onPrevPage}>{t('prev')}</button>
+                                <button className="btn btn-profile-outline-primary mx-2" disabled={page === 1} onClick={onPrevPage}>{t('prev')}</button>
                                 <span>{t('page')} {page}</span>
-                                <button className="btn btn-profile-outline-primary mx-2" disabled={feeds.length < limit}
-                                        onClick={onNextPage}>{t('next')}</button>
+                                <button className="btn btn-profile-outline-primary mx-2" disabled={stories.length < limit} onClick={onNextPage}>{t('next')}</button>
                             </div>
                         </>
                     )}
