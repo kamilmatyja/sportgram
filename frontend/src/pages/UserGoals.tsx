@@ -53,6 +53,8 @@ export default function UserGoals() {
             <ManageGoalModal
                 user={goalsService.targetUser}
                 currentUser={goalsService.currentUser}
+                availableUsers={modalsService.availableUsers}
+                handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
                 goal={modalsService.currentGoal}
                 isMyProfile={goalsService.isMyProfile}

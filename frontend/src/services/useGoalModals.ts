@@ -33,6 +33,33 @@ export function useGoalModals(onSuccess: () => void) {
     const friendProvider = new FriendProvider();
     const {getCurrentUser} = useCheckPermission();
 
+    const loadAvailableFriends = async (currentUser: UserResponse) => {
+        const fFilter = new FriendFilterQuery();
+        fFilter.userIds = [currentUser.id];
+        fFilter.status = FriendStatusEnum.ACCEPTED;
+        const fIndexDto = new FriendIndexQuery();
+        fIndexDto.filter = fFilter;
+
+        const myFriends = await friendProvider.index(fIndexDto);
+
+        const acceptedFriendIds = new Set<string>();
+        myFriends.forEach(f => {
+            if (f.senderUserId !== currentUser.id) acceptedFriendIds.add(f.senderUserId);
+            if (f.receiverUserId !== currentUser.id) acceptedFriendIds.add(f.receiverUserId);
+        });
+
+        if (acceptedFriendIds.size > 0) {
+            const uFilter = new UserFilterQuery();
+            uFilter.userIds = Array.from(acceptedFriendIds);
+            const uIndexDto = new UserIndexQuery();
+            uIndexDto.filter = uFilter;
+            const acceptedFriendsUsers = await userProvider.index(uIndexDto);
+            setAvailableUsers(acceptedFriendsUsers);
+        } else {
+            setAvailableUsers([]);
+        }
+    };
+
     const openAddModal = async () => {
         setFormData(new GoalBody(null, null, '', '', 0, 0, null, []));
         setGlobalError('');
@@ -42,31 +69,7 @@ export function useGoalModals(onSuccess: () => void) {
         try {
             const currentUser = await getCurrentUser();
             if (currentUser) {
-                const fFilterDto = new FriendFilterQuery();
-                fFilterDto.status = FriendStatusEnum.ACCEPTED;
-                fFilterDto.userIds = [currentUser.id];
-                const fIndexDto = new FriendIndexQuery();
-                fIndexDto.limit = 100;
-                fIndexDto.filter = fFilterDto;
-                const myFriends = await friendProvider.index(fIndexDto);
-
-                const acceptedFriendIds = new Set<string>();
-                myFriends.forEach(f => {
-                    if (f.senderUserId !== currentUser.id) acceptedFriendIds.add(f.senderUserId);
-                    if (f.receiverUserId !== currentUser.id) acceptedFriendIds.add(f.receiverUserId);
-                });
-
-                if (acceptedFriendIds.size > 0) {
-                    const uFilter = new UserFilterQuery();
-                    uFilter.userIds = Array.from(acceptedFriendIds);
-                    const uIndexDto = new UserIndexQuery();
-                    uIndexDto.filter = uFilter;
-
-                    const acceptedFriendsUsers = await userProvider.index(uIndexDto);
-                    setAvailableUsers(acceptedFriendsUsers);
-                } else {
-                    setAvailableUsers([]);
-                }
+                await loadAvailableFriends(currentUser);
             }
         } catch (e: any) {
             setGlobalError(e.error);
@@ -95,7 +98,7 @@ export function useGoalModals(onSuccess: () => void) {
         }
     };
 
-    const openManageModal = (goal: GoalResponse) => {
+    const openManageModal = async (goal: GoalResponse) => {
         setCurrentGoal(goal);
         setFormData(new GoalBody(
             goal.startedAt ? goal.startedAt.substring(0, 16) : null,
@@ -109,7 +112,19 @@ export function useGoalModals(onSuccess: () => void) {
         ));
         setGlobalError('');
         setFieldErrors({});
-        setShowManage(true);
+        setLoading(true);
+
+        try {
+            const currentUser = await getCurrentUser();
+            if (currentUser) {
+                await loadAvailableFriends(currentUser);
+            }
+        } catch (e: any) {
+            setGlobalError(e.error);
+        } finally {
+            setLoading(false);
+            setShowManage(true);
+        }
     };
 
     const closeManageModal = () => setShowManage(false);

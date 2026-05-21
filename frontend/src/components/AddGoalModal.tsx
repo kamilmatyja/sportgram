@@ -96,7 +96,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                         {fieldErrors.discipline && <div className="invalid-feedback d-block">{fieldErrors.discipline}</div>}
                                     </div>
                                     <div className="col-md-4">
-                                        <label className="form-label">{t('distance')}</label>
+                                        <label className="form-label">{t('distance')} [m]</label>
                                         <input type="number" name="distance"
                                                className={`form-control ${fieldErrors.distance ? 'is-invalid' : ''}`}
                                                value={formData.distance || ''} onChange={handleChange} required/>
@@ -105,7 +105,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                 </div>
 
                                 <div className="mb-3">
-                                    <label className="form-label">{t('time')}</label>
+                                    <label className="form-label">{t('time')} [s]</label>
                                     <input type="number" name="time"
                                            className={`form-control ${fieldErrors.time ? 'is-invalid' : ''}`}
                                            value={formData.time || ''} onChange={handleChange}/>

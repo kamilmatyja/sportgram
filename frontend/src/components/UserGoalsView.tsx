@@ -128,8 +128,8 @@ export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
                                     <tr>
                                         <th>{t('title')}</th>
                                         <th>{t('discipline')}</th>
-                                        <th>{t('distance')}</th>
-                                        <th>{t('time')}</th>
+                                        <th>{t('distance')} [m]</th>
+                                        <th>{t('time')} [s]</th>
                                         <th>{t('status')}</th>
                                         <th>{t('startedAt')}</th>
                                         <th>{t('endedAt')}</th>

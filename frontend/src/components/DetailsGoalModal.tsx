@@ -46,8 +46,8 @@ export const DetailsGoalModal: React.FC<DetailsGoalModalProps> = ({
                             <p><strong>{t('link')}:</strong> {goal.link}</p>
                             <div className="row mb-3">
                                 <div className="col-md-4"><p><strong>{t('discipline')}:</strong> {DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(goal.discipline))?.label || goal.discipline}</p></div>
-                                <div className="col-md-4"><p><strong>{t('distance')}:</strong> {goal.distance}</p></div>
-                                <div className="col-md-4"><p><strong>{t('time')}:</strong> {goal.time ? goal.time : '-'}</p></div>
+                                <div className="col-md-4"><p><strong>{t('distance')}:</strong> {goal.distance} [m]</p></div>
+                                <div className="col-md-4"><p><strong>{t('time')}:</strong> {goal.time ? goal.time : '-'} [s]</p></div>
                             </div>
                             <p><strong>{t('status')}:</strong> {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}</p>
 
@@ -67,7 +67,7 @@ export const DetailsGoalModal: React.FC<DetailsGoalModalProps> = ({
                                                     <ul className="mt-2 text-muted small">
                                                         {p.results.map(r => (
                                                             <li key={r.id}>
-                                                                {t('distance')}: {r.distance}, {t('time')}: {r.time}, {t('status')}: {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(r.status))?.label || r.status}
+                                                                {t('distance')}: {r.distance} [m], {t('time')}: {r.time} [s], {t('status')}: {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(r.status))?.label || r.status}
                                                             </li>
                                                         ))}
                                                     </ul>

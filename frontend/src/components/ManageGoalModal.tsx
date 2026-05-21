@@ -11,6 +11,8 @@ import {ColorEnum} from '../enums/ColorEnum';
 interface ManageGoalModalProps {
     user: UserResponse | null;
     currentUser: UserResponse | null;
+    availableUsers: UserResponse[];
+    handleParticipantsChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     show: boolean;
     goal: GoalResponse | null;
     isMyProfile: boolean;
@@ -31,6 +33,8 @@ interface ManageGoalModalProps {
 export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                                                     user,
                                                                     currentUser,
+                                                                    availableUsers,
+                                                                    handleParticipantsChange,
                                                                     show,
                                                                     goal,
                                                                     isMyProfile,
@@ -114,7 +118,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                             {fieldErrors.discipline && <div className="invalid-feedback d-block">{fieldErrors.discipline}</div>}
                                         </div>
                                         <div className="col-md-4">
-                                            <label className="form-label">{t('distance')}</label>
+                                            <label className="form-label">{t('distance')} [m]</label>
                                             <input type="number" name="distance"
                                                    className={`form-control ${fieldErrors.distance ? 'is-invalid' : ''}`}
                                                    value={formData.distance || ''} onChange={handleChange} required/>
@@ -123,11 +127,29 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                     </div>
 
                                     <div className="mb-3">
-                                        <label className="form-label">{t('time')}</label>
+                                        <label className="form-label">{t('time')} [s]</label>
                                         <input type="number" name="time"
                                                className={`form-control ${fieldErrors.time ? 'is-invalid' : ''}`}
                                                value={formData.time || ''} onChange={handleChange}/>
                                         {fieldErrors.time && <div className="invalid-feedback d-block">{fieldErrors.time}</div>}
+                                    </div>
+                                    <div className="mb-3">
+                                        <label className="form-label">{t('participants')}</label>
+                                        <select
+                                            name="participants"
+                                            className={`form-select ${fieldErrors.participants ? 'is-invalid' : ''}`}
+                                            value={Array.isArray(formData.participants) ? formData.participants : []}
+                                            onChange={handleParticipantsChange}
+                                            multiple
+                                        >
+                                            {availableUsers.map(u => (
+                                                <option key={u.id} value={u.id}>
+                                                    {u.firstName} {u.lastName} ({u.link})
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="form-text">{t('participantsHint')}</div>
+                                        {fieldErrors.participants && <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
                                     </div>
                                 </form>
                             )}
@@ -187,7 +209,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                             {myParticipant.results.map(res => (
                                                 <div key={res.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
                                                     <div>
-                                                        <strong>{t('distance')}:</strong> {res.distance} | <strong>{t('time')}:</strong> {res.time} | <strong>{t('status')}:</strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(res.status))?.label || res.status}
+                                                        <strong>{t('distance')}:</strong> {res.distance} [m] | <strong>{t('time')}:</strong> {res.time} [s] | <strong>{t('status')}:</strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(res.status))?.label || res.status}
                                                     </div>
                                                     <div className="ms-auto">
                                                         {SaveStatusEnum.getOptions(t)
