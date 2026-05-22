@@ -49,6 +49,14 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
 
     const hexColor = ColorEnum.getHex(user.color);
 
+    const visibleComments = feed.comments
+        ? (isAdmin ? feed.comments : feed.comments.filter(c => c.userId === user.id))
+        : [];
+
+    const visibleReactions = feed.reactions
+        ? (isAdmin ? feed.reactions : feed.reactions.filter(r => r.userId === user.id))
+        : [];
+
     return (
         <>
             <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
@@ -108,10 +116,11 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                                 ))}
                                         </div>
                                     </div>
-                                    {feed.comments && feed.comments.length > 0 && (
+
+                                    {visibleComments.length > 0 && (
                                         <div className="mb-4 border-bottom pb-3">
-                                            <h6>{t('comments')} ({feed.comments.length})</h6>
-                                            {feed.comments.map(comment => (
+                                            <h6>{t('comments')} ({visibleComments.length})</h6>
+                                            {visibleComments.map(comment => (
                                                 <div key={comment.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
                                                     <div className="text-truncate" style={{maxWidth: '200px'}} title={comment.text}>
                                                         <strong>{t('text')}:</strong> {comment.text}
@@ -140,10 +149,10 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                         </div>
                                     )}
 
-                                    {feed.reactions && feed.reactions.length > 0 && (
+                                    {visibleReactions.length > 0 && (
                                         <>
-                                            <h6>{t('reactions')} ({feed.reactions.length})</h6>
-                                            {feed.reactions.map(reaction => (
+                                            <h6>{t('reactions')} ({visibleReactions.length})</h6>
+                                            {visibleReactions.map(reaction => (
                                                 <div key={reaction.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
                                                     <div>
                                                         <strong>{t('reaction')}:</strong> {FeedReactionEnum.getOptions(t).find(opt => String(opt.value) === String(reaction.reaction))?.label || reaction.reaction}
