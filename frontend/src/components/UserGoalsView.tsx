@@ -28,7 +28,6 @@ interface UserGoalsViewProps {
     onNextPage: () => void;
     onAddClick: () => void;
     onManageClick: (goal: GoalResponse) => void;
-    onDetailsClick: (goal: GoalResponse) => void;
 }
 
 export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
@@ -49,8 +48,7 @@ export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
                                                                 onPrevPage,
                                                                 onNextPage,
                                                                 onAddClick,
-                                                                onManageClick,
-                                                                onDetailsClick
+                                                                onManageClick
                                                             }) => {
     const {t} = useTranslation();
 
@@ -143,7 +141,11 @@ export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
                                         </tr>
                                     ) : goals.map(goal => (
                                         <tr key={goal.id}>
-                                            <td className="text-truncate feed-text-cell">{goal.text}</td>
+                                            <td className="text-truncate feed-text-cell">
+                                                <a href={`/goals/${goal.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                    {goal.text}
+                                                </a>
+                                            </td>
                                             <td>{DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(goal.discipline))?.label || goal.discipline}</td>
                                             <td>{goal.distance}</td>
                                             <td>{goal.time ? goal.time : '-'}</td>
@@ -151,9 +153,6 @@ export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
                                             <td>{formatDate(goal.startedAt)}</td>
                                             <td>{formatDate(goal.endedAt)}</td>
                                             <td className="text-end">
-                                                <button className="btn btn-sm btn-profile-outline-primary me-2" title={t('details')} onClick={() => onDetailsClick(goal)}>
-                                                    <i className="bi bi-eye" aria-hidden="true"></i>
-                                                </button>
                                                 {(isMyProfile || isAdmin || goal.participants?.some(p => p.userId === user?.id)) && (
                                                     <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(goal)}>
                                                         <i className="bi bi-gear" aria-hidden="true"></i>

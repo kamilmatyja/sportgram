@@ -7,9 +7,9 @@ import {FriendResponse} from '../api/responses/FriendResponse';
 import {UserResponse} from '../api/responses/UserResponse';
 import {createFormHandler} from '../utils/formHandler';
 import {useCheckPermission} from '../utils/checkPermission';
-import {FriendFilterQuery} from "../api/queries/FriendFilterQuery.ts";
-import {FriendIndexQuery} from "../api/queries/FriendIndexQuery.ts";
-import {UserIndexQuery} from "../api/queries/UserIndexQuery.ts";
+import {FriendFilterQuery} from '../api/queries/FriendFilterQuery';
+import {FriendIndexQuery} from '../api/queries/FriendIndexQuery';
+import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 
 export function useFriendModals(onSuccess: () => void) {
     const [showAdd, setShowAdd] = useState(false);

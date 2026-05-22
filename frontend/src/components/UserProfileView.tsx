@@ -95,6 +95,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                                     <strong>{t('changeStatus')}: </strong>
                                                     {UserStatusEnum.getNanoOptions(t)
                                                         .filter(opt => opt.value !== user.status)
+                                                        .filter(opt => opt.value !== UserStatusEnum.PENDING)
                                                         .map(opt => (
                                                             <button
                                                                 key={opt.value}

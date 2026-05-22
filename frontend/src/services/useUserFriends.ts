@@ -4,12 +4,12 @@ import {FriendIndexQuery} from '../api/queries/FriendIndexQuery';
 import {UserFilterQuery} from '../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 import {useCheckPermission} from '../utils/checkPermission';
-import {UserResponse} from "../api/responses/UserResponse.ts";
-import {useEffect, useState} from "react";
-import {FriendResponse} from "../api/responses/FriendResponse.ts";
-import {FriendFilterQuery} from "../api/queries/FriendFilterQuery.ts";
-import {RoleEnum} from "../enums/RoleEnum.ts";
-import {FriendStatusEnum} from "../enums/FriendStatusEnum.ts";
+import {UserResponse} from '../api/responses/UserResponse';
+import {useEffect, useState} from 'react';
+import {FriendResponse} from '../api/responses/FriendResponse';
+import {FriendFilterQuery} from '../api/queries/FriendFilterQuery';
+import {RoleEnum} from '../enums/RoleEnum';
+import {FriendStatusEnum} from '../enums/FriendStatusEnum';
 
 export function useUserFriends(link?: string) {
     const {getCurrentUser} = useCheckPermission();

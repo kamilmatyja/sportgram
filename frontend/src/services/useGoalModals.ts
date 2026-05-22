@@ -8,16 +8,15 @@ import {GoalResponse} from '../api/responses/GoalResponse';
 import {UserResponse} from '../api/responses/UserResponse';
 import {createFormHandler} from '../utils/formHandler';
 import {useCheckPermission} from '../utils/checkPermission';
-import {UserIndexQuery} from "../api/queries/UserIndexQuery.ts";
-import {FriendFilterQuery} from "../api/queries/FriendFilterQuery.ts";
-import {FriendIndexQuery} from "../api/queries/FriendIndexQuery.ts";
-import {FriendStatusEnum} from "../enums/FriendStatusEnum.ts";
-import {UserFilterQuery} from "../api/queries/UserFilterQuery.ts";
+import {UserIndexQuery} from '../api/queries/UserIndexQuery';
+import {FriendFilterQuery} from '../api/queries/FriendFilterQuery';
+import {FriendIndexQuery} from '../api/queries/FriendIndexQuery';
+import {FriendStatusEnum} from '../enums/FriendStatusEnum';
+import {UserFilterQuery} from '../api/queries/UserFilterQuery';
 
 export function useGoalModals(onSuccess: () => void) {
     const [showAdd, setShowAdd] = useState(false);
     const [showManage, setShowManage] = useState(false);
-    const [showDetails, setShowDetails] = useState(false);
 
     const [currentGoal, setCurrentGoal] = useState<GoalResponse | null>(null);
     const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
@@ -129,13 +128,6 @@ export function useGoalModals(onSuccess: () => void) {
 
     const closeManageModal = () => setShowManage(false);
 
-    const openDetailsModal = (goal: GoalResponse) => {
-        setCurrentGoal(goal);
-        setShowDetails(true);
-    };
-
-    const closeDetailsModal = () => setShowDetails(false);
-
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!currentGoal) return;
@@ -223,7 +215,6 @@ export function useGoalModals(onSuccess: () => void) {
         showAdd, openAddModal, closeAddModal, handleAddSubmit, availableUsers,
         showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
         handleParticipantStatusSubmit, handleParticipantResultStatusSubmit,
-        showDetails, openDetailsModal, closeDetailsModal,
         currentGoal, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
     };
 }

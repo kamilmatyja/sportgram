@@ -130,8 +130,16 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
 
                                         return (
                                             <tr key={friend.id}>
-                                                <td>{sender ? `${sender.firstName} ${sender.lastName}` : friend.senderUserId}</td>
-                                                <td>{receiver ? `${receiver.firstName} ${receiver.lastName}` : friend.receiverUserId}</td>
+                                                <td>
+                                                    <a href={`/users/${sender.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                        {sender.firstName} {sender.lastName}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <a href={`/users/${receiver.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                        {receiver.firstName} {receiver.lastName}
+                                                    </a>
+                                                </td>
                                                 <td>{FriendStatusEnum.getOptions(t).find(opt => String(opt.value) === String(friend.status))?.label || friend.status}</td>
                                                 <td>{formatDate(friend.createdAt)}</td>
                                                 <td className="text-end">

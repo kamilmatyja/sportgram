@@ -189,6 +189,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                         </span>
                                         {SaveStatusEnum.getOptions(t)
                                             .filter(opt => opt.value !== myParticipant.status)
+                                            .filter(opt => opt.value !== SaveStatusEnum.PENDING)
                                             .map(opt => (
                                                 <button
                                                     key={opt.value}
@@ -213,6 +214,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                                     <div className="ms-auto">
                                                         {SaveStatusEnum.getOptions(t)
                                                             .filter(opt => opt.value !== res.status)
+                                                            .filter(opt => opt.value !== SaveStatusEnum.PENDING)
                                                             .map(opt => (
                                                                 <button
                                                                     key={opt.value}

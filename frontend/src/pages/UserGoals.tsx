@@ -4,7 +4,6 @@ import {useGoalModals} from '../services/useGoalModals';
 import {UserGoalsView} from '../components/UserGoalsView';
 import {AddGoalModal} from '../components/AddGoalModal';
 import {ManageGoalModal} from '../components/ManageGoalModal';
-import {DetailsGoalModal} from '../components/DetailsGoalModal';
 
 export default function UserGoals() {
     const {link} = useParams<{ link: string }>();
@@ -33,7 +32,6 @@ export default function UserGoals() {
                 onNextPage={goalsService.handleNextPage}
                 onAddClick={modalsService.openAddModal}
                 onManageClick={modalsService.openManageModal}
-                onDetailsClick={modalsService.openDetailsModal}
             />
 
             <AddGoalModal
@@ -70,14 +68,6 @@ export default function UserGoals() {
                 handleParticipantStatusSubmit={modalsService.handleParticipantStatusSubmit}
                 handleParticipantResultStatusSubmit={modalsService.handleParticipantResultStatusSubmit}
                 handleDelete={modalsService.handleDelete}
-            />
-
-            <DetailsGoalModal
-                relatedUsers={goalsService.relatedUsers}
-                user={goalsService.targetUser}
-                show={modalsService.showDetails}
-                goal={modalsService.currentGoal}
-                closeModal={modalsService.closeDetailsModal}
             />
         </>
     );
