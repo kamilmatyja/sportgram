@@ -71,21 +71,24 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form id="edit-goal-form" onSubmit={handleEditSubmit} className="mb-4 border-bottom pb-3">
+                                <form id="edit-goal-form" onSubmit={handleEditSubmit}
+                                      className="mb-4 border-bottom">
                                     <div className="row mb-3">
                                         <div className="col-md-6">
                                             <label className="form-label">{t('startedAt')}</label>
                                             <input type="datetime-local" name="startedAt"
                                                    className={`form-control ${fieldErrors.startedAt ? 'is-invalid' : ''}`}
                                                    value={formData.startedAt || ''} onChange={handleChange}/>
-                                            {fieldErrors.startedAt && <div className="invalid-feedback d-block">{fieldErrors.startedAt}</div>}
+                                            {fieldErrors.startedAt &&
+                                                <div className="invalid-feedback d-block">{fieldErrors.startedAt}</div>}
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label">{t('endedAt')}</label>
                                             <input type="datetime-local" name="endedAt"
                                                    className={`form-control ${fieldErrors.endedAt ? 'is-invalid' : ''}`}
                                                    value={formData.endedAt || ''} onChange={handleChange}/>
-                                            {fieldErrors.endedAt && <div className="invalid-feedback d-block">{fieldErrors.endedAt}</div>}
+                                            {fieldErrors.endedAt &&
+                                                <div className="invalid-feedback d-block">{fieldErrors.endedAt}</div>}
                                         </div>
                                     </div>
 
@@ -94,7 +97,8 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                         <input type="text" name="text"
                                                className={`form-control ${fieldErrors.text ? 'is-invalid' : ''}`}
                                                value={formData.text} onChange={handleChange} required/>
-                                        {fieldErrors.text && <div className="invalid-feedback d-block">{fieldErrors.text}</div>}
+                                        {fieldErrors.text &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.text}</div>}
                                     </div>
 
                                     <div className="row mb-3">
@@ -103,7 +107,8 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                             <input type="text" name="link"
                                                    className={`form-control ${fieldErrors.link ? 'is-invalid' : ''}`}
                                                    value={formData.link} onChange={handleChange} required/>
-                                            {fieldErrors.link && <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
+                                            {fieldErrors.link &&
+                                                <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
                                         </div>
                                         <div className="col-md-4">
                                             <label className="form-label">{t('discipline')}</label>
@@ -115,14 +120,16 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                                                 ))}
                                             </select>
-                                            {fieldErrors.discipline && <div className="invalid-feedback d-block">{fieldErrors.discipline}</div>}
+                                            {fieldErrors.discipline && <div
+                                                className="invalid-feedback d-block">{fieldErrors.discipline}</div>}
                                         </div>
                                         <div className="col-md-4">
                                             <label className="form-label">{t('distance')} [m]</label>
                                             <input type="number" name="distance"
                                                    className={`form-control ${fieldErrors.distance ? 'is-invalid' : ''}`}
                                                    value={formData.distance || ''} onChange={handleChange} required/>
-                                            {fieldErrors.distance && <div className="invalid-feedback d-block">{fieldErrors.distance}</div>}
+                                            {fieldErrors.distance &&
+                                                <div className="invalid-feedback d-block">{fieldErrors.distance}</div>}
                                         </div>
                                     </div>
 
@@ -131,7 +138,8 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                         <input type="number" name="time"
                                                className={`form-control ${fieldErrors.time ? 'is-invalid' : ''}`}
                                                value={formData.time || ''} onChange={handleChange}/>
-                                        {fieldErrors.time && <div className="invalid-feedback d-block">{fieldErrors.time}</div>}
+                                        {fieldErrors.time &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.time}</div>}
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label">{t('participants')}</label>
@@ -148,16 +156,16 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                                 </option>
                                             ))}
                                         </select>
-                                        {fieldErrors.participants && <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
+                                        {fieldErrors.participants &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
                                     </div>
                                 </form>
                             )}
 
                             {(isMyProfile || isAdmin) && (
-                                <div className="mb-4">
-                                    <h6>{t('manageGoalStatus')}</h6>
+                                <div className="mb-4 border-bottom pb-3">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('status')}:</strong>
+                                        <strong>{t('goalStatus')}:</strong>
                                         <span className="me-2">
                                             {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}
                                         </span>
@@ -180,58 +188,56 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                             )}
 
                             {myParticipant && (
-                                <div className="mb-4">
-                                    <h6>{t('manageParticipantStatus')}</h6>
-                                    <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
-                                        <strong>{t('status')}:</strong>
-                                        <span className="me-2">
+                                <>
+                                    <div className="mb-4 border-bottom pb-3">
+                                        <div className="d-flex flex-wrap gap-2 align-items-center">
+                                            <strong>{t('participantStatus')}:</strong>
+                                            <span className="me-2">
                                             {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
                                         </span>
-                                        {SaveStatusEnum.getOptions(t)
-                                            .filter(opt => opt.value !== myParticipant.status)
-                                            .filter(opt => opt.value !== SaveStatusEnum.PENDING)
-                                            .map(opt => (
-                                                <button
-                                                    key={opt.value}
-                                                    type="button"
-                                                    className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                    disabled={loading}
-                                                    onClick={() => handleParticipantStatusSubmit(myParticipant.id, opt.value)}
-                                                >
-                                                    {loading ? t('loading') : opt.label}
-                                                </button>
-                                            ))}
+                                            {SaveStatusEnum.getOptions(t)
+                                                .filter(opt => opt.value !== myParticipant.status)
+                                                .filter(opt => opt.value !== SaveStatusEnum.PENDING)
+                                                .map(opt => (
+                                                    <button
+                                                        key={opt.value}
+                                                        type="button"
+                                                        className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                                        disabled={loading}
+                                                        onClick={() => handleParticipantStatusSubmit(myParticipant.id, opt.value)}
+                                                    >
+                                                        {loading ? t('loading') : opt.label}
+                                                    </button>
+                                                ))}
+                                        </div>
                                     </div>
-
-                                    {myParticipant.results && myParticipant.results.length > 0 && (
-                                        <>
-                                            <h6>{t('manageResultStatus')}</h6>
-                                            {myParticipant.results.map(res => (
-                                                <div key={res.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
-                                                    <div>
-                                                        <strong>{t('distance')}:</strong> {res.distance} [m] | <strong>{t('time')}:</strong> {res.time} [s] | <strong>{t('status')}:</strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(res.status))?.label || res.status}
-                                                    </div>
-                                                    <div className="ms-auto">
-                                                        {SaveStatusEnum.getOptions(t)
-                                                            .filter(opt => opt.value !== res.status)
-                                                            .filter(opt => opt.value !== SaveStatusEnum.PENDING)
-                                                            .map(opt => (
-                                                                <button
-                                                                    key={opt.value}
-                                                                    type="button"
-                                                                    className="btn btn-xs btn-profile-outline-primary py-0 px-2 ms-1"
-                                                                    disabled={loading}
-                                                                    onClick={() => handleParticipantResultStatusSubmit(res.id, opt.value)}
-                                                                >
-                                                                    {loading ? t('loading') : opt.label}
-                                                                </button>
-                                                            ))}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </>
-                                    )}
-                                </div>
+                                    {myParticipant.results && myParticipant.results.length > 0 && myParticipant.results.map(res => (
+                                        <div key={res.id}
+                                             className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
+                                            <div>
+                                                <strong>{t('distance')}:</strong> {res.distance} [m]
+                                                | <strong>{t('time')}:</strong> {res.time} [s]
+                                                | <strong>{t('status')}:</strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(res.status))?.label || res.status}
+                                            </div>
+                                            <div className="ms-auto">
+                                                {SaveStatusEnum.getOptions(t)
+                                                    .filter(opt => opt.value !== res.status)
+                                                    .filter(opt => opt.value !== SaveStatusEnum.PENDING)
+                                                    .map(opt => (
+                                                        <button
+                                                            key={opt.value}
+                                                            type="button"
+                                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2 ms-1"
+                                                            disabled={loading}
+                                                            onClick={() => handleParticipantResultStatusSubmit(res.id, opt.value)}
+                                                        >
+                                                            {loading ? t('loading') : opt.label}
+                                                        </button>
+                                                    ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
                             )}
 
                         </div>

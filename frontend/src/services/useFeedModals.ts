@@ -44,8 +44,13 @@ export function useFeedModals(onSuccess: () => void) {
         }
     };
 
-    const openManageModal = (feed: FeedResponse) => {
-        setCurrentFeed(feed);
+    const openManageModal = async (feed: FeedResponse) => {
+        const currentFeed = await feedProvider.details(feed.id, [
+            'feedReactions',
+            'feedComments',
+        ]);
+
+        setCurrentFeed(currentFeed);
         setFormData(new FeedBody(feed.text, ''));
         setGlobalError('');
         setFieldErrors({});
@@ -103,11 +108,40 @@ export function useFeedModals(onSuccess: () => void) {
         }
     };
 
+    const handleCommentStatusSubmit = async (commentId: string, newStatus: number) => {
+        setLoading(true);
+        setGlobalError('');
+        try {
+            await feedProvider.updateCommentStatus(commentId, new StatusBody(newStatus));
+            closeManageModal();
+            onSuccess();
+        } catch (err: any) {
+            setGlobalError(err.error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleReactionStatusSubmit = async (reactionId: string, newStatus: number) => {
+        setLoading(true);
+        setGlobalError('');
+        try {
+            await feedProvider.updateReactionStatus(reactionId, new StatusBody(newStatus));
+            closeManageModal();
+            onSuccess();
+        } catch (err: any) {
+            setGlobalError(err.error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleChange = createFormHandler(setFormData);
 
     return {
         showAdd, openAddModal, closeAddModal, handleAddSubmit,
         showManage, openManageModal, closeManageModal, currentFeed, handleEditSubmit, handleStatusSubmit, handleDelete,
+        handleCommentStatusSubmit, handleReactionStatusSubmit,
         formData, handleChange, loading, globalError, fieldErrors
     };
 }

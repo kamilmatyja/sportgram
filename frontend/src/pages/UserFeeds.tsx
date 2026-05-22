@@ -60,6 +60,8 @@ export default function UserFeeds() {
                 handleEditSubmit={modalsService.handleEditSubmit}
                 handleStatusSubmit={modalsService.handleStatusSubmit}
                 handleDelete={modalsService.handleDelete}
+                handleCommentStatusSubmit={modalsService.handleCommentStatusSubmit}
+                handleReactionStatusSubmit={modalsService.handleReactionStatusSubmit}
             />
         </>
     );

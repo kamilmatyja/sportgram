@@ -84,7 +84,7 @@ export const ManageStoryModal: React.FC<ManageStoryModalProps> = ({
                                     <strong>{t('status')}:</strong>
                                     <span className="me-2">
                                             {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(story.status))?.label || story.status}
-                                        </span>
+                                    </span>
                                     {ElementStatusEnum.getOptions(t)
                                         .filter(opt => opt.value !== story.status)
                                         .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))

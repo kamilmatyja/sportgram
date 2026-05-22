@@ -309,4 +309,10 @@ export const pl = {
     endedAt: "Koniec",
     selectOption: "Wybierz",
     user: "Użytkownik",
+    goalStatus: "Status celu",
+    participantStatus: "Status uczestnika",
+    feedStatus: "Status wpisu",
+    comments: "Komentarze",
+    reactions: "Reakcje",
+    reaction: "Reakcja",
 };

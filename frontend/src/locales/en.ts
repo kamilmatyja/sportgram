@@ -304,4 +304,10 @@ export const en = {
     close: "Close",
     selectOption: "Select",
     user: "User",
+    goalStatus: "Goal status",
+    participantStatus: "Participant status",
+    feedStatus: "Feed status",
+    comments: "Comments",
+    reactions: "Reactions",
+    reaction: "Reaction",
 };
