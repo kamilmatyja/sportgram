@@ -36,7 +36,7 @@ export const ManageNotificationModal: React.FC<ManageNotificationModalProps> = (
     return (
         <>
             <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
-                <div className="modal-dialog">
+                <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">{t('manageNotification')}</h5>

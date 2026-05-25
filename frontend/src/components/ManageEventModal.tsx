@@ -104,7 +104,7 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
     return (
         <>
             <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
-                <div className="modal-dialog modal-xl modal-dialog-scrollable">
+                <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">{t('manageEvent')}</h5>
@@ -231,10 +231,9 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                                            value={dist.distance}
                                                                            onChange={e => updateDistanceValue(dIndex, distIndex, parseInt(e.target.value) || 0)}/>
                                                                 </div>
-                                                                <button type="button" className="btn btn-sm btn-outline-danger ms-auto"
-                                                                        onClick={() => removeDistance(dIndex, distIndex)}>
-                                                                    <i className="bi bi-x"></i> {t('removeDistanceBtn')}
-                                                                </button>
+                                                                <button type="button" className="btn btn-sm btn-outline-danger"
+                                                                        onClick={() => removeDistance(dIndex, distIndex)}><i
+                                                                    className="bi bi-trash"></i></button>
                                                             </div>
 
                                                             <div className="ps-3 border-start">
@@ -250,10 +249,9 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                                         <input type="number" className="form-control form-control-sm w-50"
                                                                                placeholder={t('subDistanceMeters')} value={sub.subDistance}
                                                                                onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, parseInt(e.target.value) || 0)}/>
-                                                                        <button type="button" className="btn btn-sm text-danger p-0"
-                                                                                onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
-                                                                            <i className="bi bi-x-circle"></i>
-                                                                        </button>
+                                                                        <button type="button" className="btn btn-sm btn-outline-danger"
+                                                                                onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}><i
+                                                                            className="bi bi-trash"></i></button>
                                                                     </div>
                                                                 ))}
                                                             </div>

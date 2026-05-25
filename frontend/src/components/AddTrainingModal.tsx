@@ -61,7 +61,7 @@ export const AddTrainingModal: React.FC<AddTrainingModalProps> = ({
     return (
         <>
             <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
-                <div className="modal-dialog modal-xl modal-dialog-scrollable">
+                <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">{t('addTraining')}</h5>
@@ -165,8 +165,7 @@ export const AddTrainingModal: React.FC<AddTrainingModalProps> = ({
                                                                                                      value={opt.value}>{opt.label}</option>)}
                                                 </select>
                                             </div>
-                                            <button type="button" className="btn btn-outline-danger"
-                                                    onClick={() => removeDiscipline(dIndex)}>
+                                            <button type="button" className="btn btn-outline-danger" onClick={() => removeDiscipline(dIndex)}>
                                                 <i className="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -200,11 +199,9 @@ export const AddTrainingModal: React.FC<AddTrainingModalProps> = ({
                                                                        value={dist.time}
                                                                        onChange={e => updateDistanceValue(dIndex, distIndex, 'time', parseInt(e.target.value) || 0)}/>
                                                             </div>
-                                                            <button type="button"
-                                                                    className="btn btn-sm btn-outline-danger ms-auto"
-                                                                    onClick={() => removeDistance(dIndex, distIndex)}>
-                                                                <i className="bi bi-x"></i>
-                                                            </button>
+                                                            <button type="button" className="btn btn-sm btn-outline-danger"
+                                                                    onClick={() => removeDistance(dIndex, distIndex)}><i
+                                                                className="bi bi-trash"></i></button>
                                                         </div>
 
                                                         <div className="ps-3 border-start">
@@ -232,12 +229,9 @@ export const AddTrainingModal: React.FC<AddTrainingModalProps> = ({
                                                                            placeholder={t('timeSeconds')}
                                                                            value={sub.time}
                                                                            onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'time', parseInt(e.target.value) || 0)}/>
-
-                                                                    <button type="button"
-                                                                            className="btn btn-sm text-danger p-0 ms-auto"
-                                                                            onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
-                                                                        <i className="bi bi-x-circle"></i>
-                                                                    </button>
+                                                                    <button type="button" className="btn btn-sm btn-outline-danger"
+                                                                            onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}><i
+                                                                        className="bi bi-trash"></i></button>
                                                                 </div>
                                                             ))}
                                                         </div>

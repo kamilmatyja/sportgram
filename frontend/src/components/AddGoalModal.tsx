@@ -40,7 +40,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
     return (
         <>
             <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
-                <div className="modal-dialog">
+                <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <form onSubmit={handleSubmit}>
                             <div className="modal-header">

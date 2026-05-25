@@ -60,7 +60,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
     return (
         <>
             <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
-                <div className="modal-dialog modal-lg modal-dialog-scrollable">
+                <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">{t('manageFeed')}</h5>

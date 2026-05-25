@@ -34,6 +34,8 @@ html, body {
 .btn-profile-primary {
     --bs-btn-bg: var(--theme-color);
     --bs-btn-border-color: var(--theme-color);
+    --bs-btn-hover-bg: var(--theme-color);
+    --bs-btn-hover-border-color: var(--theme-color);
     --bs-btn-disabled-bg: var(--theme-color);
     --bs-btn-disabled-border-color: var(--theme-color);
 }
@@ -47,12 +49,6 @@ html, body {
     --bs-btn-active-border-color: var(--theme-color);
     --bs-btn-disabled-color: var(--theme-color);
     --bs-btn-disabled-border-color: var(--theme-color);
-}
-
-.btn-profile-primary:hover {
-    color: var(--theme-color);
-    background-color: var(--theme-color);
-    border-color: var(--theme-color);
 }
 
 .table-responsive-custom {
@@ -78,5 +74,6 @@ html, body {
 }
 
 .text-profile-primary {
-    color: var(--theme-color) !important;
+    --bs-text-opacity: var(--theme-color);
+    color: var(--bs-text-opacity) !important;
 }

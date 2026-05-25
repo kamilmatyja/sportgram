@@ -37,7 +37,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
     return (
         <>
             <div className="modal d-block" tabIndex={-1}>
-                <div className="modal-dialog modal-lg  modal-dialog-scrollable">
+                <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <form onSubmit={handleSubmit}>
                             <div className="modal-header">
