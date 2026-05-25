@@ -348,4 +348,8 @@ export const en = {
     saveResultBtn: "Save result",
     noRegistrationsForDistance: "No registrations for this distance.",
     addSubDistanceBtn: "+ Add sub-distance",
+    addTraining: "Add training",
+    manageTraining: "Manage training",
+    noTrainings: "No trainings found",
+    trainingStatus: "Training status",
 };

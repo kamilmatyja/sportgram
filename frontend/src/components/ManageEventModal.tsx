@@ -83,7 +83,7 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                     const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
                     return (
                         <div key={idx} className="d-flex align-items-center gap-2 mb-1">
-                            <span className="small text-muted w-50">{t('forDistance')} {sdMeta?.subDistance || '?'}m:</span>
+                            <span className="small text-muted w-50">{t('forDistance')} {sdMeta?.subDistance || '?'} [m]:</span>
                             <input type="number" className="form-control form-control-sm w-50"
                                    placeholder={t('timeSeconds')} value={sr.time} onChange={e => {
                                 const newSubs = [...resultFormData.subResults];

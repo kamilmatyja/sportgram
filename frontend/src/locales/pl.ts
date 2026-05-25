@@ -353,4 +353,8 @@ export const pl = {
     saveResultBtn: "Zapisz wynik",
     noRegistrationsForDistance: "Brak zapisów na ten dystans.",
     addSubDistanceBtn: "+ Dodaj sub-dystans",
+    addTraining: "Dodaj trening",
+    manageTraining: "Zarządzaj treningiem",
+    noTrainings: "Brak treningów",
+    trainingStatus: "Status treningu",
 };
