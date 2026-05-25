@@ -364,4 +364,10 @@ export const en = {
     pushPermissionDenied: "Permission denied. Check your browser settings.",
     browserDevice: "Browser / Device",
     endpoint: "Endpoint",
+    conversationsList: "Recent conversations",
+    noConversations: "You have no active conversations.",
+    lastActivity: "Last activity",
+    isTyping: "is typing",
+    loadEarlier: "Load earlier messages",
+    typeMessage: "Type a message...",
 };

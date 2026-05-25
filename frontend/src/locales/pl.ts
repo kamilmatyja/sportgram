@@ -369,4 +369,10 @@ export const pl = {
     pushPermissionDenied: "Odmówiono dostępu do powiadomień. Sprawdź ustawienia przeglądarki.",
     browserDevice: "Przeglądarka / Urządzenie",
     endpoint: "Endpoint",
+    conversationsList: "Ostatnie rozmowy",
+    noConversations: "Nie masz aktywnych rozmów.",
+    lastActivity: "Ostatnia aktywność",
+    isTyping: "pisze",
+    loadEarlier: "Załaduj wcześniejsze wiadomości",
+    typeMessage: "Napisz wiadomość...",
 };
