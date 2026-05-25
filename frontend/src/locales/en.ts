@@ -352,4 +352,6 @@ export const en = {
     manageTraining: "Manage training",
     noTrainings: "No trainings found",
     trainingStatus: "Training status",
+    manageNotification: "Manage notification",
+    noNotifications: "No notifications found",
 };

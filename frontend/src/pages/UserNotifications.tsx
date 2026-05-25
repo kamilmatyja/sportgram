@@ -1,7 +1,46 @@
 import {useParams} from 'react-router-dom';
+import {useUserNotifications} from '../services/useUserNotifications';
+import {useNotificationModals} from '../services/useNotificationModals';
+import {UserNotificationsView} from '../components/UserNotificationsView';
+import {ManageNotificationModal} from '../components/ManageNotificationModal';
 
 export default function UserNotifications() {
     const {link} = useParams<{ link: string }>();
-    return <div className="container mt-5"><h2>Powiadomienia: {link}</h2><p className="text-muted">Skrzynka powiadomień
-        użytkownika.</p></div>;
+
+    const notificationsService = useUserNotifications(link);
+    const modalsService = useNotificationModals(notificationsService.refreshNotifications);
+
+    return (
+        <>
+            <UserNotificationsView
+                user={notificationsService.targetUser}
+                notifications={notificationsService.notifications}
+                isMyProfile={notificationsService.isMyProfile}
+                loading={notificationsService.loading}
+                error={notificationsService.error}
+                page={notificationsService.page}
+                limit={notificationsService.limit}
+                sort={notificationsService.sort}
+                filters={notificationsService.filters}
+                onFilterChange={notificationsService.handleFilterChange}
+                onSortChange={notificationsService.handleSortChange}
+                onLimitChange={notificationsService.handleLimitChange}
+                onPrevPage={notificationsService.handlePrevPage}
+                onNextPage={notificationsService.handleNextPage}
+                onManageClick={modalsService.openManageModal}
+            />
+
+            <ManageNotificationModal
+                user={notificationsService.targetUser}
+                show={modalsService.showManage}
+                notification={modalsService.currentNotification}
+                isMyProfile={notificationsService.isMyProfile}
+                closeModal={modalsService.closeManageModal}
+                loading={modalsService.loading}
+                globalError={modalsService.globalError}
+                handleStatusSubmit={modalsService.handleStatusSubmit}
+                handleDelete={modalsService.handleDelete}
+            />
+        </>
+    );
 }

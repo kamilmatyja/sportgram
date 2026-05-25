@@ -357,4 +357,6 @@ export const pl = {
     manageTraining: "Zarządzaj treningiem",
     noTrainings: "Brak treningów",
     trainingStatus: "Status treningu",
+    manageNotification: "Zarządzaj powiadomieniem",
+    noNotifications: "Brak powiadomień",
 };
