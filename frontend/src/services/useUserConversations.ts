@@ -48,8 +48,6 @@ export function useUserConversations(link?: string) {
 
     const chatEndRef = useRef<HTMLDivElement>(null);
     const lastTypingPatch = useRef<number>(0);
-    const targetLastUpdatedAt = useRef<string | null>(null);
-    const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const userProvider = new UserProvider();
     const conversationProvider = new ConversationProvider();
@@ -196,12 +194,15 @@ export function useUserConversations(link?: string) {
 
             const targetActivity = acts.find(a => a.senderUserId === tUser.id);
             if (targetActivity) {
-                if (targetLastUpdatedAt.current && targetLastUpdatedAt.current !== targetActivity.updatedAt) {
+                const serverTimeMs = new Date(targetActivity.updatedAt).getTime();
+                const nowMs = Date.now();
+                if (nowMs - serverTimeMs <= 10000) {
                     setIsTyping(true);
-                    if (typingTimeout.current) clearTimeout(typingTimeout.current);
-                    typingTimeout.current = setTimeout(() => setIsTyping(false), 4000);
+                } else {
+                    setIsTyping(false);
                 }
-                targetLastUpdatedAt.current = targetActivity.updatedAt;
+            } else {
+                setIsTyping(false);
             }
 
         } catch (e) {
@@ -253,15 +254,6 @@ export function useUserConversations(link?: string) {
                         return;
                     }
 
-                    const actIndex = new ConversationActivityIndexQuery();
-                    actIndex.filter = {userId: tUser.id};
-                    actIndex.limit = 1;
-                    const initialActs = await conversationProvider.indexActivity(actIndex);
-                    const initTargetAct = initialActs.find(a => a.senderUserId === tUser.id);
-                    if (initTargetAct) {
-                        targetLastUpdatedAt.current = initTargetAct.updatedAt;
-                    }
-
                     await fetchMessages(tUser, 1, false);
                 }
             } catch (err: any) {
@@ -280,11 +272,6 @@ export function useUserConversations(link?: string) {
         return () => clearInterval(intervalId);
     }, [isMyProfile, targetUser, currentUser]);
 
-    useEffect(() => {
-        return () => {
-            if (typingTimeout.current) clearTimeout(typingTimeout.current);
-        };
-    }, []);
 
     const loadEarlierMessages = () => {
         if (!targetUser) return;
@@ -293,7 +280,7 @@ export function useUserConversations(link?: string) {
         fetchMessages(targetUser, nextPage, true);
     };
 
-    const handleSendMessage = async (e: React.FormEvent) => {
+    const handleSendMessage = async (e: React.ChangeEvent) => {
         e.preventDefault();
         if (!messageInput.trim() || !targetUser) return;
 

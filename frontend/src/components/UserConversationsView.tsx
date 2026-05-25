@@ -72,7 +72,6 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
 
     const hexColor = ColorEnum.getHex(targetUser.color);
 
-    // --- WIDOK 1: MÓJ PROFIL -> LISTA AKTYWNOŚCI ---
     const renderActivityList = () => (
         <div className="card shadow-sm">
             <div className="card-body">
@@ -157,14 +156,13 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
         </div>
     );
 
-    // --- WIDOK 2: INNY PROFIL -> WIDOK CZATU ---
     const renderChat = () => (
-        <div className="card shadow-sm d-flex flex-column" style={{height: '600px'}}>
+        <div className="card shadow-sm d-flex flex-column">
             <div className="card-header bg-light d-flex align-items-center gap-3">
                 <img src={`data:image/webp;base64,${targetUser.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover" width={40} height={40} />
                 <div>
-                    <h6 className="mb-0 fw-bold" style={{color: hexColor}}>{targetUser.firstName} {targetUser.lastName}</h6>
-                    <div style={{height: '15px'}}>
+                    <h6 className="mb-0 fw-bold">{targetUser.firstName} {targetUser.lastName}</h6>
+                    <div>
                         {isTyping && <small className="text-profile-primary fst-italic">{t('isTyping')}...</small>}
                     </div>
                 </div>
@@ -183,10 +181,10 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                     const isMine = msg.senderUserId === currentUser.id;
                     return (
                         <div key={msg.id} className={`d-flex flex-column ${isMine ? 'align-items-end' : 'align-items-start'}`}>
-                            <div className={`p-2 px-3 rounded-3 text-break shadow-sm ${isMine ? 'profile-theme-bg' : 'bg-white border'}`} style={{maxWidth: '75%'}}>
+                            <div className={`p-2 px-3 rounded-3 text-break shadow-sm ${isMine ? 'profile-theme-bg' : 'bg-white border'}`}>
                                 {msg.text}
                             </div>
-                            <small className="text-muted mt-1" style={{fontSize: '0.7rem'}}>{formatDate(msg.createdAt)}</small>
+                            <small className="text-muted mt-1">{formatDate(msg.createdAt)}</small>
                         </div>
                     );
                 })}
@@ -203,7 +201,7 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                         onChange={handleTyping}
                         disabled={isSending}
                     />
-                    <button type="submit" className="btn btn-profile-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: '40px', height: '40px'}} disabled={!messageInput.trim() || isSending}>
+                    <button type="submit" className="btn btn-profile-primary rounded-circle d-flex align-items-center justify-content-center" disabled={!messageInput.trim() || isSending}>
                         {isSending ? <div className="spinner-border spinner-border-sm"/> : <i className="bi bi-send-fill"></i>}
                     </button>
                 </form>
