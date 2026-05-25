@@ -57,8 +57,8 @@ export const ManagePushSubscriptionModal: React.FC<ManagePushSubscriptionModalPr
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             <div className="mb-4">
-                                <label className="form-label text-muted small">{t('endpoint')}</label>
-                                <p className="text-break border p-2 bg-light">{subscription.endpoint}</p>
+                                <label className="form-label">{t('endpoint')}</label>
+                                <span className="me-2 text-break">{subscription.endpoint}</span>
                             </div>
 
                             {isMyProfile && (
