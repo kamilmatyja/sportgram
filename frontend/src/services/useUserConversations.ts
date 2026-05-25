@@ -17,6 +17,10 @@ import {ConversationBody} from '../api/body/ConversationBody';
 import {useCheckPermission} from '../utils/checkPermission';
 import {FriendStatusEnum} from '../enums/FriendStatusEnum';
 
+export interface ProcessedActivity extends ConversationActivityResponse {
+    otherUser: UserResponse;
+}
+
 export function useUserConversations(link?: string) {
     const {getCurrentUser} = useCheckPermission();
 
@@ -27,10 +31,12 @@ export function useUserConversations(link?: string) {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [activities, setActivities] = useState<ConversationActivityResponse[]>([]);
+    const [rawActivities, setRawActivities] = useState<ConversationActivityResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
     const [activityPage, setActivityPage] = useState<number>(1);
     const [activityLimit, setActivityLimit] = useState<number>(10);
+    const [activitySort, setActivitySort] = useState<string>('updatedAt:desc');
+    const [activitySearch, setActivitySearch] = useState<string>('');
 
     const [messages, setMessages] = useState<ConversationResponse[]>([]);
     const [chatPage, setChatPage] = useState<number>(1);
@@ -41,7 +47,9 @@ export function useUserConversations(link?: string) {
     const [loadingEarlier, setLoadingEarlier] = useState<boolean>(false);
 
     const chatEndRef = useRef<HTMLDivElement>(null);
-    const lastTypingUpdate = useRef<number>(0);
+    const lastTypingPatch = useRef<number>(0);
+    const targetLastUpdatedAt = useRef<string | null>(null);
+    const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const userProvider = new UserProvider();
     const conversationProvider = new ConversationProvider();
@@ -55,31 +63,23 @@ export function useUserConversations(link?: string) {
         try {
             setLoading(true);
             const indexDto = new ConversationActivityIndexQuery();
-            indexDto.page = activityPage;
+            indexDto.limit = 100;
 
             const data = await conversationProvider.indexActivity(indexDto);
+            setRawActivities(data);
 
-            const uniqueOtherUserIds = new Set<string>();
-            const deduplicated: ConversationActivityResponse[] = [];
+            const otherUserIds = Array.from(
+                new Set(data.map(act => act.senderUserId === currentUsr.id ? act.receiverUserId : act.senderUserId))
+            );
 
-            for (const act of data) {
-                const otherId = act.senderUserId === currentUsr.id ? act.receiverUserId : act.senderUserId;
-                if (!uniqueOtherUserIds.has(otherId)) {
-                    uniqueOtherUserIds.add(otherId);
-                    deduplicated.push(act);
-                }
-            }
-
-            const paginated = deduplicated.slice((activityPage - 1) * activityLimit, activityPage * activityLimit);
-            setActivities(paginated);
-
-            if (uniqueOtherUserIds.size > 0) {
+            if (otherUserIds.length > 0) {
                 const uFilter = new UserFilterQuery();
-                uFilter.userIds = Array.from(uniqueOtherUserIds);
+                uFilter.userIds = otherUserIds;
                 const uIndexDto = new UserIndexQuery();
                 uIndexDto.filter = uFilter;
-                uIndexDto.limit = uniqueOtherUserIds.size;
+                uIndexDto.limit = otherUserIds.length;
                 const usersData = await userProvider.index(uIndexDto);
+
                 const usersMap = usersData.reduce((acc, curr) => {
                     acc[curr.id] = curr;
                     return acc;
@@ -91,6 +91,51 @@ export function useUserConversations(link?: string) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const processActivities = (): { paginated: ProcessedActivity[], total: number } => {
+        if (!currentUser) return {paginated: [], total: 0};
+
+        const mapped: ProcessedActivity[] = rawActivities
+            .map(act => {
+                const otherId = act.senderUserId === currentUser.id ? act.receiverUserId : act.senderUserId;
+                return {...act, otherUser: relatedUsers[otherId]};
+            })
+            .filter(act => act.otherUser !== undefined);
+
+        const uniqueMap = new Map<string, ProcessedActivity>();
+        for (const act of mapped) {
+            if (!uniqueMap.has(act.otherUser.id)) {
+                uniqueMap.set(act.otherUser.id, act);
+            }
+        }
+        let processed = Array.from(uniqueMap.values());
+
+        if (activitySearch) {
+            const search = activitySearch.toLowerCase();
+            processed = processed.filter(act =>
+                act.otherUser.firstName.toLowerCase().includes(search) ||
+                act.otherUser.lastName.toLowerCase().includes(search) ||
+                act.otherUser.link.toLowerCase().includes(search)
+            );
+        }
+
+        processed.sort((a, b) => {
+            const [field, dir] = activitySort.split(':');
+            const mod = dir === 'desc' ? -1 : 1;
+            if (field === 'updatedAt') {
+                return mod * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
+            }
+            if (field === 'user') {
+                return mod * a.otherUser.firstName.localeCompare(b.otherUser.firstName);
+            }
+            return 0;
+        });
+
+        const total = processed.length;
+        const paginated = processed.slice((activityPage - 1) * activityLimit, activityPage * activityLimit);
+
+        return {paginated, total};
     };
 
     const fetchMessages = async (tUser: UserResponse, pageToFetch: number = 1, append: boolean = false) => {
@@ -105,13 +150,13 @@ export function useUserConversations(link?: string) {
             indexDto.filter = filter;
             indexDto.page = pageToFetch;
             indexDto.limit = 20;
+            indexDto.sort = 'createdAt:desc';
 
             const data = await conversationProvider.index(indexDto);
-
             setHasMoreMessages(data.length === 20);
 
             if (append) {
-                setMessages(prev => [...data, ...prev]);
+                setMessages(prev => [...prev, ...data]);
             } else {
                 setMessages(data);
                 setTimeout(scrollToBottom, 100);
@@ -134,9 +179,10 @@ export function useUserConversations(link?: string) {
             const data = await conversationProvider.index(indexDto);
 
             setMessages(prev => {
-                if (data.length > 0 && prev.length > 0 && data[0].id !== prev[0].id) {
+                const newMessages = data.filter(newMsg => !prev.some(oldMsg => oldMsg.id === newMsg.id));
+                if (newMessages.length > 0) {
                     setTimeout(scrollToBottom, 100);
-                    return data;
+                    return [...newMessages, ...prev];
                 }
                 return prev;
             });
@@ -146,17 +192,18 @@ export function useUserConversations(link?: string) {
             const actIndexDto = new ConversationActivityIndexQuery();
             actIndexDto.filter = actFilter;
             actIndexDto.limit = 1;
-            actIndexDto.sort = 'createdAt:desc';
             const acts = await conversationProvider.indexActivity(actIndexDto);
 
-            if (acts.length > 0) {
-                const latestAct = acts[0];
-                if (latestAct.senderUserId === tUser.id) {
-                    const updatedAt = new Date(latestAct.updatedAt).getTime();
-                    const now = Date.now();
-                    setIsTyping((now - updatedAt) < 5000);
+            const targetActivity = acts.find(a => a.senderUserId === tUser.id);
+            if (targetActivity) {
+                if (targetLastUpdatedAt.current && targetLastUpdatedAt.current !== targetActivity.updatedAt) {
+                    setIsTyping(true);
+                    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+                    typingTimeout.current = setTimeout(() => setIsTyping(false), 4000);
                 }
+                targetLastUpdatedAt.current = targetActivity.updatedAt;
             }
+
         } catch (e) {
         }
     };
@@ -205,6 +252,16 @@ export function useUserConversations(link?: string) {
                         setLoading(false);
                         return;
                     }
+
+                    const actIndex = new ConversationActivityIndexQuery();
+                    actIndex.filter = {userId: tUser.id};
+                    actIndex.limit = 1;
+                    const initialActs = await conversationProvider.indexActivity(actIndex);
+                    const initTargetAct = initialActs.find(a => a.senderUserId === tUser.id);
+                    if (initTargetAct) {
+                        targetLastUpdatedAt.current = initTargetAct.updatedAt;
+                    }
+
                     await fetchMessages(tUser, 1, false);
                 }
             } catch (err: any) {
@@ -215,13 +272,19 @@ export function useUserConversations(link?: string) {
         };
 
         init();
-    }, [link, activityPage, activityLimit]);
+    }, [link]);
 
     useEffect(() => {
         if (isMyProfile || !targetUser || !currentUser) return;
         const intervalId = setInterval(() => pollUpdates(targetUser), 3000);
         return () => clearInterval(intervalId);
     }, [isMyProfile, targetUser, currentUser]);
+
+    useEffect(() => {
+        return () => {
+            if (typingTimeout.current) clearTimeout(typingTimeout.current);
+        };
+    }, []);
 
     const loadEarlierMessages = () => {
         if (!targetUser) return;
@@ -239,7 +302,9 @@ export function useUserConversations(link?: string) {
             const body = new ConversationBody(messageInput);
             await conversationProvider.create(targetUser.id, body);
             setMessageInput('');
+            setIsTyping(false);
             await fetchMessages(targetUser, 1, false);
+            setTimeout(scrollToBottom, 100);
         } catch (e: any) {
             alert(e.error);
         } finally {
@@ -252,17 +317,27 @@ export function useUserConversations(link?: string) {
         if (!targetUser) return;
 
         const now = Date.now();
-        if (now - lastTypingUpdate.current > 3000) {
+        if (now - lastTypingPatch.current > 3000) {
             conversationProvider.updateActivityUpdatedAt(targetUser.id).catch(() => {});
-            lastTypingUpdate.current = now;
+            lastTypingPatch.current = now;
         }
     };
+
+    const {paginated: paginatedActivities, total: totalActivities} = processActivities();
 
     return {
         targetUser, currentUser, isMyProfile, loading, error,
 
-        activities, relatedUsers, activityPage, activityLimit,
-        setActivityPage, setActivityLimit,
+        activities: paginatedActivities,
+        totalActivities,
+        activityPage,
+        activityLimit,
+        activitySort,
+        activitySearch,
+        setActivityPage,
+        setActivityLimit,
+        setActivitySort,
+        setActivitySearch,
 
         messages, messageInput, isSending, isTyping, hasMoreMessages, loadingEarlier, chatEndRef,
         handleTyping, handleSendMessage, loadEarlierMessages

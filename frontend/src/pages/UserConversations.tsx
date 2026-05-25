@@ -15,11 +15,15 @@ export default function UserConversations() {
             error={conversationsService.error}
 
             activities={conversationsService.activities}
-            relatedUsers={conversationsService.relatedUsers}
+            totalActivities={conversationsService.totalActivities}
             activityPage={conversationsService.activityPage}
             activityLimit={conversationsService.activityLimit}
+            activitySort={conversationsService.activitySort}
+            activitySearch={conversationsService.activitySearch}
             setActivityPage={conversationsService.setActivityPage}
             setActivityLimit={conversationsService.setActivityLimit}
+            setActivitySort={conversationsService.setActivitySort}
+            setActivitySearch={conversationsService.setActivitySearch}
 
             messages={conversationsService.messages}
             messageInput={conversationsService.messageInput}

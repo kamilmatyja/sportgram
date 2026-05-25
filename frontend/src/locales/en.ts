@@ -370,4 +370,8 @@ export const en = {
     isTyping: "is typing",
     loadEarlier: "Load earlier messages",
     typeMessage: "Type a message...",
+    search: "Search...",
+    sortUserAsc: "User A-Z",
+    sortUserDesc: "User Z-A",
+    chat: "Chat",
 };

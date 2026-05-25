@@ -375,4 +375,8 @@ export const pl = {
     isTyping: "pisze",
     loadEarlier: "Załaduj wcześniejsze wiadomości",
     typeMessage: "Napisz wiadomość...",
+    search: "Szukaj...",
+    sortUserAsc: "Użytkownik A-Z",
+    sortUserDesc: "Użytkownik Z-A",
+    chat: "Czat",
 };

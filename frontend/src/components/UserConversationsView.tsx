@@ -1,11 +1,11 @@
 import React from 'react';
-import {useTranslation} from '../context/TranslationContext.tsx';
-import {UserResponse} from '../api/responses/UserResponse.ts';
-import {ConversationActivityResponse} from '../api/responses/ConversationActivityResponse.ts';
-import {ConversationResponse} from '../api/responses/ConversationResponse.ts';
-import {ColorEnum} from '../enums/ColorEnum.ts';
-import {PaginationEnum} from '../enums/PaginationEnum.ts';
-import {formatDate} from '../utils/dateFormat.ts';
+import {useTranslation} from '../context/TranslationContext';
+import {UserResponse} from '../api/responses/UserResponse';
+import {ConversationResponse} from '../api/responses/ConversationResponse';
+import {ColorEnum} from '../enums/ColorEnum';
+import {PaginationEnum} from '../enums/PaginationEnum';
+import {formatDate} from '../utils/dateFormat';
+import {ProcessedActivity} from '../services/useUserConversations';
 
 interface UserConversationsViewProps {
     targetUser: UserResponse | null;
@@ -14,12 +14,16 @@ interface UserConversationsViewProps {
     loading: boolean;
     error: string | null;
 
-    activities: ConversationActivityResponse[];
-    relatedUsers: Record<string, UserResponse>;
+    activities: ProcessedActivity[];
+    totalActivities: number;
     activityPage: number;
     activityLimit: number;
+    activitySort: string;
+    activitySearch: string;
     setActivityPage: (page: number) => void;
     setActivityLimit: (limit: number) => void;
+    setActivitySort: (sort: string) => void;
+    setActivitySearch: (search: string) => void;
 
     messages: ConversationResponse[];
     messageInput: string;
@@ -29,7 +33,7 @@ interface UserConversationsViewProps {
     loadingEarlier: boolean;
     chatEndRef: React.RefObject<HTMLDivElement | null>;
     handleTyping: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleSendMessage: (e: React.ChangeEvent) => void;
+    handleSendMessage: (e: React.FormEvent) => void;
     loadEarlierMessages: () => void;
 }
 
@@ -40,11 +44,15 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                                                                                 loading,
                                                                                 error,
                                                                                 activities,
-                                                                                relatedUsers,
+                                                                                totalActivities,
                                                                                 activityPage,
                                                                                 activityLimit,
+                                                                                activitySort,
+                                                                                activitySearch,
                                                                                 setActivityPage,
                                                                                 setActivityLimit,
+                                                                                setActivitySort,
+                                                                                setActivitySearch,
                                                                                 messages,
                                                                                 messageInput,
                                                                                 isSending,
@@ -58,66 +66,90 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                                                                             }) => {
     const {t} = useTranslation();
 
-    if (loading && !targetUser) return <div className="container mt-5 text-center">
-        <div className="spinner-border"/>
-    </div>;
+    if (loading && !targetUser && !isMyProfile) return <div className="container mt-5 text-center"><div className="spinner-border"/></div>;
 
-    if (error || !targetUser || !currentUser) return <div
-        className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
+    if (error || !targetUser || !currentUser) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
     const hexColor = ColorEnum.getHex(targetUser.color);
 
+    // --- WIDOK 1: MÓJ PROFIL -> LISTA AKTYWNOŚCI ---
     const renderActivityList = () => (
         <div className="card shadow-sm">
             <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h4 className="mb-0">{t('conversationsList')}</h4>
-                    <select value={activityLimit} onChange={e => {
-                        setActivityLimit(Number(e.target.value));
-                        setActivityPage(1);
-                    }} className="form-select w-auto">
+                </div>
+
+                <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
+                    <input
+                        type="text"
+                        placeholder={t('search')}
+                        value={activitySearch}
+                        onChange={e => {setActivitySearch(e.target.value); setActivityPage(1);}}
+                        className="form-control w-auto"
+                    />
+                    <select value={activitySort} onChange={e => {setActivitySort(e.target.value); setActivityPage(1);}} className="form-select w-auto ms-auto">
+                        <option value="updatedAt:desc">{t('sortCreatedDesc')}</option>
+                        <option value="updatedAt:asc">{t('sortCreatedAsc')}</option>
+                        <option value="user:asc">{t('sortUserAsc')}</option>
+                        <option value="user:desc">{t('sortUserDesc')}</option>
+                    </select>
+                    <select value={activityLimit} onChange={e => {setActivityLimit(Number(e.target.value)); setActivityPage(1);}} className="form-select w-auto">
                         {PaginationEnum.getOptions(t).map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
                 </div>
 
-                {loading ? <div className="text-center">
-                    <div className="spinner-border"/>
-                </div> : (
+                {loading ? <div className="text-center"><div className="spinner-border"/></div> : (
                     <>
-                        <div className="list-group mb-3">
-                            {activities.length === 0 ? (
-                                <div className="text-center text-muted py-4">{t('noConversations')}</div>
-                            ) : activities.map(act => {
-                                const otherUserId = act.senderUserId === currentUser.id ? act.receiverUserId : act.senderUserId;
-                                const otherUser = relatedUsers[otherUserId];
-
-                                if (!otherUser) return null;
-
-                                return (
-                                    <a key={act.id} href={`/users/${otherUser.link}/conversations`}
-                                       className="list-group-item list-group-item-action d-flex align-items-center gap-3">
-                                        <img src={`data:image/webp;base64,${otherUser.profilePhoto}`} alt="avatar"
-                                             className="rounded-circle object-fit-cover" width={50} height={50}/>
-                                        <div className="flex-grow-1">
-                                            <h6 className="mb-0 fw-bold"
-                                                style={{color: ColorEnum.getHex(otherUser.color)}}>{otherUser.firstName} {otherUser.lastName}</h6>
-                                            <small
-                                                className="text-muted">{t('lastActivity')}: {formatDate(act.updatedAt)}</small>
-                                        </div>
-                                        <i className="bi bi-chevron-right text-muted"></i>
-                                    </a>
-                                );
-                            })}
+                        <div className="table-responsive-custom mb-3">
+                            <table className="table table-bordered table-hover align-middle">
+                                <thead className="table-light">
+                                <tr>
+                                    <th>{t('photo')}</th>
+                                    <th>{t('user')}</th>
+                                    <th>{t('link')}</th>
+                                    <th>{t('lastActivity')}</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {activities.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="text-center text-muted">{t('noConversations')}</td>
+                                    </tr>
+                                ) : activities.map(act => (
+                                    <tr key={act.otherUser.id}>
+                                        <td className="text-center align-middle feed-photo-cell">
+                                            {act.otherUser.profilePhoto ? (
+                                                <img src={`data:image/webp;base64,${act.otherUser.profilePhoto}`} alt="avatar" className="rounded-circle img-fluid feed-photo"/>
+                                            ) : (
+                                                <span className="text-muted">-</span>
+                                            )}
+                                        </td>
+                                        <td className="text-truncate feed-text-cell">
+                                            <a href={`/users/${act.otherUser.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                {act.otherUser.firstName} {act.otherUser.lastName}
+                                            </a>
+                                        </td>
+                                        <td>@{act.otherUser.link}</td>
+                                        <td>{formatDate(act.updatedAt)}</td>
+                                        <td className="text-end">
+                                            <a href={`/users/${act.otherUser.link}/conversations`} title={t('chat')} className="btn btn-sm btn-profile-outline-primary">
+                                                <i className="bi bi-chat-dots me-1"></i>
+                                                <span className="visually-hidden">{t('chat')}</span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
                         </div>
                         <div className="d-flex justify-content-between align-items-center">
-                            <button className="btn btn-profile-outline-primary" disabled={activityPage === 1}
-                                    onClick={() => setActivityPage(Math.max(activityPage - 1, 1))}>{t('prev')}</button>
+                            <button className="btn btn-profile-outline-primary mx-2" disabled={activityPage === 1} onClick={() => setActivityPage(Math.max(activityPage - 1, 1))}>{t('prev')}</button>
                             <span>{t('page')} {activityPage}</span>
-                            <button className="btn btn-profile-outline-primary"
-                                    disabled={activities.length < activityLimit}
-                                    onClick={() => setActivityPage(activityPage + 1)}>{t('next')}</button>
+                            <button className="btn btn-profile-outline-primary mx-2" disabled={activityPage * activityLimit >= totalActivities} onClick={() => setActivityPage(activityPage + 1)}>{t('next')}</button>
                         </div>
                     </>
                 )}
@@ -125,23 +157,23 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
         </div>
     );
 
+    // --- WIDOK 2: INNY PROFIL -> WIDOK CZATU ---
     const renderChat = () => (
         <div className="card shadow-sm d-flex flex-column" style={{height: '600px'}}>
             <div className="card-header bg-light d-flex align-items-center gap-3">
-                <img src={`data:image/webp;base64,${targetUser.profilePhoto}`} alt="avatar"
-                     className="rounded-circle object-fit-cover" width={40} height={40}/>
+                <img src={`data:image/webp;base64,${targetUser.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover" width={40} height={40} />
                 <div>
-                    <h6 className="mb-0 fw-bold"
-                        style={{color: hexColor}}>{targetUser.firstName} {targetUser.lastName}</h6>
-                    {isTyping && <small className="text-profile-primary">{t('isTyping')}...</small>}
+                    <h6 className="mb-0 fw-bold" style={{color: hexColor}}>{targetUser.firstName} {targetUser.lastName}</h6>
+                    <div style={{height: '15px'}}>
+                        {isTyping && <small className="text-profile-primary fst-italic">{t('isTyping')}...</small>}
+                    </div>
                 </div>
             </div>
 
             <div className="card-body overflow-auto d-flex flex-column gap-2 bg-light bg-opacity-50">
                 {hasMoreMessages && (
                     <div className="text-center mb-3">
-                        <button className="btn btn-sm btn-outline-secondary" onClick={loadEarlierMessages}
-                                disabled={loadingEarlier}>
+                        <button className="btn btn-sm btn-outline-secondary" onClick={loadEarlierMessages} disabled={loadingEarlier}>
                             {loadingEarlier ? <div className="spinner-border spinner-border-sm"/> : t('loadEarlier')}
                         </button>
                     </div>
@@ -150,35 +182,29 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                 {[...messages].reverse().map(msg => {
                     const isMine = msg.senderUserId === currentUser.id;
                     return (
-                        <div key={msg.id}
-                             className={`d-flex flex-column ${isMine ? 'align-items-end' : 'align-items-start'}`}>
-                            <div
-                                className={`p-2 px-3 rounded-3 text-break shadow-sm ${isMine ? 'profile-theme-bg' : 'bg-white border'}`}
-                                style={{maxWidth: '75%'}}>
+                        <div key={msg.id} className={`d-flex flex-column ${isMine ? 'align-items-end' : 'align-items-start'}`}>
+                            <div className={`p-2 px-3 rounded-3 text-break shadow-sm ${isMine ? 'profile-theme-bg' : 'bg-white border'}`} style={{maxWidth: '75%'}}>
                                 {msg.text}
                             </div>
-                            <small className="text-muted mt-1"
-                                   style={{fontSize: '0.7rem'}}>{formatDate(msg.createdAt)}</small>
+                            <small className="text-muted mt-1" style={{fontSize: '0.7rem'}}>{formatDate(msg.createdAt)}</small>
                         </div>
                     );
                 })}
-                <div ref={chatEndRef}/>
+                <div ref={chatEndRef} />
             </div>
 
-            <div className="card-footer bg-white">
+            <div className="card-footer bg-white border-top-0 pt-3 pb-3">
                 <form onSubmit={handleSendMessage} className="d-flex gap-2">
                     <input
                         type="text"
-                        className="form-control"
+                        className="form-control rounded-pill px-4"
                         placeholder={t('typeMessage')}
                         value={messageInput}
                         onChange={handleTyping}
                         disabled={isSending}
                     />
-                    <button type="submit" className="btn btn-profile-primary px-4"
-                            disabled={!messageInput.trim() || isSending}>
-                        {isSending ? <div className="spinner-border spinner-border-sm"/> :
-                            <i className="bi bi-send-fill"></i>}
+                    <button type="submit" className="btn btn-profile-primary rounded-circle d-flex align-items-center justify-content-center" style={{width: '40px', height: '40px'}} disabled={!messageInput.trim() || isSending}>
+                        {isSending ? <div className="spinner-border spinner-border-sm"/> : <i className="bi bi-send-fill"></i>}
                     </button>
                 </form>
             </div>
@@ -188,14 +214,11 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
     return (
         <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
             <div className="card shadow-sm mb-4">
-                <div
-                    className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
-                    <img src={`data:image/webp;base64,${targetUser.backgroundPhoto}`} alt="Background"
-                         className="w-100 h-100 object-fit-cover"/>
+                <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+                    <img src={`data:image/webp;base64,${targetUser.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover"/>
                 </div>
                 <div className="card-body position-relative pt-5">
-                    <img src={`data:image/webp;base64,${targetUser.profilePhoto}`} alt="Profile"
-                         className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
+                    <img src={`data:image/webp;base64,${targetUser.profilePhoto}`} alt="Profile" className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                     <div className="mt-3">
                         <h2 className="mb-0 profile-theme-text">{targetUser.firstName} {targetUser.lastName}</h2>
                         <p className="text-muted mb-0">@{targetUser.link}</p>
