@@ -315,4 +315,10 @@ export const pl = {
     comments: "Komentarze",
     reactions: "Reakcje",
     reaction: "Reakcja",
+    addPage: "Dodaj stronę",
+    managePage: "Zarządzaj stroną",
+    noPages: "Brak stron",
+    pageStatus: "Status strony",
+    pageFollows: "Obserwacje",
+    description: "Opis",
 };

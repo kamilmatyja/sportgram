@@ -1,7 +1,74 @@
 import {useParams} from 'react-router-dom';
+import {useUserPages} from '../services/useUserPages';
+import {usePageModals} from '../services/usePageModals';
+import {UserPagesView} from '../components/UserPagesView';
+import {AddPageModal} from '../components/AddPageModal';
+import {ManagePageModal} from '../components/ManagePageModal';
 
 export default function UserPages() {
     const {link} = useParams<{ link: string }>();
-    return <div className="container mt-5"><h2>Strony użytkownika: {link}</h2><p className="text-muted">Lista stron i
-        formularz dodawania (Tylko rola Organizator).</p></div>;
+
+    const pagesService = useUserPages(link);
+    const modalsService = usePageModals(pagesService.refreshPages);
+
+    return (
+        <>
+            <UserPagesView
+                user={pagesService.targetUser}
+                pages={pagesService.pages}
+                isMyProfile={pagesService.isMyProfile}
+                isAdmin={pagesService.isAdmin}
+                isOrganizer={pagesService.isOrganizer}
+                loading={pagesService.loading}
+                error={pagesService.error}
+                page={pagesService.page}
+                limit={pagesService.limit}
+                sort={pagesService.sort}
+                filters={pagesService.filters}
+                onFilterChange={pagesService.handleFilterChange}
+                onSortChange={pagesService.handleSortChange}
+                onLimitChange={pagesService.handleLimitChange}
+                onPrevPage={pagesService.handlePrevPage}
+                onNextPage={pagesService.handleNextPage}
+                onAddClick={modalsService.openAddModal}
+                onManageClick={modalsService.openManageModal}
+            />
+
+            <AddPageModal
+                user={pagesService.targetUser}
+                show={modalsService.showAdd}
+                availableUsers={modalsService.availableUsers}
+                closeModal={modalsService.closeAddModal}
+                loading={modalsService.loading}
+                globalError={modalsService.globalError}
+                fieldErrors={modalsService.fieldErrors}
+                formData={modalsService.formData}
+                handleChange={modalsService.handleChange}
+                handleParticipantsChange={modalsService.handleParticipantsChange}
+                handleSubmit={modalsService.handleAddSubmit}
+            />
+
+            <ManagePageModal
+                user={pagesService.targetUser}
+                currentUser={pagesService.currentUser}
+                availableUsers={modalsService.availableUsers}
+                handleParticipantsChange={modalsService.handleParticipantsChange}
+                show={modalsService.showManage}
+                currentPageObj={modalsService.currentPage}
+                isMyProfile={pagesService.isMyProfile}
+                isAdmin={pagesService.isAdmin}
+                closeModal={modalsService.closeManageModal}
+                loading={modalsService.loading}
+                globalError={modalsService.globalError}
+                fieldErrors={modalsService.fieldErrors}
+                formData={modalsService.formData}
+                handleChange={modalsService.handleChange}
+                handleEditSubmit={modalsService.handleEditSubmit}
+                handleStatusSubmit={modalsService.handleStatusSubmit}
+                handleParticipantStatusSubmit={modalsService.handleParticipantStatusSubmit}
+                handleFollowStatusSubmit={modalsService.handleFollowStatusSubmit}
+                handleDelete={modalsService.handleDelete}
+            />
+        </>
+    );
 }

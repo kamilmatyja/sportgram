@@ -310,4 +310,10 @@ export const en = {
     comments: "Comments",
     reactions: "Reactions",
     reaction: "Reaction",
+    addPage: "Add page",
+    managePage: "Manage page",
+    noPages: "No pages found",
+    pageStatus: "Page status",
+    pageFollows: "Follows",
+    description: "Description",
 };

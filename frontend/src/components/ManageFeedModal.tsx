@@ -122,7 +122,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                             <h6>{t('comments')} ({visibleComments.length})</h6>
                                             {visibleComments.map(comment => (
                                                 <div key={comment.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
-                                                    <div className="text-truncate" style={{maxWidth: '200px'}} title={comment.text}>
+                                                    <div className="text-truncate" title={comment.text}>
                                                         <strong>{t('text')}:</strong> {comment.text}
                                                     </div>
                                                     <div>
