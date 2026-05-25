@@ -82,7 +82,7 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
             closeAddModal();
             onSuccess();
         } catch (err: any) {
-            setGlobalError(err.message || err.error || 'Subscription error');
+            setGlobalError(err.message || err.error);
         } finally {
             setLoading(false);
         }
@@ -94,7 +94,7 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
             subscription.endpoint,
             subscription.p256dh,
             subscription.auth,
-            subscription.userAgent || '',
+            subscription.userAgent,
             subscription.status
         ));
         setGlobalError('');

@@ -327,7 +327,7 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
             setActiveResultListId(null);
             await fetchDistanceLists(selectedDistanceId);
         } catch (err: any) {
-            setGlobalError(err.error || 'Validation error');
+            setGlobalError(err.error);
         } finally {
             setLoadingLists(false);
         }

@@ -1,7 +1,5 @@
-declare const self: ServiceWorkerGlobalScope;
-
-const CACHE_NAME: string = 'sportgram-v1';
-const ASSETS: string[] = [
+const CACHE_NAME = 'sportgram-v1';
+const ASSETS = [
     '/',
     '/manifest.webmanifest',
     '/icon-192.svg',
@@ -9,36 +7,30 @@ const ASSETS: string[] = [
     '/icon.svg'
 ];
 
-self.addEventListener('install', (event: ExtendableEvent) => {
+self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
     );
     self.skipWaiting();
 });
 
-self.addEventListener('activate', (event: ExtendableEvent) => {
+self.addEventListener('activate', event => {
     event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener('fetch', (event: FetchEvent) => {
+self.addEventListener('fetch', event => {
     if (event.request.method !== 'GET') {
         return;
     }
-
     event.respondWith(
-        caches.match(event.request).then((cached) => {
+        caches.match(event.request).then(cached => {
             return cached || fetch(event.request);
         })
     );
 });
 
-interface PushPayload {
-    title: string;
-    body: string;
-}
-
-self.addEventListener('push', (event: PushEvent) => {
-    const payload: PushPayload = event.data
+self.addEventListener('push', event => {
+    const payload = event.data
         ? event.data.json()
         : {title: 'Sportgram', body: 'Nowe powiadomienie'};
 
@@ -50,5 +42,3 @@ self.addEventListener('push', (event: PushEvent) => {
         })
     );
 });
-
-export {};
