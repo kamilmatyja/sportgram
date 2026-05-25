@@ -7,8 +7,8 @@ import {SaveStatusEnum} from '../enums/SaveStatusEnum';
 import {DisciplineEnum} from '../enums/DisciplineEnum';
 import {ColorEnum} from '../enums/ColorEnum';
 import {UserResponse} from '../api/responses/UserResponse';
-import {TrainingDistance} from "../api/body/TrainingDistance.ts";
-import {TrainingSubDistance} from "../api/body/TrainingSubDistance.ts";
+import {TrainingDistance} from '../api/body/TrainingDistance';
+import {TrainingSubDistance} from '../api/body/TrainingSubDistance';
 
 interface ManageTrainingModalProps {
     user: UserResponse | null;
@@ -168,13 +168,13 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                 {disc.distances?.map((dist, distIndex) => (
                                                     <div key={distIndex} className="card mb-2 shadow-none border">
                                                         <div className="card-body p-2">
-                                                            <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                                                                <div className="input-group input-group-sm" style={{width: '200px'}}>
+                                                            <div className="d-flex align-items-center gap-2 mb-2">
+                                                                <div className="input-group input-group-sm">
                                                                     <span className="input-group-text">{t('distanceMeters')}</span>
                                                                     <input type="number" className="form-control" value={dist.distance}
                                                                            onChange={e => updateDistanceValue(dIndex, distIndex, 'distance', parseInt(e.target.value) || 0)}/>
                                                                 </div>
-                                                                <div className="input-group input-group-sm" style={{width: '180px'}}>
+                                                                <div className="input-group input-group-sm">
                                                                     <span className="input-group-text">{t('timeSeconds')}</span>
                                                                     <input type="number" className="form-control" value={dist.time}
                                                                            onChange={e => updateDistanceValue(dIndex, distIndex, 'time', parseInt(e.target.value) || 0)}/>
@@ -185,17 +185,17 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                             </div>
 
                                                             <div className="ps-3 border-start">
-                                                                <div className="d-flex justify-content-between mb-1">
+                                                                <div className="d-flex justify-content-between mb-2">
                                                                     <small className="text-muted">{t('subDistances')}</small>
                                                                     <button type="button" className="btn btn-xs btn-profile-outline-primary py-0 px-2" onClick={() => addSubDistance(dIndex, distIndex)}>
                                                                         {t('addSubDistanceBtn')}
                                                                     </button>
                                                                 </div>
                                                                 {dist.subDistances?.map((sub, subIndex) => (
-                                                                    <div key={subIndex} className="d-flex align-items-center gap-2 mt-1 flex-wrap">
-                                                                        <input type="number" className="form-control form-control-sm" style={{width: '100px'}} placeholder={t('subDistanceMeters')} value={sub.subDistance}
+                                                                    <div key={subIndex} className="d-flex align-items-center gap-2 mt-1">
+                                                                        <input type="number" className="form-control form-control-sm" placeholder={t('subDistanceMeters')} value={sub.subDistance}
                                                                                onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'subDistance', parseInt(e.target.value) || 0)}/>
-                                                                        <input type="number" className="form-control form-control-sm" style={{width: '100px'}} placeholder={t('timeSeconds')} value={sub.time}
+                                                                        <input type="number" className="form-control form-control-sm" placeholder={t('timeSeconds')} value={sub.time}
                                                                                onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'time', parseInt(e.target.value) || 0)}/>
                                                                         <button type="button" className="btn btn-sm btn-outline-danger"
                                                                                 onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}><i

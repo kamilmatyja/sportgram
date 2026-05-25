@@ -154,10 +154,12 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                         <div className="invalid-feedback d-block">{fieldErrors.photo}</div>}
                                 </div>
 
-                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
                                     <h6 className="card-title text-profile-primary mb-0">{t('disciplinesAndDistances')}</h6>
                                     <button type="button" className="btn btn-sm btn-profile-outline-primary"
-                                            onClick={addDiscipline}>{t('addDisciplineBtn')}</button>
+                                            onClick={addDiscipline}>
+                                        {t('addDisciplineBtn')}
+                                    </button>
                                 </div>
 
                                 {formData.disciplines?.map((disc, dIndex) => (
@@ -171,16 +173,18 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                                                                                      value={opt.value}>{opt.label}</option>)}
                                                 </select>
                                             </div>
-                                            <button type="button" className="btn btn-outline-danger"
-                                                    onClick={() => removeDiscipline(dIndex)}><i
-                                                className="bi bi-trash"></i></button>
+                                            <button type="button" className="btn btn-outline-danger" onClick={() => removeDiscipline(dIndex)}>
+                                                <i className="bi bi-trash"></i>
+                                            </button>
                                         </div>
 
-                                        <div className="ps-4 border-start border-2 border-primary">
+                                        <div className="ps-4 border-start border-2 border-profile-primary">
                                             <div className="d-flex justify-content-between mb-2">
                                                 <span className="fw-bold">{t('distances')}</span>
                                                 <button type="button" className="btn btn-sm btn-profile-outline-primary"
-                                                        onClick={() => addDistance(dIndex)}>{t('addDistanceBtn')}</button>
+                                                        onClick={() => addDistance(dIndex)}>
+                                                    {t('addDistanceBtn')}
+                                                </button>
                                             </div>
 
                                             {disc.distances?.map((dist, distIndex) => (
@@ -200,13 +204,14 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                                         </div>
 
                                                         <div className="ps-3 border-start">
-                                                            <div className="d-flex justify-content-between mb-1">
+                                                            <div className="d-flex justify-content-between mb-2">
                                                                 <small
                                                                     className="text-muted">{t('subDistances')}</small>
-
                                                                 <button type="button"
-                                                                        className="btn btn-sm btn-profile-outline-primary"
-                                                                        onClick={() => addSubDistance(dIndex, distIndex)}>{t('addSubDistanceBtn')}</button>
+                                                                        className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                                                        onClick={() => addSubDistance(dIndex, distIndex)}>
+                                                                    {t('addSubDistanceBtn')}
+                                                                </button>
                                                             </div>
                                                             {dist.subDistances?.map((sub, subIndex) => (
                                                                 <div key={subIndex}

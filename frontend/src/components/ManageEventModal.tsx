@@ -193,8 +193,8 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
 
                                     <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
                                         <h6 className="card-title text-profile-primary mb-0">{t('disciplinesAndDistances')}</h6>
-                                        <button type="button" className="btn btn-sm btn-profile-outline-primary"
-                                                onClick={addDiscipline}>{t('addDisciplineBtn')}
+                                        <button type="button" className="btn btn-sm btn-profile-outline-primary" onClick={addDiscipline}>
+                                            {t('addDisciplineBtn')}
                                         </button>
                                     </div>
 
@@ -237,10 +237,9 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                             </div>
 
                                                             <div className="ps-3 border-start">
-                                                                <div className="d-flex justify-content-between mb-1">
+                                                                <div className="d-flex justify-content-between mb-2">
                                                                     <small className="text-muted">{t('subDistances')}</small>
-                                                                    <button type="button" className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                                            onClick={() => addSubDistance(dIndex, distIndex)}>
+                                                                    <button type="button" className="btn btn-xs btn-profile-outline-primary py-0 px-2" onClick={() => addSubDistance(dIndex, distIndex)}>
                                                                         {t('addSubDistanceBtn')}
                                                                     </button>
                                                                 </div>
