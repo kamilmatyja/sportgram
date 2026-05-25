@@ -71,7 +71,7 @@ readonly class EventService
             $dto->description,
             $dto->link,
             $dto->rules,
-            $dto->photo,
+            base64_decode($dto->photo),
             $dto->location,
             ElementStatusEnum::Active,
         );
@@ -121,7 +121,7 @@ readonly class EventService
         $event->description = $dto->description;
         $event->link = $dto->link;
         $event->rules = $dto->rules;
-        $event->photo = $dto->photo;
+        $event->photo = base64_decode($dto->photo);
         $event->location = $dto->location;
 
         foreach ($event->disciplines as $discipline) {

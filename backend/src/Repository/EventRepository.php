@@ -42,13 +42,13 @@ class EventRepository extends BaseRepository
         $qb = $this->createQueryBuilder('e');
 
         if ($dto->filter->userId) {
-            $qb->leftJoin('e.participants', 'p')
+            $qb->leftJoin('e.pageParticipant', 'p')
                 ->andWhere('p.user = :userId')
                 ->setParameter('userId', $dto->filter->userId);
         }
 
         if ($dto->filter->pageId) {
-            $qb->leftJoin('e.pages', 'p')
+            $qb->leftJoin('e.pageParticipant', 'p')
                 ->andWhere('p.page = :pageId')
                 ->setParameter('pageId', $dto->filter->pageId);
         }

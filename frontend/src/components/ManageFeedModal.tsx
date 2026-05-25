@@ -121,7 +121,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                         <div className="mb-4 border-bottom pb-3">
                                             <h6>{t('comments')} ({visibleComments.length})</h6>
                                             {visibleComments.map(comment => (
-                                                <div key={comment.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
+                                                <div key={comment.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
                                                     <div className="text-truncate" title={comment.text}>
                                                         <strong>{t('text')}:</strong> {comment.text}
                                                     </div>
@@ -153,7 +153,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                         <>
                                             <h6>{t('reactions')} ({visibleReactions.length})</h6>
                                             {visibleReactions.map(reaction => (
-                                                <div key={reaction.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
+                                                <div key={reaction.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
                                                     <div>
                                                         <strong>{t('reaction')}:</strong> {FeedReactionEnum.getOptions(t).find(opt => String(opt.value) === String(reaction.reaction))?.label || reaction.reaction}
                                                     </div>

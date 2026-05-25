@@ -76,3 +76,7 @@ html, body {
 .feed-text-cell {
     max-width: 250px;
 }
+
+.text-profile-primary {
+    color: var(--theme-color) !important;
+}
