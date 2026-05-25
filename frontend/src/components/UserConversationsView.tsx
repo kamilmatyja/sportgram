@@ -33,7 +33,7 @@ interface UserConversationsViewProps {
     loadingEarlier: boolean;
     chatEndRef: React.RefObject<HTMLDivElement | null>;
     handleTyping: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleSendMessage: (e: React.FormEvent) => void;
+    handleSendMessage: (e: React.ChangeEvent) => void;
     loadEarlierMessages: () => void;
 }
 
