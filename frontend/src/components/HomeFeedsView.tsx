@@ -36,7 +36,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
     const {t} = useTranslation();
 
     if (loading && feeds.length === 0) {
-        return <div className="container mt-5 text-center"><div className="spinner-border"/></div>;
+        return <div className="container mt-5 text-center"><div className="spinner-border text-profile-primary"/></div>;
     }
 
     const getFeedTypeLabel = (feed: FeedResponse) => {
@@ -50,7 +50,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
 
     const getReactionIcon = (type: number) => {
         switch (type) {
-            case FeedReactionEnum.LIKE: return 'bi-hand-thumbs-up-fill text-primary';
+            case FeedReactionEnum.LIKE: return 'bi-hand-thumbs-up-fill text-profile-primary';
             case FeedReactionEnum.LOVE: return 'bi-heart-fill text-danger';
             case FeedReactionEnum.HAHA: return 'bi-emoji-laughing-fill text-warning';
             case FeedReactionEnum.WOW: return 'bi-emoji-surprise-fill text-warning';
@@ -63,7 +63,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
     return (
         <div className="container mt-4 mb-5 mx-auto feed-container">
             {feeds.length === 0 ? (
-                <div className="text-center text-muted p-5 bg-light rounded">
+                <div className="text-center text-muted p-5 bg-light rounded border">
                     {t('noFeeds')}
                 </div>
             ) : (
@@ -76,7 +76,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                         <div key={feed.id} className="card shadow-sm mb-4">
                             <div className="card-header bg-white d-flex align-items-center gap-3 border-bottom-0 pt-3">
                                 {author?.profilePhoto ? (
-                                    <img src={`data:image/webp;base64,${author.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover feed-avatar-48" />
+                                    <img src={`data:image/webp;base64,${author.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover feed-avatar-48 border profile-theme-border" />
                                 ) : (
                                     <div className="bg-secondary rounded-circle feed-avatar-48"></div>
                                 )}
@@ -86,7 +86,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                                     </a>
                                     <div className="d-flex align-items-center gap-2">
                                         <small className="text-muted">{formatDate(feed.createdAt)}</small>
-                                        <span className="badge bg-light text-dark border">{getFeedTypeLabel(feed)}</span>
+                                        <span className="badge bg-light text-dark border profile-theme-border">{getFeedTypeLabel(feed)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -99,11 +99,21 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                                 <img src={`data:image/webp;base64,${feed.photo}`} alt="feed" className="w-100 object-fit-cover feed-image-max" />
                             )}
 
-                            <div className="card-footer bg-white pt-3 pb-2">
+                            <div className="card-footer bg-white pt-3 pb-2 border-top-0">
                                 <div className="d-flex justify-content-between align-items-center mb-2 px-2">
-                                    <div className="text-muted small">
+                                    <div className="text-muted small d-flex gap-3">
                                         {feed.reactions && feed.reactions.length > 0 && (
-                                            <><i className="bi bi-hand-thumbs-up-fill text-primary me-1"></i> {feed.reactions.length}</>
+                                            Object.entries(
+                                                feed.reactions.reduce((acc, curr) => {
+                                                    acc[curr.reaction] = (acc[curr.reaction] || 0) + 1;
+                                                    return acc;
+                                                }, {} as Record<number, number>)
+                                            ).map(([type, count]) => (
+                                                <span key={type} className="d-flex align-items-center" title={FeedReactionEnum.getOptions(t).find(o => o.value === Number(type))?.label}>
+                                                    <i className={`${getReactionIcon(Number(type))} me-1`}></i>
+                                                    {count}
+                                                </span>
+                                            ))
                                         )}
                                     </div>
                                     <div className="text-muted small">
@@ -119,7 +129,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                                         return (
                                             <button
                                                 key={opt.value}
-                                                className={`btn btn-sm flex-grow-1 ${isActive ? 'bg-light fw-bold' : 'btn-light bg-transparent'}`}
+                                                className={`btn btn-sm flex-grow-1 ${isActive ? 'bg-light fw-bold profile-theme-text' : 'btn-light bg-transparent'}`}
                                                 disabled={isFeedLoading}
                                                 onClick={() => handleReaction(feed.id, opt.value)}
                                             >
@@ -160,7 +170,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                                                                 />
                                                                 <div className="d-flex justify-content-end gap-1">
                                                                     <button className="btn btn-xs btn-outline-secondary py-0" onClick={() => setEditingCommentId(null)} disabled={isFeedLoading}>{t('cancel')}</button>
-                                                                    <button className="btn btn-xs btn-primary py-0" onClick={() => handleUpdateComment(feed.id, comment.id)} disabled={isFeedLoading}>{t('save')}</button>
+                                                                    <button className="btn btn-xs btn-profile-primary py-0" onClick={() => handleUpdateComment(feed.id, comment.id)} disabled={isFeedLoading}>{t('save')}</button>
                                                                 </div>
                                                             </div>
                                                         ) : (
@@ -193,7 +203,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                                             onChange={e => handleCommentInput(feed.id, e.target.value)}
                                             disabled={isFeedLoading}
                                         />
-                                        <button type="submit" className="btn btn-sm btn-primary rounded-circle px-2" disabled={isFeedLoading || !(commentInputs[feed.id]?.trim())}>
+                                        <button type="submit" className="btn btn-sm btn-profile-primary rounded-circle px-2" disabled={isFeedLoading || !(commentInputs[feed.id]?.trim())}>
                                             <i className="bi bi-send-fill"></i>
                                         </button>
                                     </form>
@@ -207,7 +217,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
             {feeds.length > 0 && (
                 <div className="text-center mt-4">
                     {hasMore ? (
-                        <button className="btn btn-outline-primary" onClick={handleLoadMore} disabled={loadingMore}>
+                        <button className="btn btn-profile-outline-primary" onClick={handleLoadMore} disabled={loadingMore}>
                             {loadingMore ? <span className="spinner-border spinner-border-sm" /> : t('loadMore')}
                         </button>
                     ) : (

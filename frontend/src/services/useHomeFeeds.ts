@@ -9,8 +9,9 @@ import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 import {FeedCommentBody} from '../api/body/FeedCommentBody';
 import {FeedReactionBody} from '../api/body/FeedReactionBody';
 import {useCheckPermission} from '../utils/checkPermission';
+import {FeedFilterQuery} from '../api/queries/FeedFilterQuery';
 
-export function useHomeFeeds() {
+export function useHomeFeeds(targetUserId?: string) {
     const {getCurrentUser} = useCheckPermission();
 
     const [feeds, setFeeds] = useState<FeedResponse[]>([]);
@@ -74,6 +75,12 @@ export function useHomeFeeds() {
             indexDto.limit = limit;
             indexDto.sort = 'createdAt:desc';
 
+            if (targetUserId) {
+                const filter = new FeedFilterQuery();
+                filter.userId = targetUserId;
+                indexDto.filter = filter;
+            }
+
             const data = await feedProvider.index(indexDto);
 
             const detailedFeeds = await Promise.all(data.map(async (feed) => {
@@ -115,11 +122,12 @@ export function useHomeFeeds() {
             const user = await getCurrentUser();
             if (user) {
                 setCurrentUser(user);
+                setPage(1);
                 await fetchFeeds(1, false);
             }
         };
         init();
-    }, []);
+    }, [targetUserId]);
 
     const handleLoadMore = () => {
         const nextPage = page + 1;
