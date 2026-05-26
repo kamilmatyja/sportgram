@@ -89,7 +89,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                         <li><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
                                         <li className="d-flex align-items-center flex-wrap gap-2">
                                             <strong>{t('userStatus')}:</strong>
-                                            <span>{UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}</span>
+                                            <span className="me-2 badge bg-light text-dark border profile-theme-border">{UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}</span>
                                             {!isMyProfile && isAdmin && (
                                                 <>
                                                     <strong>{t('changeStatus')}: </strong>
@@ -99,7 +99,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                                         .map(opt => (
                                                             <button
                                                                 key={opt.value}
-                                                                className="btn btn-xs btn-profile-outline-warning py-0 px-2"
+                                                                className="btn btn-xs btn-profile-outline-primary py-0 px-2"
                                                                 onClick={() => handleChangeUserStatus(opt.value)}
                                                                 disabled={statusLoading}
                                                             >
@@ -142,7 +142,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                 {!isMyProfile && friendship && (
                                     <li className="d-flex align-items-center flex-wrap gap-2">
                                         <strong>{t('friendshipStatus')}:</strong>
-                                        <span>{FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label || friendship.status}</span>
+                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">{FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label || friendship.status}</span>
                                         <>
                                             {(friendship.senderUserId === currentUser?.id || friendship.receiverUserId === currentUser?.id) && (
                                                 <>

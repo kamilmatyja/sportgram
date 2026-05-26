@@ -116,7 +116,7 @@ export const UserNotificationsView: React.FC<UserNotificationsViewProps> = ({
                                         </tr>
                                     ) : notifications.map(notif => (
                                         <tr key={notif.id} className="text-muted">
-                                            <td className="text-truncate feed-text-cell">
+                                            <td>
                                                 {notif.link ? (
                                                     <a href={notif.link} className="btn btn-link p-0 text-decoration-none">
                                                         {notif.text}

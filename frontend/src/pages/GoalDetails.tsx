@@ -1,6 +1,10 @@
 import {useParams} from 'react-router-dom';
+import {useGoalDetails} from '../services/useGoalDetails';
+import {GoalDetailsView} from '../components/GoalDetailsView';
 
 export default function GoalDetails() {
     const {link} = useParams<{ link: string }>();
-    return <div className="container mt-5"><h2>Szczegóły celu: {link}</h2></div>;
+    const detailsProps = useGoalDetails(link);
+
+    return <GoalDetailsView {...detailsProps} />;
 }

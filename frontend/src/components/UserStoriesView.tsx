@@ -134,7 +134,7 @@ export const UserStoriesView: React.FC<UserStoriesViewProps> = ({
                                                     <span className="text-muted">-</span>
                                                 )}
                                             </td>
-                                            <td className="text-truncate feed-text-cell">{story.text}</td>
+                                            <td>{story.text}</td>
                                             <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(story.status))?.label || story.status}</td>
                                             <td>{formatDate(story.createdAt)}</td>
                                             <td className="text-end">

@@ -166,7 +166,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                 <div className="mb-4 border-bottom pb-3">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('goalStatus')}:</strong>
-                                        <span className="me-2">
+                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                             {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}
                                         </span>
                                         {GoalStatusEnum.getOptions(t)
@@ -192,9 +192,9 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                     <div className="mb-4 border-bottom pb-3">
                                         <div className="d-flex flex-wrap gap-2 align-items-center">
                                             <strong>{t('participantStatus')}:</strong>
-                                            <span className="me-2">
+                                            <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                             {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
-                                        </span>
+                                            </span>
                                             {SaveStatusEnum.getOptions(t)
                                                 .filter(opt => opt.value !== myParticipant.status)
                                                 .filter(opt => opt.value !== SaveStatusEnum.PENDING)

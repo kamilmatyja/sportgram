@@ -141,7 +141,7 @@ export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
                                         </tr>
                                     ) : goals.map(goal => (
                                         <tr key={goal.id}>
-                                            <td className="text-truncate feed-text-cell">
+                                            <td>
                                                 <a href={`/goals/${goal.link}`} className="btn btn-link p-0 text-decoration-none">
                                                     {goal.text}
                                                 </a>

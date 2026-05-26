@@ -163,7 +163,7 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                 <div className="mb-4 border-bottom pb-3">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('pageStatus')}:</strong>
-                                        <span className="me-2">
+                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                             {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(currentPageObj.status))?.label || currentPageObj.status}
                                         </span>
                                         {ElementStatusEnum.getOptions(t)
@@ -188,7 +188,7 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                 <div className="mb-4 border-bottom pb-3">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('participantStatus')}:</strong>
-                                        <span className="me-2">
+                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                             {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
                                         </span>
                                         {SaveStatusEnum.getOptions(t)
@@ -215,7 +215,9 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                     {visibleFollows.map(follow => (
                                         <div key={follow.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
                                             <div>
-                                                <strong>{isAdmin ? `${t('user')}: ${follow.userId} | ` : ''}{t('status')}:</strong> {PageFollowStatusEnum.getOptions(t).find(opt => String(opt.value) === String(follow.status))?.label || follow.status}
+                                                <strong>{isAdmin ? `${t('user')}: ${follow.userId} | ` : ''}{t('status')}:</strong>
+                                                <span className="me-2 badge bg-light text-dark border profile-theme-border">{PageFollowStatusEnum.getOptions(t).find(opt => String(opt.value) === String(follow.status))?.label || follow.status}
+                                                </span>
                                             </div>
                                             <div className="ms-auto d-flex gap-1 flex-wrap">
                                                 {PageFollowStatusEnum.getOptions(t)

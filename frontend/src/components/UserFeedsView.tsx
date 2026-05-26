@@ -152,12 +152,8 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
                                                     <span className="text-muted">-</span>
                                                 )}
                                             </td>
-                                            <td>
-                                                <span className="badge bg-light text-dark border border-1 profile-theme-border">
-                                                    {getFeedTypeLabel(feed)}
-                                                </span>
-                                            </td>
-                                            <td className="text-truncate feed-text-cell">{feed.text}</td>
+                                            <td>{getFeedTypeLabel(feed)}</td>
+                                            <td>{feed.text}</td>
                                             <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}</td>
                                             <td>{formatDate(feed.createdAt)}</td>
                                             <td className="text-end">

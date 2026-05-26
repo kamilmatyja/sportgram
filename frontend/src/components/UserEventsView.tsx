@@ -136,7 +136,7 @@ export const UserEventsView: React.FC<UserEventsViewProps> = ({
                                                 <img src={`data:image/webp;base64,${ev.photo}`} alt="Photo"
                                                      className="w-100 h-100 object-fit-cover"/>
                                             </td>
-                                            <td className="text-truncate feed-text-cell">
+                                            <td>
                                                 <a href={`/events/${ev.link}`} className="btn btn-link p-0 text-decoration-none">
                                                     {ev.title}
                                                 </a>

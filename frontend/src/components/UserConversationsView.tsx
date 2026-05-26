@@ -127,7 +127,7 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                                                 <span className="text-muted">-</span>
                                             )}
                                         </td>
-                                        <td className="text-truncate feed-text-cell">
+                                        <td>
                                             <a href={`/users/${act.otherUser.link}`} className="btn btn-link p-0 text-decoration-none">
                                                 {act.otherUser.firstName} {act.otherUser.lastName}
                                             </a>

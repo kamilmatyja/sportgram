@@ -117,7 +117,7 @@ export const UserTrainingsView: React.FC<UserTrainingsViewProps> = ({
                                         </tr>
                                     ) : trainings.map(tr => (
                                         <tr key={tr.id}>
-                                            <td className="text-truncate feed-text-cell">
+                                            <td>
                                                 <a href={`/trainings/${tr.link}`} className="btn btn-link p-0 text-decoration-none">
                                                     {tr.title}
                                                 </a>

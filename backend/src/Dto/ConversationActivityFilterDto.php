@@ -8,7 +8,7 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    required: null,
+    required: [],
     properties: [
         new OA\Property(
             property: 'userId',

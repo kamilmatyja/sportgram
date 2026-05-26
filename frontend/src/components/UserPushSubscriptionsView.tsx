@@ -119,10 +119,10 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                                         </tr>
                                     ) : subscriptions.map(sub => (
                                         <tr key={sub.id}>
-                                            <td className="text-truncate feed-text-cell" title={sub.userAgent || ''}>
+                                            <td>
                                                 {sub.userAgent || '-'}
                                             </td>
-                                            <td className="text-truncate" title={sub.endpoint}>
+                                            <td>
                                                 {sub.endpoint}
                                             </td>
                                             <td>{PushSubscriptionStatusEnum.getOptions(t).find(opt => String(opt.value) === String(sub.status))?.label || sub.status}</td>

@@ -140,7 +140,7 @@ export const UserPagesView: React.FC<UserPagesViewProps> = ({
                                                     <span className="text-muted">-</span>
                                                 )}
                                             </td>
-                                            <td className="text-truncate feed-text-cell">
+                                            <td>
                                                 <a href={`/pages/${pageObj.link}`} className="btn btn-link p-0 text-decoration-none">
                                                     {pageObj.title}
                                                 </a>

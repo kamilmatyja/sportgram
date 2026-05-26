@@ -216,7 +216,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                 <div className="mb-4 border-bottom pb-3">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('trainingStatus')}:</strong>
-                                        <span className="me-2">
+                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                             {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(currentTraining.status))?.label || currentTraining.status}
                                         </span>
                                         {ElementStatusEnum.getOptions(t)
@@ -241,7 +241,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                 <div className="mb-4 pb-3 border-bottom">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('participantStatus')}:</strong>
-                                        <span className="me-2">
+                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                             {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
                                         </span>
                                         {SaveStatusEnum.getOptions(t)

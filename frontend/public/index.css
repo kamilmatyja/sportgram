@@ -69,10 +69,6 @@ html, body {
     object-fit: cover;
 }
 
-.feed-text-cell {
-    max-width: 250px;
-}
-
 .text-profile-primary {
     --bs-text-opacity: var(--theme-color);
     color: var(--bs-text-opacity) !important;

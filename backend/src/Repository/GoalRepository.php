@@ -65,9 +65,11 @@ class GoalRepository extends BaseRepository
     {
         $qb = $this->createQueryBuilder('g');
 
-        $qb->leftJoin('g.participants', 'p')
-            ->andWhere('p.user = :userId')
-            ->setParameter('userId', $dto->filter->userId);
+        if ($dto->filter->userId) {
+            $qb->leftJoin('g.participants', 'p')
+                ->andWhere('p.user = :userId')
+                ->setParameter('userId', $dto->filter->userId);
+        }
 
         if ($dto->filter->link) {
             $qb->andWhere('g.link = :link')
