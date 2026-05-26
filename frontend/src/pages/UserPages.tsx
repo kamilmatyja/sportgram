@@ -52,6 +52,7 @@ export default function UserPages() {
                 user={pagesService.targetUser}
                 currentUser={pagesService.currentUser}
                 availableUsers={modalsService.availableUsers}
+                relatedUsers={pagesService.relatedUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
                 currentPageObj={modalsService.currentPage}

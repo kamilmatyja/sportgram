@@ -12,6 +12,7 @@ interface ManagePageModalProps {
     user: UserResponse | null;
     currentUser: UserResponse | null;
     availableUsers: UserResponse[];
+    relatedUsers: Record<string, UserResponse>;
     handleParticipantsChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     show: boolean;
     currentPageObj: PageResponse | null;
@@ -34,6 +35,7 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                                                     user,
                                                                     currentUser,
                                                                     availableUsers,
+                                                                    relatedUsers,
                                                                     handleParticipantsChange,
                                                                     show,
                                                                     currentPageObj,
@@ -212,31 +214,36 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                             {visibleFollows.length > 0 && (
                                 <div className="mb-4">
                                     <h6>{t('pageFollows')} ({visibleFollows.length})</h6>
-                                    {visibleFollows.map(follow => (
-                                        <div key={follow.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
-                                            <div>
-                                                <strong>{isAdmin ? `${t('user')}: ${follow.userId} | ` : ''}{t('status')}: </strong>
-                                                <span className="me-2 badge bg-light text-dark border profile-theme-border">{PageFollowStatusEnum.getOptions(t).find(opt => String(opt.value) === String(follow.status))?.label || follow.status}
-                                                </span>
+                                    {visibleFollows.map(follow => {
+                                        const fUser = relatedUsers[follow.userId];
+                                        const fUserName = fUser ? `${fUser.firstName} ${fUser.lastName}` : follow.userId;
+
+                                        return (
+                                            <div key={follow.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
+                                                <div>
+                                                    <strong>{isAdmin ? `${t('user')}: ${fUserName} | ` : ''}{t('status')}: </strong>
+                                                    <span className="me-2 badge bg-light text-dark border profile-theme-border">{PageFollowStatusEnum.getOptions(t).find(opt => String(opt.value) === String(follow.status))?.label || follow.status}
+                                                    </span>
+                                                </div>
+                                                <div className="ms-auto d-flex gap-1 flex-wrap">
+                                                    {PageFollowStatusEnum.getOptions(t)
+                                                        .filter(opt => opt.value !== follow.status)
+                                                        .filter(opt => opt.value !== PageFollowStatusEnum.PENDING)
+                                                        .map(opt => (
+                                                            <button
+                                                                key={opt.value}
+                                                                type="button"
+                                                                className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                                                disabled={loading}
+                                                                onClick={() => handleFollowStatusSubmit(follow.id, opt.value)}
+                                                            >
+                                                                {loading ? t('loading') : opt.label}
+                                                            </button>
+                                                        ))}
+                                                </div>
                                             </div>
-                                            <div className="ms-auto d-flex gap-1 flex-wrap">
-                                                {PageFollowStatusEnum.getOptions(t)
-                                                    .filter(opt => opt.value !== follow.status)
-                                                    .filter(opt => opt.value !== PageFollowStatusEnum.PENDING)
-                                                    .map(opt => (
-                                                        <button
-                                                            key={opt.value}
-                                                            type="button"
-                                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                            disabled={loading}
-                                                            onClick={() => handleFollowStatusSubmit(follow.id, opt.value)}
-                                                        >
-                                                            {loading ? t('loading') : opt.label}
-                                                        </button>
-                                                    ))}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
 

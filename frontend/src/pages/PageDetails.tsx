@@ -41,6 +41,7 @@ export default function PageDetails() {
                 user={detailsProps.ownerUser}
                 currentUser={detailsProps.currentUser}
                 availableUsers={modalsService.availableUsers}
+                relatedUsers={detailsProps.relatedUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
                 currentPageObj={modalsService.currentPage}

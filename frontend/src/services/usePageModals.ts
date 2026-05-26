@@ -32,7 +32,7 @@ export function usePageModals(onSuccess: () => void) {
     const friendProvider = new FriendProvider();
     const {getCurrentUser} = useCheckPermission();
 
-    const loadAvailableFriends = async (currentUser: UserResponse) => {
+    const loadAvailableFriends = async (currentUser: UserResponse, pageObj?: PageResponse | null) => {
         const fFilter = new FriendFilterQuery();
         fFilter.userIds = [currentUser.id];
         fFilter.status = FriendStatusEnum.ACCEPTED;
@@ -41,19 +41,26 @@ export function usePageModals(onSuccess: () => void) {
 
         const myFriends = await friendProvider.index(fIndexDto);
 
-        const acceptedFriendIds = new Set<string>();
+        const userIdsToFetch = new Set<string>();
         myFriends.forEach(f => {
-            if (f.senderUserId !== currentUser.id) acceptedFriendIds.add(f.senderUserId);
-            if (f.receiverUserId !== currentUser.id) acceptedFriendIds.add(f.receiverUserId);
+            if (f.senderUserId !== currentUser.id) userIdsToFetch.add(f.senderUserId);
+            if (f.receiverUserId !== currentUser.id) userIdsToFetch.add(f.receiverUserId);
         });
 
-        if (acceptedFriendIds.size > 0) {
+        if (pageObj) {
+            pageObj.participants.forEach(p => userIdsToFetch.add(p.userId));
+            pageObj.follows?.forEach(f => userIdsToFetch.add(f.userId));
+        }
+
+        const idsArray = Array.from(userIdsToFetch);
+        if (idsArray.length > 0) {
             const uFilter = new UserFilterQuery();
-            uFilter.userIds = Array.from(acceptedFriendIds);
+            uFilter.userIds = idsArray;
             const uIndexDto = new UserIndexQuery();
             uIndexDto.filter = uFilter;
-            const acceptedFriendsUsers = await userProvider.index(uIndexDto);
-            setAvailableUsers(acceptedFriendsUsers);
+            uIndexDto.limit = idsArray.length;
+            const fetchedUsers = await userProvider.index(uIndexDto);
+            setAvailableUsers(fetchedUsers);
         } else {
             setAvailableUsers([]);
         }
@@ -115,7 +122,7 @@ export function usePageModals(onSuccess: () => void) {
         try {
             const currentUser = await getCurrentUser();
             if (currentUser) {
-                await loadAvailableFriends(currentUser);
+                await loadAvailableFriends(currentUser, page);
             }
         } catch (e: any) {
             setGlobalError(e.error);

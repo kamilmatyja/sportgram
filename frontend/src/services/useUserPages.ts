@@ -64,16 +64,19 @@ export function useUserPages(link?: string) {
 
             setPages(detailedPages);
 
-            const userIdsToFetch = Array.from(
-                new Set(detailedPages.flatMap(p => p.participants.map(part => part.userId)))
-            );
+            const userIdsToFetch = new Set<string>();
+            detailedPages.forEach(p => {
+                p.participants.forEach(part => userIdsToFetch.add(part.userId));
+                p.follows?.forEach(f => userIdsToFetch.add(f.userId));
+            });
 
-            if (userIdsToFetch.length > 0) {
+            const idsArray = Array.from(userIdsToFetch);
+            if (idsArray.length > 0) {
                 const uFilter = new UserFilterQuery();
-                uFilter.userIds = userIdsToFetch;
+                uFilter.userIds = idsArray;
                 const uIndexDto = new UserIndexQuery();
                 uIndexDto.filter = uFilter;
-                uIndexDto.limit = userIdsToFetch.length;
+                uIndexDto.limit = idsArray.length;
                 const usersData = await userProvider.index(uIndexDto);
                 const usersMap = usersData.reduce((acc, curr) => {
                     acc[curr.id] = curr;

@@ -116,13 +116,17 @@ export function usePageDetails(link?: string) {
             const existingFollow = targetPage.follows?.find(f => f.userId === currentUsr.id) || null;
             setMyFollow(existingFollow);
 
-            const userIdsToFetch = Array.from(new Set(targetPage.participants.map(p => p.userId)));
-            if (userIdsToFetch.length > 0) {
+            const userIdsToFetch = new Set<string>();
+            targetPage.participants.forEach(p => userIdsToFetch.add(p.userId));
+            targetPage.follows?.forEach(f => userIdsToFetch.add(f.userId));
+
+            const idsArray = Array.from(userIdsToFetch);
+            if (idsArray.length > 0) {
                 const uFilter = new UserFilterQuery();
-                uFilter.userIds = userIdsToFetch;
+                uFilter.userIds = idsArray;
                 const uIndexDto = new UserIndexQuery();
                 uIndexDto.filter = uFilter;
-                uIndexDto.limit = userIdsToFetch.length;
+                uIndexDto.limit = idsArray.length;
                 const usersData = await userProvider.index(uIndexDto);
                 const usersMap = usersData.reduce((acc, curr) => {
                     acc[curr.id] = curr;
