@@ -394,4 +394,20 @@ export const en = {
     writeComment: "Write a comment...",
     send: "Send",
     save: "Save",
+    guestHome: {
+        title: "Welcome to Sportgram!",
+        subtitle: "Log in or create an account to continue.",
+        login: "Login",
+        register: "Register"
+    },
+    auth: {
+        loading: "Checking session..."
+    },
+    notFound: {
+        title: "404 - Not found"
+    },
+    brand: {
+        sportgram: "Sportgram"
+    },
+    logout: "Logout"
 };

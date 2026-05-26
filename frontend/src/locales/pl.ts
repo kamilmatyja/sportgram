@@ -399,4 +399,20 @@ export const pl = {
     writeComment: "Napisz komentarz...",
     send: "Wyślij",
     save: "Zapisz",
+    guestHome: {
+        title: "Witaj w Sportgram!",
+        subtitle: "Zaloguj się lub utwórz konto, aby kontynuować.",
+        login: "Logowanie",
+        register: "Rejestracja"
+    },
+    auth: {
+        loading: "Sprawdzanie sesji..."
+    },
+    notFound: {
+        title: "404 - Nie znaleziono"
+    },
+    brand: {
+        sportgram: "Sportgram"
+    },
+    logout: "Wyloguj się",
 };

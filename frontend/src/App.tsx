@@ -1,7 +1,6 @@
 import React from 'react';
-import {Link, Navigate, Route, Routes} from 'react-router-dom';
-import {AuthProvider, useAuth} from './context/AuthContext';
-import {useTheme} from './context/ThemeContext';
+import {Navigate, Route, Routes} from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Register from './pages/Register';
 import Sign from './pages/Sign';
 import PasswordReset from './pages/PasswordReset';
@@ -25,6 +24,11 @@ import EventsList from './pages/EventsList';
 import EventDetails from './pages/EventDetails';
 import Statistics from './pages/Statistics';
 import Home from './pages/Home';
+import GuestHome from './components/GuestHome';
+import AuthenticationLoading from './components/AuthenticationLoading';
+import NotFound from './components/NotFound';
+import AppLayout from './components/AppLayout';
+import AuthenticatedLayout from './components/AuthenticatedLayout';
 
 interface RouteProps {
     children: React.ReactNode;
@@ -42,63 +46,19 @@ const GuestRoute: React.FC<RouteProps> = ({children}) => {
     return <>{children}</>;
 };
 
-const GuestHome: React.FC = () => {
-    return (
-        <div className="container mt-5 text-center">
-            <h1>Witaj w Sportgram!</h1>
-            <p className="text-muted">Zaloguj się lub utwórz konto, aby kontynuować.</p>
-            <div className="mt-4 gap-3 d-flex justify-content-center">
-                <Link to="/sign" className="btn btn-primary">Logowanie</Link>
-                <Link to="/register" className="btn btn-outline-primary">Rejestracja</Link>
-            </div>
-        </div>
-    );
-};
-
-const AuthenticatedLayout: React.FC<{children: React.ReactNode}> = ({children}) => {
-    const {logout} = useAuth();
-    const {theme, toggleTheme} = useTheme();
-
-    return (
-        <>
-            <nav className="navbar navbar-expand bg-white shadow-sm mb-4 border-bottom">
-                <div className="container d-flex justify-content-between">
-                    <Link to="/" className="navbar-brand fw-bold text-primary">Sportgram</Link>
-                    <div className="d-flex gap-2">
-                        <Link to="/users" className="btn btn-sm btn-outline-primary"><i className="bi bi-search"></i></Link>
-                        <button className="btn btn-sm btn-outline-secondary" onClick={toggleTheme}>
-                            {theme === 'light' ? <i className="bi bi-moon-fill"></i> : <i className="bi bi-sun-fill"></i>}
-                        </button>
-                        <button className="btn btn-sm btn-danger" onClick={logout}><i className="bi bi-box-arrow-right"></i></button>
-                    </div>
-                </div>
-            </nav>
-            {children}
-        </>
-    );
-};
-
 const AppRoutes: React.FC = () => {
     const {isAuthLoading, isAuthenticated} = useAuth();
 
     if (isAuthLoading) {
-        return (
-            <div className="min-vh-100 d-flex justify-content-center align-items-center bg-light">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Sprawdzanie sesji...</span>
-                </div>
-            </div>
-        );
+        return <AuthenticationLoading />;
     }
 
     return (
         <Routes>
             <Route path="/" element={isAuthenticated ? <AuthenticatedLayout><Home/></AuthenticatedLayout> : <GuestHome/>}/>
-
             <Route path="/register" element={<GuestRoute><Register/></GuestRoute>}/>
             <Route path="/sign" element={<GuestRoute><Sign/></GuestRoute>}/>
             <Route path="/password-reset" element={<GuestRoute><PasswordReset/></GuestRoute>}/>
-
             <Route path="/users" element={<ProtectedRoute><AuthenticatedLayout><Users/></AuthenticatedLayout></ProtectedRoute>}/>
             <Route path="/users/:link" element={<ProtectedRoute><AuthenticatedLayout><UserProfile/></AuthenticatedLayout></ProtectedRoute>}/>
             <Route path="/users/:link/feeds" element={<ProtectedRoute><AuthenticatedLayout><UserFeeds/></AuthenticatedLayout></ProtectedRoute>}/>
@@ -119,7 +79,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/events/:link" element={<ProtectedRoute><AuthenticatedLayout><EventDetails/></AuthenticatedLayout></ProtectedRoute>}/>
             <Route path="/statistics" element={<ProtectedRoute><AuthenticatedLayout><Statistics/></AuthenticatedLayout></ProtectedRoute>}/>
 
-            <Route path="*" element={<h1 className="text-center mt-5">404 - Nie znaleziono</h1>}/>
+            <Route path="*" element={<NotFound />}/>
         </Routes>
     );
 };
@@ -127,9 +87,9 @@ const AppRoutes: React.FC = () => {
 export default function App() {
     return (
         <AuthProvider>
-            <div className="min-vh-100 bg-body text-body">
+            <AppLayout>
                 <AppRoutes/>
-            </div>
+            </AppLayout>
         </AuthProvider>
     );
 }
