@@ -3,6 +3,7 @@ import {PageParticipantResponse} from './PageParticipantResponse';
 
 export class PageResponse {
     id!: string;
+    userId!: string;
     createdAt!: string;
     updatedAt!: string;
     title!: string;

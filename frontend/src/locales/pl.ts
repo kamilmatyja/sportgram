@@ -381,4 +381,5 @@ export const pl = {
     chat: "Czat",
     from: "od",
     to: "do",
+    managePageStatus: "Zarządzanie statusem strony",
 };

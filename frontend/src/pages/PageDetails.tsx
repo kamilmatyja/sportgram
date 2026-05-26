@@ -1,6 +1,10 @@
 import {useParams} from 'react-router-dom';
+import {usePageDetails} from '../services/usePageDetails';
+import {PageDetailsView} from '../components/PageDetailsView';
 
 export default function PageDetails() {
     const {link} = useParams<{ link: string }>();
-    return <div className="container mt-5"><h2>Szczegóły strony: {link}</h2></div>;
+    const detailsProps = usePageDetails(link);
+
+    return <PageDetailsView {...detailsProps} />;
 }

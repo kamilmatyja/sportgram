@@ -10,6 +10,7 @@ use OpenApi\Attributes as OA;
 #[OA\Schema(
     required: [
         'id',
+        'userId',
         'createdAt',
         'updatedAt',
         'title',
@@ -22,7 +23,13 @@ use OpenApi\Attributes as OA;
     ],
     properties: [
         new OA\Property(
-            property: 'Id',
+            property: 'id',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
+        new OA\Property(
+            property: 'userId',
             type: 'string',
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
@@ -55,6 +62,7 @@ class PageResource
     {
         $data = [
             'id' => $page->id->toString(),
+            'userId' => $page->user->id->toString(),
             'createdAt' => $page->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $page->updatedAt->format('Y-m-d\TH:i:s'),
             'title' => $page->title,

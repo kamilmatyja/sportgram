@@ -376,4 +376,5 @@ export const en = {
     chat: "Chat",
     from: "from",
     to: "to",
+    managePageStatus: "Manage page status",
 };

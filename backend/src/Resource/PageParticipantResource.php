@@ -16,7 +16,7 @@ use OpenApi\Attributes as OA;
     ],
     properties: [
         new OA\Property(
-            property: 'Id',
+            property: 'id',
             type: 'string',
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
