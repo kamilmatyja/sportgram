@@ -426,4 +426,6 @@ export const pl = {
     },
     results: "Wyniki",
     details: "Szczegóły",
+    followPage: "Zaobserwuj stronę",
+    unfollowPage: "Przestań obserwować",
 };

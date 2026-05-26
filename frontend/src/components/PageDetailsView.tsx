@@ -3,9 +3,11 @@ import {useTranslation} from '../context/TranslationContext';
 import {PageResponse} from '../api/responses/PageResponse';
 import {UserResponse} from '../api/responses/UserResponse';
 import {EventResponse} from '../api/responses/EventResponse';
+import {PageFollowResponse} from '../api/responses/PageFollowResponse';
 import {ColorEnum} from '../enums/ColorEnum';
 import {ElementStatusEnum} from '../enums/ElementStatusEnum';
 import {SaveStatusEnum} from '../enums/SaveStatusEnum';
+import {PageFollowStatusEnum} from '../enums/PageFollowStatusEnum';
 import {EventFilterQuery} from '../api/queries/EventFilterQuery';
 import {PaginationEnum} from '../enums/PaginationEnum';
 import {formatDate} from '../utils/dateFormat';
@@ -17,6 +19,9 @@ interface PageDetailsViewProps {
     isMyProfile: boolean;
     isAdmin: boolean;
     isParticipantOfPage: boolean;
+    myFollow: PageFollowResponse | null;
+    followLoading: boolean;
+    handleToggleFollow: () => void;
     loading: boolean;
     error: string | null;
     onManageClick: (page: PageResponse) => void;
@@ -41,6 +46,9 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                                                                     isMyProfile,
                                                                     isAdmin,
                                                                     isParticipantOfPage,
+                                                                    myFollow,
+                                                                    followLoading,
+                                                                    handleToggleFollow,
                                                                     loading,
                                                                     error,
                                                                     onManageClick,
@@ -104,6 +112,21 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                             <span className="badge bg-light text-dark border profile-theme-border">
                                 {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}
                             </span>
+                        </div>
+                        <div className="d-flex align-items-center gap-2 mt-3">
+                            <button
+                                className={`btn btn-sm ${myFollow?.status === PageFollowStatusEnum.ACCEPTED ? 'btn-outline-danger' : 'btn-profile-primary'}`}
+                                onClick={handleToggleFollow}
+                                disabled={followLoading}
+                            >
+                                {followLoading ? (
+                                    <span className="spinner-border spinner-border-sm" />
+                                ) : myFollow?.status === PageFollowStatusEnum.ACCEPTED ? (
+                                    <><i className="bi bi-dash-circle me-1"></i> {t('unfollowPage')}</>
+                                ) : (
+                                    <><i className="bi bi-plus-circle me-1"></i> {t('followPage')}</>
+                                )}
+                            </button>
                         </div>
                     </div>
 

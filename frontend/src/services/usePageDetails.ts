@@ -5,6 +5,7 @@ import {EventProvider} from '../api/providers/EventProvider';
 import {PageResponse} from '../api/responses/PageResponse';
 import {UserResponse} from '../api/responses/UserResponse';
 import {EventResponse} from '../api/responses/EventResponse';
+import {PageFollowResponse} from '../api/responses/PageFollowResponse';
 import {useCheckPermission} from '../utils/checkPermission';
 import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 import {UserFilterQuery} from '../api/queries/UserFilterQuery';
@@ -13,6 +14,8 @@ import {PageIndexQuery} from '../api/queries/PageIndexQuery';
 import {EventFilterQuery} from '../api/queries/EventFilterQuery';
 import {EventIndexQuery} from '../api/queries/EventIndexQuery';
 import {RoleEnum} from '../enums/RoleEnum';
+import {PageFollowStatusEnum} from '../enums/PageFollowStatusEnum';
+import {StatusBody} from '../api/body/StatusBody';
 
 export function usePageDetails(link?: string) {
     const {getCurrentUser} = useCheckPermission();
@@ -32,6 +35,9 @@ export function usePageDetails(link?: string) {
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isParticipantOfPage, setIsParticipantOfPage] = useState<boolean>(false);
+
+    const [myFollow, setMyFollow] = useState<PageFollowResponse | null>(null);
+    const [followLoading, setFollowLoading] = useState<boolean>(false);
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -107,6 +113,9 @@ export function usePageDetails(link?: string) {
             const participantCheck = targetPage.participants?.some(p => p.userId === currentUsr.id) ?? false;
             setIsParticipantOfPage(participantCheck);
 
+            const existingFollow = targetPage.follows?.find(f => f.userId === currentUsr.id) || null;
+            setMyFollow(existingFollow);
+
             const userIdsToFetch = Array.from(new Set(targetPage.participants.map(p => p.userId)));
             if (userIdsToFetch.length > 0) {
                 const uFilter = new UserFilterQuery();
@@ -158,6 +167,26 @@ export function usePageDetails(link?: string) {
     const handleEventPrevPage = () => setEventPage(prev => Math.max(prev - 1, 1));
     const handleEventNextPage = () => setEventPage(prev => prev + 1);
 
+    const handleToggleFollow = async () => {
+        if (!pageObj || !currentUser) return;
+        setFollowLoading(true);
+        try {
+            if (!myFollow) {
+                await pageProvider.createFollow(pageObj.id, new StatusBody(PageFollowStatusEnum.ACCEPTED));
+            } else {
+                const newStatus = myFollow.status === PageFollowStatusEnum.ACCEPTED
+                    ? PageFollowStatusEnum.UNFOLLOWED
+                    : PageFollowStatusEnum.ACCEPTED;
+                await pageProvider.updateFollowStatus(myFollow.id, new StatusBody(newStatus));
+            }
+            await fetchPageData();
+        } catch (err: any) {
+            alert(err.error || 'Error');
+        } finally {
+            setFollowLoading(false);
+        }
+    };
+
     const refreshPage = () => {
         fetchPageData();
     };
@@ -170,6 +199,9 @@ export function usePageDetails(link?: string) {
         isMyProfile,
         isAdmin,
         isParticipantOfPage,
+        myFollow,
+        followLoading,
+        handleToggleFollow,
         loading,
         error,
         events,

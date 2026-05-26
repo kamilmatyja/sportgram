@@ -18,6 +18,9 @@ export default function PageDetails() {
                 isMyProfile={detailsProps.isMyProfile}
                 isAdmin={detailsProps.isAdmin}
                 isParticipantOfPage={detailsProps.isParticipantOfPage}
+                myFollow={detailsProps.myFollow}
+                followLoading={detailsProps.followLoading}
+                handleToggleFollow={detailsProps.handleToggleFollow}
                 loading={detailsProps.loading}
                 error={detailsProps.error}
                 onManageClick={modalsService.openManageModal}

@@ -421,4 +421,6 @@ export const en = {
     },
     results: "Results",
     details: "Details",
+    followPage: "Follow page",
+    unfollowPage: "Unfollow page",
 };
