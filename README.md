@@ -120,7 +120,6 @@ npm run dev
 - wysyłka push wiadomości nie działa
 - kamera na froncie
 - gps na froncie przy dodawaniu treningu
-- przycisk follow na stronie
 - zapisywanie wyświetleń encji po wejściu na jakiś profil
 - informacje o wyświetleniach przy encjach
 - informacje o ilości follow na profilach

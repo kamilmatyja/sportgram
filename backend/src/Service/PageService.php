@@ -200,10 +200,14 @@ readonly class PageService
 
     final public function createFollow(Uuid $pageId, PageFollowStatusDto $dto): Uuid
     {
-        $page = $this->pageRepository->findById($pageId);
-
         /** @var User $user */
         $user = $this->security->getUser();
+
+        if ($this->pageFollowRepository->hasRow($user->id, $pageId)) {
+            throw new ValidatorException('User already follows this page.');
+        }
+
+        $page = $this->pageRepository->findById($pageId);
 
         $pageFollow = new PageFollow($page, $user, PageFollowStatusEnum::from($dto->status));
 

@@ -65,4 +65,18 @@ class PageFollowRepository extends BaseRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    final public function hasRow(Uuid $userId, Uuid $pageId): bool
+    {
+        $qb = $this->createQueryBuilder('p');
+        $qb->select('COUNT(p.id)')
+            ->andWhere('p.user = :userId')
+            ->andWhere('p.page = :pageId')
+            ->setParameter('userId', $userId)
+            ->setParameter('pageId', $pageId);
+
+        $count = $qb->getQuery()->getSingleScalarResult();
+
+        return (int)$count > 0;
+    }
 }
