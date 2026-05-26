@@ -53,9 +53,12 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
             </div>
 
             <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                <input name="title" placeholder={t('title')} value={filters.title || ''} onChange={onFilterChange} className="form-control w-auto"/>
-                <input name="link" placeholder={t('link')} value={filters.link || ''} onChange={onFilterChange} className="form-control w-auto"/>
-                <select name="status" value={filters.status || ''} onChange={onFilterChange} className="form-select w-auto">
+                <input name="title" placeholder={t('title')} value={filters.title || ''} onChange={onFilterChange}
+                       className="form-control w-auto"/>
+                <input name="link" placeholder={t('link')} value={filters.link || ''} onChange={onFilterChange}
+                       className="form-control w-auto"/>
+                <select name="status" value={filters.status || ''} onChange={onFilterChange}
+                        className="form-select w-auto">
                     <option value="">{t('status')}</option>
                     {ElementStatusEnum.getOptions(t).map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -74,7 +77,9 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
                 </select>
             </div>
 
-            {loading && pages.length === 0 ? <div className="text-center"><div className="spinner-border"/></div> : error ? <div className="alert alert-danger">{t(error)}</div> : (
+            {loading && pages.length === 0 ? <div className="text-center">
+                <div className="spinner-border"/>
+            </div> : error ? <div className="alert alert-danger">{t(error)}</div> : (
                 <>
                     <div className="table-responsive-custom">
                         <table className="table table-bordered table-hover align-middle">
@@ -97,13 +102,15 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
                                 <tr key={pageObj.id}>
                                     <td className="text-center align-middle feed-photo-cell">
                                         {pageObj.profilePhoto ? (
-                                            <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="page" className="rounded-circle img-fluid feed-photo"/>
+                                            <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="page"
+                                                 className="rounded-circle img-fluid feed-photo"/>
                                         ) : (
                                             <span className="text-muted">-</span>
                                         )}
                                     </td>
                                     <td>
-                                        <a href={`/pages/${pageObj.link}`} className="btn btn-link p-0 text-decoration-none">
+                                        <a href={`/pages/${pageObj.link}`}
+                                           className="btn btn-link p-0 text-decoration-none">
                                             {pageObj.title}
                                         </a>
                                     </td>
@@ -111,7 +118,8 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
                                     <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}</td>
                                     <td>{formatDate(pageObj.createdAt)}</td>
                                     <td className="text-end">
-                                        <a href={`/pages/${pageObj.link}`} className="btn btn-sm btn-outline-primary" title={t('profile')}>
+                                        <a href={`/pages/${pageObj.link}`} className="btn btn-sm btn-outline-primary"
+                                           title={t('profile')}>
                                             <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i>
                                             <span className="visually-hidden">{t('profile')}</span>
                                         </a>
@@ -122,9 +130,11 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
                         </table>
                     </div>
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <button className="btn btn-outline-primary mx-2" disabled={page === 1} onClick={onPrevPage}>{t('prev')}</button>
+                        <button className="btn btn-outline-primary mx-2" disabled={page === 1}
+                                onClick={onPrevPage}>{t('prev')}</button>
                         <span>{t('page')} {page}</span>
-                        <button className="btn btn-outline-primary mx-2" disabled={pages.length < limit} onClick={onNextPage}>{t('next')}</button>
+                        <button className="btn btn-outline-primary mx-2" disabled={pages.length < limit}
+                                onClick={onNextPage}>{t('next')}</button>
                     </div>
                 </>
             )}

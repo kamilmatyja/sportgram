@@ -1,6 +1,6 @@
 import React from 'react';
 import {Navigate, Route, Routes} from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import {AuthProvider, useAuth} from './context/AuthContext';
 import Register from './pages/Register';
 import Sign from './pages/Sign';
 import PasswordReset from './pages/PasswordReset';
@@ -50,36 +50,54 @@ const AppRoutes: React.FC = () => {
     const {isAuthLoading, isAuthenticated} = useAuth();
 
     if (isAuthLoading) {
-        return <AuthenticationLoading />;
+        return <AuthenticationLoading/>;
     }
 
     return (
         <Routes>
-            <Route path="/" element={isAuthenticated ? <AuthenticatedLayout><Home/></AuthenticatedLayout> : <GuestHome/>}/>
+            <Route path="/"
+                   element={isAuthenticated ? <AuthenticatedLayout><Home/></AuthenticatedLayout> : <GuestHome/>}/>
             <Route path="/register" element={<GuestRoute><Register/></GuestRoute>}/>
             <Route path="/sign" element={<GuestRoute><Sign/></GuestRoute>}/>
             <Route path="/password-reset" element={<GuestRoute><PasswordReset/></GuestRoute>}/>
-            <Route path="/users" element={<ProtectedRoute><AuthenticatedLayout><Users/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/users/:link" element={<ProtectedRoute><AuthenticatedLayout><UserProfile/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/users/:link/feeds" element={<ProtectedRoute><AuthenticatedLayout><UserFeeds/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/users/:link/stories" element={<ProtectedRoute><AuthenticatedLayout><UserStories/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/users/:link/friends" element={<ProtectedRoute><AuthenticatedLayout><UserFriends/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/users/:link/goals" element={<ProtectedRoute><AuthenticatedLayout><UserGoals/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/users/:link/pages" element={<ProtectedRoute><AuthenticatedLayout><UserPages/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/users/:link/events" element={<ProtectedRoute><AuthenticatedLayout><UserEvents/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/users/:link/trainings" element={<ProtectedRoute><AuthenticatedLayout><UserTrainings/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users"
+                   element={<ProtectedRoute><AuthenticatedLayout><Users/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link" element={
+                <ProtectedRoute><AuthenticatedLayout><UserProfile/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/feeds"
+                   element={<ProtectedRoute><AuthenticatedLayout><UserFeeds/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/stories" element={
+                <ProtectedRoute><AuthenticatedLayout><UserStories/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/friends" element={
+                <ProtectedRoute><AuthenticatedLayout><UserFriends/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/goals"
+                   element={<ProtectedRoute><AuthenticatedLayout><UserGoals/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/pages"
+                   element={<ProtectedRoute><AuthenticatedLayout><UserPages/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/events"
+                   element={<ProtectedRoute><AuthenticatedLayout><UserEvents/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/trainings" element={
+                <ProtectedRoute><AuthenticatedLayout><UserTrainings/></AuthenticatedLayout></ProtectedRoute>}/>
             <Route path="/users/:link/notifications" element={<ProtectedRoute><AuthenticatedLayout><UserNotifications/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/users/:link/push-subscriptions" element={<ProtectedRoute><AuthenticatedLayout><UserPushSubscriptions/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/push-subscriptions" element={
+                <ProtectedRoute><AuthenticatedLayout><UserPushSubscriptions/></AuthenticatedLayout></ProtectedRoute>}/>
             <Route path="/users/:link/conversations" element={<ProtectedRoute><AuthenticatedLayout><UserConversations/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/goals/:link" element={<ProtectedRoute><AuthenticatedLayout><GoalDetails/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/trainings/:link" element={<ProtectedRoute><AuthenticatedLayout><TrainingDetails/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/pages" element={<ProtectedRoute><AuthenticatedLayout><PagesList/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/pages/:link" element={<ProtectedRoute><AuthenticatedLayout><PageDetails/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/events" element={<ProtectedRoute><AuthenticatedLayout><EventsList/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/events/:link" element={<ProtectedRoute><AuthenticatedLayout><EventDetails/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/statistics" element={<ProtectedRoute><AuthenticatedLayout><Statistics/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/goals/:link" element={
+                <ProtectedRoute><AuthenticatedLayout><GoalDetails/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/trainings/:link" element={
+                <ProtectedRoute><AuthenticatedLayout><TrainingDetails/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/pages"
+                   element={<ProtectedRoute><AuthenticatedLayout><PagesList/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/pages/:link" element={
+                <ProtectedRoute><AuthenticatedLayout><PageDetails/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/events"
+                   element={<ProtectedRoute><AuthenticatedLayout><EventsList/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/events/:link" element={
+                <ProtectedRoute><AuthenticatedLayout><EventDetails/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/statistics"
+                   element={<ProtectedRoute><AuthenticatedLayout><Statistics/></AuthenticatedLayout></ProtectedRoute>}/>
 
-            <Route path="*" element={<NotFound />}/>
+            <Route path="*" element={<NotFound/>}/>
         </Routes>
     );
 };

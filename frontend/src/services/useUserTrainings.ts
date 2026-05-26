@@ -174,7 +174,24 @@ export function useUserTrainings(link?: string) {
     };
 
     return {
-        trainings, relatedUsers, targetUser, currentUser, isMyProfile, isAdmin, isParticipant, page, limit, sort, filters, loading, error,
-        handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshTrainings
+        trainings,
+        relatedUsers,
+        targetUser,
+        currentUser,
+        isMyProfile,
+        isAdmin,
+        isParticipant,
+        page,
+        limit,
+        sort,
+        filters,
+        loading,
+        error,
+        handleFilterChange,
+        handleSortChange,
+        handleLimitChange,
+        handlePrevPage,
+        handleNextPage,
+        refreshTrainings
     };
 }

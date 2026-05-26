@@ -28,15 +28,32 @@ interface HomeFeedsViewProps {
 }
 
 export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
-                                                                feeds, relatedUsers, currentUser, loading, loadingMore, hasMore, actionLoading,
-                                                                commentInputs, editingCommentId, editCommentText, setEditCommentText, setEditingCommentId,
-                                                                handleLoadMore, handleReaction, handleCommentInput, handleAddComment, handleDeleteComment,
-                                                                startEditingComment, handleUpdateComment
+                                                                feeds,
+                                                                relatedUsers,
+                                                                currentUser,
+                                                                loading,
+                                                                loadingMore,
+                                                                hasMore,
+                                                                actionLoading,
+                                                                commentInputs,
+                                                                editingCommentId,
+                                                                editCommentText,
+                                                                setEditCommentText,
+                                                                setEditingCommentId,
+                                                                handleLoadMore,
+                                                                handleReaction,
+                                                                handleCommentInput,
+                                                                handleAddComment,
+                                                                handleDeleteComment,
+                                                                startEditingComment,
+                                                                handleUpdateComment
                                                             }) => {
     const {t} = useTranslation();
 
     if (loading && feeds.length === 0) {
-        return <div className="container mt-5 text-center"><div className="spinner-border text-profile-primary"/></div>;
+        return <div className="container mt-5 text-center">
+            <div className="spinner-border text-profile-primary"/>
+        </div>;
     }
 
     const getFeedTypeLabel = (feed: FeedResponse) => {
@@ -50,13 +67,20 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
 
     const getReactionIcon = (type: number) => {
         switch (type) {
-            case FeedReactionEnum.LIKE: return 'bi-hand-thumbs-up-fill text-profile-primary';
-            case FeedReactionEnum.LOVE: return 'bi-heart-fill text-danger';
-            case FeedReactionEnum.HAHA: return 'bi-emoji-laughing-fill text-warning';
-            case FeedReactionEnum.WOW: return 'bi-emoji-surprise-fill text-warning';
-            case FeedReactionEnum.SAD: return 'bi-emoji-frown-fill text-warning';
-            case FeedReactionEnum.ANGRY: return 'bi-emoji-angry-fill text-danger';
-            default: return 'bi-hand-thumbs-up';
+            case FeedReactionEnum.LIKE:
+                return 'bi-hand-thumbs-up-fill text-profile-primary';
+            case FeedReactionEnum.LOVE:
+                return 'bi-heart-fill text-danger';
+            case FeedReactionEnum.HAHA:
+                return 'bi-emoji-laughing-fill text-warning';
+            case FeedReactionEnum.WOW:
+                return 'bi-emoji-surprise-fill text-warning';
+            case FeedReactionEnum.SAD:
+                return 'bi-emoji-frown-fill text-warning';
+            case FeedReactionEnum.ANGRY:
+                return 'bi-emoji-angry-fill text-danger';
+            default:
+                return 'bi-hand-thumbs-up';
         }
     };
 
@@ -76,17 +100,20 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                         <div key={feed.id} className="card shadow-sm mb-4">
                             <div className="card-header bg-white d-flex align-items-center gap-3 border-bottom-0 pt-3">
                                 {author?.profilePhoto ? (
-                                    <img src={`data:image/webp;base64,${author.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover feed-avatar-48 border profile-theme-border" />
+                                    <img src={`data:image/webp;base64,${author.profilePhoto}`} alt="avatar"
+                                         className="rounded-circle object-fit-cover feed-avatar-48 border profile-theme-border"/>
                                 ) : (
                                     <div className="bg-secondary rounded-circle feed-avatar-48"></div>
                                 )}
                                 <div className="flex-grow-1">
-                                    <a href={`/users/${author?.link}`} className="fw-bold text-decoration-none text-body d-block">
+                                    <a href={`/users/${author?.link}`}
+                                       className="fw-bold text-decoration-none text-body d-block">
                                         {author ? `${author.firstName} ${author.lastName}` : feed.userId}
                                     </a>
                                     <div className="d-flex align-items-center gap-2">
                                         <small className="text-muted">{formatDate(feed.createdAt)}</small>
-                                        <span className="badge bg-light text-dark border profile-theme-border">{getFeedTypeLabel(feed)}</span>
+                                        <span
+                                            className="badge bg-light text-dark border profile-theme-border">{getFeedTypeLabel(feed)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -96,7 +123,8 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                             </div>
 
                             {feed.photo && (
-                                <img src={`data:image/webp;base64,${feed.photo}`} alt="feed" className="w-100 object-fit-cover feed-image-max" />
+                                <img src={`data:image/webp;base64,${feed.photo}`} alt="feed"
+                                     className="w-100 object-fit-cover feed-image-max"/>
                             )}
 
                             <div className="card-footer bg-white pt-3 pb-2 border-top-0">
@@ -109,7 +137,8 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                                                     return acc;
                                                 }, {} as Record<number, number>)
                                             ).map(([type, count]) => (
-                                                <span key={type} className="d-flex align-items-center" title={FeedReactionEnum.getOptions(t).find(o => o.value === Number(type))?.label}>
+                                                <span key={type} className="d-flex align-items-center"
+                                                      title={FeedReactionEnum.getOptions(t).find(o => o.value === Number(type))?.label}>
                                                     <i className={`${getReactionIcon(Number(type))} me-1`}></i>
                                                     {count}
                                                 </span>
@@ -123,7 +152,8 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                                     </div>
                                 </div>
 
-                                <div className="d-flex flex-wrap gap-1 border-top border-bottom py-2 justify-content-between">
+                                <div
+                                    className="d-flex flex-wrap gap-1 border-top border-bottom py-2 justify-content-between">
                                     {FeedReactionEnum.getOptions(t).map(opt => {
                                         const isActive = myReaction?.reaction === opt.value;
                                         return (
@@ -149,14 +179,18 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                                         return (
                                             <div key={comment.id} className="d-flex gap-2 mb-3">
                                                 {commentAuthor?.profilePhoto ? (
-                                                    <img src={`data:image/webp;base64,${commentAuthor.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover flex-shrink-0 feed-avatar-32" />
+                                                    <img src={`data:image/webp;base64,${commentAuthor.profilePhoto}`}
+                                                         alt="avatar"
+                                                         className="rounded-circle object-fit-cover flex-shrink-0 feed-avatar-32"/>
                                                 ) : (
-                                                    <div className="bg-secondary rounded-circle flex-shrink-0 feed-avatar-32"></div>
+                                                    <div
+                                                        className="bg-secondary rounded-circle flex-shrink-0 feed-avatar-32"></div>
                                                 )}
 
                                                 <div className="flex-grow-1">
                                                     <div className="bg-light p-2 rounded-3">
-                                                        <a href={`/users/${commentAuthor?.link}`} className="fw-bold text-decoration-none text-body small d-block">
+                                                        <a href={`/users/${commentAuthor?.link}`}
+                                                           className="fw-bold text-decoration-none text-body small d-block">
                                                             {commentAuthor ? `${commentAuthor.firstName} ${commentAuthor.lastName}` : comment.userId}
                                                         </a>
 
@@ -169,8 +203,14 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                                                                     onChange={e => setEditCommentText(e.target.value)}
                                                                 />
                                                                 <div className="d-flex justify-content-end gap-1">
-                                                                    <button className="btn btn-xs btn-outline-secondary py-0" onClick={() => setEditingCommentId(null)} disabled={isFeedLoading}>{t('cancel')}</button>
-                                                                    <button className="btn btn-xs btn-profile-primary py-0" onClick={() => handleUpdateComment(feed.id, comment.id)} disabled={isFeedLoading}>{t('save')}</button>
+                                                                    <button
+                                                                        className="btn btn-xs btn-outline-secondary py-0"
+                                                                        onClick={() => setEditingCommentId(null)}
+                                                                        disabled={isFeedLoading}>{t('cancel')}</button>
+                                                                    <button
+                                                                        className="btn btn-xs btn-profile-primary py-0"
+                                                                        onClick={() => handleUpdateComment(feed.id, comment.id)}
+                                                                        disabled={isFeedLoading}>{t('save')}</button>
                                                                 </div>
                                                             </div>
                                                         ) : (
@@ -180,8 +220,14 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
 
                                                     {!isEditing && isMyComment && (
                                                         <div className="ms-2 mt-1 gap-2 d-flex">
-                                                            <button className="btn btn-link p-0 text-muted small text-decoration-none" onClick={() => startEditingComment(comment.id, comment.text)} disabled={isFeedLoading}>{t('edit')}</button>
-                                                            <button className="btn btn-link p-0 text-danger small text-decoration-none" onClick={() => handleDeleteComment(feed.id, comment.id)} disabled={isFeedLoading}>{t('delete')}</button>
+                                                            <button
+                                                                className="btn btn-link p-0 text-muted small text-decoration-none"
+                                                                onClick={() => startEditingComment(comment.id, comment.text)}
+                                                                disabled={isFeedLoading}>{t('edit')}</button>
+                                                            <button
+                                                                className="btn btn-link p-0 text-danger small text-decoration-none"
+                                                                onClick={() => handleDeleteComment(feed.id, comment.id)}
+                                                                disabled={isFeedLoading}>{t('delete')}</button>
                                                         </div>
                                                     )}
                                                 </div>
@@ -191,9 +237,11 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
 
                                     <form onSubmit={(e) => handleAddComment(e, feed.id)} className="d-flex gap-2 mt-3">
                                         {currentUser?.profilePhoto ? (
-                                            <img src={`data:image/webp;base64,${currentUser.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover flex-shrink-0 feed-avatar-32" />
+                                            <img src={`data:image/webp;base64,${currentUser.profilePhoto}`} alt="avatar"
+                                                 className="rounded-circle object-fit-cover flex-shrink-0 feed-avatar-32"/>
                                         ) : (
-                                            <div className="bg-secondary rounded-circle flex-shrink-0 feed-avatar-32"></div>
+                                            <div
+                                                className="bg-secondary rounded-circle flex-shrink-0 feed-avatar-32"></div>
                                         )}
                                         <input
                                             type="text"
@@ -203,7 +251,9 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
                                             onChange={e => handleCommentInput(feed.id, e.target.value)}
                                             disabled={isFeedLoading}
                                         />
-                                        <button type="submit" className="btn btn-sm btn-profile-primary rounded-circle px-2" disabled={isFeedLoading || !(commentInputs[feed.id]?.trim())}>
+                                        <button type="submit"
+                                                className="btn btn-sm btn-profile-primary rounded-circle px-2"
+                                                disabled={isFeedLoading || !(commentInputs[feed.id]?.trim())}>
                                             <i className="bi bi-send-fill"></i>
                                         </button>
                                     </form>
@@ -217,8 +267,9 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = ({
             {feeds.length > 0 && (
                 <div className="text-center mt-4">
                     {hasMore ? (
-                        <button className="btn btn-profile-outline-primary" onClick={handleLoadMore} disabled={loadingMore}>
-                            {loadingMore ? <span className="spinner-border spinner-border-sm" /> : t('loadMore')}
+                        <button className="btn btn-profile-outline-primary" onClick={handleLoadMore}
+                                disabled={loadingMore}>
+                            {loadingMore ? <span className="spinner-border spinner-border-sm"/> : t('loadMore')}
                         </button>
                     ) : (
                         <span className="text-muted">{t('noMoreFeeds')}</span>

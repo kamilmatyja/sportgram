@@ -184,19 +184,19 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
         const newDisc = new EventDiscipline();
         newDisc.discipline = 1;
         newDisc.distances = [];
-        setFormData(prev => ({ ...prev, disciplines: [...(prev.disciplines || []), newDisc] }));
+        setFormData(prev => ({...prev, disciplines: [...(prev.disciplines || []), newDisc]}));
     };
 
     const updateDisciplineType = (index: number, type: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[index].discipline = type;
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const removeDiscipline = (index: number) => {
         const discs = [...(formData.disciplines || [])];
         discs.splice(index, 1);
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const addDistance = (discIndex: number) => {
@@ -205,19 +205,19 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
         newDist.distance = 0;
         newDist.subDistances = [];
         discs[discIndex].distances = [...(discs[discIndex].distances || []), newDist];
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const updateDistanceValue = (discIndex: number, distIndex: number, val: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[discIndex].distances![distIndex].distance = val;
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const removeDistance = (discIndex: number, distIndex: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[discIndex].distances!.splice(distIndex, 1);
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const addSubDistance = (discIndex: number, distIndex: number) => {
@@ -225,19 +225,19 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
         const newSub = new EventSubDistance();
         newSub.subDistance = 0;
         discs[discIndex].distances![distIndex].subDistances = [...(discs[discIndex].distances![distIndex].subDistances || []), newSub];
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const updateSubDistanceValue = (discIndex: number, distIndex: number, subIndex: number, val: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[discIndex].distances![distIndex].subDistances![subIndex].subDistance = val;
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const removeSubDistance = (discIndex: number, distIndex: number, subIndex: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[discIndex].distances![distIndex].subDistances!.splice(subIndex, 1);
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const handleChange = createFormHandler(setFormData);
@@ -302,7 +302,7 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
 
     const openEditResultForm = (list: EventDisciplineDistanceListResponse, resultId: string) => {
         const resultObj = list.results?.find(r => r.id === resultId);
-        if(!resultObj) return;
+        if (!resultObj) return;
 
         const subRes: EventSubResult[] = resultObj.subResults?.map(sr => ({
             eventDisciplineSubDistanceId: sr.eventDisciplineSubDistanceId,
@@ -315,7 +315,7 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
     };
 
     const handleSaveResult = async () => {
-        if(!activeResultListId) return;
+        if (!activeResultListId) return;
         setLoadingLists(true);
         setGlobalError('');
         try {
@@ -346,11 +346,47 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
     };
 
     return {
-        showAdd, openAddModal, closeAddModal, handleAddSubmit, myPages, selectedPageId, setSelectedPageId,
-        showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
-        currentEvent, formData, handleChange, loading, globalError, fieldErrors,
-        addDiscipline, updateDisciplineType, removeDiscipline, addDistance, updateDistanceValue, removeDistance, addSubDistance, updateSubDistanceValue, removeSubDistance,
-        selectedDistanceId, distanceLists, listUsers, loadingLists, fetchDistanceLists, handleListStatusUpdate: handleListStatusSubmit,
-        activeResultListId, setActiveResultListId, resultFormData, setResultFormData, openAddResultForm, openEditResultForm, handleSaveResult, handleDeleteResult
+        showAdd,
+        openAddModal,
+        closeAddModal,
+        handleAddSubmit,
+        myPages,
+        selectedPageId,
+        setSelectedPageId,
+        showManage,
+        openManageModal,
+        closeManageModal,
+        handleEditSubmit,
+        handleStatusSubmit,
+        handleDelete,
+        currentEvent,
+        formData,
+        handleChange,
+        loading,
+        globalError,
+        fieldErrors,
+        addDiscipline,
+        updateDisciplineType,
+        removeDiscipline,
+        addDistance,
+        updateDistanceValue,
+        removeDistance,
+        addSubDistance,
+        updateSubDistanceValue,
+        removeSubDistance,
+        selectedDistanceId,
+        distanceLists,
+        listUsers,
+        loadingLists,
+        fetchDistanceLists,
+        handleListStatusUpdate: handleListStatusSubmit,
+        activeResultListId,
+        setActiveResultListId,
+        resultFormData,
+        setResultFormData,
+        openAddResultForm,
+        openEditResultForm,
+        handleSaveResult,
+        handleDeleteResult
     };
 }

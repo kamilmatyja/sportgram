@@ -138,7 +138,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                 <li className="mb-1"><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
                                 <li className="d-flex align-items-center flex-wrap gap-2 mt-2">
                                     <strong>{t('userStatus')}: </strong>
-                                    <span className="me-2 badge bg-light text-dark border profile-theme-border">{UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}</span>
+                                    <span
+                                        className="me-2 badge bg-light text-dark border profile-theme-border">{UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}</span>
                                 </li>
                                 <li className="d-flex align-items-center flex-wrap gap-2 mt-2">
                                     <strong>{t('role')}:</strong>
@@ -173,7 +174,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                         {!isMyProfile && friendship && (
                             <li className="d-flex align-items-center flex-wrap gap-2 mt-2">
                                 <strong>{t('friendshipStatus')}: </strong>
-                                <span className="me-2 badge bg-light text-dark border profile-theme-border">{FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label || friendship.status}</span>
+                                <span
+                                    className="me-2 badge bg-light text-dark border profile-theme-border">{FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label || friendship.status}</span>
                                 <>
                                     {(friendship.senderUserId === currentUser?.id || friendship.receiverUserId === currentUser?.id) && (
                                         <>

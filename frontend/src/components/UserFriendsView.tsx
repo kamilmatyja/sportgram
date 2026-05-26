@@ -53,18 +53,22 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
         <div className="spinner-border"/>
     </div>;
 
-    if (error || !user) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
+    if (error || !user) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
     const hexColor = ColorEnum.getHex(user.color);
 
     return (
         <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
             <div className="card shadow-sm mb-4">
-                <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
-                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover"/>
+                <div
+                    className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background"
+                         className="w-100 h-100 object-fit-cover"/>
                 </div>
                 <div className="card-body position-relative pt-5">
-                    <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile" className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
+                    <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile"
+                         className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                     <div className="mt-3">
                         <h2 className="mb-0 profile-theme-text">{user.firstName} {user.lastName}</h2>
                         <p className="text-muted mb-0">@{user.link}</p>
@@ -89,7 +93,8 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                     </div>
 
                     <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                        <select name="status" value={filters.status || ''} onChange={onFilterChange} className="form-select w-auto">
+                        <select name="status" value={filters.status || ''} onChange={onFilterChange}
+                                className="form-select w-auto">
                             <option value="">{t('status')}</option>
                             {FriendStatusEnum.getOptions(t).map(opt => (
                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -106,7 +111,9 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                         </select>
                     </div>
 
-                    {loading && friends.length === 0 ? <div className="text-center"><div className="spinner-border"/></div> : (
+                    {loading && friends.length === 0 ? <div className="text-center">
+                        <div className="spinner-border"/>
+                    </div> : (
                         <>
                             <div className="table-responsive-custom">
                                 <table className="table table-bordered table-hover align-middle">
@@ -131,12 +138,14 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                                         return (
                                             <tr key={friend.id}>
                                                 <td>
-                                                    <a href={`/users/${sender.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                    <a href={`/users/${sender.link}`}
+                                                       className="btn btn-link p-0 text-decoration-none">
                                                         {sender.firstName} {sender.lastName}
                                                     </a>
                                                 </td>
                                                 <td>
-                                                    <a href={`/users/${receiver.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                    <a href={`/users/${receiver.link}`}
+                                                       className="btn btn-link p-0 text-decoration-none">
                                                         {receiver.firstName} {receiver.lastName}
                                                     </a>
                                                 </td>
@@ -144,7 +153,9 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                                                 <td>{formatDate(friend.createdAt)}</td>
                                                 <td className="text-end">
                                                     {isMyProfile && (
-                                                        <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(friend)}>
+                                                        <button className="btn btn-sm btn-profile-outline-primary"
+                                                                title={t('manage')}
+                                                                onClick={() => onManageClick(friend)}>
                                                             <i className="bi bi-gear" aria-hidden="true"></i>
                                                             <span className="visually-hidden">{t('manage')}</span>
                                                         </button>
@@ -157,9 +168,11 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                                 </table>
                             </div>
                             <div className="d-flex justify-content-between align-items-center mb-3">
-                                <button className="btn btn-profile-outline-primary mx-2" disabled={page === 1} onClick={onPrevPage}>{t('prev')}</button>
+                                <button className="btn btn-profile-outline-primary mx-2" disabled={page === 1}
+                                        onClick={onPrevPage}>{t('prev')}</button>
                                 <span>{t('page')} {page}</span>
-                                <button className="btn btn-profile-outline-primary mx-2" disabled={friends.length < limit} onClick={onNextPage}>{t('next')}</button>
+                                <button className="btn btn-profile-outline-primary mx-2"
+                                        disabled={friends.length < limit} onClick={onNextPage}>{t('next')}</button>
                             </div>
                         </>
                     )}

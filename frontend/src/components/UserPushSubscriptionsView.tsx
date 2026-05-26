@@ -49,20 +49,26 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                                                                                     }) => {
     const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center"><div className="spinner-border"/></div>;
+    if (loading) return <div className="container mt-5 text-center">
+        <div className="spinner-border"/>
+    </div>;
 
-    if (error || !user) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
+    if (error || !user) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
     const hexColor = ColorEnum.getHex(user.color);
 
     return (
         <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
             <div className="card shadow-sm mb-4">
-                <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
-                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover"/>
+                <div
+                    className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background"
+                         className="w-100 h-100 object-fit-cover"/>
                 </div>
                 <div className="card-body position-relative pt-5">
-                    <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile" className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
+                    <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile"
+                         className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                     <div className="mt-3">
                         <h2 className="mb-0 profile-theme-text">{user.firstName} {user.lastName}</h2>
                         <p className="text-muted mb-0">@{user.link}</p>
@@ -87,7 +93,8 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                     </div>
 
                     <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                        <input name="endpoint" placeholder={t('endpoint')} value={filters.endpoint || ''} onChange={onFilterChange} className="form-control w-auto"/>
+                        <input name="endpoint" placeholder={t('endpoint')} value={filters.endpoint || ''}
+                               onChange={onFilterChange} className="form-control w-auto"/>
                         <select value={sort} onChange={onSortChange} className="form-select w-auto ms-auto">
                             <option value="createdAt:desc">{t('sortCreatedDesc')}</option>
                             <option value="createdAt:asc">{t('sortCreatedAsc')}</option>
@@ -99,7 +106,9 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                         </select>
                     </div>
 
-                    {loading && subscriptions.length === 0 ? <div className="text-center"><div className="spinner-border"/></div> : (
+                    {loading && subscriptions.length === 0 ? <div className="text-center">
+                        <div className="spinner-border"/>
+                    </div> : (
                         <>
                             <div className="table-responsive-custom">
                                 <table className="table table-bordered table-hover align-middle">
@@ -115,7 +124,8 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                                     <tbody>
                                     {subscriptions.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="text-center text-muted">{t('noSubscriptions')}</td>
+                                            <td colSpan={5}
+                                                className="text-center text-muted">{t('noSubscriptions')}</td>
                                         </tr>
                                     ) : subscriptions.map(sub => (
                                         <tr key={sub.id}>
@@ -129,7 +139,8 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                                             <td>{formatDate(sub.createdAt)}</td>
                                             <td className="text-end">
                                                 {(isMyProfile || isAdmin) && (
-                                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(sub)}>
+                                                    <button className="btn btn-sm btn-profile-outline-primary"
+                                                            title={t('manage')} onClick={() => onManageClick(sub)}>
                                                         <i className="bi bi-gear" aria-hidden="true"></i>
                                                         <span className="visually-hidden">{t('manage')}</span>
                                                     </button>
@@ -141,9 +152,12 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                                 </table>
                             </div>
                             <div className="d-flex justify-content-between align-items-center mb-3">
-                                <button className="btn btn-profile-outline-primary mx-2" disabled={page === 1} onClick={onPrevPage}>{t('prev')}</button>
+                                <button className="btn btn-profile-outline-primary mx-2" disabled={page === 1}
+                                        onClick={onPrevPage}>{t('prev')}</button>
                                 <span>{t('page')} {page}</span>
-                                <button className="btn btn-profile-outline-primary mx-2" disabled={subscriptions.length < limit} onClick={onNextPage}>{t('next')}</button>
+                                <button className="btn btn-profile-outline-primary mx-2"
+                                        disabled={subscriptions.length < limit}
+                                        onClick={onNextPage}>{t('next')}</button>
                             </div>
                         </>
                     )}

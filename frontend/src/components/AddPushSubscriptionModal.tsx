@@ -40,8 +40,10 @@ export const AddPushSubscriptionModal: React.FC<AddPushSubscriptionModalProps> =
                             <p className="text-muted small">{t('pushPermissionWillBeAsked')}</p>
                         </div>
                         <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" onClick={closeModal}>{t('cancel')}</button>
-                            <button type="button" className="btn btn-profile-primary" onClick={handleSubscribeDevice} disabled={loading}>
+                            <button type="button" className="btn btn-secondary"
+                                    onClick={closeModal}>{t('cancel')}</button>
+                            <button type="button" className="btn btn-profile-primary" onClick={handleSubscribeDevice}
+                                    disabled={loading}>
                                 {loading ? t('sending') : t('subscribeThisDevice')}
                             </button>
                         </div>

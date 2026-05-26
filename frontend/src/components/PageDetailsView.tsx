@@ -66,9 +66,12 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                                                                 }) => {
     const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center"><div className="spinner-border"/></div>;
+    if (loading) return <div className="container mt-5 text-center">
+        <div className="spinner-border"/>
+    </div>;
 
-    if (error || !pageObj || !ownerUser) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (error || !pageObj || !ownerUser) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
 
     const hexColor = ColorEnum.getHex(pageObj.color);
     const canManage = isMyProfile || isAdmin || isParticipantOfPage;
@@ -76,11 +79,14 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
     return (
         <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
             <div className="card shadow-sm mb-4">
-                <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
-                    <img src={`data:image/webp;base64,${pageObj.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover"/>
+                <div
+                    className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+                    <img src={`data:image/webp;base64,${pageObj.backgroundPhoto}`} alt="Background"
+                         className="w-100 h-100 object-fit-cover"/>
                 </div>
                 <div className="card-body position-relative pt-5">
-                    <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="Profile" className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
+                    <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="Profile"
+                         className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                     <div className="mt-3">
                         <h2 className="mb-0 profile-theme-text">{pageObj.title}</h2>
                         <p className="text-muted mb-0">@{pageObj.link}</p>
@@ -120,7 +126,7 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                                 disabled={followLoading}
                             >
                                 {followLoading ? (
-                                    <span className="spinner-border spinner-border-sm" />
+                                    <span className="spinner-border spinner-border-sm"/>
                                 ) : myFollow?.status === PageFollowStatusEnum.ACCEPTED ? (
                                     <><i className="bi bi-dash-circle me-1"></i> {t('unfollowPage')}</>
                                 ) : (
@@ -143,13 +149,16 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                                 </thead>
                                 <tbody>
                                 {pageObj.participants.length === 0 ? (
-                                    <tr><td colSpan={3} className="text-center text-muted">{t('noParticipants')}</td></tr>
+                                    <tr>
+                                        <td colSpan={3} className="text-center text-muted">{t('noParticipants')}</td>
+                                    </tr>
                                 ) : pageObj.participants.map(p => {
                                     const u = relatedUsers[p.userId];
                                     return (
                                         <tr key={p.id}>
                                             <td>
-                                                {u ? <a href={`/users/${u.link}`} className="btn btn-link p-0 text-decoration-none">{u.firstName} {u.lastName}</a> : p.userId}
+                                                {u ? <a href={`/users/${u.link}`}
+                                                        className="btn btn-link p-0 text-decoration-none">{u.firstName} {u.lastName}</a> : p.userId}
                                             </td>
                                             <td>{SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(p.status))?.label || p.status}</td>
                                             <td>{formatDate(p.createdAt)}</td>
@@ -170,15 +179,19 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                     </div>
 
                     <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                        <input name="title" placeholder={t('title')} value={eventFilters.title || ''} onChange={handleEventFilterChange} className="form-control w-auto"/>
-                        <input name="link" placeholder={t('link')} value={eventFilters.link || ''} onChange={handleEventFilterChange} className="form-control w-auto"/>
-                        <select name="status" value={eventFilters.status || ''} onChange={handleEventFilterChange} className="form-select w-auto">
+                        <input name="title" placeholder={t('title')} value={eventFilters.title || ''}
+                               onChange={handleEventFilterChange} className="form-control w-auto"/>
+                        <input name="link" placeholder={t('link')} value={eventFilters.link || ''}
+                               onChange={handleEventFilterChange} className="form-control w-auto"/>
+                        <select name="status" value={eventFilters.status || ''} onChange={handleEventFilterChange}
+                                className="form-select w-auto">
                             <option value="">{t('status')}</option>
                             {ElementStatusEnum.getOptions(t).map(opt => (
                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
                             ))}
                         </select>
-                        <select value={eventSort} onChange={handleEventSortChange} className="form-select w-auto ms-auto">
+                        <select value={eventSort} onChange={handleEventSortChange}
+                                className="form-select w-auto ms-auto">
                             <option value="createdAt:desc">{t('sortCreatedDesc')}</option>
                             <option value="createdAt:asc">{t('sortCreatedAsc')}</option>
                             <option value="startedAt:desc">{t('startedAt')} Z-A</option>
@@ -191,7 +204,9 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                         </select>
                     </div>
 
-                    {eventsLoading && events.length === 0 ? <div className="text-center"><div className="spinner-border"/></div> : (
+                    {eventsLoading && events.length === 0 ? <div className="text-center">
+                        <div className="spinner-border"/>
+                    </div> : (
                         <>
                             <div className="table-responsive-custom">
                                 <table className="table table-bordered table-hover align-middle">
@@ -213,10 +228,12 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                                     ) : events.map(ev => (
                                         <tr key={ev.id}>
                                             <td className="text-center align-middle feed-photo-cell">
-                                                <img src={`data:image/webp;base64,${ev.photo}`} alt="Photo" className="w-100 h-100 object-fit-cover"/>
+                                                <img src={`data:image/webp;base64,${ev.photo}`} alt="Photo"
+                                                     className="w-100 h-100 object-fit-cover"/>
                                             </td>
                                             <td>
-                                                <a href={`/events/${ev.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                <a href={`/events/${ev.link}`}
+                                                   className="btn btn-link p-0 text-decoration-none">
                                                     {ev.title}
                                                 </a>
                                             </td>
@@ -230,9 +247,12 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                                 </table>
                             </div>
                             <div className="d-flex justify-content-between align-items-center mb-3">
-                                <button className="btn btn-profile-outline-primary mx-2" disabled={eventPage === 1} onClick={handleEventPrevPage}>{t('prev')}</button>
+                                <button className="btn btn-profile-outline-primary mx-2" disabled={eventPage === 1}
+                                        onClick={handleEventPrevPage}>{t('prev')}</button>
                                 <span>{t('page')} {eventPage}</span>
-                                <button className="btn btn-profile-outline-primary mx-2" disabled={events.length < eventLimit} onClick={handleEventNextPage}>{t('next')}</button>
+                                <button className="btn btn-profile-outline-primary mx-2"
+                                        disabled={events.length < eventLimit}
+                                        onClick={handleEventNextPage}>{t('next')}</button>
                             </div>
                         </>
                     )}

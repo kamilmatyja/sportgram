@@ -210,19 +210,19 @@ export function useTrainingModals(onSuccess: () => void) {
         const newDisc = new TrainingDiscipline();
         newDisc.discipline = 1;
         newDisc.distances = [];
-        setFormData(prev => ({ ...prev, disciplines: [...(prev.disciplines || []), newDisc] }));
+        setFormData(prev => ({...prev, disciplines: [...(prev.disciplines || []), newDisc]}));
     };
 
     const updateDisciplineType = (index: number, type: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[index].discipline = type;
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const removeDiscipline = (index: number) => {
         const discs = [...(formData.disciplines || [])];
         discs.splice(index, 1);
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const addDistance = (discIndex: number) => {
@@ -232,19 +232,19 @@ export function useTrainingModals(onSuccess: () => void) {
         newDist.time = 0;
         newDist.subDistances = [];
         discs[discIndex].distances = [...(discs[discIndex].distances || []), newDist];
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const updateDistanceValue = (discIndex: number, distIndex: number, field: keyof TrainingDistance, val: number) => {
         const discs = [...(formData.disciplines || [])];
         (discs[discIndex].distances![distIndex] as any)[field] = val;
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const removeDistance = (discIndex: number, distIndex: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[discIndex].distances!.splice(distIndex, 1);
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const addSubDistance = (discIndex: number, distIndex: number) => {
@@ -253,26 +253,26 @@ export function useTrainingModals(onSuccess: () => void) {
         newSub.subDistance = 0;
         newSub.time = 0;
         discs[discIndex].distances![distIndex].subDistances = [...(discs[discIndex].distances![distIndex].subDistances || []), newSub];
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const updateSubDistanceValue = (discIndex: number, distIndex: number, subIndex: number, field: keyof TrainingSubDistance, val: number) => {
         const discs = [...(formData.disciplines || [])];
         (discs[discIndex].distances![distIndex].subDistances![subIndex] as any)[field] = val;
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const removeSubDistance = (discIndex: number, distIndex: number, subIndex: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[discIndex].distances![distIndex].subDistances!.splice(subIndex, 1);
-        setFormData(prev => ({ ...prev, disciplines: discs }));
+        setFormData(prev => ({...prev, disciplines: discs}));
     };
 
     const handleChange = createFormHandler(setFormData);
 
     const handleParticipantsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selected = Array.from(e.target.selectedOptions).map(o => o.value);
-        setFormData(prev => ({ ...prev, participants: selected }));
+        setFormData(prev => ({...prev, participants: selected}));
     };
 
     return {

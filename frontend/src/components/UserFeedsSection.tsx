@@ -12,12 +12,12 @@ interface UserFeedsSectionProps {
     friendship?: { status: FriendStatusEnum } | null;
 }
 
-const ProfileFeedsWrapper = ({ userId }: { userId: string }) => {
+const ProfileFeedsWrapper = ({userId}: { userId: string }) => {
     const feedsService = useHomeFeeds(userId);
     return <HomeFeedsView {...feedsService} />;
 };
 
-export const UserFeedsSection: React.FC<UserFeedsSectionProps> = ({ user, isMyProfile, isAdmin, friendship }) => {
+export const UserFeedsSection: React.FC<UserFeedsSectionProps> = ({user, isMyProfile, isAdmin, friendship}) => {
     const canViewFeeds = user && (
         isMyProfile ||
         isAdmin ||
@@ -28,8 +28,8 @@ export const UserFeedsSection: React.FC<UserFeedsSectionProps> = ({ user, isMyPr
     if (!canViewFeeds || !user) return null;
 
     return (
-        <div style={hexColor ? { '--theme-color': hexColor } as React.CSSProperties : {}}>
-            <ProfileFeedsWrapper userId={user.id} />
+        <div style={hexColor ? {'--theme-color': hexColor} as React.CSSProperties : {}}>
+            <ProfileFeedsWrapper userId={user.id}/>
         </div>
     );
 };

@@ -62,7 +62,8 @@ export const AddStoryModal: React.FC<AddStoryModalProps> = ({
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeModal}>{t('cancel')}</button>
+                                <button type="button" className="btn btn-secondary"
+                                        onClick={closeModal}>{t('cancel')}</button>
                                 <button type="submit" className="btn btn-profile-primary" disabled={loading}>
                                     {loading ? t('sending') : t('addStory')}
                                 </button>

@@ -33,9 +33,12 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                                                                 }) => {
     const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center"><div className="spinner-border"/></div>;
+    if (loading) return <div className="container mt-5 text-center">
+        <div className="spinner-border"/>
+    </div>;
 
-    if (error || !goal || !ownerUser) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (error || !goal || !ownerUser) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
 
     const hexColor = ColorEnum.getHex(ownerUser.color);
     const canManage = isMyProfile || isAdmin || isParticipantOfGoal;
@@ -98,13 +101,16 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                                 </thead>
                                 <tbody>
                                 {goal.participants.length === 0 ? (
-                                    <tr><td colSpan={3} className="text-center text-muted">{t('noParticipants')}</td></tr>
+                                    <tr>
+                                        <td colSpan={3} className="text-center text-muted">{t('noParticipants')}</td>
+                                    </tr>
                                 ) : goal.participants.map(p => {
                                     const u = relatedUsers[p.userId];
                                     return (
                                         <tr key={p.id}>
                                             <td>
-                                                {u ? <a href={`/users/${u.link}`} className="btn btn-link p-0 text-decoration-none">{u.firstName} {u.lastName}</a> : p.userId}
+                                                {u ? <a href={`/users/${u.link}`}
+                                                        className="btn btn-link p-0 text-decoration-none">{u.firstName} {u.lastName}</a> : p.userId}
                                             </td>
                                             <td>{SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(p.status))?.label || p.status}</td>
                                             <td>{formatDate(p.createdAt)}</td>
@@ -131,16 +137,22 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                                 </thead>
                                 <tbody>
                                 {(() => {
-                                    const allResults = goal.participants.flatMap(p => p.results.map(r => ({ ...r, userId: p.userId })));
+                                    const allResults = goal.participants.flatMap(p => p.results.map(r => ({
+                                        ...r,
+                                        userId: p.userId
+                                    })));
                                     if (allResults.length === 0) {
-                                        return <tr><td colSpan={5} className="text-center text-muted">{t('noRecords')}</td></tr>;
+                                        return <tr>
+                                            <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
+                                        </tr>;
                                     }
                                     return allResults.map(r => {
                                         const u = relatedUsers[r.userId];
                                         return (
                                             <tr key={r.id}>
                                                 <td>
-                                                    {u ? <a href={`/users/${u.link}`} className="btn btn-link p-0 text-decoration-none">{u.firstName} {u.lastName}</a> : r.userId}
+                                                    {u ? <a href={`/users/${u.link}`}
+                                                            className="btn btn-link p-0 text-decoration-none">{u.firstName} {u.lastName}</a> : r.userId}
                                                 </td>
                                                 <td>{r.distance}</td>
                                                 <td>{r.time}</td>

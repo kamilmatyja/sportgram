@@ -49,7 +49,8 @@ export const ManageNotificationModal: React.FC<ManageNotificationModalProps> = (
                                 <strong>{t('text')}:</strong>
                                 <p className="mb-1 text-break">{notification.text}</p>
                                 {notification.link && (
-                                    <a href={notification.link} className="btn btn-sm btn-link p-0 text-profile-primary">
+                                    <a href={notification.link}
+                                       className="btn btn-sm btn-link p-0 text-profile-primary">
                                         {t('link')} <i className="bi bi-box-arrow-up-right"></i>
                                     </a>
                                 )}

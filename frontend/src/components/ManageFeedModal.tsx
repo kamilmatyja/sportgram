@@ -121,13 +121,15 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                         <div className="mb-4 border-bottom pb-3">
                                             <h6>{t('comments')} ({visibleComments.length})</h6>
                                             {visibleComments.map(comment => (
-                                                <div key={comment.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
+                                                <div key={comment.id}
+                                                     className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
                                                     <div>
                                                         <strong>{t('text')}:</strong> {comment.text}
                                                     </div>
                                                     <div>
                                                         <strong>{t('status')}: </strong>
-                                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(comment.status))?.label || comment.status}
+                                                        <span
+                                                            className="me-2 badge bg-light text-dark border profile-theme-border">{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(comment.status))?.label || comment.status}
                                                         </span>
                                                     </div>
                                                     <div className="ms-auto d-flex gap-1 flex-wrap">
@@ -155,13 +157,15 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                         <>
                                             <h6>{t('reactions')} ({visibleReactions.length})</h6>
                                             {visibleReactions.map(reaction => (
-                                                <div key={reaction.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
+                                                <div key={reaction.id}
+                                                     className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
                                                     <div>
                                                         <strong>{t('reaction')}:</strong> {FeedReactionEnum.getOptions(t).find(opt => String(opt.value) === String(reaction.reaction))?.label || reaction.reaction}
                                                     </div>
                                                     <div>
                                                         <strong>{t('status')}: </strong>
-                                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(reaction.status))?.label || reaction.status}
+                                                        <span
+                                                            className="me-2 badge bg-light text-dark border profile-theme-border">{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(reaction.status))?.label || reaction.status}
                                                         </span>
                                                     </div>
                                                     <div className="ms-auto d-flex gap-1 flex-wrap">

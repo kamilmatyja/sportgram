@@ -33,9 +33,12 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
                                                                         }) => {
     const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center"><div className="spinner-border"/></div>;
+    if (loading) return <div className="container mt-5 text-center">
+        <div className="spinner-border"/>
+    </div>;
 
-    if (error || !training || !ownerUser) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (error || !training || !ownerUser) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
 
     const hexColor = ColorEnum.getHex(ownerUser.color);
     const canManage = isMyProfile || isAdmin || isParticipantOfTraining;
@@ -90,13 +93,16 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
                                 </thead>
                                 <tbody>
                                 {training.participants.length === 0 ? (
-                                    <tr><td colSpan={3} className="text-center text-muted">{t('noParticipants')}</td></tr>
+                                    <tr>
+                                        <td colSpan={3} className="text-center text-muted">{t('noParticipants')}</td>
+                                    </tr>
                                 ) : training.participants.map(p => {
                                     const u = relatedUsers[p.userId];
                                     return (
                                         <tr key={p.id}>
                                             <td>
-                                                {u ? <a href={`/users/${u.link}`} className="btn btn-link p-0 text-decoration-none">{u.firstName} {u.lastName}</a> : p.userId}
+                                                {u ? <a href={`/users/${u.link}`}
+                                                        className="btn btn-link p-0 text-decoration-none">{u.firstName} {u.lastName}</a> : p.userId}
                                             </td>
                                             <td>{SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(p.status))?.label || p.status}</td>
                                             <td>{formatDate(p.createdAt)}</td>
@@ -122,7 +128,9 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
                                 </thead>
                                 <tbody>
                                 {training.disciplines.length === 0 ? (
-                                    <tr><td colSpan={4} className="text-center text-muted">{t('noRecords')}</td></tr>
+                                    <tr>
+                                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
+                                    </tr>
                                 ) : training.disciplines.flatMap(disc =>
                                     disc.distances.map(dist => (
                                         <tr key={dist.id}>

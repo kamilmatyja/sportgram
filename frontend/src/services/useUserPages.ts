@@ -175,7 +175,24 @@ export function useUserPages(link?: string) {
     };
 
     return {
-        pages, relatedUsers, targetUser, currentUser, isMyProfile, isAdmin, isOrganizer, page, limit, sort, filters, loading, error,
-        handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshPages
+        pages,
+        relatedUsers,
+        targetUser,
+        currentUser,
+        isMyProfile,
+        isAdmin,
+        isOrganizer,
+        page,
+        limit,
+        sort,
+        filters,
+        loading,
+        error,
+        handleFilterChange,
+        handleSortChange,
+        handleLimitChange,
+        handlePrevPage,
+        handleNextPage,
+        refreshPages
     };
 }

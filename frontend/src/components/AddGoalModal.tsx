@@ -56,14 +56,16 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                         <input type="datetime-local" name="startedAt"
                                                className={`form-control ${fieldErrors.startedAt ? 'is-invalid' : ''}`}
                                                value={formData.startedAt || ''} onChange={handleChange}/>
-                                        {fieldErrors.startedAt && <div className="invalid-feedback d-block">{fieldErrors.startedAt}</div>}
+                                        {fieldErrors.startedAt &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.startedAt}</div>}
                                     </div>
                                     <div className="col-md-6">
                                         <label className="form-label">{t('endedAt')}</label>
                                         <input type="datetime-local" name="endedAt"
                                                className={`form-control ${fieldErrors.endedAt ? 'is-invalid' : ''}`}
                                                value={formData.endedAt || ''} onChange={handleChange}/>
-                                        {fieldErrors.endedAt && <div className="invalid-feedback d-block">{fieldErrors.endedAt}</div>}
+                                        {fieldErrors.endedAt &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.endedAt}</div>}
                                     </div>
                                 </div>
 
@@ -72,7 +74,8 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                     <input type="text" name="text"
                                            className={`form-control ${fieldErrors.text ? 'is-invalid' : ''}`}
                                            value={formData.text} onChange={handleChange} required/>
-                                    {fieldErrors.text && <div className="invalid-feedback d-block">{fieldErrors.text}</div>}
+                                    {fieldErrors.text &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.text}</div>}
                                 </div>
 
                                 <div className="row mb-3">
@@ -81,7 +84,8 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                         <input type="text" name="link"
                                                className={`form-control ${fieldErrors.link ? 'is-invalid' : ''}`}
                                                value={formData.link} onChange={handleChange} required/>
-                                        {fieldErrors.link && <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
+                                        {fieldErrors.link &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
                                     </div>
                                     <div className="col-md-4">
                                         <label className="form-label">{t('discipline')}</label>
@@ -93,14 +97,16 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
                                             ))}
                                         </select>
-                                        {fieldErrors.discipline && <div className="invalid-feedback d-block">{fieldErrors.discipline}</div>}
+                                        {fieldErrors.discipline &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.discipline}</div>}
                                     </div>
                                     <div className="col-md-4">
                                         <label className="form-label">{t('distance')} [m]</label>
                                         <input type="number" name="distance"
                                                className={`form-control ${fieldErrors.distance ? 'is-invalid' : ''}`}
                                                value={formData.distance || ''} onChange={handleChange} required/>
-                                        {fieldErrors.distance && <div className="invalid-feedback d-block">{fieldErrors.distance}</div>}
+                                        {fieldErrors.distance &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.distance}</div>}
                                     </div>
                                 </div>
 
@@ -109,7 +115,8 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                     <input type="number" name="time"
                                            className={`form-control ${fieldErrors.time ? 'is-invalid' : ''}`}
                                            value={formData.time || ''} onChange={handleChange}/>
-                                    {fieldErrors.time && <div className="invalid-feedback d-block">{fieldErrors.time}</div>}
+                                    {fieldErrors.time &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.time}</div>}
                                 </div>
 
                                 <div className="mb-3">
@@ -127,11 +134,13 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                                             </option>
                                         ))}
                                     </select>
-                                    {fieldErrors.participants && <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
+                                    {fieldErrors.participants &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeModal}>{t('cancel')}</button>
+                                <button type="button" className="btn btn-secondary"
+                                        onClick={closeModal}>{t('cancel')}</button>
                                 <button type="submit" className="btn btn-profile-primary" disabled={loading}>
                                     {loading ? t('sending') : t('addGoal')}
                                 </button>

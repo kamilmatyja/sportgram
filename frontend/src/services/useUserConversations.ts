@@ -317,7 +317,8 @@ export function useUserConversations(link?: string) {
 
         const now = Date.now();
         if (now - lastTypingPatch.current > 3000) {
-            conversationProvider.updateActivityUpdatedAt(targetUser.id).catch(() => {});
+            conversationProvider.updateActivityUpdatedAt(targetUser.id).catch(() => {
+            });
             lastTypingPatch.current = now;
         }
     };

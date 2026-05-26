@@ -165,7 +165,8 @@ export const AddTrainingModal: React.FC<AddTrainingModalProps> = ({
                                                                                                      value={opt.value}>{opt.label}</option>)}
                                                 </select>
                                             </div>
-                                            <button type="button" className="btn btn-outline-danger" onClick={() => removeDiscipline(dIndex)}>
+                                            <button type="button" className="btn btn-outline-danger"
+                                                    onClick={() => removeDiscipline(dIndex)}>
                                                 <i className="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -197,7 +198,8 @@ export const AddTrainingModal: React.FC<AddTrainingModalProps> = ({
                                                                        value={dist.time}
                                                                        onChange={e => updateDistanceValue(dIndex, distIndex, 'time', parseInt(e.target.value) || 0)}/>
                                                             </div>
-                                                            <button type="button" className="btn btn-sm btn-outline-danger"
+                                                            <button type="button"
+                                                                    className="btn btn-sm btn-outline-danger"
                                                                     onClick={() => removeDistance(dIndex, distIndex)}><i
                                                                 className="bi bi-trash"></i></button>
                                                         </div>
@@ -225,9 +227,11 @@ export const AddTrainingModal: React.FC<AddTrainingModalProps> = ({
                                                                            placeholder={t('timeSeconds')}
                                                                            value={sub.time}
                                                                            onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'time', parseInt(e.target.value) || 0)}/>
-                                                                    <button type="button" className="btn btn-sm btn-outline-danger"
-                                                                            onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}><i
-                                                                        className="bi bi-trash"></i></button>
+                                                                    <button type="button"
+                                                                            className="btn btn-sm btn-outline-danger"
+                                                                            onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
+                                                                        <i
+                                                                            className="bi bi-trash"></i></button>
                                                                 </div>
                                                             ))}
                                                         </div>

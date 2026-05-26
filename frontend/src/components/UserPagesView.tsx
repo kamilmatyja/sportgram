@@ -55,18 +55,22 @@ export const UserPagesView: React.FC<UserPagesViewProps> = ({
         <div className="spinner-border"/>
     </div>;
 
-    if (error || !user) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
+    if (error || !user) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
     const hexColor = ColorEnum.getHex(user.color);
 
     return (
         <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
             <div className="card shadow-sm mb-4">
-                <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
-                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover"/>
+                <div
+                    className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background"
+                         className="w-100 h-100 object-fit-cover"/>
                 </div>
                 <div className="card-body position-relative pt-5">
-                    <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile" className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
+                    <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile"
+                         className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                     <div className="mt-3">
                         <h2 className="mb-0 profile-theme-text">{user.firstName} {user.lastName}</h2>
                         <p className="text-muted mb-0">@{user.link}</p>
@@ -91,9 +95,12 @@ export const UserPagesView: React.FC<UserPagesViewProps> = ({
                     </div>
 
                     <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                        <input name="title" placeholder={t('title')} value={filters.title || ''} onChange={onFilterChange} className="form-control w-auto"/>
-                        <input name="link" placeholder={t('link')} value={filters.link || ''} onChange={onFilterChange} className="form-control w-auto"/>
-                        <select name="status" value={filters.status || ''} onChange={onFilterChange} className="form-select w-auto">
+                        <input name="title" placeholder={t('title')} value={filters.title || ''}
+                               onChange={onFilterChange} className="form-control w-auto"/>
+                        <input name="link" placeholder={t('link')} value={filters.link || ''} onChange={onFilterChange}
+                               className="form-control w-auto"/>
+                        <select name="status" value={filters.status || ''} onChange={onFilterChange}
+                                className="form-select w-auto">
                             <option value="">{t('status')}</option>
                             {ElementStatusEnum.getOptions(t).map(opt => (
                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -112,7 +119,9 @@ export const UserPagesView: React.FC<UserPagesViewProps> = ({
                         </select>
                     </div>
 
-                    {loading && pages.length === 0 ? <div className="text-center"><div className="spinner-border"/></div> : (
+                    {loading && pages.length === 0 ? <div className="text-center">
+                        <div className="spinner-border"/>
+                    </div> : (
                         <>
                             <div className="table-responsive-custom">
                                 <table className="table table-bordered table-hover align-middle">
@@ -135,13 +144,15 @@ export const UserPagesView: React.FC<UserPagesViewProps> = ({
                                         <tr key={pageObj.id}>
                                             <td className="text-center align-middle feed-photo-cell">
                                                 {pageObj.profilePhoto ? (
-                                                    <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="page" className="rounded-circle img-fluid feed-photo"/>
+                                                    <img src={`data:image/webp;base64,${pageObj.profilePhoto}`}
+                                                         alt="page" className="rounded-circle img-fluid feed-photo"/>
                                                 ) : (
                                                     <span className="text-muted">-</span>
                                                 )}
                                             </td>
                                             <td>
-                                                <a href={`/pages/${pageObj.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                <a href={`/pages/${pageObj.link}`}
+                                                   className="btn btn-link p-0 text-decoration-none">
                                                     {pageObj.title}
                                                 </a>
                                             </td>
@@ -150,7 +161,8 @@ export const UserPagesView: React.FC<UserPagesViewProps> = ({
                                             <td>{formatDate(pageObj.createdAt)}</td>
                                             <td className="text-end">
                                                 {(isMyProfile || isAdmin || pageObj.participants?.some(p => p.userId === user?.id)) && (
-                                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(pageObj)}>
+                                                    <button className="btn btn-sm btn-profile-outline-primary"
+                                                            title={t('manage')} onClick={() => onManageClick(pageObj)}>
                                                         <i className="bi bi-gear" aria-hidden="true"></i>
                                                         <span className="visually-hidden">{t('manage')}</span>
                                                     </button>
@@ -162,9 +174,11 @@ export const UserPagesView: React.FC<UserPagesViewProps> = ({
                                 </table>
                             </div>
                             <div className="d-flex justify-content-between align-items-center mb-3">
-                                <button className="btn btn-profile-outline-primary mx-2" disabled={page === 1} onClick={onPrevPage}>{t('prev')}</button>
+                                <button className="btn btn-profile-outline-primary mx-2" disabled={page === 1}
+                                        onClick={onPrevPage}>{t('prev')}</button>
                                 <span>{t('page')} {page}</span>
-                                <button className="btn btn-profile-outline-primary mx-2" disabled={pages.length < limit} onClick={onNextPage}>{t('next')}</button>
+                                <button className="btn btn-profile-outline-primary mx-2" disabled={pages.length < limit}
+                                        onClick={onNextPage}>{t('next')}</button>
                             </div>
                         </>
                     )}

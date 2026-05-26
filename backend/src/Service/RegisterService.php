@@ -2,11 +2,11 @@
 
 namespace App\Service;
 
-use App\SaveValidationException;
 use App\Dto\{UserCodeDto, UserEmailDto};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
 use App\Event\UserRegisterEmailEvent;
 use App\Repository\{UserRegisterRepository, UserRepository};
+use App\SaveValidationException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;

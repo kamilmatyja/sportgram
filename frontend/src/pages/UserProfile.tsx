@@ -12,7 +12,7 @@ export default function UserProfile() {
 
     return (
         <>
-            <UserProfileView {...profileProps} onManageClick={modalsService.openManageModal} />
+            <UserProfileView {...profileProps} onManageClick={modalsService.openManageModal}/>
             <UserFeedsSection
                 user={profileProps.user}
                 isMyProfile={profileProps.isMyProfile}

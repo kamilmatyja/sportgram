@@ -54,7 +54,8 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                                     <input type="text" name="title"
                                            className={`form-control ${fieldErrors.title ? 'is-invalid' : ''}`}
                                            value={formData.title} onChange={handleChange} required/>
-                                    {fieldErrors.title && <div className="invalid-feedback d-block">{fieldErrors.title}</div>}
+                                    {fieldErrors.title &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.title}</div>}
                                 </div>
 
                                 <div className="mb-3">
@@ -62,7 +63,8 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                                     <textarea name="description"
                                               className={`form-control ${fieldErrors.description ? 'is-invalid' : ''}`}
                                               value={formData.description} onChange={handleChange} required rows={3}/>
-                                    {fieldErrors.description && <div className="invalid-feedback d-block">{fieldErrors.description}</div>}
+                                    {fieldErrors.description &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.description}</div>}
                                 </div>
 
                                 <div className="row mb-3">
@@ -71,7 +73,8 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                                         <input type="text" name="link"
                                                className={`form-control ${fieldErrors.link ? 'is-invalid' : ''}`}
                                                value={formData.link} onChange={handleChange} required/>
-                                        {fieldErrors.link && <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
+                                        {fieldErrors.link &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
                                     </div>
                                     <div className="col-md-6">
                                         <label className="form-label">{t('color')}</label>
@@ -83,7 +86,8 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
                                             ))}
                                         </select>
-                                        {fieldErrors.color && <div className="invalid-feedback d-block">{fieldErrors.color}</div>}
+                                        {fieldErrors.color &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.color}</div>}
                                     </div>
                                 </div>
 
@@ -93,14 +97,16 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                                         <input type="file" accept="image/*" name="profilePhoto"
                                                className={`form-control ${fieldErrors.profilePhoto ? 'is-invalid' : ''}`}
                                                onChange={handleChange} required/>
-                                        {fieldErrors.profilePhoto && <div className="invalid-feedback d-block">{fieldErrors.profilePhoto}</div>}
+                                        {fieldErrors.profilePhoto &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.profilePhoto}</div>}
                                     </div>
                                     <div className="col-md-6">
                                         <label className="form-label">{t('backgroundPhoto')}</label>
                                         <input type="file" accept="image/*" name="backgroundPhoto"
                                                className={`form-control ${fieldErrors.backgroundPhoto ? 'is-invalid' : ''}`}
                                                onChange={handleChange} required/>
-                                        {fieldErrors.backgroundPhoto && <div className="invalid-feedback d-block">{fieldErrors.backgroundPhoto}</div>}
+                                        {fieldErrors.backgroundPhoto && <div
+                                            className="invalid-feedback d-block">{fieldErrors.backgroundPhoto}</div>}
                                     </div>
                                 </div>
 
@@ -119,11 +125,13 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                                             </option>
                                         ))}
                                     </select>
-                                    {fieldErrors.participants && <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
+                                    {fieldErrors.participants &&
+                                        <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeModal}>{t('cancel')}</button>
+                                <button type="button" className="btn btn-secondary"
+                                        onClick={closeModal}>{t('cancel')}</button>
                                 <button type="submit" className="btn btn-profile-primary" disabled={loading}>
                                     {loading ? t('sending') : t('addPage')}
                                 </button>

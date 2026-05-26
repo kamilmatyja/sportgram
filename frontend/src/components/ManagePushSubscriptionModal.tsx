@@ -62,7 +62,8 @@ export const ManagePushSubscriptionModal: React.FC<ManagePushSubscriptionModalPr
                             </div>
 
                             {isMyProfile && (
-                                <form id="edit-push-form" onSubmit={handleEditSubmit} className="mb-4 border-bottom pb-3">
+                                <form id="edit-push-form" onSubmit={handleEditSubmit}
+                                      className="mb-4 border-bottom pb-3">
                                     <div className="mb-3">
                                         <label className="form-label">{t('browserDevice')}</label>
                                         <input type="text" name="userAgent"

@@ -39,7 +39,7 @@ readonly class DoctrineTransactionSubscriber implements EventSubscriberInterface
     final public function onKernelException(ExceptionEvent $event): void
     {
         if ($this->em->getConnection()->isTransactionActive()
-            && !($event->getThrowable() instanceof SaveValidationException)) {
+            && ! ($event->getThrowable() instanceof SaveValidationException)) {
             $this->em->rollback();
         }
     }

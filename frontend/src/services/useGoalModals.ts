@@ -208,7 +208,7 @@ export function useGoalModals(onSuccess: () => void) {
 
     const handleParticipantsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selected = Array.from(e.target.selectedOptions).map(o => o.value);
-        setFormData(prev => ({ ...prev, participants: selected }));
+        setFormData(prev => ({...prev, participants: selected}));
     };
 
     return {

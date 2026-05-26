@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useTranslation } from '../context/TranslationContext';
-import { useCheckPermission } from '../utils/checkPermission';
+import React, {useEffect, useState} from 'react';
+import {Link, NavLink} from 'react-router-dom';
+import {useAuth} from '../context/AuthContext';
+import {useTranslation} from '../context/TranslationContext';
+import {useCheckPermission} from '../utils/checkPermission';
 
-const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { logout } = useAuth();
-    const { t } = useTranslation();
+const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}) => {
+    const {logout} = useAuth();
+    const {t} = useTranslation();
     const [isNavOpen, setIsNavOpen] = useState<boolean>(false);
     const [userLink, setUserLink] = useState<string | null>(null);
-    const { getCurrentUser } = useCheckPermission();
+    const {getCurrentUser} = useCheckPermission();
 
     useEffect(() => {
         (async () => {
@@ -45,7 +45,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
                                 <NavLink
                                     to="/"
                                     end
-                                    className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
                                     <i className="bi bi-house-door me-2 d-lg-none"></i>{t('nav.home')}
@@ -55,7 +55,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
                                 <NavLink
                                     to="/users"
                                     end
-                                    className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
                                     <i className="bi bi-people me-2 d-lg-none"></i>{t('nav.users')}
@@ -64,7 +64,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
                             <li className="nav-item">
                                 <NavLink
                                     to="/pages"
-                                    className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
                                     <i className="bi bi-file-earmark-text me-2 d-lg-none"></i>{t('nav.pages')}
@@ -73,7 +73,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
                             <li className="nav-item">
                                 <NavLink
                                     to="/events"
-                                    className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
                                     <i className="bi bi-calendar-event me-2 d-lg-none"></i>{t('nav.events')}
@@ -82,7 +82,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
                             <li className="nav-item">
                                 <NavLink
                                     to="/statistics"
-                                    className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
                                     <i className="bi bi-graph-up me-2 d-lg-none"></i>{t('nav.statistics')}
@@ -92,7 +92,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
                                 {userLink && (
                                     <NavLink
                                         to={`/users/${userLink}`}
-                                        className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                        className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                         onClick={closeNav}
                                     >
                                         <i className="bi bi-person me-2 d-lg-none"></i>{t('nav.profile')}
@@ -104,7 +104,10 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
                         <div className="d-flex align-items-center gap-2 mt-3 mt-lg-0 pt-3 pt-lg-0">
                             <button
                                 className="btn btn-sm btn-danger w-100 w-lg-auto text-start text-lg-center"
-                                onClick={() => { closeNav(); logout(); }}
+                                onClick={() => {
+                                    closeNav();
+                                    logout();
+                                }}
                                 title={t('logout')}
                             >
                                 <i className="bi bi-box-arrow-right"></i>

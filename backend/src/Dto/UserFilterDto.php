@@ -2,8 +2,7 @@
 
 namespace App\Dto;
 
-use App\Entity\User;
-use App\Entity\UserSign;
+use App\Entity\{User, UserSign};
 use App\Enum\{CountryEnum, GenderEnum, UserStatusEnum};
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
@@ -31,7 +30,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             type: 'string',
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
-            nullable: true
+            nullable: true,
         ),
     ],
     type: 'object',

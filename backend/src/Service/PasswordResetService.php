@@ -2,16 +2,16 @@
 
 namespace App\Service;
 
-use App\SaveValidationException;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Dto\{UserEmailDto, UserPasswordDto};
 use App\Entity\{UserPasswordReset};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
 use App\Event\UserPasswordResetEmailEvent;
 use App\Repository\{UserPasswordResetRepository, UserRegisterRepository, UserRepository};
+use App\SaveValidationException;
 use DateTimeImmutable;
 use Random\RandomException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
 

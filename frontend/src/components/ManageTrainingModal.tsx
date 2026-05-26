@@ -42,12 +42,33 @@ interface ManageTrainingModalProps {
 }
 
 export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
-                                                                            user, currentUser, availableUsers, handleParticipantsChange, show, currentTraining,
-                                                                            isMyProfile, isAdmin, closeModal, loading, globalError, fieldErrors, formData,
-                                                                            handleChange, handleEditSubmit, handleStatusSubmit, handleParticipantStatusSubmit, handleDelete,
-                                                                            addDiscipline, updateDisciplineType, removeDiscipline,
-                                                                            addDistance, updateDistanceValue, removeDistance,
-                                                                            addSubDistance, updateSubDistanceValue, removeSubDistance
+                                                                            user,
+                                                                            currentUser,
+                                                                            availableUsers,
+                                                                            handleParticipantsChange,
+                                                                            show,
+                                                                            currentTraining,
+                                                                            isMyProfile,
+                                                                            isAdmin,
+                                                                            closeModal,
+                                                                            loading,
+                                                                            globalError,
+                                                                            fieldErrors,
+                                                                            formData,
+                                                                            handleChange,
+                                                                            handleEditSubmit,
+                                                                            handleStatusSubmit,
+                                                                            handleParticipantStatusSubmit,
+                                                                            handleDelete,
+                                                                            addDiscipline,
+                                                                            updateDisciplineType,
+                                                                            removeDiscipline,
+                                                                            addDistance,
+                                                                            updateDistanceValue,
+                                                                            removeDistance,
+                                                                            addSubDistance,
+                                                                            updateSubDistanceValue,
+                                                                            removeSubDistance
                                                                         }) => {
     const {t} = useTranslation();
     if (!show || !currentTraining || !user || !currentUser) return null;
@@ -68,21 +89,24 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form id="edit-training-form" onSubmit={handleEditSubmit} className="mb-4 pb-3 border-bottom">
+                                <form id="edit-training-form" onSubmit={handleEditSubmit}
+                                      className="mb-4 pb-3 border-bottom">
                                     <div className="row mb-3">
                                         <div className="col-md-6">
                                             <label className="form-label">{t('startedAt')}</label>
                                             <input type="datetime-local" name="startedAt"
                                                    className={`form-control ${fieldErrors.startedAt ? 'is-invalid' : ''}`}
                                                    value={formData.startedAt} onChange={handleChange} required/>
-                                            {fieldErrors.startedAt && <div className="invalid-feedback d-block">{fieldErrors.startedAt}</div>}
+                                            {fieldErrors.startedAt &&
+                                                <div className="invalid-feedback d-block">{fieldErrors.startedAt}</div>}
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label">{t('endedAt')}</label>
                                             <input type="datetime-local" name="endedAt"
                                                    className={`form-control ${fieldErrors.endedAt ? 'is-invalid' : ''}`}
                                                    value={formData.endedAt} onChange={handleChange} required/>
-                                            {fieldErrors.endedAt && <div className="invalid-feedback d-block">{fieldErrors.endedAt}</div>}
+                                            {fieldErrors.endedAt &&
+                                                <div className="invalid-feedback d-block">{fieldErrors.endedAt}</div>}
                                         </div>
                                     </div>
 
@@ -92,14 +116,16 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                             <input type="text" name="title"
                                                    className={`form-control ${fieldErrors.title ? 'is-invalid' : ''}`}
                                                    value={formData.title} onChange={handleChange} required/>
-                                            {fieldErrors.title && <div className="invalid-feedback d-block">{fieldErrors.title}</div>}
+                                            {fieldErrors.title &&
+                                                <div className="invalid-feedback d-block">{fieldErrors.title}</div>}
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label">{t('link')}</label>
                                             <input type="text" name="link"
                                                    className={`form-control ${fieldErrors.link ? 'is-invalid' : ''}`}
                                                    value={formData.link} onChange={handleChange} required/>
-                                            {fieldErrors.link && <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
+                                            {fieldErrors.link &&
+                                                <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
                                         </div>
                                     </div>
 
@@ -108,15 +134,18 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                         <input type="text" name="location"
                                                className={`form-control ${fieldErrors.location ? 'is-invalid' : ''}`}
                                                value={formData.location} onChange={handleChange} required/>
-                                        {fieldErrors.location && <div className="invalid-feedback d-block">{fieldErrors.location}</div>}
+                                        {fieldErrors.location &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.location}</div>}
                                     </div>
 
                                     <div className="mb-3">
                                         <label className="form-label">{t('description')}</label>
                                         <textarea name="description"
                                                   className={`form-control ${fieldErrors.description ? 'is-invalid' : ''}`}
-                                                  value={formData.description} onChange={handleChange} required rows={3}/>
-                                        {fieldErrors.description && <div className="invalid-feedback d-block">{fieldErrors.description}</div>}
+                                                  value={formData.description} onChange={handleChange} required
+                                                  rows={3}/>
+                                        {fieldErrors.description &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.description}</div>}
                                     </div>
 
                                     <div className="mb-3">
@@ -129,15 +158,18 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                             multiple
                                         >
                                             {availableUsers.map(u => (
-                                                <option key={u.id} value={u.id}>{u.firstName} {u.lastName} ({u.link})</option>
+                                                <option key={u.id}
+                                                        value={u.id}>{u.firstName} {u.lastName} ({u.link})</option>
                                             ))}
                                         </select>
-                                        {fieldErrors.participants && <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
+                                        {fieldErrors.participants &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
                                     </div>
 
                                     <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
                                         <h6 className="card-title text-profile-primary mb-0">{t('disciplinesAndDistances')}</h6>
-                                        <button type="button" className="btn btn-sm btn-profile-outline-primary" onClick={addDiscipline}>
+                                        <button type="button" className="btn btn-sm btn-profile-outline-primary"
+                                                onClick={addDiscipline}>
                                             {t('addDisciplineBtn')}
                                         </button>
                                     </div>
@@ -149,10 +181,12 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                     <label className="form-label">{t('discipline')}</label>
                                                     <select className="form-select" value={disc.discipline}
                                                             onChange={e => updateDisciplineType(dIndex, parseInt(e.target.value))}>
-                                                        {DisciplineEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                                        {DisciplineEnum.getOptions(t).map(opt => <option key={opt.value}
+                                                                                                         value={opt.value}>{opt.label}</option>)}
                                                     </select>
                                                 </div>
-                                                <button type="button" className="btn btn-outline-danger" onClick={() => removeDiscipline(dIndex)}>
+                                                <button type="button" className="btn btn-outline-danger"
+                                                        onClick={() => removeDiscipline(dIndex)}>
                                                     <i className="bi bi-trash"></i>
                                                 </button>
                                             </div>
@@ -160,7 +194,9 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                             <div className="ps-4 border-start border-2 border-profile-primary">
                                                 <div className="d-flex justify-content-between mb-2">
                                                     <span className="fw-bold">{t('distances')}</span>
-                                                    <button type="button" className="btn btn-sm btn-profile-outline-primary" onClick={() => addDistance(dIndex)}>
+                                                    <button type="button"
+                                                            className="btn btn-sm btn-profile-outline-primary"
+                                                            onClick={() => addDistance(dIndex)}>
                                                         {t('addDistanceBtn')}
                                                     </button>
                                                 </div>
@@ -170,36 +206,54 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                         <div className="card-body p-2">
                                                             <div className="d-flex align-items-center gap-2 mb-2">
                                                                 <div className="input-group input-group-sm">
-                                                                    <span className="input-group-text">{t('distanceMeters')}</span>
-                                                                    <input type="number" className="form-control" value={dist.distance}
+                                                                    <span
+                                                                        className="input-group-text">{t('distanceMeters')}</span>
+                                                                    <input type="number" className="form-control"
+                                                                           value={dist.distance}
                                                                            onChange={e => updateDistanceValue(dIndex, distIndex, 'distance', parseInt(e.target.value) || 0)}/>
                                                                 </div>
                                                                 <div className="input-group input-group-sm">
-                                                                    <span className="input-group-text">{t('timeSeconds')}</span>
-                                                                    <input type="number" className="form-control" value={dist.time}
+                                                                    <span
+                                                                        className="input-group-text">{t('timeSeconds')}</span>
+                                                                    <input type="number" className="form-control"
+                                                                           value={dist.time}
                                                                            onChange={e => updateDistanceValue(dIndex, distIndex, 'time', parseInt(e.target.value) || 0)}/>
                                                                 </div>
-                                                                <button type="button" className="btn btn-sm btn-outline-danger"
-                                                                        onClick={() => removeDistance(dIndex, distIndex)}><i
-                                                                    className="bi bi-trash"></i></button>
+                                                                <button type="button"
+                                                                        className="btn btn-sm btn-outline-danger"
+                                                                        onClick={() => removeDistance(dIndex, distIndex)}>
+                                                                    <i
+                                                                        className="bi bi-trash"></i></button>
                                                             </div>
 
                                                             <div className="ps-3 border-start">
                                                                 <div className="d-flex justify-content-between mb-2">
-                                                                    <small className="text-muted">{t('subDistances')}</small>
-                                                                    <button type="button" className="btn btn-xs btn-profile-outline-primary py-0 px-2" onClick={() => addSubDistance(dIndex, distIndex)}>
+                                                                    <small
+                                                                        className="text-muted">{t('subDistances')}</small>
+                                                                    <button type="button"
+                                                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                                                            onClick={() => addSubDistance(dIndex, distIndex)}>
                                                                         {t('addSubDistanceBtn')}
                                                                     </button>
                                                                 </div>
                                                                 {dist.subDistances?.map((sub, subIndex) => (
-                                                                    <div key={subIndex} className="d-flex align-items-center gap-2 mt-1">
-                                                                        <input type="number" className="form-control form-control-sm" placeholder={t('subDistanceMeters')} value={sub.subDistance}
+                                                                    <div key={subIndex}
+                                                                         className="d-flex align-items-center gap-2 mt-1">
+                                                                        <input type="number"
+                                                                               className="form-control form-control-sm"
+                                                                               placeholder={t('subDistanceMeters')}
+                                                                               value={sub.subDistance}
                                                                                onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'subDistance', parseInt(e.target.value) || 0)}/>
-                                                                        <input type="number" className="form-control form-control-sm" placeholder={t('timeSeconds')} value={sub.time}
+                                                                        <input type="number"
+                                                                               className="form-control form-control-sm"
+                                                                               placeholder={t('timeSeconds')}
+                                                                               value={sub.time}
                                                                                onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'time', parseInt(e.target.value) || 0)}/>
-                                                                        <button type="button" className="btn btn-sm btn-outline-danger"
-                                                                                onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}><i
-                                                                            className="bi bi-trash"></i></button>
+                                                                        <button type="button"
+                                                                                className="btn btn-sm btn-outline-danger"
+                                                                                onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
+                                                                            <i
+                                                                                className="bi bi-trash"></i></button>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -269,10 +323,12 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                             </button>
                             {isMyProfile && (
                                 <>
-                                    <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={loading}>
+                                    <button type="button" className="btn btn-danger" onClick={handleDelete}
+                                            disabled={loading}>
                                         {loading ? t('sending') : t('delete')}
                                     </button>
-                                    <button type="submit" form="edit-training-form" className="btn btn-profile-primary" disabled={loading}>
+                                    <button type="submit" form="edit-training-form" className="btn btn-profile-primary"
+                                            disabled={loading}>
                                         {loading ? t('sending') : t('saveChanges')}
                                     </button>
                                 </>

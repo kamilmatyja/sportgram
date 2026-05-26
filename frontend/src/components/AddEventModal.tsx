@@ -173,7 +173,8 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                                                                                      value={opt.value}>{opt.label}</option>)}
                                                 </select>
                                             </div>
-                                            <button type="button" className="btn btn-outline-danger" onClick={() => removeDiscipline(dIndex)}>
+                                            <button type="button" className="btn btn-outline-danger"
+                                                    onClick={() => removeDiscipline(dIndex)}>
                                                 <i className="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -198,7 +199,8 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                                                        value={dist.distance}
                                                                        onChange={e => updateDistanceValue(dIndex, distIndex, parseInt(e.target.value) || 0)}/>
                                                             </div>
-                                                            <button type="button" className="btn btn-sm btn-outline-danger"
+                                                            <button type="button"
+                                                                    className="btn btn-sm btn-outline-danger"
                                                                     onClick={() => removeDistance(dIndex, distIndex)}><i
                                                                 className="bi bi-trash"></i></button>
                                                         </div>
@@ -221,9 +223,11 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                                                            placeholder={t('subDistanceMeters')}
                                                                            value={sub.subDistance}
                                                                            onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, parseInt(e.target.value) || 0)}/>
-                                                                    <button type="button" className="btn btn-sm btn-outline-danger"
-                                                                            onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}><i
-                                                                        className="bi bi-trash"></i></button>
+                                                                    <button type="button"
+                                                                            className="btn btn-sm btn-outline-danger"
+                                                                            onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
+                                                                        <i
+                                                                            className="bi bi-trash"></i></button>
                                                                 </div>
                                                             ))}
                                                         </div>

@@ -28,12 +28,29 @@ interface StatisticsViewProps {
 }
 
 export const StatisticsView: React.FC<StatisticsViewProps> = ({
-                                                                  currentUser, availableUsers, activeTab, setActiveTab, data, page, limit, sort, filters, loading, error,
-                                                                  handleFilterChange, handleUsersChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage
+                                                                  currentUser,
+                                                                  availableUsers,
+                                                                  activeTab,
+                                                                  setActiveTab,
+                                                                  data,
+                                                                  page,
+                                                                  limit,
+                                                                  sort,
+                                                                  filters,
+                                                                  loading,
+                                                                  error,
+                                                                  handleFilterChange,
+                                                                  handleUsersChange,
+                                                                  handleSortChange,
+                                                                  handleLimitChange,
+                                                                  handlePrevPage,
+                                                                  handleNextPage
                                                               }) => {
     const {t} = useTranslation();
 
-    if (!currentUser) return <div className="container mt-5 text-center"><div className="spinner-border"/></div>;
+    if (!currentUser) return <div className="container mt-5 text-center">
+        <div className="spinner-border"/>
+    </div>;
 
     const getUserName = (id: string) => {
         const u = availableUsers.find(au => au.id === id);
@@ -48,7 +65,10 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                         <li className="nav-item">
                             <button
                                 className={`nav-link ${activeTab === 'records' ? 'active fw-bold' : 'text-muted'}`}
-                                onClick={() => { setActiveTab('records'); handleSortChange({ target: { value: 'time:asc' } } as any); }}
+                                onClick={() => {
+                                    setActiveTab('records');
+                                    handleSortChange({target: {value: 'time:asc'}} as any);
+                                }}
                             >
                                 {t('records')}
                             </button>
@@ -56,7 +76,10 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                         <li className="nav-item">
                             <button
                                 className={`nav-link ${activeTab === 'progress' ? 'active fw-bold' : 'text-muted'}`}
-                                onClick={() => { setActiveTab('progress'); handleSortChange({ target: { value: 'createdAt:desc' } } as any); }}
+                                onClick={() => {
+                                    setActiveTab('progress');
+                                    handleSortChange({target: {value: 'createdAt:desc'}} as any);
+                                }}
                             >
                                 {t('progress')}
                             </button>
@@ -83,7 +106,8 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                         <div className="col-12 col-lg-9 d-flex flex-wrap gap-3 align-items-end">
                             <div>
                                 <label className="form-label small text-muted mb-1">{t('discipline')}</label>
-                                <select name="discipline" value={filters.discipline || ''} onChange={handleFilterChange} className="form-select w-auto">
+                                <select name="discipline" value={filters.discipline || ''} onChange={handleFilterChange}
+                                        className="form-select w-auto">
                                     <option value="">{t('selectOption')}</option>
                                     {DisciplineEnum.getOptions(t).map(opt => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -92,11 +116,14 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                             </div>
                             <div>
                                 <label className="form-label small text-muted mb-1">{t('distance')}</label>
-                                <input type="number" name="distance" placeholder={t('distanceMeters')} value={filters.distance || ''} onChange={handleFilterChange} className="form-control w-auto"/>
+                                <input type="number" name="distance" placeholder={t('distanceMeters')}
+                                       value={filters.distance || ''} onChange={handleFilterChange}
+                                       className="form-control w-auto"/>
                             </div>
                             <div className="ms-auto d-flex gap-3">
                                 <div>
-                                    <label className="form-label small text-muted mb-1">{t('sortCreatedDesc').split(' ')[0]}</label>
+                                    <label
+                                        className="form-label small text-muted mb-1">{t('sortCreatedDesc').split(' ')[0]}</label>
                                     <select value={sort} onChange={handleSortChange} className="form-select w-auto">
                                         {activeTab === 'progress' ? (
                                             <>
@@ -127,7 +154,9 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                         </div>
                     </div>
 
-                    {loading && data.length === 0 ? <div className="text-center"><div className="spinner-border"/></div> : error ? <div className="alert alert-danger">{t(error)}</div> : (
+                    {loading && data.length === 0 ? <div className="text-center">
+                        <div className="spinner-border"/>
+                    </div> : error ? <div className="alert alert-danger">{t(error)}</div> : (
                         <>
                             <div className="table-responsive-custom">
                                 <table className="table table-bordered table-hover align-middle">
@@ -150,7 +179,8 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                                     ) : data.map((stat, idx) => (
                                         <tr key={idx}>
                                             <td className="fw-bold">
-                                                <a href={`/users/${stat.userId}`} className="btn btn-link p-0 text-decoration-none">
+                                                <a href={`/users/${stat.userId}`}
+                                                   className="btn btn-link p-0 text-decoration-none">
                                                     {getUserName(stat.userId)}
                                                 </a></td>
                                             <td>{DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(stat.discipline))?.label || stat.discipline}</td>
@@ -163,9 +193,11 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                                 </table>
                             </div>
                             <div className="d-flex justify-content-between align-items-center mb-3">
-                                <button className="btn btn-outline-primary mx-2" disabled={page === 1} onClick={handlePrevPage}>{t('prev')}</button>
+                                <button className="btn btn-outline-primary mx-2" disabled={page === 1}
+                                        onClick={handlePrevPage}>{t('prev')}</button>
                                 <span>{t('page')} {page}</span>
-                                <button className="btn btn-outline-primary mx-2" disabled={data.length < limit} onClick={handleNextPage}>{t('next')}</button>
+                                <button className="btn btn-outline-primary mx-2" disabled={data.length < limit}
+                                        onClick={handleNextPage}>{t('next')}</button>
                             </div>
                         </>
                     )}

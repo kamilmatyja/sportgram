@@ -154,7 +154,24 @@ export function useUserGoals(link?: string) {
     };
 
     return {
-        goals, relatedUsers, targetUser, currentUser, isMyProfile, isAdmin, isParticipant, page, limit, sort, filters, loading, error,
-        handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshGoals
+        goals,
+        relatedUsers,
+        targetUser,
+        currentUser,
+        isMyProfile,
+        isAdmin,
+        isParticipant,
+        page,
+        limit,
+        sort,
+        filters,
+        loading,
+        error,
+        handleFilterChange,
+        handleSortChange,
+        handleLimitChange,
+        handlePrevPage,
+        handleNextPage,
+        refreshGoals
     };
 }

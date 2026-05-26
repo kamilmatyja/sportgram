@@ -9,6 +9,7 @@ import {LanguageEnum} from '../enums/LanguageEnum';
 import {ThemeEnum} from '../enums/ThemeEnum';
 import {DisciplineEnum} from '../enums/DisciplineEnum';
 import {UserStatusEnum} from '../enums/UserStatusEnum';
+
 interface ManageUserModalProps {
     show: boolean;
     managedUser: UserResponse | null;
@@ -24,6 +25,7 @@ interface ManageUserModalProps {
     handleStatusSubmit: (newStatus: number) => void;
     handleDelete: () => void;
 }
+
 export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                                                     show,
                                                                     managedUser,
@@ -58,7 +60,8 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form id="edit-user-form" onSubmit={handleEditSubmit} className="mb-4 pb-3 border-bottom">
+                                <form id="edit-user-form" onSubmit={handleEditSubmit}
+                                      className="mb-4 pb-3 border-bottom">
                                     <div className="row">
                                         <div className="col-md-6 mb-3">
                                             <label className="form-label">{t('firstName')}</label>
@@ -91,7 +94,8 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                             <label className="form-label">{t('password')}</label>
                                             <input type="password" name="password"
                                                    className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
-                                                   value={formData.password || ''} onChange={handleChange} minLength={8}/>
+                                                   value={formData.password || ''} onChange={handleChange}
+                                                   minLength={8}/>
                                             <div className="form-text">{t('passwordOptional')}</div>
                                             {fieldErrors.password &&
                                                 <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
@@ -120,7 +124,8 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                             <input type="text" name="link"
                                                    className={`form-control ${fieldErrors.link ? 'is-invalid' : ''}`}
                                                    value={formData.link || ''} onChange={handleChange} required/>
-                                            {fieldErrors.link && <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
+                                            {fieldErrors.link &&
+                                                <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
                                         </div>
                                     </div>
 
@@ -136,7 +141,8 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                         </div>
                                         <div className="col-md-6 mb-3">
                                             <label className="form-label">{t('country')}</label>
-                                            <select name="country" className="form-select" value={formData.country || ''}
+                                            <select name="country" className="form-select"
+                                                    value={formData.country || ''}
                                                     onChange={handleChange} required>
                                                 <option value="">{t('country')}</option>
                                                 {CountryEnum.getOptions(t).map(opt => <option key={opt.value}
@@ -148,7 +154,8 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                     <div className="row">
                                         <div className="col-md-4 mb-3">
                                             <label className="form-label">{t('language')}</label>
-                                            <select name="language" className="form-select" value={formData.language || ''}
+                                            <select name="language" className="form-select"
+                                                    value={formData.language || ''}
                                                     onChange={handleChange} required>
                                                 <option value="">{t('language')}</option>
                                                 {LanguageEnum.getOptions(t).map(opt => <option key={opt.value}
@@ -191,9 +198,11 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
 
                                     <div className="mb-3">
                                         <label className="form-label">{t('bio')}</label>
-                                        <textarea name="bio" className={`form-control ${fieldErrors.bio ? 'is-invalid' : ''}`}
+                                        <textarea name="bio"
+                                                  className={`form-control ${fieldErrors.bio ? 'is-invalid' : ''}`}
                                                   rows={4} value={formData.bio || ''} onChange={handleChange} required/>
-                                        {fieldErrors.bio && <div className="invalid-feedback d-block">{fieldErrors.bio}</div>}
+                                        {fieldErrors.bio &&
+                                            <div className="invalid-feedback d-block">{fieldErrors.bio}</div>}
                                     </div>
 
                                     <div className="row">
@@ -204,7 +213,8 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                                    name="profilePhoto" onChange={handleChange}/>
                                             <div className="form-text">{t('photoOptional')}</div>
                                             {fieldErrors.profilePhoto &&
-                                                <div className="invalid-feedback d-block">{fieldErrors.profilePhoto}</div>}
+                                                <div
+                                                    className="invalid-feedback d-block">{fieldErrors.profilePhoto}</div>}
                                         </div>
                                         <div className="col-md-6 mb-3">
                                             <label className="form-label">{t('backgroundPhoto')}</label>
@@ -213,7 +223,8 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                                    name="backgroundPhoto" onChange={handleChange}/>
                                             <div className="form-text">{t('photoOptional')}</div>
                                             {fieldErrors.backgroundPhoto &&
-                                                <div className="invalid-feedback d-block">{fieldErrors.backgroundPhoto}</div>}
+                                                <div
+                                                    className="invalid-feedback d-block">{fieldErrors.backgroundPhoto}</div>}
                                         </div>
                                     </div>
                                 </form>
@@ -251,10 +262,12 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                             </button>
                             {isMyProfile && (
                                 <>
-                                    <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={loading}>
+                                    <button type="button" className="btn btn-danger" onClick={handleDelete}
+                                            disabled={loading}>
                                         {loading ? t('sending') : t('delete')}
                                     </button>
-                                    <button type="submit" form="edit-user-form" className="btn btn-profile-primary" disabled={loading}>
+                                    <button type="submit" form="edit-user-form" className="btn btn-profile-primary"
+                                            disabled={loading}>
                                         {loading ? t('sending') : t('saveChanges')}
                                     </button>
                                 </>

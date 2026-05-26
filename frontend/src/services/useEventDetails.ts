@@ -186,7 +186,7 @@ export function useEventDetails(link?: string) {
             if (selectedDistanceId === distId) {
                 await fetchDistanceLists(distId);
             }
-        } catch(e: any) {
+        } catch (e: any) {
             alert(e.error);
         } finally {
             setActionLoading(false);

@@ -2,12 +2,12 @@
 
 namespace App\Service;
 
-use App\SaveValidationException;
 use App\Dto\{UserCodeDto, UserSignDto};
 use App\Entity\{UserSign};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
 use App\Event\UserSignEmailEvent;
 use App\Repository\{UserRegisterRepository, UserRepository, UserSignRepository};
+use App\SaveValidationException;
 use DateTimeImmutable;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Random\RandomException;

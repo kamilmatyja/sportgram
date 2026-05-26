@@ -54,11 +54,43 @@ interface ManageEventModalProps {
 }
 
 export const ManageEventModal: React.FC<ManageEventModalProps> = ({
-                                                                      user, show, currentEvent, isMyProfile, isAdmin, closeModal, loading, globalError, fieldErrors,
-                                                                      formData, handleChange, handleEditSubmit, handleStatusSubmit, handleDelete,
-                                                                      addDiscipline, updateDisciplineType, removeDiscipline, addDistance, updateDistanceValue, removeDistance, addSubDistance, updateSubDistanceValue, removeSubDistance,
-                                                                      selectedDistanceId, distanceLists, listUsers, loadingLists, fetchDistanceLists, handleListStatusUpdate,
-                                                                      activeResultListId, setActiveResultListId, resultFormData, setResultFormData, openAddResultForm, openEditResultForm, handleSaveResult, handleDeleteResult
+                                                                      user,
+                                                                      show,
+                                                                      currentEvent,
+                                                                      isMyProfile,
+                                                                      isAdmin,
+                                                                      closeModal,
+                                                                      loading,
+                                                                      globalError,
+                                                                      fieldErrors,
+                                                                      formData,
+                                                                      handleChange,
+                                                                      handleEditSubmit,
+                                                                      handleStatusSubmit,
+                                                                      handleDelete,
+                                                                      addDiscipline,
+                                                                      updateDisciplineType,
+                                                                      removeDiscipline,
+                                                                      addDistance,
+                                                                      updateDistanceValue,
+                                                                      removeDistance,
+                                                                      addSubDistance,
+                                                                      updateSubDistanceValue,
+                                                                      removeSubDistance,
+                                                                      selectedDistanceId,
+                                                                      distanceLists,
+                                                                      listUsers,
+                                                                      loadingLists,
+                                                                      fetchDistanceLists,
+                                                                      handleListStatusUpdate,
+                                                                      activeResultListId,
+                                                                      setActiveResultListId,
+                                                                      resultFormData,
+                                                                      setResultFormData,
+                                                                      openAddResultForm,
+                                                                      openEditResultForm,
+                                                                      handleSaveResult,
+                                                                      handleDeleteResult
                                                                   }) => {
     const {t} = useTranslation();
     if (!show || !currentEvent || !user) return null;
@@ -76,14 +108,18 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                 <div className="mb-2">
                     <label className="form-label mb-0 small">{t('finalTimeSeconds')}</label>
                     <input type="number" className="form-control form-control-sm" value={resultFormData.time}
-                           onChange={e => setResultFormData((prev: any) => ({...prev, time: parseInt(e.target.value) || 0}))}/>
+                           onChange={e => setResultFormData((prev: any) => ({
+                               ...prev,
+                               time: parseInt(e.target.value) || 0
+                           }))}/>
                 </div>
                 {resultFormData.subResults.length > 0 && <strong className="small">{t('subDistances')}:</strong>}
                 {resultFormData.subResults.map((sr, idx) => {
                     const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
                     return (
                         <div key={idx} className="d-flex align-items-center gap-2 mb-1">
-                            <span className="small text-muted w-50">{t('forDistance')} {sdMeta?.subDistance || '?'} [m]:</span>
+                            <span
+                                className="small text-muted w-50">{t('forDistance')} {sdMeta?.subDistance || '?'} [m]:</span>
                             <input type="number" className="form-control form-control-sm w-50"
                                    placeholder={t('timeSeconds')} value={sr.time} onChange={e => {
                                 const newSubs = [...resultFormData.subResults];
@@ -94,8 +130,10 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                     );
                 })}
                 <div className="mt-2 text-end">
-                    <button className="btn btn-sm btn-secondary me-2" onClick={() => setActiveResultListId(null)}>{t('cancel')}</button>
-                    <button className="btn btn-sm btn-profile-primary" onClick={handleSaveResult} disabled={loadingLists}>{t('saveResultBtn')}</button>
+                    <button className="btn btn-sm btn-secondary me-2"
+                            onClick={() => setActiveResultListId(null)}>{t('cancel')}</button>
+                    <button className="btn btn-sm btn-profile-primary" onClick={handleSaveResult}
+                            disabled={loadingLists}>{t('saveResultBtn')}</button>
                 </div>
             </div>
         );
@@ -114,7 +152,8 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form id="edit-event-form" onSubmit={handleEditSubmit} className="mb-4 pb-3 border-bottom">
+                                <form id="edit-event-form" onSubmit={handleEditSubmit}
+                                      className="mb-4 pb-3 border-bottom">
                                     <div className="row mb-3">
                                         <div className="col-md-6">
                                             <label className="form-label">{t('startedAt')}</label>
@@ -193,7 +232,8 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
 
                                     <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
                                         <h6 className="card-title text-profile-primary mb-0">{t('disciplinesAndDistances')}</h6>
-                                        <button type="button" className="btn btn-sm btn-profile-outline-primary" onClick={addDiscipline}>
+                                        <button type="button" className="btn btn-sm btn-profile-outline-primary"
+                                                onClick={addDiscipline}>
                                             {t('addDisciplineBtn')}
                                         </button>
                                     </div>
@@ -205,10 +245,12 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                     <label className="form-label">{t('discipline')}</label>
                                                     <select className="form-select" value={disc.discipline}
                                                             onChange={e => updateDisciplineType(dIndex, parseInt(e.target.value))}>
-                                                        {DisciplineEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                                        {DisciplineEnum.getOptions(t).map(opt => <option key={opt.value}
+                                                                                                         value={opt.value}>{opt.label}</option>)}
                                                     </select>
                                                 </div>
-                                                <button type="button" className="btn btn-outline-danger" onClick={() => removeDiscipline(dIndex)}>
+                                                <button type="button" className="btn btn-outline-danger"
+                                                        onClick={() => removeDiscipline(dIndex)}>
                                                     <i className="bi bi-trash"></i>
                                                 </button>
                                             </div>
@@ -216,7 +258,9 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                             <div className="ps-4 border-start border-2 border-profile-primary">
                                                 <div className="d-flex justify-content-between mb-2">
                                                     <span className="fw-bold">{t('distances')}</span>
-                                                    <button type="button" className="btn btn-sm btn-profile-outline-primary" onClick={() => addDistance(dIndex)}>
+                                                    <button type="button"
+                                                            className="btn btn-sm btn-profile-outline-primary"
+                                                            onClick={() => addDistance(dIndex)}>
                                                         {t('addDistanceBtn')}
                                                     </button>
                                                 </div>
@@ -226,31 +270,42 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                         <div className="card-body p-2">
                                                             <div className="d-flex align-items-center gap-2 mb-2">
                                                                 <div className="input-group input-group-sm w-50">
-                                                                    <span className="input-group-text">{t('distanceMeters')}</span>
+                                                                    <span
+                                                                        className="input-group-text">{t('distanceMeters')}</span>
                                                                     <input type="number" className="form-control"
                                                                            value={dist.distance}
                                                                            onChange={e => updateDistanceValue(dIndex, distIndex, parseInt(e.target.value) || 0)}/>
                                                                 </div>
-                                                                <button type="button" className="btn btn-sm btn-outline-danger"
-                                                                        onClick={() => removeDistance(dIndex, distIndex)}><i
-                                                                    className="bi bi-trash"></i></button>
+                                                                <button type="button"
+                                                                        className="btn btn-sm btn-outline-danger"
+                                                                        onClick={() => removeDistance(dIndex, distIndex)}>
+                                                                    <i
+                                                                        className="bi bi-trash"></i></button>
                                                             </div>
 
                                                             <div className="ps-3 border-start">
                                                                 <div className="d-flex justify-content-between mb-2">
-                                                                    <small className="text-muted">{t('subDistances')}</small>
-                                                                    <button type="button" className="btn btn-xs btn-profile-outline-primary py-0 px-2" onClick={() => addSubDistance(dIndex, distIndex)}>
+                                                                    <small
+                                                                        className="text-muted">{t('subDistances')}</small>
+                                                                    <button type="button"
+                                                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                                                            onClick={() => addSubDistance(dIndex, distIndex)}>
                                                                         {t('addSubDistanceBtn')}
                                                                     </button>
                                                                 </div>
                                                                 {dist.subDistances?.map((sub, subIndex) => (
-                                                                    <div key={subIndex} className="d-flex align-items-center gap-2 mt-1">
-                                                                        <input type="number" className="form-control form-control-sm w-50"
-                                                                               placeholder={t('subDistanceMeters')} value={sub.subDistance}
+                                                                    <div key={subIndex}
+                                                                         className="d-flex align-items-center gap-2 mt-1">
+                                                                        <input type="number"
+                                                                               className="form-control form-control-sm w-50"
+                                                                               placeholder={t('subDistanceMeters')}
+                                                                               value={sub.subDistance}
                                                                                onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, parseInt(e.target.value) || 0)}/>
-                                                                        <button type="button" className="btn btn-sm btn-outline-danger"
-                                                                                onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}><i
-                                                                            className="bi bi-trash"></i></button>
+                                                                        <button type="button"
+                                                                                className="btn btn-sm btn-outline-danger"
+                                                                                onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
+                                                                            <i
+                                                                                className="bi bi-trash"></i></button>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -306,7 +361,9 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                         </select>
                                     </div>
 
-                                    {loadingLists && <div className="text-center"><div className="spinner-border spinner-border-sm text-profile-primary"/></div>}
+                                    {loadingLists && <div className="text-center">
+                                        <div className="spinner-border spinner-border-sm text-profile-primary"/>
+                                    </div>}
 
                                     {!loadingLists && selectedDistanceId && distanceLists.length > 0 && (
                                         <div className="mt-3">
@@ -316,12 +373,14 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
 
                                                 return (
                                                     <div key={list.id} className="border p-2 mb-2 rounded bg-light">
-                                                        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                                        <div
+                                                            className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                                             <div>
                                                                 <strong>{u ? `${u.firstName} ${u.lastName}` : list.userId}</strong>
                                                             </div>
                                                             <div className="d-flex align-items-center gap-2">
-                                                                <span className="me-2 badge bg-light text-dark border profile-theme-border">{SaveStatusEnum.getOptions(t).find(o => o.value === list.status)?.label}</span>
+                                                                <span
+                                                                    className="me-2 badge bg-light text-dark border profile-theme-border">{SaveStatusEnum.getOptions(t).find(o => o.value === list.status)?.label}</span>
                                                                 {SaveStatusEnum.getOptions(t)
                                                                     .filter(opt => opt.value !== list.status)
                                                                     .filter(opt => opt.value !== SaveStatusEnum.PENDING)
@@ -342,19 +401,24 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                         {list.status === SaveStatusEnum.ACCEPTED && (
                                                             <div className="mt-2 pt-2 border-top">
                                                                 {!res ? (
-                                                                    <button className="btn btn-sm btn-profile-outline-primary"
-                                                                            onClick={() => openAddResultForm(list)}>{t('enterResultBtn')}
+                                                                    <button
+                                                                        className="btn btn-sm btn-profile-outline-primary"
+                                                                        onClick={() => openAddResultForm(list)}>{t('enterResultBtn')}
                                                                     </button>
                                                                 ) : (
-                                                                    <div className="d-flex justify-content-between align-items-center">
-                                                                        <span className="text-success fw-bold">{t('time')}: {res.time} [s]</span>
+                                                                    <div
+                                                                        className="d-flex justify-content-between align-items-center">
+                                                                        <span
+                                                                            className="text-success fw-bold">{t('time')}: {res.time} [s]</span>
                                                                         <div>
-                                                                            <button className="btn btn-sm btn-profile-outline-primary me-1"
-                                                                                    onClick={() => openEditResultForm(list, res.id)}>
+                                                                            <button
+                                                                                className="btn btn-sm btn-profile-outline-primary me-1"
+                                                                                onClick={() => openEditResultForm(list, res.id)}>
                                                                                 <i className="bi bi-pencil"></i>
                                                                             </button>
-                                                                            <button className="btn btn-sm btn-outline-danger"
-                                                                                    onClick={() => handleDeleteResult(res.id)}>
+                                                                            <button
+                                                                                className="btn btn-sm btn-outline-danger"
+                                                                                onClick={() => handleDeleteResult(res.id)}>
                                                                                 <i className="bi bi-trash"></i>
                                                                             </button>
                                                                         </div>

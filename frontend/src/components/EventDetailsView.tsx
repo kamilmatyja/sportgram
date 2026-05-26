@@ -41,9 +41,12 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                                                                   }) => {
     const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center"><div className="spinner-border"/></div>;
+    if (loading) return <div className="container mt-5 text-center">
+        <div className="spinner-border"/>
+    </div>;
 
-    if (error || !eventObj || !currentUser) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (error || !eventObj || !currentUser) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
 
     const hexColor = ownerPage ? ColorEnum.getHex(ownerPage.color) : ColorEnum.getHex(currentUser.color);
     const canManage = isMyProfile || isAdmin;
@@ -75,7 +78,8 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                     <div className="mb-4 border-bottom pb-4">
                         <div className="text-center mb-4">
                             {eventObj.photo && (
-                                <img src={`data:image/webp;base64,${eventObj.photo}`} alt="Event photo" className="img-fluid rounded shadow-sm event-details-photo" />
+                                <img src={`data:image/webp;base64,${eventObj.photo}`} alt="Event photo"
+                                     className="img-fluid rounded shadow-sm event-details-photo"/>
                             )}
                         </div>
                         <p className="text-muted mb-2">
@@ -116,7 +120,9 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                                 </thead>
                                 <tbody>
                                 {eventObj.disciplines.length === 0 ? (
-                                    <tr><td colSpan={4} className="text-center text-muted">{t('noRecords')}</td></tr>
+                                    <tr>
+                                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
+                                    </tr>
                                 ) : eventObj.disciplines.flatMap(disc =>
                                     disc.distances.map(dist => (
                                         <tr key={dist.id}>
@@ -139,11 +145,15 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                                             <td className="text-end">
                                                 <div className="d-flex justify-content-end gap-2 flex-wrap">
                                                     {isParticipant && !userEnrollments.includes(dist.id) && (
-                                                        <button className="btn btn-sm btn-profile-primary" onClick={() => handleEnroll(dist.id)} disabled={actionLoading}>
-                                                            {actionLoading ? <span className="spinner-border spinner-border-sm" /> : t('addBtn')}
+                                                        <button className="btn btn-sm btn-profile-primary"
+                                                                onClick={() => handleEnroll(dist.id)}
+                                                                disabled={actionLoading}>
+                                                            {actionLoading ? <span
+                                                                className="spinner-border spinner-border-sm"/> : t('addBtn')}
                                                         </button>
                                                     )}
-                                                    <button className="btn btn-sm btn-profile-outline-primary" onClick={() => openListsModal(dist.id)}>
+                                                    <button className="btn btn-sm btn-profile-outline-primary"
+                                                            onClick={() => openListsModal(dist.id)}>
                                                         <i className="bi bi-list-ul me-1"></i> {t('eventTypes.eventDisciplineList')}
                                                     </button>
                                                 </div>

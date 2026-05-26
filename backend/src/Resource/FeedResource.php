@@ -103,13 +103,13 @@ class FeedResource
 
         if ($dto && in_array($dto::EVENT_DISCIPLINE_LIST, $dto->include)) {
             $data['eventDisciplineList'] = $feed->eventDisciplineList ? EventDisciplineDistanceListResource::fromEntity(
-                $feed->eventDisciplineList
+                $feed->eventDisciplineList,
             ) : null;
         }
 
         if ($dto && in_array($dto::EVENT_DISCIPLINE_RESULT, $dto->include)) {
             $data['eventDisciplineResult'] = $feed->eventDisciplineResult ? EventDisciplineDistanceResultResource::fromEntity(
-                $feed->eventDisciplineResult
+                $feed->eventDisciplineResult,
             ) : null;
         }
 
@@ -119,7 +119,7 @@ class FeedResource
 
         if ($dto && in_array($dto::GOAL_PARTICIPANT_RESULT, $dto->include)) {
             $data['goalParticipantResult'] = $feed->goalParticipantResult ? GoalParticipantResultResource::fromEntity(
-                $feed->goalParticipantResult
+                $feed->goalParticipantResult,
             ) : null;
         }
 

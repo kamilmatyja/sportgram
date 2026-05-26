@@ -92,7 +92,8 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                         <label className="form-label">{t('description')}</label>
                                         <textarea name="description"
                                                   className={`form-control ${fieldErrors.description ? 'is-invalid' : ''}`}
-                                                  value={formData.description} onChange={handleChange} required rows={3}/>
+                                                  value={formData.description} onChange={handleChange} required
+                                                  rows={3}/>
                                         {fieldErrors.description &&
                                             <div className="invalid-feedback d-block">{fieldErrors.description}</div>}
                                     </div>
@@ -128,7 +129,8 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                                    className={`form-control ${fieldErrors.profilePhoto ? 'is-invalid' : ''}`}
                                                    onChange={handleChange}/>
                                             <div className="form-text">{t('photoOptional')}</div>
-                                            {fieldErrors.profilePhoto && <div className="invalid-feedback d-block">{fieldErrors.profilePhoto}</div>}
+                                            {fieldErrors.profilePhoto && <div
+                                                className="invalid-feedback d-block">{fieldErrors.profilePhoto}</div>}
                                         </div>
                                         <div className="col-md-6">
                                             <label className="form-label">{t('backgroundPhoto')}</label>
@@ -136,7 +138,8 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                                    className={`form-control ${fieldErrors.backgroundPhoto ? 'is-invalid' : ''}`}
                                                    onChange={handleChange}/>
                                             <div className="form-text">{t('photoOptional')}</div>
-                                            {fieldErrors.backgroundPhoto && <div className="invalid-feedback d-block">{fieldErrors.backgroundPhoto}</div>}
+                                            {fieldErrors.backgroundPhoto && <div
+                                                className="invalid-feedback d-block">{fieldErrors.backgroundPhoto}</div>}
                                         </div>
                                     </div>
 
@@ -219,10 +222,12 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                         const fUserName = fUser ? `${fUser.firstName} ${fUser.lastName}` : follow.userId;
 
                                         return (
-                                            <div key={follow.id} className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
+                                            <div key={follow.id}
+                                                 className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
                                                 <div>
                                                     <strong>{isAdmin ? `${t('user')}: ${fUserName} | ` : ''}{t('status')}: </strong>
-                                                    <span className="me-2 badge bg-light text-dark border profile-theme-border">{PageFollowStatusEnum.getOptions(t).find(opt => String(opt.value) === String(follow.status))?.label || follow.status}
+                                                    <span
+                                                        className="me-2 badge bg-light text-dark border profile-theme-border">{PageFollowStatusEnum.getOptions(t).find(opt => String(opt.value) === String(follow.status))?.label || follow.status}
                                                     </span>
                                                 </div>
                                                 <div className="ms-auto d-flex gap-1 flex-wrap">

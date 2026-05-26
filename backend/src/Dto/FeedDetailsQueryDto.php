@@ -17,6 +17,7 @@ class FeedDetailsQueryDto
     public const string FEED_COMMENTS = 'feedComments';
 
     public const string FEED_REACTIONS = 'feedReactions';
+
     public const string EVENT_DISCIPLINE_LIST = 'eventDisciplineList';
 
     public const string EVENT_DISCIPLINE_RESULT = 'eventDisciplineResult';
@@ -35,7 +36,7 @@ class FeedDetailsQueryDto
         self::EVENT_DISCIPLINE_RESULT,
         self::GOAL,
         self::GOAL_PARTICIPANT_RESULT,
-        self::TRAINING
+        self::TRAINING,
     ], multiple: true)]
     public array $include = [];
 }

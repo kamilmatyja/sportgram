@@ -67,20 +67,25 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                             <h5 className="modal-title">
                                 {t('eventTypes.eventDisciplineList')} - {distanceObj?.distance} [m]
                             </h5>
-                            <button type="button" className="btn-close" onClick={onClose} disabled={actionLoading}></button>
+                            <button type="button" className="btn-close" onClick={onClose}
+                                    disabled={actionLoading}></button>
                         </div>
                         <div className="modal-body">
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <span>{t('participants')} ({lists.length})</span>
                                 {(isParticipant && !isEnrolled) && (
-                                    <button className="btn btn-sm btn-profile-primary" onClick={onEnroll} disabled={actionLoading}>
-                                        {actionLoading ? <span className="spinner-border spinner-border-sm"/> : t('addBtn')}
+                                    <button className="btn btn-sm btn-profile-primary" onClick={onEnroll}
+                                            disabled={actionLoading}>
+                                        {actionLoading ?
+                                            <span className="spinner-border spinner-border-sm"/> : t('addBtn')}
                                     </button>
                                 )}
                             </div>
 
                             {loading ? (
-                                <div className="text-center my-4"><div className="spinner-border"/></div>
+                                <div className="text-center my-4">
+                                    <div className="spinner-border"/>
+                                </div>
                             ) : (
                                 <div className="table-responsive-custom">
                                     <table className="table table-bordered table-hover align-middle">
@@ -97,7 +102,8 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                                         <tbody>
                                         {lists.length === 0 ? (
                                             <tr>
-                                                <td colSpan={6} className="text-center text-muted">{t('noParticipants')}</td>
+                                                <td colSpan={6}
+                                                    className="text-center text-muted">{t('noParticipants')}</td>
                                             </tr>
                                         ) : lists.map(list => {
                                             const u = relatedUsers[list.userId];
@@ -110,14 +116,17 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                                                     <tr>
                                                         <td className="text-center align-middle feed-photo-cell">
                                                             {u?.profilePhoto ? (
-                                                                <img src={`data:image/webp;base64,${u.profilePhoto}`} alt="User" className="rounded-circle img-fluid feed-photo"/>
+                                                                <img src={`data:image/webp;base64,${u.profilePhoto}`}
+                                                                     alt="User"
+                                                                     className="rounded-circle img-fluid feed-photo"/>
                                                             ) : (
                                                                 <span className="text-muted">-</span>
                                                             )}
                                                         </td>
                                                         <td>
                                                             {u ? (
-                                                                <a href={`/users/${u.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                                <a href={`/users/${u.link}`}
+                                                                   className="btn btn-link p-0 text-decoration-none">
                                                                     {u.firstName} {u.lastName}
                                                                 </a>
                                                             ) : list.userId}
@@ -126,8 +135,10 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                                                         <td>{formatDate(list.createdAt)}</td>
                                                         <td>
                                                             {hasResult ? (
-                                                                <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(list.id)}>
-                                                                    {isExpanded ? <i className="bi bi-chevron-up"></i> : <i className="bi bi-chevron-down"></i>} {t('time')}: {result?.time} [s]
+                                                                <button className="btn btn-sm btn-outline-secondary"
+                                                                        onClick={() => toggleRow(list.id)}>
+                                                                    {isExpanded ? <i className="bi bi-chevron-up"></i> :
+                                                                        <i className="bi bi-chevron-down"></i>} {t('time')}: {result?.time} [s]
                                                                 </button>
                                                             ) : (
                                                                 <span className="text-muted small">-</span>
@@ -149,7 +160,10 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                                                                         </button>
                                                                     ))}
                                                                 {(isEventOwner || isAdmin || list.userId === currentUser?.id) && (
-                                                                    <button className="btn btn-sm btn-outline-danger ms-2" onClick={() => onDelete(list.id)} disabled={actionLoading}>
+                                                                    <button
+                                                                        className="btn btn-sm btn-outline-danger ms-2"
+                                                                        onClick={() => onDelete(list.id)}
+                                                                        disabled={actionLoading}>
                                                                         <i className="bi bi-trash"></i>
                                                                     </button>
                                                                 )}
@@ -159,19 +173,26 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                                                     {isExpanded && result && (
                                                         <tr className="bg-light">
                                                             <td colSpan={6}>
-                                                                <div className="p-3 border rounded border-profile-primary">
-                                                                    <strong className="d-block mb-2 text-profile-primary">{t('eventTypes.eventDisciplineResult')}</strong>
-                                                                    <div><strong>{t('finalTimeSeconds')}:</strong> {result.time} [s]</div>
+                                                                <div
+                                                                    className="p-3 border rounded border-profile-primary">
+                                                                    <strong
+                                                                        className="d-block mb-2 text-profile-primary">{t('eventTypes.eventDisciplineResult')}</strong>
+                                                                    <div>
+                                                                        <strong>{t('finalTimeSeconds')}:</strong> {result.time} [s]
+                                                                    </div>
                                                                     {result.subResults && result.subResults.length > 0 && (
                                                                         <div className="mt-2">
-                                                                            <strong className="small">{t('subDistances')}:</strong>
+                                                                            <strong
+                                                                                className="small">{t('subDistances')}:</strong>
                                                                             <ul className="mb-0 list-unstyled ms-3">
                                                                                 {result.subResults.map(sr => {
                                                                                     const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
                                                                                     return (
-                                                                                        <li key={sr.id} className="small text-muted">
+                                                                                        <li key={sr.id}
+                                                                                            className="small text-muted">
                                                                                             <i className="bi bi-stopwatch me-1"></i>
-                                                                                            {t('forDistance')} {sdMeta?.subDistance || '?'} [m] - {sr.time} [s]
+                                                                                            {t('forDistance')} {sdMeta?.subDistance || '?'} [m]
+                                                                                            - {sr.time} [s]
                                                                                         </li>
                                                                                     );
                                                                                 })}

@@ -67,8 +67,10 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeModal}>{t('cancel')}</button>
-                                <button type="submit" className="btn btn-profile-primary" disabled={loading || availableUsers.length === 0}>
+                                <button type="button" className="btn btn-secondary"
+                                        onClick={closeModal}>{t('cancel')}</button>
+                                <button type="submit" className="btn btn-profile-primary"
+                                        disabled={loading || availableUsers.length === 0}>
                                     {loading ? t('sending') : t('addFriend')}
                                 </button>
                             </div>
