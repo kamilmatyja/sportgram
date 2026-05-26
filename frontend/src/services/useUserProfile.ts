@@ -21,55 +21,53 @@ export function useUserProfile(link?: string) {
     const [friendship, setFriendship] = useState<FriendResponse | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [statusLoading, setStatusLoading] = useState(false);
-
     const userProvider = new UserProvider();
     const friendProvider = new FriendProvider();
 
-    useEffect(() => {
-        const fetchProfileData = async () => {
-            try {
-                setLoading(true);
+    const fetchProfileData = async () => {
+        try {
+            setLoading(true);
 
-                const currentUsr = await getCurrentUser();
-                setCurrentUser(currentUsr);
+            const currentUsr = await getCurrentUser();
+            setCurrentUser(currentUsr);
 
-                const filterDto = new UserFilterQuery();
-                filterDto.link = link;
-                const indexDto = new UserIndexQuery();
-                indexDto.filter = filterDto;
-                const targetUsers = await userProvider.index(indexDto);
+            const filterDto = new UserFilterQuery();
+            filterDto.link = link;
+            const indexDto = new UserIndexQuery();
+            indexDto.filter = filterDto;
+            const targetUsers = await userProvider.index(indexDto);
 
-                if (targetUsers.length === 0) {
-                    setError(t('userNotFound'));
-                    return;
-                }
-
-                const profileUser = targetUsers[0];
-                const fullProfileUser = await userProvider.details(profileUser.id, ['userRoles', 'userDisciplines']);
-                setUser(fullProfileUser);
-
-                if (currentUsr && currentUsr.id !== profileUser.id) {
-                    const friendFilter = new FriendFilterQuery();
-                    friendFilter.userIds = [profileUser.id, currentUsr.id];
-                    const friendIndexDto = new FriendIndexQuery();
-                    friendIndexDto.filter = friendFilter;
-                    const friends = await friendProvider.index(friendIndexDto);
-                    const relation = friends.find((f: FriendResponse) =>
-                        (f.senderUserId === currentUsr.id && f.receiverUserId === profileUser.id) ||
-                        (f.senderUserId === profileUser.id && f.receiverUserId === currentUsr.id)
-                    );
-                    setFriendship(relation || null);
-                } else {
-                    setFriendship(null);
-                }
-            } catch (err: any) {
-                setError(err.error);
-            } finally {
-                setLoading(false);
+            if (targetUsers.length === 0) {
+                setError(t('userNotFound'));
+                return;
             }
-        };
 
+            const profileUser = targetUsers[0];
+            const fullProfileUser = await userProvider.details(profileUser.id, ['userRoles', 'userDisciplines']);
+            setUser(fullProfileUser);
+
+            if (currentUsr && currentUsr.id !== profileUser.id) {
+                const friendFilter = new FriendFilterQuery();
+                friendFilter.userIds = [profileUser.id, currentUsr.id];
+                const friendIndexDto = new FriendIndexQuery();
+                friendIndexDto.filter = friendFilter;
+                const friends = await friendProvider.index(friendIndexDto);
+                const relation = friends.find((f: FriendResponse) =>
+                    (f.senderUserId === currentUsr.id && f.receiverUserId === profileUser.id) ||
+                    (f.senderUserId === profileUser.id && f.receiverUserId === currentUsr.id)
+                );
+                setFriendship(relation || null);
+            } else {
+                setFriendship(null);
+            }
+        } catch (err: any) {
+            setError(err.error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         if (link) {
             fetchProfileData();
         }
@@ -98,16 +96,9 @@ export function useUserProfile(link?: string) {
         }
     };
 
-    const handleChangeUserStatus = async (newStatus: number) => {
-        if (!user) return;
-        setStatusLoading(true);
-        try {
-            await userProvider.updateStatus(user.id, new StatusBody(newStatus));
-            setUser({...user, status: newStatus});
-        } catch (e: any) {
-            alert(e.error);
-        } finally {
-            setStatusLoading(false);
+    const refreshProfile = () => {
+        if (link) {
+            fetchProfileData();
         }
     };
 
@@ -115,8 +106,8 @@ export function useUserProfile(link?: string) {
     const isAdmin = Boolean(currentUser && Array.isArray(currentUser.roles) && currentUser.roles.some((role: any) => role.role === RoleEnum.ADMINISTRATOR));
 
     return {
-        user, currentUser, friendship, loading, error, statusLoading,
-        handleAddFriend, handleUpdateFriendStatus, handleChangeUserStatus,
-        isMyProfile, isAdmin
+        user, currentUser, friendship, loading, error,
+        handleAddFriend, handleUpdateFriendStatus,
+        isMyProfile, isAdmin, refreshProfile
     };
 }

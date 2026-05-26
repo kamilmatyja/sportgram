@@ -116,6 +116,8 @@ export const pl = {
     next: "Następna",
     page: "Strona",
     addUser: "Dodaj użytkownika",
+    manageUser: "Zarządzaj użytkownikiem",
+    manageUserStatus: "Zarządzanie statusem użytkownika",
     photosRequired: "Zdjęcia są wymagane",
     languages: {
         english: "Angielski",

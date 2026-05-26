@@ -1,11 +1,11 @@
 import UsersView from '../components/UsersView';
 import {AddUserModal} from '../components/AddUserModal';
 import {useUsers} from '../services/useUsers';
-import {useAddUser} from '../services/useAddUser';
+import {useUserModals} from '../services/useUserModals';
 
 export default function Users() {
     const usersService = useUsers();
-    const addUserService = useAddUser(usersService.fetchUsers);
+    const modalsService = useUserModals(usersService.fetchUsers);
 
     return (
         <>
@@ -23,10 +23,19 @@ export default function Users() {
                 onPrevPage={usersService.handlePrevPage}
                 onNextPage={usersService.handleNextPage}
                 isAdmin={usersService.isAdmin}
-                onAddUserClick={addUserService.openModal}
+                onAddUserClick={modalsService.openAddModal}
             />
 
-            <AddUserModal {...addUserService} />
+            <AddUserModal
+                show={modalsService.showAdd}
+                closeModal={modalsService.closeAddModal}
+                loading={modalsService.loading}
+                globalError={modalsService.globalError}
+                fieldErrors={modalsService.fieldErrors}
+                formData={modalsService.addFormData}
+                handleChange={modalsService.handleAddChange}
+                handleSubmit={modalsService.handleAddSubmit}
+            />
         </>
     );
 }

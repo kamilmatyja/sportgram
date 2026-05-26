@@ -116,6 +116,8 @@ export const en = {
     next: "Next",
     page: "Page",
     addUser: "Add user",
+    manageUser: "Manage user",
+    manageUserStatus: "Manage user status",
     photosRequired: "Photos required",
     languages: {
         english: "English",

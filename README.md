@@ -93,7 +93,6 @@ npm run dev
 - /users (lista użytkowników - tylko dla zalogowanych)
 - /users/{user-link} (profil użytkownika, jeżeli user inny niż ja to pokazuje przycisk
   znajomości - tylko dla zalogowanych)
-- /users/{user-link}/settings (ustawienia użytkownika, pokazuje formularz edycji danych - tylko dla zalogowanych)
 - /users/{user-link}/feeds (lista feeds użytkownika, pokazuje formularz dodawania feed - tylko dla zalogowanych)
 - /users/{user-link}/stories (lista stories użytkownika, pokazuje formularz dodawania story - tylko dla zalogowanych)
 - /users/{user-link}/friends (lista znajomych użytkownika, pokazuje liste friends - tylko dla zalogowanych)

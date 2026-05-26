@@ -17,12 +17,11 @@ interface UserProfileViewProps {
     friendship: FriendResponse | null;
     loading: boolean;
     error: string | null;
-    statusLoading: boolean;
     handleAddFriend: () => void;
     handleUpdateFriendStatus: (status: number) => void;
-    handleChangeUserStatus: (status: number) => void;
     isMyProfile: boolean;
     isAdmin: boolean;
+    onManageClick: (user: UserResponse) => void;
 }
 
 export const UserProfileView: React.FC<UserProfileViewProps> = ({
@@ -31,12 +30,11 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                                                     friendship,
                                                                     loading,
                                                                     error,
-                                                                    statusLoading,
                                                                     handleAddFriend,
                                                                     handleUpdateFriendStatus,
-                                                                    handleChangeUserStatus,
                                                                     isMyProfile,
-                                                                    isAdmin
+                                                                    isAdmin,
+                                                                    onManageClick
                                                                 }) => {
     const {t} = useTranslation();
 
@@ -90,31 +88,13 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                         <li className="d-flex align-items-center flex-wrap gap-2">
                                             <strong>{t('userStatus')}:</strong>
                                             <span className="me-2 badge bg-light text-dark border profile-theme-border">{UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}</span>
-                                            {!isMyProfile && isAdmin && (
-                                                <>
-                                                    <strong>{t('changeStatus')}: </strong>
-                                                    {UserStatusEnum.getNanoOptions(t)
-                                                        .filter(opt => opt.value !== user.status)
-                                                        .filter(opt => opt.value !== UserStatusEnum.PENDING)
-                                                        .map(opt => (
-                                                            <button
-                                                                key={opt.value}
-                                                                className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                                onClick={() => handleChangeUserStatus(opt.value)}
-                                                                disabled={statusLoading}
-                                                            >
-                                                                {statusLoading ? t('loading') : opt.label}
-                                                            </button>
-                                                        ))}
-                                                </>
-                                            )}
                                         </li>
                                         <li className="d-flex align-items-center flex-wrap gap-2">
                                             <strong>{t('role')}:</strong>
                                             {user.roles && user.roles.length > 0 && user.roles.map((role: any) => (
                                                 <span key={role.id} className="badge profile-theme-bg">
-                                                {RoleEnum.getOptions(t).find(opt => opt.value === role.role)?.label || role.role}
-                                            </span>
+                                            {RoleEnum.getOptions(t).find(opt => opt.value === role.role)?.label || role.role}
+                                        </span>
                                             ))}
                                         </li>
                                         <li className="d-flex align-items-center flex-wrap gap-2">
@@ -122,8 +102,8 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                             {user.disciplines && user.disciplines.length > 0 && user.disciplines.map((disc: any) => (
                                                 <span key={disc.id}
                                                       className="badge bg-light text-dark border border-1 profile-theme-border">
-                                                {DisciplineEnum.getOptions(t).find(opt => opt.value === disc.discipline)?.label || disc.discipline}
-                                            </span>
+                                            {DisciplineEnum.getOptions(t).find(opt => opt.value === disc.discipline)?.label || disc.discipline}
+                                        </span>
                                             ))}
                                         </li>
                                     </>
@@ -172,10 +152,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             <div className="d-flex flex-wrap gap-2 mb-3 overflow-x-auto">
                 {(isMyProfile || isAdmin || friendship?.status === FriendStatusEnum.ACCEPTED) && (
                     <>
-                        {isMyProfile && (
-                            <a href={`/users/${user.link}/settings`} className="btn btn-profile-outline-primary">
+                        {(isMyProfile || isAdmin) && (
+                            <button className="btn btn-profile-outline-primary" onClick={() => onManageClick(user)}>
                                 <i className="bi bi-gear me-1"></i> {t('settings')}
-                            </a>
+                            </button>
                         )}
                         <a href={`/users/${user.link}/feeds`} className="btn btn-profile-outline-primary">
                             <i className="bi bi-list-ul me-1"></i> {t('feeds')}

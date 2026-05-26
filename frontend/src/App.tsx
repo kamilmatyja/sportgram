@@ -7,7 +7,6 @@ import Sign from './pages/Sign';
 import PasswordReset from './pages/PasswordReset';
 import Users from './pages/Users';
 import UserProfile from './pages/UserProfile';
-import UserSettings from './pages/UserSettings';
 import UserFeeds from './pages/UserFeeds';
 import UserStories from './pages/UserStories';
 import UserFriends from './pages/UserFriends';
@@ -102,7 +101,6 @@ const AppRoutes: React.FC = () => {
 
             <Route path="/users" element={<ProtectedRoute><AuthenticatedLayout><Users/></AuthenticatedLayout></ProtectedRoute>}/>
             <Route path="/users/:link" element={<ProtectedRoute><AuthenticatedLayout><UserProfile/></AuthenticatedLayout></ProtectedRoute>}/>
-            <Route path="/users/:link/settings" element={<ProtectedRoute><AuthenticatedLayout><UserSettings/></AuthenticatedLayout></ProtectedRoute>}/>
             <Route path="/users/:link/feeds" element={<ProtectedRoute><AuthenticatedLayout><UserFeeds/></AuthenticatedLayout></ProtectedRoute>}/>
             <Route path="/users/:link/stories" element={<ProtectedRoute><AuthenticatedLayout><UserStories/></AuthenticatedLayout></ProtectedRoute>}/>
             <Route path="/users/:link/friends" element={<ProtectedRoute><AuthenticatedLayout><UserFriends/></AuthenticatedLayout></ProtectedRoute>}/>
