@@ -81,7 +81,7 @@ export const ManageStoryModal: React.FC<ManageStoryModalProps> = ({
 
                             {(isMyProfile || isAdmin) && (
                                 <div className="d-flex flex-wrap gap-2 align-items-center">
-                                    <strong>{t('status')}:</strong>
+                                    <strong>{t('status')}: </strong>
                                     <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                             {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(story.status))?.label || story.status}
                                     </span>

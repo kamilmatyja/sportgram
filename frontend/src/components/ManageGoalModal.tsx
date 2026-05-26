@@ -165,7 +165,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                             {(isMyProfile || isAdmin) && (
                                 <div className="mb-4 border-bottom pb-3">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('goalStatus')}:</strong>
+                                        <strong>{t('goalStatus')}: </strong>
                                         <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                             {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}
                                         </span>
@@ -191,7 +191,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                 <>
                                     <div className="mb-4 border-bottom pb-3">
                                         <div className="d-flex flex-wrap gap-2 align-items-center">
-                                            <strong>{t('participantStatus')}:</strong>
+                                            <strong>{t('participantStatus')}: </strong>
                                             <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                             {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
                                             </span>
@@ -217,7 +217,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                             <div>
                                                 <strong>{t('distance')}:</strong> {res.distance} [m]
                                                 | <strong>{t('time')}:</strong> {res.time} [s]
-                                                | <strong>{t('status')}:</strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(res.status))?.label || res.status}
+                                                | <strong>{t('status')}: </strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(res.status))?.label || res.status}
                                             </div>
                                             <div className="ms-auto">
                                                 {SaveStatusEnum.getOptions(t)

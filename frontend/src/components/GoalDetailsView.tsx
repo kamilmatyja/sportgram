@@ -207,7 +207,7 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                         <div className="mb-4 border-bottom pb-4">
                             <h6 className="mb-3">{t('manageGoalStatus')}</h6>
                             <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('goalStatus')}:</strong>
+                                <strong>{t('goalStatus')}: </strong>
                                 <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                     {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}
                                 </span>
@@ -234,7 +234,7 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                             <div className="mb-4 border-bottom pb-4">
                                 <h6 className="mb-3">{t('manageParticipantStatus')}</h6>
                                 <div className="d-flex flex-wrap gap-2 align-items-center">
-                                    <strong>{t('participantStatus')}:</strong>
+                                    <strong>{t('participantStatus')}: </strong>
                                     <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                     {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
                                 </span>
@@ -257,7 +257,7 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                             <div className="mb-4">
                                 {myParticipant.results && myParticipant.results.length > 0 && (
                                     <div>
-                                        <strong className="d-block mb-2">{t('manageResultStatus')}:</strong>
+                                        <strong className="d-block mb-2">{t('manageResultStatus')}: </strong>
                                         {myParticipant.results.map(res => (
                                             <div key={res.id}
                                                  className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
@@ -266,7 +266,7 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                                                     <span className="mx-2">|</span>
                                                     <strong>{t('time')}:</strong> {res.time} [s]
                                                     <span className="mx-2">|</span>
-                                                    <strong>{t('status')}:</strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(res.status))?.label || res.status}
+                                                    <strong>{t('status')}: </strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(res.status))?.label || res.status}
                                                 </div>
                                                 <div className="ms-auto">
                                                     {SaveStatusEnum.getOptions(t)

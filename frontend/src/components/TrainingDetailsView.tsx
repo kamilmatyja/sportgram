@@ -298,7 +298,7 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
                         <div className="mb-4 border-bottom pb-4">
                             <h6 className="mb-3">{t('trainingStatus')}</h6>
                             <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('status')}:</strong>
+                                <strong>{t('status')}: </strong>
                                 <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                     {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(training.status))?.label || training.status}
                                 </span>
@@ -324,7 +324,7 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
                         <div className="mb-4 pb-2">
                             <h6 className="mb-3">{t('participantStatus')}</h6>
                             <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('status')}:</strong>
+                                <strong>{t('status')}: </strong>
                                 <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                     {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
                                 </span>

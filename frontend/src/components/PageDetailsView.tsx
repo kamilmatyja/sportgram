@@ -209,7 +209,7 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                         <div className="mb-4 border-bottom pb-4">
                             <h6 className="mb-3">{t('managePageStatus')}</h6>
                             <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('pageStatus')}:</strong>
+                                <strong>{t('pageStatus')}: </strong>
                                 <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                     {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}
                                 </span>
@@ -235,7 +235,7 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                         <div className="mb-4">
                             <h6 className="mb-3">{t('manageParticipantStatus')}</h6>
                             <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('participantStatus')}:</strong>
+                                <strong>{t('participantStatus')}: </strong>
                                 <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                 {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
                             </span>

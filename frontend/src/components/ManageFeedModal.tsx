@@ -96,7 +96,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                 <>
                                     <div className="mb-4 border-bottom pb-3">
                                         <div className="d-flex flex-wrap gap-2 align-items-center">
-                                            <strong>{t('feedStatus')}:</strong>
+                                            <strong>{t('feedStatus')}: </strong>
                                             <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                                     {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}
                                                 </span>
@@ -126,7 +126,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                                         <strong>{t('text')}:</strong> {comment.text}
                                                     </div>
                                                     <div>
-                                                        <strong>{t('status')}:</strong>
+                                                        <strong>{t('status')}: </strong>
                                                         <span className="me-2 badge bg-light text-dark border profile-theme-border">{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(comment.status))?.label || comment.status}
                                                         </span>
                                                     </div>
@@ -160,7 +160,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                                         <strong>{t('reaction')}:</strong> {FeedReactionEnum.getOptions(t).find(opt => String(opt.value) === String(reaction.reaction))?.label || reaction.reaction}
                                                     </div>
                                                     <div>
-                                                        <strong>{t('status')}:</strong>
+                                                        <strong>{t('status')}: </strong>
                                                         <span className="me-2 badge bg-light text-dark border profile-theme-border">{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(reaction.status))?.label || reaction.status}
                                                         </span>
                                                     </div>

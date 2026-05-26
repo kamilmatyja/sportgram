@@ -46,7 +46,7 @@ export const ManageFriendModal: React.FC<ManageFriendModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('status')}:</strong>
+                                <strong>{t('status')}: </strong>
                                 <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                     {FriendStatusEnum.getOptions(t).find(opt => String(opt.value) === String(friend.status))?.label || friend.status}
                                 </span>

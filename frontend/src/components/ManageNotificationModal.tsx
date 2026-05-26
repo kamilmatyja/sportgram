@@ -55,7 +55,7 @@ export const ManageNotificationModal: React.FC<ManageNotificationModalProps> = (
                                 )}
                             </div>
                             <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('status')}:</strong>
+                                <strong>{t('status')}: </strong>
                                 <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                     {NotificationStatusEnum.getOptions(t).find(opt => String(opt.value) === String(notification.status))?.label || notification.status}
                                 </span>

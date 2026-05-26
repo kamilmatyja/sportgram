@@ -306,7 +306,7 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                         <div className="mb-4">
                             <h6 className="mb-3">{t('eventStatus')}</h6>
                             <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('status')}:</strong>
+                                <strong>{t('status')}: </strong>
                                 <span className="me-2 badge bg-light text-dark border profile-theme-border">
                                     {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(eventObj.status))?.label || eventObj.status}
                                 </span>

@@ -80,7 +80,7 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
             <div className="card shadow-sm">
                 <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h4 className="mb-0">{t('friends')}</h4>
+                        <h4 className="mb-0">{t('friend')}</h4>
                         {isMyProfile && (
                             <button className="btn btn-profile-primary" onClick={onAddClick}>
                                 {t('addFriend')}

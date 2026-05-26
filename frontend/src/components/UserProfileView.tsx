@@ -60,91 +60,15 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                         className="w-100 h-100 object-fit-cover"
                     />
                 </div>
-
                 <div className="card-body position-relative pt-5">
                     <img
                         src={`data:image/webp;base64,${user.profilePhoto}`}
                         alt="Profile"
                         className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"
                     />
-
-                    <div className="d-flex justify-content-between align-items-center mt-3">
-                        <div>
-                            <h2 className="mb-0 profile-theme-text">{user.firstName} {user.lastName}</h2>
-                            <p className="text-muted mb-2">@{user.link}</p>
-                            <p className="mb-0">{user.bio}</p>
-                            <ul className="list-unstyled mt-2 mb-2">
-                                {(isMyProfile || isAdmin || friendship?.status === FriendStatusEnum.ACCEPTED) && (
-                                    <>
-                                        <li><strong>{t('email')}:</strong> {user.email}</li>
-                                        <li><strong>{t('phone')}:</strong> {user.phone}</li>
-                                        <li>
-                                            <strong>{t('country')}:</strong> {CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}
-                                        </li>
-                                        <li>
-                                            <strong>{t('gender')}:</strong> {GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}
-                                        </li>
-                                        <li><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
-                                        <li className="d-flex align-items-center flex-wrap gap-2">
-                                            <strong>{t('userStatus')}:</strong>
-                                            <span className="me-2 badge bg-light text-dark border profile-theme-border">{UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}</span>
-                                        </li>
-                                        <li className="d-flex align-items-center flex-wrap gap-2">
-                                            <strong>{t('role')}:</strong>
-                                            {user.roles && user.roles.length > 0 && user.roles.map((role: any) => (
-                                                <span key={role.id} className="badge profile-theme-bg">
-                                            {RoleEnum.getOptions(t).find(opt => opt.value === role.role)?.label || role.role}
-                                        </span>
-                                            ))}
-                                        </li>
-                                        <li className="d-flex align-items-center flex-wrap gap-2">
-                                            <strong>{t('discipline')}:</strong>
-                                            {user.disciplines && user.disciplines.length > 0 && user.disciplines.map((disc: any) => (
-                                                <span key={disc.id}
-                                                      className="badge bg-light text-dark border border-1 profile-theme-border">
-                                            {DisciplineEnum.getOptions(t).find(opt => opt.value === disc.discipline)?.label || disc.discipline}
-                                        </span>
-                                            ))}
-                                        </li>
-                                    </>
-                                )}
-                                {!isMyProfile && !friendship && (
-                                    <li className="d-flex align-items-center flex-wrap gap-2">
-                                        <strong>{t('friendshipStatus')}:</strong>
-                                        <button
-                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                            onClick={handleAddFriend}
-                                        >
-                                            {t('addFriend')}
-                                        </button>
-                                    </li>
-                                )}
-                                {!isMyProfile && friendship && (
-                                    <li className="d-flex align-items-center flex-wrap gap-2">
-                                        <strong>{t('friendshipStatus')}:</strong>
-                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">{FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label || friendship.status}</span>
-                                        <>
-                                            {(friendship.senderUserId === currentUser?.id || friendship.receiverUserId === currentUser?.id) && (
-                                                <>
-                                                    <strong>{t('changeStatus')}: </strong>
-                                                    {FriendStatusEnum.getNanoOptions(t).map(opt => (
-                                                        opt.value !== friendship.status && (
-                                                            <button
-                                                                key={opt.value}
-                                                                className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                                onClick={() => handleUpdateFriendStatus(opt.value)}
-                                                            >
-                                                                {opt.label}
-                                                            </button>
-                                                        )
-                                                    ))}
-                                                </>
-                                            )}
-                                        </>
-                                    </li>
-                                )}
-                            </ul>
-                        </div>
+                    <div className="mt-3">
+                        <h2 className="mb-0 profile-theme-text">{user.firstName} {user.lastName}</h2>
+                        <p className="text-muted mb-0">@{user.link}</p>
                     </div>
                 </div>
             </div>
@@ -194,6 +118,84 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                         </a>
                     </>
                 )}
+            </div>
+
+            <div className="card shadow-sm mb-4">
+                <div className="card-body">
+                    <h4 className="mb-3">{t('basicInformation')}</h4>
+                    <p className="mb-3">{user.bio}</p>
+                    <ul className="list-unstyled mb-0">
+                        {(isMyProfile || isAdmin || friendship?.status === FriendStatusEnum.ACCEPTED) && (
+                            <>
+                                <li className="mb-1"><strong>{t('email')}:</strong> {user.email}</li>
+                                <li className="mb-1"><strong>{t('phone')}:</strong> {user.phone}</li>
+                                <li className="mb-1">
+                                    <strong>{t('country')}:</strong> {CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}
+                                </li>
+                                <li className="mb-1">
+                                    <strong>{t('gender')}:</strong> {GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}
+                                </li>
+                                <li className="mb-1"><strong>{t('age')}:</strong> {getAgeFromDate(user.birthAt)}</li>
+                                <li className="d-flex align-items-center flex-wrap gap-2 mt-2">
+                                    <strong>{t('userStatus')}: </strong>
+                                    <span className="me-2 badge bg-light text-dark border profile-theme-border">{UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}</span>
+                                </li>
+                                <li className="d-flex align-items-center flex-wrap gap-2 mt-2">
+                                    <strong>{t('role')}:</strong>
+                                    {user.roles && user.roles.length > 0 && user.roles.map((role: any) => (
+                                        <span key={role.id} className="badge profile-theme-bg">
+                                            {RoleEnum.getOptions(t).find(opt => opt.value === role.role)?.label || role.role}
+                                        </span>
+                                    ))}
+                                </li>
+                                <li className="d-flex align-items-center flex-wrap gap-2 mt-2">
+                                    <strong>{t('discipline')}:</strong>
+                                    {user.disciplines && user.disciplines.length > 0 && user.disciplines.map((disc: any) => (
+                                        <span key={disc.id}
+                                              className="badge bg-light text-dark border border-1 profile-theme-border">
+                                            {DisciplineEnum.getOptions(t).find(opt => opt.value === disc.discipline)?.label || disc.discipline}
+                                        </span>
+                                    ))}
+                                </li>
+                            </>
+                        )}
+                        {!isMyProfile && !friendship && (
+                            <li className="d-flex align-items-center flex-wrap gap-2 mt-2">
+                                <strong>{t('friendshipStatus')}: </strong>
+                                <button
+                                    className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                    onClick={handleAddFriend}
+                                >
+                                    {t('addFriend')}
+                                </button>
+                            </li>
+                        )}
+                        {!isMyProfile && friendship && (
+                            <li className="d-flex align-items-center flex-wrap gap-2 mt-2">
+                                <strong>{t('friendshipStatus')}: </strong>
+                                <span className="me-2 badge bg-light text-dark border profile-theme-border">{FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label || friendship.status}</span>
+                                <>
+                                    {(friendship.senderUserId === currentUser?.id || friendship.receiverUserId === currentUser?.id) && (
+                                        <>
+                                            <strong>{t('changeStatus')}: </strong>
+                                            {FriendStatusEnum.getNanoOptions(t).map(opt => (
+                                                opt.value !== friendship.status && (
+                                                    <button
+                                                        key={opt.value}
+                                                        className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                                        onClick={() => handleUpdateFriendStatus(opt.value)}
+                                                    >
+                                                        {opt.label}
+                                                    </button>
+                                                )
+                                            ))}
+                                        </>
+                                    )}
+                                </>
+                            </li>
+                        )}
+                    </ul>
+                </div>
             </div>
         </div>
     );
