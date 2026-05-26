@@ -35,6 +35,7 @@ interface EventDetailsViewProps {
     addSubDistance: (discIndex: number, distIndex: number) => void;
     updateSubDistanceValue: (discIndex: number, distIndex: number, subIndex: number, val: number) => void;
     removeSubDistance: (discIndex: number, distIndex: number, subIndex: number) => void;
+    openListsModal: (distId: string) => void;
 }
 
 export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
@@ -62,7 +63,8 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                                                                       removeDistance,
                                                                       addSubDistance,
                                                                       updateSubDistanceValue,
-                                                                      removeSubDistance
+                                                                      removeSubDistance,
+                                                                      openListsModal
                                                                   }) => {
     const {t} = useTranslation();
 
@@ -272,17 +274,13 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                                                 <ul className="mb-0 mt-2 list-unstyled ms-3">
                                                     {disc.distances.map(dist => (
                                                         <li key={dist.id} className="mb-2">
-                                                            <i className="bi bi-signpost-split me-2 text-muted"></i>
-                                                            <span className="fw-bold">{dist.distance} [m]</span>
-                                                            <div className="mt-1">
-                                                                <a href={`/events/${eventObj.link}/${disc.discipline}/${dist.distance}/lists`} className="btn btn-xs btn-profile-outline-primary py-0 px-2 me-2">
+                                                            <div className="d-flex align-items-center gap-2">
+                                                                <i className="bi bi-signpost-split text-muted"></i>
+                                                                <span className="fw-bold">{dist.distance} [m]</span>
+                                                                <button type="button" className="btn btn-xs btn-profile-outline-primary py-0 px-2 ms-2" onClick={() => openListsModal(dist.id)}>
                                                                     <i className="bi bi-list-ul me-1"></i> {t('eventTypes.eventDisciplineList')}
-                                                                </a>
-                                                                <a href={`/events/${eventObj.link}/${disc.discipline}/${dist.distance}/results`} className="btn btn-xs btn-profile-outline-primary py-0 px-2">
-                                                                    <i className="bi bi-trophy me-1"></i> {t('eventTypes.eventDisciplineResult')}
-                                                                </a>
+                                                                </button>
                                                             </div>
-
                                                             {dist.subDistances && dist.subDistances.length > 0 && (
                                                                 <ul className="mb-0 mt-1 list-unstyled ms-4 text-muted small">
                                                                     {dist.subDistances.map(sub => (

@@ -114,8 +114,18 @@ npm run dev
 - /pages/{page-link} (profil strony - tylko dla zalogowanych)
 - /events (lista wydarzeń - tylko dla zalogowanych)
 - /events/{event-link} (profil wydarzenia - tylko dla zalogowanych)
-- /events/{event-link}/{event-discipline}/{event-distance}/lists (lista zapisanych na dystans dyscypliny wydarzenia,
-  pokazuje przycisk zapisania się gdy user ma role Uczestnik - tylko dla zalogowanych)
-- /events/{event-link}/{event-discipline}/{event-distance}/results (lista wyników z dystansu dyscypliny wydarzenia,
-  pokazuje przycisk dodania wyniku gdy user ma role Organizator - tylko dla zalogowanych)
 - /statistics (statystyki - tylko dla zalogowanych)
+
+12. Brakuje:
+- wysyłka email nie działa
+- wysyłka push wiadomości nie działa
+- kamera na froncie
+- gps na froncie przy dodawaniu treningu
+- przycisk follow na stronie
+- przycisk zapisu na wydarzeniu
+- zapisywanie wyświetleń encji po wejściu na jakiś profil
+- informacje o wyświetleniach przy encjach
+- informacje o ilości follow na profilach
+- informacje o ilości znajomych na profilach
+- nawigacja po stronach
+- lista feed

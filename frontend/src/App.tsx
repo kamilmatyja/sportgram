@@ -24,8 +24,6 @@ import PagesList from './pages/PagesList';
 import PageDetails from './pages/PageDetails';
 import EventsList from './pages/EventsList';
 import EventDetails from './pages/EventDetails';
-import EventLists from './pages/EventLists';
-import EventResults from './pages/EventResults';
 import Statistics from './pages/Statistics';
 
 interface RouteProps {
@@ -125,10 +123,6 @@ const AppRoutes: React.FC = () => {
             <Route path="/pages/:link" element={<ProtectedRoute><PageDetails/></ProtectedRoute>}/>
             <Route path="/events" element={<ProtectedRoute><EventsList/></ProtectedRoute>}/>
             <Route path="/events/:link" element={<ProtectedRoute><EventDetails/></ProtectedRoute>}/>
-            <Route path="/events/:link/:discipline/:distance/lists"
-                   element={<ProtectedRoute><EventLists/></ProtectedRoute>}/>
-            <Route path="/events/:link/:discipline/:distance/results"
-                   element={<ProtectedRoute><EventResults/></ProtectedRoute>}/>
             <Route path="/statistics" element={<ProtectedRoute><Statistics/></ProtectedRoute>}/>
 
             <Route path="*" element={<h1 className="text-center mt-5">404 - Nie znaleziono</h1>}/>
