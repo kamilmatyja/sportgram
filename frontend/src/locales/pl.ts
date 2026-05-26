@@ -416,11 +416,12 @@ export const pl = {
     },
     logout: "Wyloguj się",
     nav: {
-        home: "Strona główna",
-        users: "Lista użytkowników",
-        pages: "Lista stron",
-        events: "Lista wydarzeń",
+        home: "Kokpit",
+        users: "Użytkownicy",
+        pages: "Strony",
+        events: "Wydarzenia",
         statistics: "Statystyki",
-        toggle: "Przełącz nawigację"
+        toggle: "Przełącz nawigację",
+        profile: "Mój profil"
     },
 };

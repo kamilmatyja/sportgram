@@ -411,11 +411,12 @@ export const en = {
     },
     logout: "Logout",
     nav: {
-        home: "Home",
-        users: "Users list",
-        pages: "Pages list",
-        events: "Events list",
+        home: "Dashboard",
+        users: "Users",
+        pages: "Pages",
+        events: "Events",
         statistics: "Statistics",
-        toggle: "Toggle navigation"
+        toggle: "Toggle navigation",
+        profile: "My profile"
     },
 };

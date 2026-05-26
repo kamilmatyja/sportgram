@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../context/TranslationContext';
+import { useCheckPermission } from '../utils/checkPermission';
 
 const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { logout } = useAuth();
     const { t } = useTranslation();
     const [isNavOpen, setIsNavOpen] = useState<boolean>(false);
+    const [userLink, setUserLink] = useState<string | null>(null);
+    const { getCurrentUser } = useCheckPermission();
+
+    useEffect(() => {
+        (async () => {
+            const user = await getCurrentUser();
+            if (user && user.link) setUserLink(user.link);
+        })();
+    }, [getCurrentUser]);
 
     const toggleNav = () => setIsNavOpen(!isNavOpen);
     const closeNav = () => setIsNavOpen(false);
@@ -44,6 +54,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
                             <li className="nav-item">
                                 <NavLink
                                     to="/users"
+                                    end
                                     className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
@@ -76,6 +87,17 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children
                                 >
                                     <i className="bi bi-graph-up me-2 d-lg-none"></i>{t('nav.statistics')}
                                 </NavLink>
+                            </li>
+                            <li className="nav-item">
+                                {userLink && (
+                                    <NavLink
+                                        to={`/users/${userLink}`}
+                                        className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                        onClick={closeNav}
+                                    >
+                                        <i className="bi bi-person me-2 d-lg-none"></i>{t('nav.profile')}
+                                    </NavLink>
+                                )}
                             </li>
                         </ul>
 
