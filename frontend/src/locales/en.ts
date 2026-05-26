@@ -380,5 +380,11 @@ export const en = {
     eventTypes: {
         eventDisciplineList: "Start List",
         eventDisciplineResult: "Results"
-    }
+    },
+    statistics: "Statistics",
+    progress: "Progress",
+    records: "Records",
+    selectFriends: "Select users",
+    noRecords: "No records found",
+    noProgress: "No progress found",
 };

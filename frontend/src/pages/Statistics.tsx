@@ -1,4 +1,8 @@
+import {useStatistics} from '../services/useStatistics';
+import {StatisticsView} from '../components/StatisticsView';
+
 export default function Statistics() {
-    return <div className="container mt-5"><h2>Statystyki</h2><p className="text-muted">Twój globalny panel postępów i
-        statystyk.</p></div>;
+    const statsService = useStatistics();
+
+    return <StatisticsView {...statsService} />;
 }

@@ -244,7 +244,7 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                         <div className="mb-4 pb-4 border-bottom">
                             <div className="text-center mb-4">
                                 {eventObj.photo && (
-                                    <img src={`data:image/webp;base64,${eventObj.photo}`} alt="Event photo" className="img-fluid rounded shadow-sm" style={{maxHeight: '300px', objectFit: 'cover'}} />
+                                    <img src={`data:image/webp;base64,${eventObj.photo}`} alt="Event photo" className="img-fluid rounded shadow-sm" />
                                 )}
                             </div>
                             <h3 className="fw-bold">{eventObj.title}</h3>
@@ -258,11 +258,11 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                             </p>
                             <div className="mb-3">
                                 <h5>{t('description')}</h5>
-                                <p style={{whiteSpace: 'pre-wrap'}}>{eventObj.description}</p>
+                                <p>{eventObj.description}</p>
                             </div>
                             <div className="mb-3">
                                 <h5>{t('rules')}</h5>
-                                <p style={{whiteSpace: 'pre-wrap'}}>{eventObj.rules}</p>
+                                <p>{eventObj.rules}</p>
                             </div>
                             {eventObj.disciplines && eventObj.disciplines.length > 0 && (
                                 <div className="mt-4">
