@@ -392,4 +392,9 @@ export const pl = {
     selectFriends: "Wybierz użytkowników",
     noRecords: "Brak rekordów",
     noProgress: "Brak progresu",
+    loadMore: "Załaduj więcej",
+    noMoreFeeds: "Brak starszych wpisów",
+    writeComment: "Napisz komentarz...",
+    send: "Wyślij",
+    save: "Zapisz",
 };

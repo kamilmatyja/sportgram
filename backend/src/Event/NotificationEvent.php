@@ -10,7 +10,7 @@ readonly class NotificationEvent
     public function __construct(
         private User $user,
         private NotificationTypeEnum $type,
-        private string $text,
+        private ?string $text,
         private ?string $link,
     ) {
     }
@@ -27,7 +27,7 @@ readonly class NotificationEvent
 
     final public function getText(): string
     {
-        return $this->text;
+        return $this->text || '-';
     }
 
     final public function getLink(): ?string

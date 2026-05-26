@@ -25,6 +25,7 @@ import PageDetails from './pages/PageDetails';
 import EventsList from './pages/EventsList';
 import EventDetails from './pages/EventDetails';
 import Statistics from './pages/Statistics';
+import Home from './pages/Home';
 
 interface RouteProps {
     children: React.ReactNode;
@@ -42,48 +43,44 @@ const GuestRoute: React.FC<RouteProps> = ({children}) => {
     return <>{children}</>;
 };
 
-const Home: React.FC = () => {
-    const {isAuthenticated, logout} = useAuth();
-    const {theme, toggleTheme} = useTheme();
-
-    if (!isAuthenticated) {
-        return (
-            <div className="container mt-5 text-center">
-                <h1>Witaj w Sportgram!</h1>
-                <p className="text-muted">Zaloguj się lub utwórz konto, aby kontynuować.</p>
-                <div className="mt-4 gap-3 d-flex justify-content-center">
-                    <Link to="/sign" className="btn btn-primary">Logowanie</Link>
-                    <Link to="/register" className="btn btn-outline-primary">Rejestracja</Link>
-                </div>
-            </div>
-        );
-    }
-
+const GuestHome: React.FC = () => {
     return (
         <div className="container mt-5 text-center">
-            <h1>Strona główna</h1>
-            <div className="row mt-4">
-                <div className="col-md-6 border-end">
-                    <h3>Stories</h3>
-                    <p className="text-muted small">Tutaj pojawi się komponent wyświetlający stories...</p>
-                </div>
-                <div className="col-md-6">
-                    <h3>Feeds</h3>
-                    <p className="text-muted small">Tutaj pojawi się komponent wyświetlający listę wpisów...</p>
-                </div>
-            </div>
-            <div className="mt-5 border-top pt-4">
-                <button className="btn btn-danger me-2" onClick={logout}>Wyloguj</button>
-                <button className="btn btn-secondary" onClick={toggleTheme}>
-                    Motyw: {theme === 'light' ? 'Jasny ☀️' : 'Ciemny 🌙'}
-                </button>
+            <h1>Witaj w Sportgram!</h1>
+            <p className="text-muted">Zaloguj się lub utwórz konto, aby kontynuować.</p>
+            <div className="mt-4 gap-3 d-flex justify-content-center">
+                <Link to="/sign" className="btn btn-primary">Logowanie</Link>
+                <Link to="/register" className="btn btn-outline-primary">Rejestracja</Link>
             </div>
         </div>
     );
 };
 
+const AuthenticatedLayout: React.FC<{children: React.ReactNode}> = ({children}) => {
+    const {logout} = useAuth();
+    const {theme, toggleTheme} = useTheme();
+
+    return (
+        <>
+            <nav className="navbar navbar-expand bg-white shadow-sm mb-4 border-bottom">
+                <div className="container d-flex justify-content-between">
+                    <Link to="/" className="navbar-brand fw-bold text-primary">Sportgram</Link>
+                    <div className="d-flex gap-2">
+                        <Link to="/users" className="btn btn-sm btn-outline-primary"><i className="bi bi-search"></i></Link>
+                        <button className="btn btn-sm btn-outline-secondary" onClick={toggleTheme}>
+                            {theme === 'light' ? <i className="bi bi-moon-fill"></i> : <i className="bi bi-sun-fill"></i>}
+                        </button>
+                        <button className="btn btn-sm btn-danger" onClick={logout}><i className="bi bi-box-arrow-right"></i></button>
+                    </div>
+                </div>
+            </nav>
+            {children}
+        </>
+    );
+};
+
 const AppRoutes: React.FC = () => {
-    const {isAuthLoading} = useAuth();
+    const {isAuthLoading, isAuthenticated} = useAuth();
 
     if (isAuthLoading) {
         return (
@@ -97,33 +94,32 @@ const AppRoutes: React.FC = () => {
 
     return (
         <Routes>
-            <Route path="/" element={<Home/>}/>
+            <Route path="/" element={isAuthenticated ? <AuthenticatedLayout><Home/></AuthenticatedLayout> : <GuestHome/>}/>
 
             <Route path="/register" element={<GuestRoute><Register/></GuestRoute>}/>
             <Route path="/sign" element={<GuestRoute><Sign/></GuestRoute>}/>
             <Route path="/password-reset" element={<GuestRoute><PasswordReset/></GuestRoute>}/>
 
-            <Route path="/users" element={<ProtectedRoute><Users/></ProtectedRoute>}/>
-            <Route path="/users/:link" element={<ProtectedRoute><UserProfile/></ProtectedRoute>}/>
-            <Route path="/users/:link/settings" element={<ProtectedRoute><UserSettings/></ProtectedRoute>}/>
-            <Route path="/users/:link/feeds" element={<ProtectedRoute><UserFeeds/></ProtectedRoute>}/>
-            <Route path="/users/:link/stories" element={<ProtectedRoute><UserStories/></ProtectedRoute>}/>
-            <Route path="/users/:link/friends" element={<ProtectedRoute><UserFriends/></ProtectedRoute>}/>
-            <Route path="/users/:link/goals" element={<ProtectedRoute><UserGoals/></ProtectedRoute>}/>
-            <Route path="/users/:link/pages" element={<ProtectedRoute><UserPages/></ProtectedRoute>}/>
-            <Route path="/users/:link/events" element={<ProtectedRoute><UserEvents/></ProtectedRoute>}/>
-            <Route path="/users/:link/trainings" element={<ProtectedRoute><UserTrainings/></ProtectedRoute>}/>
-            <Route path="/users/:link/notifications" element={<ProtectedRoute><UserNotifications/></ProtectedRoute>}/>
-            <Route path="/users/:link/push-subscriptions"
-                   element={<ProtectedRoute><UserPushSubscriptions/></ProtectedRoute>}/>
-            <Route path="/users/:link/conversations" element={<ProtectedRoute><UserConversations/></ProtectedRoute>}/>
-            <Route path="/goals/:link" element={<ProtectedRoute><GoalDetails/></ProtectedRoute>}/>
-            <Route path="/trainings/:link" element={<ProtectedRoute><TrainingDetails/></ProtectedRoute>}/>
-            <Route path="/pages" element={<ProtectedRoute><PagesList/></ProtectedRoute>}/>
-            <Route path="/pages/:link" element={<ProtectedRoute><PageDetails/></ProtectedRoute>}/>
-            <Route path="/events" element={<ProtectedRoute><EventsList/></ProtectedRoute>}/>
-            <Route path="/events/:link" element={<ProtectedRoute><EventDetails/></ProtectedRoute>}/>
-            <Route path="/statistics" element={<ProtectedRoute><Statistics/></ProtectedRoute>}/>
+            <Route path="/users" element={<ProtectedRoute><AuthenticatedLayout><Users/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link" element={<ProtectedRoute><AuthenticatedLayout><UserProfile/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/settings" element={<ProtectedRoute><AuthenticatedLayout><UserSettings/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/feeds" element={<ProtectedRoute><AuthenticatedLayout><UserFeeds/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/stories" element={<ProtectedRoute><AuthenticatedLayout><UserStories/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/friends" element={<ProtectedRoute><AuthenticatedLayout><UserFriends/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/goals" element={<ProtectedRoute><AuthenticatedLayout><UserGoals/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/pages" element={<ProtectedRoute><AuthenticatedLayout><UserPages/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/events" element={<ProtectedRoute><AuthenticatedLayout><UserEvents/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/trainings" element={<ProtectedRoute><AuthenticatedLayout><UserTrainings/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/notifications" element={<ProtectedRoute><AuthenticatedLayout><UserNotifications/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/push-subscriptions" element={<ProtectedRoute><AuthenticatedLayout><UserPushSubscriptions/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/users/:link/conversations" element={<ProtectedRoute><AuthenticatedLayout><UserConversations/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/goals/:link" element={<ProtectedRoute><AuthenticatedLayout><GoalDetails/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/trainings/:link" element={<ProtectedRoute><AuthenticatedLayout><TrainingDetails/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/pages" element={<ProtectedRoute><AuthenticatedLayout><PagesList/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/pages/:link" element={<ProtectedRoute><AuthenticatedLayout><PageDetails/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/events" element={<ProtectedRoute><AuthenticatedLayout><EventsList/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/events/:link" element={<ProtectedRoute><AuthenticatedLayout><EventDetails/></AuthenticatedLayout></ProtectedRoute>}/>
+            <Route path="/statistics" element={<ProtectedRoute><AuthenticatedLayout><Statistics/></AuthenticatedLayout></ProtectedRoute>}/>
 
             <Route path="*" element={<h1 className="text-center mt-5">404 - Nie znaleziono</h1>}/>
         </Routes>

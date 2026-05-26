@@ -387,4 +387,9 @@ export const en = {
     selectFriends: "Select users",
     noRecords: "No records found",
     noProgress: "No progress found",
+    loadMore: "Load more",
+    noMoreFeeds: "No more feeds to load",
+    writeComment: "Write a comment...",
+    send: "Send",
+    save: "Save",
 };
