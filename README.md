@@ -121,7 +121,6 @@ npm run dev
 - kamera na froncie
 - gps na froncie przy dodawaniu treningu
 - przycisk follow na stronie
-- przycisk zapisu na wydarzeniu
 - zapisywanie wyświetleń encji po wejściu na jakiś profil
 - informacje o wyświetleniach przy encjach
 - informacje o ilości follow na profilach

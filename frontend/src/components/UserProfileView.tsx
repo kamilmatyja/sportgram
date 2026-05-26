@@ -78,7 +78,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                     <>
                         {(isMyProfile || isAdmin) && (
                             <button className="btn btn-profile-outline-primary" onClick={() => onManageClick(user)}>
-                                <i className="bi bi-gear me-1"></i> {t('settings')}
+                                <i className="bi bi-gear me-1"></i> {t('manage')}
                             </button>
                         )}
                         <a href={`/users/${user.link}/feeds`} className="btn btn-profile-outline-primary">

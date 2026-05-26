@@ -1,20 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
 import {PageProvider} from '../api/providers/PageProvider';
 import {UserProvider} from '../api/providers/UserProvider';
-import {FriendProvider} from '../api/providers/FriendProvider';
 import {EventProvider} from '../api/providers/EventProvider';
-import {PageBody} from '../api/body/PageBody';
-import {StatusBody} from '../api/body/StatusBody';
 import {PageResponse} from '../api/responses/PageResponse';
 import {UserResponse} from '../api/responses/UserResponse';
 import {EventResponse} from '../api/responses/EventResponse';
-import {createFormHandler} from '../utils/formHandler';
 import {useCheckPermission} from '../utils/checkPermission';
 import {UserIndexQuery} from '../api/queries/UserIndexQuery';
-import {FriendFilterQuery} from '../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../api/queries/FriendIndexQuery';
-import {FriendStatusEnum} from '../enums/FriendStatusEnum';
 import {UserFilterQuery} from '../api/queries/UserFilterQuery';
 import {PageFilterQuery} from '../api/queries/PageFilterQuery';
 import {PageIndexQuery} from '../api/queries/PageIndexQuery';
@@ -23,13 +15,12 @@ import {EventIndexQuery} from '../api/queries/EventIndexQuery';
 import {RoleEnum} from '../enums/RoleEnum';
 
 export function usePageDetails(link?: string) {
-    const navigate = useNavigate();
     const {getCurrentUser} = useCheckPermission();
 
     const [pageObj, setPageObj] = useState<PageResponse | null>(null);
     const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
-    const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
+    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
 
     const [events, setEvents] = useState<EventResponse[]>([]);
     const [eventPage, setEventPage] = useState<number>(1);
@@ -40,47 +31,14 @@ export function usePageDetails(link?: string) {
 
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const [isParticipantOfPage, setIsParticipantOfPage] = useState<boolean>(false);
 
     const [loading, setLoading] = useState<boolean>(true);
-    const [submitLoading, setSubmitLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
-    const [successMsg, setSuccessMsg] = useState<string>('');
-
-    const [formData, setFormData] = useState(new PageBody('', '', '', '', '', 0, []));
 
     const pageProvider = new PageProvider();
     const userProvider = new UserProvider();
-    const friendProvider = new FriendProvider();
     const eventProvider = new EventProvider();
-
-    const loadAvailableFriends = async (currentUsr: UserResponse) => {
-        const fFilter = new FriendFilterQuery();
-        fFilter.userIds = [currentUsr.id];
-        fFilter.status = FriendStatusEnum.ACCEPTED;
-        const fIndexDto = new FriendIndexQuery();
-        fIndexDto.filter = fFilter;
-
-        const myFriends = await friendProvider.index(fIndexDto);
-
-        const acceptedFriendIds = new Set<string>();
-        myFriends.forEach(f => {
-            if (f.senderUserId !== currentUsr.id) acceptedFriendIds.add(f.senderUserId);
-            if (f.receiverUserId !== currentUsr.id) acceptedFriendIds.add(f.receiverUserId);
-        });
-
-        if (acceptedFriendIds.size > 0) {
-            const uFilter = new UserFilterQuery();
-            uFilter.userIds = Array.from(acceptedFriendIds);
-            const uIndexDto = new UserIndexQuery();
-            uIndexDto.filter = uFilter;
-            const acceptedFriendsUsers = await userProvider.index(uIndexDto);
-            setAvailableUsers(acceptedFriendsUsers);
-        } else {
-            setAvailableUsers([]);
-        }
-    };
 
     const fetchEvents = async (targetPageId: string) => {
         setEventsLoading(true);
@@ -146,18 +104,22 @@ export function usePageDetails(link?: string) {
             const isOwner = currentUsr.id === owner.id;
             setIsMyProfile(isOwner);
 
-            setFormData(new PageBody(
-                targetPage.title,
-                targetPage.description,
-                targetPage.link,
-                '',
-                '',
-                targetPage.color,
-                targetPage.participants.map(p => p.userId)
-            ));
+            const participantCheck = targetPage.participants?.some(p => p.userId === currentUsr.id) ?? false;
+            setIsParticipantOfPage(participantCheck);
 
-            if (isOwner || adminCheck) {
-                await loadAvailableFriends(owner);
+            const userIdsToFetch = Array.from(new Set(targetPage.participants.map(p => p.userId)));
+            if (userIdsToFetch.length > 0) {
+                const uFilter = new UserFilterQuery();
+                uFilter.userIds = userIdsToFetch;
+                const uIndexDto = new UserIndexQuery();
+                uIndexDto.filter = uFilter;
+                uIndexDto.limit = userIdsToFetch.length;
+                const usersData = await userProvider.index(uIndexDto);
+                const usersMap = usersData.reduce((acc, curr) => {
+                    acc[curr.id] = curr;
+                    return acc;
+                }, {} as Record<string, UserResponse>);
+                setRelatedUsers(usersMap);
             }
 
             await fetchEvents(targetPage.id);
@@ -179,77 +141,6 @@ export function usePageDetails(link?: string) {
         }
     }, [eventPage, eventLimit, eventSort, eventFilters]);
 
-    const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!pageObj) return;
-        setSubmitLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        setSuccessMsg('');
-        try {
-            formData.profilePhoto = formData.profilePhoto ? formData.profilePhoto : pageObj.profilePhoto;
-            formData.backgroundPhoto = formData.backgroundPhoto ? formData.backgroundPhoto : pageObj.backgroundPhoto;
-
-            await pageProvider.update(pageObj.id, formData);
-            setSuccessMsg('settingsUpdated');
-            await fetchPageData();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setSubmitLoading(false);
-        }
-    };
-
-    const handleStatusSubmit = async (newStatus: number) => {
-        if (!pageObj) return;
-        setSubmitLoading(true);
-        setGlobalError('');
-        setSuccessMsg('');
-        try {
-            await pageProvider.updateStatus(pageObj.id, new StatusBody(newStatus));
-            await fetchPageData();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setSubmitLoading(false);
-        }
-    };
-
-    const handleParticipantStatusSubmit = async (participantId: string, newStatus: number) => {
-        setSubmitLoading(true);
-        setGlobalError('');
-        setSuccessMsg('');
-        try {
-            await pageProvider.updateParticipantStatus(participantId, new StatusBody(newStatus));
-            await fetchPageData();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setSubmitLoading(false);
-        }
-    };
-
-    const handleDelete = async () => {
-        if (!pageObj || !ownerUser) return;
-        setSubmitLoading(true);
-        setGlobalError('');
-        try {
-            await pageProvider.delete(pageObj.id);
-            navigate(`/users/${ownerUser.link}/pages`);
-        } catch (err: any) {
-            setGlobalError(err.error);
-            setSubmitLoading(false);
-        }
-    };
-
-    const handleChange = createFormHandler(setFormData);
-
-    const handleParticipantsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selected = Array.from(e.target.selectedOptions).map(o => o.value);
-        setFormData(prev => ({...prev, participants: selected}));
-    };
-
     const handleEventFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setEventFilters(prev => ({...prev, [e.target.name]: e.target.value}));
         setEventPage(1);
@@ -267,25 +158,20 @@ export function usePageDetails(link?: string) {
     const handleEventPrevPage = () => setEventPage(prev => Math.max(prev - 1, 1));
     const handleEventNextPage = () => setEventPage(prev => prev + 1);
 
+    const refreshPage = () => {
+        fetchPageData();
+    };
+
     return {
         pageObj,
+        ownerUser,
         currentUser,
-        availableUsers,
+        relatedUsers,
         isMyProfile,
         isAdmin,
+        isParticipantOfPage,
         loading,
-        submitLoading,
         error,
-        globalError,
-        fieldErrors,
-        successMsg,
-        formData,
-        handleChange,
-        handleParticipantsChange,
-        handleEditSubmit,
-        handleStatusSubmit,
-        handleParticipantStatusSubmit,
-        handleDelete,
         events,
         eventsLoading,
         eventPage,
@@ -296,6 +182,7 @@ export function usePageDetails(link?: string) {
         handleEventSortChange,
         handleEventLimitChange,
         handleEventPrevPage,
-        handleEventNextPage
+        handleEventNextPage,
+        refreshPage
     };
 }

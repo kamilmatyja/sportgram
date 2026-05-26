@@ -419,4 +419,6 @@ export const en = {
         toggle: "Toggle navigation",
         profile: "My profile"
     },
+    results: "Results",
+    details: "Details",
 };

@@ -424,4 +424,6 @@ export const pl = {
         toggle: "Przełącz nawigację",
         profile: "Mój profil"
     },
+    results: "Wyniki",
+    details: "Szczegóły",
 };

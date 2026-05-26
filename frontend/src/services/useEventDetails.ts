@@ -1,15 +1,11 @@
-import React, {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useEffect, useState} from 'react';
 import {EventProvider} from '../api/providers/EventProvider';
 import {PageProvider} from '../api/providers/PageProvider';
 import {UserProvider} from '../api/providers/UserProvider';
-import {EventBody} from '../api/body/EventBody';
-import {StatusBody} from '../api/body/StatusBody';
 import {EventResponse} from '../api/responses/EventResponse';
 import {UserResponse} from '../api/responses/UserResponse';
 import {PageResponse} from '../api/responses/PageResponse';
 import {EventDisciplineDistanceListResponse} from '../api/responses/EventDisciplineDistanceListResponse';
-import {createFormHandler} from '../utils/formHandler';
 import {useCheckPermission} from '../utils/checkPermission';
 import {EventFilterQuery} from '../api/queries/EventFilterQuery';
 import {EventIndexQuery} from '../api/queries/EventIndexQuery';
@@ -19,12 +15,10 @@ import {EventListIndexQuery} from '../api/queries/EventListIndexQuery';
 import {UserFilterQuery} from '../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 import {RoleEnum} from '../enums/RoleEnum';
-import {EventDiscipline} from '../api/body/EventDiscipline';
-import {EventDistance} from '../api/body/EventDistance';
-import {EventSubDistance} from '../api/body/EventSubDistance';
+import {StatusBody} from '../api/body/StatusBody';
+import {EventListFilterQuery} from '../api/queries/EventListFilterQuery';
 
 export function useEventDetails(link?: string) {
-    const navigate = useNavigate();
     const {getCurrentUser} = useCheckPermission();
 
     const [eventObj, setEventObj] = useState<EventResponse | null>(null);
@@ -34,15 +28,10 @@ export function useEventDetails(link?: string) {
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isParticipant, setIsParticipant] = useState<boolean>(false);
+    const [userEnrollments, setUserEnrollments] = useState<string[]>([]);
 
     const [loading, setLoading] = useState<boolean>(true);
-    const [submitLoading, setSubmitLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
-    const [successMsg, setSuccessMsg] = useState<string>('');
-
-    const [formData, setFormData] = useState(new EventBody('', '', '', '', '', '', '', '', []));
 
     const [showListsModal, setShowListsModal] = useState(false);
     const [selectedDistanceId, setSelectedDistanceId] = useState<string>('');
@@ -116,27 +105,21 @@ export function useEventDetails(link?: string) {
             setIsMyProfile(isOwner);
             setOwnerPage(targetPage);
 
-            const disciplinesMapped: EventDiscipline[] = targetEvent.disciplines.map(d => ({
-                discipline: d.discipline,
-                distances: d.distances.map(dist => ({
-                    distance: dist.distance,
-                    subDistances: dist.subDistances.map(sub => ({
-                        subDistance: sub.subDistance
-                    }))
-                }))
-            }));
-
-            setFormData(new EventBody(
-                targetEvent.startedAt.substring(0, 16),
-                targetEvent.endedAt.substring(0, 16),
-                targetEvent.title,
-                targetEvent.description,
-                targetEvent.link,
-                targetEvent.rules,
-                '',
-                targetEvent.location,
-                disciplinesMapped
-            ));
+            if (participantCheck) {
+                const enrollments: string[] = [];
+                const distIds = targetEvent.disciplines.flatMap(d => d.distances.map(dist => dist.id));
+                await Promise.all(distIds.map(async (distId) => {
+                    const lFilter = new EventListFilterQuery();
+                    lFilter.userId = currentUsr.id;
+                    const lIndex = new EventListIndexQuery();
+                    lIndex.filter = lFilter;
+                    const lists = await eventProvider.indexList(distId, lIndex);
+                    if (lists.length > 0) {
+                        enrollments.push(distId);
+                    }
+                }));
+                setUserEnrollments(enrollments);
+            }
 
         } catch (err: any) {
             setError(err.error);
@@ -148,116 +131,6 @@ export function useEventDetails(link?: string) {
     useEffect(() => {
         fetchEventData();
     }, [link]);
-
-    const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!eventObj) return;
-        setSubmitLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        setSuccessMsg('');
-        try {
-            formData.photo = formData.photo ? formData.photo : eventObj.photo;
-            await eventProvider.update(eventObj.id, formData);
-            setSuccessMsg('settingsUpdated');
-            await fetchEventData();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setSubmitLoading(false);
-        }
-    };
-
-    const handleStatusSubmit = async (newStatus: number) => {
-        if (!eventObj) return;
-        setSubmitLoading(true);
-        setGlobalError('');
-        setSuccessMsg('');
-        try {
-            await eventProvider.updateStatus(eventObj.id, new StatusBody(newStatus));
-            await fetchEventData();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setSubmitLoading(false);
-        }
-    };
-
-    const handleDelete = async () => {
-        if (!eventObj) return;
-        setSubmitLoading(true);
-        setGlobalError('');
-        try {
-            await eventProvider.delete(eventObj.id);
-            navigate(`/events`);
-        } catch (err: any) {
-            setGlobalError(err.error);
-            setSubmitLoading(false);
-        }
-    };
-
-    const addDiscipline = () => {
-        const newDisc = new EventDiscipline();
-        newDisc.discipline = 1;
-        newDisc.distances = [];
-        setFormData(prev => ({ ...prev, disciplines: [...(prev.disciplines || []), newDisc] }));
-    };
-
-    const updateDisciplineType = (index: number, type: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[index].discipline = type;
-        setFormData(prev => ({ ...prev, disciplines: discs }));
-    };
-
-    const removeDiscipline = (index: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs.splice(index, 1);
-        setFormData(prev => ({ ...prev, disciplines: discs }));
-    };
-
-    const addDistance = (discIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        const newDist = new EventDistance();
-        newDist.distance = 0;
-        newDist.subDistances = [];
-        discs[discIndex].distances = [...(discs[discIndex].distances || []), newDist];
-        setFormData(prev => ({ ...prev, disciplines: discs }));
-    };
-
-    const updateDistanceValue = (discIndex: number, distIndex: number, val: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[discIndex].distances![distIndex].distance = val;
-        setFormData(prev => ({ ...prev, disciplines: discs }));
-    };
-
-    const removeDistance = (discIndex: number, distIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[discIndex].distances!.splice(distIndex, 1);
-        setFormData(prev => ({ ...prev, disciplines: discs }));
-    };
-
-    const addSubDistance = (discIndex: number, distIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        const newSub = new EventSubDistance();
-        newSub.subDistance = 0;
-        discs[discIndex].distances![distIndex].subDistances = [...(discs[discIndex].distances![distIndex].subDistances || []), newSub];
-        setFormData(prev => ({ ...prev, disciplines: discs }));
-    };
-
-    const updateSubDistanceValue = (discIndex: number, distIndex: number, subIndex: number, val: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[discIndex].distances![distIndex].subDistances![subIndex].subDistance = val;
-        setFormData(prev => ({ ...prev, disciplines: discs }));
-    };
-
-    const removeSubDistance = (discIndex: number, distIndex: number, subIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[discIndex].distances![distIndex].subDistances!.splice(subIndex, 1);
-        setFormData(prev => ({ ...prev, disciplines: discs }));
-    };
-
-    const handleChange = createFormHandler(setFormData);
 
     const fetchDistanceLists = async (distId: string) => {
         setListsLoading(true);
@@ -305,12 +178,14 @@ export function useEventDetails(link?: string) {
         setDistanceLists([]);
     };
 
-    const handleEnroll = async () => {
-        if (!selectedDistanceId) return;
+    const handleEnroll = async (distId: string) => {
         setActionLoading(true);
         try {
-            await eventProvider.createList(selectedDistanceId);
-            await fetchDistanceLists(selectedDistanceId);
+            await eventProvider.createList(distId);
+            setUserEnrollments(prev => [...prev, distId]);
+            if (selectedDistanceId === distId) {
+                await fetchDistanceLists(distId);
+            }
         } catch(e: any) {
             alert(e.error);
         } finally {
@@ -342,6 +217,10 @@ export function useEventDetails(link?: string) {
         }
     };
 
+    const refreshEvent = () => {
+        fetchEventData();
+    };
+
     return {
         eventObj,
         ownerPage,
@@ -349,26 +228,9 @@ export function useEventDetails(link?: string) {
         isMyProfile,
         isAdmin,
         isParticipant,
+        userEnrollments,
         loading,
-        submitLoading,
         error,
-        globalError,
-        fieldErrors,
-        successMsg,
-        formData,
-        handleChange,
-        handleEditSubmit,
-        handleStatusSubmit,
-        handleDelete,
-        addDiscipline,
-        updateDisciplineType,
-        removeDiscipline,
-        addDistance,
-        updateDistanceValue,
-        removeDistance,
-        addSubDistance,
-        updateSubDistanceValue,
-        removeSubDistance,
         showListsModal,
         openListsModal,
         closeListsModal,
@@ -379,6 +241,7 @@ export function useEventDetails(link?: string) {
         actionLoading,
         handleEnroll,
         handleListStatusUpdate,
-        handleDeleteList
+        handleDeleteList,
+        refreshEvent
     };
 }

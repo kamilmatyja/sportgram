@@ -87,6 +87,11 @@ html, body {
     max-height: 500px;
 }
 
+.event-details-photo {
+    max-height: 400px;
+    object-fit: cover;
+}
+
 .text-profile-primary {
     --bs-text-opacity: var(--theme-color);
     color: var(--bs-text-opacity) !important;

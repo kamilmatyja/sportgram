@@ -3,7 +3,6 @@ import {useTranslation} from '../context/TranslationContext';
 import {PageResponse} from '../api/responses/PageResponse';
 import {UserResponse} from '../api/responses/UserResponse';
 import {EventResponse} from '../api/responses/EventResponse';
-import {PageBody} from '../api/body/PageBody';
 import {ColorEnum} from '../enums/ColorEnum';
 import {ElementStatusEnum} from '../enums/ElementStatusEnum';
 import {SaveStatusEnum} from '../enums/SaveStatusEnum';
@@ -13,23 +12,14 @@ import {formatDate} from '../utils/dateFormat';
 
 interface PageDetailsViewProps {
     pageObj: PageResponse | null;
-    currentUser: UserResponse | null;
-    availableUsers: UserResponse[];
+    ownerUser: UserResponse | null;
+    relatedUsers: Record<string, UserResponse>;
     isMyProfile: boolean;
     isAdmin: boolean;
+    isParticipantOfPage: boolean;
     loading: boolean;
-    submitLoading: boolean;
     error: string | null;
-    globalError: string;
-    fieldErrors: Record<string, string | string[]>;
-    successMsg: string;
-    formData: PageBody;
-    handleChange: (e: React.ChangeEvent<any>) => void;
-    handleParticipantsChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-    handleEditSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
-    handleStatusSubmit: (newStatus: number) => void;
-    handleParticipantStatusSubmit: (participantId: string, newStatus: number) => void;
-    handleDelete: () => void;
+    onManageClick: (page: PageResponse) => void;
 
     events: EventResponse[];
     eventsLoading: boolean;
@@ -46,23 +36,14 @@ interface PageDetailsViewProps {
 
 export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                                                                     pageObj,
-                                                                    currentUser,
-                                                                    availableUsers,
+                                                                    ownerUser,
+                                                                    relatedUsers,
                                                                     isMyProfile,
                                                                     isAdmin,
+                                                                    isParticipantOfPage,
                                                                     loading,
-                                                                    submitLoading,
                                                                     error,
-                                                                    globalError,
-                                                                    fieldErrors,
-                                                                    successMsg,
-                                                                    formData,
-                                                                    handleChange,
-                                                                    handleParticipantsChange,
-                                                                    handleEditSubmit,
-                                                                    handleStatusSubmit,
-                                                                    handleParticipantStatusSubmit,
-                                                                    handleDelete,
+                                                                    onManageClick,
                                                                     events,
                                                                     eventsLoading,
                                                                     eventPage,
@@ -79,14 +60,13 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
 
     if (loading) return <div className="container mt-5 text-center"><div className="spinner-border"/></div>;
 
-    if (error || !pageObj || !currentUser) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (error || !pageObj || !ownerUser) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
 
     const hexColor = ColorEnum.getHex(pageObj.color);
-    const myParticipant = pageObj.participants?.find(p => p.userId === currentUser.id);
+    const canManage = isMyProfile || isAdmin || isParticipantOfPage;
 
     return (
         <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
-
             <div className="card shadow-sm mb-4">
                 <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
                     <img src={`data:image/webp;base64,${pageObj.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover"/>
@@ -108,154 +88,55 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
 
             <div className="card shadow-sm mb-4">
                 <div className="card-body">
-                    <h4 className="mb-4">{t('managePage')}</h4>
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                        <h4 className="mb-0">{t('details')}</h4>
+                        {canManage && (
+                            <button className="btn btn-profile-primary" onClick={() => onManageClick(pageObj)}>
+                                <i className="bi bi-gear me-1"></i> {t('manage')}
+                            </button>
+                        )}
+                    </div>
 
-                    {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
-                    {successMsg && <div className="alert alert-success">{t(successMsg)}</div>}
-
-                    {isMyProfile ? (
-                        <form id="edit-page-form" onSubmit={handleEditSubmit} className="mb-4 border-bottom pb-4">
-                            <div className="mb-3">
-                                <label className="form-label">{t('title')}</label>
-                                <input type="text" name="title"
-                                       className={`form-control ${fieldErrors.title ? 'is-invalid' : ''}`}
-                                       value={formData.title} onChange={handleChange} required/>
-                                {fieldErrors.title && <div className="invalid-feedback d-block">{fieldErrors.title}</div>}
-                            </div>
-
-                            <div className="mb-3">
-                                <label className="form-label">{t('description')}</label>
-                                <textarea name="description"
-                                          className={`form-control ${fieldErrors.description ? 'is-invalid' : ''}`}
-                                          value={formData.description} onChange={handleChange} required rows={3}/>
-                                {fieldErrors.description && <div className="invalid-feedback d-block">{fieldErrors.description}</div>}
-                            </div>
-
-                            <div className="row mb-3">
-                                <div className="col-md-6">
-                                    <label className="form-label">{t('link')}</label>
-                                    <input type="text" name="link"
-                                           className={`form-control ${fieldErrors.link ? 'is-invalid' : ''}`}
-                                           value={formData.link} onChange={handleChange} required/>
-                                    {fieldErrors.link && <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
-                                </div>
-                                <div className="col-md-6">
-                                    <label className="form-label">{t('color')}</label>
-                                    <select name="color"
-                                            className={`form-select ${fieldErrors.color ? 'is-invalid' : ''}`}
-                                            value={formData.color || ''} onChange={handleChange} required>
-                                        <option value="">{t('selectOption')}</option>
-                                        {ColorEnum.getOptions(t).map(opt => (
-                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                        ))}
-                                    </select>
-                                    {fieldErrors.color && <div className="invalid-feedback d-block">{fieldErrors.color}</div>}
-                                </div>
-                            </div>
-
-                            <div className="row mb-3">
-                                <div className="col-md-6">
-                                    <label className="form-label">{t('profilePhoto')}</label>
-                                    <input type="file" accept="image/*" name="profilePhoto"
-                                           className={`form-control ${fieldErrors.profilePhoto ? 'is-invalid' : ''}`}
-                                           onChange={handleChange}/>
-                                    <div className="form-text">{t('photoOptional')}</div>
-                                    {fieldErrors.profilePhoto && <div className="invalid-feedback d-block">{fieldErrors.profilePhoto}</div>}
-                                </div>
-                                <div className="col-md-6">
-                                    <label className="form-label">{t('backgroundPhoto')}</label>
-                                    <input type="file" accept="image/*" name="backgroundPhoto"
-                                           className={`form-control ${fieldErrors.backgroundPhoto ? 'is-invalid' : ''}`}
-                                           onChange={handleChange}/>
-                                    <div className="form-text">{t('photoOptional')}</div>
-                                    {fieldErrors.backgroundPhoto && <div className="invalid-feedback d-block">{fieldErrors.backgroundPhoto}</div>}
-                                </div>
-                            </div>
-
-                            <div className="mb-3">
-                                <label className="form-label">{t('participants')}</label>
-                                <select
-                                    name="participants"
-                                    className={`form-select ${fieldErrors.participants ? 'is-invalid' : ''}`}
-                                    value={Array.isArray(formData.participants) ? formData.participants : []}
-                                    onChange={handleParticipantsChange}
-                                    multiple
-                                >
-                                    {availableUsers.map(u => (
-                                        <option key={u.id} value={u.id}>
-                                            {u.firstName} {u.lastName} ({u.link})
-                                        </option>
-                                    ))}
-                                </select>
-                                {fieldErrors.participants && <div className="invalid-feedback d-block">{fieldErrors.participants}</div>}
-                            </div>
-
-                            <div className="d-flex justify-content-end gap-2 mt-4">
-                                <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={submitLoading}>
-                                    {submitLoading ? t('sending') : t('delete')}
-                                </button>
-                                <button type="submit" className="btn btn-profile-primary" disabled={submitLoading}>
-                                    {submitLoading ? t('sending') : t('saveChanges')}
-                                </button>
-                            </div>
-                        </form>
-                    ) : (
-                        <div className="mb-4 border-bottom pb-4">
-                            <p className="mb-0">{pageObj.description}</p>
-                        </div>
-                    )}
-
-                    {(isMyProfile || isAdmin) && (
-                        <div className="mb-4 border-bottom pb-4">
-                            <h6 className="mb-3">{t('managePageStatus')}</h6>
-                            <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('pageStatus')}: </strong>
-                                <span className="me-2 badge bg-light text-dark border profile-theme-border">
-                                    {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}
-                                </span>
-                                {ElementStatusEnum.getOptions(t)
-                                    .filter(opt => opt.value !== pageObj.status)
-                                    .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
-                                    .map(opt => (
-                                        <button
-                                            key={opt.value}
-                                            type="button"
-                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                            disabled={submitLoading}
-                                            onClick={() => handleStatusSubmit(opt.value)}
-                                        >
-                                            {submitLoading ? t('loading') : opt.label}
-                                        </button>
-                                    ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {myParticipant && (
-                        <div className="mb-4">
-                            <h6 className="mb-3">{t('manageParticipantStatus')}</h6>
-                            <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('participantStatus')}: </strong>
-                                <span className="me-2 badge bg-light text-dark border profile-theme-border">
-                                {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
+                    <div className="mb-4 border-bottom pb-4">
+                        <p className="mb-3">{pageObj.description}</p>
+                        <div className="d-flex align-items-center gap-2 mt-2">
+                            <strong>{t('pageStatus')}: </strong>
+                            <span className="badge bg-light text-dark border profile-theme-border">
+                                {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}
                             </span>
-                                {SaveStatusEnum.getOptions(t)
-                                    .filter(opt => opt.value !== myParticipant.status)
-                                    .filter(opt => opt.value !== SaveStatusEnum.PENDING)
-                                    .map(opt => (
-                                        <button
-                                            key={opt.value}
-                                            type="button"
-                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                            disabled={submitLoading}
-                                            onClick={() => handleParticipantStatusSubmit(myParticipant.id, opt.value)}
-                                        >
-                                            {submitLoading ? t('loading') : opt.label}
-                                        </button>
-                                    ))}
-                            </div>
                         </div>
-                    )}
+                    </div>
+
+                    <div className="mb-0">
+                        <h5 className="mb-3">{t('participants')}</h5>
+                        <div className="table-responsive-custom">
+                            <table className="table table-bordered table-hover align-middle mb-0">
+                                <thead className="table-light">
+                                <tr>
+                                    <th>{t('user')}</th>
+                                    <th>{t('status')}</th>
+                                    <th>{t('createdAt')}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {pageObj.participants.length === 0 ? (
+                                    <tr><td colSpan={3} className="text-center text-muted">{t('noParticipants')}</td></tr>
+                                ) : pageObj.participants.map(p => {
+                                    const u = relatedUsers[p.userId];
+                                    return (
+                                        <tr key={p.id}>
+                                            <td>
+                                                {u ? <a href={`/users/${u.link}`} className="btn btn-link p-0 text-decoration-none">{u.firstName} {u.lastName}</a> : p.userId}
+                                            </td>
+                                            <td>{SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(p.status))?.label || p.status}</td>
+                                            <td>{formatDate(p.createdAt)}</td>
+                                        </tr>
+                                    );
+                                })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
