@@ -409,5 +409,13 @@ export const en = {
     brand: {
         sportgram: "Sportgram"
     },
-    logout: "Logout"
+    logout: "Logout",
+    nav: {
+        home: "Home",
+        users: "Users list",
+        pages: "Pages list",
+        events: "Events list",
+        statistics: "Statistics",
+        toggle: "Toggle navigation"
+    },
 };

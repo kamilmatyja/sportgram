@@ -415,4 +415,12 @@ export const pl = {
         sportgram: "Sportgram"
     },
     logout: "Wyloguj się",
+    nav: {
+        home: "Strona główna",
+        users: "Lista użytkowników",
+        pages: "Lista stron",
+        events: "Lista wydarzeń",
+        statistics: "Statystyki",
+        toggle: "Przełącz nawigację"
+    },
 };

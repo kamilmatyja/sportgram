@@ -1,25 +1,94 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
-import {useTranslation} from '../context/TranslationContext';
+import { useTranslation } from '../context/TranslationContext';
 
 const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { logout } = useAuth();
-    const { theme, toggleTheme } = useTheme();
     const { t } = useTranslation();
+    const [isNavOpen, setIsNavOpen] = useState<boolean>(false);
+
+    const toggleNav = () => setIsNavOpen(!isNavOpen);
+    const closeNav = () => setIsNavOpen(false);
 
     return (
         <>
-            <nav className="navbar navbar-expand bg-white shadow-sm mb-4 border-bottom">
-                <div className="container d-flex justify-content-between">
-                    <Link to="/" className="navbar-brand fw-bold text-primary">{t('brand.sportgram')}</Link>
-                    <div className="d-flex gap-2">
-                        <Link to="/users" className="btn btn-sm btn-outline-primary" title={t('search')}><i className="bi bi-search"></i></Link>
-                        <button className="btn btn-sm btn-outline-secondary" onClick={toggleTheme} title={theme === 'light' ? t('themes.dark') : t('themes.light')}>
-                            {theme === 'light' ? <i className="bi bi-moon-fill"></i> : <i className="bi bi-sun-fill"></i>}
-                        </button>
-                        <button className="btn btn-sm btn-danger" onClick={logout} title={t('logout') || 'Logout'}><i className="bi bi-box-arrow-right"></i></button>
+            <nav className="navbar navbar-expand-lg bg-white shadow-sm mb-4 border-bottom sticky-top">
+                <div className="container">
+                    <Link to="/" className="navbar-brand fw-bold text-primary" onClick={closeNav}>
+                        {t('brand.sportgram')}
+                    </Link>
+
+                    <button
+                        className="navbar-toggler border-0"
+                        type="button"
+                        onClick={toggleNav}
+                        aria-expanded={isNavOpen}
+                        aria-label={t('nav.toggle')}
+                    >
+                        <span className="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div className={`collapse navbar-collapse ${isNavOpen ? 'show' : ''}`}>
+                        <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-1 mt-3 mt-lg-0">
+                            <li className="nav-item">
+                                <NavLink
+                                    to="/"
+                                    end
+                                    className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    onClick={closeNav}
+                                >
+                                    <i className="bi bi-house-door me-2 d-lg-none"></i>{t('nav.home')}
+                                </NavLink>
+                            </li>
+                            <li className="nav-item">
+                                <NavLink
+                                    to="/users"
+                                    className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    onClick={closeNav}
+                                >
+                                    <i className="bi bi-people me-2 d-lg-none"></i>{t('nav.users')}
+                                </NavLink>
+                            </li>
+                            <li className="nav-item">
+                                <NavLink
+                                    to="/pages"
+                                    className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    onClick={closeNav}
+                                >
+                                    <i className="bi bi-file-earmark-text me-2 d-lg-none"></i>{t('nav.pages')}
+                                </NavLink>
+                            </li>
+                            <li className="nav-item">
+                                <NavLink
+                                    to="/events"
+                                    className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    onClick={closeNav}
+                                >
+                                    <i className="bi bi-calendar-event me-2 d-lg-none"></i>{t('nav.events')}
+                                </NavLink>
+                            </li>
+                            <li className="nav-item">
+                                <NavLink
+                                    to="/statistics"
+                                    className={({ isActive }) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    onClick={closeNav}
+                                >
+                                    <i className="bi bi-graph-up me-2 d-lg-none"></i>{t('nav.statistics')}
+                                </NavLink>
+                            </li>
+                        </ul>
+
+                        <div className="d-flex align-items-center gap-2 mt-3 mt-lg-0 pt-3 pt-lg-0">
+                            <button
+                                className="btn btn-sm btn-danger w-100 w-lg-auto text-start text-lg-center"
+                                onClick={() => { closeNav(); logout(); }}
+                                title={t('logout')}
+                            >
+                                <i className="bi bi-box-arrow-right"></i>
+                                <span className="d-inline-block d-lg-none ms-2">{t('logout')}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </nav>

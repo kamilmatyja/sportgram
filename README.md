@@ -126,4 +126,3 @@ npm run dev
 - informacje o wyświetleniach przy encjach
 - informacje o ilości follow na profilach
 - informacje o ilości znajomych na profilach
-- nawigacja po stronach
