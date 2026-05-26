@@ -48,6 +48,7 @@ export function useUserConversations(link?: string) {
 
     const chatEndRef = useRef<HTMLDivElement>(null);
     const lastTypingPatch = useRef<number>(0);
+    const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const userProvider = new UserProvider();
     const conversationProvider = new ConversationProvider();
@@ -189,15 +190,26 @@ export function useUserConversations(link?: string) {
             actFilter.userId = tUser.id;
             const actIndexDto = new ConversationActivityIndexQuery();
             actIndexDto.filter = actFilter;
-            actIndexDto.limit = 1;
             const acts = await conversationProvider.indexActivity(actIndexDto);
 
             const targetActivity = acts.find(a => a.senderUserId === tUser.id);
             if (targetActivity) {
-                const serverTimeMs = new Date(targetActivity.updatedAt).getTime();
+                const timeStr = targetActivity.updatedAt.endsWith('Z')
+                    ? targetActivity.updatedAt
+                    : `${targetActivity.updatedAt}Z`;
+
+                const serverTimeMs = new Date(timeStr).getTime();
                 const nowMs = Date.now();
-                if (nowMs - serverTimeMs <= 10000) {
+                const diffMs = nowMs - serverTimeMs;
+
+                if (diffMs <= 10000 && diffMs >= -10000) {
                     setIsTyping(true);
+
+                    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+                    typingTimeoutRef.current = setTimeout(() => {
+                        setIsTyping(false);
+                    }, 5000 - diffMs);
                 } else {
                     setIsTyping(false);
                 }

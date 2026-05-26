@@ -157,7 +157,7 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
     );
 
     const renderChat = () => (
-        <div className="card shadow-sm d-flex flex-column">
+        <div className="card shadow-sm d-flex flex-column chat-card-container">
             <div className="card-header bg-light d-flex align-items-center gap-3">
                 <img src={`data:image/webp;base64,${targetUser.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover" width={40} height={40} />
                 <div>
@@ -168,7 +168,7 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                 </div>
             </div>
 
-            <div className="card-body overflow-auto d-flex flex-column gap-2 bg-light bg-opacity-50">
+            <div className="card-body chat-body-scrollable d-flex flex-column gap-2 bg-light bg-opacity-50">
                 {hasMoreMessages && (
                     <div className="text-center mb-3">
                         <button className="btn btn-sm btn-outline-secondary" onClick={loadEarlierMessages} disabled={loadingEarlier}>

@@ -77,3 +77,15 @@ html, body {
     --bs-text-opacity: var(--theme-color);
     color: var(--bs-text-opacity) !important;
 }
+
+
+.chat-card-container {
+    height: 65vh;
+    min-height: 400px;
+    max-height: 800px;
+}
+
+.chat-body-scrollable {
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
