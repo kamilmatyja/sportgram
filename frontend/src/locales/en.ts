@@ -377,4 +377,8 @@ export const en = {
     from: "from",
     to: "to",
     managePageStatus: "Manage page status",
+    eventTypes: {
+        eventDisciplineList: "Start List",
+        eventDisciplineResult: "Results"
+    }
 };

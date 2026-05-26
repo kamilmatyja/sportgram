@@ -1,6 +1,10 @@
 import {useParams} from 'react-router-dom';
+import {useEventDetails} from '../services/useEventDetails';
+import {EventDetailsView} from '../components/EventDetailsView';
 
 export default function EventDetails() {
     const {link} = useParams<{ link: string }>();
-    return <div className="container mt-5"><h2>Szczegóły wydarzenia: {link}</h2></div>;
+    const detailsProps = useEventDetails(link);
+
+    return <EventDetailsView {...detailsProps} />;
 }

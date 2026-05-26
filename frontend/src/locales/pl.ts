@@ -382,4 +382,8 @@ export const pl = {
     from: "od",
     to: "do",
     managePageStatus: "Zarządzanie statusem strony",
+    eventTypes: {
+        eventDisciplineList: "Lista startowa",
+        eventDisciplineResult: "Wyniki"
+    }
 };
