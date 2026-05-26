@@ -347,7 +347,7 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                                     </button>
                                                                 ) : (
                                                                     <div className="d-flex justify-content-between align-items-center">
-                                                                        <span className="text-success fw-bold">{t('time')}: {res.time}s</span>
+                                                                        <span className="text-success fw-bold">{t('time')}: {res.time} [s]</span>
                                                                         <div>
                                                                             <button className="btn btn-sm btn-profile-outline-primary me-1"
                                                                                     onClick={() => openEditResultForm(list, res.id)}>

@@ -187,8 +187,8 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                             <p className="text-muted">
                                 {DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(goal.discipline))?.label || goal.discipline}
                                 <span className="mx-2">|</span>
-                                {goal.distance}m
-                                {goal.time ? <><span className="mx-2">|</span> {goal.time}s</> : ''}
+                                {goal.distance} [m]
+                                {goal.time ? <><span className="mx-2">|</span> {goal.time} [s]</> : ''}
                             </p>
                             {(goal.startedAt || goal.endedAt) && (
                                 <p className="text-muted mb-0">

@@ -41,9 +41,11 @@ class TrainingRepository extends BaseRepository
     {
         $qb = $this->createQueryBuilder('t');
 
-        $qb->leftJoin('t.participants', 'p')
-            ->andWhere('p.user = :userId')
-            ->setParameter('userId', $dto->filter->userId);
+        if ($dto->filter->userId) {
+            $qb->leftJoin('t.participants', 'p')
+                ->andWhere('p.user = :userId')
+                ->setParameter('userId', $dto->filter->userId);
+        }
 
         if ($dto->filter->link) {
             $qb->andWhere('t.link = :link')
