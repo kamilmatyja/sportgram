@@ -8,7 +8,8 @@ import { ColorEnum } from '../enums/ColorEnum';
 import { EventFilterQuery } from '../api/queries/EventFilterQuery';
 import { PageHeader } from './Page/PageHeader';
 import { PageInfo } from './Page/PageInfo';
-import { PageParticipantsTable } from './Page/PageParticipantsTable';
+import { PageDetailsParticipantsTable } from './Page/PageDetailsParticipantsTable';
+import { PageDetailsFollowsTable } from './Page/PageDetailsFollowsTable';
 import { PageEventsTable } from './Page/PageEventsTable';
 
 interface PageDetailsViewProps {
@@ -79,12 +80,25 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
             <div className="card shadow-sm mb-4">
                 <div className="card-body">
                     <h5 className="mb-3 text-profile-primary fw-bold">{t('participants')}</h5>
-                    <PageParticipantsTable
+                    <PageDetailsParticipantsTable
                         participants={pageObj.participants || []}
                         relatedUsers={relatedUsers}
                         currentUser={currentUser}
                         actionLoading={interactions.actionLoading}
                         onUpdateStatus={interactions.handleParticipantStatusSubmit}
+                    />
+                </div>
+            </div>
+
+            <div className="card shadow-sm mb-4">
+                <div className="card-body">
+                    <h5 className="mb-3 text-profile-primary fw-bold">{t('pageFollows')}</h5>
+                    <PageDetailsFollowsTable
+                        follows={pageObj.follows || []}
+                        relatedUsers={relatedUsers}
+                        currentUser={currentUser}
+                        actionLoading={interactions.actionLoading}
+                        onUpdateStatus={interactions.handleFollowStatusSubmit}
                     />
                 </div>
             </div>

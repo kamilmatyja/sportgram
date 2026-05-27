@@ -22,6 +22,7 @@ export const PageInfo: React.FC<PageInfoProps> = ({ pageObj, myFollow, followLoa
                     <i className="bi bi-info-circle me-2"></i>{t('basicInformation')}
                 </h4>
 
+                <h4 className="mb-3 fw-bold">{pageObj.title}</h4>
                 <p className="mb-4 text-break fs-5">{pageObj.description}</p>
 
                 <div className="d-flex align-items-center gap-2 mt-2 mb-4">
