@@ -1,13 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {EventProvider} from '../../api/providers/EventProvider';
+import {FriendProvider} from '../../api/providers/FriendProvider';
 import {EventResponse} from '../../api/responses/EventResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
 import {EventIndexQuery} from '../../api/queries/EventIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
+import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
+import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {useCheckPermission} from '../../utils/checkPermission';
+import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 import {RoleEnum} from '../../enums/RoleEnum';
 
 export function useUserEvents(link?: string) {
@@ -30,6 +34,7 @@ export function useUserEvents(link?: string) {
 
     const userProvider = new UserProvider();
     const eventProvider = new EventProvider();
+    const friendProvider = new FriendProvider();
 
     const fetchEvents = async (userId: string) => {
         setLoading(true);
@@ -96,6 +101,26 @@ export function useUserEvents(link?: string) {
 
                 const isOwner = currentUsr.id === tUser.id;
                 setIsMyProfile(isOwner);
+
+                if (!isOwner && !adminCheck) {
+                    const fFilter = new FriendFilterQuery();
+                    fFilter.status = FriendStatusEnum.ACCEPTED;
+                    fFilter.userIds = [tUser.id, currentUsr.id];
+                    const fIndexDto = new FriendIndexQuery();
+                    fIndexDto.filter = fFilter;
+                    const friends = await friendProvider.index(fIndexDto);
+
+                    const hasRelation = friends.some(f =>
+                        (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
+                        (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
+                    );
+
+                    if (! hasRelation) {
+                        setError('accessDenied');
+                        setLoading(false);
+                        return;
+                    }
+                }
 
                 await fetchEvents(tUser.id);
             } catch (err: any) {

@@ -16,6 +16,7 @@ import {ConversationActivityFilterQuery} from '../../api/queries/ConversationAct
 import {ConversationBody} from '../../api/body/ConversationBody';
 import {useCheckPermission} from '../../utils/checkPermission';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
+import {RoleEnum} from '../../enums/RoleEnum';
 
 export interface ProcessedActivity extends ConversationActivityResponse {
     otherUser: UserResponse;
@@ -248,32 +249,33 @@ export function useUserConversations(link?: string) {
                 const tUser = targetUsers[0];
                 setTargetUser(tUser);
 
+                const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
                 const isOwner = currentUsr.id === tUser.id;
                 setIsMyProfile(isOwner);
 
                 if (isOwner) {
                     await fetchActivities(currentUsr);
                 } else {
-                        const fFilter = new FriendFilterQuery();
-                        fFilter.status = FriendStatusEnum.ACCEPTED;
-                        fFilter.userIds = [tUser.id, currentUsr.id];
-                        const fIndexDto = new FriendIndexQuery();
-                        fIndexDto.filter = fFilter;
-                        const friends = await friendProvider.index(fIndexDto);
+                    const fFilter = new FriendFilterQuery();
+                    fFilter.status = FriendStatusEnum.ACCEPTED;
+                    fFilter.userIds = [tUser.id, currentUsr.id];
+                    const fIndexDto = new FriendIndexQuery();
+                    fIndexDto.filter = fFilter;
+                    const friends = await friendProvider.index(fIndexDto);
 
-                        const hasRelation = friends.some(f =>
-                            (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
-                            (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
-                        );
+                    const hasRelation = friends.some(f =>
+                        (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
+                        (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
+                    );
 
-                        if (! hasRelation) {
-                            setError('accessDenied');
-                            setLoading(false);
-                            return;
-                        }
+                    if (!hasRelation && !adminCheck) {
+                        setError('accessDenied');
+                        setLoading(false);
+                        return;
+                    }
 
-                        setCanSendMessages(hasRelation);
-                        await fetchMessages(tUser, 1, false);
+                    setCanSendMessages(hasRelation);
+                    await fetchMessages(tUser, 1, false);
                 }
             } catch (err: any) {
                 setError(err.error);

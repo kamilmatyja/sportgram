@@ -1,13 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {GoalProvider} from '../../api/providers/GoalProvider';
+import {FriendProvider} from '../../api/providers/FriendProvider';
 import {GoalResponse} from '../../api/responses/GoalResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {GoalFilterQuery} from '../../api/queries/GoalFilterQuery';
 import {GoalIndexQuery} from '../../api/queries/GoalIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
+import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
+import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {useCheckPermission} from '../../utils/checkPermission';
+import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 import {RoleEnum} from '../../enums/RoleEnum';
 
 export function useUserGoals(link?: string) {
@@ -30,6 +34,7 @@ export function useUserGoals(link?: string) {
 
     const userProvider = new UserProvider();
     const goalProvider = new GoalProvider();
+    const friendProvider = new FriendProvider();
 
     const fetchGoals = async (userId: string) => {
         setLoading(true);
@@ -116,6 +121,26 @@ export function useUserGoals(link?: string) {
 
                 const isOwner = currentUsr.id === tUser.id;
                 setIsMyProfile(isOwner);
+
+                if (!isOwner && !adminCheck) {
+                    const fFilter = new FriendFilterQuery();
+                    fFilter.status = FriendStatusEnum.ACCEPTED;
+                    fFilter.userIds = [tUser.id, currentUsr.id];
+                    const fIndexDto = new FriendIndexQuery();
+                    fIndexDto.filter = fFilter;
+                    const friends = await friendProvider.index(fIndexDto);
+
+                    const hasRelation = friends.some(f =>
+                        (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
+                        (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
+                    );
+
+                    if (! hasRelation) {
+                        setError('accessDenied');
+                        setLoading(false);
+                        return;
+                    }
+                }
 
                 await fetchGoals(tUser.id);
             } catch (err: any) {
