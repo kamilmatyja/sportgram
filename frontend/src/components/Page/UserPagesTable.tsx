@@ -108,8 +108,6 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
                                                     participants={pageObj.participants || []}
                                                     relatedUsers={relatedUsers}
                                                     currentUser={currentUser}
-                                                    isMyProfile={isMyProfile}
-                                                    isAdmin={isAdmin}
                                                     actionLoading={actionLoading}
                                                     onUpdateStatus={interactions.handleParticipantStatusSubmit}
                                                 />

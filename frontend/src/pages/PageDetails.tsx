@@ -1,19 +1,22 @@
-import {useParams} from 'react-router-dom';
-import {usePageDetails} from '../services/usePageDetails';
-import {usePageModals} from '../services/usePageModals';
-import {PageDetailsView} from '../components/PageDetailsView';
-import {ManagePageModal} from '../components/ManagePageModal';
+import { useParams } from 'react-router-dom';
+import { usePageDetails } from '../services/usePageDetails';
+import { usePageModals } from '../services/usePageModals';
+import { usePageInteractions } from '../services/usePageInteractions';
+import { PageDetailsView } from '../components/PageDetailsView';
+import { ManagePageModal } from '../components/ManagePageModal';
 
 export default function PageDetails() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
     const detailsProps = usePageDetails(link);
     const modalsService = usePageModals(detailsProps.refreshPage);
+    const interactions = usePageInteractions(detailsProps.refreshPage);
 
     return (
         <>
             <PageDetailsView
                 pageObj={detailsProps.pageObj}
                 ownerUser={detailsProps.ownerUser}
+                currentUser={detailsProps.currentUser}
                 relatedUsers={detailsProps.relatedUsers}
                 isMyProfile={detailsProps.isMyProfile}
                 isAdmin={detailsProps.isAdmin}
@@ -24,6 +27,7 @@ export default function PageDetails() {
                 loading={detailsProps.loading}
                 error={detailsProps.error}
                 onManageClick={modalsService.openManageModal}
+                interactions={interactions}
                 events={detailsProps.events}
                 eventsLoading={detailsProps.eventsLoading}
                 eventPage={detailsProps.eventPage}
@@ -39,9 +43,7 @@ export default function PageDetails() {
 
             <ManagePageModal
                 user={detailsProps.ownerUser}
-                currentUser={detailsProps.currentUser}
                 availableUsers={modalsService.availableUsers}
-                relatedUsers={detailsProps.relatedUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
                 currentPageObj={modalsService.currentPage}
@@ -55,8 +57,6 @@ export default function PageDetails() {
                 handleChange={modalsService.handleChange}
                 handleEditSubmit={modalsService.handleEditSubmit}
                 handleStatusSubmit={modalsService.handleStatusSubmit}
-                handleParticipantStatusSubmit={modalsService.handleParticipantStatusSubmit}
-                handleFollowStatusSubmit={modalsService.handleFollowStatusSubmit}
                 handleDelete={modalsService.handleDelete}
             />
         </>

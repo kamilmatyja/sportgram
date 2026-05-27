@@ -9,14 +9,12 @@ interface PageParticipantsTableProps {
     participants: PageParticipantResponse[];
     relatedUsers: Record<string, UserResponse>;
     currentUser: UserResponse | null;
-    isMyProfile: boolean;
-    isAdmin: boolean;
     actionLoading: string | null;
     onUpdateStatus: (participantId: string, status: number) => void;
 }
 
 export const PageParticipantsTable: React.FC<PageParticipantsTableProps> = ({
-                                                                                participants, relatedUsers, currentUser, isMyProfile, isAdmin, actionLoading, onUpdateStatus
+                                                                                participants, relatedUsers, currentUser, actionLoading, onUpdateStatus
                                                                             }) => {
     const { t } = useTranslation();
 
@@ -39,7 +37,6 @@ export const PageParticipantsTable: React.FC<PageParticipantsTableProps> = ({
                 {participants.map(p => {
                     const u = relatedUsers[p.userId];
                     const isOwner = currentUser?.id === p.userId;
-                    const canManage = isMyProfile || isAdmin || isOwner;
 
                     return (
                         <tr key={p.id}>
@@ -57,7 +54,7 @@ export const PageParticipantsTable: React.FC<PageParticipantsTableProps> = ({
                             </td>
                             <td>{formatDate(p.createdAt)}</td>
                             <td className="text-end">
-                                {canManage && SaveStatusEnum.getOptions(t)
+                                {isOwner && SaveStatusEnum.getOptions(t)
                                     .filter(opt => opt.value !== p.status && opt.value !== SaveStatusEnum.PENDING)
                                     .map(opt => (
                                         <button
