@@ -27,29 +27,18 @@ interface ManageUserModalProps {
 }
 
 export const ManageUserModal: React.FC<ManageUserModalProps> = ({
-                                                                    show,
-                                                                    managedUser,
-                                                                    isMyProfile,
-                                                                    isAdmin,
-                                                                    closeModal,
-                                                                    loading,
-                                                                    globalError,
-                                                                    fieldErrors,
-                                                                    formData,
-                                                                    handleChange,
-                                                                    handleEditSubmit,
-                                                                    handleStatusSubmit,
-                                                                    handleDelete
+                                                                    show, managedUser, isMyProfile, isAdmin, closeModal, loading, globalError,
+                                                                    fieldErrors, formData, handleChange, handleEditSubmit, handleStatusSubmit, handleDelete
                                                                 }) => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     if (!show || !managedUser) return null;
 
-    const hexColor = ColorEnum.getHex(managedUser.color);
+    const themeClass = ColorEnum.getClass(managedUser.color);
 
     return (
         <>
-            <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
+            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">

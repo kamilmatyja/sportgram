@@ -1,24 +1,29 @@
-import {useParams} from 'react-router-dom';
-import {useUserProfile} from '../services/useUserProfile';
-import {useUserModals} from '../services/useUserModals';
-import {UserProfileView} from '../components/UserProfileView';
-import {ManageUserModal} from '../components/ManageUserModal';
-import {UserFeedsSection} from '../components/UserFeedsSection';
+import { useParams } from 'react-router-dom';
+import { useUserProfile } from '../services/useUserProfile';
+import { useUserModals } from '../services/useUserModals';
+import { UserProfileView } from '../components/UserProfileView';
+import { ManageUserModal } from '../components/ManageUserModal';
+import { UserFeedsSection } from '../components/UserFeedsSection';
+import { ColorEnum } from '../enums/ColorEnum';
+import { FriendStatusEnum } from '../enums/FriendStatusEnum';
 
 export default function UserProfile() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
     const profileProps = useUserProfile(link);
     const modalsService = useUserModals(profileProps.refreshProfile);
 
+    const { user, isMyProfile, isAdmin, friendship } = profileProps;
+    const themeClass = user ? ColorEnum.getClass(user.color) : '';
+    const canViewDetails = user && (isMyProfile || isAdmin || friendship?.status === FriendStatusEnum.ACCEPTED);
+
     return (
-        <>
-            <UserProfileView {...profileProps} onManageClick={modalsService.openManageModal}/>
-            <UserFeedsSection
-                user={profileProps.user}
-                isMyProfile={profileProps.isMyProfile}
-                isAdmin={profileProps.isAdmin}
-                friendship={profileProps.friendship}
-            />
+        <div className={themeClass}>
+            <UserProfileView {...profileProps} onManageClick={modalsService.openManageModal} />
+
+            {canViewDetails && (
+                <UserFeedsSection userId={user.id} />
+            )}
+
             <ManageUserModal
                 show={modalsService.showManage}
                 managedUser={modalsService.managedUser}
@@ -34,6 +39,6 @@ export default function UserProfile() {
                 handleStatusSubmit={modalsService.handleStatusSubmit}
                 handleDelete={modalsService.handleDelete}
             />
-        </>
+        </div>
     );
 }
