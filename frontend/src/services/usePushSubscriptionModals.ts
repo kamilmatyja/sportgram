@@ -1,8 +1,7 @@
-import React, {useState} from 'react';
+import {useState} from 'react';
 import {PushSubscriptionProvider} from '../api/providers/PushSubscriptionProvider';
 import {PushSubscriptionBody} from '../api/body/PushSubscriptionBody';
 import {PushSubscriptionResponse} from '../api/responses/PushSubscriptionResponse';
-import {createFormHandler} from '../utils/formHandler';
 import {useTranslation} from '../context/TranslationContext';
 import {PushSubscriptionStatusEnum} from '../enums/PushSubscriptionStatusEnum';
 
@@ -25,15 +24,11 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
 
     const [loading, setLoading] = useState(false);
     const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
-
-    const [formData, setFormData] = useState(new PushSubscriptionBody('', '', '', '', PushSubscriptionStatusEnum.ACTIVE));
 
     const pushSubscriptionProvider = new PushSubscriptionProvider();
 
     const openAddModal = () => {
         setGlobalError('');
-        setFieldErrors({});
         setShowAdd(true);
     };
 
@@ -90,37 +85,11 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
 
     const openManageModal = (subscription: PushSubscriptionResponse) => {
         setCurrentSubscription(subscription);
-        setFormData(new PushSubscriptionBody(
-            subscription.endpoint,
-            subscription.p256dh,
-            subscription.auth,
-            subscription.userAgent,
-            subscription.status
-        ));
         setGlobalError('');
-        setFieldErrors({});
         setShowManage(true);
     };
 
     const closeManageModal = () => setShowManage(false);
-
-    const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!currentSubscription) return;
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
-            await pushSubscriptionProvider.update(currentSubscription.id, formData);
-            closeManageModal();
-            onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleStatusSubmit = async (newStatus: number) => {
         if (!currentSubscription) return;
@@ -159,12 +128,9 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
         }
     };
 
-    const handleChange = createFormHandler(setFormData);
-
     return {
         showAdd, openAddModal, closeAddModal, handleSubscribeDevice,
         showManage, openManageModal, closeManageModal, currentSubscription,
-        handleEditSubmit, handleStatusSubmit, handleDelete,
-        formData, handleChange, loading, globalError, fieldErrors
+        handleStatusSubmit, handleDelete, loading, globalError
     };
 }

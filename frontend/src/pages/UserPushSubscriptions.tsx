@@ -51,10 +51,6 @@ export default function UserPushSubscriptions() {
                 closeModal={modalsService.closeManageModal}
                 loading={modalsService.loading}
                 globalError={modalsService.globalError}
-                fieldErrors={modalsService.fieldErrors}
-                formData={modalsService.formData}
-                handleChange={modalsService.handleChange}
-                handleEditSubmit={modalsService.handleEditSubmit}
                 handleStatusSubmit={modalsService.handleStatusSubmit}
                 handleDelete={modalsService.handleDelete}
             />
