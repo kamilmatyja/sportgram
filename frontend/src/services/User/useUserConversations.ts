@@ -27,6 +27,7 @@ export function useUserConversations(link?: string) {
     const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
+    const [canSendMessages, setCanSendMessages] = useState<boolean>(false);
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -253,20 +254,26 @@ export function useUserConversations(link?: string) {
                 if (isOwner) {
                     await fetchActivities(currentUsr);
                 } else {
-                    const fFilter = new FriendFilterQuery();
-                    fFilter.status = FriendStatusEnum.ACCEPTED;
-                    fFilter.userIds = [tUser.id, currentUsr.id];
-                    const fIndexDto = new FriendIndexQuery();
-                    fIndexDto.filter = fFilter;
-                    const friends = await friendProvider.index(fIndexDto);
+                        const fFilter = new FriendFilterQuery();
+                        fFilter.status = FriendStatusEnum.ACCEPTED;
+                        fFilter.userIds = [tUser.id, currentUsr.id];
+                        const fIndexDto = new FriendIndexQuery();
+                        fIndexDto.filter = fFilter;
+                        const friends = await friendProvider.index(fIndexDto);
 
-                    if (friends.length < 1) {
-                        setError('accessDenied');
-                        setLoading(false);
-                        return;
-                    }
+                        const hasRelation = friends.some(f =>
+                            (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
+                            (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
+                        );
 
-                    await fetchMessages(tUser, 1, false);
+                        if (! hasRelation) {
+                            setError('accessDenied');
+                            setLoading(false);
+                            return;
+                        }
+
+                        setCanSendMessages(hasRelation);
+                        await fetchMessages(tUser, 1, false);
                 }
             } catch (err: any) {
                 setError(err.error);
@@ -284,7 +291,6 @@ export function useUserConversations(link?: string) {
         return () => clearInterval(intervalId);
     }, [isMyProfile, targetUser, currentUser]);
 
-
     const loadEarlierMessages = () => {
         if (!targetUser) return;
         const nextPage = chatPage + 1;
@@ -294,7 +300,7 @@ export function useUserConversations(link?: string) {
 
     const handleSendMessage = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!messageInput.trim() || !targetUser) return;
+        if (!messageInput.trim() || !targetUser || !canSendMessages) return;
 
         setIsSending(true);
         try {
@@ -313,12 +319,11 @@ export function useUserConversations(link?: string) {
 
     const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
         setMessageInput(e.target.value);
-        if (!targetUser) return;
+        if (!targetUser || !canSendMessages) return;
 
         const now = Date.now();
         if (now - lastTypingPatch.current > 3000) {
-            conversationProvider.updateActivityUpdatedAt(targetUser.id).catch(() => {
-            });
+            conversationProvider.updateActivityUpdatedAt(targetUser.id).catch(() => {});
             lastTypingPatch.current = now;
         }
     };
@@ -326,7 +331,7 @@ export function useUserConversations(link?: string) {
     const {paginated: paginatedActivities, total: totalActivities} = processActivities();
 
     return {
-        targetUser, currentUser, isMyProfile, loading, error,
+        targetUser, currentUser, isMyProfile, canSendMessages, loading, error,
 
         activities: paginatedActivities,
         totalActivities,

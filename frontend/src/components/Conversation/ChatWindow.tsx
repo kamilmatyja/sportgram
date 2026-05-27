@@ -13,6 +13,7 @@ interface ChatWindowProps {
     isTyping: boolean;
     hasMoreMessages: boolean;
     loadingEarlier: boolean;
+    canSendMessages: boolean;
     chatEndRef: React.RefObject<HTMLDivElement | null>;
     handleTyping: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleSendMessage: (e: React.ChangeEvent<HTMLFormElement>) => void;
@@ -28,6 +29,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                                                           isTyping,
                                                           hasMoreMessages,
                                                           loadingEarlier,
+                                                          canSendMessages,
                                                           chatEndRef,
                                                           handleTyping,
                                                           handleSendMessage,
@@ -83,14 +85,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     <input
                         type="text"
                         className="form-control rounded-pill px-4"
-                        placeholder={t('typeMessage')}
+                        placeholder={canSendMessages ? t('typeMessage') : t('mustBeFriendsToChat')}
                         value={messageInput}
                         onChange={handleTyping}
-                        disabled={isSending}
+                        disabled={isSending || !canSendMessages}
                     />
                     <button type="submit"
                             className="btn btn-profile-primary rounded-circle d-flex align-items-center justify-content-center"
-                            disabled={!messageInput.trim() || isSending}>
+                            disabled={!messageInput.trim() || isSending || !canSendMessages}>
                         {isSending ? <div className="spinner-border spinner-border-sm"/> :
                             <i className="bi bi-send-fill"></i>}
                     </button>

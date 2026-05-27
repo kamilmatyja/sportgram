@@ -429,4 +429,5 @@ export const pl = {
     unfollowPage: "Przestań obserwować",
     trainingDetails: "Szczegóły treningu",
     saveUp: "Zapisz się",
+    mustBeFriendsToChat: "Musisz być znajomym, aby pisać.",
 };

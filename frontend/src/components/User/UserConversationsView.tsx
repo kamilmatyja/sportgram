@@ -3,7 +3,7 @@ import {useTranslation} from '../../context/TranslationContext';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {ConversationResponse} from '../../api/responses/ConversationResponse';
 import {ColorEnum} from '../../enums/ColorEnum';
-import {ProcessedActivity} from '../../services/Conversation/useUserConversations';
+import {ProcessedActivity} from '../../services/User/useUserConversations';
 import {UserSubpageHeader} from './UserSubpageHeader';
 import {ConversationActivityList} from '../Conversation/ConversationActivityList';
 import {ChatWindow} from '../Conversation/ChatWindow';
@@ -12,6 +12,7 @@ interface UserConversationsViewProps {
     targetUser: UserResponse | null;
     currentUser: UserResponse | null;
     isMyProfile: boolean;
+    canSendMessages: boolean;
     loading: boolean;
     error: string | null;
 
@@ -42,6 +43,7 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                                                                                 targetUser,
                                                                                 currentUser,
                                                                                 isMyProfile,
+                                                                                canSendMessages,
                                                                                 loading,
                                                                                 error,
                                                                                 activities,
@@ -117,6 +119,7 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                     handleTyping={handleTyping}
                     handleSendMessage={handleSendMessage}
                     loadEarlierMessages={loadEarlierMessages}
+                    canSendMessages={canSendMessages}
                 />
             )}
         </div>

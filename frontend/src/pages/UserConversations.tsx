@@ -1,5 +1,5 @@
 import {useParams} from 'react-router-dom';
-import {useUserConversations} from '../services/Conversation/useUserConversations';
+import {useUserConversations} from '../services/User/useUserConversations';
 import {UserConversationsView} from '../components/User/UserConversationsView';
 
 export default function UserConversations() {
@@ -11,6 +11,7 @@ export default function UserConversations() {
             targetUser={conversationsService.targetUser}
             currentUser={conversationsService.currentUser}
             isMyProfile={conversationsService.isMyProfile}
+            canSendMessages={conversationsService.canSendMessages}
             loading={conversationsService.loading}
             error={conversationsService.error}
 

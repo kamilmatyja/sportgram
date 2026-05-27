@@ -424,4 +424,5 @@ export const en = {
     unfollowPage: "Unfollow page",
     trainingDetails: "Training details",
     saveUp: "Save up",
+    mustBeFriendsToChat: "You must be friends to send messages.",
 };

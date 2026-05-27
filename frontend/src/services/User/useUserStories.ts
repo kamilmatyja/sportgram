@@ -98,7 +98,12 @@ export function useUserStories(link?: string) {
                     fIndexDto.filter = fFilter;
                     const friends = await friendProvider.index(fIndexDto);
 
-                    if (friends.length < 1) {
+                    const hasRelation = friends.some(f =>
+                        (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
+                        (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
+                    );
+
+                    if (! hasRelation) {
                         setError('accessDenied');
                         setLoading(false);
                         return;
