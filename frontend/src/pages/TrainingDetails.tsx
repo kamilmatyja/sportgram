@@ -1,31 +1,33 @@
-import {useParams} from 'react-router-dom';
-import {useTrainingDetails} from '../services/useTrainingDetails';
-import {useTrainingModals} from '../services/useTrainingModals';
-import {TrainingDetailsView} from '../components/TrainingDetailsView';
-import {ManageTrainingModal} from '../components/ManageTrainingModal';
+import { useParams } from 'react-router-dom';
+import { useTrainingDetails } from '../services/useTrainingDetails';
+import { useTrainingModals } from '../services/useTrainingModals';
+import { useTrainingInteractions } from '../services/useTrainingInteractions';
+import { TrainingDetailsView } from '../components/TrainingDetailsView';
+import { ManageTrainingModal } from '../components/ManageTrainingModal';
 
 export default function TrainingDetails() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
     const detailsProps = useTrainingDetails(link);
     const modalsService = useTrainingModals(detailsProps.refreshTraining);
+    const interactions = useTrainingInteractions(detailsProps.refreshTraining);
 
     return (
         <>
             <TrainingDetailsView
                 training={detailsProps.training}
                 ownerUser={detailsProps.ownerUser}
+                currentUser={detailsProps.currentUser}
                 relatedUsers={detailsProps.relatedUsers}
                 isMyProfile={detailsProps.isMyProfile}
                 isAdmin={detailsProps.isAdmin}
-                isParticipantOfTraining={detailsProps.isParticipantOfTraining}
                 loading={detailsProps.loading}
                 error={detailsProps.error}
                 onManageClick={modalsService.openManageModal}
+                interactions={interactions}
             />
 
             <ManageTrainingModal
                 user={detailsProps.ownerUser}
-                currentUser={detailsProps.currentUser}
                 availableUsers={modalsService.availableUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
@@ -40,7 +42,6 @@ export default function TrainingDetails() {
                 handleChange={modalsService.handleChange}
                 handleEditSubmit={modalsService.handleEditSubmit}
                 handleStatusSubmit={modalsService.handleStatusSubmit}
-                handleParticipantStatusSubmit={modalsService.handleParticipantStatusSubmit}
                 handleDelete={modalsService.handleDelete}
                 addDiscipline={modalsService.addDiscipline}
                 updateDisciplineType={modalsService.updateDisciplineType}
