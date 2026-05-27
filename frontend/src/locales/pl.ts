@@ -99,7 +99,7 @@ export const pl = {
         banned: "Zbanowany"
     },
     status: "Status",
-    userTitle: "Lista użytkowników",
+    userTitle: "Użytkownicy",
     loading: "Ładowanie...",
     noUser: "Brak użytkownika",
     noUsers: "Brak użytkowników",

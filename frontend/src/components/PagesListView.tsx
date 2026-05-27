@@ -44,7 +44,7 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
     return (
         <div className="container mt-5 mb-5">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="mb-0">{t('pages')}</h2>
+                <h2 className="mb-0 text-profile-primary fw-bold">{t('pages')}</h2>
                 {isOrganizer && (
                     <button className="btn btn-primary" onClick={onAddClick}>
                         {t('addPage')}

@@ -32,7 +32,7 @@ export default function UsersView({
     return (
         <div className="container mt-5 mb-5">
             <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2 className="mb-0 profile-theme-text">{t('userTitle')}</h2>
+                <h2 className="mb-0 profile-theme-text fw-bold">{t('userTitle')}</h2>
                 {isAdmin && (
                     <button className="btn btn-profile-primary" onClick={onAddUserClick}>
                         {t('addUser')}
