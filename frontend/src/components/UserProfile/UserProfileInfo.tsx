@@ -16,7 +16,7 @@ export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ user }) => {
     const { t } = useTranslation();
 
     return (
-        <div className="card shadow-sm mb-4 border-0">
+        <div className="card shadow-sm mb-4">
             <div className="card-body">
                 <h4 className="mb-3 text-profile-primary fw-bold"><i className="bi bi-info-circle me-2"></i>{t('basicInformation')}</h4>
                 <p className="mb-4 text-break">{user.bio || '-'}</p>

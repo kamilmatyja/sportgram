@@ -13,7 +13,7 @@ export const UserSubpageHeader: React.FC<UserSubpageHeaderProps> = ({ user, titl
 
     return (
         <>
-            <div className="card shadow-sm mb-4 border-0">
+            <div className="card shadow-sm mb-4">
                 <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
                     {user.backgroundPhoto && (
                         <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover" />

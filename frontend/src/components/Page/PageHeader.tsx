@@ -12,7 +12,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ pageObj, canManage, onMa
     const { t } = useTranslation();
 
     return (
-        <div className="card shadow-sm mb-4 border-0">
+        <div className="card shadow-sm mb-4">
             <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
                 {pageObj.backgroundPhoto && (
                     <img src={`data:image/webp;base64,${pageObj.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover" />
