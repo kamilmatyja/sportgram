@@ -3,7 +3,6 @@ import {useTranslation} from '../context/TranslationContext';
 import {TrainingBody} from '../api/body/TrainingBody';
 import {TrainingResponse} from '../api/responses/TrainingResponse';
 import {ElementStatusEnum} from '../enums/ElementStatusEnum';
-import {SaveStatusEnum} from '../enums/SaveStatusEnum';
 import {DisciplineEnum} from '../enums/DisciplineEnum';
 import {ColorEnum} from '../enums/ColorEnum';
 import {UserResponse} from '../api/responses/UserResponse';
@@ -12,7 +11,6 @@ import {TrainingSubDistance} from '../api/body/TrainingSubDistance';
 
 interface ManageTrainingModalProps {
     user: UserResponse | null;
-    currentUser: UserResponse | null;
     availableUsers: UserResponse[];
     handleParticipantsChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     show: boolean;
@@ -27,9 +25,7 @@ interface ManageTrainingModalProps {
     handleChange: (e: React.ChangeEvent<any>) => void;
     handleEditSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     handleStatusSubmit: (newStatus: number) => void;
-    handleParticipantStatusSubmit: (participantId: string, newStatus: number) => void;
     handleDelete: () => void;
-
     addDiscipline: () => void;
     updateDisciplineType: (index: number, type: number) => void;
     removeDiscipline: (index: number) => void;
@@ -43,7 +39,6 @@ interface ManageTrainingModalProps {
 
 export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                                             user,
-                                                                            currentUser,
                                                                             availableUsers,
                                                                             handleParticipantsChange,
                                                                             show,
@@ -58,7 +53,6 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                                             handleChange,
                                                                             handleEditSubmit,
                                                                             handleStatusSubmit,
-                                                                            handleParticipantStatusSubmit,
                                                                             handleDelete,
                                                                             addDiscipline,
                                                                             updateDisciplineType,
@@ -71,10 +65,9 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                                             removeSubDistance
                                                                         }) => {
     const {t} = useTranslation();
-    if (!show || !currentTraining || !user || !currentUser) return null;
+    if (!show || !currentTraining || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
-    const myParticipant = currentTraining.participants?.find(p => p.userId === currentUser.id);
 
     return (
         <>
@@ -89,8 +82,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form id="edit-training-form" onSubmit={handleEditSubmit}
-                                      className="mb-4 pb-3 border-bottom">
+                                <form id="edit-training-form" onSubmit={handleEditSubmit} className="mb-4 pb-3 border-bottom">
                                     <div className="row mb-3">
                                         <div className="col-md-6">
                                             <label className="form-label">{t('startedAt')}</label>
@@ -158,8 +150,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                             multiple
                                         >
                                             {availableUsers.map(u => (
-                                                <option key={u.id}
-                                                        value={u.id}>{u.firstName} {u.lastName} ({u.link})</option>
+                                                <option key={u.id} value={u.id}>{u.firstName} {u.lastName} ({u.link})</option>
                                             ))}
                                         </select>
                                         {fieldErrors.participants &&
@@ -181,12 +172,10 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                     <label className="form-label">{t('discipline')}</label>
                                                     <select className="form-select" value={disc.discipline}
                                                             onChange={e => updateDisciplineType(dIndex, parseInt(e.target.value))}>
-                                                        {DisciplineEnum.getOptions(t).map(opt => <option key={opt.value}
-                                                                                                         value={opt.value}>{opt.label}</option>)}
+                                                        {DisciplineEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                                     </select>
                                                 </div>
-                                                <button type="button" className="btn btn-outline-danger"
-                                                        onClick={() => removeDiscipline(dIndex)}>
+                                                <button type="button" className="btn btn-outline-danger" onClick={() => removeDiscipline(dIndex)}>
                                                     <i className="bi bi-trash"></i>
                                                 </button>
                                             </div>
@@ -194,9 +183,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                             <div className="ps-4 border-start border-2 border-profile-primary">
                                                 <div className="d-flex justify-content-between mb-2">
                                                     <span className="fw-bold">{t('distances')}</span>
-                                                    <button type="button"
-                                                            className="btn btn-sm btn-profile-outline-primary"
-                                                            onClick={() => addDistance(dIndex)}>
+                                                    <button type="button" className="btn btn-sm btn-profile-outline-primary" onClick={() => addDistance(dIndex)}>
                                                         {t('addDistanceBtn')}
                                                     </button>
                                                 </div>
@@ -206,54 +193,32 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                         <div className="card-body p-2">
                                                             <div className="d-flex align-items-center gap-2 mb-2">
                                                                 <div className="input-group input-group-sm">
-                                                                    <span
-                                                                        className="input-group-text">{t('distanceMeters')}</span>
-                                                                    <input type="number" className="form-control"
-                                                                           value={dist.distance}
-                                                                           onChange={e => updateDistanceValue(dIndex, distIndex, 'distance', parseInt(e.target.value) || 0)}/>
+                                                                    <span className="input-group-text">{t('distanceMeters')}</span>
+                                                                    <input type="number" className="form-control" value={dist.distance} onChange={e => updateDistanceValue(dIndex, distIndex, 'distance', parseInt(e.target.value) || 0)}/>
                                                                 </div>
                                                                 <div className="input-group input-group-sm">
-                                                                    <span
-                                                                        className="input-group-text">{t('timeSeconds')}</span>
-                                                                    <input type="number" className="form-control"
-                                                                           value={dist.time}
-                                                                           onChange={e => updateDistanceValue(dIndex, distIndex, 'time', parseInt(e.target.value) || 0)}/>
+                                                                    <span className="input-group-text">{t('timeSeconds')}</span>
+                                                                    <input type="number" className="form-control" value={dist.time} onChange={e => updateDistanceValue(dIndex, distIndex, 'time', parseInt(e.target.value) || 0)}/>
                                                                 </div>
-                                                                <button type="button"
-                                                                        className="btn btn-sm btn-outline-danger"
-                                                                        onClick={() => removeDistance(dIndex, distIndex)}>
-                                                                    <i
-                                                                        className="bi bi-trash"></i></button>
+                                                                <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => removeDistance(dIndex, distIndex)}>
+                                                                    <i className="bi bi-trash"></i>
+                                                                </button>
                                                             </div>
 
                                                             <div className="ps-3 border-start">
                                                                 <div className="d-flex justify-content-between mb-2">
-                                                                    <small
-                                                                        className="text-muted">{t('subDistances')}</small>
-                                                                    <button type="button"
-                                                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                                            onClick={() => addSubDistance(dIndex, distIndex)}>
+                                                                    <small className="text-muted">{t('subDistances')}</small>
+                                                                    <button type="button" className="btn btn-xs btn-profile-outline-primary py-0 px-2" onClick={() => addSubDistance(dIndex, distIndex)}>
                                                                         {t('addSubDistanceBtn')}
                                                                     </button>
                                                                 </div>
                                                                 {dist.subDistances?.map((sub, subIndex) => (
-                                                                    <div key={subIndex}
-                                                                         className="d-flex align-items-center gap-2 mt-1">
-                                                                        <input type="number"
-                                                                               className="form-control form-control-sm"
-                                                                               placeholder={t('subDistanceMeters')}
-                                                                               value={sub.subDistance}
-                                                                               onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'subDistance', parseInt(e.target.value) || 0)}/>
-                                                                        <input type="number"
-                                                                               className="form-control form-control-sm"
-                                                                               placeholder={t('timeSeconds')}
-                                                                               value={sub.time}
-                                                                               onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'time', parseInt(e.target.value) || 0)}/>
-                                                                        <button type="button"
-                                                                                className="btn btn-sm btn-outline-danger"
-                                                                                onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
-                                                                            <i
-                                                                                className="bi bi-trash"></i></button>
+                                                                    <div key={subIndex} className="d-flex align-items-center gap-2 mt-1">
+                                                                        <input type="number" className="form-control form-control-sm" placeholder={t('subDistanceMeters')} value={sub.subDistance} onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'subDistance', parseInt(e.target.value) || 0)}/>
+                                                                        <input type="number" className="form-control form-control-sm" placeholder={t('timeSeconds')} value={sub.time} onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'time', parseInt(e.target.value) || 0)}/>
+                                                                        <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
+                                                                            <i className="bi bi-trash"></i>
+                                                                        </button>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -267,7 +232,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                             )}
 
                             {(isMyProfile || isAdmin) && (
-                                <div className="mb-4 border-bottom pb-3">
+                                <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('trainingStatus')}: </strong>
                                         <span className="me-2 badge bg-light text-dark border profile-theme-border">
@@ -290,32 +255,6 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                     </div>
                                 </div>
                             )}
-
-                            {myParticipant && (
-                                <div className="mb-4 pb-3 border-bottom">
-                                    <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('participantStatus')}: </strong>
-                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
-                                            {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
-                                        </span>
-                                        {SaveStatusEnum.getOptions(t)
-                                            .filter(opt => opt.value !== myParticipant.status)
-                                            .filter(opt => opt.value !== SaveStatusEnum.PENDING)
-                                            .map(opt => (
-                                                <button
-                                                    key={opt.value}
-                                                    type="button"
-                                                    className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                    disabled={loading}
-                                                    onClick={() => handleParticipantStatusSubmit(myParticipant.id, opt.value)}
-                                                >
-                                                    {loading ? t('loading') : opt.label}
-                                                </button>
-                                            ))}
-                                    </div>
-                                </div>
-                            )}
-
                         </div>
                         <div className="modal-footer">
                             <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={loading}>
@@ -323,12 +262,10 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                             </button>
                             {isMyProfile && (
                                 <>
-                                    <button type="button" className="btn btn-danger" onClick={handleDelete}
-                                            disabled={loading}>
+                                    <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={loading}>
                                         {loading ? t('sending') : t('delete')}
                                     </button>
-                                    <button type="submit" form="edit-training-form" className="btn btn-profile-primary"
-                                            disabled={loading}>
+                                    <button type="submit" form="edit-training-form" className="btn btn-profile-primary" disabled={loading}>
                                         {loading ? t('sending') : t('saveChanges')}
                                     </button>
                                 </>

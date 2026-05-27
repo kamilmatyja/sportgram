@@ -1,21 +1,25 @@
-import {useParams} from 'react-router-dom';
-import {useUserTrainings} from '../services/useUserTrainings';
-import {useTrainingModals} from '../services/useTrainingModals';
-import {UserTrainingsView} from '../components/UserTrainingsView';
-import {AddTrainingModal} from '../components/AddTrainingModal';
-import {ManageTrainingModal} from '../components/ManageTrainingModal';
+import { useParams } from 'react-router-dom';
+import { useUserTrainings } from '../services/useUserTrainings';
+import { useTrainingModals } from '../services/useTrainingModals';
+import { useTrainingInteractions } from '../services/useTrainingInteractions';
+import { UserTrainingsView } from '../components/UserTrainingsView';
+import { AddTrainingModal } from '../components/AddTrainingModal';
+import { ManageTrainingModal } from '../components/ManageTrainingModal';
 
 export default function UserTrainings() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const trainingsService = useUserTrainings(link);
     const modalsService = useTrainingModals(trainingsService.refreshTrainings);
+    const interactions = useTrainingInteractions(trainingsService.refreshTrainings);
 
     return (
         <>
             <UserTrainingsView
                 user={trainingsService.targetUser}
+                currentUser={trainingsService.currentUser}
                 trainings={trainingsService.trainings}
+                relatedUsers={trainingsService.relatedUsers}
                 isMyProfile={trainingsService.isMyProfile}
                 isAdmin={trainingsService.isAdmin}
                 isParticipant={trainingsService.isParticipant}
@@ -25,6 +29,7 @@ export default function UserTrainings() {
                 limit={trainingsService.limit}
                 sort={trainingsService.sort}
                 filters={trainingsService.filters}
+                actionLoading={interactions.actionLoading}
                 onFilterChange={trainingsService.handleFilterChange}
                 onSortChange={trainingsService.handleSortChange}
                 onLimitChange={trainingsService.handleLimitChange}
@@ -32,6 +37,7 @@ export default function UserTrainings() {
                 onNextPage={trainingsService.handleNextPage}
                 onAddClick={modalsService.openAddModal}
                 onManageClick={modalsService.openManageModal}
+                interactions={interactions}
             />
 
             <AddTrainingModal
@@ -59,7 +65,6 @@ export default function UserTrainings() {
 
             <ManageTrainingModal
                 user={trainingsService.targetUser}
-                currentUser={trainingsService.currentUser}
                 availableUsers={modalsService.availableUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
@@ -74,7 +79,6 @@ export default function UserTrainings() {
                 handleChange={modalsService.handleChange}
                 handleEditSubmit={modalsService.handleEditSubmit}
                 handleStatusSubmit={modalsService.handleStatusSubmit}
-                handleParticipantStatusSubmit={modalsService.handleParticipantStatusSubmit}
                 handleDelete={modalsService.handleDelete}
                 addDiscipline={modalsService.addDiscipline}
                 updateDisciplineType={modalsService.updateDisciplineType}

@@ -54,6 +54,7 @@ export function useTrainingModals(onSuccess: () => void) {
             uFilter.userIds = Array.from(acceptedFriendIds);
             const uIndexDto = new UserIndexQuery();
             uIndexDto.filter = uFilter;
+            uIndexDto.limit = acceptedFriendIds.size;
             const acceptedFriendsUsers = await userProvider.index(uIndexDto);
             setAvailableUsers(acceptedFriendsUsers);
         } else {
@@ -177,20 +178,6 @@ export function useTrainingModals(onSuccess: () => void) {
         }
     };
 
-    const handleParticipantStatusSubmit = async (participantId: string, newStatus: number) => {
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await trainingProvider.updateParticipantStatus(participantId, new StatusBody(newStatus));
-            closeManageModal();
-            onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleDelete = async () => {
         if (!currentTraining) return;
         setLoading(true);
@@ -278,7 +265,6 @@ export function useTrainingModals(onSuccess: () => void) {
     return {
         showAdd, openAddModal, closeAddModal, handleAddSubmit, availableUsers,
         showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
-        handleParticipantStatusSubmit,
         currentTraining, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors,
         addDiscipline, updateDisciplineType, removeDiscipline, addDistance, updateDistanceValue, removeDistance,
         addSubDistance, updateSubDistanceValue, removeSubDistance
