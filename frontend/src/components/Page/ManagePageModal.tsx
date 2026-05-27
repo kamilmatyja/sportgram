@@ -7,7 +7,7 @@ import {ColorEnum} from '../../enums/ColorEnum';
 import {UserResponse} from '../../api/responses/UserResponse';
 
 interface ManagePageModalProps {
-    user: UserResponse | null;
+    themeColor?: number;
     availableUsers: UserResponse[];
     handleParticipantsChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     show: boolean;
@@ -26,7 +26,7 @@ interface ManagePageModalProps {
 }
 
 export const ManagePageModal: React.FC<ManagePageModalProps> = ({
-                                                                    user,
+                                                                    themeColor,
                                                                     availableUsers,
                                                                     handleParticipantsChange,
                                                                     show,
@@ -44,9 +44,9 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                                                     handleDelete
                                                                 }) => {
     const {t} = useTranslation();
-    if (!show || !currentPageObj || !user) return null;
+    if (!show || !currentPageObj) return null;
 
-    const themeClass = ColorEnum.getClass(user.color);
+    const themeClass = themeColor ? ColorEnum.getClass(themeColor) : '';
 
     return (
         <>

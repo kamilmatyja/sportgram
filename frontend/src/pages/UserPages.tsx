@@ -41,7 +41,7 @@ export default function UserPages() {
             />
 
             <AddPageModal
-                user={pagesService.targetUser}
+                themeColor={pagesService.targetUser?.color}
                 show={modalsService.showAdd}
                 availableUsers={modalsService.availableUsers}
                 closeModal={modalsService.closeAddModal}
@@ -55,7 +55,7 @@ export default function UserPages() {
             />
 
             <ManagePageModal
-                user={pagesService.targetUser}
+                themeColor={pagesService.targetUser?.color}
                 availableUsers={modalsService.availableUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}

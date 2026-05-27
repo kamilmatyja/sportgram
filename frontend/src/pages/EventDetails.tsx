@@ -35,7 +35,7 @@ export default function EventDetails() {
             />
 
             <ManageEventModal
-                user={detailsProps.currentUser}
+                themeColor={detailsProps.ownerPage?.color}
                 show={modalsService.showManage}
                 currentEvent={modalsService.currentEvent}
                 isMyProfile={detailsProps.isMyProfile}

@@ -38,7 +38,7 @@ export default function UserEvents() {
             />
 
             <AddEventModal
-                user={eventsService.targetUser}
+                themeColor={eventsService.targetUser?.color}
                 show={modalsService.showAdd}
                 myPages={modalsService.myPages}
                 selectedPageId={modalsService.selectedPageId}
@@ -62,7 +62,7 @@ export default function UserEvents() {
             />
 
             <ManageEventModal
-                user={eventsService.targetUser}
+                themeColor={eventsService.targetUser?.color}
                 show={modalsService.showManage}
                 currentEvent={modalsService.currentEvent}
                 isMyProfile={eventsService.isMyProfile}

@@ -82,6 +82,21 @@ export function useFeedInteractions(
         setEditCommentText(currentText);
     };
 
+    const handleUpdateComment = async (feedId: string, commentId: string) => {
+        if (!editCommentText.trim()) return;
+        setActionLoading(feedId);
+        try {
+            await feedProvider.updateComment(commentId, new FeedCommentBody(editCommentText));
+            setEditingCommentId(null);
+            setEditCommentText('');
+            refreshSingleFeed(feedId);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     const handleUpdateTableComment = async (feedId: string, commentId: string, newText: string) => {
         if (!newText.trim()) return;
         setActionLoading(feedId);
@@ -153,6 +168,7 @@ export function useFeedInteractions(
         handleAddComment,
         handleDeleteComment,
         startEditingComment,
+        handleUpdateComment,
         handleUpdateTableComment,
         handleCommentStatusSubmit,
         handleUpdateReaction,

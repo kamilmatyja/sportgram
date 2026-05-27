@@ -5,7 +5,7 @@ import {ColorEnum} from '../../enums/ColorEnum';
 import {UserResponse} from '../../api/responses/UserResponse';
 
 interface AddPageModalProps {
-    user: UserResponse | null;
+    themeColor?: number;
     show: boolean;
     availableUsers: UserResponse[];
     closeModal: () => void;
@@ -19,7 +19,7 @@ interface AddPageModalProps {
 }
 
 export const AddPageModal: React.FC<AddPageModalProps> = ({
-                                                              user,
+                                                              themeColor,
                                                               show,
                                                               availableUsers,
                                                               closeModal,
@@ -32,9 +32,9 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                                                               handleSubmit
                                                           }) => {
     const {t} = useTranslation();
-    if (!show || !user) return null;
+    if (!show) return null;
 
-    const themeClass = ColorEnum.getClass(user.color);
+    const themeClass = themeColor ? ColorEnum.getClass(themeColor) : '';
 
     return (
         <>

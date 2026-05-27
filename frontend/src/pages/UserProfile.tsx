@@ -4,7 +4,6 @@ import { useUserModals } from '../services/User/useUserModals';
 import { UserProfileView } from '../components/User/UserProfileView';
 import { ManageUserModal } from '../components/User/ManageUserModal';
 import { UserFeedsSection } from '../components/User/UserFeedsSection';
-import { ColorEnum } from '../enums/ColorEnum';
 import { FriendStatusEnum } from '../enums/FriendStatusEnum';
 
 export default function UserProfile() {
@@ -13,18 +12,18 @@ export default function UserProfile() {
     const modalsService = useUserModals(profileProps.refreshProfile);
 
     const { user, isMyProfile, isAdmin, friendship } = profileProps;
-    const themeClass = user ? ColorEnum.getClass(user.color) : '';
     const canViewDetails = user && (isMyProfile || isAdmin || friendship?.status === FriendStatusEnum.ACCEPTED);
 
     return (
-        <div className={themeClass}>
+        <>
             <UserProfileView {...profileProps} onManageClick={modalsService.openManageModal} />
 
             {canViewDetails && (
-                <UserFeedsSection userId={user.id} />
+                <UserFeedsSection userId={user.id} color={user.color} />
             )}
 
             <ManageUserModal
+                themeColor={user?.color}
                 show={modalsService.showManage}
                 managedUser={modalsService.managedUser}
                 isMyProfile={profileProps.isMyProfile}
@@ -39,6 +38,6 @@ export default function UserProfile() {
                 handleStatusSubmit={modalsService.handleStatusSubmit}
                 handleDelete={modalsService.handleDelete}
             />
-        </div>
+        </>
     );
 }

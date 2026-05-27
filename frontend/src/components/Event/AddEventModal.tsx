@@ -3,11 +3,10 @@ import {useTranslation} from '../../context/TranslationContext';
 import {EventBody} from '../../api/body/EventBody';
 import {ColorEnum} from '../../enums/ColorEnum';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
 import {PageResponse} from '../../api/responses/PageResponse';
 
 interface AddEventModalProps {
-    user: UserResponse | null;
+    themeColor?: number;
     show: boolean;
     myPages: PageResponse[];
     selectedPageId: string;
@@ -31,7 +30,7 @@ interface AddEventModalProps {
 }
 
 export const AddEventModal: React.FC<AddEventModalProps> = ({
-                                                                user,
+                                                                themeColor,
                                                                 show,
                                                                 myPages,
                                                                 selectedPageId,
@@ -54,9 +53,9 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                                                 removeSubDistance
                                                             }) => {
     const {t} = useTranslation();
-    if (!show || !user) return null;
+    if (!show) return null;
 
-    const themeClass = ColorEnum.getClass(user.color);
+    const themeClass = themeColor ? ColorEnum.getClass(themeColor) : '';
 
     return (
         <>

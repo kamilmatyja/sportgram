@@ -5,10 +5,9 @@ import {EventResponse} from '../../api/responses/EventResponse';
 import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
 import {ColorEnum} from '../../enums/ColorEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
 
 interface ManageEventModalProps {
-    user: UserResponse | null;
+    themeColor?: number;
     show: boolean;
     currentEvent: EventResponse | null;
     isMyProfile: boolean;
@@ -34,7 +33,7 @@ interface ManageEventModalProps {
 }
 
 export const ManageEventModal: React.FC<ManageEventModalProps> = ({
-                                                                      user,
+                                                                      themeColor,
                                                                       show,
                                                                       currentEvent,
                                                                       isMyProfile,
@@ -59,9 +58,9 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                                       removeSubDistance
                                                                   }) => {
     const {t} = useTranslation();
-    if (!show || !currentEvent || !user) return null;
+    if (!show || !currentEvent) return null;
 
-    const themeClass = ColorEnum.getClass(user.color);
+    const themeClass = themeColor ? ColorEnum.getClass(themeColor) : '';
 
     return (
         <>

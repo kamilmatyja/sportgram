@@ -11,6 +11,7 @@ import {DisciplineEnum} from '../../enums/DisciplineEnum';
 import {UserStatusEnum} from '../../enums/UserStatusEnum';
 
 interface ManageUserModalProps {
+    themeColor?: number;
     show: boolean;
     managedUser: UserResponse | null;
     isMyProfile: boolean;
@@ -27,14 +28,14 @@ interface ManageUserModalProps {
 }
 
 export const ManageUserModal: React.FC<ManageUserModalProps> = ({
-                                                                    show, managedUser, isMyProfile, isAdmin, closeModal, loading, globalError,
+                                                                    themeColor, show, managedUser, isMyProfile, isAdmin, closeModal, loading, globalError,
                                                                     fieldErrors, formData, handleChange, handleEditSubmit, handleStatusSubmit, handleDelete
                                                                 }) => {
     const { t } = useTranslation();
 
     if (!show || !managedUser) return null;
 
-    const themeClass = ColorEnum.getClass(managedUser.color);
+    const themeClass = themeColor ? ColorEnum.getClass(themeColor) : '';
 
     return (
         <>

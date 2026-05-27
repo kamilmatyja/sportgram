@@ -27,7 +27,6 @@ export default function PagesList() {
             />
 
             <AddPageModal
-                user={pagesService.currentUser}
                 show={modalsService.showAdd}
                 availableUsers={modalsService.availableUsers}
                 closeModal={modalsService.closeAddModal}

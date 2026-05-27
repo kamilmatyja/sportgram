@@ -8,10 +8,9 @@ import { ThemeEnum } from '../../enums/ThemeEnum';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { UserCreateBody } from '../../api/body/UserCreateBody';
-import { UserResponse } from '../../api/responses/UserResponse';
 
 interface AddUserModalProps {
-    currentUser: UserResponse | null;
+    themeColor?: number;
     show: boolean;
     closeModal: () => void;
     loading: boolean;
@@ -23,13 +22,13 @@ interface AddUserModalProps {
 }
 
 export const AddUserModal: React.FC<AddUserModalProps> = ({
-                                                              currentUser, show, closeModal, loading, globalError, fieldErrors, formData, handleChange, handleSubmit
+                                                              themeColor, show, closeModal, loading, globalError, fieldErrors, formData, handleChange, handleSubmit
                                                           }) => {
     const { t } = useTranslation();
 
     if (!show) return null;
 
-    const themeClass = ColorEnum.getClass(currentUser?.color);
+    const themeClass = themeColor ? ColorEnum.getClass(themeColor) : '';
 
     return (
         <>

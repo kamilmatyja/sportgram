@@ -27,7 +27,6 @@ export default function Users() {
             />
 
             <AddUserModal
-                currentUser={usersService.currentUser}
                 show={modalsService.showAdd}
                 closeModal={modalsService.closeAddModal}
                 loading={modalsService.loading}

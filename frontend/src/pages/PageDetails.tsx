@@ -42,7 +42,7 @@ export default function PageDetails() {
             />
 
             <ManagePageModal
-                user={detailsProps.ownerUser}
+                themeColor={detailsProps.pageObj?.color}
                 availableUsers={modalsService.availableUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}

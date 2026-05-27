@@ -27,7 +27,6 @@ export default function EventsList() {
             />
 
             <AddEventModal
-                user={eventsService.currentUser}
                 show={modalsService.showAdd}
                 myPages={modalsService.myPages}
                 selectedPageId={modalsService.selectedPageId}
