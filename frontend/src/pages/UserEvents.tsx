@@ -1,15 +1,17 @@
-import {useParams} from 'react-router-dom';
-import {useUserEvents} from '../services/useUserEvents';
-import {useEventModals} from '../services/useEventModals';
-import {UserEventsView} from '../components/UserEventsView';
-import {AddEventModal} from '../components/AddEventModal';
-import {ManageEventModal} from '../components/ManageEventModal';
+import { useParams } from 'react-router-dom';
+import { useUserEvents } from '../services/useUserEvents';
+import { useEventModals } from '../services/useEventModals';
+import { useEventInteractions } from '../services/useEventInteractions';
+import { UserEventsView } from '../components/UserEventsView';
+import { AddEventModal } from '../components/AddEventModal';
+import { ManageEventModal } from '../components/ManageEventModal';
 
 export default function UserEvents() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const eventsService = useUserEvents(link);
     const modalsService = useEventModals(eventsService.refreshEvents, eventsService.currentUser);
+    const interactions = useEventInteractions(eventsService.refreshEvents);
 
     return (
         <>
@@ -32,6 +34,7 @@ export default function UserEvents() {
                 onNextPage={eventsService.handleNextPage}
                 onAddClick={modalsService.openAddModal}
                 onManageClick={modalsService.openManageModal}
+                interactions={interactions}
             />
 
             <AddEventModal
@@ -82,22 +85,6 @@ export default function UserEvents() {
                 addSubDistance={modalsService.addSubDistance}
                 updateSubDistanceValue={modalsService.updateSubDistanceValue}
                 removeSubDistance={modalsService.removeSubDistance}
-
-                selectedDistanceId={modalsService.selectedDistanceId}
-                distanceLists={modalsService.distanceLists}
-                listUsers={modalsService.listUsers}
-                loadingLists={modalsService.loadingLists}
-                fetchDistanceLists={modalsService.fetchDistanceLists}
-                handleListStatusUpdate={modalsService.handleListStatusUpdate}
-
-                activeResultListId={modalsService.activeResultListId}
-                setActiveResultListId={modalsService.setActiveResultListId}
-                resultFormData={modalsService.resultFormData}
-                setResultFormData={modalsService.setResultFormData}
-                openAddResultForm={modalsService.openAddResultForm}
-                openEditResultForm={modalsService.openEditResultForm}
-                handleSaveResult={modalsService.handleSaveResult}
-                handleDeleteResult={modalsService.handleDeleteResult}
             />
         </>
     );

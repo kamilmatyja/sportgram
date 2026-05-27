@@ -39,7 +39,6 @@ export const PageParticipantsTable: React.FC<PageParticipantsTableProps> = ({
                 {participants.map(p => {
                     const u = relatedUsers[p.userId];
                     const isOwner = currentUser?.id === p.userId;
-                    // Zarządzać może właściciel profilu, admin, lub sam dany użytkownik (akceptacja/odrzucenie)
                     const canManage = isMyProfile || isAdmin || isOwner;
 
                     return (

@@ -39,7 +39,6 @@ export const PageFollowsTable: React.FC<PageFollowsTableProps> = ({
                 {follows.map(f => {
                     const u = relatedUsers[f.userId];
                     const isOwner = currentUser?.id === f.userId;
-                    // Wg logiki obserwacji, zazwyczaj to sam obserwujący zarządza statusem, ew. admin/właściciel usuwa
                     const canManage = isMyProfile || isAdmin || isOwner;
 
                     return (
