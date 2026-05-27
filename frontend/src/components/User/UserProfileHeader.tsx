@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {useTranslation} from '../../context/TranslationContext';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {FriendResponse} from '../../api/responses/FriendResponse';
@@ -12,6 +12,7 @@ interface UserProfileHeaderProps {
     isAdmin: boolean;
     handleAddFriend: () => void;
     handleUpdateFriendStatus: (status: number) => void;
+    actionLoading: boolean;
 }
 
 export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
@@ -20,9 +21,22 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
                                                                         friendship,
                                                                         isMyProfile,
                                                                         handleAddFriend,
-                                                                        handleUpdateFriendStatus
+                                                                        handleUpdateFriendStatus,
+                                                                        actionLoading
                                                                     }) => {
     const {t} = useTranslation();
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     return (
         <div className="card shadow-sm mb-4">
@@ -53,24 +67,33 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
 
                 <div className="d-flex flex-wrap gap-2 align-items-center">
                     {!isMyProfile && !friendship && (
-                        <button className="btn btn-profile-outline-primary" onClick={handleAddFriend}>
-                            <i className="bi bi-person-plus me-1"></i> {t('addFriend')}
+                        <button className="btn btn-profile-outline-primary" onClick={handleAddFriend} disabled={actionLoading}>
+                            {actionLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-person-plus me-1"></i>}
+                            {t('addFriend')}
                         </button>
                     )}
 
                     {!isMyProfile && friendship && (
-                        <div className="dropdown">
-                            <button className="btn btn-profile-outline-primary dropdown-toggle" type="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
+                        <div className="dropdown" ref={dropdownRef}>
+                            <button
+                                className="btn btn-profile-outline-primary dropdown-toggle"
+                                type="button"
+                                onClick={() => setDropdownOpen(!dropdownOpen)}
+                                disabled={actionLoading}
+                            >
+                                {actionLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : null}
                                 {t('friendshipStatus')}: {FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label}
                             </button>
-                            <ul className="dropdown-menu dropdown-menu-end">
+                            <ul className={`dropdown-menu dropdown-menu-end ${dropdownOpen ? 'show' : ''}`}>
                                 {(friendship.senderUserId === currentUser?.id || friendship.receiverUserId === currentUser?.id) && (
                                     FriendStatusEnum.getNanoOptions(t).map(opt => (
                                         opt.value !== friendship.status && (
                                             <li key={opt.value}>
                                                 <button className="dropdown-item"
-                                                        onClick={() => handleUpdateFriendStatus(opt.value)}>
+                                                        onClick={() => {
+                                                            setDropdownOpen(false);
+                                                            handleUpdateFriendStatus(opt.value);
+                                                        }}>
                                                     {opt.label}
                                                 </button>
                                             </li>

@@ -20,6 +20,7 @@ export function useUserProfile(link?: string) {
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [friendship, setFriendship] = useState<FriendResponse | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [actionLoading, setActionLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const userProvider = new UserProvider();
     const friendProvider = new FriendProvider();
@@ -38,7 +39,7 @@ export function useUserProfile(link?: string) {
             const targetUsers = await userProvider.index(indexDto);
 
             if (targetUsers.length === 0) {
-                setError(t('userNotFound'));
+                setError('userNotFound');
                 return;
             }
 
@@ -75,24 +76,27 @@ export function useUserProfile(link?: string) {
 
     const handleAddFriend = async () => {
         if (!user || !currentUser) return;
+        setActionLoading(true);
         try {
             await friendProvider.create(new FriendBody(user.id));
-            const friendFilter: FriendFilterQuery = {userIds: [user.id, currentUser.id]};
-            const friendIndexDto: FriendIndexQuery = {page: 1, limit: 1, filter: friendFilter};
-            const friends = await friendProvider.index(friendIndexDto);
-            setFriendship(friends[0] || null);
+            await fetchProfileData();
         } catch (e: any) {
-            alert(e.error);
+            if (e.error) alert(t(e.error) !== e.error ? t(e.error) : e.error);
+        } finally {
+            setActionLoading(false);
         }
     };
 
     const handleUpdateFriendStatus = async (newStatus: number) => {
         if (!friendship || !user) return;
+        setActionLoading(true);
         try {
             await friendProvider.updateStatus(friendship.id, new StatusBody(newStatus));
-            setFriendship({...friendship, status: newStatus});
+            await fetchProfileData();
         } catch (e: any) {
-            alert(e.error);
+            if (e.error) alert(t(e.error) !== e.error ? t(e.error) : e.error);
+        } finally {
+            setActionLoading(false);
         }
     };
 
@@ -106,7 +110,7 @@ export function useUserProfile(link?: string) {
     const isAdmin = Boolean(currentUser && Array.isArray(currentUser.roles) && currentUser.roles.some((role: any) => role.role === RoleEnum.ADMINISTRATOR));
 
     return {
-        user, currentUser, friendship, loading, error,
+        user, currentUser, friendship, loading, actionLoading, error,
         handleAddFriend, handleUpdateFriendStatus,
         isMyProfile, isAdmin, refreshProfile
     };

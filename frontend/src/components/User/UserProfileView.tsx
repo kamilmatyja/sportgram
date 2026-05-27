@@ -13,6 +13,7 @@ interface UserProfileViewProps {
     currentUser: UserResponse | null;
     friendship: FriendResponse | null;
     loading: boolean;
+    actionLoading: boolean;
     error: string | null;
     handleAddFriend: () => void;
     handleUpdateFriendStatus: (status: number) => void;
@@ -26,6 +27,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                                                                     currentUser,
                                                                     friendship,
                                                                     loading,
+                                                                    actionLoading,
                                                                     error,
                                                                     handleAddFriend,
                                                                     handleUpdateFriendStatus,
@@ -60,6 +62,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 isAdmin={isAdmin}
                 handleAddFriend={handleAddFriend}
                 handleUpdateFriendStatus={handleUpdateFriendStatus}
+                actionLoading={actionLoading}
             />
 
             {canViewDetails && (
