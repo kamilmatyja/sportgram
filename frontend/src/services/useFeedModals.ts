@@ -45,13 +45,12 @@ export function useFeedModals(onSuccess: () => void) {
     };
 
     const openManageModal = async (feed: FeedResponse) => {
-        const currentFeed = await feedProvider.details(feed.id, [
-            'feedReactions',
-            'feedComments',
-        ]);
+        // Ponieważ modal edytuje tylko sam feed, pobieramy najnowszą jego wersję,
+        // ale bez zagnieżdżonych komentarzy/reakcji, bo ich tu nie edytujemy
+        const currentFeedObj = await feedProvider.details(feed.id, []);
 
-        setCurrentFeed(currentFeed);
-        setFormData(new FeedBody(feed.text, ''));
+        setCurrentFeed(currentFeedObj);
+        setFormData(new FeedBody(currentFeedObj.text, ''));
         setGlobalError('');
         setFieldErrors({});
         setShowManage(true);
@@ -108,40 +107,12 @@ export function useFeedModals(onSuccess: () => void) {
         }
     };
 
-    const handleCommentStatusSubmit = async (commentId: string, newStatus: number) => {
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await feedProvider.updateCommentStatus(commentId, new StatusBody(newStatus));
-            closeManageModal();
-            onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleReactionStatusSubmit = async (reactionId: string, newStatus: number) => {
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await feedProvider.updateReactionStatus(reactionId, new StatusBody(newStatus));
-            closeManageModal();
-            onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleChange = createFormHandler(setFormData);
 
     return {
         showAdd, openAddModal, closeAddModal, handleAddSubmit,
-        showManage, openManageModal, closeManageModal, currentFeed, handleEditSubmit, handleStatusSubmit, handleDelete,
-        handleCommentStatusSubmit, handleReactionStatusSubmit,
+        showManage, openManageModal, closeManageModal, currentFeed,
+        handleEditSubmit, handleStatusSubmit, handleDelete,
         formData, handleChange, loading, globalError, fieldErrors
     };
 }

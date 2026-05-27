@@ -111,7 +111,6 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                                                     comments={feed.comments || []}
                                                     relatedUsers={relatedUsers}
                                                     currentUser={currentUser}
-                                                    isMyProfile={isMyProfile}
                                                     isAdmin={isAdmin}
                                                     isFeedLoading={actionLoading === feed.id}
                                                     onDeleteComment={interactions.handleDeleteComment}
@@ -123,7 +122,6 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                                                     reactions={feed.reactions || []}
                                                     relatedUsers={relatedUsers}
                                                     currentUser={currentUser}
-                                                    isMyProfile={isMyProfile}
                                                     isAdmin={isAdmin}
                                                     isFeedLoading={actionLoading === feed.id}
                                                     onDeleteReaction={interactions.handleDeleteReaction}

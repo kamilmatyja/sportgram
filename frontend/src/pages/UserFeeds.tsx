@@ -20,8 +20,22 @@ export default function UserFeeds() {
 
     const interactions = {
         ...baseInteractions,
-        handleCommentStatusSubmit: modalsService.handleCommentStatusSubmit,
-        handleReactionStatusSubmit: modalsService.handleReactionStatusSubmit,
+        handleCommentStatusSubmit: async (commentId: string, newStatus: number) => {
+            await baseInteractions.handleCommentStatusSubmit(commentId, newStatus);
+            feedsService.refreshFeeds();
+        },
+        handleReactionStatusSubmit: async (reactionId: string, newStatus: number) => {
+            await baseInteractions.handleReactionStatusSubmit(reactionId, newStatus);
+            feedsService.refreshFeeds();
+        },
+        handleUpdateReaction: async (reactionId: string, type: number) => {
+            await baseInteractions.handleUpdateReaction(reactionId, type);
+            feedsService.refreshFeeds();
+        },
+        handleDeleteReaction: async (reactionId: string) => {
+            await baseInteractions.handleDeleteReaction(reactionId);
+            feedsService.refreshFeeds();
+        }
     };
 
     return (
@@ -77,8 +91,6 @@ export default function UserFeeds() {
                 handleEditSubmit={modalsService.handleEditSubmit}
                 handleStatusSubmit={modalsService.handleStatusSubmit}
                 handleDelete={modalsService.handleDelete}
-                handleCommentStatusSubmit={modalsService.handleCommentStatusSubmit}
-                handleReactionStatusSubmit={modalsService.handleReactionStatusSubmit}
             />
         </>
     );

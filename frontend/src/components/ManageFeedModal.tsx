@@ -5,7 +5,6 @@ import {FeedResponse} from '../api/responses/FeedResponse';
 import {ElementStatusEnum} from '../enums/ElementStatusEnum';
 import {UserResponse} from '../api/responses/UserResponse';
 import {ColorEnum} from '../enums/ColorEnum';
-import {FeedReactionEnum} from '../enums/FeedReactionEnum';
 
 interface ManageFeedModalProps {
     user: UserResponse | null;
@@ -22,8 +21,6 @@ interface ManageFeedModalProps {
     handleEditSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     handleStatusSubmit: (newStatus: number) => void;
     handleDelete: () => void;
-    handleCommentStatusSubmit: (commentId: string, newStatus: number) => void;
-    handleReactionStatusSubmit: (reactionId: string, newStatus: number) => void;
 }
 
 export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
@@ -41,21 +38,11 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                                                                     handleEditSubmit,
                                                                     handleStatusSubmit,
                                                                     handleDelete,
-                                                                    handleCommentStatusSubmit,
-                                                                    handleReactionStatusSubmit,
                                                                 }) => {
     const {t} = useTranslation();
     if (!show || !feed || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
-
-    const visibleComments = feed.comments
-        ? (isAdmin ? feed.comments : feed.comments.filter(c => c.userId === user.id))
-        : [];
-
-    const visibleReactions = feed.reactions
-        ? (isAdmin ? feed.reactions : feed.reactions.filter(r => r.userId === user.id))
-        : [];
 
     return (
         <>
@@ -70,7 +57,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form id="edit-feed-form" onSubmit={handleEditSubmit} className="mb-4 border-bottom">
+                                <form id="edit-feed-form" onSubmit={handleEditSubmit} className="mb-4 pb-3 border-bottom">
                                     <div className="mb-3">
                                         <label className="form-label">{t('text')}</label>
                                         <textarea name="text"
@@ -93,102 +80,28 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                             )}
 
                             {(isMyProfile || isAdmin) && (
-                                <>
-                                    <div className="mb-4 border-bottom pb-3">
-                                        <div className="d-flex flex-wrap gap-2 align-items-center">
-                                            <strong>{t('feedStatus')}: </strong>
-                                            <span className="me-2 badge bg-light text-dark border profile-theme-border">
-                                                    {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}
-                                                </span>
-                                            {ElementStatusEnum.getOptions(t)
-                                                .filter(opt => opt.value !== feed.status)
-                                                .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
-                                                .map(opt => (
-                                                    <button
-                                                        key={opt.value}
-                                                        type="button"
-                                                        className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                        disabled={loading}
-                                                        onClick={() => handleStatusSubmit(opt.value)}
-                                                    >
-                                                        {loading ? t('loading') : opt.label}
-                                                    </button>
-                                                ))}
-                                        </div>
+                                <div className="mb-2">
+                                    <div className="d-flex flex-wrap gap-2 align-items-center">
+                                        <strong>{t('feedStatus')}: </strong>
+                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
+                                            {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}
+                                        </span>
+                                        {ElementStatusEnum.getOptions(t)
+                                            .filter(opt => opt.value !== feed.status)
+                                            .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
+                                            .map(opt => (
+                                                <button
+                                                    key={opt.value}
+                                                    type="button"
+                                                    className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                                    disabled={loading}
+                                                    onClick={() => handleStatusSubmit(opt.value)}
+                                                >
+                                                    {loading ? t('loading') : opt.label}
+                                                </button>
+                                            ))}
                                     </div>
-
-                                    {visibleComments.length > 0 && (
-                                        <div className="mb-4 border-bottom pb-3">
-                                            <h6>{t('comments')} ({visibleComments.length})</h6>
-                                            {visibleComments.map(comment => (
-                                                <div key={comment.id}
-                                                     className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
-                                                    <div>
-                                                        <strong>{t('text')}:</strong> {comment.text}
-                                                    </div>
-                                                    <div>
-                                                        <strong>{t('status')}: </strong>
-                                                        <span
-                                                            className="me-2 badge bg-light text-dark border profile-theme-border">{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(comment.status))?.label || comment.status}
-                                                        </span>
-                                                    </div>
-                                                    <div className="ms-auto d-flex gap-1 flex-wrap">
-                                                        {ElementStatusEnum.getOptions(t)
-                                                            .filter(opt => opt.value !== comment.status)
-                                                            .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
-                                                            .map(opt => (
-                                                                <button
-                                                                    key={opt.value}
-                                                                    type="button"
-                                                                    className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                                    disabled={loading}
-                                                                    onClick={() => handleCommentStatusSubmit(comment.id, opt.value)}
-                                                                >
-                                                                    {loading ? t('loading') : opt.label}
-                                                                </button>
-                                                            ))}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {visibleReactions.length > 0 && (
-                                        <>
-                                            <h6>{t('reactions')} ({visibleReactions.length})</h6>
-                                            {visibleReactions.map(reaction => (
-                                                <div key={reaction.id}
-                                                     className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
-                                                    <div>
-                                                        <strong>{t('reaction')}:</strong> {FeedReactionEnum.getOptions(t).find(opt => String(opt.value) === String(reaction.reaction))?.label || reaction.reaction}
-                                                    </div>
-                                                    <div>
-                                                        <strong>{t('status')}: </strong>
-                                                        <span
-                                                            className="me-2 badge bg-light text-dark border profile-theme-border">{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(reaction.status))?.label || reaction.status}
-                                                        </span>
-                                                    </div>
-                                                    <div className="ms-auto d-flex gap-1 flex-wrap">
-                                                        {ElementStatusEnum.getOptions(t)
-                                                            .filter(opt => opt.value !== reaction.status)
-                                                            .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
-                                                            .map(opt => (
-                                                                <button
-                                                                    key={opt.value}
-                                                                    type="button"
-                                                                    className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                                    disabled={loading}
-                                                                    onClick={() => handleReactionStatusSubmit(reaction.id, opt.value)}
-                                                                >
-                                                                    {loading ? t('loading') : opt.label}
-                                                                </button>
-                                                            ))}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </>
-                                    )}
-                                </>
+                                </div>
                             )}
                         </div>
                         <div className="modal-footer">

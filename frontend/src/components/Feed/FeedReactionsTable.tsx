@@ -10,7 +10,6 @@ interface FeedReactionsTableProps {
     reactions: FeedReactionResponse[];
     relatedUsers: Record<string, UserResponse>;
     currentUser: UserResponse | null;
-    isMyProfile: boolean;
     isAdmin: boolean;
     isFeedLoading: boolean;
     onDeleteReaction: (reactionId: string) => void;
@@ -19,7 +18,7 @@ interface FeedReactionsTableProps {
 }
 
 export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
-                                                                          reactions, relatedUsers, currentUser, isMyProfile, isAdmin, isFeedLoading,
+                                                                          reactions, relatedUsers, currentUser, isAdmin, isFeedLoading,
                                                                           onDeleteReaction, onUpdateReaction, onChangeStatus
                                                                       }) => {
     const { t } = useTranslation();
@@ -44,7 +43,7 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
             {reactions.map(r => {
                 const author = relatedUsers[r.userId];
                 const isOwner = currentUser?.id === r.userId;
-                const canChangeStatus = isMyProfile || isAdmin;
+                const canChangeStatus = isOwner || isAdmin;
 
                 return (
                     <tr key={r.id}>
@@ -82,7 +81,10 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
                                 {isOwner && (
                                     <button className="btn btn-xs btn-outline-danger py-0" disabled={isFeedLoading} onClick={() => onDeleteReaction(r.id)}><i className="bi bi-trash"></i></button>
                                 )}
-                                {canChangeStatus && ElementStatusEnum.getOptions(t).filter(opt => opt.value !== r.status).map(opt => (
+                                {canChangeStatus && ElementStatusEnum.getOptions(t)
+                                    .filter(opt => opt.value !== r.status)
+                                    .filter(opt => opt.value !== ElementStatusEnum.REJECTED || isAdmin)
+                                    .map(opt => (
                                     <button key={opt.value} className="btn btn-xs btn-profile-outline-primary py-0" disabled={isFeedLoading} onClick={() => onChangeStatus(r.id, opt.value)}>
                                         {opt.label}
                                     </button>

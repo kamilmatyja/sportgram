@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FeedProvider } from '../api/providers/FeedProvider';
 import { FeedCommentBody } from '../api/body/FeedCommentBody';
 import { FeedReactionBody } from '../api/body/FeedReactionBody';
+import { StatusBody } from '../api/body/StatusBody';
 import { FeedResponse } from '../api/responses/FeedResponse';
 import { UserResponse } from '../api/responses/UserResponse';
 
@@ -96,10 +97,34 @@ export function useFeedInteractions(
         }
     };
 
+    const handleCommentStatusSubmit = async (commentId: string, newStatus: number) => {
+        setActionLoading('comment-status');
+        try {
+            await feedProvider.updateCommentStatus(commentId, new StatusBody(newStatus));
+            // Ponieważ odświeżamy z zewnątrz i to wpływa na konkretny feed:
+            // idealnie byłoby przekazać feedId, ale zakładam że wywołasz refreshFeeds na liście.
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     const handleUpdateReaction = async (reactionId: string, type: number) => {
         setActionLoading('reaction-update');
         try {
             await feedProvider.updateReaction(reactionId, new FeedReactionBody(type));
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleReactionStatusSubmit = async (reactionId: string, newStatus: number) => {
+        setActionLoading('reaction-status');
+        try {
+            await feedProvider.updateReactionStatus(reactionId, new StatusBody(newStatus));
         } catch (e) {
             console.error(e);
         } finally {
@@ -131,7 +156,9 @@ export function useFeedInteractions(
         handleDeleteComment,
         startEditingComment,
         handleUpdateTableComment,
+        handleCommentStatusSubmit,
         handleUpdateReaction,
+        handleReactionStatusSubmit,
         handleDeleteReaction
     };
 }
