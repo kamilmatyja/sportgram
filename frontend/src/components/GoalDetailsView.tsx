@@ -41,7 +41,7 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
             <div className="card shadow-sm mb-4">
                 <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h4 className="mb-0 text-profile-primary fw-bold">{t('goalDetails')}</h4>
+                        <h4 className="mb-3 text-profile-primary fw-bold"><i className="bi bi-info-circle me-2"></i>{t('basicInformation')}</h4>
                         {canManage && (
                             <button className="btn btn-profile-primary" onClick={() => onManageClick(goal)}>
                                 <i className="bi bi-gear me-1"></i> {t('manage')}
@@ -50,24 +50,39 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                     </div>
 
                     <div className="mb-2">
-                        <h5>{goal.text}</h5>
-                        <p className="text-muted mb-2">
-                            {DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(goal.discipline))?.label || goal.discipline}
-                            <span className="mx-2">|</span>
-                            {goal.distance} [m]
-                            {goal.time ? <><span className="mx-2">|</span> {goal.time} [s]</> : ''}
-                        </p>
-                        {(goal.startedAt || goal.endedAt) && (
-                            <p className="text-muted mb-2">
-                                {goal.startedAt && <span>{t('from')}: {formatDate(goal.startedAt)}</span>}
-                                {goal.endedAt && <><span className="mx-2">{t('to')}:</span> <span>{formatDate(goal.endedAt)}</span></>}
-                            </p>
-                        )}
-                        <div className="d-flex align-items-center gap-2 mt-3">
-                            <strong>{t('goalStatus')}: </strong>
-                            <span className="badge bg-light text-dark border profile-theme-border">
-                                {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}
-                            </span>
+                        <p className="mb-4 text-break fs-5">{goal.text}</p>
+
+                        <div className="row g-3">
+                            <div className="col-sm-6 col-md-4">
+                                <div className="text-muted small mb-1">{t('discipline')}</div>
+                                <div className="fw-medium">
+                                    {DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(goal.discipline))?.label || goal.discipline}
+                                </div>
+                            </div>
+                            <div className="col-sm-6 col-md-4">
+                                <div className="text-muted small mb-1">{t('distance')}</div>
+                                <div className="fw-medium">{goal.distance} [m]</div>
+                            </div>
+                            <div className="col-sm-6 col-md-4">
+                                <div className="text-muted small mb-1">{t('time')}</div>
+                                <div className="fw-medium">{goal.time ? `${goal.time} [s]` : '-'}</div>
+                            </div>
+                            <div className="col-sm-6 col-md-4">
+                                <div className="text-muted small mb-1">{t('startedAt')}</div>
+                                <div className="fw-medium">{goal.startedAt ? formatDate(goal.startedAt) : '-'}</div>
+                            </div>
+                            <div className="col-sm-6 col-md-4">
+                                <div className="text-muted small mb-1">{t('endedAt')}</div>
+                                <div className="fw-medium">{goal.endedAt ? formatDate(goal.endedAt) : '-'}</div>
+                            </div>
+                            <div className="col-sm-6 col-md-4">
+                                <div className="text-muted small mb-1">{t('goalStatus')}</div>
+                                <div>
+                                    <span className="badge bg-light text-dark border profile-theme-border">
+                                        {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
