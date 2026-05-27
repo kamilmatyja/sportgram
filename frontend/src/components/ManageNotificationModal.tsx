@@ -45,16 +45,6 @@ export const ManageNotificationModal: React.FC<ManageNotificationModalProps> = (
                         <div className="modal-body">
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
-                            <div className="mb-3">
-                                <strong>{t('text')}:</strong>
-                                <p className="mb-1 text-break">{notification.text}</p>
-                                {notification.link && (
-                                    <a href={notification.link}
-                                       className="btn btn-sm btn-link p-0 text-profile-primary">
-                                        {t('link')} <i className="bi bi-box-arrow-up-right"></i>
-                                    </a>
-                                )}
-                            </div>
                             <div className="d-flex flex-wrap gap-2 align-items-center">
                                 <strong>{t('status')}: </strong>
                                 <span className="me-2 badge bg-light text-dark border profile-theme-border">

@@ -14,6 +14,7 @@ export function useUserNotifications(link?: string) {
 
     const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
     const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
+    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
 
     const [page, setPage] = useState<number>(1);
@@ -55,6 +56,7 @@ export function useUserNotifications(link?: string) {
             try {
                 setLoading(true);
                 const currentUsr = await getCurrentUser();
+                setCurrentUser(currentUsr);
 
                 if (!currentUsr || !link) {
                     setError('unauthorizedEdit');
@@ -118,7 +120,7 @@ export function useUserNotifications(link?: string) {
     };
 
     return {
-        notifications, targetUser, isMyProfile, page, limit, sort, filters, loading, error,
+        notifications, targetUser, currentUser, isMyProfile, page, limit, sort, filters, loading, error,
         handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshNotifications
     };
 }
