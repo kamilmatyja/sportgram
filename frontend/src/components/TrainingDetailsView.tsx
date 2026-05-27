@@ -40,11 +40,11 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
     if (error || !training || !ownerUser) return <div
         className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
 
-    const hexColor = ColorEnum.getHex(ownerUser.color);
+    const themeClass = ColorEnum.getClass(ownerUser.color);
     const canManage = isMyProfile || isAdmin || isParticipantOfTraining;
 
     return (
-        <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
+        <div className={`container mt-4 mb-5 ${themeClass}`} tabIndex={-1}>
             <div className="d-flex flex-wrap gap-2 mb-3 overflow-x-auto">
                 <a href={`/users/${ownerUser.link}/trainings`} className="btn btn-profile-outline-primary">
                     <i className="bi bi-arrow-left me-1"></i> {t('trainings')}

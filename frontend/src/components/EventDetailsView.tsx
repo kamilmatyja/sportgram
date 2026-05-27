@@ -48,11 +48,11 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
     if (error || !eventObj || !currentUser) return <div
         className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
 
-    const hexColor = ownerPage ? ColorEnum.getHex(ownerPage.color) : ColorEnum.getHex(currentUser.color);
+    const themeClass = ColorEnum.getClass(ownerPage?.color);
     const canManage = isMyProfile || isAdmin;
 
     return (
-        <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
+        <div className={`container mt-4 mb-5 ${themeClass}`} tabIndex={-1}>
             <div className="d-flex flex-wrap gap-2 mb-3 overflow-x-auto">
                 <a href="/events" className="btn btn-profile-outline-primary">
                     <i className="bi bi-arrow-left me-1"></i> {t('events')}

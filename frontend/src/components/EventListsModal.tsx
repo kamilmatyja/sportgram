@@ -49,7 +49,7 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
 
     if (!show || !eventObj) return null;
 
-    const hexColor = ownerPage ? ColorEnum.getHex(ownerPage.color) : (currentUser ? ColorEnum.getHex(currentUser.color) : '#007bff');
+    const themeClass = ColorEnum.getClass(ownerPage?.color);
 
     const distanceObj = eventObj.disciplines.flatMap(d => d.distances).find(d => d.id === selectedDistanceId);
     const isEnrolled = lists.some(l => l.userId === currentUser?.id);
@@ -60,7 +60,7 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
 
     return (
         <>
-            <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
+            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
                 <div className="modal-dialog modal-xl modal-dialog-scrollable">
                     <div className="modal-content">
                         <div className="modal-header">

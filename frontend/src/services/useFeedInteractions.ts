@@ -8,7 +8,7 @@ import { UserResponse } from '../api/responses/UserResponse';
 export function useFeedInteractions(
     feeds: FeedResponse[],
     currentUser: UserResponse | null,
-    refreshSingleFeed: (feedId: string) => Promise<void>
+    refreshSingleFeed: (feedId: string) => void
 ) {
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
@@ -35,7 +35,7 @@ export function useFeedInteractions(
             } else {
                 await feedProvider.createReaction(feedId, new FeedReactionBody(reactionType));
             }
-            await refreshSingleFeed(feedId);
+            refreshSingleFeed(feedId);
         } catch (e) {
             console.error(e);
         } finally {
@@ -56,7 +56,7 @@ export function useFeedInteractions(
         try {
             await feedProvider.createComment(feedId, new FeedCommentBody(text));
             setCommentInputs(prev => ({ ...prev, [feedId]: '' }));
-            await refreshSingleFeed(feedId);
+            refreshSingleFeed(feedId);
         } catch (e) {
             console.error(e);
         } finally {
@@ -68,7 +68,7 @@ export function useFeedInteractions(
         setActionLoading(feedId);
         try {
             await feedProvider.deleteComment(commentId);
-            await refreshSingleFeed(feedId);
+            refreshSingleFeed(feedId);
         } catch (e) {
             console.error(e);
         } finally {
@@ -81,14 +81,36 @@ export function useFeedInteractions(
         setEditCommentText(currentText);
     };
 
-    const handleUpdateComment = async (feedId: string, commentId: string) => {
-        if (!editCommentText.trim()) return;
+    const handleUpdateTableComment = async (feedId: string, commentId: string, newText: string) => {
+        if (!newText.trim()) return;
         setActionLoading(feedId);
         try {
-            await feedProvider.updateComment(commentId, new FeedCommentBody(editCommentText));
+            await feedProvider.updateComment(commentId, new FeedCommentBody(newText));
             setEditingCommentId(null);
             setEditCommentText('');
-            await refreshSingleFeed(feedId);
+            refreshSingleFeed(feedId);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleUpdateReaction = async (reactionId: string, type: number) => {
+        setActionLoading('reaction-update');
+        try {
+            await feedProvider.updateReaction(reactionId, new FeedReactionBody(type));
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleDeleteReaction = async (reactionId: string) => {
+        setActionLoading('reaction-delete');
+        try {
+            await feedProvider.deleteReaction(reactionId);
         } catch (e) {
             console.error(e);
         } finally {
@@ -108,6 +130,8 @@ export function useFeedInteractions(
         handleAddComment,
         handleDeleteComment,
         startEditingComment,
-        handleUpdateComment
+        handleUpdateTableComment,
+        handleUpdateReaction,
+        handleDeleteReaction
     };
 }

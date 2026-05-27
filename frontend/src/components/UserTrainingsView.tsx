@@ -58,10 +58,10 @@ export const UserTrainingsView: React.FC<UserTrainingsViewProps> = ({
     if (error || !user) return <div
         className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
-    const hexColor = ColorEnum.getHex(user.color);
+    const themeClass = ColorEnum.getClass(user.color);
 
     return (
-        <div className="container mt-4 mb-5" style={{'--theme-color': hexColor} as React.CSSProperties}>
+        <div className={`container mt-4 mb-5 ${themeClass}`} tabIndex={-1}>
             <div className="card shadow-sm mb-4">
                 <div
                     className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">

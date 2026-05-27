@@ -54,13 +54,13 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
     const {t} = useTranslation();
     if (!show || !goal || !user || !currentUser) return null;
 
-    const hexColor = ColorEnum.getHex(user.color);
+    const themeClass = ColorEnum.getClass(user.color);
 
     const myParticipant = goal.participants?.find(p => p.userId === currentUser.id);
 
     return (
         <>
-            <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
+            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">

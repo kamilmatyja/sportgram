@@ -95,7 +95,7 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
     const {t} = useTranslation();
     if (!show || !currentEvent || !user) return null;
 
-    const hexColor = ColorEnum.getHex(user.color);
+    const themeClass = ColorEnum.getClass(user.color);
 
     const renderResultForm = (list: EventDisciplineDistanceListResponse) => {
         if (activeResultListId !== list.id) return null;
@@ -141,7 +141,7 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
 
     return (
         <>
-            <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
+            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">

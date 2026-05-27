@@ -1,21 +1,36 @@
-import {useParams} from 'react-router-dom';
-import {useUserFeeds} from '../services/useUserFeeds';
-import {useFeedModals} from '../services/useFeedModals';
-import {UserFeedsView} from '../components/UserFeedsView';
-import {AddFeedModal} from '../components/AddFeedModal';
-import {ManageFeedModal} from '../components/ManageFeedModal';
+import { useParams } from 'react-router-dom';
+import { useUserFeeds } from '../services/useUserFeeds';
+import { useFeedModals } from '../services/useFeedModals';
+import { useFeedInteractions } from '../services/useFeedInteractions';
+import { UserFeedsView } from '../components/UserFeedsView';
+import { AddFeedModal } from '../components/AddFeedModal';
+import { ManageFeedModal } from '../components/ManageFeedModal';
 
 export default function UserFeeds() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const feedsService = useUserFeeds(link);
     const modalsService = useFeedModals(feedsService.refreshFeeds);
+
+    const baseInteractions = useFeedInteractions(
+        feedsService.feeds,
+        feedsService.currentUser,
+        () => { feedsService.refreshFeeds(); }
+    );
+
+    const interactions = {
+        ...baseInteractions,
+        handleCommentStatusSubmit: modalsService.handleCommentStatusSubmit,
+        handleReactionStatusSubmit: modalsService.handleReactionStatusSubmit,
+    };
 
     return (
         <>
             <UserFeedsView
                 user={feedsService.targetUser}
+                currentUser={feedsService.currentUser}
                 feeds={feedsService.feeds}
+                relatedUsers={feedsService.relatedUsers}
                 isMyProfile={feedsService.isMyProfile}
                 isAdmin={feedsService.isAdmin}
                 loading={feedsService.loading}
@@ -24,6 +39,7 @@ export default function UserFeeds() {
                 limit={feedsService.limit}
                 sort={feedsService.sort}
                 filters={feedsService.filters}
+                actionLoading={interactions.actionLoading}
                 onFilterChange={feedsService.handleFilterChange}
                 onSortChange={feedsService.handleSortChange}
                 onLimitChange={feedsService.handleLimitChange}
@@ -31,6 +47,7 @@ export default function UserFeeds() {
                 onNextPage={feedsService.handleNextPage}
                 onAddClick={modalsService.openAddModal}
                 onManageClick={modalsService.openManageModal}
+                interactions={interactions}
             />
 
             <AddFeedModal

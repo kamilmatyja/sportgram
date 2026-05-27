@@ -30,11 +30,11 @@ export const AddFeedModal: React.FC<AddFeedModalProps> = ({
     const {t} = useTranslation();
     if (!show || !user) return null;
 
-    const hexColor = ColorEnum.getHex(user.color);
+    const themeClass = ColorEnum.getClass(user.color);
 
     return (
         <>
-            <div className="modal d-block" tabIndex={-1} style={{'--theme-color': hexColor} as React.CSSProperties}>
+            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <form onSubmit={handleSubmit}>
