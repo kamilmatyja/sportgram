@@ -25,7 +25,7 @@ interface PageDetailsViewProps {
     loading: boolean;
     error: string | null;
     onManageClick: (page: PageResponse) => void;
-    interactions: any; // Added interactions for Participant Status change
+    interactions: any;
 
     events: EventResponse[];
     eventsLoading: boolean;

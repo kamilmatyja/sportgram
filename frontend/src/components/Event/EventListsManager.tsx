@@ -208,7 +208,6 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                         </tr>
                                     )}
 
-                                    {/* Edit/Add Result Form */}
                                     {activeResultListId === list.id && (
                                         <tr className="bg-light">
                                             <td colSpan={5} className="p-3">
