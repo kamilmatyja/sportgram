@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from '../../context/TranslationContext';
-import { ProcessedActivity } from '../../services/useUserConversations';
+import { ProcessedActivity } from '../../services/Conversation/useUserConversations';
 import { PaginationEnum } from '../../enums/PaginationEnum';
 import { formatDate } from '../../utils/dateFormat';
 

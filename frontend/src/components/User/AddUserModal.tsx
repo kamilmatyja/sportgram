@@ -1,0 +1,181 @@
+import React from 'react';
+import { useTranslation } from '../../context/TranslationContext';
+import { GenderEnum } from '../../enums/GenderEnum';
+import { CountryEnum } from '../../enums/CountryEnum';
+import { RoleEnum } from '../../enums/RoleEnum';
+import { LanguageEnum } from '../../enums/LanguageEnum';
+import { ThemeEnum } from '../../enums/ThemeEnum';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { UserCreateBody } from '../../api/body/UserCreateBody';
+import { UserResponse } from '../../api/responses/UserResponse';
+
+interface AddUserModalProps {
+    currentUser: UserResponse | null;
+    show: boolean;
+    closeModal: () => void;
+    loading: boolean;
+    globalError: string;
+    fieldErrors: Record<string, string | string[]>;
+    formData: UserCreateBody;
+    handleChange: (e: React.ChangeEvent<any>) => void;
+    handleSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
+}
+
+export const AddUserModal: React.FC<AddUserModalProps> = ({
+                                                              currentUser, show, closeModal, loading, globalError, fieldErrors, formData, handleChange, handleSubmit
+                                                          }) => {
+    const { t } = useTranslation();
+
+    if (!show) return null;
+
+    const themeClass = ColorEnum.getClass(currentUser?.color);
+
+    return (
+        <>
+            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
+                <div className="modal-dialog modal-lg">
+                    <div className="modal-content">
+                        <form onSubmit={handleSubmit}>
+                            <div className="modal-header">
+                                <h5 className="modal-title">{t('addUser')}</h5>
+                                <button type="button" className="btn-close" onClick={closeModal}></button>
+                            </div>
+                            <div className="modal-body">
+                                {globalError && <div className="alert alert-danger">{globalError}</div>}
+
+                                <div className="row">
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('firstName')}</label>
+                                        <input name="firstName" className={`form-control ${fieldErrors.firstName ? 'is-invalid' : ''}`} value={formData.firstName || ''} onChange={handleChange} required />
+                                        {fieldErrors.firstName && <div className="invalid-feedback d-block">{fieldErrors.firstName}</div>}
+                                    </div>
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('lastName')}</label>
+                                        <input name="lastName" className={`form-control ${fieldErrors.lastName ? 'is-invalid' : ''}`} value={formData.lastName || ''} onChange={handleChange} required />
+                                        {fieldErrors.lastName && <div className="invalid-feedback d-block">{fieldErrors.lastName}</div>}
+                                    </div>
+                                </div>
+
+                                <div className="row">
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('email')}</label>
+                                        <input type="email" name="email" className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`} value={formData.email || ''} onChange={handleChange} required />
+                                        {fieldErrors.email && <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
+                                    </div>
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('password')}</label>
+                                        <input type="password" name="password" className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`} value={formData.password || ''} onChange={handleChange} required minLength={8} />
+                                        {fieldErrors.password && <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
+                                    </div>
+                                </div>
+
+                                <div className="row">
+                                    <div className="col-md-4 mb-3">
+                                        <label className="form-label">{t('phone')}</label>
+                                        <input type="number" name="phone" className={`form-control ${fieldErrors.phone ? 'is-invalid' : ''}`} value={formData.phone || ''} onChange={handleChange} required />
+                                        {fieldErrors.phone && <div className="invalid-feedback d-block">{fieldErrors.phone}</div>}
+                                    </div>
+                                    <div className="col-md-4 mb-3">
+                                        <label className="form-label">{t('birthAt')}</label>
+                                        <input type="date" name="birthAt" className={`form-control ${fieldErrors.birthAt ? 'is-invalid' : ''}`} value={formData.birthAt || ''} onChange={handleChange} required />
+                                        {fieldErrors.birthAt && <div className="invalid-feedback d-block">{fieldErrors.birthAt}</div>}
+                                    </div>
+                                    <div className="col-md-4 mb-3">
+                                        <label className="form-label">{t('link')}</label>
+                                        <input type="text" name="link" className={`form-control ${fieldErrors.link ? 'is-invalid' : ''}`} value={formData.link || ''} onChange={handleChange} required />
+                                        {fieldErrors.link && <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
+                                    </div>
+                                </div>
+
+                                <div className="row">
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('gender')}</label>
+                                        <select name="gender" className="form-select" value={formData.gender || ''} onChange={handleChange} required>
+                                            <option value="">{t('gender')}</option>
+                                            {GenderEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('country')}</label>
+                                        <select name="country" className="form-select" value={formData.country || ''} onChange={handleChange} required>
+                                            <option value="">{t('country')}</option>
+                                            {CountryEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('language')}</label>
+                                        <select name="language" className="form-select" value={formData.language || ''} onChange={handleChange} required>
+                                            <option value="">{t('language')}</option>
+                                            {LanguageEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('theme')}</label>
+                                        <select name="theme" className="form-select" value={formData.theme || ''} onChange={handleChange} required>
+                                            <option value="">{t('theme')}</option>
+                                            {ThemeEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('color')}</label>
+                                        <select name="color" className="form-select" value={formData.color || ''} onChange={handleChange} required>
+                                            <option value="">{t('color')}</option>
+                                            {ColorEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('role')}</label>
+                                        <select name="roles" className="form-select" value={Array.isArray(formData.roles) ? formData.roles.map(String) : []} onChange={handleChange} multiple required>
+                                            {RoleEnum.getOptions(t).map(opt => (
+                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">{t('discipline')}</label>
+                                    <select name="disciplines" className={`form-select ${fieldErrors.disciplines ? 'is-invalid' : ''}`} value={Array.isArray(formData.disciplines) ? formData.disciplines.map(String) : []} onChange={handleChange} multiple>
+                                        {DisciplineEnum.getOptions(t).map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+                                    {fieldErrors.disciplines && <div className="invalid-feedback d-block">{fieldErrors.disciplines}</div>}
+                                </div>
+
+                                <div className="mb-3">
+                                    <label className="form-label">{t('bio')}</label>
+                                    <textarea name="bio" className={`form-control ${fieldErrors.bio ? 'is-invalid' : ''}`} rows={4} value={formData.bio || ''} onChange={handleChange} required />
+                                    {fieldErrors.bio && <div className="invalid-feedback d-block">{fieldErrors.bio}</div>}
+                                </div>
+
+                                <div className="row">
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('profilePhoto')}</label>
+                                        <input type="file" accept="image/*" className="form-control" name="profilePhoto" onChange={handleChange} required />
+                                    </div>
+                                    <div className="col-md-6 mb-3">
+                                        <label className="form-label">{t('backgroundPhoto')}</label>
+                                        <input type="file" accept="image/*" className="form-control" name="backgroundPhoto" onChange={handleChange} required />
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={closeModal}>{t('cancel')}</button>
+                                <button type="submit" className="btn btn-profile-primary" disabled={loading}>
+                                    {loading ? t('sending') : t('addUser')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div className="modal-backdrop show"></div>
+        </>
+    );
+};

@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
-import { usePageDetails } from '../services/usePageDetails';
-import { usePageModals } from '../services/usePageModals';
-import { usePageInteractions } from '../services/usePageInteractions';
-import { PageDetailsView } from '../components/PageDetailsView';
-import { ManagePageModal } from '../components/ManagePageModal';
+import { usePageDetails } from '../services/Page/usePageDetails';
+import { usePageModals } from '../services/Page/usePageModals';
+import { usePageInteractions } from '../services/Page/usePageInteractions';
+import { PageDetailsView } from '../components/Page/PageDetailsView';
+import { ManagePageModal } from '../components/Page/ManagePageModal';
 
 export default function PageDetails() {
     const { link } = useParams<{ link: string }>();

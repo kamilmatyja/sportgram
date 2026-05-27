@@ -1,6 +1,6 @@
-import {usePasswordReset} from '../services/usePasswordReset';
-import {PasswordResetFormView} from '../components/PasswordResetFormView';
-import {PasswordResetVerificationFormView} from '../components/PasswordResetVerificationFormView';
+import {usePasswordReset} from '../services/Authentication/usePasswordReset';
+import {PasswordResetFormView} from '../components/Authentication/PasswordResetFormView';
+import {PasswordResetVerificationFormView} from '../components/Authentication/PasswordResetVerificationFormView';
 
 export default function PasswordReset() {
     const {step, passwordResetProps, verificationProps} = usePasswordReset();

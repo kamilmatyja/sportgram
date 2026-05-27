@@ -1,8 +1,8 @@
 import {useParams} from 'react-router-dom';
-import {useUserNotifications} from '../services/useUserNotifications';
-import {useNotificationModals} from '../services/useNotificationModals';
-import {UserNotificationsView} from '../components/UserNotificationsView';
-import {ManageNotificationModal} from '../components/ManageNotificationModal';
+import {useUserNotifications} from '../services/User/useUserNotifications';
+import {useNotificationModals} from '../services/Notification/useNotificationModals';
+import {UserNotificationsView} from '../components/User/UserNotificationsView';
+import {ManageNotificationModal} from '../components/Notification/ManageNotificationModal';
 
 export default function UserNotifications() {
     const {link} = useParams<{ link: string }>();

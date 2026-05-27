@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
-import { useUserFriends } from '../services/useUserFriends';
-import { useFriendModals } from '../services/useFriendModals';
-import { UserFriendsView } from '../components/UserFriendsView';
-import { AddFriendModal } from '../components/AddFriendModal';
-import { ManageFriendModal } from '../components/ManageFriendModal';
+import { useUserFriends } from '../services/User/useUserFriends';
+import { useFriendModals } from '../services/Friend/useFriendModals';
+import { UserFriendsView } from '../components/User/UserFriendsView';
+import { AddFriendModal } from '../components/Friend/AddFriendModal';
+import { ManageFriendModal } from '../components/Friend/ManageFriendModal';
 
 export default function UserFriends() {
     const { link } = useParams<{ link: string }>();

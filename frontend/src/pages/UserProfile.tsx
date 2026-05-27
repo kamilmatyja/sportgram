@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
-import { useUserProfile } from '../services/useUserProfile';
-import { useUserModals } from '../services/useUserModals';
-import { UserProfileView } from '../components/UserProfileView';
-import { ManageUserModal } from '../components/ManageUserModal';
-import { UserFeedsSection } from '../components/UserFeedsSection';
+import { useUserProfile } from '../services/User/useUserProfile';
+import { useUserModals } from '../services/User/useUserModals';
+import { UserProfileView } from '../components/User/UserProfileView';
+import { ManageUserModal } from '../components/User/ManageUserModal';
+import { UserFeedsSection } from '../components/User/UserFeedsSection';
 import { ColorEnum } from '../enums/ColorEnum';
 import { FriendStatusEnum } from '../enums/FriendStatusEnum';
 

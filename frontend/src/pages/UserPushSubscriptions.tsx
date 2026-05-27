@@ -1,9 +1,9 @@
 import {useParams} from 'react-router-dom';
-import {useUserPushSubscriptions} from '../services/useUserPushSubscriptions';
-import {usePushSubscriptionModals} from '../services/usePushSubscriptionModals';
-import {UserPushSubscriptionsView} from '../components/UserPushSubscriptionsView';
-import {AddPushSubscriptionModal} from '../components/AddPushSubscriptionModal';
-import {ManagePushSubscriptionModal} from '../components/ManagePushSubscriptionModal';
+import {useUserPushSubscriptions} from '../services/User/useUserPushSubscriptions';
+import {usePushSubscriptionModals} from '../services/PushSubscription/usePushSubscriptionModals';
+import {UserPushSubscriptionsView} from '../components/User/UserPushSubscriptionsView';
+import {AddPushSubscriptionModal} from '../components/PushSubscription/AddPushSubscriptionModal';
+import {ManagePushSubscriptionModal} from '../components/PushSubscription/ManagePushSubscriptionModal';
 
 export default function UserPushSubscriptions() {
     const {link} = useParams<{ link: string }>();

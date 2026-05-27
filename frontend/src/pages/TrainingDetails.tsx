@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
-import { useTrainingDetails } from '../services/useTrainingDetails';
-import { useTrainingModals } from '../services/useTrainingModals';
-import { useTrainingInteractions } from '../services/useTrainingInteractions';
-import { TrainingDetailsView } from '../components/TrainingDetailsView';
-import { ManageTrainingModal } from '../components/ManageTrainingModal';
+import { useTrainingDetails } from '../services/Training/useTrainingDetails';
+import { useTrainingModals } from '../services/Training/useTrainingModals';
+import { useTrainingInteractions } from '../services/Training/useTrainingInteractions';
+import { TrainingDetailsView } from '../components/Training/TrainingDetailsView';
+import { ManageTrainingModal } from '../components/Training/ManageTrainingModal';
 
 export default function TrainingDetails() {
     const { link } = useParams<{ link: string }>();

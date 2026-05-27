@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
-import { useUserStories } from '../services/useUserStories';
-import { useStoryModals } from '../services/useStoryModals';
-import { UserStoriesView } from '../components/UserStoriesView';
-import { AddStoryModal } from '../components/AddStoryModal';
-import { ManageStoryModal } from '../components/ManageStoryModal';
+import { useUserStories } from '../services/User/useUserStories';
+import { useStoryModals } from '../services/Story/useStoryModals';
+import { UserStoriesView } from '../components/User/UserStoriesView';
+import { AddStoryModal } from '../components/Story/AddStoryModal';
+import { ManageStoryModal } from '../components/Story/ManageStoryModal';
 
 export default function UserStories() {
     const { link } = useParams<{ link: string }>();

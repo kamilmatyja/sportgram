@@ -24,11 +24,11 @@ import EventsList from './pages/EventsList';
 import EventDetails from './pages/EventDetails';
 import Statistics from './pages/Statistics';
 import Home from './pages/Home';
-import GuestHome from './components/GuestHome';
-import AuthenticationLoading from './components/AuthenticationLoading';
+import GuestHome from './components/Authentication/GuestHome';
+import AuthenticationLoading from './components/Authentication/AuthenticationLoading';
 import NotFound from './components/NotFound';
 import AppLayout from './components/AppLayout';
-import AuthenticatedLayout from './components/AuthenticatedLayout';
+import AuthenticatedLayout from './components/Authentication/AuthenticatedLayout';
 
 interface RouteProps {
     children: React.ReactNode;

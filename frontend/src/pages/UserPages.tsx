@@ -1,10 +1,10 @@
 import { useParams } from 'react-router-dom';
-import { useUserPages } from '../services/useUserPages';
-import { usePageModals } from '../services/usePageModals';
-import { usePageInteractions } from '../services/usePageInteractions';
-import { UserPagesView } from '../components/UserPagesView';
-import { AddPageModal } from '../components/AddPageModal';
-import { ManagePageModal } from '../components/ManagePageModal';
+import { useUserPages } from '../services/User/useUserPages';
+import { usePageModals } from '../services/Page/usePageModals';
+import { usePageInteractions } from '../services/Page/usePageInteractions';
+import { UserPagesView } from '../components/User/UserPagesView';
+import { AddPageModal } from '../components/Page/AddPageModal';
+import { ManagePageModal } from '../components/Page/ManagePageModal';
 
 export default function UserPages() {
     const { link } = useParams<{ link: string }>();

@@ -1,6 +1,6 @@
-import {useSign} from '../services/useSign';
-import {SignFormView} from '../components/SignFormView';
-import {VerificationFormView} from '../components/VerificationFormView';
+import {useSign} from '../services/Authentication/useSign';
+import {SignFormView} from '../components/Authentication/SignFormView';
+import {VerificationFormView} from '../components/Authentication/VerificationFormView';
 
 export default function Sign() {
     const {step, signProps, verificationProps} = useSign();

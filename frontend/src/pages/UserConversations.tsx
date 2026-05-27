@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
-import { useUserConversations } from '../services/useUserConversations';
-import { UserConversationsView } from '../components/UserConversationsView';
+import { useUserConversations } from '../services/Conversation/useUserConversations';
+import { UserConversationsView } from '../components/User/UserConversationsView';
 
 export default function UserConversations() {
     const { link } = useParams<{ link: string }>();

@@ -1,7 +1,7 @@
-import UsersView from '../components/UsersView';
-import { AddUserModal } from '../components/AddUserModal';
-import { useUsers } from '../services/useUsers';
-import { useUserModals } from '../services/useUserModals';
+import UsersView from '../components/User/UsersView';
+import { AddUserModal } from '../components/User/AddUserModal';
+import { useUsers } from '../services/User/useUsers';
+import { useUserModals } from '../services/User/useUserModals';
 
 export default function Users() {
     const usersService = useUsers();

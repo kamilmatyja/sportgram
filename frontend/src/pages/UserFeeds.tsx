@@ -1,10 +1,10 @@
 import { useParams } from 'react-router-dom';
-import { useUserFeeds } from '../services/useUserFeeds';
-import { useFeedModals } from '../services/useFeedModals';
-import { useFeedInteractions } from '../services/useFeedInteractions';
-import { UserFeedsView } from '../components/UserFeedsView';
-import { AddFeedModal } from '../components/AddFeedModal';
-import { ManageFeedModal } from '../components/ManageFeedModal';
+import { useUserFeeds } from '../services/User/useUserFeeds';
+import { useFeedModals } from '../services/Feed/useFeedModals';
+import { useFeedInteractions } from '../services/Feed/useFeedInteractions';
+import { UserFeedsView } from '../components/User/UserFeedsView';
+import { AddFeedModal } from '../components/Feed/AddFeedModal';
+import { ManageFeedModal } from '../components/Feed/ManageFeedModal';
 
 export default function UserFeeds() {
     const { link } = useParams<{ link: string }>();

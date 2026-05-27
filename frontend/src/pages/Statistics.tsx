@@ -1,5 +1,5 @@
-import {useStatistics} from '../services/useStatistics';
-import {StatisticsView} from '../components/StatisticsView';
+import {useStatistics} from '../services/Statistics/useStatistics';
+import {StatisticsView} from '../components/Statistics/StatisticsView';
 
 export default function Statistics() {
     const statsService = useStatistics();

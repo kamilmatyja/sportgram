@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
-import { useGoalDetails } from '../services/useGoalDetails';
-import { useGoalModals } from '../services/useGoalModals';
-import { useGoalInteractions } from '../services/useGoalInteractions';
-import { GoalDetailsView } from '../components/GoalDetailsView';
-import { ManageGoalModal } from '../components/ManageGoalModal';
+import { useGoalDetails } from '../services/Goal/useGoalDetails';
+import { useGoalModals } from '../services/Goal/useGoalModals';
+import { useGoalInteractions } from '../services/Goal/useGoalInteractions';
+import { GoalDetailsView } from '../components/Goal/GoalDetailsView';
+import { ManageGoalModal } from '../components/Goal/ManageGoalModal';
 
 export default function GoalDetails() {
     const { link } = useParams<{ link: string }>();
