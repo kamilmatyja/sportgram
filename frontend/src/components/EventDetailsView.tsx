@@ -42,14 +42,13 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`} tabIndex={-1}>
             <EventPageHeader
-                eventObj={eventObj}
                 ownerPage={ownerPage}
-                canManage={canManage}
-                onManageClick={onManageClick}
             />
 
             <EventBasicInfo
                 eventObj={eventObj}
+                canManage={canManage}
+                onManageClick={onManageClick}
             />
 
             <EventDisciplinesTable

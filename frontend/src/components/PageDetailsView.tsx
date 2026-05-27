@@ -60,8 +60,6 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
         <div className={`container mt-4 mb-5 ${themeClass}`} tabIndex={-1}>
             <PageHeader
                 pageObj={pageObj}
-                canManage={canManage}
-                onManageClick={onManageClick}
             />
 
             <div className="d-flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2">
@@ -75,6 +73,8 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                 myFollow={myFollow}
                 followLoading={followLoading}
                 handleToggleFollow={handleToggleFollow}
+                canManage={canManage}
+                onManageClick={onManageClick}
             />
 
             <div className="card shadow-sm mb-4">

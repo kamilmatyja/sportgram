@@ -10,13 +10,12 @@ interface UserProfileHeaderProps {
     friendship: FriendResponse | null;
     isMyProfile: boolean;
     isAdmin: boolean;
-    onManageClick: (user: UserResponse) => void;
     handleAddFriend: () => void;
     handleUpdateFriendStatus: (status: number) => void;
 }
 
 export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
-                                                                        user, currentUser, friendship, isMyProfile, isAdmin, onManageClick, handleAddFriend, handleUpdateFriendStatus
+                                                                        user, currentUser, friendship, isMyProfile, handleAddFriend, handleUpdateFriendStatus
                                                                     }) => {
     const { t } = useTranslation();
 
@@ -43,12 +42,6 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
                 </div>
 
                 <div className="d-flex flex-wrap gap-2 align-items-center">
-                    {(isMyProfile || isAdmin) && (
-                        <button className="btn btn-profile-primary" onClick={() => onManageClick(user)}>
-                            <i className="bi bi-gear me-1"></i> {t('manage')}
-                        </button>
-                    )}
-
                     {!isMyProfile && !friendship && (
                         <button className="btn btn-profile-outline-primary" onClick={handleAddFriend}>
                             <i className="bi bi-person-plus me-1"></i> {t('addFriend')}

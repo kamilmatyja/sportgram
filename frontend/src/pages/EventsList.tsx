@@ -5,7 +5,6 @@ import { AddEventModal } from '../components/AddEventModal';
 
 export default function EventsList() {
     const eventsService = useEvents();
-    // modalsService potrzebuje funkcji odświeżającej i informacji o zalogowanym użytkowniku
     const modalsService = useEventModals(eventsService.fetchEvents, eventsService.currentUser);
 
     return (

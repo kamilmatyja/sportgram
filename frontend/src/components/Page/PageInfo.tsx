@@ -10,17 +10,26 @@ interface PageInfoProps {
     myFollow: PageFollowResponse | null;
     followLoading: boolean;
     handleToggleFollow: () => void;
+    canManage: boolean;
+    onManageClick: (page: PageResponse) => void;
 }
 
-export const PageInfo: React.FC<PageInfoProps> = ({ pageObj, myFollow, followLoading, handleToggleFollow }) => {
+export const PageInfo: React.FC<PageInfoProps> = ({ pageObj, myFollow, followLoading, handleToggleFollow, canManage, onManageClick }) => {
     const { t } = useTranslation();
 
     return (
         <div className="card shadow-sm mb-4">
             <div className="card-body">
-                <h4 className="mb-3 text-profile-primary fw-bold">
-                    <i className="bi bi-info-circle me-2"></i>{t('basicInformation')}
-                </h4>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h4 className="mb-0 text-profile-primary fw-bold">
+                        <i className="bi bi-info-circle me-2"></i>{t('basicInformation')}
+                    </h4>
+                    {canManage && (
+                        <button className="btn btn-profile-primary" onClick={() => onManageClick(pageObj)}>
+                            <i className="bi bi-gear me-1"></i> {t('manage')}
+                        </button>
+                    )}
+                </div>
 
                 <h4 className="mb-3 fw-bold">{pageObj.title}</h4>
                 <p className="mb-4 text-break fs-5">{pageObj.description}</p>

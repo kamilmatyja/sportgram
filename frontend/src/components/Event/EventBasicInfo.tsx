@@ -6,17 +6,29 @@ import { formatDate } from '../../utils/dateFormat';
 
 interface EventBasicInfoProps {
     eventObj: EventResponse;
+    canManage: boolean;
+    onManageClick: (eventObj: EventResponse) => void;
 }
 
-export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({ eventObj }) => {
+export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({ eventObj, canManage, onManageClick }) => {
     const { t } = useTranslation();
 
     return (
         <div className="card shadow-sm mb-4">
             <div className="card-body">
-                <h4 className="mb-4 text-profile-primary fw-bold">
-                    <i className="bi bi-info-circle me-2"></i>{t('basicInformation')}
-                </h4>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h4 className="mb-0 text-profile-primary fw-bold">
+                        <i className="bi bi-info-circle me-2"></i>{t('basicInformation')}
+                    </h4>
+                    {canManage && (
+                        <button className="btn btn-profile-primary" onClick={() => onManageClick(eventObj)}>
+                            <i className="bi bi-gear me-1"></i> {t('manage')}
+                        </button>
+                    )}
+                </div>
+
+                <h4 className="mb-3 fw-bold">{eventObj.title}</h4>
+                <p className="mb-4 text-break fs-5">{eventObj.description}</p>
 
                 <div className="text-center mb-4">
                     {eventObj.photo && (
@@ -47,11 +59,6 @@ export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({ eventObj }) => {
                         <div className="text-muted small mb-1">{t('endedAt')}</div>
                         <div className="fw-medium">{formatDate(eventObj.endedAt)}</div>
                     </div>
-                </div>
-
-                <div className="mb-4 border-bottom pb-4">
-                    <h5 className="fw-bold">{t('description')}</h5>
-                    <p className="text-break mb-0">{eventObj.description}</p>
                 </div>
 
                 <div className="mb-2">

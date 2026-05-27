@@ -10,15 +10,28 @@ import { getAgeFromDate } from '../../utils/dateFormat';
 
 interface UserProfileInfoProps {
     user: UserResponse;
+    isMyProfile: boolean;
+    isAdmin: boolean;
+    onManageClick: (user: UserResponse) => void;
 }
 
-export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ user }) => {
+export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ user, isMyProfile, isAdmin, onManageClick }) => {
     const { t } = useTranslation();
 
     return (
         <div className="card shadow-sm mb-4">
             <div className="card-body">
-                <h4 className="mb-3 text-profile-primary fw-bold"><i className="bi bi-info-circle me-2"></i>{t('basicInformation')}</h4>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h4 className="mb-0 text-profile-primary fw-bold">
+                        <i className="bi bi-info-circle me-2"></i>{t('basicInformation')}
+                    </h4>
+                    {(isMyProfile || isAdmin) && (
+                        <button className="btn btn-profile-primary" onClick={() => onManageClick(user)}>
+                            <i className="bi bi-gear me-1"></i> {t('manage')}
+                        </button>
+                    )}
+                </div>
+
                 <p className="mb-4 text-break">{user.bio || '-'}</p>
 
                 <div className="row g-3">

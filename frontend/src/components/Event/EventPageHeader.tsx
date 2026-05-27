@@ -2,16 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../../context/TranslationContext';
 import { PageResponse } from '../../api/responses/PageResponse';
-import { EventResponse } from '../../api/responses/EventResponse';
 
 interface EventPageHeaderProps {
-    eventObj: EventResponse;
     ownerPage: PageResponse;
-    canManage: boolean;
-    onManageClick: (eventObj: EventResponse) => void;
 }
 
-export const EventPageHeader: React.FC<EventPageHeaderProps> = ({ eventObj, ownerPage, canManage, onManageClick }) => {
+export const EventPageHeader: React.FC<EventPageHeaderProps> = ({ ownerPage }) => {
     const { t } = useTranslation();
 
     return (
@@ -32,19 +28,9 @@ export const EventPageHeader: React.FC<EventPageHeaderProps> = ({ eventObj, owne
                             </div>
                         )}
                         <div className="mt-4 mt-md-3">
-                            <h2 className="mb-0 profile-theme-text fw-bold">{eventObj.title}</h2>
-                            <p className="text-muted mb-0">
-                                {t('pageOrganizer')}: <Link to={`/pages/${ownerPage.link}`} className="text-decoration-none text-muted fw-bold">@{ownerPage.link}</Link>
-                            </p>
+                            <h2 className="mb-0 profile-theme-text fw-bold">{ownerPage.title}</h2>
+                            <p className="text-muted mb-0">@{ownerPage.link}</p>
                         </div>
-                    </div>
-
-                    <div className="d-flex flex-wrap gap-2 align-items-center">
-                        {canManage && (
-                            <button className="btn btn-profile-primary" onClick={() => onManageClick(eventObj)}>
-                                <i className="bi bi-gear me-1"></i> {t('manageEvent')}
-                            </button>
-                        )}
                     </div>
                 </div>
             </div>

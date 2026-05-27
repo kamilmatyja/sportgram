@@ -328,7 +328,6 @@ export const pl = {
     eventStatus: "Status wydarzenia",
     location: "Lokalizacja",
     rules: "Regulamin",
-    pageOrganizer: "Strona (organizator)",
     selectPageForEvent: "Wybierz stronę dla wydarzenia.",
     selectPage: "Wybierz stronę...",
     basicInformation: "Informacje podstawowe",

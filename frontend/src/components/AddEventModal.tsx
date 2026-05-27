@@ -72,7 +72,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                 {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                                 <div className="mb-3">
-                                    <label className="form-label">{t('pageOrganizer')}</label>
+                                    <label className="form-label">{t('page')}</label>
                                     <select className="form-select" value={selectedPageId}
                                             onChange={e => setSelectedPageId(e.target.value)} required>
                                         <option value="">{t('selectPage')}</option>

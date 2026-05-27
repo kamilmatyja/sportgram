@@ -49,7 +49,6 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
                 friendship={friendship}
                 isMyProfile={isMyProfile}
                 isAdmin={isAdmin}
-                onManageClick={onManageClick}
                 handleAddFriend={handleAddFriend}
                 handleUpdateFriendStatus={handleUpdateFriendStatus}
             />
@@ -57,7 +56,12 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
             {canViewDetails && (
                 <>
                     <UserProfileNav user={user} isMyProfile={isMyProfile} />
-                    <UserProfileInfo user={user} />
+                    <UserProfileInfo
+                        user={user}
+                        isMyProfile={isMyProfile}
+                        isAdmin={isAdmin}
+                        onManageClick={onManageClick}
+                    />
                 </>
             )}
         </div>
