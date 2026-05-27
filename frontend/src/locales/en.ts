@@ -289,9 +289,8 @@ export const en = {
         training: "Training",
         regular: "Regular feed"
     },
-    friend: "Friend",
+    friend: "Friends",
     selectUser: "Select user...",
-    friendsList: "Friends list",
     sender: "Sender",
     receiver: "Receiver",
     addGoal: "Add goal",
@@ -366,7 +365,7 @@ export const en = {
     pushPermissionDenied: "Permission denied. Check your browser settings.",
     browserDevice: "Browser / Device",
     endpoint: "Endpoint",
-    conversationsList: "Recent conversations",
+    conversation: "Conversations",
     noConversations: "You have no active conversations.",
     lastActivity: "Last activity",
     isTyping: "is typing",
@@ -419,6 +418,7 @@ export const en = {
         toggle: "Toggle navigation",
         profile: "My profile"
     },
+    lists: "Lists",
     results: "Results",
     details: "Details",
     followPage: "Follow page",

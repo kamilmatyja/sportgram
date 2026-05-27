@@ -43,15 +43,15 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user} title={t('friendsList')} />
+            <UserSubpageHeader user={user} title={t('friend')} />
 
             <div className="card shadow-sm">
                 <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h4 className="mb-0 text-profile-primary fw-bold">{t('friendsList')}</h4>
+                        <h4 className="mb-0 text-profile-primary fw-bold">{t('friend')}</h4>
                         {isMyProfile && (
                             <button className="btn btn-profile-primary" onClick={onAddClick}>
-                                <i className="bi bi-person-plus me-1"></i> {t('addFriend')}
+                                {t('addFriend')}
                             </button>
                         )}
                     </div>

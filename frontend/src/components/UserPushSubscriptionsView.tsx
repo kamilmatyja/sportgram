@@ -50,7 +50,7 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                         <h4 className="mb-0 text-profile-primary fw-bold">{t('pushSubscriptions')}</h4>
                         {isMyProfile && (
                             <button className="btn btn-profile-primary" onClick={onAddClick}>
-                                <i className="bi bi-plus-lg me-1"></i> {t('addSubscription')}
+                                {t('addSubscription')}
                             </button>
                         )}
                     </div>

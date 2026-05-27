@@ -37,7 +37,7 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
         <div className="card shadow-sm">
             <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4 className="mb-0 text-profile-primary fw-bold">{t('conversationsList')}</h4>
+                    <h4 className="mb-0 text-profile-primary fw-bold">{t('conversations')}</h4>
                 </div>
 
                 <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">

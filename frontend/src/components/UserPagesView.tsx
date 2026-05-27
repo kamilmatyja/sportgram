@@ -56,7 +56,7 @@ export const UserPagesView: React.FC<UserPagesViewProps> = ({
                         <h4 className="mb-0 text-profile-primary fw-bold">{t('pages')}</h4>
                         {(isMyProfile && isOrganizer) && (
                             <button className="btn btn-profile-primary" onClick={onAddClick}>
-                                <i className="bi bi-plus-lg me-1"></i> {t('addPage')}
+                                {t('addPage')}
                             </button>
                         )}
                     </div>

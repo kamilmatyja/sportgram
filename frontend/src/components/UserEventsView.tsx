@@ -53,7 +53,7 @@ export const UserEventsView: React.FC<UserEventsViewProps> = ({
                         <h4 className="mb-0 text-profile-primary fw-bold">{t('events')}</h4>
                         {(isMyProfile && isOrganizer) && (
                             <button className="btn btn-profile-primary" onClick={onAddClick}>
-                                <i className="bi bi-plus-lg me-1"></i> {t('addEvent')}
+                                {t('addEvent')}
                             </button>
                         )}
                     </div>

@@ -56,7 +56,7 @@ export const UserTrainingsView: React.FC<UserTrainingsViewProps> = ({
                         <h4 className="mb-0 text-profile-primary fw-bold">{t('trainings')}</h4>
                         {(isMyProfile && isParticipant) && (
                             <button className="btn btn-profile-primary" onClick={onAddClick}>
-                                <i className="bi bi-plus-lg me-1"></i> {t('addTraining')}
+                                {t('addTraining')}
                             </button>
                         )}
                     </div>

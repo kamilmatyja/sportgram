@@ -51,7 +51,7 @@ export const EventsTable: React.FC<EventsTableProps> = ({ events }) => {
                             )}
                         </td>
                         <td>
-                            <Link to={`/events/${ev.link}`} className="btn btn-link p-0 text-decoration-none fw-bold">
+                            <Link to={`/events/${ev.link}`} className="btn btn-link p-0 text-decoration-none">
                                 {ev.title}
                             </Link>
                         </td>

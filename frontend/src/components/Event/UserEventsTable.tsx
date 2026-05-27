@@ -67,7 +67,7 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
                             <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(ev.status))?.label || ev.status}</td>
                             <td>
                                 <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(ev.id)}>
-                                    {expandedRow === ev.id ? <i className="bi bi-chevron-up"></i> : <i className="bi bi-chevron-down"></i>} {t('manageListsAndResults')}
+                                    {expandedRow === ev.id ? <i className="bi bi-chevron-up"></i> : <i className="bi bi-chevron-down"></i>} {t('lists')} / {t('results')}
                                 </button>
                             </td>
                             <td className="text-end">
