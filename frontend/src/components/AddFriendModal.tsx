@@ -1,8 +1,8 @@
 import React from 'react';
-import {useTranslation} from '../context/TranslationContext';
-import {FriendBody} from '../api/body/FriendBody';
-import {ColorEnum} from '../enums/ColorEnum';
-import {UserResponse} from '../api/responses/UserResponse';
+import { useTranslation } from '../context/TranslationContext';
+import { FriendBody } from '../api/body/FriendBody';
+import { ColorEnum } from '../enums/ColorEnum';
+import { UserResponse } from '../api/responses/UserResponse';
 
 interface AddFriendModalProps {
     user: UserResponse | null;
@@ -18,18 +18,9 @@ interface AddFriendModalProps {
 }
 
 export const AddFriendModal: React.FC<AddFriendModalProps> = ({
-                                                                  user,
-                                                                  show,
-                                                                  availableUsers,
-                                                                  closeModal,
-                                                                  loading,
-                                                                  globalError,
-                                                                  fieldErrors,
-                                                                  formData,
-                                                                  handleChange,
-                                                                  handleSubmit
+                                                                  user, show, availableUsers, closeModal, loading, globalError, fieldErrors, formData, handleChange, handleSubmit
                                                               }) => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     if (!show || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
@@ -62,15 +53,12 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                                             </option>
                                         ))}
                                     </select>
-                                    {fieldErrors.receiverUserId &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.receiverUserId}</div>}
+                                    {fieldErrors.receiverUserId && <div className="invalid-feedback d-block">{fieldErrors.receiverUserId}</div>}
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary"
-                                        onClick={closeModal}>{t('cancel')}</button>
-                                <button type="submit" className="btn btn-profile-primary"
-                                        disabled={loading || availableUsers.length === 0}>
+                                <button type="button" className="btn btn-secondary" onClick={closeModal}>{t('cancel')}</button>
+                                <button type="submit" className="btn btn-profile-primary" disabled={loading || availableUsers.length === 0}>
                                     {loading ? t('sending') : t('addFriend')}
                                 </button>
                             </div>

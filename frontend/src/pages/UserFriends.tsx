@@ -1,12 +1,12 @@
-import {useParams} from 'react-router-dom';
-import {useUserFriends} from '../services/useUserFriends';
-import {useFriendModals} from '../services/useFriendModals';
-import {UserFriendsView} from '../components/UserFriendsView';
-import {AddFriendModal} from '../components/AddFriendModal';
-import {ManageFriendModal} from '../components/ManageFriendModal';
+import { useParams } from 'react-router-dom';
+import { useUserFriends } from '../services/useUserFriends';
+import { useFriendModals } from '../services/useFriendModals';
+import { UserFriendsView } from '../components/UserFriendsView';
+import { AddFriendModal } from '../components/AddFriendModal';
+import { ManageFriendModal } from '../components/ManageFriendModal';
 
 export default function UserFriends() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const friendsService = useUserFriends(link);
     const modalsService = useFriendModals(friendsService.refreshFriends);

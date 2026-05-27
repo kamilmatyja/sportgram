@@ -1,10 +1,10 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext.tsx';
-import { FeedResponse } from '../../api/responses/FeedResponse.ts';
-import { UserResponse } from '../../api/responses/UserResponse.ts';
-import { formatDate } from '../../utils/dateFormat.ts';
-import { FeedReactions } from './FeedReactions.tsx';
-import { FeedComments } from './FeedComments.tsx';
+import { useTranslation } from '../../context/TranslationContext';
+import { FeedResponse } from '../../api/responses/FeedResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { formatDate } from '../../utils/dateFormat';
+import { FeedReactions } from './FeedReactions';
+import { FeedComments } from './FeedComments';
 
 interface FeedCardProps {
     feed: FeedResponse;

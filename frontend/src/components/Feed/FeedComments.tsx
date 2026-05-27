@@ -1,7 +1,7 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext.tsx';
-import { FeedResponse } from '../../api/responses/FeedResponse.ts';
-import { UserResponse } from '../../api/responses/UserResponse.ts';
+import { useTranslation } from '../../context/TranslationContext';
+import { FeedResponse } from '../../api/responses/FeedResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
 
 interface FeedCommentsProps {
     feed: FeedResponse;

@@ -45,8 +45,6 @@ export function useFeedModals(onSuccess: () => void) {
     };
 
     const openManageModal = async (feed: FeedResponse) => {
-        // Ponieważ modal edytuje tylko sam feed, pobieramy najnowszą jego wersję,
-        // ale bez zagnieżdżonych komentarzy/reakcji, bo ich tu nie edytujemy
         const currentFeedObj = await feedProvider.details(feed.id, []);
 
         setCurrentFeed(currentFeedObj);

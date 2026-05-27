@@ -101,8 +101,6 @@ export function useFeedInteractions(
         setActionLoading('comment-status');
         try {
             await feedProvider.updateCommentStatus(commentId, new StatusBody(newStatus));
-            // Ponieważ odświeżamy z zewnątrz i to wpływa na konkretny feed:
-            // idealnie byłoby przekazać feedId, ale zakładam że wywołasz refreshFeeds na liście.
         } catch (e) {
             console.error(e);
         } finally {

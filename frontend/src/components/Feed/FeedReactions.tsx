@@ -1,7 +1,7 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext.tsx';
-import { FeedReactionEnum } from '../../enums/FeedReactionEnum.ts';
-import { FeedResponse } from '../../api/responses/FeedResponse.ts';
+import { useTranslation } from '../../context/TranslationContext';
+import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
+import { FeedResponse } from '../../api/responses/FeedResponse';
 
 interface FeedReactionsProps {
     feed: FeedResponse;

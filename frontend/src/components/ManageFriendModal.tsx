@@ -1,9 +1,9 @@
 import React from 'react';
-import {useTranslation} from '../context/TranslationContext';
-import {FriendResponse} from '../api/responses/FriendResponse';
-import {UserResponse} from '../api/responses/UserResponse';
-import {FriendStatusEnum} from '../enums/FriendStatusEnum';
-import {ColorEnum} from '../enums/ColorEnum';
+import { useTranslation } from '../context/TranslationContext';
+import { FriendResponse } from '../api/responses/FriendResponse';
+import { UserResponse } from '../api/responses/UserResponse';
+import { FriendStatusEnum } from '../enums/FriendStatusEnum';
+import { ColorEnum } from '../enums/ColorEnum';
 
 interface ManageFriendModalProps {
     user: UserResponse | null;
@@ -18,17 +18,9 @@ interface ManageFriendModalProps {
 }
 
 export const ManageFriendModal: React.FC<ManageFriendModalProps> = ({
-                                                                        user,
-                                                                        show,
-                                                                        friend,
-                                                                        isMyProfile,
-                                                                        closeModal,
-                                                                        loading,
-                                                                        globalError,
-                                                                        handleStatusSubmit,
-                                                                        handleDelete
+                                                                        user, show, friend, isMyProfile, closeModal, loading, globalError, handleStatusSubmit, handleDelete
                                                                     }) => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     if (!show || !friend || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
@@ -71,8 +63,7 @@ export const ManageFriendModal: React.FC<ManageFriendModalProps> = ({
                                 {t('cancel')}
                             </button>
                             {isMyProfile && (
-                                <button type="button" className="btn btn-danger" onClick={handleDelete}
-                                        disabled={loading}>
+                                <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={loading}>
                                     {loading ? t('sending') : t('delete')}
                                 </button>
                             )}
