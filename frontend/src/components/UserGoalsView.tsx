@@ -48,7 +48,7 @@ export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user} title={t('goals')} />
+            <UserSubpageHeader user={user} />
 
             <div className="card shadow-sm">
                 <div className="card-body">

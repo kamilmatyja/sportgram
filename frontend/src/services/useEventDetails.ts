@@ -242,6 +242,7 @@ export function useEventDetails(link?: string) {
         handleEnroll,
         handleListStatusUpdate,
         handleDeleteList,
-        refreshEvent
+        refreshEvent,
+        refreshLists: fetchDistanceLists
     };
 }

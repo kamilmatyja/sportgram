@@ -43,7 +43,7 @@ export const UserStoriesView: React.FC<UserStoriesViewProps> = ({
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user} title={t('stories')} />
+            <UserSubpageHeader user={user} />
 
             <div className="card shadow-sm">
                 <div className="card-body">

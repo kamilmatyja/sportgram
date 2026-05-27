@@ -42,7 +42,7 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user} title={t('pushSubscriptions')} />
+            <UserSubpageHeader user={user} />
 
             <div className="card shadow-sm">
                 <div className="card-body">

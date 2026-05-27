@@ -87,7 +87,7 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={targetUser} title={t('conversations')} />
+            <UserSubpageHeader user={targetUser} />
 
             {isMyProfile ? (
                 <ConversationActivityList

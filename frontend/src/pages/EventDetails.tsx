@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useEventDetails } from '../services/useEventDetails';
 import { useEventModals } from '../services/useEventModals';
+import { useEventInteractions } from '../services/useEventInteractions';
 import { EventDetailsView } from '../components/EventDetailsView';
 import { EventListsModal } from '../components/EventListsModal';
 import { ManageEventModal } from '../components/ManageEventModal';
@@ -9,6 +10,15 @@ export default function EventDetails() {
     const { link } = useParams<{ link: string }>();
     const detailsProps = useEventDetails(link);
     const modalsService = useEventModals(detailsProps.refreshEvent, detailsProps.currentUser);
+
+    const refreshAll = () => {
+        detailsProps.refreshEvent();
+        if (detailsProps.selectedDistanceId) {
+            detailsProps.refreshLists(detailsProps.selectedDistanceId);
+        }
+    };
+
+    const interactions = useEventInteractions(refreshAll);
 
     return (
         <>
@@ -63,10 +73,12 @@ export default function EventDetails() {
                 isAdmin={detailsProps.isAdmin}
                 isParticipant={detailsProps.isParticipant}
                 loading={detailsProps.listsLoading}
-                actionLoading={detailsProps.actionLoading}
+                actionLoading={detailsProps.actionLoading || (interactions.actionLoading !== null)}
                 onEnroll={() => detailsProps.handleEnroll(detailsProps.selectedDistanceId)}
                 onUpdateStatus={detailsProps.handleListStatusUpdate}
                 onDelete={detailsProps.handleDeleteList}
+                interactions={interactions}
+                refreshLists={() => detailsProps.refreshLists(detailsProps.selectedDistanceId)}
             />
         </>
     );

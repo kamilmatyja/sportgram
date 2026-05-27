@@ -5,10 +5,9 @@ import { Link } from 'react-router-dom';
 
 interface UserSubpageHeaderProps {
     user: UserResponse;
-    title: string;
 }
 
-export const UserSubpageHeader: React.FC<UserSubpageHeaderProps> = ({ user, title }) => {
+export const UserSubpageHeader: React.FC<UserSubpageHeaderProps> = ({ user }) => {
     const { t } = useTranslation();
 
     return (
@@ -30,7 +29,7 @@ export const UserSubpageHeader: React.FC<UserSubpageHeaderProps> = ({ user, titl
                         )}
                         <div className="mt-3">
                             <h2 className="mb-0 profile-theme-text fw-bold">{user.firstName} {user.lastName}</h2>
-                            <p className="text-muted mb-0">@{user.link} - {title}</p>
+                            <p className="text-muted mb-0">@{user.link}</p>
                         </div>
                     </div>
                 </div>

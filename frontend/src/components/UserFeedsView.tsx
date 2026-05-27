@@ -47,7 +47,7 @@ export const UserFeedsView: React.FC<UserFeedsViewProps> = ({
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user} title={t('feeds')} />
+            <UserSubpageHeader user={user} />
 
             <div className="card shadow-sm">
                 <div className="card-body">

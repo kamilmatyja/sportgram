@@ -44,7 +44,7 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={ownerUser} title={t('trainingDetails')} />
+            <UserSubpageHeader user={ownerUser} />
 
             <div className="card shadow-sm mb-4">
                 <div className="card-body">
