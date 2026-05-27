@@ -428,4 +428,5 @@ export const pl = {
     details: "Szczegóły",
     followPage: "Zaobserwuj stronę",
     unfollowPage: "Przestań obserwować",
+    trainingDetails: "Szczegóły treningu",
 };

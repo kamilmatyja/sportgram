@@ -423,4 +423,5 @@ export const en = {
     details: "Details",
     followPage: "Follow page",
     unfollowPage: "Unfollow page",
+    trainingDetails: "Training details",
 };
