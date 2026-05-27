@@ -64,6 +64,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                             <li className="nav-item">
                                 <NavLink
                                     to="/pages"
+                                    end
                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
@@ -73,6 +74,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                             <li className="nav-item">
                                 <NavLink
                                     to="/events"
+                                    end
                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
@@ -82,6 +84,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                             <li className="nav-item">
                                 <NavLink
                                     to="/statistics"
+                                    end
                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
@@ -89,15 +92,14 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                                 </NavLink>
                             </li>
                             <li className="nav-item">
-                                {userLink && (
-                                    <NavLink
-                                        to={`/users/${userLink}`}
-                                        className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
-                                        onClick={closeNav}
-                                    >
-                                        <i className="bi bi-person me-2 d-lg-none"></i>{t('nav.profile')}
-                                    </NavLink>
-                                )}
+                                <NavLink
+                                    to={`/users/${userLink}`}
+                                    end
+                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
+                                    onClick={closeNav}
+                                >
+                                    <i className="bi bi-person me-2 d-lg-none"></i>{t('nav.profile')}
+                                </NavLink>
                             </li>
                         </ul>
 

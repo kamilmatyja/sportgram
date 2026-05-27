@@ -1,14 +1,15 @@
-import React, {useEffect, useState} from 'react';
-import {UserProvider} from '../api/providers/UserProvider';
-import {UserIndexQuery} from '../api/queries/UserIndexQuery';
-import {UserResponse} from '../api/responses/UserResponse';
-import {RoleEnum} from '../enums/RoleEnum';
-import {useCheckPermission} from '../utils/checkPermission';
-import {UserFilterQuery} from '../api/queries/UserFilterQuery';
+import React, { useEffect, useState } from 'react';
+import { UserProvider } from '../api/providers/UserProvider';
+import { UserIndexQuery } from '../api/queries/UserIndexQuery';
+import { UserResponse } from '../api/responses/UserResponse';
+import { RoleEnum } from '../enums/RoleEnum';
+import { useCheckPermission } from '../utils/checkPermission';
+import { UserFilterQuery } from '../api/queries/UserFilterQuery';
 
 export function useUsers() {
-    const {check: checkPermission} = useCheckPermission();
+    const { check: checkPermission, getCurrentUser } = useCheckPermission();
     const [users, setUsers] = useState<UserResponse[]>([]);
+    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
     const [page, setPage] = useState<number>(1);
@@ -22,15 +23,18 @@ export function useUsers() {
     const userProvider = new UserProvider();
 
     useEffect(() => {
-        const check = async () => {
+        const init = async () => {
             try {
                 const admin = await checkPermission(RoleEnum.ADMINISTRATOR);
                 setIsAdmin(admin);
+
+                const user = await getCurrentUser();
+                setCurrentUser(user);
             } catch (err: any) {
                 setError(err.error);
             }
         };
-        check();
+        init();
     }, []);
 
     const fetchUsers = async () => {
@@ -66,7 +70,7 @@ export function useUsers() {
     }, [page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
+        setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
         setPage(1);
     };
 
@@ -79,16 +83,11 @@ export function useUsers() {
         setPage(1);
     };
 
-    const handlePrevPage = () => {
-        setPage(prev => Math.max(prev - 1, 1));
-    };
-
-    const handleNextPage = () => {
-        setPage(prev => prev + 1);
-    };
+    const handlePrevPage = () => setPage(prev => Math.max(prev - 1, 1));
+    const handleNextPage = () => setPage(prev => prev + 1);
 
     return {
-        users, isAdmin, page, limit, sort, filters, loading, error,
+        users, currentUser, isAdmin, page, limit, sort, filters, loading, error,
         handleFilterChange, handleSortChange, handleLimitChange,
         handlePrevPage, handleNextPage, fetchUsers
     };

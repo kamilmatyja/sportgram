@@ -2,6 +2,42 @@
     --theme-color: #007bff;
 }
 
+.theme-red {
+    --theme-color: #dc3545 !important;
+}
+
+.theme-green {
+    --theme-color: #198754 !important;
+}
+
+.theme-blue {
+    --theme-color: #0d6efd !important;
+}
+
+.theme-yellow {
+    --theme-color: #ffc107 !important;
+}
+
+.theme-gray {
+    --theme-color: #6c757d !important;
+}
+
+.theme-orange {
+    --theme-color: #fd7e14 !important;
+}
+
+.theme-brown {
+    --theme-color: #795548 !important;
+}
+
+.theme-purple {
+    --theme-color: #6f42c1 !important;
+}
+
+.theme-pink {
+    --theme-color: #e83e8c !important;
+}
+
 html, body {
     overflow-x: hidden;
 }

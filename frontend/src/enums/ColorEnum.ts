@@ -20,26 +20,18 @@ export namespace ColorEnum {
             }));
     };
 
-    export const getHex = (color: number): string => {
+    export const getClass = (color?: number): string => {
         switch (color) {
-            case ColorEnum.RED:
-                return '#dc3545';
-            case ColorEnum.GREEN:
-                return '#198754';
-            case ColorEnum.BLUE:
-                return '#0d6efd';
-            case ColorEnum.YELLOW:
-                return '#ffc107';
-            case ColorEnum.GRAY:
-                return '#6c757d';
-            case ColorEnum.ORANGE:
-                return '#fd7e14';
-            case ColorEnum.BROWN:
-                return '#795548';
-            case ColorEnum.PURPLE:
-                return '#6f42c1';
-            default:
-                return '#e83e8c';
+            case ColorEnum.RED: return 'theme-red';
+            case ColorEnum.GREEN: return 'theme-green';
+            case ColorEnum.BLUE: return 'theme-blue';
+            case ColorEnum.YELLOW: return 'theme-yellow';
+            case ColorEnum.GRAY: return 'theme-gray';
+            case ColorEnum.ORANGE: return 'theme-orange';
+            case ColorEnum.BROWN: return 'theme-brown';
+            case ColorEnum.PURPLE: return 'theme-purple';
+            case ColorEnum.PINK: return 'theme-pink';
+            default: return 'theme-blue';
         }
     };
 }

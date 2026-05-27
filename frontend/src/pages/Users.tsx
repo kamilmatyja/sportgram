@@ -1,7 +1,7 @@
 import UsersView from '../components/UsersView';
-import {AddUserModal} from '../components/AddUserModal';
-import {useUsers} from '../services/useUsers';
-import {useUserModals} from '../services/useUserModals';
+import { AddUserModal } from '../components/AddUserModal';
+import { useUsers } from '../services/useUsers';
+import { useUserModals } from '../services/useUserModals';
 
 export default function Users() {
     const usersService = useUsers();
@@ -27,6 +27,7 @@ export default function Users() {
             />
 
             <AddUserModal
+                currentUser={usersService.currentUser}
                 show={modalsService.showAdd}
                 closeModal={modalsService.closeAddModal}
                 loading={modalsService.loading}
