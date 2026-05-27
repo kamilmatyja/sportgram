@@ -1,9 +1,9 @@
-import {useParams} from 'react-router-dom';
-import {useUserConversations} from '../services/useUserConversations';
-import {UserConversationsView} from '../components/UserConversationsView';
+import { useParams } from 'react-router-dom';
+import { useUserConversations } from '../services/useUserConversations';
+import { UserConversationsView } from '../components/UserConversationsView';
 
 export default function UserConversations() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
     const conversationsService = useUserConversations(link);
 
     return (

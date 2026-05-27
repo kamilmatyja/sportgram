@@ -292,7 +292,7 @@ export function useUserConversations(link?: string) {
         fetchMessages(targetUser, nextPage, true);
     };
 
-    const handleSendMessage = async (e: React.ChangeEvent) => {
+    const handleSendMessage = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!messageInput.trim() || !targetUser) return;
 
