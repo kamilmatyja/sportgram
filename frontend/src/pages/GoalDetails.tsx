@@ -1,31 +1,33 @@
-import {useParams} from 'react-router-dom';
-import {useGoalDetails} from '../services/useGoalDetails';
-import {useGoalModals} from '../services/useGoalModals';
-import {GoalDetailsView} from '../components/GoalDetailsView';
-import {ManageGoalModal} from '../components/ManageGoalModal';
+import { useParams } from 'react-router-dom';
+import { useGoalDetails } from '../services/useGoalDetails';
+import { useGoalModals } from '../services/useGoalModals';
+import { useGoalInteractions } from '../services/useGoalInteractions';
+import { GoalDetailsView } from '../components/GoalDetailsView';
+import { ManageGoalModal } from '../components/ManageGoalModal';
 
 export default function GoalDetails() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
     const detailsProps = useGoalDetails(link);
     const modalsService = useGoalModals(detailsProps.refreshGoal);
+    const interactions = useGoalInteractions(detailsProps.refreshGoal);
 
     return (
         <>
             <GoalDetailsView
                 goal={detailsProps.goal}
                 ownerUser={detailsProps.ownerUser}
+                currentUser={detailsProps.currentUser}
                 relatedUsers={detailsProps.relatedUsers}
                 isMyProfile={detailsProps.isMyProfile}
                 isAdmin={detailsProps.isAdmin}
-                isParticipantOfGoal={detailsProps.isParticipantOfGoal}
                 loading={detailsProps.loading}
                 error={detailsProps.error}
                 onManageClick={modalsService.openManageModal}
+                interactions={interactions}
             />
 
             <ManageGoalModal
                 user={detailsProps.ownerUser}
-                currentUser={detailsProps.currentUser}
                 availableUsers={modalsService.availableUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
@@ -40,8 +42,6 @@ export default function GoalDetails() {
                 handleChange={modalsService.handleChange}
                 handleEditSubmit={modalsService.handleEditSubmit}
                 handleStatusSubmit={modalsService.handleStatusSubmit}
-                handleParticipantStatusSubmit={modalsService.handleParticipantStatusSubmit}
-                handleParticipantResultStatusSubmit={modalsService.handleParticipantResultStatusSubmit}
                 handleDelete={modalsService.handleDelete}
             />
         </>
