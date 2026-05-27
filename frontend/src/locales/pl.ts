@@ -429,4 +429,5 @@ export const pl = {
     followPage: "Zaobserwuj stronę",
     unfollowPage: "Przestań obserwować",
     trainingDetails: "Szczegóły treningu",
+    saveUp: "Zapisz się",
 };

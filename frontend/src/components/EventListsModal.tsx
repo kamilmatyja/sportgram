@@ -77,7 +77,7 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                                     <button className="btn btn-sm btn-profile-primary" onClick={onEnroll}
                                             disabled={actionLoading}>
                                         {actionLoading ?
-                                            <span className="spinner-border spinner-border-sm"/> : t('addBtn')}
+                                            <span className="spinner-border spinner-border-sm"/> : t('saveUp')}
                                     </button>
                                 )}
                             </div>
