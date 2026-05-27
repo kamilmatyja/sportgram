@@ -3,14 +3,12 @@ import {useTranslation} from '../context/TranslationContext';
 import {GoalBody} from '../api/body/GoalBody';
 import {GoalResponse} from '../api/responses/GoalResponse';
 import {GoalStatusEnum} from '../enums/GoalStatusEnum';
-import {SaveStatusEnum} from '../enums/SaveStatusEnum';
 import {DisciplineEnum} from '../enums/DisciplineEnum';
 import {UserResponse} from '../api/responses/UserResponse';
 import {ColorEnum} from '../enums/ColorEnum';
 
 interface ManageGoalModalProps {
     user: UserResponse | null;
-    currentUser: UserResponse | null;
     availableUsers: UserResponse[];
     handleParticipantsChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     show: boolean;
@@ -25,14 +23,11 @@ interface ManageGoalModalProps {
     handleChange: (e: React.ChangeEvent<any>) => void;
     handleEditSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     handleStatusSubmit: (newStatus: number) => void;
-    handleParticipantStatusSubmit: (participantId: string, newStatus: number) => void;
-    handleParticipantResultStatusSubmit: (resultId: string, newStatus: number) => void;
     handleDelete: () => void;
 }
 
 export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                                                     user,
-                                                                    currentUser,
                                                                     availableUsers,
                                                                     handleParticipantsChange,
                                                                     show,
@@ -47,16 +42,12 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                                                     handleChange,
                                                                     handleEditSubmit,
                                                                     handleStatusSubmit,
-                                                                    handleParticipantStatusSubmit,
-                                                                    handleParticipantResultStatusSubmit,
                                                                     handleDelete
                                                                 }) => {
     const {t} = useTranslation();
-    if (!show || !goal || !user || !currentUser) return null;
+    if (!show || !goal || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
-
-    const myParticipant = goal.participants?.find(p => p.userId === currentUser.id);
 
     return (
         <>
@@ -72,7 +63,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
 
                             {isMyProfile && (
                                 <form id="edit-goal-form" onSubmit={handleEditSubmit}
-                                      className="mb-4 border-bottom">
+                                      className="mb-4 border-bottom pb-3">
                                     <div className="row mb-3">
                                         <div className="col-md-6">
                                             <label className="form-label">{t('startedAt')}</label>
@@ -163,7 +154,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                             )}
 
                             {(isMyProfile || isAdmin) && (
-                                <div className="mb-4 border-bottom pb-3">
+                                <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('goalStatus')}: </strong>
                                         <span className="me-2 badge bg-light text-dark border profile-theme-border">
@@ -185,59 +176,6 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                             ))}
                                     </div>
                                 </div>
-                            )}
-
-                            {myParticipant && (
-                                <>
-                                    <div className="mb-4 border-bottom pb-3">
-                                        <div className="d-flex flex-wrap gap-2 align-items-center">
-                                            <strong>{t('participantStatus')}: </strong>
-                                            <span className="me-2 badge bg-light text-dark border profile-theme-border">
-                                            {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
-                                            </span>
-                                            {SaveStatusEnum.getOptions(t)
-                                                .filter(opt => opt.value !== myParticipant.status)
-                                                .filter(opt => opt.value !== SaveStatusEnum.PENDING)
-                                                .map(opt => (
-                                                    <button
-                                                        key={opt.value}
-                                                        type="button"
-                                                        className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                        disabled={loading}
-                                                        onClick={() => handleParticipantStatusSubmit(myParticipant.id, opt.value)}
-                                                    >
-                                                        {loading ? t('loading') : opt.label}
-                                                    </button>
-                                                ))}
-                                        </div>
-                                    </div>
-                                    {myParticipant.results && myParticipant.results.length > 0 && myParticipant.results.map(res => (
-                                        <div key={res.id}
-                                             className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded">
-                                            <div>
-                                                <strong>{t('distance')}:</strong> {res.distance} [m]
-                                                | <strong>{t('time')}:</strong> {res.time} [s]
-                                                | <strong>{t('status')}: </strong> {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(res.status))?.label || res.status}
-                                            </div>
-                                            <div className="ms-auto">
-                                                {SaveStatusEnum.getOptions(t)
-                                                    .filter(opt => opt.value !== res.status)
-                                                    .filter(opt => opt.value !== SaveStatusEnum.PENDING)
-                                                    .map(opt => (
-                                                        <button
-                                                            key={opt.value}
-                                                            type="button"
-                                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2 ms-1"
-                                                            disabled={loading}
-                                                            onClick={() => handleParticipantResultStatusSubmit(res.id, opt.value)}
-                                                        >
-                                                            {loading ? t('loading') : opt.label}
-                                                        </button>
-                                                    ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </>
                             )}
 
                         </div>

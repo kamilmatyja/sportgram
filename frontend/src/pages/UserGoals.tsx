@@ -1,30 +1,34 @@
-import {useParams} from 'react-router-dom';
-import {useUserGoals} from '../services/useUserGoals';
-import {useGoalModals} from '../services/useGoalModals';
-import {UserGoalsView} from '../components/UserGoalsView';
-import {AddGoalModal} from '../components/AddGoalModal';
-import {ManageGoalModal} from '../components/ManageGoalModal';
+import { useParams } from 'react-router-dom';
+import { useUserGoals } from '../services/useUserGoals';
+import { useGoalModals } from '../services/useGoalModals';
+import { useGoalInteractions } from '../services/useGoalInteractions';
+import { UserGoalsView } from '../components/UserGoalsView';
+import { AddGoalModal } from '../components/AddGoalModal';
+import { ManageGoalModal } from '../components/ManageGoalModal';
 
 export default function UserGoals() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const goalsService = useUserGoals(link);
     const modalsService = useGoalModals(goalsService.refreshGoals);
+    const interactions = useGoalInteractions(goalsService.refreshGoals);
 
     return (
         <>
             <UserGoalsView
                 user={goalsService.targetUser}
+                currentUser={goalsService.currentUser}
                 goals={goalsService.goals}
+                relatedUsers={goalsService.relatedUsers}
                 isMyProfile={goalsService.isMyProfile}
                 isAdmin={goalsService.isAdmin}
-                isParticipant={goalsService.isParticipant}
                 loading={goalsService.loading}
                 error={goalsService.error}
                 page={goalsService.page}
                 limit={goalsService.limit}
                 sort={goalsService.sort}
                 filters={goalsService.filters}
+                actionLoading={interactions.actionLoading}
                 onFilterChange={goalsService.handleFilterChange}
                 onSortChange={goalsService.handleSortChange}
                 onLimitChange={goalsService.handleLimitChange}
@@ -32,6 +36,7 @@ export default function UserGoals() {
                 onNextPage={goalsService.handleNextPage}
                 onAddClick={modalsService.openAddModal}
                 onManageClick={modalsService.openManageModal}
+                interactions={interactions}
             />
 
             <AddGoalModal
@@ -50,7 +55,6 @@ export default function UserGoals() {
 
             <ManageGoalModal
                 user={goalsService.targetUser}
-                currentUser={goalsService.currentUser}
                 availableUsers={modalsService.availableUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
@@ -65,8 +69,6 @@ export default function UserGoals() {
                 handleChange={modalsService.handleChange}
                 handleEditSubmit={modalsService.handleEditSubmit}
                 handleStatusSubmit={modalsService.handleStatusSubmit}
-                handleParticipantStatusSubmit={modalsService.handleParticipantStatusSubmit}
-                handleParticipantResultStatusSubmit={modalsService.handleParticipantResultStatusSubmit}
                 handleDelete={modalsService.handleDelete}
             />
         </>

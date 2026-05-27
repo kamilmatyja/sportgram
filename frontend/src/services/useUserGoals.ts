@@ -1,17 +1,17 @@
-import React, {useEffect, useState} from 'react';
-import {UserProvider} from '../api/providers/UserProvider';
-import {GoalProvider} from '../api/providers/GoalProvider';
-import {GoalResponse} from '../api/responses/GoalResponse';
-import {UserResponse} from '../api/responses/UserResponse';
-import {GoalFilterQuery} from '../api/queries/GoalFilterQuery';
-import {GoalIndexQuery} from '../api/queries/GoalIndexQuery';
-import {UserFilterQuery} from '../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../api/queries/UserIndexQuery';
-import {useCheckPermission} from '../utils/checkPermission';
-import {RoleEnum} from '../enums/RoleEnum';
+import React, { useEffect, useState } from 'react';
+import { UserProvider } from '../api/providers/UserProvider';
+import { GoalProvider } from '../api/providers/GoalProvider';
+import { GoalResponse } from '../api/responses/GoalResponse';
+import { UserResponse } from '../api/responses/UserResponse';
+import { GoalFilterQuery } from '../api/queries/GoalFilterQuery';
+import { GoalIndexQuery } from '../api/queries/GoalIndexQuery';
+import { UserFilterQuery } from '../api/queries/UserFilterQuery';
+import { UserIndexQuery } from '../api/queries/UserIndexQuery';
+import { useCheckPermission } from '../utils/checkPermission';
+import { RoleEnum } from '../enums/RoleEnum';
 
 export function useUserGoals(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const { getCurrentUser } = useCheckPermission();
 
     const [goals, setGoals] = useState<GoalResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
@@ -19,7 +19,6 @@ export function useUserGoals(link?: string) {
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
-    const [isParticipant, setIsParticipant] = useState<boolean>(false);
 
     const [page, setPage] = useState<number>(1);
     const [limit, setLimit] = useState<number>(10);
@@ -100,9 +99,6 @@ export function useUserGoals(link?: string) {
                 const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
                 setIsAdmin(adminCheck);
 
-                const participantCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.PARTICIPANT) ?? false;
-                setIsParticipant(participantCheck);
-
                 const uFilter = new UserFilterQuery();
                 uFilter.link = link;
                 const uIndexDto = new UserIndexQuery();
@@ -160,7 +156,6 @@ export function useUserGoals(link?: string) {
         currentUser,
         isMyProfile,
         isAdmin,
-        isParticipant,
         page,
         limit,
         sort,

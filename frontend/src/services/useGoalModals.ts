@@ -161,34 +161,6 @@ export function useGoalModals(onSuccess: () => void) {
         }
     };
 
-    const handleParticipantStatusSubmit = async (participantId: string, newStatus: number) => {
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await goalProvider.updateParticipantStatus(participantId, new StatusBody(newStatus));
-            closeManageModal();
-            onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleParticipantResultStatusSubmit = async (resultId: string, newStatus: number) => {
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await goalProvider.updateParticipantResultStatus(resultId, new StatusBody(newStatus));
-            closeManageModal();
-            onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleDelete = async () => {
         if (!currentGoal) return;
         setLoading(true);
@@ -214,7 +186,6 @@ export function useGoalModals(onSuccess: () => void) {
     return {
         showAdd, openAddModal, closeAddModal, handleAddSubmit, availableUsers,
         showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
-        handleParticipantStatusSubmit, handleParticipantResultStatusSubmit,
         currentGoal, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
     };
 }
