@@ -1,21 +1,25 @@
-import {useParams} from 'react-router-dom';
-import {useUserPages} from '../services/useUserPages';
-import {usePageModals} from '../services/usePageModals';
-import {UserPagesView} from '../components/UserPagesView';
-import {AddPageModal} from '../components/AddPageModal';
-import {ManagePageModal} from '../components/ManagePageModal';
+import { useParams } from 'react-router-dom';
+import { useUserPages } from '../services/useUserPages';
+import { usePageModals } from '../services/usePageModals';
+import { usePageInteractions } from '../services/usePageInteractions';
+import { UserPagesView } from '../components/UserPagesView';
+import { AddPageModal } from '../components/AddPageModal';
+import { ManagePageModal } from '../components/ManagePageModal';
 
 export default function UserPages() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const pagesService = useUserPages(link);
     const modalsService = usePageModals(pagesService.refreshPages);
+    const interactions = usePageInteractions(pagesService.refreshPages);
 
     return (
         <>
             <UserPagesView
                 user={pagesService.targetUser}
+                currentUser={pagesService.currentUser}
                 pages={pagesService.pages}
+                relatedUsers={pagesService.relatedUsers}
                 isMyProfile={pagesService.isMyProfile}
                 isAdmin={pagesService.isAdmin}
                 isOrganizer={pagesService.isOrganizer}
@@ -25,6 +29,7 @@ export default function UserPages() {
                 limit={pagesService.limit}
                 sort={pagesService.sort}
                 filters={pagesService.filters}
+                actionLoading={interactions.actionLoading}
                 onFilterChange={pagesService.handleFilterChange}
                 onSortChange={pagesService.handleSortChange}
                 onLimitChange={pagesService.handleLimitChange}
@@ -32,6 +37,7 @@ export default function UserPages() {
                 onNextPage={pagesService.handleNextPage}
                 onAddClick={modalsService.openAddModal}
                 onManageClick={modalsService.openManageModal}
+                interactions={interactions}
             />
 
             <AddPageModal
@@ -50,9 +56,7 @@ export default function UserPages() {
 
             <ManagePageModal
                 user={pagesService.targetUser}
-                currentUser={pagesService.currentUser}
                 availableUsers={modalsService.availableUsers}
-                relatedUsers={pagesService.relatedUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
                 currentPageObj={modalsService.currentPage}
@@ -66,8 +70,6 @@ export default function UserPages() {
                 handleChange={modalsService.handleChange}
                 handleEditSubmit={modalsService.handleEditSubmit}
                 handleStatusSubmit={modalsService.handleStatusSubmit}
-                handleParticipantStatusSubmit={modalsService.handleParticipantStatusSubmit}
-                handleFollowStatusSubmit={modalsService.handleFollowStatusSubmit}
                 handleDelete={modalsService.handleDelete}
             />
         </>

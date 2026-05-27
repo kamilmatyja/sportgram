@@ -3,16 +3,12 @@ import {useTranslation} from '../context/TranslationContext';
 import {PageBody} from '../api/body/PageBody';
 import {PageResponse} from '../api/responses/PageResponse';
 import {ElementStatusEnum} from '../enums/ElementStatusEnum';
-import {SaveStatusEnum} from '../enums/SaveStatusEnum';
-import {PageFollowStatusEnum} from '../enums/PageFollowStatusEnum';
 import {ColorEnum} from '../enums/ColorEnum';
 import {UserResponse} from '../api/responses/UserResponse';
 
 interface ManagePageModalProps {
     user: UserResponse | null;
-    currentUser: UserResponse | null;
     availableUsers: UserResponse[];
-    relatedUsers: Record<string, UserResponse>;
     handleParticipantsChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     show: boolean;
     currentPageObj: PageResponse | null;
@@ -26,16 +22,12 @@ interface ManagePageModalProps {
     handleChange: (e: React.ChangeEvent<any>) => void;
     handleEditSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     handleStatusSubmit: (newStatus: number) => void;
-    handleParticipantStatusSubmit: (participantId: string, newStatus: number) => void;
-    handleFollowStatusSubmit: (followId: string, newStatus: number) => void;
     handleDelete: () => void;
 }
 
 export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                                                     user,
-                                                                    currentUser,
                                                                     availableUsers,
-                                                                    relatedUsers,
                                                                     handleParticipantsChange,
                                                                     show,
                                                                     currentPageObj,
@@ -49,20 +41,12 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                                                     handleChange,
                                                                     handleEditSubmit,
                                                                     handleStatusSubmit,
-                                                                    handleParticipantStatusSubmit,
-                                                                    handleFollowStatusSubmit,
                                                                     handleDelete
                                                                 }) => {
     const {t} = useTranslation();
-    if (!show || !currentPageObj || !user || !currentUser) return null;
+    if (!show || !currentPageObj || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
-
-    const myParticipant = currentPageObj.participants?.find(p => p.userId === currentUser.id);
-
-    const visibleFollows = currentPageObj.follows
-        ? (isAdmin ? currentPageObj.follows : currentPageObj.follows.filter(f => f.userId === currentUser.id))
-        : [];
 
     return (
         <>
@@ -77,8 +61,7 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form id="edit-page-form" onSubmit={handleEditSubmit}
-                                      className="mb-4 border-bottom pb-3">
+                                <form id="edit-page-form" onSubmit={handleEditSubmit} className="mb-4 border-bottom pb-3">
                                     <div className="mb-3">
                                         <label className="form-label">{t('title')}</label>
                                         <input type="text" name="title"
@@ -165,7 +148,7 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                             )}
 
                             {(isMyProfile || isAdmin) && (
-                                <div className="mb-4 border-bottom pb-3">
+                                <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('pageStatus')}: </strong>
                                         <span className="me-2 badge bg-light text-dark border profile-theme-border">
@@ -186,69 +169,6 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                                                 </button>
                                             ))}
                                     </div>
-                                </div>
-                            )}
-
-                            {myParticipant && (
-                                <div className="mb-4 border-bottom pb-3">
-                                    <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('participantStatus')}: </strong>
-                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
-                                            {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(myParticipant.status))?.label || myParticipant.status}
-                                        </span>
-                                        {SaveStatusEnum.getOptions(t)
-                                            .filter(opt => opt.value !== myParticipant.status)
-                                            .filter(opt => opt.value !== SaveStatusEnum.PENDING)
-                                            .map(opt => (
-                                                <button
-                                                    key={opt.value}
-                                                    type="button"
-                                                    className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                    disabled={loading}
-                                                    onClick={() => handleParticipantStatusSubmit(myParticipant.id, opt.value)}
-                                                >
-                                                    {loading ? t('loading') : opt.label}
-                                                </button>
-                                            ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {visibleFollows.length > 0 && (
-                                <div className="mb-4">
-                                    <h6>{t('pageFollows')} ({visibleFollows.length})</h6>
-                                    {visibleFollows.map(follow => {
-                                        const fUser = relatedUsers[follow.userId];
-                                        const fUserName = fUser ? `${fUser.firstName} ${fUser.lastName}` : follow.userId;
-
-                                        return (
-                                            <div key={follow.id}
-                                                 className="d-flex flex-wrap gap-2 align-items-center mb-2 border p-2 rounded bg-light">
-                                                <div>
-                                                    <strong>{isAdmin ? `${t('user')}: ${fUserName} | ` : ''}{t('status')}: </strong>
-                                                    <span
-                                                        className="me-2 badge bg-light text-dark border profile-theme-border">{PageFollowStatusEnum.getOptions(t).find(opt => String(opt.value) === String(follow.status))?.label || follow.status}
-                                                    </span>
-                                                </div>
-                                                <div className="ms-auto d-flex gap-1 flex-wrap">
-                                                    {PageFollowStatusEnum.getOptions(t)
-                                                        .filter(opt => opt.value !== follow.status)
-                                                        .filter(opt => opt.value !== PageFollowStatusEnum.PENDING)
-                                                        .map(opt => (
-                                                            <button
-                                                                key={opt.value}
-                                                                type="button"
-                                                                className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                                disabled={loading}
-                                                                onClick={() => handleFollowStatusSubmit(follow.id, opt.value)}
-                                                            >
-                                                                {loading ? t('loading') : opt.label}
-                                                            </button>
-                                                        ))}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
                                 </div>
                             )}
 

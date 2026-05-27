@@ -49,7 +49,6 @@ export function usePageModals(onSuccess: () => void) {
 
         if (pageObj) {
             pageObj.participants.forEach(p => userIdsToFetch.add(p.userId));
-            pageObj.follows?.forEach(f => userIdsToFetch.add(f.userId));
         }
 
         const idsArray = Array.from(userIdsToFetch);
@@ -169,34 +168,6 @@ export function usePageModals(onSuccess: () => void) {
         }
     };
 
-    const handleParticipantStatusSubmit = async (participantId: string, newStatus: number) => {
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await pageProvider.updateParticipantStatus(participantId, new StatusBody(newStatus));
-            closeManageModal();
-            onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleFollowStatusSubmit = async (followId: string, newStatus: number) => {
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await pageProvider.updateFollowStatus(followId, new StatusBody(newStatus));
-            closeManageModal();
-            onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleDelete = async () => {
         if (!currentPage) return;
         setLoading(true);
@@ -222,7 +193,6 @@ export function usePageModals(onSuccess: () => void) {
     return {
         showAdd, openAddModal, closeAddModal, handleAddSubmit, availableUsers,
         showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
-        handleParticipantStatusSubmit, handleFollowStatusSubmit,
         currentPage, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
     };
 }
