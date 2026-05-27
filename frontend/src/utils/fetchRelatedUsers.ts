@@ -1,7 +1,7 @@
-import { UserResponse } from '../api/responses/UserResponse';
-import { UserProvider } from '../api/providers/UserProvider';
-import { UserFilterQuery } from '../api/queries/UserFilterQuery';
-import { UserIndexQuery } from '../api/queries/UserIndexQuery';
+import {UserResponse} from '../api/responses/UserResponse';
+import {UserProvider} from '../api/providers/UserProvider';
+import {UserFilterQuery} from '../api/queries/UserFilterQuery';
+import {UserIndexQuery} from '../api/queries/UserIndexQuery';
 
 export async function fetchRelatedUsersFromIds(
     userIdsSet: Set<string>,
@@ -19,7 +19,7 @@ export async function fetchRelatedUsersFromIds(
 
     const usersData = await userProvider.index(uIndexDto);
 
-    const newMap = { ...currentMap };
+    const newMap = {...currentMap};
     usersData.forEach(u => {
         newMap[u.id] = u;
     });

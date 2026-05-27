@@ -1,5 +1,5 @@
 import React from 'react';
-import {useTranslation} from '../context/TranslationContext';
+import {useTranslation} from '../../context/TranslationContext';
 
 const NotFound: React.FC = () => {
     const {t} = useTranslation();

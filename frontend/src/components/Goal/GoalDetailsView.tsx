@@ -1,14 +1,14 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { GoalResponse } from '../../api/responses/GoalResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { ColorEnum } from '../../enums/ColorEnum';
-import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { formatDate } from '../../utils/dateFormat';
-import { UserSubpageHeader } from '../User/UserSubpageHeader';
-import { GoalDetailsParticipantsTable } from './GoalDetailsParticipantsTable';
-import { GoalDetailsResultsTable } from './GoalDetailsResultsTable';
+import {useTranslation} from '../../context/TranslationContext';
+import {GoalResponse} from '../../api/responses/GoalResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {ColorEnum} from '../../enums/ColorEnum';
+import {GoalStatusEnum} from '../../enums/GoalStatusEnum';
+import {DisciplineEnum} from '../../enums/DisciplineEnum';
+import {formatDate} from '../../utils/dateFormat';
+import {UserSubpageHeader} from '../User/UserSubpageHeader';
+import {GoalDetailsParticipantsTable} from './GoalDetailsParticipantsTable';
+import {GoalDetailsResultsTable} from './GoalDetailsResultsTable';
 
 interface GoalDetailsViewProps {
     goal: GoalResponse | null;
@@ -24,24 +24,37 @@ interface GoalDetailsViewProps {
 }
 
 export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
-                                                                    goal, ownerUser, currentUser, relatedUsers, isMyProfile, isAdmin, loading, error, onManageClick, interactions
+                                                                    goal,
+                                                                    ownerUser,
+                                                                    currentUser,
+                                                                    relatedUsers,
+                                                                    isMyProfile,
+                                                                    isAdmin,
+                                                                    loading,
+                                                                    error,
+                                                                    onManageClick,
+                                                                    interactions
                                                                 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center"><div className="spinner-border text-profile-primary" /></div>;
-    if (error || !goal || !ownerUser) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (loading) return <div className="container mt-5 text-center">
+        <div className="spinner-border text-profile-primary"/>
+    </div>;
+    if (error || !goal || !ownerUser) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
 
     const themeClass = ColorEnum.getClass(ownerUser.color);
     const canManage = isMyProfile || isAdmin;
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={ownerUser} />
+            <UserSubpageHeader user={ownerUser}/>
 
             <div className="card shadow-sm mb-4">
                 <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h4 className="mb-3 text-profile-primary fw-bold"><i className="bi bi-info-circle me-2"></i>{t('basicInformation')}</h4>
+                        <h4 className="mb-3 text-profile-primary fw-bold"><i
+                            className="bi bi-info-circle me-2"></i>{t('basicInformation')}</h4>
                         {canManage && (
                             <button className="btn btn-profile-primary" onClick={() => onManageClick(goal)}>
                                 <i className="bi bi-gear me-1"></i> {t('manage')}

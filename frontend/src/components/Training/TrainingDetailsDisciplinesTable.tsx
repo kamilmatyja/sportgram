@@ -1,20 +1,24 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { TrainingDisciplineResponse } from '../../api/responses/TrainingDisciplineResponse';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import {useTranslation} from '../../context/TranslationContext';
+import {TrainingDisciplineResponse} from '../../api/responses/TrainingDisciplineResponse';
+import {DisciplineEnum} from '../../enums/DisciplineEnum';
 
 interface TrainingDetailsDisciplinesTableProps {
     disciplines: TrainingDisciplineResponse[];
 }
 
-export const TrainingDetailsDisciplinesTable: React.FC<TrainingDetailsDisciplinesTableProps> = ({ disciplines }) => {
-    const { t } = useTranslation();
+export const TrainingDetailsDisciplinesTable: React.FC<TrainingDetailsDisciplinesTableProps> = ({disciplines}) => {
+    const {t} = useTranslation();
 
     if (disciplines.length === 0) {
         return (
             <div className="table-responsive-custom">
                 <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody><tr><td colSpan={4} className="text-center text-muted">{t('noRecords')}</td></tr></tbody>
+                    <tbody>
+                    <tr>
+                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                    </tbody>
                 </table>
             </div>
         );

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { FeedCommentResponse } from '../../api/responses/FeedCommentResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import React, {useState} from 'react';
+import {useTranslation} from '../../context/TranslationContext';
+import {FeedCommentResponse} from '../../api/responses/FeedCommentResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface FeedCommentsTableProps {
     feedId: string;
@@ -18,10 +18,17 @@ interface FeedCommentsTableProps {
 }
 
 export const FeedCommentsTable: React.FC<FeedCommentsTableProps> = ({
-                                                                        feedId, comments, relatedUsers, currentUser, isAdmin, isFeedLoading,
-                                                                        onDeleteComment, onUpdateComment, onChangeStatus
+                                                                        feedId,
+                                                                        comments,
+                                                                        relatedUsers,
+                                                                        currentUser,
+                                                                        isAdmin,
+                                                                        isFeedLoading,
+                                                                        onDeleteComment,
+                                                                        onUpdateComment,
+                                                                        onChangeStatus
                                                                     }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editText, setEditText] = useState('');
 
@@ -60,12 +67,14 @@ export const FeedCommentsTable: React.FC<FeedCommentsTableProps> = ({
                     <tr key={c.id}>
                         <td>
                             {author ? (
-                                <a href={`/users/${author.link}`} className="text-decoration-none">{author.firstName} {author.lastName}</a>
+                                <a href={`/users/${author.link}`}
+                                   className="text-decoration-none">{author.firstName} {author.lastName}</a>
                             ) : c.userId}
                         </td>
                         <td>
                             {editingId === c.id ? (
-                                <input type="text" className="form-control form-control-sm" value={editText} onChange={e => setEditText(e.target.value)} />
+                                <input type="text" className="form-control form-control-sm" value={editText}
+                                       onChange={e => setEditText(e.target.value)}/>
                             ) : c.text}
                         </td>
                         <td>
@@ -77,22 +86,30 @@ export const FeedCommentsTable: React.FC<FeedCommentsTableProps> = ({
                         <td className="text-end">
                             <div className="d-flex justify-content-end gap-1 flex-wrap">
                                 {isOwner && editingId !== c.id && (
-                                    <button className="btn btn-xs btn-outline-secondary py-0" disabled={isFeedLoading} onClick={() => startEdit(c.id, c.text)}><i className="bi bi-pencil"></i></button>
+                                    <button className="btn btn-xs btn-outline-secondary py-0" disabled={isFeedLoading}
+                                            onClick={() => startEdit(c.id, c.text)}><i className="bi bi-pencil"></i>
+                                    </button>
                                 )}
                                 {isOwner && editingId === c.id && (
                                     <>
-                                        <button className="btn btn-xs btn-success py-0" disabled={isFeedLoading} onClick={() => saveEdit(c.id)}><i className="bi bi-check"></i></button>
-                                        <button className="btn btn-xs btn-danger py-0" disabled={isFeedLoading} onClick={() => setEditingId(null)}><i className="bi bi-x"></i></button>
+                                        <button className="btn btn-xs btn-success py-0" disabled={isFeedLoading}
+                                                onClick={() => saveEdit(c.id)}><i className="bi bi-check"></i></button>
+                                        <button className="btn btn-xs btn-danger py-0" disabled={isFeedLoading}
+                                                onClick={() => setEditingId(null)}><i className="bi bi-x"></i></button>
                                     </>
                                 )}
                                 {isOwner && (
-                                    <button className="btn btn-xs btn-outline-danger py-0" disabled={isFeedLoading} onClick={() => onDeleteComment(feedId, c.id)}><i className="bi bi-trash"></i></button>
+                                    <button className="btn btn-xs btn-outline-danger py-0" disabled={isFeedLoading}
+                                            onClick={() => onDeleteComment(feedId, c.id)}><i
+                                        className="bi bi-trash"></i></button>
                                 )}
                                 {canChangeStatus && ElementStatusEnum.getOptions(t)
                                     .filter(opt => opt.value !== c.status)
                                     .filter(opt => opt.value !== ElementStatusEnum.REJECTED || isAdmin)
                                     .map(opt => (
-                                        <button key={opt.value} className="btn btn-xs btn-profile-outline-primary py-0" disabled={isFeedLoading} onClick={() => onChangeStatus(c.id, opt.value)}>
+                                        <button key={opt.value} className="btn btn-xs btn-profile-outline-primary py-0"
+                                                disabled={isFeedLoading}
+                                                onClick={() => onChangeStatus(c.id, opt.value)}>
                                             {opt.label}
                                         </button>
                                     ))}

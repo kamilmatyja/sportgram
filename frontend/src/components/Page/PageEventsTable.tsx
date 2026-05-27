@@ -1,11 +1,11 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { EventResponse } from '../../api/responses/EventResponse';
-import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { PaginationEnum } from '../../enums/PaginationEnum';
-import { formatDate } from '../../utils/dateFormat';
-import { Pagination } from '../Common/Pagination';
+import {useTranslation} from '../../context/TranslationContext';
+import {EventResponse} from '../../api/responses/EventResponse';
+import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {PaginationEnum} from '../../enums/PaginationEnum';
+import {formatDate} from '../../utils/dateFormat';
+import {Pagination} from '../Common/Pagination';
 
 interface PageEventsTableProps {
     events: EventResponse[];
@@ -22,11 +22,19 @@ interface PageEventsTableProps {
 }
 
 export const PageEventsTable: React.FC<PageEventsTableProps> = ({
-                                                                    events, eventsLoading, eventPage, eventLimit, eventSort, eventFilters,
-                                                                    handleEventFilterChange, handleEventSortChange, handleEventLimitChange,
-                                                                    handleEventPrevPage, handleEventNextPage
+                                                                    events,
+                                                                    eventsLoading,
+                                                                    eventPage,
+                                                                    eventLimit,
+                                                                    eventSort,
+                                                                    eventFilters,
+                                                                    handleEventFilterChange,
+                                                                    handleEventSortChange,
+                                                                    handleEventLimitChange,
+                                                                    handleEventPrevPage,
+                                                                    handleEventNextPage
                                                                 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="card shadow-sm">
@@ -36,9 +44,12 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                 </div>
 
                 <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                    <input name="title" placeholder={t('title')} value={eventFilters.title || ''} onChange={handleEventFilterChange} className="form-control w-auto" />
-                    <input name="link" placeholder={t('link')} value={eventFilters.link || ''} onChange={handleEventFilterChange} className="form-control w-auto" />
-                    <select name="status" value={eventFilters.status || ''} onChange={handleEventFilterChange} className="form-select w-auto">
+                    <input name="title" placeholder={t('title')} value={eventFilters.title || ''}
+                           onChange={handleEventFilterChange} className="form-control w-auto"/>
+                    <input name="link" placeholder={t('link')} value={eventFilters.link || ''}
+                           onChange={handleEventFilterChange} className="form-control w-auto"/>
+                    <select name="status" value={eventFilters.status || ''} onChange={handleEventFilterChange}
+                            className="form-select w-auto">
                         <option value="">{t('status')}</option>
                         {ElementStatusEnum.getOptions(t).map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -58,7 +69,9 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                 </div>
 
                 {eventsLoading && events.length === 0 ? (
-                    <div className="text-center my-4"><div className="spinner-border text-profile-primary" /></div>
+                    <div className="text-center my-4">
+                        <div className="spinner-border text-profile-primary"/>
+                    </div>
                 ) : (
                     <>
                         <div className="table-responsive-custom">
@@ -81,10 +94,12 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                                 ) : events.map(ev => (
                                     <tr key={ev.id}>
                                         <td className="text-center align-middle feed-photo-cell">
-                                            <img src={`data:image/webp;base64,${ev.photo}`} alt="Photo" className="w-100 h-100 object-fit-cover" />
+                                            <img src={`data:image/webp;base64,${ev.photo}`} alt="Photo"
+                                                 className="w-100 h-100 object-fit-cover"/>
                                         </td>
                                         <td>
-                                            <a href={`/events/${ev.link}`} className="btn btn-link p-0 text-decoration-none">
+                                            <a href={`/events/${ev.link}`}
+                                               className="btn btn-link p-0 text-decoration-none">
                                                 {ev.title}
                                             </a>
                                         </td>
@@ -98,7 +113,8 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                             </table>
                         </div>
                         <div className="mt-3">
-                            <Pagination page={eventPage} hasMore={events.length >= eventLimit} onPrevPage={handleEventPrevPage} onNextPage={handleEventNextPage} />
+                            <Pagination page={eventPage} hasMore={events.length >= eventLimit}
+                                        onPrevPage={handleEventPrevPage} onNextPage={handleEventNextPage}/>
                         </div>
                     </>
                 )}

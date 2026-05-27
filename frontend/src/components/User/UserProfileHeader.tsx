@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { FriendResponse } from '../../api/responses/FriendResponse';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import {useTranslation} from '../../context/TranslationContext';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {FriendResponse} from '../../api/responses/FriendResponse';
+import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 
 interface UserProfileHeaderProps {
     user: UserResponse;
@@ -15,23 +15,33 @@ interface UserProfileHeaderProps {
 }
 
 export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
-                                                                        user, currentUser, friendship, isMyProfile, handleAddFriend, handleUpdateFriendStatus
+                                                                        user,
+                                                                        currentUser,
+                                                                        friendship,
+                                                                        isMyProfile,
+                                                                        handleAddFriend,
+                                                                        handleUpdateFriendStatus
                                                                     }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="card shadow-sm mb-4">
-            <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+            <div
+                className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
                 {user.backgroundPhoto && (
-                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover" />
+                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background"
+                         className="w-100 h-100 object-fit-cover"/>
                 )}
             </div>
-            <div className="card-body position-relative pt-5 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end gap-3">
+            <div
+                className="card-body position-relative pt-5 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end gap-3">
                 <div>
                     {user.profilePhoto ? (
-                        <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile" className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover" />
+                        <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile"
+                             className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                     ) : (
-                        <div className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar d-flex align-items-center justify-content-center">
+                        <div
+                            className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar d-flex align-items-center justify-content-center">
                             <i className="bi bi-person fs-1 text-muted"></i>
                         </div>
                     )}
@@ -50,7 +60,8 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
 
                     {!isMyProfile && friendship && (
                         <div className="dropdown">
-                            <button className="btn btn-profile-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button className="btn btn-profile-outline-primary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
                                 {t('friendshipStatus')}: {FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label}
                             </button>
                             <ul className="dropdown-menu dropdown-menu-end">
@@ -58,7 +69,8 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
                                     FriendStatusEnum.getNanoOptions(t).map(opt => (
                                         opt.value !== friendship.status && (
                                             <li key={opt.value}>
-                                                <button className="dropdown-item" onClick={() => handleUpdateFriendStatus(opt.value)}>
+                                                <button className="dropdown-item"
+                                                        onClick={() => handleUpdateFriendStatus(opt.value)}>
                                                     {opt.label}
                                                 </button>
                                             </li>

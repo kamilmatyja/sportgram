@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { FeedReactionResponse } from '../../api/responses/FeedReactionResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
-import { formatDate } from '../../utils/dateFormat';
+import React, {useState} from 'react';
+import {useTranslation} from '../../context/TranslationContext';
+import {FeedReactionResponse} from '../../api/responses/FeedReactionResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {FeedReactionEnum} from '../../enums/FeedReactionEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface FeedReactionsTableProps {
     reactions: FeedReactionResponse[];
@@ -18,10 +18,16 @@ interface FeedReactionsTableProps {
 }
 
 export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
-                                                                          reactions, relatedUsers, currentUser, isAdmin, isFeedLoading,
-                                                                          onDeleteReaction, onUpdateReaction, onChangeStatus
+                                                                          reactions,
+                                                                          relatedUsers,
+                                                                          currentUser,
+                                                                          isAdmin,
+                                                                          isFeedLoading,
+                                                                          onDeleteReaction,
+                                                                          onUpdateReaction,
+                                                                          onChangeStatus
                                                                       }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [editingId, setEditingId] = useState<string | null>(null);
 
     if (!reactions || reactions.length === 0) {
@@ -49,16 +55,19 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
                     <tr key={r.id}>
                         <td>
                             {author ? (
-                                <a href={`/users/${author.link}`} className="text-decoration-none">{author.firstName} {author.lastName}</a>
+                                <a href={`/users/${author.link}`}
+                                   className="text-decoration-none">{author.firstName} {author.lastName}</a>
                             ) : r.userId}
                         </td>
                         <td>
                             {editingId === r.id ? (
-                                <select className="form-select form-select-sm" defaultValue={r.reaction} onChange={(e) => {
-                                    onUpdateReaction(r.id, parseInt(e.target.value));
-                                    setEditingId(null);
-                                }}>
-                                    {FeedReactionEnum.getOptions(t).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                                <select className="form-select form-select-sm" defaultValue={r.reaction}
+                                        onChange={(e) => {
+                                            onUpdateReaction(r.id, parseInt(e.target.value));
+                                            setEditingId(null);
+                                        }}>
+                                    {FeedReactionEnum.getOptions(t).map(o => <option key={o.value}
+                                                                                     value={o.value}>{o.label}</option>)}
                                 </select>
                             ) : (
                                 FeedReactionEnum.getOptions(t).find(o => o.value === r.reaction)?.label || r.reaction
@@ -73,22 +82,28 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
                         <td className="text-end">
                             <div className="d-flex justify-content-end gap-1 flex-wrap">
                                 {isOwner && editingId !== r.id && (
-                                    <button className="btn btn-xs btn-outline-secondary py-0" disabled={isFeedLoading} onClick={() => setEditingId(r.id)}><i className="bi bi-pencil"></i></button>
+                                    <button className="btn btn-xs btn-outline-secondary py-0" disabled={isFeedLoading}
+                                            onClick={() => setEditingId(r.id)}><i className="bi bi-pencil"></i></button>
                                 )}
                                 {isOwner && editingId === r.id && (
-                                    <button className="btn btn-xs btn-danger py-0" disabled={isFeedLoading} onClick={() => setEditingId(null)}><i className="bi bi-x"></i></button>
+                                    <button className="btn btn-xs btn-danger py-0" disabled={isFeedLoading}
+                                            onClick={() => setEditingId(null)}><i className="bi bi-x"></i></button>
                                 )}
                                 {isOwner && (
-                                    <button className="btn btn-xs btn-outline-danger py-0" disabled={isFeedLoading} onClick={() => onDeleteReaction(r.id)}><i className="bi bi-trash"></i></button>
+                                    <button className="btn btn-xs btn-outline-danger py-0" disabled={isFeedLoading}
+                                            onClick={() => onDeleteReaction(r.id)}><i className="bi bi-trash"></i>
+                                    </button>
                                 )}
                                 {canChangeStatus && ElementStatusEnum.getOptions(t)
                                     .filter(opt => opt.value !== r.status)
                                     .filter(opt => opt.value !== ElementStatusEnum.REJECTED || isAdmin)
                                     .map(opt => (
-                                    <button key={opt.value} className="btn btn-xs btn-profile-outline-primary py-0" disabled={isFeedLoading} onClick={() => onChangeStatus(r.id, opt.value)}>
-                                        {opt.label}
-                                    </button>
-                                ))}
+                                        <button key={opt.value} className="btn btn-xs btn-profile-outline-primary py-0"
+                                                disabled={isFeedLoading}
+                                                onClick={() => onChangeStatus(r.id, opt.value)}>
+                                            {opt.label}
+                                        </button>
+                                    ))}
                             </div>
                         </td>
                     </tr>

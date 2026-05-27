@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { PageParticipantResponse } from '../../api/responses/PageParticipantResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {useTranslation} from '../../context/TranslationContext';
+import {PageParticipantResponse} from '../../api/responses/PageParticipantResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {SaveStatusEnum} from '../../enums/SaveStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface PageParticipantsTableProps {
     participants: PageParticipantResponse[];
@@ -14,9 +14,13 @@ interface PageParticipantsTableProps {
 }
 
 export const PageParticipantsTable: React.FC<PageParticipantsTableProps> = ({
-                                                                                participants, relatedUsers, currentUser, actionLoading, onUpdateStatus
+                                                                                participants,
+                                                                                relatedUsers,
+                                                                                currentUser,
+                                                                                actionLoading,
+                                                                                onUpdateStatus
                                                                             }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (!participants || participants.length === 0) {
         return <div className="text-muted small p-2">{t('noParticipants')}</div>;

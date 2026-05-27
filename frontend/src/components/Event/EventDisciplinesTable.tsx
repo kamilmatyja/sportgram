@@ -1,7 +1,7 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { EventResponse } from '../../api/responses/EventResponse';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import {useTranslation} from '../../context/TranslationContext';
+import {EventResponse} from '../../api/responses/EventResponse';
+import {DisciplineEnum} from '../../enums/DisciplineEnum';
 
 interface EventDisciplinesTableProps {
     eventObj: EventResponse;
@@ -11,7 +11,7 @@ interface EventDisciplinesTableProps {
 export const EventDisciplinesTable: React.FC<EventDisciplinesTableProps> = ({
                                                                                 eventObj, openListsModal
                                                                             }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="card shadow-sm mb-4">
@@ -57,7 +57,8 @@ export const EventDisciplinesTable: React.FC<EventDisciplinesTableProps> = ({
                                             <button className="btn btn-sm btn-profile-outline-primary"
                                                     onClick={() => openListsModal(dist.id)}>
                                                 <i className="bi bi-list-ul me-1"></i>
-                                                <span className="visually-hidden">{t('eventTypes.eventDisciplineList')}</span>
+                                                <span
+                                                    className="visually-hidden">{t('eventTypes.eventDisciplineList')}</span>
                                             </button>
                                         </div>
                                     </td>

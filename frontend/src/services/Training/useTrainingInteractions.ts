@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { TrainingProvider } from '../../api/providers/TrainingProvider';
-import { StatusBody } from '../../api/body/StatusBody';
+import {useState} from 'react';
+import {TrainingProvider} from '../../api/providers/TrainingProvider';
+import {StatusBody} from '../../api/body/StatusBody';
 
 export function useTrainingInteractions(refreshTrainings: () => void) {
     const [actionLoading, setActionLoading] = useState<string | null>(null);

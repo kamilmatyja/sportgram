@@ -1,14 +1,14 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { FriendResponse } from '../../api/responses/FriendResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
-import { PaginationEnum } from '../../enums/PaginationEnum';
-import { ColorEnum } from '../../enums/ColorEnum';
-import { UserSubpageHeader } from './UserSubpageHeader';
-import { Pagination } from '../Common/Pagination';
-import { UserFriendsTable } from '../Friend/UserFriendsTable';
+import {useTranslation} from '../../context/TranslationContext';
+import {FriendResponse} from '../../api/responses/FriendResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
+import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
+import {PaginationEnum} from '../../enums/PaginationEnum';
+import {ColorEnum} from '../../enums/ColorEnum';
+import {UserSubpageHeader} from './UserSubpageHeader';
+import {Pagination} from '../Common/Pagination';
+import {UserFriendsTable} from '../Friend/UserFriendsTable';
 
 interface UserFriendsViewProps {
     user: UserResponse | null;
@@ -31,19 +31,37 @@ interface UserFriendsViewProps {
 }
 
 export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
-                                                                    user, friends, relatedUsers, isMyProfile, loading, error, page, limit, sort, filters,
-                                                                    onFilterChange, onSortChange, onLimitChange, onPrevPage, onNextPage, onAddClick, onManageClick
+                                                                    user,
+                                                                    friends,
+                                                                    relatedUsers,
+                                                                    isMyProfile,
+                                                                    loading,
+                                                                    error,
+                                                                    page,
+                                                                    limit,
+                                                                    sort,
+                                                                    filters,
+                                                                    onFilterChange,
+                                                                    onSortChange,
+                                                                    onLimitChange,
+                                                                    onPrevPage,
+                                                                    onNextPage,
+                                                                    onAddClick,
+                                                                    onManageClick
                                                                 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
-    if (loading && friends.length === 0) return <div className="container mt-5 text-center"><div className="spinner-border text-profile-primary" /></div>;
-    if (error || !user) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
+    if (loading && friends.length === 0) return <div className="container mt-5 text-center">
+        <div className="spinner-border text-profile-primary"/>
+    </div>;
+    if (error || !user) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
     const themeClass = ColorEnum.getClass(user.color);
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user} />
+            <UserSubpageHeader user={user}/>
 
             <div className="card shadow-sm">
                 <div className="card-body">
@@ -57,7 +75,8 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                     </div>
 
                     <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                        <select name="status" value={filters.status || ''} onChange={onFilterChange} className="form-select w-auto">
+                        <select name="status" value={filters.status || ''} onChange={onFilterChange}
+                                className="form-select w-auto">
                             <option value="">{t('status')}</option>
                             {FriendStatusEnum.getOptions(t).map(opt => (
                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -75,7 +94,9 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                     </div>
 
                     {loading ? (
-                        <div className="text-center my-4"><div className="spinner-border text-profile-primary" /></div>
+                        <div className="text-center my-4">
+                            <div className="spinner-border text-profile-primary"/>
+                        </div>
                     ) : (
                         <>
                             <UserFriendsTable
@@ -85,7 +106,8 @@ export const UserFriendsView: React.FC<UserFriendsViewProps> = ({
                                 onManageClick={onManageClick}
                             />
                             <div className="mt-3">
-                                <Pagination page={page} hasMore={friends.length >= limit} onPrevPage={onPrevPage} onNextPage={onNextPage} />
+                                <Pagination page={page} hasMore={friends.length >= limit} onPrevPage={onPrevPage}
+                                            onNextPage={onNextPage}/>
                             </div>
                         </>
                     )}

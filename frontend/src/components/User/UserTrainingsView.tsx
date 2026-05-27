@@ -1,14 +1,14 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { TrainingResponse } from '../../api/responses/TrainingResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { TrainingFilterQuery } from '../../api/queries/TrainingFilterQuery';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { PaginationEnum } from '../../enums/PaginationEnum';
-import { ColorEnum } from '../../enums/ColorEnum';
-import { UserSubpageHeader } from './UserSubpageHeader';
-import { Pagination } from '../Common/Pagination';
-import { UserTrainingsTable } from '../Training/UserTrainingsTable';
+import {useTranslation} from '../../context/TranslationContext';
+import {TrainingResponse} from '../../api/responses/TrainingResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {TrainingFilterQuery} from '../../api/queries/TrainingFilterQuery';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {PaginationEnum} from '../../enums/PaginationEnum';
+import {ColorEnum} from '../../enums/ColorEnum';
+import {UserSubpageHeader} from './UserSubpageHeader';
+import {Pagination} from '../Common/Pagination';
+import {UserTrainingsTable} from '../Training/UserTrainingsTable';
 
 interface UserTrainingsViewProps {
     user: UserResponse | null;
@@ -36,19 +36,42 @@ interface UserTrainingsViewProps {
 }
 
 export const UserTrainingsView: React.FC<UserTrainingsViewProps> = ({
-                                                                        user, currentUser, trainings, relatedUsers, isMyProfile, isAdmin, isParticipant, loading, error, page, limit, sort, filters, actionLoading,
-                                                                        onFilterChange, onSortChange, onLimitChange, onPrevPage, onNextPage, onAddClick, onManageClick, interactions
+                                                                        user,
+                                                                        currentUser,
+                                                                        trainings,
+                                                                        relatedUsers,
+                                                                        isMyProfile,
+                                                                        isAdmin,
+                                                                        isParticipant,
+                                                                        loading,
+                                                                        error,
+                                                                        page,
+                                                                        limit,
+                                                                        sort,
+                                                                        filters,
+                                                                        actionLoading,
+                                                                        onFilterChange,
+                                                                        onSortChange,
+                                                                        onLimitChange,
+                                                                        onPrevPage,
+                                                                        onNextPage,
+                                                                        onAddClick,
+                                                                        onManageClick,
+                                                                        interactions
                                                                     }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
-    if (loading && trainings.length === 0) return <div className="container mt-5 text-center"><div className="spinner-border text-profile-primary" /></div>;
-    if (error || !user) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
+    if (loading && trainings.length === 0) return <div className="container mt-5 text-center">
+        <div className="spinner-border text-profile-primary"/>
+    </div>;
+    if (error || !user) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
     const themeClass = ColorEnum.getClass(user.color);
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user} />
+            <UserSubpageHeader user={user}/>
 
             <div className="card shadow-sm">
                 <div className="card-body">
@@ -62,11 +85,15 @@ export const UserTrainingsView: React.FC<UserTrainingsViewProps> = ({
                     </div>
 
                     <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                        <input name="title" placeholder={t('title')} value={filters.title || ''} onChange={onFilterChange} className="form-control w-auto" />
-                        <input name="link" placeholder={t('link')} value={filters.link || ''} onChange={onFilterChange} className="form-control w-auto" />
-                        <select name="status" value={filters.status || ''} onChange={onFilterChange} className="form-select w-auto">
+                        <input name="title" placeholder={t('title')} value={filters.title || ''}
+                               onChange={onFilterChange} className="form-control w-auto"/>
+                        <input name="link" placeholder={t('link')} value={filters.link || ''} onChange={onFilterChange}
+                               className="form-control w-auto"/>
+                        <select name="status" value={filters.status || ''} onChange={onFilterChange}
+                                className="form-select w-auto">
                             <option value="">{t('status')}</option>
-                            {ElementStatusEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                            {ElementStatusEnum.getOptions(t).map(opt => <option key={opt.value}
+                                                                                value={opt.value}>{opt.label}</option>)}
                         </select>
                         <select value={sort} onChange={onSortChange} className="form-select w-auto ms-auto">
                             <option value="createdAt:desc">{t('sortCreatedDesc')}</option>
@@ -75,12 +102,15 @@ export const UserTrainingsView: React.FC<UserTrainingsViewProps> = ({
                             <option value="startedAt:asc">{t('startedAt')} A-Z</option>
                         </select>
                         <select value={limit} onChange={onLimitChange} className="form-select w-auto">
-                            {PaginationEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                            {PaginationEnum.getOptions(t).map(opt => <option key={opt.value}
+                                                                             value={opt.value}>{opt.label}</option>)}
                         </select>
                     </div>
 
                     {loading ? (
-                        <div className="text-center my-4"><div className="spinner-border text-profile-primary" /></div>
+                        <div className="text-center my-4">
+                            <div className="spinner-border text-profile-primary"/>
+                        </div>
                     ) : (
                         <>
                             <UserTrainingsTable
@@ -94,7 +124,8 @@ export const UserTrainingsView: React.FC<UserTrainingsViewProps> = ({
                                 interactions={interactions}
                             />
                             <div className="mt-3">
-                                <Pagination page={page} hasMore={trainings.length >= limit} onPrevPage={onPrevPage} onNextPage={onNextPage} />
+                                <Pagination page={page} hasMore={trainings.length >= limit} onPrevPage={onPrevPage}
+                                            onNextPage={onNextPage}/>
                             </div>
                         </>
                     )}

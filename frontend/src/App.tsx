@@ -26,8 +26,8 @@ import Statistics from './pages/Statistics';
 import Home from './pages/Home';
 import GuestHome from './components/Authentication/GuestHome';
 import AuthenticationLoading from './components/Authentication/AuthenticationLoading';
-import NotFound from './components/NotFound';
-import AppLayout from './components/AppLayout';
+import NotFound from './components/Common/NotFound';
+import AppLayout from './components/Common/AppLayout';
 import AuthenticatedLayout from './components/Authentication/AuthenticatedLayout';
 
 interface RouteProps {

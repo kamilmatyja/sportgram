@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
-import { FeedProvider } from '../../api/providers/FeedProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
-import { FeedResponse } from '../../api/responses/FeedResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { FeedIndexQuery } from '../../api/queries/FeedIndexQuery';
-import { useCheckPermission } from '../../utils/checkPermission';
-import { FeedFilterQuery } from '../../api/queries/FeedFilterQuery';
-import { fetchRelatedUsersFromIds } from '../../utils/fetchRelatedUsers';
-import { useFeedInteractions } from '../Feed/useFeedInteractions';
+import {useEffect, useState} from 'react';
+import {FeedProvider} from '../../api/providers/FeedProvider';
+import {UserProvider} from '../../api/providers/UserProvider';
+import {FeedResponse} from '../../api/responses/FeedResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {FeedIndexQuery} from '../../api/queries/FeedIndexQuery';
+import {useCheckPermission} from '../../utils/checkPermission';
+import {FeedFilterQuery} from '../../api/queries/FeedFilterQuery';
+import {fetchRelatedUsersFromIds} from '../../utils/fetchRelatedUsers';
+import {useFeedInteractions} from '../Feed/useFeedInteractions';
 
 export function useHomeFeeds(targetUserId?: string) {
-    const { getCurrentUser } = useCheckPermission();
+    const {getCurrentUser} = useCheckPermission();
     const [feeds, setFeeds] = useState<FeedResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);

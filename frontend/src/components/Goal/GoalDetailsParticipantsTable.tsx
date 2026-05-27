@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from '../../context/TranslationContext';
-import { GoalParticipantResponse } from '../../api/responses/GoalParticipantResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {Link} from 'react-router-dom';
+import {useTranslation} from '../../context/TranslationContext';
+import {GoalParticipantResponse} from '../../api/responses/GoalParticipantResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {SaveStatusEnum} from '../../enums/SaveStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface GoalDetailsParticipantsTableProps {
     participants: GoalParticipantResponse[];
@@ -15,15 +15,23 @@ interface GoalDetailsParticipantsTableProps {
 }
 
 export const GoalDetailsParticipantsTable: React.FC<GoalDetailsParticipantsTableProps> = ({
-                                                                                              participants, relatedUsers, currentUser, actionLoading, onUpdateStatus
+                                                                                              participants,
+                                                                                              relatedUsers,
+                                                                                              currentUser,
+                                                                                              actionLoading,
+                                                                                              onUpdateStatus
                                                                                           }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (participants.length === 0) {
         return (
             <div className="table-responsive-custom">
                 <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody><tr><td colSpan={4} className="text-center text-muted">{t('noParticipants')}</td></tr></tbody>
+                    <tbody>
+                    <tr>
+                        <td colSpan={4} className="text-center text-muted">{t('noParticipants')}</td>
+                    </tr>
+                    </tbody>
                 </table>
             </div>
         );

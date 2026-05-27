@@ -1,10 +1,10 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { PageResponse } from '../../api/responses/PageResponse';
-import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
-import { Pagination } from '../Common/Pagination';
-import { PagesFilterBar } from './PagesFilterBar';
-import { PagesTable } from './PagesTable';
+import {useTranslation} from '../../context/TranslationContext';
+import {PageResponse} from '../../api/responses/PageResponse';
+import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
+import {Pagination} from '../Common/Pagination';
+import {PagesFilterBar} from './PagesFilterBar';
+import {PagesTable} from './PagesTable';
 
 interface PagesListViewProps {
     pages: PageResponse[];
@@ -39,7 +39,7 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
                                                                 onNextPage,
                                                                 onAddClick
                                                             }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="container mt-5 mb-5">
@@ -63,13 +63,13 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
 
             {loading && pages.length === 0 ? (
                 <div className="text-center mt-4">
-                    <div className="spinner-border text-primary" />
+                    <div className="spinner-border text-primary"/>
                 </div>
             ) : error ? (
                 <div className="alert alert-danger mt-3">{t(error)}</div>
             ) : (
                 <>
-                    <PagesTable pages={pages} />
+                    <PagesTable pages={pages}/>
                     <div className="mt-3">
                         <Pagination
                             page={page}

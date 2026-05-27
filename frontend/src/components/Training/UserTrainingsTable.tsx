@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { TrainingResponse } from '../../api/responses/TrainingResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
-import { TrainingParticipantsTable } from './TrainingParticipantsTable';
+import React, {useState} from 'react';
+import {useTranslation} from '../../context/TranslationContext';
+import {TrainingResponse} from '../../api/responses/TrainingResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
+import {TrainingParticipantsTable} from './TrainingParticipantsTable';
 
 interface UserTrainingsTableProps {
     trainings: TrainingResponse[];
@@ -18,9 +18,16 @@ interface UserTrainingsTableProps {
 }
 
 export const UserTrainingsTable: React.FC<UserTrainingsTableProps> = ({
-                                                                          trainings, relatedUsers, currentUser, isMyProfile, isAdmin, actionLoading, onManageClick, interactions
+                                                                          trainings,
+                                                                          relatedUsers,
+                                                                          currentUser,
+                                                                          isMyProfile,
+                                                                          isAdmin,
+                                                                          actionLoading,
+                                                                          onManageClick,
+                                                                          interactions
                                                                       }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
     const toggleRow = (id: string) => {
@@ -30,8 +37,12 @@ export const UserTrainingsTable: React.FC<UserTrainingsTableProps> = ({
     if (trainings.length === 0) {
         return (
             <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle">
-                    <tbody><tr><td colSpan={7} className="text-center text-muted">{t('noTrainings')}</td></tr></tbody>
+                <table className="table table-bordered table-hover align-middle mb-0">
+                    <tbody>
+                    <tr>
+                        <td colSpan={7} className="text-center text-muted">{t('noTrainings')}</td>
+                    </tr>
+                    </tbody>
                 </table>
             </div>
         );
@@ -66,12 +77,14 @@ export const UserTrainingsTable: React.FC<UserTrainingsTableProps> = ({
                             <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(tr.status))?.label || tr.status}</td>
                             <td>
                                 <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(tr.id)}>
-                                    {expandedRow === tr.id ? <i className="bi bi-chevron-up"></i> : <i className="bi bi-chevron-down"></i>} {t('participants')}
+                                    {expandedRow === tr.id ? <i className="bi bi-chevron-up"></i> :
+                                        <i className="bi bi-chevron-down"></i>} {t('participants')}
                                 </button>
                             </td>
                             <td className="text-end">
                                 {(isMyProfile || isAdmin || tr.participants?.some(p => p.userId === currentUser?.id)) && (
-                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(tr)}>
+                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
+                                            onClick={() => onManageClick(tr)}>
                                         <i className="bi bi-gear" aria-hidden="true"></i>
                                         <span className="visually-hidden">{t('manage')}</span>
                                     </button>

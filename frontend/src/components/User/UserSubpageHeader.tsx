@@ -1,29 +1,33 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { Link } from 'react-router-dom';
+import {useTranslation} from '../../context/TranslationContext';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {Link} from 'react-router-dom';
 
 interface UserSubpageHeaderProps {
     user: UserResponse;
 }
 
-export const UserSubpageHeader: React.FC<UserSubpageHeaderProps> = ({ user }) => {
-    const { t } = useTranslation();
+export const UserSubpageHeader: React.FC<UserSubpageHeaderProps> = ({user}) => {
+    const {t} = useTranslation();
 
     return (
         <>
             <div className="card shadow-sm mb-4">
-                <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+                <div
+                    className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
                     {user.backgroundPhoto && (
-                        <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover" />
+                        <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background"
+                             className="w-100 h-100 object-fit-cover"/>
                     )}
                 </div>
                 <div className="card-body position-relative pt-5 d-flex justify-content-between align-items-end">
                     <div>
                         {user.profilePhoto ? (
-                            <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile" className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover" />
+                            <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile"
+                                 className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                         ) : (
-                            <div className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar d-flex align-items-center justify-content-center">
+                            <div
+                                className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar d-flex align-items-center justify-content-center">
                                 <i className="bi bi-person fs-1 text-muted"></i>
                             </div>
                         )}

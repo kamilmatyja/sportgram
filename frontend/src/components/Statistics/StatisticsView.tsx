@@ -1,11 +1,11 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { StatisticResponse } from '../../api/responses/StatisticResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { StatisticFilterQuery } from '../../api/queries/StatisticFilterQuery';
-import { Pagination } from '../Common/Pagination';
-import { StatisticsFilterBar } from './StatisticsFilterBar';
-import { StatisticsTable } from './StatisticsTable';
+import {useTranslation} from '../../context/TranslationContext';
+import {StatisticResponse} from '../../api/responses/StatisticResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {StatisticFilterQuery} from '../../api/queries/StatisticFilterQuery';
+import {Pagination} from '../Common/Pagination';
+import {StatisticsFilterBar} from './StatisticsFilterBar';
+import {StatisticsTable} from './StatisticsTable';
 
 interface StatisticsViewProps {
     currentUser: UserResponse | null;
@@ -28,14 +28,29 @@ interface StatisticsViewProps {
 }
 
 export const StatisticsView: React.FC<StatisticsViewProps> = ({
-                                                                  currentUser, availableUsers, activeTab, setActiveTab, data, page, limit, sort, filters, loading, error,
-                                                                  handleFilterChange, handleUsersChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage
+                                                                  currentUser,
+                                                                  availableUsers,
+                                                                  activeTab,
+                                                                  setActiveTab,
+                                                                  data,
+                                                                  page,
+                                                                  limit,
+                                                                  sort,
+                                                                  filters,
+                                                                  loading,
+                                                                  error,
+                                                                  handleFilterChange,
+                                                                  handleUsersChange,
+                                                                  handleSortChange,
+                                                                  handleLimitChange,
+                                                                  handlePrevPage,
+                                                                  handleNextPage
                                                               }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (!currentUser) return (
         <div className="container mt-5 text-center">
-            <div className="spinner-border text-profile-primary" />
+            <div className="spinner-border text-profile-primary"/>
         </div>
     );
 
@@ -49,7 +64,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                                 className={`nav-link ${activeTab === 'records' ? 'active fw-bold' : 'text-muted'}`}
                                 onClick={() => {
                                     setActiveTab('records');
-                                    handleSortChange({ target: { value: 'time:asc' } } as any);
+                                    handleSortChange({target: {value: 'time:asc'}} as any);
                                 }}
                             >
                                 {t('records')}
@@ -60,7 +75,7 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                                 className={`nav-link ${activeTab === 'progress' ? 'active fw-bold' : 'text-muted'}`}
                                 onClick={() => {
                                     setActiveTab('progress');
-                                    handleSortChange({ target: { value: 'createdAt:desc' } } as any);
+                                    handleSortChange({target: {value: 'createdAt:desc'}} as any);
                                 }}
                             >
                                 {t('progress')}
@@ -83,7 +98,9 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                     />
 
                     {loading && data.length === 0 ? (
-                        <div className="text-center"><div className="spinner-border text-profile-primary" /></div>
+                        <div className="text-center">
+                            <div className="spinner-border text-profile-primary"/>
+                        </div>
                     ) : error ? (
                         <div className="alert alert-danger">{t(error)}</div>
                     ) : (

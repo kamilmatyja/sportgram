@@ -57,7 +57,8 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form id="edit-feed-form" onSubmit={handleEditSubmit} className="mb-4 pb-3 border-bottom">
+                                <form id="edit-feed-form" onSubmit={handleEditSubmit}
+                                      className="mb-4 pb-3 border-bottom">
                                     <div className="mb-3">
                                         <label className="form-label">{t('text')}</label>
                                         <textarea name="text"

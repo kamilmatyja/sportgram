@@ -1,10 +1,10 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { StatisticResponse } from '../../api/responses/StatisticResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { formatDate } from '../../utils/dateFormat';
-import { Link } from 'react-router-dom';
+import {useTranslation} from '../../context/TranslationContext';
+import {StatisticResponse} from '../../api/responses/StatisticResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {DisciplineEnum} from '../../enums/DisciplineEnum';
+import {formatDate} from '../../utils/dateFormat';
+import {Link} from 'react-router-dom';
 
 interface StatisticsTableProps {
     data: StatisticResponse[];
@@ -12,8 +12,8 @@ interface StatisticsTableProps {
     activeTab: 'records' | 'progress';
 }
 
-export const StatisticsTable: React.FC<StatisticsTableProps> = ({ data, availableUsers, activeTab }) => {
-    const { t } = useTranslation();
+export const StatisticsTable: React.FC<StatisticsTableProps> = ({data, availableUsers, activeTab}) => {
+    const {t} = useTranslation();
 
     const getUserName = (id: string) => {
         const u = availableUsers.find(au => au.id === id);
@@ -23,7 +23,7 @@ export const StatisticsTable: React.FC<StatisticsTableProps> = ({ data, availabl
     if (data.length === 0) {
         return (
             <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle">
+                <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
                         <td colSpan={5} className="text-center text-muted">
@@ -38,7 +38,7 @@ export const StatisticsTable: React.FC<StatisticsTableProps> = ({ data, availabl
 
     return (
         <div className="table-responsive-custom">
-            <table className="table table-bordered table-hover align-middle">
+            <table className="table table-bordered table-hover align-middle mb-0">
                 <thead className="table-light">
                 <tr>
                     <th>{t('user')}</th>
@@ -52,7 +52,8 @@ export const StatisticsTable: React.FC<StatisticsTableProps> = ({ data, availabl
                 {data.map((stat, idx) => (
                     <tr key={idx}>
                         <td className="fw-bold">
-                            <Link to={`/users/${availableUsers.find(au => au.id === stat.userId)?.link || stat.userId}`} className="btn btn-link p-0 text-decoration-none">
+                            <Link to={`/users/${availableUsers.find(au => au.id === stat.userId)?.link || stat.userId}`}
+                                  className="btn btn-link p-0 text-decoration-none">
                                 {getUserName(stat.userId)}
                             </Link>
                         </td>

@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from '../../context/TranslationContext';
-import { PageFollowResponse } from '../../api/responses/PageFollowResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {Link} from 'react-router-dom';
+import {useTranslation} from '../../context/TranslationContext';
+import {PageFollowResponse} from '../../api/responses/PageFollowResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {PageFollowStatusEnum} from '../../enums/PageFollowStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface PageDetailsFollowsTableProps {
     follows: PageFollowResponse[];
@@ -15,15 +15,23 @@ interface PageDetailsFollowsTableProps {
 }
 
 export const PageDetailsFollowsTable: React.FC<PageDetailsFollowsTableProps> = ({
-                                                                                    follows, relatedUsers, currentUser, actionLoading, onUpdateStatus
+                                                                                    follows,
+                                                                                    relatedUsers,
+                                                                                    currentUser,
+                                                                                    actionLoading,
+                                                                                    onUpdateStatus
                                                                                 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (!follows || follows.length === 0) {
         return (
             <div className="table-responsive-custom">
                 <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody><tr><td colSpan={4} className="text-center text-muted">{t('noRecords')}</td></tr></tbody>
+                    <tbody>
+                    <tr>
+                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                    </tbody>
                 </table>
             </div>
         );

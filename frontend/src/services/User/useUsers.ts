@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { UserProvider } from '../../api/providers/UserProvider';
-import { UserIndexQuery } from '../../api/queries/UserIndexQuery';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { RoleEnum } from '../../enums/RoleEnum';
-import { useCheckPermission } from '../../utils/checkPermission';
-import { UserFilterQuery } from '../../api/queries/UserFilterQuery';
+import React, {useEffect, useState} from 'react';
+import {UserProvider} from '../../api/providers/UserProvider';
+import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {RoleEnum} from '../../enums/RoleEnum';
+import {useCheckPermission} from '../../utils/checkPermission';
+import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 
 export function useUsers() {
-    const { check: checkPermission, getCurrentUser } = useCheckPermission();
+    const {check: checkPermission, getCurrentUser} = useCheckPermission();
     const [users, setUsers] = useState<UserResponse[]>([]);
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -70,7 +70,7 @@ export function useUsers() {
     }, [page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
         setPage(1);
     };
 

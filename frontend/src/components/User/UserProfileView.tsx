@@ -1,12 +1,12 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { FriendResponse } from '../../api/responses/FriendResponse';
-import { ColorEnum } from '../../enums/ColorEnum';
-import { UserProfileHeader } from './UserProfileHeader';
-import { UserProfileNav } from './UserProfileNav';
-import { UserProfileInfo } from './UserProfileInfo';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import {useTranslation} from '../../context/TranslationContext';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {FriendResponse} from '../../api/responses/FriendResponse';
+import {ColorEnum} from '../../enums/ColorEnum';
+import {UserProfileHeader} from './UserProfileHeader';
+import {UserProfileNav} from './UserProfileNav';
+import {UserProfileInfo} from './UserProfileInfo';
+import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 
 interface UserProfileViewProps {
     user: UserResponse | null;
@@ -22,13 +22,22 @@ interface UserProfileViewProps {
 }
 
 export const UserProfileView: React.FC<UserProfileViewProps> = ({
-                                                                    user, currentUser, friendship, loading, error, handleAddFriend, handleUpdateFriendStatus, isMyProfile, isAdmin, onManageClick
+                                                                    user,
+                                                                    currentUser,
+                                                                    friendship,
+                                                                    loading,
+                                                                    error,
+                                                                    handleAddFriend,
+                                                                    handleUpdateFriendStatus,
+                                                                    isMyProfile,
+                                                                    isAdmin,
+                                                                    onManageClick
                                                                 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (loading) return (
         <div className="container mt-5 text-center">
-            <div className="spinner-border text-profile-primary" />
+            <div className="spinner-border text-profile-primary"/>
         </div>
     );
 
@@ -55,7 +64,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({
 
             {canViewDetails && (
                 <>
-                    <UserProfileNav user={user} isMyProfile={isMyProfile} />
+                    <UserProfileNav user={user} isMyProfile={isMyProfile}/>
                     <UserProfileInfo
                         user={user}
                         isMyProfile={isMyProfile}

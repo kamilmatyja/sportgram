@@ -1,20 +1,23 @@
-import { useState } from 'react';
-import { EventProvider } from '../../api/providers/EventProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
-import { StatusBody } from '../../api/body/StatusBody';
-import { EventResultBody } from '../../api/body/EventResultBody';
-import { EventListIndexQuery } from '../../api/queries/EventListIndexQuery';
-import { UserIndexQuery } from '../../api/queries/UserIndexQuery';
-import { UserFilterQuery } from '../../api/queries/UserFilterQuery';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { EventDisciplineDistanceListResponse } from '../../api/responses/EventDisciplineDistanceListResponse';
+import {useState} from 'react';
+import {EventProvider} from '../../api/providers/EventProvider';
+import {UserProvider} from '../../api/providers/UserProvider';
+import {StatusBody} from '../../api/body/StatusBody';
+import {EventResultBody} from '../../api/body/EventResultBody';
+import {EventListIndexQuery} from '../../api/queries/EventListIndexQuery';
+import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
+import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {EventDisciplineDistanceListResponse} from '../../api/responses/EventDisciplineDistanceListResponse';
 
 export function useEventInteractions(refreshEvents: () => void) {
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const eventProvider = new EventProvider();
     const userProvider = new UserProvider();
 
-    const fetchDistanceLists = async (distId: string): Promise<{ lists: EventDisciplineDistanceListResponse[], users: Record<string, UserResponse> }> => {
+    const fetchDistanceLists = async (distId: string): Promise<{
+        lists: EventDisciplineDistanceListResponse[],
+        users: Record<string, UserResponse>
+    }> => {
         const indexQuery = new EventListIndexQuery();
         indexQuery.limit = 100;
         const lists = await eventProvider.indexList(distId, indexQuery);
@@ -36,7 +39,7 @@ export function useEventInteractions(refreshEvents: () => void) {
             users.forEach(u => usersMap[u.id] = u);
         }
 
-        return { lists: detailedLists, users: usersMap };
+        return {lists: detailedLists, users: usersMap};
     };
 
     const handleListStatusSubmit = async (listId: string, status: number) => {

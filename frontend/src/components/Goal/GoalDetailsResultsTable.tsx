@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from '../../context/TranslationContext';
-import { GoalParticipantResponse } from '../../api/responses/GoalParticipantResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {Link} from 'react-router-dom';
+import {useTranslation} from '../../context/TranslationContext';
+import {GoalParticipantResponse} from '../../api/responses/GoalParticipantResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {SaveStatusEnum} from '../../enums/SaveStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface GoalDetailsResultsTableProps {
     participants: GoalParticipantResponse[];
@@ -15,9 +15,13 @@ interface GoalDetailsResultsTableProps {
 }
 
 export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = ({
-                                                                                    participants, relatedUsers, currentUser, actionLoading, onUpdateStatus
+                                                                                    participants,
+                                                                                    relatedUsers,
+                                                                                    currentUser,
+                                                                                    actionLoading,
+                                                                                    onUpdateStatus
                                                                                 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     const allResults = participants.flatMap(p => p.results.map(r => ({
         ...r,
@@ -28,7 +32,11 @@ export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = (
         return (
             <div className="table-responsive-custom">
                 <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody><tr><td colSpan={6} className="text-center text-muted">{t('noRecords')}</td></tr></tbody>
+                    <tbody>
+                    <tr>
+                        <td colSpan={6} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                    </tbody>
                 </table>
             </div>
         );

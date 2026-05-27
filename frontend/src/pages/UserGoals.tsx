@@ -1,13 +1,13 @@
-import { useParams } from 'react-router-dom';
-import { useUserGoals } from '../services/User/useUserGoals';
-import { useGoalModals } from '../services/Goal/useGoalModals';
-import { useGoalInteractions } from '../services/Goal/useGoalInteractions';
-import { UserGoalsView } from '../components/User/UserGoalsView';
-import { AddGoalModal } from '../components/Goal/AddGoalModal';
-import { ManageGoalModal } from '../components/Goal/ManageGoalModal';
+import {useParams} from 'react-router-dom';
+import {useUserGoals} from '../services/User/useUserGoals';
+import {useGoalModals} from '../services/Goal/useGoalModals';
+import {useGoalInteractions} from '../services/Goal/useGoalInteractions';
+import {UserGoalsView} from '../components/User/UserGoalsView';
+import {AddGoalModal} from '../components/Goal/AddGoalModal';
+import {ManageGoalModal} from '../components/Goal/ManageGoalModal';
 
 export default function UserGoals() {
-    const { link } = useParams<{ link: string }>();
+    const {link} = useParams<{ link: string }>();
 
     const goalsService = useUserGoals(link);
     const modalsService = useGoalModals(goalsService.refreshGoals);

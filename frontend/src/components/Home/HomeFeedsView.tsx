@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { FeedResponse } from '../../api/responses/FeedResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { FeedCard } from '../Feed/FeedCard';
+import {useTranslation} from '../../context/TranslationContext';
+import {FeedResponse} from '../../api/responses/FeedResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {FeedCard} from '../Feed/FeedCard';
 
 interface HomeFeedsViewProps {
     feeds: FeedResponse[];
@@ -27,13 +27,13 @@ interface HomeFeedsViewProps {
 }
 
 export const HomeFeedsView: React.FC<HomeFeedsViewProps> = (props) => {
-    const { t } = useTranslation();
-    const { feeds, relatedUsers, currentUser, loading, loadingMore, hasMore, handleLoadMore } = props;
+    const {t} = useTranslation();
+    const {feeds, relatedUsers, currentUser, loading, loadingMore, hasMore, handleLoadMore} = props;
 
     if (loading && feeds.length === 0) {
         return (
             <div className="container mt-5 text-center">
-                <div className="spinner-border text-profile-primary" />
+                <div className="spinner-border text-profile-primary"/>
             </div>
         );
     }
@@ -63,8 +63,9 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = (props) => {
             {feeds.length > 0 && (
                 <div className="text-center mt-4">
                     {hasMore ? (
-                        <button className="btn btn-profile-outline-primary" onClick={handleLoadMore} disabled={loadingMore}>
-                            {loadingMore ? <span className="spinner-border spinner-border-sm" /> : t('loadMore')}
+                        <button className="btn btn-profile-outline-primary" onClick={handleLoadMore}
+                                disabled={loadingMore}>
+                            {loadingMore ? <span className="spinner-border spinner-border-sm"/> : t('loadMore')}
                         </button>
                     ) : (
                         <span className="text-muted">{t('noMoreFeeds')}</span>

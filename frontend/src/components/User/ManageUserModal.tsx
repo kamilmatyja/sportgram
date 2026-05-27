@@ -28,10 +28,22 @@ interface ManageUserModalProps {
 }
 
 export const ManageUserModal: React.FC<ManageUserModalProps> = ({
-                                                                    themeColor, show, managedUser, isMyProfile, isAdmin, closeModal, loading, globalError,
-                                                                    fieldErrors, formData, handleChange, handleEditSubmit, handleStatusSubmit, handleDelete
+                                                                    themeColor,
+                                                                    show,
+                                                                    managedUser,
+                                                                    isMyProfile,
+                                                                    isAdmin,
+                                                                    closeModal,
+                                                                    loading,
+                                                                    globalError,
+                                                                    fieldErrors,
+                                                                    formData,
+                                                                    handleChange,
+                                                                    handleEditSubmit,
+                                                                    handleStatusSubmit,
+                                                                    handleDelete
                                                                 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (!show || !managedUser) return null;
 

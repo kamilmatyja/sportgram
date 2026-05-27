@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { GoalProvider } from '../../api/providers/GoalProvider';
-import { StatusBody } from '../../api/body/StatusBody';
+import {useState} from 'react';
+import {GoalProvider} from '../../api/providers/GoalProvider';
+import {StatusBody} from '../../api/body/StatusBody';
 
 export function useGoalInteractions(refreshGoals: () => void) {
     const [actionLoading, setActionLoading] = useState<string | null>(null);

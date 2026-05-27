@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { PaginationEnum } from '../../enums/PaginationEnum';
+import {useTranslation} from '../../context/TranslationContext';
+import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {PaginationEnum} from '../../enums/PaginationEnum';
 
 interface PagesFilterBarProps {
     filters: PageFilterQuery;
@@ -14,14 +14,21 @@ interface PagesFilterBarProps {
 }
 
 export const PagesFilterBar: React.FC<PagesFilterBarProps> = ({
-                                                                  filters, sort, limit, onFilterChange, onSortChange, onLimitChange
+                                                                  filters,
+                                                                  sort,
+                                                                  limit,
+                                                                  onFilterChange,
+                                                                  onSortChange,
+                                                                  onLimitChange
                                                               }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-            <input name="title" placeholder={t('title')} value={filters.title || ''} onChange={onFilterChange} className="form-control w-auto" />
-            <input name="link" placeholder={t('link')} value={filters.link || ''} onChange={onFilterChange} className="form-control w-auto" />
+            <input name="title" placeholder={t('title')} value={filters.title || ''} onChange={onFilterChange}
+                   className="form-control w-auto"/>
+            <input name="link" placeholder={t('link')} value={filters.link || ''} onChange={onFilterChange}
+                   className="form-control w-auto"/>
             <select name="status" value={filters.status || ''} onChange={onFilterChange} className="form-select w-auto">
                 <option value="">{t('status')}</option>
                 {ElementStatusEnum.getOptions(t).map(opt => (

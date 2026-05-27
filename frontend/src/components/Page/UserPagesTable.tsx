@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { PageResponse } from '../../api/responses/PageResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
-import { PageParticipantsTable } from './PageParticipantsTable';
-import { PageFollowsTable } from './PageFollowsTable';
+import React, {useState} from 'react';
+import {useTranslation} from '../../context/TranslationContext';
+import {PageResponse} from '../../api/responses/PageResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
+import {PageParticipantsTable} from './PageParticipantsTable';
+import {PageFollowsTable} from './PageFollowsTable';
 
 interface UserPagesTableProps {
     pages: PageResponse[];
@@ -19,11 +19,18 @@ interface UserPagesTableProps {
 }
 
 export const UserPagesTable: React.FC<UserPagesTableProps> = ({
-                                                                  pages, relatedUsers, currentUser, isMyProfile, isAdmin, actionLoading, onManageClick, interactions
+                                                                  pages,
+                                                                  relatedUsers,
+                                                                  currentUser,
+                                                                  isMyProfile,
+                                                                  isAdmin,
+                                                                  actionLoading,
+                                                                  onManageClick,
+                                                                  interactions
                                                               }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'participants'|'follows'>('participants');
+    const [activeTab, setActiveTab] = useState<'participants' | 'follows'>('participants');
 
     const toggleRow = (id: string) => {
         setExpandedRow(prev => prev === id ? null : id);
@@ -32,8 +39,12 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
     if (pages.length === 0) {
         return (
             <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle">
-                    <tbody><tr><td colSpan={7} className="text-center text-muted">{t('noPages')}</td></tr></tbody>
+                <table className="table table-bordered table-hover align-middle mb-0">
+                    <tbody>
+                    <tr>
+                        <td colSpan={7} className="text-center text-muted">{t('noPages')}</td>
+                    </tr>
+                    </tbody>
                 </table>
             </div>
         );
@@ -59,7 +70,8 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
                         <tr>
                             <td className="text-center align-middle feed-photo-cell">
                                 {pageObj.profilePhoto ? (
-                                    <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="page" className="rounded-circle img-fluid feed-photo" />
+                                    <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="page"
+                                         className="rounded-circle img-fluid feed-photo"/>
                                 ) : (
                                     <span className="text-muted">-</span>
                                 )}
@@ -73,13 +85,16 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
                             <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}</td>
                             <td>{formatDate(pageObj.createdAt)}</td>
                             <td>
-                                <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(pageObj.id)}>
-                                    {expandedRow === pageObj.id ? <i className="bi bi-chevron-up"></i> : <i className="bi bi-chevron-down"></i>} {t('participants')} / {t('pageFollows')}
+                                <button className="btn btn-sm btn-outline-secondary"
+                                        onClick={() => toggleRow(pageObj.id)}>
+                                    {expandedRow === pageObj.id ? <i className="bi bi-chevron-up"></i> :
+                                        <i className="bi bi-chevron-down"></i>} {t('participants')} / {t('pageFollows')}
                                 </button>
                             </td>
                             <td className="text-end">
                                 {(isMyProfile || isAdmin) && (
-                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(pageObj)}>
+                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
+                                            onClick={() => onManageClick(pageObj)}>
                                         <i className="bi bi-gear" aria-hidden="true"></i>
                                         <span className="visually-hidden">{t('manage')}</span>
                                     </button>
@@ -92,12 +107,16 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
                                     <div className="border rounded border-profile-primary bg-white overflow-hidden">
                                         <ul className="nav nav-tabs px-3 pt-2 bg-light border-bottom">
                                             <li className="nav-item">
-                                                <button className={`nav-link ${activeTab === 'participants' ? 'active fw-bold border-bottom-0' : 'text-muted border-0'}`} onClick={() => setActiveTab('participants')}>
+                                                <button
+                                                    className={`nav-link ${activeTab === 'participants' ? 'active fw-bold border-bottom-0' : 'text-muted border-0'}`}
+                                                    onClick={() => setActiveTab('participants')}>
                                                     {t('participants')} ({pageObj.participants?.length || 0})
                                                 </button>
                                             </li>
                                             <li className="nav-item">
-                                                <button className={`nav-link ${activeTab === 'follows' ? 'active fw-bold border-bottom-0' : 'text-muted border-0'}`} onClick={() => setActiveTab('follows')}>
+                                                <button
+                                                    className={`nav-link ${activeTab === 'follows' ? 'active fw-bold border-bottom-0' : 'text-muted border-0'}`}
+                                                    onClick={() => setActiveTab('follows')}>
                                                     {t('pageFollows')} ({pageObj.follows?.length || 0})
                                                 </button>
                                             </li>

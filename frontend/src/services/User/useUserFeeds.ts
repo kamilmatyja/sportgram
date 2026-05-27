@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react';
-import { UserProvider } from '../../api/providers/UserProvider';
-import { FeedProvider } from '../../api/providers/FeedProvider';
-import { FriendProvider } from '../../api/providers/FriendProvider';
-import { FeedResponse } from '../../api/responses/FeedResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { FeedFilterQuery } from '../../api/queries/FeedFilterQuery';
-import { FeedIndexQuery } from '../../api/queries/FeedIndexQuery';
-import { UserFilterQuery } from '../../api/queries/UserFilterQuery';
-import { UserIndexQuery } from '../../api/queries/UserIndexQuery';
-import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
-import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
-import { useCheckPermission } from '../../utils/checkPermission';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
-import { RoleEnum } from '../../enums/RoleEnum';
-import { fetchRelatedUsersFromIds } from '../../utils/fetchRelatedUsers';
+import {useEffect, useState} from 'react';
+import {UserProvider} from '../../api/providers/UserProvider';
+import {FeedProvider} from '../../api/providers/FeedProvider';
+import {FriendProvider} from '../../api/providers/FriendProvider';
+import {FeedResponse} from '../../api/responses/FeedResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {FeedFilterQuery} from '../../api/queries/FeedFilterQuery';
+import {FeedIndexQuery} from '../../api/queries/FeedIndexQuery';
+import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
+import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
+import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
+import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
+import {useCheckPermission} from '../../utils/checkPermission';
+import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
+import {RoleEnum} from '../../enums/RoleEnum';
+import {fetchRelatedUsersFromIds} from '../../utils/fetchRelatedUsers';
 
 export function useUserFeeds(link?: string) {
-    const { getCurrentUser } = useCheckPermission();
+    const {getCurrentUser} = useCheckPermission();
 
     const [feeds, setFeeds] = useState<FeedResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
@@ -148,7 +148,7 @@ export function useUserFeeds(link?: string) {
     }, [link, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
         setPage(1);
     };
 

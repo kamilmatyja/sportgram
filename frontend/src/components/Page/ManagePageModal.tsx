@@ -61,7 +61,8 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form id="edit-page-form" onSubmit={handleEditSubmit} className="mb-4 border-bottom pb-3">
+                                <form id="edit-page-form" onSubmit={handleEditSubmit}
+                                      className="mb-4 border-bottom pb-3">
                                     <div className="mb-3">
                                         <label className="form-label">{t('title')}</label>
                                         <input type="text" name="title"

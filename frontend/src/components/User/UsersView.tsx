@@ -1,10 +1,10 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { UserFilterQuery } from '../../api/queries/UserFilterQuery';
-import { UsersFilterBar } from './UsersFilterBar';
-import { UsersTable } from './UsersTable';
-import { Pagination } from '../Common/Pagination';
+import {useTranslation} from '../../context/TranslationContext';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
+import {UsersFilterBar} from './UsersFilterBar';
+import {UsersTable} from './UsersTable';
+import {Pagination} from '../Common/Pagination';
 
 interface UsersViewProps {
     filters: UserFilterQuery;
@@ -27,7 +27,7 @@ export default function UsersView({
                                       filters, onFilterChange, sort, onSortChange, limit, onLimitChange,
                                       users, loading, error, page, onPrevPage, onNextPage, isAdmin, onAddUserClick
                                   }: UsersViewProps) {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="container mt-5 mb-5">
@@ -49,23 +49,23 @@ export default function UsersView({
                 onLimitChange={onLimitChange}
             />
 
-            <div className="mb-3" />
-
             {loading ? (
                 <div className="text-center">
-                    <div className="spinner-border text-profile-primary" />
+                    <div className="spinner-border text-profile-primary"/>
                 </div>
             ) : error ? (
                 <div className="alert alert-danger">{error}</div>
             ) : (
                 <>
-                    <UsersTable users={users} />
-                    <Pagination
-                        page={page}
-                        hasMore={users.length >= limit}
-                        onPrevPage={onPrevPage}
-                        onNextPage={onNextPage}
-                    />
+                    <UsersTable users={users}/>
+                    <div className="mt-3">
+                        <Pagination
+                            page={page}
+                            hasMore={users.length >= limit}
+                            onPrevPage={onPrevPage}
+                            onNextPage={onNextPage}
+                        />
+                    </div>
                 </>
             )}
         </div>

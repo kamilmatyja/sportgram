@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { TrainingParticipantResponse } from '../../api/responses/TrainingParticipantResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {useTranslation} from '../../context/TranslationContext';
+import {TrainingParticipantResponse} from '../../api/responses/TrainingParticipantResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {SaveStatusEnum} from '../../enums/SaveStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface TrainingParticipantsTableProps {
     participants: TrainingParticipantResponse[];
@@ -16,9 +16,15 @@ interface TrainingParticipantsTableProps {
 }
 
 export const TrainingParticipantsTable: React.FC<TrainingParticipantsTableProps> = ({
-                                                                                        participants, relatedUsers, currentUser, isMyProfile, isAdmin, actionLoading, onUpdateStatus
+                                                                                        participants,
+                                                                                        relatedUsers,
+                                                                                        currentUser,
+                                                                                        isMyProfile,
+                                                                                        isAdmin,
+                                                                                        actionLoading,
+                                                                                        onUpdateStatus
                                                                                     }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (!participants || participants.length === 0) {
         return <div className="text-muted small p-2">{t('noParticipants')}</div>;

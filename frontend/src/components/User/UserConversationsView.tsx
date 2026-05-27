@@ -1,12 +1,12 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { ConversationResponse } from '../../api/responses/ConversationResponse';
-import { ColorEnum } from '../../enums/ColorEnum';
-import { ProcessedActivity } from '../../services/Conversation/useUserConversations';
-import { UserSubpageHeader } from './UserSubpageHeader';
-import { ConversationActivityList } from '../Conversation/ConversationActivityList';
-import { ChatWindow } from '../Conversation/ChatWindow';
+import {useTranslation} from '../../context/TranslationContext';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {ConversationResponse} from '../../api/responses/ConversationResponse';
+import {ColorEnum} from '../../enums/ColorEnum';
+import {ProcessedActivity} from '../../services/Conversation/useUserConversations';
+import {UserSubpageHeader} from './UserSubpageHeader';
+import {ConversationActivityList} from '../Conversation/ConversationActivityList';
+import {ChatWindow} from '../Conversation/ChatWindow';
 
 interface UserConversationsViewProps {
     targetUser: UserResponse | null;
@@ -65,12 +65,12 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                                                                                 handleSendMessage,
                                                                                 loadEarlierMessages
                                                                             }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (loading && !targetUser && !isMyProfile) {
         return (
             <div className="container mt-5 text-center">
-                <div className="spinner-border text-profile-primary" />
+                <div className="spinner-border text-profile-primary"/>
             </div>
         );
     }
@@ -87,7 +87,7 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={targetUser} />
+            <UserSubpageHeader user={targetUser}/>
 
             {isMyProfile ? (
                 <ConversationActivityList

@@ -1,13 +1,13 @@
-import { useParams } from 'react-router-dom';
-import { useUserTrainings } from '../services/User/useUserTrainings';
-import { useTrainingModals } from '../services/Training/useTrainingModals';
-import { useTrainingInteractions } from '../services/Training/useTrainingInteractions';
-import { UserTrainingsView } from '../components/User/UserTrainingsView';
-import { AddTrainingModal } from '../components/Training/AddTrainingModal';
-import { ManageTrainingModal } from '../components/Training/ManageTrainingModal';
+import {useParams} from 'react-router-dom';
+import {useUserTrainings} from '../services/User/useUserTrainings';
+import {useTrainingModals} from '../services/Training/useTrainingModals';
+import {useTrainingInteractions} from '../services/Training/useTrainingInteractions';
+import {UserTrainingsView} from '../components/User/UserTrainingsView';
+import {AddTrainingModal} from '../components/Training/AddTrainingModal';
+import {ManageTrainingModal} from '../components/Training/ManageTrainingModal';
 
 export default function UserTrainings() {
-    const { link } = useParams<{ link: string }>();
+    const {link} = useParams<{ link: string }>();
 
     const trainingsService = useUserTrainings(link);
     const modalsService = useTrainingModals(trainingsService.refreshTrainings);

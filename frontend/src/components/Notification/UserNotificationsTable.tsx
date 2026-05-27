@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { NotificationResponse } from '../../api/responses/NotificationResponse';
-import { NotificationStatusEnum } from '../../enums/NotificationStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {useTranslation} from '../../context/TranslationContext';
+import {NotificationResponse} from '../../api/responses/NotificationResponse';
+import {NotificationStatusEnum} from '../../enums/NotificationStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface UserNotificationsTableProps {
     notifications: NotificationResponse[];
@@ -11,15 +11,21 @@ interface UserNotificationsTableProps {
 }
 
 export const UserNotificationsTable: React.FC<UserNotificationsTableProps> = ({
-                                                                                  notifications, isMyProfile, onManageClick
+                                                                                  notifications,
+                                                                                  isMyProfile,
+                                                                                  onManageClick
                                                                               }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (notifications.length === 0) {
         return (
             <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle">
-                    <tbody><tr><td colSpan={4} className="text-center text-muted">{t('noNotifications')}</td></tr></tbody>
+                <table className="table table-bordered table-hover align-middle mb-0">
+                    <tbody>
+                    <tr>
+                        <td colSpan={4} className="text-center text-muted">{t('noNotifications')}</td>
+                    </tr>
+                    </tbody>
                 </table>
             </div>
         );
@@ -52,7 +58,8 @@ export const UserNotificationsTable: React.FC<UserNotificationsTableProps> = ({
                         <td>{formatDate(notif.createdAt)}</td>
                         <td className="text-end">
                             {isMyProfile && (
-                                <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(notif)}>
+                                <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
+                                        onClick={() => onManageClick(notif)}>
                                     <i className="bi bi-gear" aria-hidden="true"></i>
                                     <span className="visually-hidden">{t('manage')}</span>
                                 </button>

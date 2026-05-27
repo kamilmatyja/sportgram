@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { FeedProvider } from '../../api/providers/FeedProvider';
-import { FeedCommentBody } from '../../api/body/FeedCommentBody';
-import { FeedReactionBody } from '../../api/body/FeedReactionBody';
-import { StatusBody } from '../../api/body/StatusBody';
-import { FeedResponse } from '../../api/responses/FeedResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
+import {useState} from 'react';
+import {FeedProvider} from '../../api/providers/FeedProvider';
+import {FeedCommentBody} from '../../api/body/FeedCommentBody';
+import {FeedReactionBody} from '../../api/body/FeedReactionBody';
+import {StatusBody} from '../../api/body/StatusBody';
+import {FeedResponse} from '../../api/responses/FeedResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
 
 export function useFeedInteractions(
     feeds: FeedResponse[],
@@ -45,7 +45,7 @@ export function useFeedInteractions(
     };
 
     const handleCommentInput = (feedId: string, value: string) => {
-        setCommentInputs(prev => ({ ...prev, [feedId]: value }));
+        setCommentInputs(prev => ({...prev, [feedId]: value}));
     };
 
     const handleAddComment = async (e: React.SyntheticEvent<HTMLFormElement>, feedId: string) => {
@@ -56,7 +56,7 @@ export function useFeedInteractions(
         setActionLoading(feedId);
         try {
             await feedProvider.createComment(feedId, new FeedCommentBody(text));
-            setCommentInputs(prev => ({ ...prev, [feedId]: '' }));
+            setCommentInputs(prev => ({...prev, [feedId]: ''}));
             refreshSingleFeed(feedId);
         } catch (e) {
             console.error(e);

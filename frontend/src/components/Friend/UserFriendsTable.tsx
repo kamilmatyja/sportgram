@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { FriendResponse } from '../../api/responses/FriendResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {useTranslation} from '../../context/TranslationContext';
+import {FriendResponse} from '../../api/responses/FriendResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface UserFriendsTableProps {
     friends: FriendResponse[];
@@ -15,12 +15,12 @@ interface UserFriendsTableProps {
 export const UserFriendsTable: React.FC<UserFriendsTableProps> = ({
                                                                       friends, relatedUsers, isMyProfile, onManageClick
                                                                   }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (friends.length === 0) {
         return (
             <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle">
+                <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
                         <td colSpan={5} className="text-center text-muted">{t('noUsers')}</td>
@@ -59,7 +59,8 @@ export const UserFriendsTable: React.FC<UserFriendsTableProps> = ({
                             </td>
                             <td>
                                 {receiver ? (
-                                    <a href={`/users/${receiver.link}`} className="btn btn-link p-0 text-decoration-none">
+                                    <a href={`/users/${receiver.link}`}
+                                       className="btn btn-link p-0 text-decoration-none">
                                         {receiver.firstName} {receiver.lastName}
                                     </a>
                                 ) : friend.receiverUserId}
@@ -68,7 +69,8 @@ export const UserFriendsTable: React.FC<UserFriendsTableProps> = ({
                             <td>{formatDate(friend.createdAt)}</td>
                             <td className="text-end">
                                 {isMyProfile && (
-                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(friend)}>
+                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
+                                            onClick={() => onManageClick(friend)}>
                                         <i className="bi bi-gear" aria-hidden="true"></i>
                                         <span className="visually-hidden">{t('manage')}</span>
                                     </button>

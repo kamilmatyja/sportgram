@@ -1,25 +1,25 @@
-import { useParams } from 'react-router-dom';
-import { useUserProfile } from '../services/User/useUserProfile';
-import { useUserModals } from '../services/User/useUserModals';
-import { UserProfileView } from '../components/User/UserProfileView';
-import { ManageUserModal } from '../components/User/ManageUserModal';
-import { UserFeedsSection } from '../components/User/UserFeedsSection';
-import { FriendStatusEnum } from '../enums/FriendStatusEnum';
+import {useParams} from 'react-router-dom';
+import {useUserProfile} from '../services/User/useUserProfile';
+import {useUserModals} from '../services/User/useUserModals';
+import {UserProfileView} from '../components/User/UserProfileView';
+import {ManageUserModal} from '../components/User/ManageUserModal';
+import {UserFeedsSection} from '../components/User/UserFeedsSection';
+import {FriendStatusEnum} from '../enums/FriendStatusEnum';
 
 export default function UserProfile() {
-    const { link } = useParams<{ link: string }>();
+    const {link} = useParams<{ link: string }>();
     const profileProps = useUserProfile(link);
     const modalsService = useUserModals(profileProps.refreshProfile);
 
-    const { user, isMyProfile, isAdmin, friendship } = profileProps;
+    const {user, isMyProfile, isAdmin, friendship} = profileProps;
     const canViewDetails = user && (isMyProfile || isAdmin || friendship?.status === FriendStatusEnum.ACCEPTED);
 
     return (
         <>
-            <UserProfileView {...profileProps} onManageClick={modalsService.openManageModal} />
+            <UserProfileView {...profileProps} onManageClick={modalsService.openManageModal}/>
 
             {canViewDetails && (
-                <UserFeedsSection userId={user.id} color={user.color} />
+                <UserFeedsSection userId={user.id} color={user.color}/>
             )}
 
             <ManageUserModal

@@ -1,13 +1,13 @@
-import { useParams } from 'react-router-dom';
-import { useEventDetails } from '../services/Event/useEventDetails';
-import { useEventModals } from '../services/Event/useEventModals';
-import { useEventInteractions } from '../services/Event/useEventInteractions';
-import { EventDetailsView } from '../components/Event/EventDetailsView';
-import { EventListsModal } from '../components/Event/EventListsModal';
-import { ManageEventModal } from '../components/Event/ManageEventModal';
+import {useParams} from 'react-router-dom';
+import {useEventDetails} from '../services/Event/useEventDetails';
+import {useEventModals} from '../services/Event/useEventModals';
+import {useEventInteractions} from '../services/Event/useEventInteractions';
+import {EventDetailsView} from '../components/Event/EventDetailsView';
+import {EventListsModal} from '../components/Event/EventListsModal';
+import {ManageEventModal} from '../components/Event/ManageEventModal';
 
 export default function EventDetails() {
-    const { link } = useParams<{ link: string }>();
+    const {link} = useParams<{ link: string }>();
     const detailsProps = useEventDetails(link);
     const modalsService = useEventModals(detailsProps.refreshEvent, detailsProps.currentUser);
 

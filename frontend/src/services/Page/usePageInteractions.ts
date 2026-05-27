@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { PageProvider } from '../../api/providers/PageProvider';
-import { StatusBody } from '../../api/body/StatusBody';
+import {useState} from 'react';
+import {PageProvider} from '../../api/providers/PageProvider';
+import {StatusBody} from '../../api/body/StatusBody';
 
 export function usePageInteractions(refreshPages: () => void) {
     const [actionLoading, setActionLoading] = useState<string | null>(null);

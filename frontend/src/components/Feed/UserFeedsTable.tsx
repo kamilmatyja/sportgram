@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { FeedResponse } from '../../api/responses/FeedResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
-import { FeedCommentsTable } from './FeedCommentsTable';
-import { FeedReactionsTable } from './FeedReactionsTable';
+import React, {useState} from 'react';
+import {useTranslation} from '../../context/TranslationContext';
+import {FeedResponse} from '../../api/responses/FeedResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
+import {FeedCommentsTable} from './FeedCommentsTable';
+import {FeedReactionsTable} from './FeedReactionsTable';
 
 interface UserFeedsTableProps {
     feeds: FeedResponse[];
@@ -19,11 +19,18 @@ interface UserFeedsTableProps {
 }
 
 export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
-                                                                  feeds, relatedUsers, currentUser, isMyProfile, isAdmin, actionLoading, onManageClick, interactions
+                                                                  feeds,
+                                                                  relatedUsers,
+                                                                  currentUser,
+                                                                  isMyProfile,
+                                                                  isAdmin,
+                                                                  actionLoading,
+                                                                  onManageClick,
+                                                                  interactions
                                                               }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'comments'|'reactions'>('comments');
+    const [activeTab, setActiveTab] = useState<'comments' | 'reactions'>('comments');
 
     const toggleRow = (id: string) => {
         setExpandedRow(prev => prev === id ? null : id);
@@ -41,8 +48,12 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
     if (feeds.length === 0) {
         return (
             <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle">
-                    <tbody><tr><td colSpan={7} className="text-center text-muted">{t('noFeeds')}</td></tr></tbody>
+                <table className="table table-bordered table-hover align-middle mb-0">
+                    <tbody>
+                    <tr>
+                        <td colSpan={7} className="text-center text-muted">{t('noFeeds')}</td>
+                    </tr>
+                    </tbody>
                 </table>
             </div>
         );
@@ -68,7 +79,8 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                         <tr>
                             <td className="text-center feed-photo-cell">
                                 {feed.photo ? (
-                                    <img src={`data:image/webp;base64,${feed.photo}`} alt="feed" className="rounded img-fluid feed-photo" />
+                                    <img src={`data:image/webp;base64,${feed.photo}`} alt="feed"
+                                         className="rounded img-fluid feed-photo"/>
                                 ) : <span className="text-muted">-</span>}
                             </td>
                             <td>{getFeedTypeLabel(feed)}</td>
@@ -77,12 +89,14 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                             <td>{formatDate(feed.createdAt)}</td>
                             <td>
                                 <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(feed.id)}>
-                                    {expandedRow === feed.id ? <i className="bi bi-chevron-up"></i> : <i className="bi bi-chevron-down"></i>} {t('comments')} / {t('reactions')}
+                                    {expandedRow === feed.id ? <i className="bi bi-chevron-up"></i> :
+                                        <i className="bi bi-chevron-down"></i>} {t('comments')} / {t('reactions')}
                                 </button>
                             </td>
                             <td className="text-end">
                                 {(isMyProfile || isAdmin) && (
-                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(feed)}>
+                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
+                                            onClick={() => onManageClick(feed)}>
                                         <i className="bi bi-gear"></i>
                                     </button>
                                 )}
@@ -94,12 +108,16 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                                     <div className="border rounded border-profile-primary bg-white overflow-hidden">
                                         <ul className="nav nav-tabs px-3 pt-2 bg-light border-bottom">
                                             <li className="nav-item">
-                                                <button className={`nav-link ${activeTab === 'comments' ? 'active fw-bold border-bottom-0' : 'text-muted border-0'}`} onClick={() => setActiveTab('comments')}>
+                                                <button
+                                                    className={`nav-link ${activeTab === 'comments' ? 'active fw-bold border-bottom-0' : 'text-muted border-0'}`}
+                                                    onClick={() => setActiveTab('comments')}>
                                                     {t('comments')} ({feed.comments?.length || 0})
                                                 </button>
                                             </li>
                                             <li className="nav-item">
-                                                <button className={`nav-link ${activeTab === 'reactions' ? 'active fw-bold border-bottom-0' : 'text-muted border-0'}`} onClick={() => setActiveTab('reactions')}>
+                                                <button
+                                                    className={`nav-link ${activeTab === 'reactions' ? 'active fw-bold border-bottom-0' : 'text-muted border-0'}`}
+                                                    onClick={() => setActiveTab('reactions')}>
                                                     {t('reactions')} ({feed.reactions?.length || 0})
                                                 </button>
                                             </li>

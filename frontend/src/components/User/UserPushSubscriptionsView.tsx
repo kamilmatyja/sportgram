@@ -30,19 +30,37 @@ interface UserPushSubscriptionsViewProps {
 }
 
 export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps> = ({
-                                                                                        user, subscriptions, isMyProfile, isAdmin, loading, error, page, limit, sort, filters,
-                                                                                        onFilterChange, onSortChange, onLimitChange, onPrevPage, onNextPage, onAddClick, onManageClick
+                                                                                        user,
+                                                                                        subscriptions,
+                                                                                        isMyProfile,
+                                                                                        isAdmin,
+                                                                                        loading,
+                                                                                        error,
+                                                                                        page,
+                                                                                        limit,
+                                                                                        sort,
+                                                                                        filters,
+                                                                                        onFilterChange,
+                                                                                        onSortChange,
+                                                                                        onLimitChange,
+                                                                                        onPrevPage,
+                                                                                        onNextPage,
+                                                                                        onAddClick,
+                                                                                        onManageClick
                                                                                     }) => {
     const {t} = useTranslation();
 
-    if (loading && subscriptions.length === 0) return <div className="container mt-5 text-center"><div className="spinner-border text-profile-primary"/></div>;
-    if (error || !user) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
+    if (loading && subscriptions.length === 0) return <div className="container mt-5 text-center">
+        <div className="spinner-border text-profile-primary"/>
+    </div>;
+    if (error || !user) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
     const themeClass = ColorEnum.getClass(user.color);
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user} />
+            <UserSubpageHeader user={user}/>
 
             <div className="card shadow-sm">
                 <div className="card-body">
@@ -56,7 +74,8 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                     </div>
 
                     <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                        <input name="endpoint" placeholder={t('endpoint')} value={filters.endpoint || ''} onChange={onFilterChange} className="form-control w-auto"/>
+                        <input name="endpoint" placeholder={t('endpoint')} value={filters.endpoint || ''}
+                               onChange={onFilterChange} className="form-control w-auto"/>
                         <select value={sort} onChange={onSortChange} className="form-select w-auto ms-auto">
                             <option value="createdAt:desc">{t('sortCreatedDesc')}</option>
                             <option value="createdAt:asc">{t('sortCreatedAsc')}</option>
@@ -71,7 +90,9 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                     </div>
 
                     {loading ? (
-                        <div className="text-center my-4"><div className="spinner-border text-profile-primary"/></div>
+                        <div className="text-center my-4">
+                            <div className="spinner-border text-profile-primary"/>
+                        </div>
                     ) : (
                         <>
                             <UserPushSubscriptionsTable
@@ -81,7 +102,8 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                                 onManageClick={onManageClick}
                             />
                             <div className="mt-3">
-                                <Pagination page={page} hasMore={subscriptions.length >= limit} onPrevPage={onPrevPage} onNextPage={onNextPage} />
+                                <Pagination page={page} hasMore={subscriptions.length >= limit} onPrevPage={onPrevPage}
+                                            onNextPage={onNextPage}/>
                             </div>
                         </>
                     )}

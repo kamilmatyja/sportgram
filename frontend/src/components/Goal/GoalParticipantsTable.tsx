@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { GoalParticipantResponse } from '../../api/responses/GoalParticipantResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
+import {useTranslation} from '../../context/TranslationContext';
+import {GoalParticipantResponse} from '../../api/responses/GoalParticipantResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {SaveStatusEnum} from '../../enums/SaveStatusEnum';
 
 interface GoalParticipantsTableProps {
     participants: GoalParticipantResponse[];
@@ -14,10 +14,14 @@ interface GoalParticipantsTableProps {
 }
 
 export const GoalParticipantsTable: React.FC<GoalParticipantsTableProps> = ({
-                                                                                participants, relatedUsers, currentUser, actionLoading,
-                                                                                onUpdateParticipantStatus, onUpdateResultStatus
+                                                                                participants,
+                                                                                relatedUsers,
+                                                                                currentUser,
+                                                                                actionLoading,
+                                                                                onUpdateParticipantStatus,
+                                                                                onUpdateResultStatus
                                                                             }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (!participants || participants.length === 0) {
         return <div className="text-muted small p-2">{t('noParticipants')}</div>;
@@ -76,7 +80,8 @@ export const GoalParticipantsTable: React.FC<GoalParticipantsTableProps> = ({
                                     </td>
                                     <td colSpan={2}>
                                         <div className="d-flex align-items-center gap-3">
-                                            <span className="small"><strong>{t('distance')}:</strong> {r.distance}m</span>
+                                            <span
+                                                className="small"><strong>{t('distance')}:</strong> {r.distance}m</span>
                                             <span className="small"><strong>{t('time')}:</strong> {r.time}s</span>
                                             <span className="badge bg-light text-dark border ms-2">
                                                 {SaveStatusEnum.getOptions(t).find(opt => opt.value === r.status)?.label || r.status}

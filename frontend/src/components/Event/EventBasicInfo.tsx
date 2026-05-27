@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { EventResponse } from '../../api/responses/EventResponse';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {useTranslation} from '../../context/TranslationContext';
+import {EventResponse} from '../../api/responses/EventResponse';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface EventBasicInfoProps {
     eventObj: EventResponse;
@@ -10,8 +10,8 @@ interface EventBasicInfoProps {
     onManageClick: (eventObj: EventResponse) => void;
 }
 
-export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({ eventObj, canManage, onManageClick }) => {
-    const { t } = useTranslation();
+export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({eventObj, canManage, onManageClick}) => {
+    const {t} = useTranslation();
 
     return (
         <div className="card shadow-sm mb-4">
@@ -32,7 +32,8 @@ export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({ eventObj, canMan
 
                 <div className="text-center mb-4">
                     {eventObj.photo && (
-                        <img src={`data:image/webp;base64,${eventObj.photo}`} alt="Event photo" className="img-fluid rounded shadow-sm event-details-photo" />
+                        <img src={`data:image/webp;base64,${eventObj.photo}`} alt="Event photo"
+                             className="img-fluid rounded shadow-sm event-details-photo"/>
                     )}
                 </div>
 

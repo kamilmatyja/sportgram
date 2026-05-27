@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { GoalResponse } from '../../api/responses/GoalResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
-import { GoalParticipantsTable } from './GoalParticipantsTable';
+import React, {useState} from 'react';
+import {useTranslation} from '../../context/TranslationContext';
+import {GoalResponse} from '../../api/responses/GoalResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {DisciplineEnum} from '../../enums/DisciplineEnum';
+import {GoalStatusEnum} from '../../enums/GoalStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
+import {GoalParticipantsTable} from './GoalParticipantsTable';
 
 interface UserGoalsTableProps {
     goals: GoalResponse[];
@@ -19,9 +19,16 @@ interface UserGoalsTableProps {
 }
 
 export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
-                                                                  goals, relatedUsers, currentUser, isMyProfile, isAdmin, actionLoading, onManageClick, interactions
+                                                                  goals,
+                                                                  relatedUsers,
+                                                                  currentUser,
+                                                                  isMyProfile,
+                                                                  isAdmin,
+                                                                  actionLoading,
+                                                                  onManageClick,
+                                                                  interactions
                                                               }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
     const toggleRow = (id: string) => {
@@ -31,8 +38,12 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
     if (goals.length === 0) {
         return (
             <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle">
-                    <tbody><tr><td colSpan={8} className="text-center text-muted">{t('noGoals')}</td></tr></tbody>
+                <table className="table table-bordered table-hover align-middle mb-0">
+                    <tbody>
+                    <tr>
+                        <td colSpan={8} className="text-center text-muted">{t('noGoals')}</td>
+                    </tr>
+                    </tbody>
                 </table>
             </div>
         );
@@ -71,13 +82,15 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
                             <td>{formatDate(goal.endedAt)}</td>
                             <td>
                                 <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(goal.id)}>
-                                    {expandedRow === goal.id ? <i className="bi bi-chevron-up"></i> : <i className="bi bi-chevron-down"></i>} {t('participants')}
+                                    {expandedRow === goal.id ? <i className="bi bi-chevron-up"></i> :
+                                        <i className="bi bi-chevron-down"></i>} {t('participants')}
                                 </button>
                             </td>
                             <td className="text-end">
                                 <div className="d-flex justify-content-end gap-2 flex-wrap">
                                     {(isMyProfile || isAdmin) && (
-                                        <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(goal)}>
+                                        <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
+                                                onClick={() => onManageClick(goal)}>
                                             <i className="bi bi-gear" aria-hidden="true"></i>
                                             <span className="visually-hidden">{t('manage')}</span>
                                         </button>

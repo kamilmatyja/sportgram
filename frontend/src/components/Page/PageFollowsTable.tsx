@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { PageFollowResponse } from '../../api/responses/PageFollowResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {useTranslation} from '../../context/TranslationContext';
+import {PageFollowResponse} from '../../api/responses/PageFollowResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {PageFollowStatusEnum} from '../../enums/PageFollowStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface PageFollowsTableProps {
     follows: PageFollowResponse[];
@@ -16,9 +16,15 @@ interface PageFollowsTableProps {
 }
 
 export const PageFollowsTable: React.FC<PageFollowsTableProps> = ({
-                                                                      follows, relatedUsers, currentUser, isMyProfile, isAdmin, actionLoading, onUpdateStatus
+                                                                      follows,
+                                                                      relatedUsers,
+                                                                      currentUser,
+                                                                      isMyProfile,
+                                                                      isAdmin,
+                                                                      actionLoading,
+                                                                      onUpdateStatus
                                                                   }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     if (!follows || follows.length === 0) {
         return <div className="text-muted small p-2">{t('noRecords')}</div>;

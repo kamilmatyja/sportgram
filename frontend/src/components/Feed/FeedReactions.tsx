@@ -1,7 +1,7 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
-import { FeedResponse } from '../../api/responses/FeedResponse';
+import {useTranslation} from '../../context/TranslationContext';
+import {FeedReactionEnum} from '../../enums/FeedReactionEnum';
+import {FeedResponse} from '../../api/responses/FeedResponse';
 
 interface FeedReactionsProps {
     feed: FeedResponse;
@@ -10,18 +10,25 @@ interface FeedReactionsProps {
     onReact: (feedId: string, type: number) => void;
 }
 
-export const FeedReactions: React.FC<FeedReactionsProps> = ({ feed, myReactionType, isFeedLoading, onReact }) => {
-    const { t } = useTranslation();
+export const FeedReactions: React.FC<FeedReactionsProps> = ({feed, myReactionType, isFeedLoading, onReact}) => {
+    const {t} = useTranslation();
 
     const getReactionIcon = (type: number) => {
         switch (type) {
-            case FeedReactionEnum.LIKE: return 'bi-hand-thumbs-up-fill text-profile-primary';
-            case FeedReactionEnum.LOVE: return 'bi-heart-fill text-danger';
-            case FeedReactionEnum.HAHA: return 'bi-emoji-laughing-fill text-warning';
-            case FeedReactionEnum.WOW: return 'bi-emoji-surprise-fill text-warning';
-            case FeedReactionEnum.SAD: return 'bi-emoji-frown-fill text-warning';
-            case FeedReactionEnum.ANGRY: return 'bi-emoji-angry-fill text-danger';
-            default: return 'bi-hand-thumbs-up';
+            case FeedReactionEnum.LIKE:
+                return 'bi-hand-thumbs-up-fill text-profile-primary';
+            case FeedReactionEnum.LOVE:
+                return 'bi-heart-fill text-danger';
+            case FeedReactionEnum.HAHA:
+                return 'bi-emoji-laughing-fill text-warning';
+            case FeedReactionEnum.WOW:
+                return 'bi-emoji-surprise-fill text-warning';
+            case FeedReactionEnum.SAD:
+                return 'bi-emoji-frown-fill text-warning';
+            case FeedReactionEnum.ANGRY:
+                return 'bi-emoji-angry-fill text-danger';
+            default:
+                return 'bi-hand-thumbs-up';
         }
     };
 

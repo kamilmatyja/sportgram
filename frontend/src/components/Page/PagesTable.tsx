@@ -1,20 +1,20 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { PageResponse } from '../../api/responses/PageResponse';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {useTranslation} from '../../context/TranslationContext';
+import {PageResponse} from '../../api/responses/PageResponse';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
 
 interface PagesTableProps {
     pages: PageResponse[];
 }
 
-export const PagesTable: React.FC<PagesTableProps> = ({ pages }) => {
-    const { t } = useTranslation();
+export const PagesTable: React.FC<PagesTableProps> = ({pages}) => {
+    const {t} = useTranslation();
 
     if (pages.length === 0) {
         return (
             <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle">
+                <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
                         <td colSpan={6} className="text-center text-muted">{t('noPages')}</td>
@@ -27,7 +27,7 @@ export const PagesTable: React.FC<PagesTableProps> = ({ pages }) => {
 
     return (
         <div className="table-responsive-custom">
-            <table className="table table-bordered table-hover align-middle">
+            <table className="table table-bordered table-hover align-middle mb-0">
                 <thead className="table-light">
                 <tr>
                     <th>{t('photo')}</th>
@@ -43,7 +43,8 @@ export const PagesTable: React.FC<PagesTableProps> = ({ pages }) => {
                     <tr key={pageObj.id}>
                         <td className="text-center align-middle feed-photo-cell">
                             {pageObj.profilePhoto ? (
-                                <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="page" className="rounded-circle img-fluid feed-photo" />
+                                <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="page"
+                                     className="rounded-circle img-fluid feed-photo"/>
                             ) : (
                                 <span className="text-muted">-</span>
                             )}
@@ -57,7 +58,8 @@ export const PagesTable: React.FC<PagesTableProps> = ({ pages }) => {
                         <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}</td>
                         <td>{formatDate(pageObj.createdAt)}</td>
                         <td className="text-end">
-                            <a href={`/pages/${pageObj.link}`} className="btn btn-sm btn-outline-primary" title={t('profile')}>
+                            <a href={`/pages/${pageObj.link}`} className="btn btn-sm btn-outline-primary"
+                               title={t('profile')}>
                                 <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i>
                                 <span className="visually-hidden">{t('profile')}</span>
                             </a>

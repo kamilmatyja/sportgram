@@ -1,8 +1,9 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { ProcessedActivity } from '../../services/Conversation/useUserConversations';
-import { PaginationEnum } from '../../enums/PaginationEnum';
-import { formatDate } from '../../utils/dateFormat';
+import {useTranslation} from '../../context/TranslationContext';
+import {ProcessedActivity} from '../../services/Conversation/useUserConversations';
+import {PaginationEnum} from '../../enums/PaginationEnum';
+import {formatDate} from '../../utils/dateFormat';
+import {Pagination} from '../Common/Pagination';
 
 interface ConversationActivityListProps {
     activities: ProcessedActivity[];
@@ -31,7 +32,7 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                                                                       setActivitySort,
                                                                                       setActivitySearch
                                                                                   }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="card shadow-sm">
@@ -72,12 +73,12 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
 
                 {loading ? (
                     <div className="text-center my-4">
-                        <div className="spinner-border text-profile-primary" />
+                        <div className="spinner-border text-profile-primary"/>
                     </div>
                 ) : (
                     <>
-                        <div className="table-responsive-custom mb-3">
-                            <table className="table table-bordered table-hover align-middle">
+                        <div className="table-responsive-custom">
+                            <table className="table table-bordered table-hover align-middle mb-0">
                                 <thead className="table-light">
                                 <tr>
                                     <th>{t('photo')}</th>
@@ -96,20 +97,23 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                     <tr key={act.otherUser.id}>
                                         <td className="text-center align-middle feed-photo-cell">
                                             {act.otherUser.profilePhoto ? (
-                                                <img src={`data:image/webp;base64,${act.otherUser.profilePhoto}`} alt="avatar" className="rounded-circle img-fluid feed-photo" />
+                                                <img src={`data:image/webp;base64,${act.otherUser.profilePhoto}`}
+                                                     alt="avatar" className="rounded-circle img-fluid feed-photo"/>
                                             ) : (
                                                 <span className="text-muted">-</span>
                                             )}
                                         </td>
                                         <td>
-                                            <a href={`/users/${act.otherUser.link}`} className="btn btn-link p-0 text-decoration-none">
+                                            <a href={`/users/${act.otherUser.link}`}
+                                               className="btn btn-link p-0 text-decoration-none">
                                                 {act.otherUser.firstName} {act.otherUser.lastName}
                                             </a>
                                         </td>
                                         <td>@{act.otherUser.link}</td>
                                         <td>{formatDate(act.updatedAt)}</td>
                                         <td className="text-end">
-                                            <a href={`/users/${act.otherUser.link}/conversations`} title={t('chat')} className="btn btn-sm btn-profile-outline-primary">
+                                            <a href={`/users/${act.otherUser.link}/conversations`} title={t('chat')}
+                                               className="btn btn-sm btn-profile-outline-primary">
                                                 <i className="bi bi-chat-dots me-1"></i>
                                                 <span className="visually-hidden">{t('chat')}</span>
                                             </a>
@@ -119,15 +123,13 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                 </tbody>
                             </table>
                         </div>
-
-                        <div className="d-flex justify-content-between align-items-center">
-                            <button className="btn btn-profile-outline-primary mx-2" disabled={activityPage === 1} onClick={() => setActivityPage(Math.max(activityPage - 1, 1))}>
-                                {t('prev')}
-                            </button>
-                            <span>{t('page')} {activityPage}</span>
-                            <button className="btn btn-profile-outline-primary mx-2" disabled={activityPage * activityLimit >= totalActivities} onClick={() => setActivityPage(activityPage + 1)}>
-                                {t('next')}
-                            </button>
+                        <div className="mt-3">
+                            <Pagination
+                                page={activityPage}
+                                hasMore={(activityPage * activityLimit) < totalActivities}
+                                onPrevPage={() => setActivityPage(Math.max(activityPage - 1, 1))}
+                                onNextPage={() => setActivityPage(activityPage + 1)}
+                            />
                         </div>
                     </>
                 )}

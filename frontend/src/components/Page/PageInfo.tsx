@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { PageResponse } from '../../api/responses/PageResponse';
-import { PageFollowResponse } from '../../api/responses/PageFollowResponse';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
+import {useTranslation} from '../../context/TranslationContext';
+import {PageResponse} from '../../api/responses/PageResponse';
+import {PageFollowResponse} from '../../api/responses/PageFollowResponse';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {PageFollowStatusEnum} from '../../enums/PageFollowStatusEnum';
 
 interface PageInfoProps {
     pageObj: PageResponse;
@@ -14,8 +14,15 @@ interface PageInfoProps {
     onManageClick: (page: PageResponse) => void;
 }
 
-export const PageInfo: React.FC<PageInfoProps> = ({ pageObj, myFollow, followLoading, handleToggleFollow, canManage, onManageClick }) => {
-    const { t } = useTranslation();
+export const PageInfo: React.FC<PageInfoProps> = ({
+                                                      pageObj,
+                                                      myFollow,
+                                                      followLoading,
+                                                      handleToggleFollow,
+                                                      canManage,
+                                                      onManageClick
+                                                  }) => {
+    const {t} = useTranslation();
 
     return (
         <div className="card shadow-sm mb-4">
@@ -48,7 +55,7 @@ export const PageInfo: React.FC<PageInfoProps> = ({ pageObj, myFollow, followLoa
                         disabled={followLoading}
                     >
                         {followLoading ? (
-                            <span className="spinner-border spinner-border-sm" />
+                            <span className="spinner-border spinner-border-sm"/>
                         ) : myFollow?.status === PageFollowStatusEnum.ACCEPTED ? (
                             <><i className="bi bi-dash-circle me-1"></i> {t('unfollowPage')}</>
                         ) : (

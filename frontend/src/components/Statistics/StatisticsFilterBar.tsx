@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { StatisticFilterQuery } from '../../api/queries/StatisticFilterQuery';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { PaginationEnum } from '../../enums/PaginationEnum';
-import { UserResponse } from '../../api/responses/UserResponse';
+import {useTranslation} from '../../context/TranslationContext';
+import {StatisticFilterQuery} from '../../api/queries/StatisticFilterQuery';
+import {DisciplineEnum} from '../../enums/DisciplineEnum';
+import {PaginationEnum} from '../../enums/PaginationEnum';
+import {UserResponse} from '../../api/responses/UserResponse';
 
 interface StatisticsFilterBarProps {
     filters: StatisticFilterQuery;
@@ -19,10 +19,18 @@ interface StatisticsFilterBarProps {
 }
 
 export const StatisticsFilterBar: React.FC<StatisticsFilterBarProps> = ({
-                                                                            filters, sort, limit, activeTab, availableUsers, currentUser,
-                                                                            onFilterChange, onUsersChange, onSortChange, onLimitChange
+                                                                            filters,
+                                                                            sort,
+                                                                            limit,
+                                                                            activeTab,
+                                                                            availableUsers,
+                                                                            currentUser,
+                                                                            onFilterChange,
+                                                                            onUsersChange,
+                                                                            onSortChange,
+                                                                            onLimitChange
                                                                         }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="row mb-4">
@@ -45,7 +53,8 @@ export const StatisticsFilterBar: React.FC<StatisticsFilterBarProps> = ({
             <div className="col-12 col-lg-9 d-flex flex-wrap gap-3 align-items-end">
                 <div>
                     <label className="form-label small text-muted mb-1">{t('discipline')}</label>
-                    <select name="discipline" value={filters.discipline || ''} onChange={onFilterChange} className="form-select w-auto">
+                    <select name="discipline" value={filters.discipline || ''} onChange={onFilterChange}
+                            className="form-select w-auto">
                         <option value="">{t('selectOption')}</option>
                         {DisciplineEnum.getOptions(t).map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -55,7 +64,8 @@ export const StatisticsFilterBar: React.FC<StatisticsFilterBarProps> = ({
 
                 <div>
                     <label className="form-label small text-muted mb-1">{t('distance')}</label>
-                    <input type="number" name="distance" placeholder={t('distanceMeters')} value={filters.distance || ''} onChange={onFilterChange} className="form-control w-auto"/>
+                    <input type="number" name="distance" placeholder={t('distanceMeters')}
+                           value={filters.distance || ''} onChange={onFilterChange} className="form-control w-auto"/>
                 </div>
 
                 <div className="ms-auto d-flex gap-3">

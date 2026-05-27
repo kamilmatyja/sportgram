@@ -75,7 +75,8 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                             {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
 
                             {isMyProfile && (
-                                <form id="edit-event-form" onSubmit={handleEditSubmit} className="mb-4 pb-3 border-bottom">
+                                <form id="edit-event-form" onSubmit={handleEditSubmit}
+                                      className="mb-4 pb-3 border-bottom">
                                     <div className="row mb-3">
                                         <div className="col-md-6">
                                             <label className="form-label">{t('startedAt')}</label>
@@ -167,10 +168,12 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                     <label className="form-label">{t('discipline')}</label>
                                                     <select className="form-select" value={disc.discipline}
                                                             onChange={e => updateDisciplineType(dIndex, parseInt(e.target.value))}>
-                                                        {DisciplineEnum.getOptions(t).map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                                        {DisciplineEnum.getOptions(t).map(opt => <option key={opt.value}
+                                                                                                         value={opt.value}>{opt.label}</option>)}
                                                     </select>
                                                 </div>
-                                                <button type="button" className="btn btn-outline-danger" onClick={() => removeDiscipline(dIndex)}>
+                                                <button type="button" className="btn btn-outline-danger"
+                                                        onClick={() => removeDiscipline(dIndex)}>
                                                     <i className="bi bi-trash"></i>
                                                 </button>
                                             </div>
@@ -178,7 +181,9 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                             <div className="ps-4 border-start border-2 border-profile-primary">
                                                 <div className="d-flex justify-content-between mb-2">
                                                     <span className="fw-bold">{t('distances')}</span>
-                                                    <button type="button" className="btn btn-sm btn-profile-outline-primary" onClick={() => addDistance(dIndex)}>
+                                                    <button type="button"
+                                                            className="btn btn-sm btn-profile-outline-primary"
+                                                            onClick={() => addDistance(dIndex)}>
                                                         {t('addDistanceBtn')}
                                                     </button>
                                                 </div>
@@ -188,25 +193,40 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                         <div className="card-body p-2">
                                                             <div className="d-flex align-items-center gap-2 mb-2">
                                                                 <div className="input-group input-group-sm w-50">
-                                                                    <span className="input-group-text">{t('distanceMeters')}</span>
-                                                                    <input type="number" className="form-control" value={dist.distance} onChange={e => updateDistanceValue(dIndex, distIndex, parseInt(e.target.value) || 0)}/>
+                                                                    <span
+                                                                        className="input-group-text">{t('distanceMeters')}</span>
+                                                                    <input type="number" className="form-control"
+                                                                           value={dist.distance}
+                                                                           onChange={e => updateDistanceValue(dIndex, distIndex, parseInt(e.target.value) || 0)}/>
                                                                 </div>
-                                                                <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => removeDistance(dIndex, distIndex)}>
+                                                                <button type="button"
+                                                                        className="btn btn-sm btn-outline-danger"
+                                                                        onClick={() => removeDistance(dIndex, distIndex)}>
                                                                     <i className="bi bi-trash"></i>
                                                                 </button>
                                                             </div>
 
                                                             <div className="ps-3 border-start">
                                                                 <div className="d-flex justify-content-between mb-2">
-                                                                    <small className="text-muted">{t('subDistances')}</small>
-                                                                    <button type="button" className="btn btn-xs btn-profile-outline-primary py-0 px-2" onClick={() => addSubDistance(dIndex, distIndex)}>
+                                                                    <small
+                                                                        className="text-muted">{t('subDistances')}</small>
+                                                                    <button type="button"
+                                                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                                                            onClick={() => addSubDistance(dIndex, distIndex)}>
                                                                         {t('addSubDistanceBtn')}
                                                                     </button>
                                                                 </div>
                                                                 {dist.subDistances?.map((sub, subIndex) => (
-                                                                    <div key={subIndex} className="d-flex align-items-center gap-2 mt-1">
-                                                                        <input type="number" className="form-control form-control-sm w-50" placeholder={t('subDistanceMeters')} value={sub.subDistance} onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, parseInt(e.target.value) || 0)}/>
-                                                                        <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
+                                                                    <div key={subIndex}
+                                                                         className="d-flex align-items-center gap-2 mt-1">
+                                                                        <input type="number"
+                                                                               className="form-control form-control-sm w-50"
+                                                                               placeholder={t('subDistanceMeters')}
+                                                                               value={sub.subDistance}
+                                                                               onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, parseInt(e.target.value) || 0)}/>
+                                                                        <button type="button"
+                                                                                className="btn btn-sm btn-outline-danger"
+                                                                                onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
                                                                             <i className="bi bi-trash"></i>
                                                                         </button>
                                                                     </div>
@@ -253,10 +273,12 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                             </button>
                             {isMyProfile && (
                                 <>
-                                    <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={loading}>
+                                    <button type="button" className="btn btn-danger" onClick={handleDelete}
+                                            disabled={loading}>
                                         {loading ? t('sending') : t('delete')}
                                     </button>
-                                    <button type="submit" form="edit-event-form" className="btn btn-profile-primary" disabled={loading}>
+                                    <button type="submit" form="edit-event-form" className="btn btn-profile-primary"
+                                            disabled={loading}>
                                         {loading ? t('sending') : t('saveChanges')}
                                     </button>
                                 </>

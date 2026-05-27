@@ -1,10 +1,10 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { FeedResponse } from '../../api/responses/FeedResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { formatDate } from '../../utils/dateFormat';
-import { FeedReactions } from './FeedReactions';
-import { FeedComments } from './FeedComments';
+import {useTranslation} from '../../context/TranslationContext';
+import {FeedResponse} from '../../api/responses/FeedResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {formatDate} from '../../utils/dateFormat';
+import {FeedReactions} from './FeedReactions';
+import {FeedComments} from './FeedComments';
 
 interface FeedCardProps {
     feed: FeedResponse;
@@ -17,8 +17,17 @@ interface FeedCardProps {
     interactions: any;
 }
 
-export const FeedCard: React.FC<FeedCardProps> = ({ feed, currentUser, relatedUsers, isFeedLoading, commentInputValue, editingCommentId, editCommentText, interactions }) => {
-    const { t } = useTranslation();
+export const FeedCard: React.FC<FeedCardProps> = ({
+                                                      feed,
+                                                      currentUser,
+                                                      relatedUsers,
+                                                      isFeedLoading,
+                                                      commentInputValue,
+                                                      editingCommentId,
+                                                      editCommentText,
+                                                      interactions
+                                                  }) => {
+    const {t} = useTranslation();
     const author = relatedUsers[feed.userId];
     const myReaction = feed.reactions?.find(r => r.userId === currentUser?.id);
 
@@ -35,17 +44,20 @@ export const FeedCard: React.FC<FeedCardProps> = ({ feed, currentUser, relatedUs
         <div className="card shadow-sm mb-4">
             <div className="card-header bg-white d-flex align-items-center gap-3 border-bottom-0 pt-3">
                 {author?.profilePhoto ? (
-                    <img src={`data:image/webp;base64,${author.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover feed-avatar-48 border profile-theme-border" />
+                    <img src={`data:image/webp;base64,${author.profilePhoto}`} alt="avatar"
+                         className="rounded-circle object-fit-cover feed-avatar-48 border profile-theme-border"/>
                 ) : (
                     <div className="bg-secondary rounded-circle feed-avatar-48"></div>
                 )}
                 <div className="flex-grow-1">
-                    <a href={`/users/${author?.link || feed.userId}`} className="fw-bold text-decoration-none text-body d-block">
+                    <a href={`/users/${author?.link || feed.userId}`}
+                       className="fw-bold text-decoration-none text-body d-block">
                         {author ? `${author.firstName} ${author.lastName}` : feed.userId}
                     </a>
                     <div className="d-flex align-items-center gap-2">
                         <small className="text-muted">{formatDate(feed.createdAt)}</small>
-                        <span className="badge bg-light text-dark border profile-theme-border">{getFeedTypeLabel(feed)}</span>
+                        <span
+                            className="badge bg-light text-dark border profile-theme-border">{getFeedTypeLabel(feed)}</span>
                     </div>
                 </div>
             </div>
@@ -55,7 +67,8 @@ export const FeedCard: React.FC<FeedCardProps> = ({ feed, currentUser, relatedUs
             </div>
 
             {feed.photo && (
-                <img src={`data:image/webp;base64,${feed.photo}`} alt="feed" className="w-100 object-fit-cover feed-image-max" />
+                <img src={`data:image/webp;base64,${feed.photo}`} alt="feed"
+                     className="w-100 object-fit-cover feed-image-max"/>
             )}
 
             <div className="card-footer bg-white pt-3 pb-2 border-top-0">

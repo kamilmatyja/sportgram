@@ -1,16 +1,16 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { PageResponse } from '../../api/responses/PageResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { EventResponse } from '../../api/responses/EventResponse';
-import { PageFollowResponse } from '../../api/responses/PageFollowResponse';
-import { ColorEnum } from '../../enums/ColorEnum';
-import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
-import { PageHeader } from './PageHeader';
-import { PageInfo } from './PageInfo';
-import { PageDetailsParticipantsTable } from './PageDetailsParticipantsTable';
-import { PageDetailsFollowsTable } from './PageDetailsFollowsTable';
-import { PageEventsTable } from './PageEventsTable';
+import {useTranslation} from '../../context/TranslationContext';
+import {PageResponse} from '../../api/responses/PageResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {EventResponse} from '../../api/responses/EventResponse';
+import {PageFollowResponse} from '../../api/responses/PageFollowResponse';
+import {ColorEnum} from '../../enums/ColorEnum';
+import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
+import {PageHeader} from './PageHeader';
+import {PageInfo} from './PageInfo';
+import {PageDetailsParticipantsTable} from './PageDetailsParticipantsTable';
+import {PageDetailsFollowsTable} from './PageDetailsFollowsTable';
+import {PageEventsTable} from './PageEventsTable';
 
 interface PageDetailsViewProps {
     pageObj: PageResponse | null;
@@ -42,16 +42,39 @@ interface PageDetailsViewProps {
 }
 
 export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
-                                                                    pageObj, ownerUser, currentUser, relatedUsers, isMyProfile, isAdmin, isParticipantOfPage,
-                                                                    myFollow, followLoading, handleToggleFollow, loading, error, onManageClick, interactions,
-                                                                    events, eventsLoading, eventPage, eventLimit, eventSort, eventFilters,
-                                                                    handleEventFilterChange, handleEventSortChange, handleEventLimitChange,
-                                                                    handleEventPrevPage, handleEventNextPage
+                                                                    pageObj,
+                                                                    ownerUser,
+                                                                    currentUser,
+                                                                    relatedUsers,
+                                                                    isMyProfile,
+                                                                    isAdmin,
+                                                                    isParticipantOfPage,
+                                                                    myFollow,
+                                                                    followLoading,
+                                                                    handleToggleFollow,
+                                                                    loading,
+                                                                    error,
+                                                                    onManageClick,
+                                                                    interactions,
+                                                                    events,
+                                                                    eventsLoading,
+                                                                    eventPage,
+                                                                    eventLimit,
+                                                                    eventSort,
+                                                                    eventFilters,
+                                                                    handleEventFilterChange,
+                                                                    handleEventSortChange,
+                                                                    handleEventLimitChange,
+                                                                    handleEventPrevPage,
+                                                                    handleEventNextPage
                                                                 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center"><div className="spinner-border text-profile-primary" /></div>;
-    if (error || !pageObj || !ownerUser) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (loading) return <div className="container mt-5 text-center">
+        <div className="spinner-border text-profile-primary"/>
+    </div>;
+    if (error || !pageObj || !ownerUser) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
 
     const themeClass = ColorEnum.getClass(pageObj.color);
     const canManage = isMyProfile || isAdmin || isParticipantOfPage;

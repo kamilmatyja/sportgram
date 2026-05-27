@@ -29,19 +29,35 @@ interface UserNotificationsViewProps {
 }
 
 export const UserNotificationsView: React.FC<UserNotificationsViewProps> = ({
-                                                                                user, notifications, isMyProfile, loading, error, page, limit, sort, filters,
-                                                                                onFilterChange, onSortChange, onLimitChange, onPrevPage, onNextPage, onManageClick
+                                                                                user,
+                                                                                notifications,
+                                                                                isMyProfile,
+                                                                                loading,
+                                                                                error,
+                                                                                page,
+                                                                                limit,
+                                                                                sort,
+                                                                                filters,
+                                                                                onFilterChange,
+                                                                                onSortChange,
+                                                                                onLimitChange,
+                                                                                onPrevPage,
+                                                                                onNextPage,
+                                                                                onManageClick
                                                                             }) => {
     const {t} = useTranslation();
 
-    if (loading && notifications.length === 0) return <div className="container mt-5 text-center"><div className="spinner-border text-profile-primary"/></div>;
-    if (error || !user) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
+    if (loading && notifications.length === 0) return <div className="container mt-5 text-center">
+        <div className="spinner-border text-profile-primary"/>
+    </div>;
+    if (error || !user) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
 
     const themeClass = ColorEnum.getClass(user.color);
 
     return (
         <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user} />
+            <UserSubpageHeader user={user}/>
 
             <div className="card shadow-sm">
                 <div className="card-body">
@@ -50,8 +66,10 @@ export const UserNotificationsView: React.FC<UserNotificationsViewProps> = ({
                     </div>
 
                     <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                        <input name="text" placeholder={t('text')} value={filters.text || ''} onChange={onFilterChange} className="form-control w-auto"/>
-                        <select name="status" value={filters.status || ''} onChange={onFilterChange} className="form-select w-auto">
+                        <input name="text" placeholder={t('text')} value={filters.text || ''} onChange={onFilterChange}
+                               className="form-control w-auto"/>
+                        <select name="status" value={filters.status || ''} onChange={onFilterChange}
+                                className="form-select w-auto">
                             <option value="">{t('status')}</option>
                             {NotificationStatusEnum.getOptions(t).map(opt => (
                                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -69,7 +87,9 @@ export const UserNotificationsView: React.FC<UserNotificationsViewProps> = ({
                     </div>
 
                     {loading ? (
-                        <div className="text-center my-4"><div className="spinner-border text-profile-primary"/></div>
+                        <div className="text-center my-4">
+                            <div className="spinner-border text-profile-primary"/>
+                        </div>
                     ) : (
                         <>
                             <UserNotificationsTable
@@ -78,7 +98,8 @@ export const UserNotificationsView: React.FC<UserNotificationsViewProps> = ({
                                 onManageClick={onManageClick}
                             />
                             <div className="mt-3">
-                                <Pagination page={page} hasMore={notifications.length >= limit} onPrevPage={onPrevPage} onNextPage={onNextPage} />
+                                <Pagination page={page} hasMore={notifications.length >= limit} onPrevPage={onPrevPage}
+                                            onNextPage={onNextPage}/>
                             </div>
                         </>
                     )}

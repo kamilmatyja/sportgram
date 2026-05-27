@@ -1,13 +1,13 @@
-import { useParams } from 'react-router-dom';
-import { useUserFeeds } from '../services/User/useUserFeeds';
-import { useFeedModals } from '../services/Feed/useFeedModals';
-import { useFeedInteractions } from '../services/Feed/useFeedInteractions';
-import { UserFeedsView } from '../components/User/UserFeedsView';
-import { AddFeedModal } from '../components/Feed/AddFeedModal';
-import { ManageFeedModal } from '../components/Feed/ManageFeedModal';
+import {useParams} from 'react-router-dom';
+import {useUserFeeds} from '../services/User/useUserFeeds';
+import {useFeedModals} from '../services/Feed/useFeedModals';
+import {useFeedInteractions} from '../services/Feed/useFeedInteractions';
+import {UserFeedsView} from '../components/User/UserFeedsView';
+import {AddFeedModal} from '../components/Feed/AddFeedModal';
+import {ManageFeedModal} from '../components/Feed/ManageFeedModal';
 
 export default function UserFeeds() {
-    const { link } = useParams<{ link: string }>();
+    const {link} = useParams<{ link: string }>();
 
     const feedsService = useUserFeeds(link);
     const modalsService = useFeedModals(feedsService.refreshFeeds);
@@ -15,7 +15,9 @@ export default function UserFeeds() {
     const baseInteractions = useFeedInteractions(
         feedsService.feeds,
         feedsService.currentUser,
-        () => { feedsService.refreshFeeds(); }
+        () => {
+            feedsService.refreshFeeds();
+        }
     );
 
     const interactions = {

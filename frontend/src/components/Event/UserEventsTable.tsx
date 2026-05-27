@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { EventResponse } from '../../api/responses/EventResponse';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
-import { EventListsManager } from './EventListsManager';
+import React, {useState} from 'react';
+import {useTranslation} from '../../context/TranslationContext';
+import {EventResponse} from '../../api/responses/EventResponse';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
+import {EventListsManager} from './EventListsManager';
 
 interface UserEventsTableProps {
     events: EventResponse[];
@@ -15,9 +15,13 @@ interface UserEventsTableProps {
 }
 
 export const UserEventsTable: React.FC<UserEventsTableProps> = ({
-                                                                    events, isMyProfile, isAdmin, onManageClick, interactions
+                                                                    events,
+                                                                    isMyProfile,
+                                                                    isAdmin,
+                                                                    onManageClick,
+                                                                    interactions
                                                                 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
     const toggleRow = (id: string) => {
@@ -27,8 +31,12 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
     if (events.length === 0) {
         return (
             <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle">
-                    <tbody><tr><td colSpan={8} className="text-center text-muted">{t('noEvents')}</td></tr></tbody>
+                <table className="table table-bordered table-hover align-middle mb-0">
+                    <tbody>
+                    <tr>
+                        <td colSpan={8} className="text-center text-muted">{t('noEvents')}</td>
+                    </tr>
+                    </tbody>
                 </table>
             </div>
         );
@@ -54,7 +62,8 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
                     <React.Fragment key={ev.id}>
                         <tr>
                             <td className="text-center align-middle feed-photo-cell">
-                                <img src={`data:image/webp;base64,${ev.photo}`} alt="Photo" className="w-100 h-100 object-fit-cover" />
+                                <img src={`data:image/webp;base64,${ev.photo}`} alt="Photo"
+                                     className="w-100 h-100 object-fit-cover"/>
                             </td>
                             <td>
                                 <a href={`/events/${ev.link}`} className="btn btn-link p-0 text-decoration-none">
@@ -67,12 +76,14 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
                             <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(ev.status))?.label || ev.status}</td>
                             <td>
                                 <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(ev.id)}>
-                                    {expandedRow === ev.id ? <i className="bi bi-chevron-up"></i> : <i className="bi bi-chevron-down"></i>} {t('lists')} / {t('results')}
+                                    {expandedRow === ev.id ? <i className="bi bi-chevron-up"></i> :
+                                        <i className="bi bi-chevron-down"></i>} {t('lists')} / {t('results')}
                                 </button>
                             </td>
                             <td className="text-end">
                                 {(isMyProfile || isAdmin) && (
-                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')} onClick={() => onManageClick(ev)}>
+                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
+                                            onClick={() => onManageClick(ev)}>
                                         <i className="bi bi-gear" aria-hidden="true"></i>
                                         <span className="visually-hidden">{t('manage')}</span>
                                     </button>

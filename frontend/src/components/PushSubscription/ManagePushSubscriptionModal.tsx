@@ -75,7 +75,8 @@ export const ManagePushSubscriptionModal: React.FC<ManagePushSubscriptionModalPr
                                 {t('cancel')}
                             </button>
                             {isMyProfile && (
-                                <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={loading}>
+                                <button type="button" className="btn btn-danger" onClick={handleDelete}
+                                        disabled={loading}>
                                     {loading ? t('sending') : t('delete')}
                                 </button>
                             )}

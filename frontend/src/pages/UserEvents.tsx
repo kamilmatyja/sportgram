@@ -1,13 +1,13 @@
-import { useParams } from 'react-router-dom';
-import { useUserEvents } from '../services/User/useUserEvents';
-import { useEventModals } from '../services/Event/useEventModals';
-import { useEventInteractions } from '../services/Event/useEventInteractions';
-import { UserEventsView } from '../components/User/UserEventsView';
-import { AddEventModal } from '../components/Event/AddEventModal';
-import { ManageEventModal } from '../components/Event/ManageEventModal';
+import {useParams} from 'react-router-dom';
+import {useUserEvents} from '../services/User/useUserEvents';
+import {useEventModals} from '../services/Event/useEventModals';
+import {useEventInteractions} from '../services/Event/useEventInteractions';
+import {UserEventsView} from '../components/User/UserEventsView';
+import {AddEventModal} from '../components/Event/AddEventModal';
+import {ManageEventModal} from '../components/Event/ManageEventModal';
 
 export default function UserEvents() {
-    const { link } = useParams<{ link: string }>();
+    const {link} = useParams<{ link: string }>();
 
     const eventsService = useUserEvents(link);
     const modalsService = useEventModals(eventsService.refreshEvents, eventsService.currentUser);

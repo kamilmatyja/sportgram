@@ -1,14 +1,14 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { UserResponse } from '../../api/responses/UserResponse';
+import {useTranslation} from '../../context/TranslationContext';
+import {UserResponse} from '../../api/responses/UserResponse';
 
 interface UserProfileNavProps {
     user: UserResponse;
     isMyProfile: boolean;
 }
 
-export const UserProfileNav: React.FC<UserProfileNavProps> = ({ user, isMyProfile }) => {
-    const { t } = useTranslation();
+export const UserProfileNav: React.FC<UserProfileNavProps> = ({user, isMyProfile}) => {
+    const {t} = useTranslation();
 
     return (
         <div className="d-flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2">
@@ -39,7 +39,8 @@ export const UserProfileNav: React.FC<UserProfileNavProps> = ({ user, isMyProfil
                 </a>
             )}
             {isMyProfile && (
-                <a href={`/users/${user.link}/push-subscriptions`} className="btn btn-profile-outline-primary text-nowrap">
+                <a href={`/users/${user.link}/push-subscriptions`}
+                   className="btn btn-profile-outline-primary text-nowrap">
                     <i className="bi bi-broadcast-pin me-1"></i> {t('pushSubscriptions')}
                 </a>
             )}

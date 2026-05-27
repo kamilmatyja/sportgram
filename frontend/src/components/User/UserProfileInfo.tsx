@@ -1,12 +1,12 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { CountryEnum } from '../../enums/CountryEnum';
-import { GenderEnum } from '../../enums/GenderEnum';
-import { UserStatusEnum } from '../../enums/UserStatusEnum';
-import { RoleEnum } from '../../enums/RoleEnum';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { getAgeFromDate } from '../../utils/dateFormat';
+import {useTranslation} from '../../context/TranslationContext';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {CountryEnum} from '../../enums/CountryEnum';
+import {GenderEnum} from '../../enums/GenderEnum';
+import {UserStatusEnum} from '../../enums/UserStatusEnum';
+import {RoleEnum} from '../../enums/RoleEnum';
+import {DisciplineEnum} from '../../enums/DisciplineEnum';
+import {getAgeFromDate} from '../../utils/dateFormat';
 
 interface UserProfileInfoProps {
     user: UserResponse;
@@ -15,8 +15,8 @@ interface UserProfileInfoProps {
     onManageClick: (user: UserResponse) => void;
 }
 
-export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ user, isMyProfile, isAdmin, onManageClick }) => {
-    const { t } = useTranslation();
+export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({user, isMyProfile, isAdmin, onManageClick}) => {
+    const {t} = useTranslation();
 
     return (
         <div className="card shadow-sm mb-4">
@@ -49,11 +49,13 @@ export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ user, isMyProf
                     </div>
                     <div className="col-sm-6 col-md-4">
                         <div className="text-muted small mb-1">{t('country')}</div>
-                        <div className="fw-medium">{CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}</div>
+                        <div
+                            className="fw-medium">{CountryEnum.getOptions(t).find(opt => opt.value === user.country)?.label || user.country}</div>
                     </div>
                     <div className="col-sm-6 col-md-4">
                         <div className="text-muted small mb-1">{t('gender')}</div>
-                        <div className="fw-medium">{GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}</div>
+                        <div
+                            className="fw-medium">{GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}</div>
                     </div>
                     <div className="col-sm-6 col-md-4">
                         <div className="text-muted small mb-1">{t('userStatus')}</div>

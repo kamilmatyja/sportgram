@@ -1,10 +1,10 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { EventResponse } from '../../api/responses/EventResponse';
-import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
-import { Pagination } from '../Common/Pagination';
-import { EventsFilterBar } from './EventsFilterBar';
-import { EventsTable } from './EventsTable';
+import {useTranslation} from '../../context/TranslationContext';
+import {EventResponse} from '../../api/responses/EventResponse';
+import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
+import {Pagination} from '../Common/Pagination';
+import {EventsFilterBar} from './EventsFilterBar';
+import {EventsTable} from './EventsTable';
 
 interface EventsListViewProps {
     events: EventResponse[];
@@ -39,7 +39,7 @@ export const EventsListView: React.FC<EventsListViewProps> = ({
                                                                   onNextPage,
                                                                   onAddClick
                                                               }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="container mt-5 mb-5">
@@ -63,13 +63,13 @@ export const EventsListView: React.FC<EventsListViewProps> = ({
 
             {loading && events.length === 0 ? (
                 <div className="text-center mt-4">
-                    <div className="spinner-border text-profile-primary" />
+                    <div className="spinner-border text-profile-primary"/>
                 </div>
             ) : error ? (
                 <div className="alert alert-danger mt-3">{t(error)}</div>
             ) : (
                 <>
-                    <EventsTable events={events} />
+                    <EventsTable events={events}/>
                     <div className="mt-3">
                         <Pagination
                             page={page}

@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { UserProvider } from '../../api/providers/UserProvider';
-import { GoalProvider } from '../../api/providers/GoalProvider';
-import { GoalResponse } from '../../api/responses/GoalResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { GoalFilterQuery } from '../../api/queries/GoalFilterQuery';
-import { GoalIndexQuery } from '../../api/queries/GoalIndexQuery';
-import { UserFilterQuery } from '../../api/queries/UserFilterQuery';
-import { UserIndexQuery } from '../../api/queries/UserIndexQuery';
-import { useCheckPermission } from '../../utils/checkPermission';
-import { RoleEnum } from '../../enums/RoleEnum';
+import React, {useEffect, useState} from 'react';
+import {UserProvider} from '../../api/providers/UserProvider';
+import {GoalProvider} from '../../api/providers/GoalProvider';
+import {GoalResponse} from '../../api/responses/GoalResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {GoalFilterQuery} from '../../api/queries/GoalFilterQuery';
+import {GoalIndexQuery} from '../../api/queries/GoalIndexQuery';
+import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
+import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
+import {useCheckPermission} from '../../utils/checkPermission';
+import {RoleEnum} from '../../enums/RoleEnum';
 
 export function useUserGoals(link?: string) {
-    const { getCurrentUser } = useCheckPermission();
+    const {getCurrentUser} = useCheckPermission();
 
     const [goals, setGoals] = useState<GoalResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});

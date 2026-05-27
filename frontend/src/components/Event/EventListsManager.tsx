@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { EventResponse } from '../../api/responses/EventResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { EventDisciplineDistanceListResponse } from '../../api/responses/EventDisciplineDistanceListResponse';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
-import { EventResultBody } from '../../api/body/EventResultBody';
-import { EventSubResult } from '../../api/body/EventSubResult';
+import React, {useEffect, useState} from 'react';
+import {useTranslation} from '../../context/TranslationContext';
+import {EventResponse} from '../../api/responses/EventResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {EventDisciplineDistanceListResponse} from '../../api/responses/EventDisciplineDistanceListResponse';
+import {DisciplineEnum} from '../../enums/DisciplineEnum';
+import {SaveStatusEnum} from '../../enums/SaveStatusEnum';
+import {formatDate} from '../../utils/dateFormat';
+import {EventResultBody} from '../../api/body/EventResultBody';
+import {EventSubResult} from '../../api/body/EventSubResult';
 
 interface EventListsManagerProps {
     eventObj: EventResponse;
@@ -19,7 +19,7 @@ interface EventListsManagerProps {
 export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                                                         eventObj, isMyProfile, isAdmin, interactions
                                                                     }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [selectedDistanceId, setSelectedDistanceId] = useState<string>('');
     const [lists, setLists] = useState<EventDisciplineDistanceListResponse[]>([]);
     const [listUsers, setListUsers] = useState<Record<string, UserResponse>>({});
@@ -57,7 +57,7 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
     const distanceObj = eventObj.disciplines.flatMap(d => d.distances).find(d => d.id === selectedDistanceId);
 
     const toggleRow = (listId: string) => {
-        setExpandedRows(prev => ({ ...prev, [listId]: !prev[listId] }));
+        setExpandedRows(prev => ({...prev, [listId]: !prev[listId]}));
     };
 
     const handleStatusUpdate = async (listId: string, status: number) => {
@@ -106,7 +106,8 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
             <h6 className="text-profile-primary mb-3">{t('manageListsAndResults')}</h6>
             <div className="mb-3">
                 <label className="form-label fw-bold">{t('selectDistanceSavedChanges')}</label>
-                <select className="form-select" value={selectedDistanceId} onChange={e => setSelectedDistanceId(e.target.value)}>
+                <select className="form-select" value={selectedDistanceId}
+                        onChange={e => setSelectedDistanceId(e.target.value)}>
                     <option value="">{t('selectDistance')}</option>
                     {eventObj.disciplines.flatMap(d => d.distances.map(dist => ({
                         id: dist.id,
@@ -117,7 +118,9 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                 </select>
             </div>
 
-            {loadingLists && <div className="text-center my-3"><div className="spinner-border spinner-border-sm text-profile-primary" /></div>}
+            {loadingLists && <div className="text-center my-3">
+                <div className="spinner-border spinner-border-sm text-profile-primary"/>
+            </div>}
 
             {!loadingLists && selectedDistanceId && lists.length > 0 && (
                 <div className="table-responsive">
@@ -156,8 +159,10 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                         <td>{formatDate(list.createdAt)}</td>
                                         <td>
                                             {hasResult ? (
-                                                <button className="btn btn-sm btn-outline-secondary py-0" onClick={() => toggleRow(list.id)}>
-                                                    {isExpanded ? <i className="bi bi-chevron-up"></i> : <i className="bi bi-chevron-down"></i>} {t('time')}: {result?.time} [s]
+                                                <button className="btn btn-sm btn-outline-secondary py-0"
+                                                        onClick={() => toggleRow(list.id)}>
+                                                    {isExpanded ? <i className="bi bi-chevron-up"></i> :
+                                                        <i className="bi bi-chevron-down"></i>} {t('time')}: {result?.time} [s]
                                                 </button>
                                             ) : <span className="text-muted small">-</span>}
                                         </td>
@@ -166,7 +171,10 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                                 {(isMyProfile || isAdmin) && SaveStatusEnum.getOptions(t)
                                                     .filter(opt => opt.value !== list.status && opt.value !== SaveStatusEnum.PENDING)
                                                     .map(opt => (
-                                                        <button key={opt.value} className="btn btn-xs btn-profile-outline-primary py-0 px-2" disabled={interactions.actionLoading === list.id} onClick={() => handleStatusUpdate(list.id, opt.value)}>
+                                                        <button key={opt.value}
+                                                                className="btn btn-xs btn-profile-outline-primary py-0 px-2"
+                                                                disabled={interactions.actionLoading === list.id}
+                                                                onClick={() => handleStatusUpdate(list.id, opt.value)}>
                                                             {opt.label}
                                                         </button>
                                                     ))}
@@ -177,16 +185,25 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                         <tr className="bg-light">
                                             <td colSpan={5} className="p-3">
                                                 <div className="border rounded border-profile-primary bg-white p-3">
-                                                    <div className="d-flex justify-content-between align-items-center mb-2">
-                                                        <strong className="text-profile-primary">{t('eventTypes.eventDisciplineResult')}</strong>
+                                                    <div
+                                                        className="d-flex justify-content-between align-items-center mb-2">
+                                                        <strong
+                                                            className="text-profile-primary">{t('eventTypes.eventDisciplineResult')}</strong>
                                                         {(isMyProfile || isAdmin) && (
                                                             <div>
-                                                                <button className="btn btn-sm btn-outline-secondary me-1 py-0" onClick={() => openEditResultForm(list, result.id)}><i className="bi bi-pencil"></i></button>
-                                                                <button className="btn btn-sm btn-outline-danger py-0" disabled={interactions.actionLoading === 'delete_result'} onClick={() => deleteResult(result.id)}><i className="bi bi-trash"></i></button>
+                                                                <button
+                                                                    className="btn btn-sm btn-outline-secondary me-1 py-0"
+                                                                    onClick={() => openEditResultForm(list, result.id)}>
+                                                                    <i className="bi bi-pencil"></i></button>
+                                                                <button className="btn btn-sm btn-outline-danger py-0"
+                                                                        disabled={interactions.actionLoading === 'delete_result'}
+                                                                        onClick={() => deleteResult(result.id)}><i
+                                                                    className="bi bi-trash"></i></button>
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div><strong>{t('finalTimeSeconds')}:</strong> {result.time} [s]</div>
+                                                    <div><strong>{t('finalTimeSeconds')}:</strong> {result.time} [s]
+                                                    </div>
                                                     {result.subResults && result.subResults.length > 0 && (
                                                         <div className="mt-2">
                                                             <strong className="small">{t('subDistances')}:</strong>
@@ -196,7 +213,8 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                                                     return (
                                                                         <li key={sr.id} className="small text-muted">
                                                                             <i className="bi bi-stopwatch me-1"></i>
-                                                                            {t('forDistance')} {sdMeta?.subDistance || '?'} [m] - {sr.time} [s]
+                                                                            {t('forDistance')} {sdMeta?.subDistance || '?'} [m]
+                                                                            - {sr.time} [s]
                                                                         </li>
                                                                     );
                                                                 })}
@@ -214,26 +232,44 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                                 <div className="border rounded border-profile-primary bg-white p-3">
                                                     <h6 className="text-profile-primary">{t('resultFormTitle')}</h6>
                                                     <div className="mb-2">
-                                                        <label className="form-label mb-0 small">{t('finalTimeSeconds')}</label>
-                                                        <input type="number" className="form-control form-control-sm" value={resultFormData.time} onChange={e => setResultFormData((prev: any) => ({ ...prev, time: parseInt(e.target.value) || 0 }))} />
+                                                        <label
+                                                            className="form-label mb-0 small">{t('finalTimeSeconds')}</label>
+                                                        <input type="number" className="form-control form-control-sm"
+                                                               value={resultFormData.time}
+                                                               onChange={e => setResultFormData((prev: any) => ({
+                                                                   ...prev,
+                                                                   time: parseInt(e.target.value) || 0
+                                                               }))}/>
                                                     </div>
-                                                    {resultFormData.subResults.length > 0 && <strong className="small">{t('subDistances')}:</strong>}
+                                                    {resultFormData.subResults.length > 0 &&
+                                                        <strong className="small">{t('subDistances')}:</strong>}
                                                     {resultFormData.subResults.map((sr, idx) => {
                                                         const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
                                                         return (
-                                                            <div key={idx} className="d-flex align-items-center gap-2 mb-1">
-                                                                <span className="small text-muted w-50">{t('forDistance')} {sdMeta?.subDistance || '?'} [m]:</span>
-                                                                <input type="number" className="form-control form-control-sm w-50" placeholder={t('timeSeconds')} value={sr.time} onChange={e => {
-                                                                    const newSubs = [...resultFormData.subResults];
-                                                                    newSubs[idx].time = parseInt(e.target.value) || 0;
-                                                                    setResultFormData((prev: any) => ({ ...prev, subResults: newSubs }));
-                                                                }} />
+                                                            <div key={idx}
+                                                                 className="d-flex align-items-center gap-2 mb-1">
+                                                                <span
+                                                                    className="small text-muted w-50">{t('forDistance')} {sdMeta?.subDistance || '?'} [m]:</span>
+                                                                <input type="number"
+                                                                       className="form-control form-control-sm w-50"
+                                                                       placeholder={t('timeSeconds')} value={sr.time}
+                                                                       onChange={e => {
+                                                                           const newSubs = [...resultFormData.subResults];
+                                                                           newSubs[idx].time = parseInt(e.target.value) || 0;
+                                                                           setResultFormData((prev: any) => ({
+                                                                               ...prev,
+                                                                               subResults: newSubs
+                                                                           }));
+                                                                       }}/>
                                                             </div>
                                                         );
                                                     })}
                                                     <div className="mt-2 text-end">
-                                                        <button className="btn btn-sm btn-secondary me-2" onClick={() => setActiveResultListId(null)}>{t('cancel')}</button>
-                                                        <button className="btn btn-sm btn-profile-primary" onClick={saveResult} disabled={interactions.actionLoading !== null}>{t('saveResultBtn')}</button>
+                                                        <button className="btn btn-sm btn-secondary me-2"
+                                                                onClick={() => setActiveResultListId(null)}>{t('cancel')}</button>
+                                                        <button className="btn btn-sm btn-profile-primary"
+                                                                onClick={saveResult}
+                                                                disabled={interactions.actionLoading !== null}>{t('saveResultBtn')}</button>
                                                     </div>
                                                 </div>
                                             </td>
@@ -242,7 +278,8 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                     {list.status === SaveStatusEnum.ACCEPTED && !hasResult && !activeResultListId && (isMyProfile || isAdmin) && (
                                         <tr>
                                             <td colSpan={5} className="text-end border-bottom">
-                                                <button className="btn btn-sm btn-profile-outline-primary" onClick={() => openAddResultForm(list)}>{t('enterResultBtn')}</button>
+                                                <button className="btn btn-sm btn-profile-outline-primary"
+                                                        onClick={() => openAddResultForm(list)}>{t('enterResultBtn')}</button>
                                             </td>
                                         </tr>
                                     )}

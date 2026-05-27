@@ -22,16 +22,26 @@ export namespace ColorEnum {
 
     export const getClass = (color?: number): string => {
         switch (color) {
-            case ColorEnum.RED: return 'theme-red';
-            case ColorEnum.GREEN: return 'theme-green';
-            case ColorEnum.BLUE: return 'theme-blue';
-            case ColorEnum.YELLOW: return 'theme-yellow';
-            case ColorEnum.GRAY: return 'theme-gray';
-            case ColorEnum.ORANGE: return 'theme-orange';
-            case ColorEnum.BROWN: return 'theme-brown';
-            case ColorEnum.PURPLE: return 'theme-purple';
-            case ColorEnum.PINK: return 'theme-pink';
-            default: return 'theme-blue';
+            case ColorEnum.RED:
+                return 'theme-red';
+            case ColorEnum.GREEN:
+                return 'theme-green';
+            case ColorEnum.BLUE:
+                return 'theme-blue';
+            case ColorEnum.YELLOW:
+                return 'theme-yellow';
+            case ColorEnum.GRAY:
+                return 'theme-gray';
+            case ColorEnum.ORANGE:
+                return 'theme-orange';
+            case ColorEnum.BROWN:
+                return 'theme-brown';
+            case ColorEnum.PURPLE:
+                return 'theme-purple';
+            case ColorEnum.PINK:
+                return 'theme-pink';
+            default:
+                return 'theme-blue';
         }
     };
 }

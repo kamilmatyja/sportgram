@@ -1,24 +1,29 @@
 import React from 'react';
-import { PageResponse } from '../../api/responses/PageResponse';
+import {PageResponse} from '../../api/responses/PageResponse';
 
 interface PageHeaderProps {
     pageObj: PageResponse;
 }
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ pageObj }) => {
+export const PageHeader: React.FC<PageHeaderProps> = ({pageObj}) => {
     return (
         <div className="card shadow-sm mb-4">
-            <div className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+            <div
+                className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
                 {pageObj.backgroundPhoto && (
-                    <img src={`data:image/webp;base64,${pageObj.backgroundPhoto}`} alt="Background" className="w-100 h-100 object-fit-cover" />
+                    <img src={`data:image/webp;base64,${pageObj.backgroundPhoto}`} alt="Background"
+                         className="w-100 h-100 object-fit-cover"/>
                 )}
             </div>
-            <div className="card-body position-relative pt-5 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end gap-3">
+            <div
+                className="card-body position-relative pt-5 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end gap-3">
                 <div>
                     {pageObj.profilePhoto ? (
-                        <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="Profile" className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover" />
+                        <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="Profile"
+                             className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                     ) : (
-                        <div className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar d-flex align-items-center justify-content-center">
+                        <div
+                            className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar d-flex align-items-center justify-content-center">
                             <i className="bi bi-file-earmark-text fs-1 text-muted"></i>
                         </div>
                     )}

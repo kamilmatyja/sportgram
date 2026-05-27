@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { PaginationEnum } from '../../enums/PaginationEnum';
+import {useTranslation} from '../../context/TranslationContext';
+import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import {PaginationEnum} from '../../enums/PaginationEnum';
 
 interface EventsFilterBarProps {
     filters: EventFilterQuery;
@@ -14,9 +14,14 @@ interface EventsFilterBarProps {
 }
 
 export const EventsFilterBar: React.FC<EventsFilterBarProps> = ({
-                                                                    filters, sort, limit, onFilterChange, onSortChange, onLimitChange
+                                                                    filters,
+                                                                    sort,
+                                                                    limit,
+                                                                    onFilterChange,
+                                                                    onSortChange,
+                                                                    onLimitChange
                                                                 }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">

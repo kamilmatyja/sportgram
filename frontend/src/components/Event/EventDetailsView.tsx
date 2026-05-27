@@ -1,12 +1,12 @@
 import React from 'react';
-import { useTranslation } from '../../context/TranslationContext';
-import { EventResponse } from '../../api/responses/EventResponse';
-import { PageResponse } from '../../api/responses/PageResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { ColorEnum } from '../../enums/ColorEnum';
-import { EventPageHeader } from './EventPageHeader';
-import { EventBasicInfo } from './EventBasicInfo';
-import { EventDisciplinesTable } from './EventDisciplinesTable';
+import {useTranslation} from '../../context/TranslationContext';
+import {EventResponse} from '../../api/responses/EventResponse';
+import {PageResponse} from '../../api/responses/PageResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {ColorEnum} from '../../enums/ColorEnum';
+import {EventPageHeader} from './EventPageHeader';
+import {EventBasicInfo} from './EventBasicInfo';
+import {EventDisciplinesTable} from './EventDisciplinesTable';
 
 interface EventDetailsViewProps {
     eventObj: EventResponse | null;
@@ -31,10 +31,13 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                                                                       onManageClick,
                                                                       openListsModal
                                                                   }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center"><div className="spinner-border text-profile-primary" /></div>;
-    if (error || !eventObj || !ownerPage || !currentUser) return <div className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (loading) return <div className="container mt-5 text-center">
+        <div className="spinner-border text-profile-primary"/>
+    </div>;
+    if (error || !eventObj || !ownerPage || !currentUser) return <div
+        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
 
     const themeClass = ColorEnum.getClass(ownerPage.color);
     const canManage = isMyProfile || isAdmin;
