@@ -1,20 +1,20 @@
-import React, {useEffect, useState} from 'react';
-import {useCheckPermission} from '../utils/checkPermission';
-import {StatisticProvider} from '../api/providers/StatisticProvider';
-import {FriendProvider} from '../api/providers/FriendProvider';
-import {UserProvider} from '../api/providers/UserProvider';
-import {StatisticFilterQuery} from '../api/queries/StatisticFilterQuery';
-import {StatisticIndexQuery} from '../api/queries/StatisticIndexQuery';
-import {FriendFilterQuery} from '../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../api/queries/FriendIndexQuery';
-import {UserFilterQuery} from '../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../api/queries/UserIndexQuery';
-import {StatisticResponse} from '../api/responses/StatisticResponse';
-import {UserResponse} from '../api/responses/UserResponse';
-import {FriendStatusEnum} from '../enums/FriendStatusEnum';
+import React, { useEffect, useState } from 'react';
+import { useCheckPermission } from '../utils/checkPermission';
+import { StatisticProvider } from '../api/providers/StatisticProvider';
+import { FriendProvider } from '../api/providers/FriendProvider';
+import { UserProvider } from '../api/providers/UserProvider';
+import { StatisticFilterQuery } from '../api/queries/StatisticFilterQuery';
+import { StatisticIndexQuery } from '../api/queries/StatisticIndexQuery';
+import { FriendFilterQuery } from '../api/queries/FriendFilterQuery';
+import { FriendIndexQuery } from '../api/queries/FriendIndexQuery';
+import { UserFilterQuery } from '../api/queries/UserFilterQuery';
+import { UserIndexQuery } from '../api/queries/UserIndexQuery';
+import { StatisticResponse } from '../api/responses/StatisticResponse';
+import { UserResponse } from '../api/responses/UserResponse';
+import { FriendStatusEnum } from '../enums/FriendStatusEnum';
 
 export function useStatistics() {
-    const {getCurrentUser} = useCheckPermission();
+    const { getCurrentUser } = useCheckPermission();
 
     const statisticProvider = new StatisticProvider();
     const friendProvider = new FriendProvider();
@@ -65,7 +65,7 @@ export function useStatistics() {
         setAvailableUsers(usersList);
 
         if (!filters.userIds || filters.userIds.length === 0) {
-            setFilters(prev => ({...prev, userIds: [currentUsr.id]}));
+            setFilters(prev => ({ ...prev, userIds: [currentUsr.id] }));
         }
     };
 
@@ -128,16 +128,16 @@ export function useStatistics() {
     }, [currentUser, activeTab, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
+        setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
         setPage(1);
     };
 
     const handleUsersChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selected = Array.from(e.target.selectedOptions).map(o => o.value);
         if (selected.length === 0 && currentUser) {
-            setFilters(prev => ({...prev, userIds: [currentUser.id]}));
+            setFilters(prev => ({ ...prev, userIds: [currentUser.id] }));
         } else {
-            setFilters(prev => ({...prev, userIds: selected}));
+            setFilters(prev => ({ ...prev, userIds: selected }));
         }
         setPage(1);
     };
