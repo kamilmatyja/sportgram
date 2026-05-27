@@ -42,7 +42,7 @@ export const UserPushSubscriptionsTable: React.FC<UserPushSubscriptionsTableProp
                 {subscriptions.map(sub => (
                     <tr key={sub.id}>
                         <td>{sub.userAgent || '-'}</td>
-                        <td className="text-truncate" style={{ maxWidth: '300px' }}>{sub.endpoint}</td>
+                        <td>{sub.endpoint}</td>
                         <td>{PushSubscriptionStatusEnum.getOptions(t).find(opt => String(opt.value) === String(sub.status))?.label || sub.status}</td>
                         <td>{formatDate(sub.createdAt)}</td>
                         <td className="text-end">

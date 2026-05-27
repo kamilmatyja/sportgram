@@ -72,7 +72,7 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                                 ) : <span className="text-muted">-</span>}
                             </td>
                             <td>{getFeedTypeLabel(feed)}</td>
-                            <td className="text-truncate">{feed.text}</td>
+                            <td>{feed.text}</td>
                             <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}</td>
                             <td>{formatDate(feed.createdAt)}</td>
                             <td>

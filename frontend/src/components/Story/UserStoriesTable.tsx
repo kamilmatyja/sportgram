@@ -52,7 +52,7 @@ export const UserStoriesTable: React.FC<UserStoriesTableProps> = ({
                                 <span className="text-muted">-</span>
                             )}
                         </td>
-                        <td className="text-truncate">{story.text}</td>
+                        <td>{story.text}</td>
                         <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(story.status))?.label || story.status}</td>
                         <td>{formatDate(story.createdAt)}</td>
                         <td className="text-end">
