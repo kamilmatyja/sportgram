@@ -3,15 +3,14 @@ import {GoalProvider} from '../../api/providers/GoalProvider';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {GoalResponse} from '../../api/responses/GoalResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
-import {useCheckPermission} from '../../utils/checkPermission';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {GoalFilterQuery} from '../../api/queries/GoalFilterQuery';
 import {GoalIndexQuery} from '../../api/queries/GoalIndexQuery';
-import {RoleEnum} from '../../enums/RoleEnum';
+import {profileAccess} from '../../utils/profileAccess';
 
 export function useGoalDetails(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const {checkAccess} = profileAccess();
 
     const [goal, setGoal] = useState<GoalResponse | null>(null);
     const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
@@ -32,16 +31,10 @@ export function useGoalDetails(link?: string) {
         setLoading(true);
         setError(null);
         try {
-            const currentUsr = await getCurrentUser();
-            setCurrentUser(currentUsr);
-
-            if (!currentUsr || !link) {
+            if (!link) {
                 setError('unauthorizedEdit');
                 return;
             }
-
-            const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-            setIsAdmin(adminCheck);
 
             const filterDto = new GoalFilterQuery();
             filterDto.link = link;
@@ -60,15 +53,15 @@ export function useGoalDetails(link?: string) {
                 'goalParticipantResults'
             ]);
 
+            const access = await checkAccess({ id: targetGoal.userId }, { requireFriendship: true });
+
             setGoal(targetGoal);
+            setCurrentUser(access.currentUser);
+            setOwnerUser(access.targetUser);
+            setIsAdmin(access.isAdmin);
+            setIsMyProfile(access.isMyProfile);
 
-            const owner = await userProvider.details(targetGoal.userId);
-            setOwnerUser(owner);
-
-            const isOwner = currentUsr.id === owner.id;
-            setIsMyProfile(isOwner);
-
-            const participantCheck = targetGoal.participants?.some(p => p.userId === currentUsr.id) ?? false;
+            const participantCheck = targetGoal.participants?.some(p => p.userId === access.currentUser.id) ?? false;
             setIsParticipantOfGoal(participantCheck);
 
             const userIdsToFetch = Array.from(new Set(targetGoal.participants.map(p => p.userId)));
@@ -102,15 +95,7 @@ export function useGoalDetails(link?: string) {
     };
 
     return {
-        goal,
-        ownerUser,
-        currentUser,
-        relatedUsers,
-        isMyProfile,
-        isAdmin,
-        isParticipantOfGoal,
-        loading,
-        error,
-        refreshGoal
+        goal, ownerUser, currentUser, relatedUsers, isMyProfile, isAdmin, isParticipantOfGoal,
+        loading, error, refreshGoal
     };
 }

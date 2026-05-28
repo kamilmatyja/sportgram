@@ -1,18 +1,16 @@
-import {UserProvider} from '../../api/providers/UserProvider';
+import React, {useEffect, useState} from 'react';
 import {FriendProvider} from '../../api/providers/FriendProvider';
+import {UserProvider} from '../../api/providers/UserProvider';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {useCheckPermission} from '../../utils/checkPermission';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {useEffect, useState} from 'react';
-import {FriendResponse} from '../../api/responses/FriendResponse';
 import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
-import {RoleEnum} from '../../enums/RoleEnum';
-import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
+import {UserResponse} from '../../api/responses/UserResponse';
+import {FriendResponse} from '../../api/responses/FriendResponse';
+import {profileAccess} from '../../utils/profileAccess.ts';
 
 export function useUserFriends(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const {checkAccess} = profileAccess();
 
     const [friends, setFriends] = useState<FriendResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
@@ -80,58 +78,21 @@ export function useUserFriends(link?: string) {
     };
 
     useEffect(() => {
-        const checkAccessAndFetch = async () => {
+        const init = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
-                const currentUsr = await getCurrentUser();
-
-                if (!currentUsr || !link) {
-                    setError('unauthorizedEdit');
-                    return;
-                }
-
-                const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-                setIsAdmin(adminCheck);
-
-                const uFilter = new UserFilterQuery();
-                uFilter.link = link;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                const targetUsers = await userProvider.index(uIndexDto);
-
-                if (targetUsers.length === 0) {
+                if (!link) {
                     setError('userNotFound');
                     return;
                 }
 
-                const tUser = targetUsers[0];
-                const fullTargetUser = await userProvider.details(tUser.id, ['userRoles', 'userDisciplines']);
-                setTargetUser(fullTargetUser);
+                const access = await checkAccess({ link }, { requireFriendship: true });
 
-                const isOwner = currentUsr.id === tUser.id;
-                setIsMyProfile(isOwner);
+                setTargetUser(access.targetUser);
+                setIsAdmin(access.isAdmin);
+                setIsMyProfile(access.isMyProfile);
 
-                if (!isOwner && !adminCheck) {
-                    const fFilter = new FriendFilterQuery();
-                    fFilter.status = FriendStatusEnum.ACCEPTED;
-                    fFilter.userIds = [tUser.id, currentUsr.id];
-                    const fIndexDto = new FriendIndexQuery();
-                    fIndexDto.filter = fFilter;
-                    const friends = await friendProvider.index(fIndexDto);
-
-                    const hasRelation = friends.some(f =>
-                        (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
-                        (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
-                    );
-
-                    if (! hasRelation) {
-                        setError('accessDenied');
-                        setLoading(false);
-                        return;
-                    }
-                }
-
-                await fetchFriends(tUser.id);
+                await fetchFriends(access.targetUser.id);
             } catch (err: any) {
                 setError(err.error);
             } finally {
@@ -139,10 +100,10 @@ export function useUserFriends(link?: string) {
             }
         };
 
-        checkAccessAndFetch();
+        init();
     }, [link, page, limit, sort, filters]);
 
-    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
         setPage(1);
     };

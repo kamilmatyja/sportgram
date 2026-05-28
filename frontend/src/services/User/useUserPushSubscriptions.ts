@@ -1,17 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {UserProvider} from '../../api/providers/UserProvider';
 import {PushSubscriptionProvider} from '../../api/providers/PushSubscriptionProvider';
 import {PushSubscriptionResponse} from '../../api/responses/PushSubscriptionResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {PushSubscriptionFilterQuery} from '../../api/queries/PushSubscriptionFilterQuery';
 import {PushSubscriptionIndexQuery} from '../../api/queries/PushSubscriptionIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {useCheckPermission} from '../../utils/checkPermission';
-import {RoleEnum} from '../../enums/RoleEnum';
+import {profileAccess} from '../../utils/profileAccess.ts';
 
 export function useUserPushSubscriptions(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const {checkAccess} = profileAccess();
 
     const [subscriptions, setSubscriptions] = useState<PushSubscriptionResponse[]>([]);
     const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
@@ -27,7 +23,6 @@ export function useUserPushSubscriptions(link?: string) {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const userProvider = new UserProvider();
     const pushSubscriptionProvider = new PushSubscriptionProvider();
 
     const fetchSubscriptions = async (userId: string) => {
@@ -56,45 +51,22 @@ export function useUserPushSubscriptions(link?: string) {
     };
 
     useEffect(() => {
-        const checkAccessAndFetch = async () => {
+        const init = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
-                const currentUsr = await getCurrentUser();
-                setCurrentUser(currentUsr);
-
-                if (!currentUsr || !link) {
-                    setError('unauthorizedEdit');
-                    return;
-                }
-
-                const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-                setIsAdmin(adminCheck);
-
-                const uFilter = new UserFilterQuery();
-                uFilter.link = link;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                const targetUsers = await userProvider.index(uIndexDto);
-
-                if (targetUsers.length === 0) {
+                if (!link) {
                     setError('userNotFound');
                     return;
                 }
 
-                const tUser = targetUsers[0];
-                const fullTargetUser = await userProvider.details(tUser.id, ['userRoles', 'userDisciplines']);
-                setTargetUser(fullTargetUser);
+                const access = await checkAccess({ link }, { requireOwner: true });
 
-                const isOwner = currentUsr.id === tUser.id;
-                setIsMyProfile(isOwner);
+                setCurrentUser(access.currentUser);
+                setTargetUser(access.targetUser);
+                setIsAdmin(access.isAdmin);
+                setIsMyProfile(access.isMyProfile);
 
-                if (!isOwner && !adminCheck) {
-                    setError('accessDenied');
-                    setLoading(false);
-                    return;
-                }
-
-                await fetchSubscriptions(tUser.id);
+                await fetchSubscriptions(access.targetUser.id);
             } catch (err: any) {
                 setError(err.error);
             } finally {
@@ -102,7 +74,7 @@ export function useUserPushSubscriptions(link?: string) {
             }
         };
 
-        checkAccessAndFetch();
+        init();
     }, [link, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

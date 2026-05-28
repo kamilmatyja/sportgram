@@ -1,21 +1,16 @@
 import React, {useEffect, useState} from 'react';
-import {UserProvider} from '../../api/providers/UserProvider';
 import {TrainingProvider} from '../../api/providers/TrainingProvider';
-import {FriendProvider} from '../../api/providers/FriendProvider';
+import {UserProvider} from '../../api/providers/UserProvider';
 import {TrainingResponse} from '../../api/responses/TrainingResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {TrainingFilterQuery} from '../../api/queries/TrainingFilterQuery';
 import {TrainingIndexQuery} from '../../api/queries/TrainingIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
-import {useCheckPermission} from '../../utils/checkPermission';
-import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
-import {RoleEnum} from '../../enums/RoleEnum';
+import {profileAccess} from '../../utils/profileAccess.ts';
 
 export function useUserTrainings(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const {checkAccess} = profileAccess();
 
     const [trainings, setTrainings] = useState<TrainingResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
@@ -35,7 +30,6 @@ export function useUserTrainings(link?: string) {
 
     const userProvider = new UserProvider();
     const trainingProvider = new TrainingProvider();
-    const friendProvider = new FriendProvider();
 
     const fetchTrainings = async (userId: string) => {
         setLoading(true);
@@ -91,62 +85,23 @@ export function useUserTrainings(link?: string) {
     };
 
     useEffect(() => {
-        const checkAccessAndFetch = async () => {
+        const init = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
-                const currentUsr = await getCurrentUser();
-                setCurrentUser(currentUsr);
-
-                if (!currentUsr || !link) {
-                    setError('unauthorizedEdit');
-                    return;
-                }
-
-                const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-                setIsAdmin(adminCheck);
-
-                const participantCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.PARTICIPANT) ?? false;
-                setIsParticipant(participantCheck);
-
-                const uFilter = new UserFilterQuery();
-                uFilter.link = link;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                const targetUsers = await userProvider.index(uIndexDto);
-
-                if (targetUsers.length === 0) {
+                if (!link) {
                     setError('userNotFound');
                     return;
                 }
 
-                const tUser = targetUsers[0];
-                const fullTargetUser = await userProvider.details(tUser.id, ['userRoles', 'userDisciplines']);
-                setTargetUser(fullTargetUser);
+                const access = await checkAccess({ link }, { requireFriendship: true });
 
-                const isOwner = currentUsr.id === tUser.id;
-                setIsMyProfile(isOwner);
+                setCurrentUser(access.currentUser);
+                setTargetUser(access.targetUser);
+                setIsAdmin(access.isAdmin);
+                setIsParticipant(access.isParticipant);
+                setIsMyProfile(access.isMyProfile);
 
-                if (!isOwner && !adminCheck) {
-                    const fFilter = new FriendFilterQuery();
-                    fFilter.status = FriendStatusEnum.ACCEPTED;
-                    fFilter.userIds = [tUser.id, currentUsr.id];
-                    const fIndexDto = new FriendIndexQuery();
-                    fIndexDto.filter = fFilter;
-                    const friends = await friendProvider.index(fIndexDto);
-
-                    const hasRelation = friends.some(f =>
-                        (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
-                        (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
-                    );
-
-                    if (! hasRelation) {
-                        setError('accessDenied');
-                        setLoading(false);
-                        return;
-                    }
-                }
-
-                await fetchTrainings(tUser.id);
+                await fetchTrainings(access.targetUser.id);
             } catch (err: any) {
                 setError(err.error);
             } finally {
@@ -154,7 +109,7 @@ export function useUserTrainings(link?: string) {
             }
         };
 
-        checkAccessAndFetch();
+        init();
     }, [link, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -179,24 +134,8 @@ export function useUserTrainings(link?: string) {
     };
 
     return {
-        trainings,
-        relatedUsers,
-        targetUser,
-        currentUser,
-        isMyProfile,
-        isAdmin,
-        isParticipant,
-        page,
-        limit,
-        sort,
-        filters,
-        loading,
-        error,
-        handleFilterChange,
-        handleSortChange,
-        handleLimitChange,
-        handlePrevPage,
-        handleNextPage,
-        refreshTrainings
+        trainings, relatedUsers, targetUser, currentUser, isMyProfile, isAdmin, isParticipant,
+        page, limit, sort, filters, loading, error,
+        handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshTrainings
     };
 }

@@ -1,21 +1,16 @@
 import React, {useEffect, useState} from 'react';
-import {UserProvider} from '../../api/providers/UserProvider';
 import {GoalProvider} from '../../api/providers/GoalProvider';
-import {FriendProvider} from '../../api/providers/FriendProvider';
+import {UserProvider} from '../../api/providers/UserProvider';
 import {GoalResponse} from '../../api/responses/GoalResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {GoalFilterQuery} from '../../api/queries/GoalFilterQuery';
 import {GoalIndexQuery} from '../../api/queries/GoalIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
-import {useCheckPermission} from '../../utils/checkPermission';
-import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
-import {RoleEnum} from '../../enums/RoleEnum';
+import {profileAccess} from '../../utils/profileAccess.ts';
 
 export function useUserGoals(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const {checkAccess} = profileAccess();
 
     const [goals, setGoals] = useState<GoalResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
@@ -34,7 +29,6 @@ export function useUserGoals(link?: string) {
 
     const userProvider = new UserProvider();
     const goalProvider = new GoalProvider();
-    const friendProvider = new FriendProvider();
 
     const fetchGoals = async (userId: string) => {
         setLoading(true);
@@ -90,59 +84,22 @@ export function useUserGoals(link?: string) {
     };
 
     useEffect(() => {
-        const checkAccessAndFetch = async () => {
+        const init = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
-                const currentUsr = await getCurrentUser();
-                setCurrentUser(currentUsr);
-
-                if (!currentUsr || !link) {
-                    setError('unauthorizedEdit');
-                    return;
-                }
-
-                const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-                setIsAdmin(adminCheck);
-
-                const uFilter = new UserFilterQuery();
-                uFilter.link = link;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                const targetUsers = await userProvider.index(uIndexDto);
-
-                if (targetUsers.length === 0) {
+                if (!link) {
                     setError('userNotFound');
                     return;
                 }
 
-                const tUser = targetUsers[0];
-                const fullTargetUser = await userProvider.details(tUser.id, ['userRoles', 'userDisciplines']);
-                setTargetUser(fullTargetUser);
+                const access = await checkAccess({ link }, { requireFriendship: true });
 
-                const isOwner = currentUsr.id === tUser.id;
-                setIsMyProfile(isOwner);
+                setCurrentUser(access.currentUser);
+                setTargetUser(access.targetUser);
+                setIsAdmin(access.isAdmin);
+                setIsMyProfile(access.isMyProfile);
 
-                if (!isOwner && !adminCheck) {
-                    const fFilter = new FriendFilterQuery();
-                    fFilter.status = FriendStatusEnum.ACCEPTED;
-                    fFilter.userIds = [tUser.id, currentUsr.id];
-                    const fIndexDto = new FriendIndexQuery();
-                    fIndexDto.filter = fFilter;
-                    const friends = await friendProvider.index(fIndexDto);
-
-                    const hasRelation = friends.some(f =>
-                        (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
-                        (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
-                    );
-
-                    if (! hasRelation) {
-                        setError('accessDenied');
-                        setLoading(false);
-                        return;
-                    }
-                }
-
-                await fetchGoals(tUser.id);
+                await fetchGoals(access.targetUser.id);
             } catch (err: any) {
                 setError(err.error);
             } finally {
@@ -150,7 +107,7 @@ export function useUserGoals(link?: string) {
             }
         };
 
-        checkAccessAndFetch();
+        init();
     }, [link, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -175,23 +132,7 @@ export function useUserGoals(link?: string) {
     };
 
     return {
-        goals,
-        relatedUsers,
-        targetUser,
-        currentUser,
-        isMyProfile,
-        isAdmin,
-        page,
-        limit,
-        sort,
-        filters,
-        loading,
-        error,
-        handleFilterChange,
-        handleSortChange,
-        handleLimitChange,
-        handlePrevPage,
-        handleNextPage,
-        refreshGoals
+        goals, relatedUsers, targetUser, currentUser, isMyProfile, isAdmin, page, limit, sort, filters, loading, error,
+        handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshGoals
     };
 }

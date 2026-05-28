@@ -3,15 +3,14 @@ import {TrainingProvider} from '../../api/providers/TrainingProvider';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {TrainingResponse} from '../../api/responses/TrainingResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
-import {useCheckPermission} from '../../utils/checkPermission';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {TrainingFilterQuery} from '../../api/queries/TrainingFilterQuery';
 import {TrainingIndexQuery} from '../../api/queries/TrainingIndexQuery';
-import {RoleEnum} from '../../enums/RoleEnum';
+import {profileAccess} from '../../utils/profileAccess';
 
 export function useTrainingDetails(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const {checkAccess} = profileAccess();
 
     const [training, setTraining] = useState<TrainingResponse | null>(null);
     const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
@@ -32,16 +31,10 @@ export function useTrainingDetails(link?: string) {
         setLoading(true);
         setError(null);
         try {
-            const currentUsr = await getCurrentUser();
-            setCurrentUser(currentUsr);
-
-            if (!currentUsr || !link) {
+            if (!link) {
                 setError('unauthorizedEdit');
                 return;
             }
-
-            const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-            setIsAdmin(adminCheck);
 
             const filterDto = new TrainingFilterQuery();
             filterDto.link = link;
@@ -62,15 +55,15 @@ export function useTrainingDetails(link?: string) {
                 'trainingParticipants'
             ]);
 
+            const access = await checkAccess({ id: targetTraining.userId }, { requireFriendship: true });
+
             setTraining(targetTraining);
+            setCurrentUser(access.currentUser);
+            setOwnerUser(access.targetUser);
+            setIsAdmin(access.isAdmin);
+            setIsMyProfile(access.isMyProfile);
 
-            const owner = await userProvider.details(targetTraining.userId);
-            setOwnerUser(owner);
-
-            const isOwner = currentUsr.id === owner.id;
-            setIsMyProfile(isOwner);
-
-            const participantCheck = targetTraining.participants?.some(p => p.userId === currentUsr.id) ?? false;
+            const participantCheck = targetTraining.participants?.some(p => p.userId === access.currentUser.id) ?? false;
             setIsParticipantOfTraining(participantCheck);
 
             const userIdsToFetch = Array.from(new Set(targetTraining.participants.map(p => p.userId)));
@@ -104,15 +97,7 @@ export function useTrainingDetails(link?: string) {
     };
 
     return {
-        training,
-        ownerUser,
-        currentUser,
-        relatedUsers,
-        isMyProfile,
-        isAdmin,
-        isParticipantOfTraining,
-        loading,
-        error,
-        refreshTraining
+        training, ownerUser, currentUser, relatedUsers, isMyProfile, isAdmin, isParticipantOfTraining,
+        loading, error, refreshTraining
     };
 }

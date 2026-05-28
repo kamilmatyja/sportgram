@@ -1,21 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {UserProvider} from '../../api/providers/UserProvider';
 import {EventProvider} from '../../api/providers/EventProvider';
-import {FriendProvider} from '../../api/providers/FriendProvider';
 import {EventResponse} from '../../api/responses/EventResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
 import {EventIndexQuery} from '../../api/queries/EventIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
-import {useCheckPermission} from '../../utils/checkPermission';
-import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
-import {RoleEnum} from '../../enums/RoleEnum';
+import {profileAccess} from '../../utils/profileAccess.ts';
 
 export function useUserEvents(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const {checkAccess} = profileAccess();
 
     const [events, setEvents] = useState<EventResponse[]>([]);
     const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
@@ -32,9 +24,7 @@ export function useUserEvents(link?: string) {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const userProvider = new UserProvider();
     const eventProvider = new EventProvider();
-    const friendProvider = new FriendProvider();
 
     const fetchEvents = async (userId: string) => {
         setLoading(true);
@@ -67,62 +57,23 @@ export function useUserEvents(link?: string) {
     };
 
     useEffect(() => {
-        const checkAccessAndFetch = async () => {
+        const init = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
-                const currentUsr = await getCurrentUser();
-                setCurrentUser(currentUsr);
-
-                if (!currentUsr || !link) {
-                    setError('unauthorizedEdit');
-                    return;
-                }
-
-                const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-                setIsAdmin(adminCheck);
-
-                const organizerCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ORGANIZER) ?? false;
-                setIsOrganizer(organizerCheck);
-
-                const uFilter = new UserFilterQuery();
-                uFilter.link = link;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                const targetUsers = await userProvider.index(uIndexDto);
-
-                if (targetUsers.length === 0) {
+                if (!link) {
                     setError('userNotFound');
                     return;
                 }
 
-                const tUser = targetUsers[0];
-                const fullTargetUser = await userProvider.details(tUser.id, ['userRoles', 'userDisciplines']);
-                setTargetUser(fullTargetUser);
+                const access = await checkAccess({ link }, { requireFriendship: true });
 
-                const isOwner = currentUsr.id === tUser.id;
-                setIsMyProfile(isOwner);
+                setCurrentUser(access.currentUser);
+                setTargetUser(access.targetUser);
+                setIsAdmin(access.isAdmin);
+                setIsOrganizer(access.isOrganizer);
+                setIsMyProfile(access.isMyProfile);
 
-                if (!isOwner && !adminCheck) {
-                    const fFilter = new FriendFilterQuery();
-                    fFilter.status = FriendStatusEnum.ACCEPTED;
-                    fFilter.userIds = [tUser.id, currentUsr.id];
-                    const fIndexDto = new FriendIndexQuery();
-                    fIndexDto.filter = fFilter;
-                    const friends = await friendProvider.index(fIndexDto);
-
-                    const hasRelation = friends.some(f =>
-                        (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
-                        (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
-                    );
-
-                    if (! hasRelation) {
-                        setError('accessDenied');
-                        setLoading(false);
-                        return;
-                    }
-                }
-
-                await fetchEvents(tUser.id);
+                await fetchEvents(access.targetUser.id);
             } catch (err: any) {
                 setError(err.error);
             } finally {
@@ -130,7 +81,7 @@ export function useUserEvents(link?: string) {
             }
         };
 
-        checkAccessAndFetch();
+        init();
     }, [link, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

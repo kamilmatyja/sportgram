@@ -49,7 +49,7 @@ export function usePages() {
     };
 
     useEffect(() => {
-        const checkAccessAndFetch = async () => {
+        const init = async () => {
             try {
                 setLoading(true);
                 const currentUsr = await getCurrentUser();
@@ -67,7 +67,7 @@ export function usePages() {
             }
         };
 
-        checkAccessAndFetch();
+        init();
     }, [page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

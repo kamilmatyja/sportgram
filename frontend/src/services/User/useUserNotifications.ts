@@ -1,16 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {UserProvider} from '../../api/providers/UserProvider';
 import {NotificationProvider} from '../../api/providers/NotificationProvider';
 import {NotificationResponse} from '../../api/responses/NotificationResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {NotificationFilterQuery} from '../../api/queries/NotificationFilterQuery';
 import {NotificationIndexQuery} from '../../api/queries/NotificationIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {useCheckPermission} from '../../utils/checkPermission';
+import {profileAccess} from '../../utils/profileAccess.ts';
 
 export function useUserNotifications(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const {checkAccess} = profileAccess();
 
     const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
     const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
@@ -25,7 +22,6 @@ export function useUserNotifications(link?: string) {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const userProvider = new UserProvider();
     const notificationProvider = new NotificationProvider();
 
     const fetchNotifications = async () => {
@@ -52,40 +48,19 @@ export function useUserNotifications(link?: string) {
     };
 
     useEffect(() => {
-        const checkAccessAndFetch = async () => {
+        const init = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
-                const currentUsr = await getCurrentUser();
-                setCurrentUser(currentUsr);
-
-                if (!currentUsr || !link) {
-                    setError('unauthorizedEdit');
-                    return;
-                }
-
-                const uFilter = new UserFilterQuery();
-                uFilter.link = link;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                const targetUsers = await userProvider.index(uIndexDto);
-
-                if (targetUsers.length === 0) {
+                if (!link) {
                     setError('userNotFound');
                     return;
                 }
 
-                const tUser = targetUsers[0];
-                const fullTargetUser = await userProvider.details(tUser.id, ['userRoles', 'userDisciplines']);
-                setTargetUser(fullTargetUser);
+                const access = await checkAccess({ link }, { requireOwner: true });
 
-                const isOwner = currentUsr.id === tUser.id;
-                setIsMyProfile(isOwner);
-
-                if (!isOwner) {
-                    setError('accessDenied');
-                    setLoading(false);
-                    return;
-                }
+                setCurrentUser(access.currentUser);
+                setTargetUser(access.targetUser);
+                setIsMyProfile(access.isMyProfile);
 
                 await fetchNotifications();
             } catch (err: any) {
@@ -95,7 +70,7 @@ export function useUserNotifications(link?: string) {
             }
         };
 
-        checkAccessAndFetch();
+        init();
     }, [link, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

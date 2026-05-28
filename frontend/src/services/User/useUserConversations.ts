@@ -1,29 +1,24 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {ConversationProvider} from '../../api/providers/ConversationProvider';
-import {FriendProvider} from '../../api/providers/FriendProvider';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {ConversationResponse} from '../../api/responses/ConversationResponse';
 import {ConversationActivityResponse} from '../../api/responses/ConversationActivityResponse';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {ConversationIndexQuery} from '../../api/queries/ConversationIndexQuery';
 import {ConversationFilterQuery} from '../../api/queries/ConversationFilterQuery';
 import {ConversationActivityIndexQuery} from '../../api/queries/ConversationActivityIndexQuery';
 import {ConversationActivityFilterQuery} from '../../api/queries/ConversationActivityFilterQuery';
 import {ConversationBody} from '../../api/body/ConversationBody';
-import {useCheckPermission} from '../../utils/checkPermission';
-import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
-import {RoleEnum} from '../../enums/RoleEnum';
+import {profileAccess} from '../../utils/profileAccess.ts';
 
 export interface ProcessedActivity extends ConversationActivityResponse {
     otherUser: UserResponse;
 }
 
 export function useUserConversations(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const {checkAccess} = profileAccess();
 
     const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
@@ -54,7 +49,6 @@ export function useUserConversations(link?: string) {
 
     const userProvider = new UserProvider();
     const conversationProvider = new ConversationProvider();
-    const friendProvider = new FriendProvider();
 
     const scrollToBottom = () => {
         chatEndRef.current?.scrollIntoView({behavior: 'smooth'});
@@ -206,9 +200,7 @@ export function useUserConversations(link?: string) {
 
                 if (diffMs <= 10000 && diffMs >= -10000) {
                     setIsTyping(true);
-
                     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-
                     typingTimeoutRef.current = setTimeout(() => {
                         setIsTyping(false);
                     }, 5000 - diffMs);
@@ -218,64 +210,34 @@ export function useUserConversations(link?: string) {
             } else {
                 setIsTyping(false);
             }
-
-        } catch (e) {
-        }
+        } catch (e) {}
     };
 
     useEffect(() => {
         const init = async () => {
             setLoading(true);
             try {
-                const currentUsr = await getCurrentUser();
-                setCurrentUser(currentUsr);
-
-                if (!currentUsr || !link) {
-                    setError('unauthorizedEdit');
-                    return;
-                }
-
-                const uFilter = new UserFilterQuery();
-                uFilter.link = link;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                const targetUsers = await userProvider.index(uIndexDto);
-
-                if (targetUsers.length === 0) {
+                if (!link) {
                     setError('userNotFound');
                     return;
                 }
 
-                const tUser = targetUsers[0];
-                setTargetUser(tUser);
+                const access = await checkAccess({ link }, { requireFriendship: true });
 
-                const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-                const isOwner = currentUsr.id === tUser.id;
-                setIsMyProfile(isOwner);
+                setCurrentUser(access.currentUser);
+                setTargetUser(access.targetUser);
+                setIsMyProfile(access.isMyProfile);
 
-                if (isOwner) {
-                    await fetchActivities(currentUsr);
+                if (access.isMyProfile) {
+                    await fetchActivities(access.currentUser);
                 } else {
-                    const fFilter = new FriendFilterQuery();
-                    fFilter.status = FriendStatusEnum.ACCEPTED;
-                    fFilter.userIds = [tUser.id, currentUsr.id];
-                    const fIndexDto = new FriendIndexQuery();
-                    fIndexDto.filter = fFilter;
-                    const friends = await friendProvider.index(fIndexDto);
-
-                    const hasRelation = friends.some(f =>
-                        (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
-                        (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
-                    );
-
-                    if (!hasRelation && !adminCheck) {
+                    if (!access.isAdmin && !access.friendship) {
                         setError('accessDenied');
                         setLoading(false);
                         return;
                     }
-
-                    setCanSendMessages(hasRelation);
-                    await fetchMessages(tUser, 1, false);
+                    setCanSendMessages(!!access.friendship);
+                    await fetchMessages(access.targetUser, 1, false);
                 }
             } catch (err: any) {
                 setError(err.error);
