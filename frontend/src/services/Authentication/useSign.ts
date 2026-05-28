@@ -47,7 +47,7 @@ export function useSign() {
                     sessionStorage.removeItem('sign_id');
                     navigate('/register');
                 } catch (registerErr: any) {
-                    setGlobalError(registerErr.error || 'Unknown error');
+                    setGlobalError(registerErr.error);
                 }
             }
         });

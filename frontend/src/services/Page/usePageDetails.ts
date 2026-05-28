@@ -144,7 +144,7 @@ export function usePageDetails(link?: string) {
             }
             await fetchPageData();
         } catch (err: any) {
-            alert(err.error || 'Error');
+            alert(err.error);
         } finally {
             setFollowLoading(false);
         }

@@ -42,7 +42,7 @@ export function usePasswordReset() {
                     sessionStorage.removeItem('password_reset_id');
                     navigate('/register');
                 } catch (registerErr: any) {
-                    setGlobalError(registerErr.error || 'Unknown error');
+                    setGlobalError(registerErr.error);
                 }
             }
         });
