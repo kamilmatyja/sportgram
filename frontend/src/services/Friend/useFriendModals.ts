@@ -10,19 +10,16 @@ import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
+import {useModal} from '../../utils/hooks/useModal';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useFriendModals(onSuccess: () => void) {
     const { currentUser } = useAppAccess();
+    const addModal = useModal();
+    const manageModal = useModal<FriendResponse>();
+    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
 
-    const [showAdd, setShowAdd] = useState(false);
-    const [showManage, setShowManage] = useState(false);
-    const [currentFriend, setCurrentFriend] = useState<FriendResponse | null>(null);
     const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
-
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
-
     const [formData, setFormData] = useState(new FriendBody(''));
 
     const friendProvider = new FriendProvider();
@@ -30,11 +27,8 @@ export function useFriendModals(onSuccess: () => void) {
 
     const openAddModal = async () => {
         setFormData(new FriendBody(''));
-        setGlobalError('');
-        setFieldErrors({});
-        setLoading(true);
-
-        try {
+        resetErrors();
+        await wrap(async () => {
             if (currentUser) {
                 const uIndexDto = new UserIndexQuery();
                 uIndexDto.limit = 100;
@@ -54,77 +48,48 @@ export function useFriendModals(onSuccess: () => void) {
 
                 setAvailableUsers(allUsers.filter(u => u.id !== currentUser.id && !friendIds.has(u.id)));
             }
-        } catch (e: any) {
-            setGlobalError(e.error);
-        } finally {
-            setLoading(false);
-            setShowAdd(true);
-        }
+        }).catch(() => {});
+        addModal.open();
     };
-
-    const closeAddModal = () => setShowAdd(false);
 
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
+        wrap(async () => {
             await friendProvider.create(formData);
-            closeAddModal();
+            addModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const openManageModal = (friend: FriendResponse) => {
-        setCurrentFriend(friend);
-        setGlobalError('');
-        setFieldErrors({});
-        setShowManage(true);
+        resetErrors();
+        manageModal.open(friend);
     };
 
-    const closeManageModal = () => setShowManage(false);
-
     const handleStatusSubmit = async (newStatus: number) => {
-        if (!currentFriend) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await friendProvider.updateStatus(currentFriend.id, new StatusBody(newStatus));
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await friendProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleDelete = async () => {
-        if (!currentFriend) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await friendProvider.delete(currentFriend.id);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await friendProvider.delete(manageModal.data!.id);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleChange = createFormHandler(setFormData);
 
     return {
-        showAdd, openAddModal, closeAddModal, handleAddSubmit, availableUsers,
-        showManage, openManageModal, closeManageModal, currentFriend, handleStatusSubmit, handleDelete,
+        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit, availableUsers,
+        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
+        currentFriend: manageModal.data, handleStatusSubmit, handleDelete,
         formData, handleChange, loading, globalError, fieldErrors
     };
 }

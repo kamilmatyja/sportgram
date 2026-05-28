@@ -12,20 +12,16 @@ import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
+import {useModal} from '../../utils/hooks/useModal';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useGoalModals(onSuccess: () => void) {
     const { currentUser } = useAppAccess();
+    const addModal = useModal();
+    const manageModal = useModal<GoalResponse>();
+    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
 
-    const [showAdd, setShowAdd] = useState(false);
-    const [showManage, setShowManage] = useState(false);
-
-    const [currentGoal, setCurrentGoal] = useState<GoalResponse | null>(null);
     const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
-
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
-
     const [formData, setFormData] = useState(new GoalBody(null, null, '', '', 0, 0, null, []));
 
     const goalProvider = new GoalProvider();
@@ -57,43 +53,24 @@ export function useGoalModals(onSuccess: () => void) {
 
     const openAddModal = async () => {
         setFormData(new GoalBody(null, null, '', '', 0, 0, null, []));
-        setGlobalError('');
-        setFieldErrors({});
-        setLoading(true);
-
-        try {
-            if (currentUser) {
-                await loadAvailableFriends(currentUser);
-            }
-        } catch (e: any) {
-            setGlobalError(e.error);
-        } finally {
-            setLoading(false);
-            setShowAdd(true);
-        }
+        resetErrors();
+        await wrap(async () => {
+            if (currentUser) { await loadAvailableFriends(currentUser); }
+        }).catch(() => {});
+        addModal.open();
     };
-
-    const closeAddModal = () => setShowAdd(false);
 
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
+        wrap(async () => {
             await goalProvider.create(formData);
-            closeAddModal();
+            addModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const openManageModal = async (goal: GoalResponse) => {
-        setCurrentGoal(goal);
+        manageModal.open(goal);
         setFormData(new GoalBody(
             goal.startedAt ? goal.startedAt.substring(0, 16) : null,
             goal.endedAt ? goal.endedAt.substring(0, 16) : null,
@@ -104,70 +81,38 @@ export function useGoalModals(onSuccess: () => void) {
             goal.time,
             goal.participants.map(p => p.userId)
         ));
-        setGlobalError('');
-        setFieldErrors({});
-        setLoading(true);
-
-        try {
-            if (currentUser) {
-                await loadAvailableFriends(currentUser);
-            }
-        } catch (e: any) {
-            setGlobalError(e.error);
-        } finally {
-            setLoading(false);
-            setShowManage(true);
-        }
+        resetErrors();
+        await wrap(async () => {
+            if (currentUser) { await loadAvailableFriends(currentUser); }
+        }).catch(() => {});
     };
-
-    const closeManageModal = () => setShowManage(false);
 
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!currentGoal) return;
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
-            await goalProvider.update(currentGoal.id, formData);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await goalProvider.update(manageModal.data!.id, formData);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleStatusSubmit = async (newStatus: number) => {
-        if (!currentGoal) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await goalProvider.updateStatus(currentGoal.id, new StatusBody(newStatus));
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await goalProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleDelete = async () => {
-        if (!currentGoal) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await goalProvider.delete(currentGoal.id);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await goalProvider.delete(manageModal.data!.id);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleChange = createFormHandler(setFormData);
@@ -178,8 +123,9 @@ export function useGoalModals(onSuccess: () => void) {
     };
 
     return {
-        showAdd, openAddModal, closeAddModal, handleAddSubmit, availableUsers,
-        showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
-        currentGoal, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
+        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit, availableUsers,
+        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
+        handleEditSubmit, handleStatusSubmit, handleDelete,
+        currentGoal: manageModal.data, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
     };
 }

@@ -15,20 +15,16 @@ import {TrainingDiscipline} from '../../api/body/TrainingDiscipline';
 import {TrainingDistance} from '../../api/body/TrainingDistance';
 import {TrainingSubDistance} from '../../api/body/TrainingSubDistance';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
+import {useModal} from '../../utils/hooks/useModal';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useTrainingModals(onSuccess: () => void) {
     const { currentUser } = useAppAccess();
+    const addModal = useModal();
+    const manageModal = useModal<TrainingResponse>();
+    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
 
-    const [showAdd, setShowAdd] = useState(false);
-    const [showManage, setShowManage] = useState(false);
-
-    const [currentTraining, setCurrentTraining] = useState<TrainingResponse | null>(null);
     const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
-
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
-
     const [formData, setFormData] = useState<TrainingBody>(new TrainingBody('', '', '', '', '', '', [], []));
 
     const trainingProvider = new TrainingProvider();
@@ -59,43 +55,24 @@ export function useTrainingModals(onSuccess: () => void) {
 
     const openAddModal = async () => {
         setFormData(new TrainingBody('', '', '', '', '', '', [], []));
-        setGlobalError('');
-        setFieldErrors({});
-        setLoading(true);
-
-        try {
-            if (currentUser) {
-                await loadAvailableFriends(currentUser);
-            }
-        } catch (e: any) {
-            setGlobalError(e.error);
-        } finally {
-            setLoading(false);
-            setShowAdd(true);
-        }
+        resetErrors();
+        await wrap(async () => {
+            if (currentUser) { await loadAvailableFriends(currentUser); }
+        }).catch(() => {});
+        addModal.open();
     };
-
-    const closeAddModal = () => setShowAdd(false);
 
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
+        wrap(async () => {
             await trainingProvider.create(formData);
-            closeAddModal();
+            addModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const openManageModal = async (tr: TrainingResponse) => {
-        setCurrentTraining(tr);
+        manageModal.open(tr);
 
         const disciplinesMapped: TrainingDiscipline[] = tr.disciplines.map(d => ({
             discipline: d.discipline,
@@ -124,68 +101,38 @@ export function useTrainingModals(onSuccess: () => void) {
             tr.participants.map(p => p.userId)
         ));
 
-        setGlobalError('');
-        setFieldErrors({});
-        setLoading(true);
-
-        try {
+        resetErrors();
+        await wrap(async () => {
             if (currentUser) await loadAvailableFriends(currentUser);
-        } catch (e: any) {
-            setGlobalError(e.error);
-        } finally {
-            setLoading(false);
-            setShowManage(true);
-        }
+        }).catch(() => {});
     };
-
-    const closeManageModal = () => setShowManage(false);
 
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!currentTraining) return;
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
-            await trainingProvider.update(currentTraining.id, formData);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await trainingProvider.update(manageModal.data!.id, formData);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleStatusSubmit = async (newStatus: number) => {
-        if (!currentTraining) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await trainingProvider.updateStatus(currentTraining.id, new StatusBody(newStatus));
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await trainingProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleDelete = async () => {
-        if (!currentTraining) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await trainingProvider.delete(currentTraining.id);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await trainingProvider.delete(manageModal.data!.id);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const addDiscipline = () => {
@@ -258,9 +205,10 @@ export function useTrainingModals(onSuccess: () => void) {
     };
 
     return {
-        showAdd, openAddModal, closeAddModal, handleAddSubmit, availableUsers,
-        showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
-        currentTraining, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors,
+        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit, availableUsers,
+        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
+        handleEditSubmit, handleStatusSubmit, handleDelete,
+        currentTraining: manageModal.data, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors,
         addDiscipline, updateDisciplineType, removeDiscipline, addDistance, updateDistanceValue, removeDistance,
         addSubDistance, updateSubDistanceValue, removeSubDistance
     };

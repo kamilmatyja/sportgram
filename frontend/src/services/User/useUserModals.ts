@@ -7,18 +7,16 @@ import {UserResponse} from '../../api/responses/UserResponse';
 import {createFormHandler} from '../../utils/formHandler';
 import {useTranslation} from '../../context/TranslationContext';
 import {useNavigate} from 'react-router-dom';
+import {useModal} from '../../utils/hooks/useModal';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useUserModals(onSuccess: () => void) {
     const {t} = useTranslation();
     const navigate = useNavigate();
-    const [showAdd, setShowAdd] = useState(false);
-    const [showManage, setShowManage] = useState(false);
 
-    const [managedUser, setManagedUser] = useState<UserResponse | null>(null);
-
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
+    const addModal = useModal();
+    const manageModal = useModal<UserResponse>();
+    const { loading, globalError, fieldErrors, wrap, resetErrors, setGlobalError } = useFormState();
 
     const [addFormData, setAddFormData] = useState(new UserCreateBody('', '', '', 0, 0, '', '', '', 0, 0, 0, 0, '', '', '', [], []));
     const [updateFormData, setUpdateFormData] = useState(new UserUpdateBody('', '', '', 0, 0, '', '', 0, 0, 0, 0, '', '', '', [], null, []));
@@ -27,39 +25,26 @@ export function useUserModals(onSuccess: () => void) {
 
     const openAddModal = () => {
         setAddFormData(new UserCreateBody('', '', '', 0, 0, '', '', '', 0, 0, 0, 0, '', '', '', [], []));
-        setGlobalError('');
-        setFieldErrors({});
-        setShowAdd(true);
+        resetErrors();
+        addModal.open();
     };
-
-    const closeAddModal = () => setShowAdd(false);
 
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-
         if (!addFormData.profilePhoto || !addFormData.backgroundPhoto) {
             setGlobalError(t('photosRequired'));
-            setLoading(false);
             return;
         }
-
-        try {
+        wrap(async () => {
             await userProvider.create(addFormData);
-            closeAddModal();
+            addModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const openManageModal = (user: UserResponse) => {
-        setManagedUser(user);
+        resetErrors();
+        manageModal.open(user);
         setUpdateFormData(new UserUpdateBody(
             user.birthAt.split('T')[0],
             user.firstName,
@@ -79,71 +64,45 @@ export function useUserModals(onSuccess: () => void) {
             null,
             user.disciplines?.map((d: any) => d.discipline) || []
         ));
-        setGlobalError('');
-        setFieldErrors({});
-        setShowManage(true);
     };
-
-    const closeManageModal = () => setShowManage(false);
 
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!managedUser) return;
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
-            updateFormData.profilePhoto = updateFormData.profilePhoto ? updateFormData.profilePhoto : managedUser.profilePhoto;
-            updateFormData.backgroundPhoto = updateFormData.backgroundPhoto ? updateFormData.backgroundPhoto : managedUser.backgroundPhoto;
-
-            await userProvider.update(managedUser.id, updateFormData);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            updateFormData.profilePhoto = updateFormData.profilePhoto ? updateFormData.profilePhoto : manageModal.data!.profilePhoto;
+            updateFormData.backgroundPhoto = updateFormData.backgroundPhoto ? updateFormData.backgroundPhoto : manageModal.data!.backgroundPhoto;
+            await userProvider.update(manageModal.data!.id, updateFormData);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleStatusSubmit = async (newStatus: number) => {
-        if (!managedUser) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await userProvider.updateStatus(managedUser.id, new StatusBody(newStatus));
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await userProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleDelete = async () => {
-        if (!managedUser) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await userProvider.delete(managedUser.id);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await userProvider.delete(manageModal.data!.id);
+            manageModal.close();
             navigate('/users');
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleAddChange = createFormHandler(setAddFormData);
     const handleUpdateChange = createFormHandler(setUpdateFormData);
 
     return {
-        showAdd, openAddModal, closeAddModal, addFormData, handleAddChange, handleAddSubmit,
-        showManage, openManageModal, closeManageModal, updateFormData, handleUpdateChange, handleEditSubmit,
-        handleStatusSubmit, handleDelete, managedUser,
+        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, addFormData, handleAddChange, handleAddSubmit,
+        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close, updateFormData, handleUpdateChange, handleEditSubmit,
+        handleStatusSubmit, handleDelete, managedUser: manageModal.data,
         loading, globalError, fieldErrors
     };
 }

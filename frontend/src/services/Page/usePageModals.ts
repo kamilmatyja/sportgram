@@ -12,20 +12,16 @@ import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
+import {useModal} from '../../utils/hooks/useModal';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function usePageModals(onSuccess: () => void) {
     const { currentUser } = useAppAccess();
+    const addModal = useModal();
+    const manageModal = useModal<PageResponse>();
+    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
 
-    const [showAdd, setShowAdd] = useState(false);
-    const [showManage, setShowManage] = useState(false);
-
-    const [currentPage, setCurrentPage] = useState<PageResponse | null>(null);
     const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
-
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
-
     const [formData, setFormData] = useState(new PageBody('', '', '', '', '', 0, []));
 
     const pageProvider = new PageProvider();
@@ -62,43 +58,24 @@ export function usePageModals(onSuccess: () => void) {
 
     const openAddModal = async () => {
         setFormData(new PageBody('', '', '', '', '', 0, []));
-        setGlobalError('');
-        setFieldErrors({});
-        setLoading(true);
-
-        try {
-            if (currentUser) {
-                await loadAvailableFriends(currentUser);
-            }
-        } catch (e: any) {
-            setGlobalError(e.error);
-        } finally {
-            setLoading(false);
-            setShowAdd(true);
-        }
+        resetErrors();
+        await wrap(async () => {
+            if (currentUser) { await loadAvailableFriends(currentUser); }
+        }).catch(() => {});
+        addModal.open();
     };
-
-    const closeAddModal = () => setShowAdd(false);
 
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
+        wrap(async () => {
             await pageProvider.create(formData);
-            closeAddModal();
+            addModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const openManageModal = async (page: PageResponse) => {
-        setCurrentPage(page);
+        manageModal.open(page);
         setFormData(new PageBody(
             page.title,
             page.description,
@@ -108,72 +85,40 @@ export function usePageModals(onSuccess: () => void) {
             page.color,
             page.participants.map(p => p.userId)
         ));
-        setGlobalError('');
-        setFieldErrors({});
-        setLoading(true);
-
-        try {
-            if (currentUser) {
-                await loadAvailableFriends(currentUser, page);
-            }
-        } catch (e: any) {
-            setGlobalError(e.error);
-        } finally {
-            setLoading(false);
-            setShowManage(true);
-        }
+        resetErrors();
+        await wrap(async () => {
+            if (currentUser) { await loadAvailableFriends(currentUser, page); }
+        }).catch(() => {});
     };
-
-    const closeManageModal = () => setShowManage(false);
 
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!currentPage) return;
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
-            formData.profilePhoto = formData.profilePhoto ? formData.profilePhoto : currentPage.profilePhoto;
-            formData.backgroundPhoto = formData.backgroundPhoto ? formData.backgroundPhoto : currentPage.backgroundPhoto;
-            await pageProvider.update(currentPage.id, formData);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            formData.profilePhoto = formData.profilePhoto ? formData.profilePhoto : manageModal.data!.profilePhoto;
+            formData.backgroundPhoto = formData.backgroundPhoto ? formData.backgroundPhoto : manageModal.data!.backgroundPhoto;
+            await pageProvider.update(manageModal.data!.id, formData);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleStatusSubmit = async (newStatus: number) => {
-        if (!currentPage) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await pageProvider.updateStatus(currentPage.id, new StatusBody(newStatus));
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await pageProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleDelete = async () => {
-        if (!currentPage) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await pageProvider.delete(currentPage.id);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await pageProvider.delete(manageModal.data!.id);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleChange = createFormHandler(setFormData);
@@ -184,8 +129,9 @@ export function usePageModals(onSuccess: () => void) {
     };
 
     return {
-        showAdd, openAddModal, closeAddModal, handleAddSubmit, availableUsers,
-        showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
-        currentPage, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
+        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit, availableUsers,
+        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
+        handleEditSubmit, handleStatusSubmit, handleDelete,
+        currentPage: manageModal.data, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
     };
 }

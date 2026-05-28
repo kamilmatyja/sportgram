@@ -4,112 +4,74 @@ import {FeedBody} from '../../api/body/FeedBody';
 import {StatusBody} from '../../api/body/StatusBody';
 import {FeedResponse} from '../../api/responses/FeedResponse';
 import {createFormHandler} from '../../utils/formHandler';
+import {useModal} from '../../utils/hooks/useModal';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useFeedModals(onSuccess: () => void) {
-    const [showAdd, setShowAdd] = useState(false);
-    const [showManage, setShowManage] = useState(false);
-    const [currentFeed, setCurrentFeed] = useState<FeedResponse | null>(null);
-
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
+    const addModal = useModal();
+    const manageModal = useModal<FeedResponse>();
+    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
 
     const [formData, setFormData] = useState(new FeedBody('', ''));
-
     const feedProvider = new FeedProvider();
 
     const openAddModal = () => {
         setFormData(new FeedBody('', ''));
-        setGlobalError('');
-        setFieldErrors({});
-        setShowAdd(true);
+        resetErrors();
+        addModal.open();
     };
-
-    const closeAddModal = () => setShowAdd(false);
 
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
+        wrap(async () => {
             await feedProvider.create(formData);
-            closeAddModal();
+            addModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const openManageModal = async (feed: FeedResponse) => {
+        resetErrors();
+        manageModal.open(feed);
         const currentFeedObj = await feedProvider.details(feed.id, []);
-
-        setCurrentFeed(currentFeedObj);
+        manageModal.setData(currentFeedObj);
         setFormData(new FeedBody(currentFeedObj.text, ''));
-        setGlobalError('');
-        setFieldErrors({});
-        setShowManage(true);
     };
-
-    const closeManageModal = () => setShowManage(false);
 
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!currentFeed) return;
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
-            formData.photo = formData.photo ? formData.photo : currentFeed.photo;
-            await feedProvider.update(currentFeed.id, formData);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            formData.photo = formData.photo ? formData.photo : manageModal.data!.photo;
+            await feedProvider.update(manageModal.data!.id, formData);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleStatusSubmit = async (newStatus: number) => {
-        if (!currentFeed) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await feedProvider.updateStatus(currentFeed.id, new StatusBody(newStatus));
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await feedProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleDelete = async () => {
-        if (!currentFeed) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await feedProvider.delete(currentFeed.id);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await feedProvider.delete(manageModal.data!.id);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleChange = createFormHandler(setFormData);
 
     return {
-        showAdd, openAddModal, closeAddModal, handleAddSubmit,
-        showManage, openManageModal, closeManageModal, currentFeed,
+        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit,
+        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close, currentFeed: manageModal.data,
         handleEditSubmit, handleStatusSubmit, handleDelete,
         formData, handleChange, loading, globalError, fieldErrors
     };

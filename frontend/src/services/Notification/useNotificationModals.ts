@@ -1,57 +1,41 @@
-import {useState} from 'react';
 import {NotificationProvider} from '../../api/providers/NotificationProvider';
 import {NotificationResponse} from '../../api/responses/NotificationResponse';
 import {StatusBody} from '../../api/body/StatusBody';
+import {useModal} from '../../utils/hooks/useModal';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useNotificationModals(onSuccess: () => void) {
-    const [showManage, setShowManage] = useState(false);
-    const [currentNotification, setCurrentNotification] = useState<NotificationResponse | null>(null);
-
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
+    const manageModal = useModal<NotificationResponse>();
+    const { loading, globalError, wrap, resetErrors } = useFormState();
 
     const notificationProvider = new NotificationProvider();
 
     const openManageModal = (notification: NotificationResponse) => {
-        setCurrentNotification(notification);
-        setGlobalError('');
-        setShowManage(true);
+        resetErrors();
+        manageModal.open(notification);
     };
 
-    const closeManageModal = () => setShowManage(false);
-
     const handleStatusSubmit = async (newStatus: number) => {
-        if (!currentNotification) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await notificationProvider.updateStatus(currentNotification.id, new StatusBody(newStatus));
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await notificationProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleDelete = async () => {
-        if (!currentNotification) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await notificationProvider.delete(currentNotification.id);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await notificationProvider.delete(manageModal.data!.id);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     return {
-        showManage, openManageModal, closeManageModal, currentNotification,
+        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
+        currentNotification: manageModal.data,
         handleStatusSubmit, handleDelete, loading, globalError
     };
 }

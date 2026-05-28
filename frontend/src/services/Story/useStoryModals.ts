@@ -4,15 +4,13 @@ import {StoryBody} from '../../api/body/StoryBody';
 import {StatusBody} from '../../api/body/StatusBody';
 import {StoryResponse} from '../../api/responses/StoryResponse';
 import {createFormHandler} from '../../utils/formHandler';
+import {useModal} from '../../utils/hooks/useModal';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useStoryModals(onSuccess: () => void) {
-    const [showAdd, setShowAdd] = useState(false);
-    const [showManage, setShowManage] = useState(false);
-    const [currentStory, setCurrentStory] = useState<StoryResponse | null>(null);
-
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
+    const addModal = useModal();
+    const manageModal = useModal<StoryResponse>();
+    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
 
     const [formData, setFormData] = useState(new StoryBody('', ''));
 
@@ -20,94 +18,60 @@ export function useStoryModals(onSuccess: () => void) {
 
     const openAddModal = () => {
         setFormData(new StoryBody('', ''));
-        setGlobalError('');
-        setFieldErrors({});
-        setShowAdd(true);
+        resetErrors();
+        addModal.open();
     };
-
-    const closeAddModal = () => setShowAdd(false);
 
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
+        wrap(async () => {
             await storyProvider.create(formData);
-            closeAddModal();
+            addModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const openManageModal = (story: StoryResponse) => {
-        setCurrentStory(story);
+        resetErrors();
+        manageModal.open(story);
         setFormData(new StoryBody(story.text, ''));
-        setGlobalError('');
-        setFieldErrors({});
-        setShowManage(true);
     };
-
-    const closeManageModal = () => setShowManage(false);
 
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!currentStory) return;
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
-            formData.photo = formData.photo ? formData.photo : currentStory.photo;
-            await storyProvider.update(currentStory.id, formData);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            formData.photo = formData.photo ? formData.photo : manageModal.data!.photo;
+            await storyProvider.update(manageModal.data!.id, formData);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleStatusSubmit = async (newStatus: number) => {
-        if (!currentStory) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await storyProvider.updateStatus(currentStory.id, new StatusBody(newStatus));
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await storyProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleDelete = async () => {
-        if (!currentStory) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await storyProvider.delete(currentStory.id);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await storyProvider.delete(manageModal.data!.id);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleChange = createFormHandler(setFormData);
 
     return {
-        showAdd, openAddModal, closeAddModal, handleAddSubmit,
-        showManage, openManageModal, closeManageModal, currentStory, handleEditSubmit, handleStatusSubmit, handleDelete,
+        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit,
+        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
+        currentStory: manageModal.data, handleEditSubmit, handleStatusSubmit, handleDelete,
         formData, handleChange, loading, globalError, fieldErrors
     };
 }

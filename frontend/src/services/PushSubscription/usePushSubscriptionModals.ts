@@ -1,9 +1,10 @@
-import {useState} from 'react';
 import {PushSubscriptionProvider} from '../../api/providers/PushSubscriptionProvider';
 import {PushSubscriptionBody} from '../../api/body/PushSubscriptionBody';
 import {PushSubscriptionResponse} from '../../api/responses/PushSubscriptionResponse';
 import {useTranslation} from '../../context/TranslationContext';
 import {PushSubscriptionStatusEnum} from '../../enums/PushSubscriptionStatusEnum';
+import {useModal} from '../../utils/hooks/useModal';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 const urlB64ToUint8Array = (base64String: string) => {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -18,26 +19,19 @@ const urlB64ToUint8Array = (base64String: string) => {
 
 export function usePushSubscriptionModals(onSuccess: () => void) {
     const {t} = useTranslation();
-    const [showAdd, setShowAdd] = useState(false);
-    const [showManage, setShowManage] = useState(false);
-    const [currentSubscription, setCurrentSubscription] = useState<PushSubscriptionResponse | null>(null);
-
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
+    const addModal = useModal();
+    const manageModal = useModal<PushSubscriptionResponse>();
+    const { loading, globalError, wrap, resetErrors } = useFormState();
 
     const pushSubscriptionProvider = new PushSubscriptionProvider();
 
     const openAddModal = () => {
-        setGlobalError('');
-        setShowAdd(true);
+        resetErrors();
+        addModal.open();
     };
 
-    const closeAddModal = () => setShowAdd(false);
-
     const handleSubscribeDevice = async () => {
-        setLoading(true);
-        setGlobalError('');
-        try {
+        wrap(async () => {
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
                 throw new Error(t('pushNotSupported'));
             }
@@ -74,63 +68,45 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
             );
 
             await pushSubscriptionProvider.create(pushDto);
-            closeAddModal();
+            addModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.message || err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const openManageModal = (subscription: PushSubscriptionResponse) => {
-        setCurrentSubscription(subscription);
-        setGlobalError('');
-        setShowManage(true);
+        resetErrors();
+        manageModal.open(subscription);
     };
 
-    const closeManageModal = () => setShowManage(false);
-
     const handleStatusSubmit = async (newStatus: number) => {
-        if (!currentSubscription) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
+        if (!manageModal.data) return;
+        wrap(async () => {
             const updatedDto = new PushSubscriptionBody(
-                currentSubscription.endpoint,
-                currentSubscription.p256dh,
-                currentSubscription.auth,
-                currentSubscription.userAgent,
+                manageModal.data!.endpoint,
+                manageModal.data!.p256dh,
+                manageModal.data!.auth,
+                manageModal.data!.userAgent,
                 newStatus
             );
-            await pushSubscriptionProvider.update(currentSubscription.id, updatedDto);
-            closeManageModal();
+            await pushSubscriptionProvider.update(manageModal.data!.id, updatedDto);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleDelete = async () => {
-        if (!currentSubscription) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await pushSubscriptionProvider.delete(currentSubscription.id);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await pushSubscriptionProvider.delete(manageModal.data!.id);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     return {
-        showAdd, openAddModal, closeAddModal, handleSubscribeDevice,
-        showManage, openManageModal, closeManageModal, currentSubscription,
+        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleSubscribeDevice,
+        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
+        currentSubscription: manageModal.data,
         handleStatusSubmit, handleDelete, loading, globalError
     };
 }

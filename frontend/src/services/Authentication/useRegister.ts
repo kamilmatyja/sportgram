@@ -9,6 +9,7 @@ import {CodeBody} from '../../api/body/CodeBody';
 import {EmailBody} from '../../api/body/EmailBody';
 import {SignBody} from '../../api/body/SignBody';
 import {createFormHandler} from '../../utils/formHandler';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useRegister() {
     const step = Number(sessionStorage.getItem('step')) || 1;
@@ -16,9 +17,7 @@ export function useRegister() {
     const [registerFormData, setRegisterFormData] = useState(new RegisterBody('', '', '', 0, 0, '', '', '', []));
     const [codeFormData, setCodeFormData] = useState(new CodeBody(''));
 
-    const [loading, setLoading] = useState<boolean>(false);
-    const [globalError, setGlobalError] = useState<string>('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
+    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
     const [resendSuccess, setResendSuccess] = useState<boolean>(false);
 
     const navigate = useNavigate();
@@ -29,11 +28,9 @@ export function useRegister() {
 
     const handleRegisterSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
+        resetErrors();
 
-        try {
+        await wrap(async () => {
             await userProviders.createNano(registerFormData);
             const dto = new EmailBody(registerFormData.email);
             const res = await registerProvider.register(dto);
@@ -42,23 +39,15 @@ export function useRegister() {
             sessionStorage.setItem('register_id', res.id);
             sessionStorage.setItem('email', registerFormData.email);
             sessionStorage.setItem('password', registerFormData.password);
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleCodeSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-
         if (!registerId) return;
+        resetErrors();
 
-        try {
+        await wrap(async () => {
             await registerProvider.confirm(registerId, codeFormData);
 
             const email = sessionStorage.getItem('email') || '';
@@ -81,27 +70,18 @@ export function useRegister() {
                 sessionStorage.removeItem('register_id');
                 navigate('/password-reset');
             }
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleResend = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         if (!registerId) return;
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
+        resetErrors();
+
+        await wrap(async () => {
             await registerProvider.resend(registerId);
             setResendSuccess(true);
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const clearSessionDataAndGoToStep1 = () => {

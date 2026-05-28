@@ -7,6 +7,7 @@ import {PasswordResetBody} from '../../api/body/PasswordResetBody';
 import {EmailBody} from '../../api/body/EmailBody';
 import {SignBody} from '../../api/body/SignBody';
 import {createFormHandler} from '../../utils/formHandler';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function usePasswordReset() {
     const step = Number(sessionStorage.getItem('step')) || 1;
@@ -14,9 +15,7 @@ export function usePasswordReset() {
     const [passwordResetFormData, setPasswordResetFormData] = useState(new EmailBody(''));
     const [codeFormData, setCodeFormData] = useState(new PasswordResetBody('', ''));
 
-    const [loading, setLoading] = useState<boolean>(false);
-    const [globalError, setGlobalError] = useState<string>('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
+    const { loading, globalError, fieldErrors, wrap, resetErrors, setGlobalError } = useFormState();
     const [resendSuccess, setResendSuccess] = useState<boolean>(false);
 
     const navigate = useNavigate();
@@ -26,19 +25,15 @@ export function usePasswordReset() {
 
     const handlePasswordResetSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
+        resetErrors();
 
-        try {
+        await wrap(async () => {
             const res = await passwordResetProvider.passwordReset(passwordResetFormData);
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('password_reset_id', res.id);
             sessionStorage.setItem('email', passwordResetFormData.email);
-        } catch (err: any) {
-            if (err.errors) {
-                setFieldErrors(err.errors);
-            } else if (err.error === 'User account is not confirmed.') {
+        }).catch(async (err: any) => {
+            if (err.error === 'User account is not confirmed.') {
                 try {
                     const res = await registerProvider.register(passwordResetFormData);
                     sessionStorage.setItem('step', '2');
@@ -47,26 +42,18 @@ export function usePasswordReset() {
                     sessionStorage.removeItem('password_reset_id');
                     navigate('/register');
                 } catch (registerErr: any) {
-                    if (registerErr.errors) setFieldErrors(registerErr.errors);
-                    else setGlobalError(registerErr.error);
+                    setGlobalError(registerErr.error || 'Unknown error');
                 }
-            } else {
-                setGlobalError(err.error);
             }
-        } finally {
-            setLoading(false);
-        }
+        });
     };
 
     const handleCodeSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-
         if (!passwordResetId) return;
+        resetErrors();
 
-        try {
+        await wrap(async () => {
             await passwordResetProvider.confirm(passwordResetId, codeFormData);
             const email = sessionStorage.getItem('email') || '';
             const dto = new SignBody(email, codeFormData.password, false);
@@ -76,28 +63,18 @@ export function usePasswordReset() {
             sessionStorage.setItem('sign_id', res.id);
             sessionStorage.removeItem('password_reset_id');
             navigate('/sign');
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleResend = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         if (!passwordResetId) return;
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
+        resetErrors();
+
+        await wrap(async () => {
             await passwordResetProvider.resend(passwordResetId);
             setResendSuccess(true);
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const clearSessionDataAndGoToStep1 = () => {

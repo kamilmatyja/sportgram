@@ -13,21 +13,18 @@ import {EventSubDistance} from '../../api/body/EventSubDistance';
 import {createFormHandler} from '../../utils/formHandler';
 import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
 import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
+import {useModal} from '../../utils/hooks/useModal';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useEventModals(onSuccess: () => void, currentUser: UserResponse | null) {
     const {t} = useTranslation();
 
-    const [showAdd, setShowAdd] = useState(false);
-    const [showManage, setShowManage] = useState(false);
+    const addModal = useModal();
+    const manageModal = useModal<EventResponse>();
+    const { loading, globalError, fieldErrors, wrap, resetErrors, setGlobalError } = useFormState();
 
-    const [currentEvent, setCurrentEvent] = useState<EventResponse | null>(null);
     const [myPages, setMyPages] = useState<PageResponse[]>([]);
     const [selectedPageId, setSelectedPageId] = useState<string>('');
-
-    const [loading, setLoading] = useState(false);
-    const [globalError, setGlobalError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
-
     const [formData, setFormData] = useState<EventBody>(new EventBody('', '', '', '', '', '', '', '', []));
 
     const eventProvider = new EventProvider();
@@ -51,13 +48,10 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
     const openAddModal = async () => {
         setFormData(new EventBody('', '', '', '', '', '', '', '', []));
         setSelectedPageId('');
-        setGlobalError('');
-        setFieldErrors({});
+        resetErrors();
         await fetchMyPages();
-        setShowAdd(true);
+        addModal.open();
     };
-
-    const closeAddModal = () => setShowAdd(false);
 
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -65,23 +59,15 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
             setGlobalError(t('selectPageForEvent'));
             return;
         }
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
+        wrap(async () => {
             await eventProvider.create(selectedPageId, formData);
-            closeAddModal();
+            addModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const openManageModal = async (ev: EventResponse) => {
-        setCurrentEvent(ev);
+        manageModal.open(ev);
         const disciplinesMapped: EventDiscipline[] = ev.disciplines.map(d => ({
             discipline: d.discipline,
             distances: d.distances.map(dist => ({
@@ -103,61 +89,36 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
             ev.location,
             disciplinesMapped
         ));
-
-        setGlobalError('');
-        setFieldErrors({});
-        setShowManage(true);
+        resetErrors();
     };
-
-    const closeManageModal = () => setShowManage(false);
 
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!currentEvent) return;
-        setLoading(true);
-        setGlobalError('');
-        setFieldErrors({});
-        try {
-            formData.photo = formData.photo ? formData.photo : currentEvent.photo;
-            await eventProvider.update(currentEvent.id, formData);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            formData.photo = formData.photo ? formData.photo : manageModal.data!.photo;
+            await eventProvider.update(manageModal.data!.id, formData);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleStatusSubmit = async (newStatus: number) => {
-        if (!currentEvent) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await eventProvider.updateStatus(currentEvent.id, new StatusBody(newStatus));
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await eventProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const handleDelete = async () => {
-        if (!currentEvent) return;
-        setLoading(true);
-        setGlobalError('');
-        try {
-            await eventProvider.delete(currentEvent.id);
-            closeManageModal();
+        if (!manageModal.data) return;
+        wrap(async () => {
+            await eventProvider.delete(manageModal.data!.id);
+            manageModal.close();
             onSuccess();
-        } catch (err: any) {
-            setGlobalError(err.error);
-        } finally {
-            setLoading(false);
-        }
+        }).catch(() => {});
     };
 
     const addDiscipline = () => {
@@ -223,10 +184,11 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
     const handleChange = createFormHandler(setFormData);
 
     return {
-        showAdd, openAddModal, closeAddModal, handleAddSubmit,
+        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit,
         myPages, selectedPageId, setSelectedPageId,
-        showManage, openManageModal, closeManageModal, handleEditSubmit, handleStatusSubmit, handleDelete,
-        currentEvent, formData, handleChange, loading, globalError, fieldErrors,
+        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
+        handleEditSubmit, handleStatusSubmit, handleDelete,
+        currentEvent: manageModal.data, formData, handleChange, loading, globalError, fieldErrors,
         addDiscipline, updateDisciplineType, removeDiscipline, addDistance, updateDistanceValue, removeDistance,
         addSubDistance, updateSubDistanceValue, removeSubDistance
     };
