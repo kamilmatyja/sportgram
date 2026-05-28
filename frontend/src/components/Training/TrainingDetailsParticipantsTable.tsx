@@ -29,7 +29,7 @@ export const TrainingDetailsParticipantsTable: React.FC<TrainingDetailsParticipa
                 <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
-                        <td colSpan={4} className="text-center text-muted">{t('noParticipants')}</td>
+                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
                     </tr>
                     </tbody>
                 </table>

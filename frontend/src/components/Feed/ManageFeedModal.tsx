@@ -50,7 +50,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title">{t('manageFeed')}</h5>
+                            <h5 className="modal-title">{t('manage')}</h5>
                             <button type="button" className="btn-close" onClick={closeModal}></button>
                         </div>
                         <div className="modal-body">
@@ -83,7 +83,7 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
                             {(isMyProfile || isAdmin) && (
                                 <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('feedStatus')}: </strong>
+                                        <strong>{t('status')}: </strong>
                                         <span className="badge bg-light text-dark border profile-theme-border">
                                             {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}
                                         </span>

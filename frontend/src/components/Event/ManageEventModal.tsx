@@ -157,7 +157,7 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                         <h6 className="card-title text-profile-primary mb-0">{t('disciplinesAndDistances')}</h6>
                                         <button type="button" className="btn btn-sm btn-profile-outline-primary"
                                                 onClick={addDiscipline}>
-                                            {t('addDisciplineBtn')}
+                                            {t('add')}
                                         </button>
                                     </div>
 
@@ -184,7 +184,7 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                     <button type="button"
                                                             className="btn btn-sm btn-profile-outline-primary"
                                                             onClick={() => addDistance(dIndex)}>
-                                                        {t('addDistanceBtn')}
+                                                        {t('add')}
                                                     </button>
                                                 </div>
 
@@ -213,7 +213,7 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                                                     <button type="button"
                                                                             className="btn btn-xs btn-profile-outline-primary py-0 px-2"
                                                                             onClick={() => addSubDistance(dIndex, distIndex)}>
-                                                                        {t('addSubDistanceBtn')}
+                                                                        {t('add')}
                                                                     </button>
                                                                 </div>
                                                                 {dist.subDistances?.map((sub, subIndex) => (
@@ -242,9 +242,9 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                             )}
 
                             {(isMyProfile || isAdmin) && (
-                                <div className="mb-4 border-bottom pb-3">
+                                <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('eventStatus')}: </strong>
+                                        <strong>{t('status')}: </strong>
                                         <span className="badge bg-light text-dark border profile-theme-border">
                                             {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(currentEvent.status))?.label || currentEvent.status}
                                         </span>

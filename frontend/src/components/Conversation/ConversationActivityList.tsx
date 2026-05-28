@@ -92,7 +92,7 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                 <tbody>
                                 {activities.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="text-center text-muted">{t('noConversations')}</td>
+                                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
                                     </tr>
                                 ) : activities.map(act => (
                                     <tr key={act.otherUser.id}>

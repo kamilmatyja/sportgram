@@ -159,7 +159,7 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                                         {lists.length === 0 ? (
                                             <tr>
                                                 <td colSpan={6}
-                                                    className="text-center text-muted">{t('noParticipants')}</td>
+                                                    className="text-center text-muted">{t('noRecords')}</td>
                                             </tr>
                                         ) : lists.map(list => {
                                             const u = relatedUsers[list.userId];
@@ -229,7 +229,7 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                                                                         onClick={() => openAddResultForm(list)}
                                                                         disabled={actionLoading}
                                                                     >
-                                                                        <i className="bi bi-plus-circle me-1"></i> {t('enterResultBtn')}
+                                                                        <i className="bi bi-plus-circle me-1"></i> {t('add')}
                                                                     </button>
                                                                 )}
 
@@ -293,7 +293,7 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                                                                             <button
                                                                                 className="btn btn-sm btn-profile-primary"
                                                                                 onClick={saveResult}
-                                                                                disabled={interactions.actionLoading !== null}>{t('saveResultBtn')}</button>
+                                                                                disabled={interactions.actionLoading !== null}>{t('save')}</button>
                                                                         </div>
                                                                     </div>
                                                                 ) : result ? (

@@ -32,7 +32,7 @@ export function useTrainingDetails(link?: string) {
 
             const trainings = await trainingProvider.index(indexDto);
             if (trainings.length === 0) {
-                throw { error: 'noTrainings' };
+                throw { error: 'noRecords' };
             }
 
             const targetTraining = await trainingProvider.details(trainings[0].id, [

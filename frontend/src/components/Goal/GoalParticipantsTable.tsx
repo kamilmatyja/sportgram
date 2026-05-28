@@ -24,7 +24,7 @@ export const GoalParticipantsTable: React.FC<GoalParticipantsTableProps> = ({
     const {t} = useTranslation();
 
     if (!participants || participants.length === 0) {
-        return <div className="text-muted small p-2">{t('noParticipants')}</div>;
+        return <div className="text-muted small p-2">{t('noRecords')}</div>;
     }
 
     return (
@@ -33,7 +33,7 @@ export const GoalParticipantsTable: React.FC<GoalParticipantsTableProps> = ({
                 <thead className="table-light">
                 <tr>
                     <th>{t('user')}</th>
-                    <th>{t('participantStatus')}</th>
+                    <th>{t('status')}</th>
                     <th>{t('manage')}</th>
                 </tr>
                 </thead>

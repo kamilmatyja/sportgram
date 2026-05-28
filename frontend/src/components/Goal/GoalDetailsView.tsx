@@ -89,7 +89,7 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                                 <div className="fw-medium">{goal.endedAt ? formatDate(goal.endedAt) : '-'}</div>
                             </div>
                             <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('goalStatus')}</div>
+                                <div className="text-muted small mb-1">{t('status')}</div>
                                 <div>
                                     <span className="badge bg-light text-dark border profile-theme-border">
                                         {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}

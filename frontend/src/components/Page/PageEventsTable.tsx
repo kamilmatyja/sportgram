@@ -89,7 +89,7 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                                 <tbody>
                                 {events.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="text-center text-muted">{t('noEvents')}</td>
+                                        <td colSpan={6} className="text-center text-muted">{t('noRecords')}</td>
                                     </tr>
                                 ) : events.map(ev => (
                                     <tr key={ev.id}>

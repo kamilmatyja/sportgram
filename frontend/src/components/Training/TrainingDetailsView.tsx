@@ -81,7 +81,7 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
                                 <div className="fw-medium">{formatDate(training.endedAt)}</div>
                             </div>
                             <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('trainingStatus')}</div>
+                                <div className="text-muted small mb-1">{t('status')}</div>
                                 <div>
                                     <span className="badge bg-light text-dark border profile-theme-border">
                                         {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(training.status))?.label || training.status}

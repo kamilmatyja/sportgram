@@ -19,7 +19,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({users}) => {
                 <table className="table table-bordered table-hover">
                     <tbody>
                     <tr>
-                        <td colSpan={9} className="text-center">{t('noUsers')}</td>
+                        <td colSpan={9} className="text-center">{t('noRecords')}</td>
                     </tr>
                     </tbody>
                 </table>

@@ -9,10 +9,9 @@ import {Link} from 'react-router-dom';
 interface StatisticsTableProps {
     data: StatisticResponse[];
     availableUsers: UserResponse[];
-    activeTab: 'records' | 'progress';
 }
 
-export const StatisticsTable: React.FC<StatisticsTableProps> = ({data, availableUsers, activeTab}) => {
+export const StatisticsTable: React.FC<StatisticsTableProps> = ({data, availableUsers}) => {
     const {t} = useTranslation();
 
     const getUserName = (id: string) => {
@@ -27,7 +26,7 @@ export const StatisticsTable: React.FC<StatisticsTableProps> = ({data, available
                     <tbody>
                     <tr>
                         <td colSpan={5} className="text-center text-muted">
-                            {activeTab === 'records' ? t('noRecords') : t('noProgress')}
+                            {t('noRecords')}
                         </td>
                     </tr>
                     </tbody>

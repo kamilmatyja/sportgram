@@ -55,7 +55,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title">{t('manageGoal')}</h5>
+                            <h5 className="modal-title">{t('manage')}</h5>
                             <button type="button" className="btn-close" onClick={closeModal}></button>
                         </div>
                         <div className="modal-body">
@@ -156,7 +156,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                             {(isMyProfile || isAdmin) && (
                                 <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('goalStatus')}: </strong>
+                                        <strong>{t('status')}: </strong>
                                         <span className="badge bg-light text-dark border profile-theme-border">
                                             {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}
                                         </span>

@@ -108,7 +108,6 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                             <StatisticsTable
                                 data={data}
                                 availableUsers={availableUsers}
-                                activeTab={activeTab}
                             />
 
                             <div className="mt-3">

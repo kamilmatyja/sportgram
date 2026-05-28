@@ -134,7 +134,7 @@ export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
                                         <div className="invalid-feedback d-block">{fieldErrors.roles}</div>}
                                 </div>
                                 <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-                                    {loading ? t('sending') : t('submitRegister')}
+                                    {loading ? t('sending') : t('save')}
                                 </button>
                             </form>
                             <div className="mt-3 text-center">

@@ -23,7 +23,7 @@ export const UserNotificationsTable: React.FC<UserNotificationsTableProps> = ({
                 <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
-                        <td colSpan={4} className="text-center text-muted">{t('noNotifications')}</td>
+                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
                     </tr>
                     </tbody>
                 </table>

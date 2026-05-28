@@ -45,7 +45,7 @@ export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({eventObj, canMana
                         </div>
                     </div>
                     <div className="col-md-6">
-                        <div className="text-muted small mb-1">{t('eventStatus')}</div>
+                        <div className="text-muted small mb-1">{t('status')}</div>
                         <div>
                             <span className="badge bg-light text-dark border profile-theme-border">
                                 {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(eventObj.status))?.label || eventObj.status}

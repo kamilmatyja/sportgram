@@ -45,7 +45,7 @@ export function useEventDetails(link?: string) {
 
             const events = await eventProvider.index(indexDto);
             if (events.length === 0) {
-                throw { error: 'noEvents' };
+                throw { error: 'noRecords' };
             }
 
             const targetEvent = await eventProvider.details(events[0].id, [

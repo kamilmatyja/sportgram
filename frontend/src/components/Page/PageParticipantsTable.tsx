@@ -23,7 +23,7 @@ export const PageParticipantsTable: React.FC<PageParticipantsTableProps> = ({
     const {t} = useTranslation();
 
     if (!participants || participants.length === 0) {
-        return <div className="text-muted small p-2">{t('noParticipants')}</div>;
+        return <div className="text-muted small p-2">{t('noRecords')}</div>;
     }
 
     return (

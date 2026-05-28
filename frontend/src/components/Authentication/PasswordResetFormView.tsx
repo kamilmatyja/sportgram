@@ -44,7 +44,7 @@ export const PasswordResetFormView: React.FC<PasswordResetFormViewProps> = ({
                                         <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
                                 </div>
                                 <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-                                    {loading ? t('sending') : t('submitPasswordReset')}
+                                    {loading ? t('sending') : t('save')}
                                 </button>
                             </form>
                             <div className="mt-3 text-center">

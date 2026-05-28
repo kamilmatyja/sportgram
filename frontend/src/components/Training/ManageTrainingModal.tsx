@@ -75,7 +75,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title">{t('manageTraining')}</h5>
+                            <h5 className="modal-title">{t('manage')}</h5>
                             <button type="button" className="btn-close" onClick={closeModal}></button>
                         </div>
                         <div className="modal-body">
@@ -163,7 +163,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                         <h6 className="card-title text-profile-primary mb-0">{t('disciplinesAndDistances')}</h6>
                                         <button type="button" className="btn btn-sm btn-profile-outline-primary"
                                                 onClick={addDiscipline}>
-                                            {t('addDisciplineBtn')}
+                                            {t('add')}
                                         </button>
                                     </div>
 
@@ -190,7 +190,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                     <button type="button"
                                                             className="btn btn-sm btn-profile-outline-primary"
                                                             onClick={() => addDistance(dIndex)}>
-                                                        {t('addDistanceBtn')}
+                                                        {t('add')}
                                                     </button>
                                                 </div>
 
@@ -226,7 +226,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                                                     <button type="button"
                                                                             className="btn btn-xs btn-profile-outline-primary py-0 px-2"
                                                                             onClick={() => addSubDistance(dIndex, distIndex)}>
-                                                                        {t('addSubDistanceBtn')}
+                                                                        {t('add')}
                                                                     </button>
                                                                 </div>
                                                                 {dist.subDistances?.map((sub, subIndex) => (
@@ -262,7 +262,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                             {(isMyProfile || isAdmin) && (
                                 <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('trainingStatus')}: </strong>
+                                        <strong>{t('status')}: </strong>
                                         <span className="badge bg-light text-dark border profile-theme-border">
                                             {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(currentTraining.status))?.label || currentTraining.status}
                                         </span>

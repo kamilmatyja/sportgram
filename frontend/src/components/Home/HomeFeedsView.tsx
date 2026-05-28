@@ -42,7 +42,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = (props) => {
         <div className="container mt-4 mb-5 mx-auto feed-container">
             {feeds.length === 0 ? (
                 <div className="text-center text-muted">
-                    {t('noFeeds')}
+                    {t('noRecords')}
                 </div>
             ) : (
                 feeds.map(feed => (
@@ -68,7 +68,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = (props) => {
                             {loadingMore ? <span className="spinner-border spinner-border-sm"/> : t('loadMore')}
                         </button>
                     ) : (
-                        <span className="text-muted">{t('noMoreFeeds')}</span>
+                        <span className="text-muted">{t('noRecords')}</span>
                     )}
                 </div>
             )}

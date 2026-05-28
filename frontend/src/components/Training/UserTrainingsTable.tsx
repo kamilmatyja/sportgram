@@ -40,7 +40,7 @@ export const UserTrainingsTable: React.FC<UserTrainingsTableProps> = ({
                 <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
-                        <td colSpan={7} className="text-center text-muted">{t('noTrainings')}</td>
+                        <td colSpan={7} className="text-center text-muted">{t('noRecords')}</td>
                     </tr>
                     </tbody>
                 </table>

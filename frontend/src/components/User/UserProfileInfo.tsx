@@ -58,7 +58,7 @@ export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({user, isMyProfi
                             className="fw-medium">{GenderEnum.getOptions(t).find(opt => opt.value === user.gender)?.label || user.gender}</div>
                     </div>
                     <div className="col-sm-6 col-md-4">
-                        <div className="text-muted small mb-1">{t('userStatus')}</div>
+                        <div className="text-muted small mb-1">{t('status')}</div>
                         <div>
                             <span className="badge bg-light text-dark border profile-theme-border">
                                 {UserStatusEnum.getOptions(t).find(opt => opt.value === user.status)?.label || user.status}

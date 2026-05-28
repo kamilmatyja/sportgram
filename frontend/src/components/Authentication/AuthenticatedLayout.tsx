@@ -33,7 +33,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                         type="button"
                         onClick={toggleNav}
                         aria-expanded={isNavOpen}
-                        aria-label={t('nav.toggle')}
+                        aria-label={t('navToggle')}
                     >
                         <span className="navbar-toggler-icon"></span>
                     </button>
@@ -47,7 +47,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
-                                    <i className="bi bi-house-door me-2 d-lg-none"></i>{t('nav.home')}
+                                    <i className="bi bi-house-door me-2 d-lg-none"></i>{t('navHome')}
                                 </NavLink>
                             </li>
                             <li className="nav-item">
@@ -57,7 +57,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
-                                    <i className="bi bi-people me-2 d-lg-none"></i>{t('nav.users')}
+                                    <i className="bi bi-people me-2 d-lg-none"></i>{t('navUsers')}
                                 </NavLink>
                             </li>
                             <li className="nav-item">
@@ -67,7 +67,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
-                                    <i className="bi bi-file-earmark-text me-2 d-lg-none"></i>{t('nav.pages')}
+                                    <i className="bi bi-file-earmark-text me-2 d-lg-none"></i>{t('navPages')}
                                 </NavLink>
                             </li>
                             <li className="nav-item">
@@ -77,7 +77,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
-                                    <i className="bi bi-calendar-event me-2 d-lg-none"></i>{t('nav.events')}
+                                    <i className="bi bi-calendar-event me-2 d-lg-none"></i>{t('navEvents')}
                                 </NavLink>
                             </li>
                             <li className="nav-item">
@@ -87,7 +87,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
-                                    <i className="bi bi-graph-up me-2 d-lg-none"></i>{t('nav.statistics')}
+                                    <i className="bi bi-graph-up me-2 d-lg-none"></i>{t('navStatistics')}
                                 </NavLink>
                             </li>
                             <li className="nav-item">
@@ -97,7 +97,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
                                     onClick={closeNav}
                                 >
-                                    <i className="bi bi-person me-2 d-lg-none"></i>{t('nav.profile')}
+                                    <i className="bi bi-person me-2 d-lg-none"></i>{t('navProfile')}
                                 </NavLink>
                             </li>
                         </ul>

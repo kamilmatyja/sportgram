@@ -17,7 +17,7 @@ export const PagesTable: React.FC<PagesTableProps> = ({pages}) => {
                 <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
-                        <td colSpan={6} className="text-center text-muted">{t('noPages')}</td>
+                        <td colSpan={6} className="text-center text-muted">{t('noRecords')}</td>
                     </tr>
                     </tbody>
                 </table>

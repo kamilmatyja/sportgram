@@ -54,7 +54,7 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title">{t('managePage')}</h5>
+                            <h5 className="modal-title">{t('manage')}</h5>
                             <button type="button" className="btn-close" onClick={closeModal}></button>
                         </div>
                         <div className="modal-body">
@@ -151,7 +151,7 @@ export const ManagePageModal: React.FC<ManagePageModalProps> = ({
                             {(isMyProfile || isAdmin) && (
                                 <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('pageStatus')}: </strong>
+                                        <strong>{t('status')}: </strong>
                                         <span className="badge bg-light text-dark border profile-theme-border">
                                             {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(currentPageObj.status))?.label || currentPageObj.status}
                                         </span>

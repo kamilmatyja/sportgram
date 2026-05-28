@@ -116,12 +116,13 @@ npm run dev
 - /statistics (statystyki - tylko dla zalogowanych)
 
 12. Brakuje:
-- uproszczenie tłumaczeń
+- licznik polubień
 - dodanie includów do list
 - wysyłka email nie działa
 - wysyłka push wiadomości nie działa
 - kamera na froncie
 - gps na froncie przy dodawaniu treningu
+- działająca zmiana języka / motywu
 - zapisywanie wyświetleń encji po wejściu na jakiś profil
 - informacje o wyświetleniach przy encjach
 - informacje o ilości follow na profilach

@@ -34,7 +34,7 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
                 <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
-                        <td colSpan={8} className="text-center text-muted">{t('noEvents')}</td>
+                        <td colSpan={8} className="text-center text-muted">{t('noRecords')}</td>
                     </tr>
                     </tbody>
                 </table>

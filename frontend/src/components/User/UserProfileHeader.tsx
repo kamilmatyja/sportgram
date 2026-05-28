@@ -82,7 +82,7 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
                                 disabled={actionLoading}
                             >
                                 {actionLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : null}
-                                {t('friendshipStatus')}: {FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label}
+                                {t('status')}: {FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label}
                             </button>
                             <ul className={`dropdown-menu dropdown-menu-end ${dropdownOpen ? 'show' : ''}`}>
                                 {(friendship.senderUserId === currentUser?.id || friendship.receiverUserId === currentUser?.id) && (

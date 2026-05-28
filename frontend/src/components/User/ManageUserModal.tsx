@@ -55,7 +55,7 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                 <div className="modal-dialog modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title">{t('manageUser')}</h5>
+                            <h5 className="modal-title">{t('manage')}</h5>
                             <button type="button" className="btn-close" onClick={closeModal}></button>
                         </div>
                         <div className="modal-body">
@@ -234,9 +234,8 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
 
                             {isAdmin && (
                                 <div className="mb-4">
-                                    <h6 className="mb-3">{t('manageUserStatus')}</h6>
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('userStatus')}: </strong>
+                                        <strong>{t('status')}: </strong>
                                         <span className="badge bg-light text-dark border profile-theme-border">
                                             {UserStatusEnum.getOptions(t).find(opt => String(opt.value) === String(managedUser.status))?.label || managedUser.status}
                                         </span>

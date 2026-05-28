@@ -64,7 +64,7 @@ export function usePageDetails(link?: string) {
 
             const pagesData = await pageProvider.index(indexDto);
             if (pagesData.length === 0) {
-                throw { error: 'noPages' };
+                throw { error: 'noRecords' };
             }
 
             const targetPage = await pageProvider.details(pagesData[0].id, [

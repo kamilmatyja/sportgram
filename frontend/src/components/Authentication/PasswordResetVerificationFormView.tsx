@@ -72,7 +72,7 @@ export const PasswordResetVerificationFormView: React.FC<PasswordResetVerificati
 
                                 <div className="d-flex flex-column gap-2">
                                     <button type="submit" className="btn btn-success py-2" disabled={loading}>
-                                        {loading ? t('sending') : t('submitVerify')}
+                                        {loading ? t('sending') : t('save')}
                                     </button>
                                     <button type="button" className="btn btn-outline-secondary py-2" onClick={onResend}
                                             disabled={loading}>

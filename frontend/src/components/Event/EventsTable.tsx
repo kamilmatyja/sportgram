@@ -18,7 +18,7 @@ export const EventsTable: React.FC<EventsTableProps> = ({events}) => {
                 <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
-                        <td colSpan={7} className="text-center text-muted">{t('noEvents')}</td>
+                        <td colSpan={7} className="text-center text-muted">{t('noRecords')}</td>
                     </tr>
                     </tbody>
                 </table>

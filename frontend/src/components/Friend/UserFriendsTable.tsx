@@ -23,7 +23,7 @@ export const UserFriendsTable: React.FC<UserFriendsTableProps> = ({
                 <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
-                        <td colSpan={5} className="text-center text-muted">{t('noUsers')}</td>
+                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
                     </tr>
                     </tbody>
                 </table>

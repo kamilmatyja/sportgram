@@ -70,7 +70,7 @@ export const SignFormView: React.FC<SignFormViewProps> = ({
                                     <label className="form-check-label" htmlFor="rememberMe">{t('rememberMe')}</label>
                                 </div>
                                 <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-                                    {loading ? t('sending') : t('submitSign')}
+                                    {loading ? t('sending') : t('save')}
                                 </button>
                             </form>
                             <div className="mt-3 text-center">

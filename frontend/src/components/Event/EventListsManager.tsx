@@ -108,7 +108,7 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
 
     return (
         <div className="p-3">
-            <h6 className="text-profile-primary mb-3">{t('manageListsAndResults')}</h6>
+            <h6 className="text-profile-primary mb-3">{t('manage')}</h6>
             <div className="mb-3">
                 <label className="form-label fw-bold">{t('selectDistanceSavedChanges')}</label>
                 <select className="form-select" value={selectedDistanceId}
@@ -231,7 +231,7 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                                                     onClick={() => setActiveResultListId(null)}>{t('cancel')}</button>
                                                             <button className="btn btn-sm btn-profile-primary"
                                                                     onClick={saveResult}
-                                                                    disabled={interactions.actionLoading !== null}>{t('saveResultBtn')}</button>
+                                                                    disabled={interactions.actionLoading !== null}>{t('save')}</button>
                                                         </div>
                                                     </div>
                                                 ) : result ? (
@@ -280,7 +280,7 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                         <tr>
                                             <td colSpan={5} className="text-end border-bottom">
                                                 <button className="btn btn-sm btn-profile-outline-primary"
-                                                        onClick={() => openAddResultForm(list)}>{t('enterResultBtn')}</button>
+                                                        onClick={() => openAddResultForm(list)}>{t('add')}</button>
                                             </td>
                                         </tr>
                                     )}
@@ -292,7 +292,7 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                 </div>
             )}
             {!loadingLists && selectedDistanceId && lists.length === 0 && (
-                <div className="text-muted small mt-2">{t('noRegistrationsForDistance')}</div>
+                <div className="text-muted small mt-2">{t('noRecords')}</div>
             )}
         </div>
     );

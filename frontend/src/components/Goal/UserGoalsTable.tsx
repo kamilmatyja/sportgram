@@ -41,7 +41,7 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
                 <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
-                        <td colSpan={8} className="text-center text-muted">{t('noGoals')}</td>
+                        <td colSpan={8} className="text-center text-muted">{t('noRecords')}</td>
                     </tr>
                     </tbody>
                 </table>

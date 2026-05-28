@@ -42,7 +42,7 @@ export const PageInfo: React.FC<PageInfoProps> = ({
                 <p className="mb-4 text-break fs-5">{pageObj.description}</p>
 
                 <div className="d-flex align-items-center gap-2 mt-2 mb-4">
-                    <strong>{t('pageStatus')}: </strong>
+                    <strong>{t('status')}: </strong>
                     <span className="badge bg-light text-dark border profile-theme-border">
                         {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}
                     </span>

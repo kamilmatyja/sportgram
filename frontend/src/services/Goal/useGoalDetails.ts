@@ -32,7 +32,7 @@ export function useGoalDetails(link?: string) {
 
             const goals = await goalProvider.index(indexDto);
             if (goals.length === 0) {
-                throw { error: 'noGoals' };
+                throw { error: 'noRecords' };
             }
 
             const targetGoal = await goalProvider.details(goals[0].id, [

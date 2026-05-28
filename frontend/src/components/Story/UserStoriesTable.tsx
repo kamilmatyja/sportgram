@@ -22,7 +22,7 @@ export const UserStoriesTable: React.FC<UserStoriesTableProps> = ({
                 <table className="table table-bordered table-hover align-middle mb-0">
                     <tbody>
                     <tr>
-                        <td colSpan={5} className="text-center text-muted">{t('noStories')}</td>
+                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
                     </tr>
                     </tbody>
                 </table>

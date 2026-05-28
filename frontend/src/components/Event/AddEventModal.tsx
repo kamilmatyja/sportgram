@@ -157,7 +157,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                     <h6 className="card-title text-profile-primary mb-0">{t('disciplinesAndDistances')}</h6>
                                     <button type="button" className="btn btn-sm btn-profile-outline-primary"
                                             onClick={addDiscipline}>
-                                        {t('addDisciplineBtn')}
+                                        {t('add')}
                                     </button>
                                 </div>
 
@@ -183,7 +183,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                                 <span className="fw-bold">{t('distances')}</span>
                                                 <button type="button" className="btn btn-sm btn-profile-outline-primary"
                                                         onClick={() => addDistance(dIndex)}>
-                                                    {t('addDistanceBtn')}
+                                                    {t('add')}
                                                 </button>
                                             </div>
 
@@ -211,7 +211,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({
                                                                 <button type="button"
                                                                         className="btn btn-xs btn-profile-outline-primary py-0 px-2"
                                                                         onClick={() => addSubDistance(dIndex, distIndex)}>
-                                                                    {t('addSubDistanceBtn')}
+                                                                    {t('add')}
                                                                 </button>
                                                             </div>
                                                             {dist.subDistances?.map((sub, subIndex) => (
