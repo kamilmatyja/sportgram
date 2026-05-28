@@ -1,23 +1,19 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {PushSubscriptionProvider} from '../../api/providers/PushSubscriptionProvider';
 import {PushSubscriptionResponse} from '../../api/responses/PushSubscriptionResponse';
 import {PushSubscriptionFilterQuery} from '../../api/queries/PushSubscriptionFilterQuery';
 import {PushSubscriptionIndexQuery} from '../../api/queries/PushSubscriptionIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {useListFilters} from '../../utils/hooks/useListFilters';
 
 export function useUserPushSubscriptions(link?: string) {
     const access = useAppAccess({ targetLink: link, requireOwner: true });
 
     const [subscriptions, setSubscriptions] = useState<PushSubscriptionResponse[]>([]);
-
-    const [page, setPage] = useState<number>(1);
-    const [limit, setLimit] = useState<number>(10);
-    const [sort, setSort] = useState<string>('createdAt:desc');
-    const [filters, setFilters] = useState(new PushSubscriptionFilterQuery());
-
     const [dataLoading, setDataLoading] = useState<boolean>(true);
     const [dataError, setDataError] = useState<string | null>(null);
 
+    const list = useListFilters(new PushSubscriptionFilterQuery());
     const pushSubscriptionProvider = new PushSubscriptionProvider();
 
     const fetchSubscriptions = async (userId: string) => {
@@ -25,14 +21,14 @@ export function useUserPushSubscriptions(link?: string) {
         setDataError(null);
         try {
             const filterDto = new PushSubscriptionFilterQuery();
-            filterDto.endpoint = filters.endpoint;
-            filterDto.p256dh = filters.p256dh;
-            filterDto.auth = filters.auth;
+            filterDto.endpoint = list.filters.endpoint;
+            filterDto.p256dh = list.filters.p256dh;
+            filterDto.auth = list.filters.auth;
 
             const indexDto = new PushSubscriptionIndexQuery();
-            indexDto.page = page;
-            indexDto.limit = limit;
-            indexDto.sort = sort;
+            indexDto.page = list.page;
+            indexDto.limit = list.limit;
+            indexDto.sort = list.sort;
             indexDto.filter = filterDto;
 
             const data = await pushSubscriptionProvider.index(indexDto);
@@ -49,24 +45,7 @@ export function useUserPushSubscriptions(link?: string) {
         if (!access.authLoading && !access.authError && access.targetUser) {
             fetchSubscriptions(access.targetUser.id);
         }
-    }, [access.authLoading, access.authError, access.targetUser, page, limit, sort, filters]);
-
-    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
-        setPage(1);
-    };
-
-    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSort(e.target.value);
-    };
-
-    const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setLimit(Number(e.target.value));
-        setPage(1);
-    };
-
-    const handlePrevPage = () => setPage(prev => Math.max(prev - 1, 1));
-    const handleNextPage = () => setPage(prev => prev + 1);
+    }, [access.authLoading, access.authError, access.targetUser, list.page, list.limit, list.sort, list.filters]);
 
     const refreshSubscriptions = () => {
         if (access.targetUser) fetchSubscriptions(access.targetUser.id);
@@ -74,9 +53,10 @@ export function useUserPushSubscriptions(link?: string) {
 
     return {
         ...access,
-        subscriptions, page, limit, sort, filters,
+        ...list,
+        subscriptions,
         loading: access.authLoading || dataLoading,
         error: access.authError || dataError,
-        handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshSubscriptions
+        refreshSubscriptions
     };
 }

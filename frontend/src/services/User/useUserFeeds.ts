@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {FeedProvider} from '../../api/providers/FeedProvider';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {FeedResponse} from '../../api/responses/FeedResponse';
@@ -7,20 +7,17 @@ import {FeedFilterQuery} from '../../api/queries/FeedFilterQuery';
 import {FeedIndexQuery} from '../../api/queries/FeedIndexQuery';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {useListFilters} from '../../utils/hooks/useListFilters';
 
 export function useUserFeeds(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
     const [feeds, setFeeds] = useState<FeedResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-
-    const [page, setPage] = useState<number>(1);
-    const [limit, setLimit] = useState<number>(10);
-    const [sort, setSort] = useState<string>('createdAt:desc');
-    const [filters, setFilters] = useState(new FeedFilterQuery());
-
     const [dataLoading, setDataLoading] = useState<boolean>(true);
     const [dataError, setDataError] = useState<string | null>(null);
+
+    const list = useListFilters(new FeedFilterQuery());
 
     const userProvider = new UserProvider();
     const feedProvider = new FeedProvider();
@@ -39,26 +36,20 @@ export function useUserFeeds(link?: string) {
         try {
             const filterDto = new FeedFilterQuery();
             filterDto.userId = userId;
-            filterDto.text = filters.text;
-            filterDto.status = filters.status ? Number(filters.status) : undefined;
+            filterDto.text = list.filters.text;
+            filterDto.status = list.filters.status ? Number(list.filters.status) : undefined;
 
             const indexDto = new FeedIndexQuery();
-            indexDto.page = page;
-            indexDto.limit = limit;
-            indexDto.sort = sort;
+            indexDto.page = list.page;
+            indexDto.limit = list.limit;
+            indexDto.sort = list.sort;
             indexDto.filter = filterDto;
 
             const data = await feedProvider.index(indexDto);
 
             const detailedFeeds = await Promise.all(data.map(async (feed) => {
                 return await feedProvider.details(feed.id, [
-                    'feedComments',
-                    'feedReactions',
-                    'eventDisciplineList',
-                    'eventDisciplineResult',
-                    'goal',
-                    'goalParticipantResult',
-                    'training'
+                    'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
                 ]);
             }));
 
@@ -78,24 +69,7 @@ export function useUserFeeds(link?: string) {
         if (!access.authLoading && !access.authError && access.targetUser) {
             fetchFeeds(access.targetUser.id);
         }
-    }, [access.authLoading, access.authError, access.targetUser, page, limit, sort, filters]);
-
-    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
-        setPage(1);
-    };
-
-    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSort(e.target.value);
-    };
-
-    const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setLimit(Number(e.target.value));
-        setPage(1);
-    };
-
-    const handlePrevPage = () => setPage(prev => Math.max(prev - 1, 1));
-    const handleNextPage = () => setPage(prev => prev + 1);
+    }, [access.authLoading, access.authError, access.targetUser, list.page, list.limit, list.sort, list.filters]);
 
     const refreshFeeds = () => {
         if (access.targetUser) fetchFeeds(access.targetUser.id);
@@ -103,9 +77,10 @@ export function useUserFeeds(link?: string) {
 
     return {
         ...access,
-        feeds, relatedUsers, page, limit, sort, filters,
+        ...list,
+        feeds, relatedUsers,
         loading: access.authLoading || dataLoading,
         error: access.authError || dataError,
-        handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshFeeds
+        refreshFeeds
     };
 }

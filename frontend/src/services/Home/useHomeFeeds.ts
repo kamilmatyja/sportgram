@@ -8,6 +8,7 @@ import {FeedFilterQuery} from '../../api/queries/FeedFilterQuery';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useFeedInteractions} from '../Feed/useFeedInteractions';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {useListFilters} from '../../utils/hooks/useListFilters';
 
 export function useHomeFeeds(targetUserId?: string) {
     const accessOptions = targetUserId ? { targetId: targetUserId, requireFriendship: true } : {};
@@ -16,8 +17,8 @@ export function useHomeFeeds(targetUserId?: string) {
     const [feeds, setFeeds] = useState<FeedResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
 
-    const [page, setPage] = useState<number>(1);
-    const [limit] = useState<number>(20);
+    const list = useListFilters(new FeedFilterQuery(), 'createdAt:desc', 20);
+
     const [hasMore, setHasMore] = useState<boolean>(true);
     const [dataLoading, setDataLoading] = useState<boolean>(true);
     const [loadingMore, setLoadingMore] = useState<boolean>(false);
@@ -40,8 +41,8 @@ export function useHomeFeeds(targetUserId?: string) {
         try {
             const indexDto = new FeedIndexQuery();
             indexDto.page = pageNumber;
-            indexDto.limit = limit;
-            indexDto.sort = 'createdAt:desc';
+            indexDto.limit = list.limit;
+            indexDto.sort = list.sort;
 
             if (targetUserId) {
                 const filter = new FeedFilterQuery();
@@ -55,7 +56,7 @@ export function useHomeFeeds(targetUserId?: string) {
                 'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
             ])));
 
-            setHasMore(data.length === limit);
+            setHasMore(data.length === list.limit);
 
             if (append) {
                 setFeeds(prev => [...prev, ...detailedFeeds.filter(df => !prev.some(pf => pf.id === df.id))]);
@@ -75,14 +76,14 @@ export function useHomeFeeds(targetUserId?: string) {
 
     useEffect(() => {
         if (!access.authLoading && !access.authError && access.currentUser) {
-            setPage(1);
+            list.setPage(1);
             fetchFeeds(1, false);
         }
     }, [access.authLoading, access.authError, targetUserId]);
 
     const handleLoadMore = () => {
-        const nextPage = page + 1;
-        setPage(nextPage);
+        const nextPage = list.page + 1;
+        list.setPage(nextPage);
         fetchFeeds(nextPage, true);
     };
 

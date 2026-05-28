@@ -1,23 +1,19 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {StoryProvider} from '../../api/providers/StoryProvider';
 import {StoryResponse} from '../../api/responses/StoryResponse';
 import {StoryFilterQuery} from '../../api/queries/StoryFilterQuery';
 import {StoryIndexQuery} from '../../api/queries/StoryIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {useListFilters} from '../../utils/hooks/useListFilters';
 
 export function useUserStories(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
     const [stories, setStories] = useState<StoryResponse[]>([]);
-
-    const [page, setPage] = useState<number>(1);
-    const [limit, setLimit] = useState<number>(10);
-    const [sort, setSort] = useState<string>('createdAt:desc');
-    const [filters, setFilters] = useState(new StoryFilterQuery());
-
     const [dataLoading, setDataLoading] = useState<boolean>(true);
     const [dataError, setDataError] = useState<string | null>(null);
 
+    const list = useListFilters(new StoryFilterQuery());
     const storyProvider = new StoryProvider();
 
     const fetchStories = async (userId: string) => {
@@ -26,13 +22,13 @@ export function useUserStories(link?: string) {
         try {
             const filterDto = new StoryFilterQuery();
             filterDto.userId = userId;
-            filterDto.text = filters.text;
-            filterDto.status = filters.status ? Number(filters.status) : undefined;
+            filterDto.text = list.filters.text;
+            filterDto.status = list.filters.status ? Number(list.filters.status) : undefined;
 
             const indexDto = new StoryIndexQuery();
-            indexDto.page = page;
-            indexDto.limit = limit;
-            indexDto.sort = sort;
+            indexDto.page = list.page;
+            indexDto.limit = list.limit;
+            indexDto.sort = list.sort;
             indexDto.filter = filterDto;
 
             const data = await storyProvider.index(indexDto);
@@ -48,24 +44,7 @@ export function useUserStories(link?: string) {
         if (!access.authLoading && !access.authError && access.targetUser) {
             fetchStories(access.targetUser.id);
         }
-    }, [access.authLoading, access.authError, access.targetUser, page, limit, sort, filters]);
-
-    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
-        setPage(1);
-    };
-
-    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSort(e.target.value);
-    };
-
-    const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setLimit(Number(e.target.value));
-        setPage(1);
-    };
-
-    const handlePrevPage = () => setPage(prev => Math.max(prev - 1, 1));
-    const handleNextPage = () => setPage(prev => prev + 1);
+    }, [access.authLoading, access.authError, access.targetUser, list.page, list.limit, list.sort, list.filters]);
 
     const refreshStories = () => {
         if (access.targetUser) fetchStories(access.targetUser.id);
@@ -73,9 +52,10 @@ export function useUserStories(link?: string) {
 
     return {
         ...access,
-        stories, page, limit, sort, filters,
+        ...list,
+        stories,
         loading: access.authLoading || dataLoading,
         error: access.authError || dataError,
-        handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshStories
+        refreshStories
     };
 }

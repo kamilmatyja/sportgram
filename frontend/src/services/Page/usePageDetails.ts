@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {PageProvider} from '../../api/providers/PageProvider';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {EventProvider} from '../../api/providers/EventProvider';
@@ -14,6 +14,7 @@ import {EventIndexQuery} from '../../api/queries/EventIndexQuery';
 import {PageFollowStatusEnum} from '../../enums/PageFollowStatusEnum';
 import {StatusBody} from '../../api/body/StatusBody';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
+import {useListFilters} from '../../utils/hooks/useListFilters';
 
 export function usePageDetails(link?: string) {
     const access = useAppAccess();
@@ -23,11 +24,9 @@ export function usePageDetails(link?: string) {
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
 
     const [events, setEvents] = useState<EventResponse[]>([]);
-    const [eventPage, setEventPage] = useState<number>(1);
-    const [eventLimit, setEventLimit] = useState<number>(10);
-    const [eventSort, setEventSort] = useState<string>('createdAt:desc');
-    const [eventFilters, setEventFilters] = useState(new EventFilterQuery());
     const [eventsLoading, setEventsLoading] = useState<boolean>(false);
+
+    const eventsList = useListFilters(new EventFilterQuery());
 
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
     const [isParticipantOfPage, setIsParticipantOfPage] = useState<boolean>(false);
@@ -47,14 +46,14 @@ export function usePageDetails(link?: string) {
         try {
             const filterDto = new EventFilterQuery();
             filterDto.pageId = targetPageId;
-            filterDto.title = eventFilters.title;
-            filterDto.link = eventFilters.link;
-            filterDto.status = eventFilters.status ? Number(eventFilters.status) : undefined;
+            filterDto.title = eventsList.filters.title;
+            filterDto.link = eventsList.filters.link;
+            filterDto.status = eventsList.filters.status ? Number(eventsList.filters.status) : undefined;
 
             const indexDto = new EventIndexQuery();
-            indexDto.page = eventPage;
-            indexDto.limit = eventLimit;
-            indexDto.sort = eventSort;
+            indexDto.page = eventsList.page;
+            indexDto.limit = eventsList.limit;
+            indexDto.sort = eventsList.sort;
             indexDto.filter = filterDto;
 
             const data = await eventProvider.index(indexDto);
@@ -129,24 +128,7 @@ export function usePageDetails(link?: string) {
         if (pageObj) {
             fetchEvents(pageObj.id);
         }
-    }, [eventPage, eventLimit, eventSort, eventFilters]);
-
-    const handleEventFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setEventFilters(prev => ({...prev, [e.target.name]: e.target.value}));
-        setEventPage(1);
-    };
-
-    const handleEventSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setEventSort(e.target.value);
-    };
-
-    const handleEventLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setEventLimit(Number(e.target.value));
-        setEventPage(1);
-    };
-
-    const handleEventPrevPage = () => setEventPage(prev => Math.max(prev - 1, 1));
-    const handleEventNextPage = () => setEventPage(prev => prev + 1);
+    }, [eventsList.page, eventsList.limit, eventsList.sort, eventsList.filters]);
 
     const handleToggleFollow = async () => {
         if (!pageObj || !access.currentUser) return;
@@ -186,15 +168,15 @@ export function usePageDetails(link?: string) {
         error: access.authError || dataError,
         events,
         eventsLoading,
-        eventPage,
-        eventLimit,
-        eventSort,
-        eventFilters,
-        handleEventFilterChange,
-        handleEventSortChange,
-        handleEventLimitChange,
-        handleEventPrevPage,
-        handleEventNextPage,
+        eventPage: eventsList.page,
+        eventLimit: eventsList.limit,
+        eventSort: eventsList.sort,
+        eventFilters: eventsList.filters,
+        handleEventFilterChange: eventsList.handleFilterChange,
+        handleEventSortChange: eventsList.handleSortChange,
+        handleEventLimitChange: eventsList.handleLimitChange,
+        handleEventPrevPage: eventsList.handlePrevPage,
+        handleEventNextPage: eventsList.handleNextPage,
         refreshPage
     };
 }

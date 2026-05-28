@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {TrainingProvider} from '../../api/providers/TrainingProvider';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {TrainingResponse} from '../../api/responses/TrainingResponse';
@@ -7,20 +7,17 @@ import {TrainingFilterQuery} from '../../api/queries/TrainingFilterQuery';
 import {TrainingIndexQuery} from '../../api/queries/TrainingIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
+import {useListFilters} from '../../utils/hooks/useListFilters';
 
 export function useUserTrainings(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
     const [trainings, setTrainings] = useState<TrainingResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-
-    const [page, setPage] = useState<number>(1);
-    const [limit, setLimit] = useState<number>(10);
-    const [sort, setSort] = useState<string>('createdAt:desc');
-    const [filters, setFilters] = useState(new TrainingFilterQuery());
-
     const [dataLoading, setDataLoading] = useState<boolean>(true);
     const [dataError, setDataError] = useState<string | null>(null);
+
+    const list = useListFilters(new TrainingFilterQuery());
 
     const userProvider = new UserProvider();
     const trainingProvider = new TrainingProvider();
@@ -31,24 +28,21 @@ export function useUserTrainings(link?: string) {
         try {
             const filterDto = new TrainingFilterQuery();
             filterDto.userId = userId;
-            filterDto.title = filters.title;
-            filterDto.link = filters.link;
-            filterDto.status = filters.status ? Number(filters.status) : undefined;
+            filterDto.title = list.filters.title;
+            filterDto.link = list.filters.link;
+            filterDto.status = list.filters.status ? Number(list.filters.status) : undefined;
 
             const indexDto = new TrainingIndexQuery();
-            indexDto.page = page;
-            indexDto.limit = limit;
-            indexDto.sort = sort;
+            indexDto.page = list.page;
+            indexDto.limit = list.limit;
+            indexDto.sort = list.sort;
             indexDto.filter = filterDto;
 
             const data = await trainingProvider.index(indexDto);
 
             const detailedTrainings = await Promise.all(data.map(async (tr) => {
                 return await trainingProvider.details(tr.id, [
-                    'trainingDisciplines',
-                    'trainingDisciplineDistances',
-                    'trainingDisciplineSubDistances',
-                    'trainingParticipants'
+                    'trainingDisciplines', 'trainingDisciplineDistances', 'trainingDisciplineSubDistances', 'trainingParticipants'
                 ]);
             }));
 
@@ -69,24 +63,7 @@ export function useUserTrainings(link?: string) {
         if (!access.authLoading && !access.authError && access.targetUser) {
             fetchTrainings(access.targetUser.id);
         }
-    }, [access.authLoading, access.authError, access.targetUser, page, limit, sort, filters]);
-
-    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
-        setPage(1);
-    };
-
-    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSort(e.target.value);
-    };
-
-    const handleLimitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setLimit(Number(e.target.value));
-        setPage(1);
-    };
-
-    const handlePrevPage = () => setPage(prev => Math.max(prev - 1, 1));
-    const handleNextPage = () => setPage(prev => prev + 1);
+    }, [access.authLoading, access.authError, access.targetUser, list.page, list.limit, list.sort, list.filters]);
 
     const refreshTrainings = () => {
         if (access.targetUser) fetchTrainings(access.targetUser.id);
@@ -94,9 +71,10 @@ export function useUserTrainings(link?: string) {
 
     return {
         ...access,
-        trainings, relatedUsers, page, limit, sort, filters,
+        ...list,
+        trainings, relatedUsers,
         loading: access.authLoading || dataLoading,
         error: access.authError || dataError,
-        handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshTrainings
+        refreshTrainings
     };
 }

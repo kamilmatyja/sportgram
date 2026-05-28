@@ -11,6 +11,7 @@ import {ConversationActivityFilterQuery} from '../../api/queries/ConversationAct
 import {ConversationBody} from '../../api/body/ConversationBody';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
+import {useListFilters} from '../../utils/hooks/useListFilters';
 
 export interface ProcessedActivity extends ConversationActivityResponse {
     otherUser: UserResponse;
@@ -20,16 +21,13 @@ export function useUserConversations(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
     const [canSendMessages, setCanSendMessages] = useState<boolean>(false);
-
     const [dataLoading, setDataLoading] = useState<boolean>(true);
     const [dataError, setDataError] = useState<string | null>(null);
 
     const [rawActivities, setRawActivities] = useState<ConversationActivityResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-    const [activityPage, setActivityPage] = useState<number>(1);
-    const [activityLimit, setActivityLimit] = useState<number>(10);
-    const [activitySort, setActivitySort] = useState<string>('updatedAt:desc');
-    const [activitySearch, setActivitySearch] = useState<string>('');
+
+    const activityList = useListFilters({ search: '' }, 'updatedAt:desc');
 
     const [messages, setMessages] = useState<ConversationResponse[]>([]);
     const [chatPage, setChatPage] = useState<number>(1);
@@ -88,8 +86,8 @@ export function useUserConversations(link?: string) {
         }
         let processed = Array.from(uniqueMap.values());
 
-        if (activitySearch) {
-            const search = activitySearch.toLowerCase();
+        if (activityList.filters.search) {
+            const search = activityList.filters.search.toLowerCase();
             processed = processed.filter(act =>
                 act.otherUser.firstName.toLowerCase().includes(search) ||
                 act.otherUser.lastName.toLowerCase().includes(search) ||
@@ -98,7 +96,7 @@ export function useUserConversations(link?: string) {
         }
 
         processed.sort((a, b) => {
-            const [field, dir] = activitySort.split(':');
+            const [field, dir] = activityList.sort.split(':');
             const mod = dir === 'desc' ? -1 : 1;
             if (field === 'updatedAt') {
                 return mod * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
@@ -110,7 +108,7 @@ export function useUserConversations(link?: string) {
         });
 
         const total = processed.length;
-        const paginated = processed.slice((activityPage - 1) * activityLimit, activityPage * activityLimit);
+        const paginated = processed.slice((activityList.page - 1) * activityList.limit, activityList.page * activityList.limit);
 
         return {paginated, total};
     };
@@ -172,13 +170,9 @@ export function useUserConversations(link?: string) {
 
             const targetActivity = acts.find(a => a.senderUserId === tUser.id);
             if (targetActivity) {
-                const timeStr = targetActivity.updatedAt.endsWith('Z')
-                    ? targetActivity.updatedAt
-                    : `${targetActivity.updatedAt}Z`;
-
+                const timeStr = targetActivity.updatedAt.endsWith('Z') ? targetActivity.updatedAt : `${targetActivity.updatedAt}Z`;
                 const serverTimeMs = new Date(timeStr).getTime();
-                const nowMs = Date.now();
-                const diffMs = nowMs - serverTimeMs;
+                const diffMs = Date.now() - serverTimeMs;
 
                 if (diffMs <= 10000 && diffMs >= -10000) {
                     setIsTyping(true);
@@ -258,14 +252,17 @@ export function useUserConversations(link?: string) {
         error: access.authError || dataError,
         activities: paginatedActivities,
         totalActivities,
-        activityPage,
-        activityLimit,
-        activitySort,
-        activitySearch,
-        setActivityPage,
-        setActivityLimit,
-        setActivitySort,
-        setActivitySearch,
+        activityPage: activityList.page,
+        activityLimit: activityList.limit,
+        activitySort: activityList.sort,
+        activitySearch: activityList.filters.search,
+        setActivityPage: activityList.setPage,
+        setActivityLimit: activityList.setLimit,
+        setActivitySort: activityList.setSort,
+        setActivitySearch: (search: string) => {
+            activityList.setFilters({ search });
+            activityList.setPage(1);
+        },
         messages, messageInput, isSending, isTyping, hasMoreMessages, loadingEarlier, chatEndRef,
         handleTyping, handleSendMessage, loadEarlierMessages
     };
