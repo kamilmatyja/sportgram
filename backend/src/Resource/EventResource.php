@@ -86,8 +86,8 @@ class EventResource
     }
 
     /** @param Event[] $events */
-    public static function fromEntityCollection(array $events): array
+    public static function fromEntityCollection(array $events, ?EventDetailsQueryDto $dto = null): array
     {
-        return array_map(fn (Event $event) => self::fromEntity($event), $events);
+        return array_map(fn (Event $event) => self::fromEntity($event, $dto), $events);
     }
 }

@@ -103,8 +103,8 @@ class TrainingResource
     }
 
     /** @param Training[] $trainings */
-    public static function fromEntityCollection(array $trainings): array
+    public static function fromEntityCollection(array $trainings, ?TrainingDetailsQueryDto $dto = null): array
     {
-        return array_map(fn (Training $training) => self::fromEntity($training), $trainings);
+        return array_map(fn (Training $training) => self::fromEntity($training, $dto), $trainings);
     }
 }

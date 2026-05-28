@@ -118,7 +118,7 @@ class EventController extends AbstractController
     ): JsonResponse {
         $events = $service->index($dto);
 
-        $data = EventResource::fromEntityCollection($events);
+        $data = EventResource::fromEntityCollection($events, $dto->include);
 
         return ApiResponse::elements($data);
     }
@@ -209,7 +209,7 @@ class EventController extends AbstractController
     ): JsonResponse {
         $eventDisciplineDistanceLists = $service->indexList($id, $dto);
 
-        $data = EventDisciplineDistanceListResource::fromEntityCollection($eventDisciplineDistanceLists);
+        $data = EventDisciplineDistanceListResource::fromEntityCollection($eventDisciplineDistanceLists, $dto->include);
 
         return ApiResponse::elements($data);
     }

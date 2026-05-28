@@ -80,8 +80,8 @@ class EventDisciplineDistanceListResource
     }
 
     /** @param EventDisciplineList[] $lists */
-    public static function fromEntityCollection(array $lists): array
+    public static function fromEntityCollection(array $lists, ?EventListDetailsQueryDto $dto = null): array
     {
-        return array_map(fn (EventDisciplineList $list) => self::fromEntity($list), $lists);
+        return array_map(fn (EventDisciplineList $list) => self::fromEntity($list, $dto), $lists);
     }
 }

@@ -111,7 +111,7 @@ class PageController extends AbstractController
     ): JsonResponse {
         $pages = $service->index($dto);
 
-        $data = PageResource::fromEntityCollection($pages);
+        $data = PageResource::fromEntityCollection($pages, $dto->include);
 
         return ApiResponse::elements($data);
     }

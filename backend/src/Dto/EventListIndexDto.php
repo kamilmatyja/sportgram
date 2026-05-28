@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new OA\Property(property: 'limit', type: 'integer', example: 10, nullable: true),
         new OA\Property(property: 'sort', type: 'string', example: 'createdAt:desc', nullable: true),
         new OA\Property(property: 'filter', ref: new Model(type: EventListFilterDto::class), nullable: true),
+        new OA\Property(property: 'include', ref: new Model(type: EventListDetailsQueryDto::class), nullable: true),
     ],
     type: 'object',
 )]
@@ -30,6 +31,9 @@ class EventListIndexDto
 
     #[Assert\Valid]
     public EventListFilterDto $filter;
+
+    #[Assert\Valid]
+    public ?EventListDetailsQueryDto $include = null;
 
     public function __construct()
     {

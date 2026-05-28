@@ -92,8 +92,8 @@ class PageResource
     }
 
     /** @param Page[] $pages */
-    public static function fromEntityCollection(array $pages): array
+    public static function fromEntityCollection(array $pages, ?PageDetailsQueryDto $dto = null): array
     {
-        return array_map(fn (Page $page) => self::fromEntity($page), $pages);
+        return array_map(fn (Page $page) => self::fromEntity($page, $dto), $pages);
     }
 }

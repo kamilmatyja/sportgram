@@ -88,8 +88,8 @@ class GoalResource
     }
 
     /** @param Goal[] $goals */
-    public static function fromEntityCollection(array $goals): array
+    public static function fromEntityCollection(array $goals, ?GoalDetailsQueryDto $dto = null): array
     {
-        return array_map(fn (Goal $goal) => self::fromEntity($goal), $goals);
+        return array_map(fn (Goal $goal) => self::fromEntity($goal, $dto), $goals);
     }
 }

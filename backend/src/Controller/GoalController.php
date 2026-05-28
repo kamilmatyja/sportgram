@@ -105,7 +105,7 @@ class GoalController extends AbstractController
     ): JsonResponse {
         $goals = $service->index($dto);
 
-        $data = GoalResource::fromEntityCollection($goals);
+        $data = GoalResource::fromEntityCollection($goals, $dto->include);
 
         return ApiResponse::elements($data);
     }

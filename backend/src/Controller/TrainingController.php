@@ -105,7 +105,7 @@ class TrainingController extends AbstractController
     ): JsonResponse {
         $trainings = $service->index($dto);
 
-        $data = TrainingResource::fromEntityCollection($trainings);
+        $data = TrainingResource::fromEntityCollection($trainings, $dto->include);
 
         return ApiResponse::elements($data);
     }

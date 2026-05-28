@@ -109,7 +109,7 @@ class FeedController extends AbstractController
     ): JsonResponse {
         $feeds = $service->index($dto);
 
-        $data = FeedResource::fromEntityCollection($feeds);
+        $data = FeedResource::fromEntityCollection($feeds, $dto->include);
 
         return ApiResponse::elements($data);
     }

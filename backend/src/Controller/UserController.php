@@ -123,7 +123,7 @@ class UserController extends AbstractController
     ): JsonResponse {
         $users = $service->index($dto);
 
-        $data = UserResource::fromEntityCollection($users);
+        $data = UserResource::fromEntityCollection($users, $dto->include);
 
         return ApiResponse::elements($data);
     }

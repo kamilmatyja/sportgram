@@ -108,8 +108,8 @@ class UserResource
     }
 
     /** @param User[] $users */
-    public static function fromEntityCollection(array $users): array
+    public static function fromEntityCollection(array $users, ?UserDetailsQueryDto $dto = null): array
     {
-        return array_map(fn (User $user) => self::fromEntity($user), $users);
+        return array_map(fn (User $user) => self::fromEntity($user, $dto), $users);
     }
 }

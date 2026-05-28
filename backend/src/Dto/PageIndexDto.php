@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new OA\Property(property: 'limit', type: 'integer', example: 10, nullable: true),
         new OA\Property(property: 'sort', type: 'string', example: 'createdAt:desc', nullable: true),
         new OA\Property(property: 'filter', ref: new Model(type: PageFilterDto::class), nullable: true),
+        new OA\Property(property: 'include', ref: new Model(type: PageDetailsQueryDto::class), nullable: true),
     ],
     type: 'object',
 )]
@@ -30,6 +31,9 @@ class PageIndexDto
 
     #[Assert\Valid]
     public PageFilterDto $filter;
+
+    #[Assert\Valid]
+    public ?PageDetailsQueryDto $include = null;
 
     public function __construct()
     {

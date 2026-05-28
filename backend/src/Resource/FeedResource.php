@@ -129,8 +129,8 @@ class FeedResource
     }
 
     /** @param Feed[] $feeds */
-    public static function fromEntityCollection(array $feeds): array
+    public static function fromEntityCollection(array $feeds, ?FeedDetailsQueryDto $dto = null): array
     {
-        return array_map(fn (Feed $feed) => self::fromEntity($feed), $feeds);
+        return array_map(fn (Feed $feed) => self::fromEntity($feed, $dto), $feeds);
     }
 }
