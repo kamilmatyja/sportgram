@@ -15,35 +15,28 @@ import {PageFollowStatusEnum} from '../../enums/PageFollowStatusEnum';
 import {StatusBody} from '../../api/body/StatusBody';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useListFilters} from '../../utils/hooks/useListFilters';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function usePageDetails(link?: string) {
     const access = useAppAccess();
-
-    const [pageObj, setPageObj] = useState<PageResponse | null>(null);
-    const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-
-    const [events, setEvents] = useState<EventResponse[]>([]);
-    const [eventsLoading, setEventsLoading] = useState<boolean>(false);
-
     const eventsList = useListFilters(new EventFilterQuery());
 
+    const { data: pageObj, loading: pageLoading, error: pageError, executeFetch: fetchPage } = useDataFetch<PageResponse>();
+    const { data: events, loading: eventsLoading, executeFetch: executeEventsFetch } = useDataFetch<EventResponse[]>();
+
+    const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
+    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
     const [isParticipantOfPage, setIsParticipantOfPage] = useState<boolean>(false);
-
     const [myFollow, setMyFollow] = useState<PageFollowResponse | null>(null);
     const [followLoading, setFollowLoading] = useState<boolean>(false);
-
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
 
     const pageProvider = new PageProvider();
     const userProvider = new UserProvider();
     const eventProvider = new EventProvider();
 
-    const fetchEvents = async (targetPageId: string) => {
-        setEventsLoading(true);
-        try {
+    const fetchEventsData = (targetPageId: string) => {
+        executeEventsFetch(async () => {
             const filterDto = new EventFilterQuery();
             filterDto.pageId = targetPageId;
             filterDto.title = eventsList.filters.title;
@@ -56,31 +49,22 @@ export function usePageDetails(link?: string) {
             indexDto.sort = eventsList.sort;
             indexDto.filter = filterDto;
 
-            const data = await eventProvider.index(indexDto);
-            setEvents(data);
-        } catch (err: any) {
-            console.error(err);
-        } finally {
-            setEventsLoading(false);
-        }
+            return await eventProvider.index(indexDto);
+        }, []);
     };
 
-    const fetchPageData = async () => {
+    const fetchPageData = () => {
         if (!link || !access.currentUser) return;
 
-        setDataLoading(true);
-        setDataError(null);
-        try {
+        fetchPage(async () => {
             const filterDto = new PageFilterQuery();
             filterDto.link = link;
             const indexDto = new PageIndexQuery();
             indexDto.filter = filterDto;
 
             const pagesData = await pageProvider.index(indexDto);
-
             if (pagesData.length === 0) {
-                setDataError('noPages');
-                return;
+                throw { error: 'noPages' };
             }
 
             const targetPage = await pageProvider.details(pagesData[0].id, [
@@ -88,12 +72,9 @@ export function usePageDetails(link?: string) {
                 'pageFollows'
             ]);
 
-            setPageObj(targetPage);
-
             const owner = await userProvider.details(targetPage.userId);
             setOwnerUser(owner);
-
-            setIsMyProfile(access.currentUser.id === owner.id);
+            setIsMyProfile(access.currentUser!.id === owner.id);
 
             const participantCheck = targetPage.participants?.some(p => p.userId === access.currentUser!.id) ?? false;
             setIsParticipantOfPage(participantCheck);
@@ -109,13 +90,10 @@ export function usePageDetails(link?: string) {
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
-            await fetchEvents(targetPage.id);
+            fetchEventsData(targetPage.id);
 
-        } catch (err: any) {
-            setDataError(err.error);
-        } finally {
-            setDataLoading(false);
-        }
+            return targetPage;
+        }, null as unknown as PageResponse);
     };
 
     useEffect(() => {
@@ -126,7 +104,7 @@ export function usePageDetails(link?: string) {
 
     useEffect(() => {
         if (pageObj) {
-            fetchEvents(pageObj.id);
+            fetchEventsData(pageObj.id);
         }
     }, [eventsList.page, eventsList.limit, eventsList.sort, eventsList.filters]);
 
@@ -142,7 +120,7 @@ export function usePageDetails(link?: string) {
                     : PageFollowStatusEnum.ACCEPTED;
                 await pageProvider.updateFollowStatus(myFollow.id, new StatusBody(newStatus));
             }
-            await fetchPageData();
+            fetchPageData();
         } catch (err: any) {
             alert(err.error);
         } finally {
@@ -150,9 +128,7 @@ export function usePageDetails(link?: string) {
         }
     };
 
-    const refreshPage = () => {
-        fetchPageData();
-    };
+    const refreshPage = () => fetchPageData();
 
     return {
         ...access,
@@ -164,9 +140,9 @@ export function usePageDetails(link?: string) {
         myFollow,
         followLoading,
         handleToggleFollow,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
-        events,
+        loading: access.authLoading || pageLoading,
+        error: access.authError || pageError,
+        events: events || [],
         eventsLoading,
         eventPage: eventsList.page,
         eventLimit: eventsList.limit,

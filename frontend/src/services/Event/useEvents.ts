@@ -1,25 +1,20 @@
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import {EventProvider} from '../../api/providers/EventProvider';
 import {EventResponse} from '../../api/responses/EventResponse';
 import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
 import {EventIndexQuery} from '../../api/queries/EventIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {useListFilters} from '../../utils/hooks/useListFilters';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useEvents() {
     const access = useAppAccess();
     const eventProvider = new EventProvider();
-
-    const [events, setEvents] = useState<EventResponse[]>([]);
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
-
     const list = useListFilters(new EventFilterQuery());
+    const { data, loading, error, executeFetch } = useDataFetch<EventResponse[]>();
 
-    const fetchEvents = async () => {
-        setDataLoading(true);
-        setDataError(null);
-        try {
+    const fetchEvents = () => {
+        executeFetch(async () => {
             const filterDto = new EventFilterQuery();
             filterDto.title = list.filters.title;
             filterDto.link = list.filters.link;
@@ -31,13 +26,8 @@ export function useEvents() {
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
 
-            const data = await eventProvider.index(indexDto);
-            setEvents(data);
-        } catch (err: any) {
-            setDataError(err.error);
-        } finally {
-            setDataLoading(false);
-        }
+            return await eventProvider.index(indexDto);
+        }, []);
     };
 
     useEffect(() => {
@@ -49,9 +39,9 @@ export function useEvents() {
     return {
         ...access,
         ...list,
-        events,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
+        events: data || [],
+        loading: access.authLoading || loading,
+        error: access.authError || error,
         fetchEvents
     };
 }

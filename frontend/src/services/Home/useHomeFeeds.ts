@@ -9,18 +9,17 @@ import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useFeedInteractions} from '../Feed/useFeedInteractions';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {useListFilters} from '../../utils/hooks/useListFilters';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useHomeFeeds(targetUserId?: string) {
     const accessOptions = targetUserId ? { targetId: targetUserId, requireFriendship: true } : {};
     const access = useAppAccess(accessOptions);
 
-    const [feeds, setFeeds] = useState<FeedResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-
     const list = useListFilters(new FeedFilterQuery(), 'createdAt:desc', 20);
 
+    const { data: feeds, setData: setFeeds, loading, error, executeFetch } = useDataFetch<FeedResponse[]>();
     const [hasMore, setHasMore] = useState<boolean>(true);
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
     const [loadingMore, setLoadingMore] = useState<boolean>(false);
 
     const feedProvider = new FeedProvider();
@@ -34,11 +33,10 @@ export function useHomeFeeds(targetUserId?: string) {
         ]);
     };
 
-    const fetchFeeds = async (pageNumber: number, append: boolean = false) => {
-        if (!append) setDataLoading(true);
-        else setLoadingMore(true);
+    const fetchFeeds = (pageNumber: number, append: boolean = false) => {
+        if (append) setLoadingMore(true);
 
-        try {
+        executeFetch(async () => {
             const indexDto = new FeedIndexQuery();
             indexDto.page = pageNumber;
             indexDto.limit = list.limit;
@@ -58,20 +56,17 @@ export function useHomeFeeds(targetUserId?: string) {
 
             setHasMore(data.length === list.limit);
 
-            if (append) {
-                setFeeds(prev => [...prev, ...detailedFeeds.filter(df => !prev.some(pf => pf.id === df.id))]);
-            } else {
-                setFeeds(detailedFeeds);
-            }
-
             const updatedUsers = await fetchRelatedUsers(extractUserIds(detailedFeeds), relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setDataLoading(false);
-            setLoadingMore(false);
-        }
+
+            if (append) {
+                const current = feeds || [];
+                return [...current, ...detailedFeeds.filter(df => !current.some(pf => pf.id === df.id))];
+            }
+            return detailedFeeds;
+        }, feeds || []).finally(() => {
+            if (append) setLoadingMore(false);
+        });
     };
 
     useEffect(() => {
@@ -92,7 +87,7 @@ export function useHomeFeeds(targetUserId?: string) {
             const updatedFeed = await feedProvider.details(feedId, [
                 'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
             ]);
-            setFeeds(prev => prev.map(f => f.id === feedId ? updatedFeed : f));
+            setFeeds(prev => (prev || []).map(f => f.id === feedId ? updatedFeed : f));
             const updatedUsers = await fetchRelatedUsers(extractUserIds([updatedFeed]), relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
         } catch (e) {
@@ -100,13 +95,14 @@ export function useHomeFeeds(targetUserId?: string) {
         }
     };
 
-    const interactions = useFeedInteractions(feeds, access.currentUser, refreshSingleFeed);
+    const interactions = useFeedInteractions(feeds || [], access.currentUser, refreshSingleFeed);
 
     return {
         ...access,
-        feeds,
+        feeds: feeds || [],
         relatedUsers,
-        loading: access.authLoading || dataLoading,
+        loading: access.authLoading || loading,
+        error: access.authError || error,
         loadingMore,
         hasMore,
         handleLoadMore,

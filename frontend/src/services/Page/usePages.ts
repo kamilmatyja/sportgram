@@ -1,25 +1,20 @@
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import {PageProvider} from '../../api/providers/PageProvider';
 import {PageResponse} from '../../api/responses/PageResponse';
 import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
 import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {useListFilters} from '../../utils/hooks/useListFilters';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function usePages() {
     const access = useAppAccess();
     const pageProvider = new PageProvider();
-
-    const [pages, setPages] = useState<PageResponse[]>([]);
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
-
     const list = useListFilters(new PageFilterQuery());
+    const { data, loading, error, executeFetch } = useDataFetch<PageResponse[]>();
 
-    const fetchPages = async () => {
-        setDataLoading(true);
-        setDataError(null);
-        try {
+    const fetchPages = () => {
+        executeFetch(async () => {
             const filterDto = new PageFilterQuery();
             filterDto.title = list.filters.title;
             filterDto.link = list.filters.link;
@@ -31,13 +26,8 @@ export function usePages() {
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
 
-            const data = await pageProvider.index(indexDto);
-            setPages(data);
-        } catch (err: any) {
-            setDataError(err.error);
-        } finally {
-            setDataLoading(false);
-        }
+            return await pageProvider.index(indexDto);
+        }, []);
     };
 
     useEffect(() => {
@@ -49,9 +39,9 @@ export function usePages() {
     return {
         ...access,
         ...list,
-        pages,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
+        pages: data || [],
+        loading: access.authLoading || loading,
+        error: access.authError || error,
         fetchPages
     };
 }

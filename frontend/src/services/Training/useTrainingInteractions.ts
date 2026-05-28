@@ -1,21 +1,16 @@
-import {useState} from 'react';
 import {TrainingProvider} from '../../api/providers/TrainingProvider';
 import {StatusBody} from '../../api/body/StatusBody';
+import {useActionState} from '../../utils/hooks/useActionState';
 
 export function useTrainingInteractions(refreshTrainings: () => void) {
-    const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const { actionLoading, runAction } = useActionState();
     const trainingProvider = new TrainingProvider();
 
-    const handleParticipantStatusSubmit = async (participantId: string, newStatus: number) => {
-        setActionLoading(participantId);
-        try {
+    const handleParticipantStatusSubmit = (participantId: string, newStatus: number) => {
+        runAction(participantId, async () => {
             await trainingProvider.updateParticipantStatus(participantId, new StatusBody(newStatus));
             refreshTrainings();
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
     return {

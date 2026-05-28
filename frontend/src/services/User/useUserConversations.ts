@@ -12,6 +12,8 @@ import {ConversationBody} from '../../api/body/ConversationBody';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useListFilters} from '../../utils/hooks/useListFilters';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import {useFormState} from '../../utils/hooks/useFormState';
 
 export interface ProcessedActivity extends ConversationActivityResponse {
     otherUser: UserResponse;
@@ -21,15 +23,14 @@ export function useUserConversations(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
     const [canSendMessages, setCanSendMessages] = useState<boolean>(false);
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
-
-    const [rawActivities, setRawActivities] = useState<ConversationActivityResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
+
+    const { data: rawActivities, loading: actLoading, error: actError, executeFetch: fetchActs } = useDataFetch<ConversationActivityResponse[]>();
+    const { data: messages, setData: setMessages, loading: msgLoading, error: msgError, executeFetch: fetchMsgs } = useDataFetch<ConversationResponse[]>();
+    const { wrap } = useFormState();
 
     const activityList = useListFilters({ search: '' }, 'updatedAt:desc');
 
-    const [messages, setMessages] = useState<ConversationResponse[]>([]);
     const [chatPage, setChatPage] = useState<number>(1);
     const [hasMoreMessages, setHasMoreMessages] = useState<boolean>(true);
     const [messageInput, setMessageInput] = useState<string>('');
@@ -48,28 +49,22 @@ export function useUserConversations(link?: string) {
         chatEndRef.current?.scrollIntoView({behavior: 'smooth'});
     };
 
-    const fetchActivities = async (currentUsr: UserResponse) => {
-        try {
-            setDataLoading(true);
+    const fetchActivities = (currentUsr: UserResponse) => {
+        fetchActs(async () => {
             const indexDto = new ConversationActivityIndexQuery();
             indexDto.limit = 100;
-
             const data = await conversationProvider.indexActivity(indexDto);
-            setRawActivities(data);
 
             const otherUserIds = data.map(act => act.senderUserId === currentUsr.id ? act.receiverUserId : act.senderUserId);
             const usersMap = await fetchRelatedUsers(otherUserIds, relatedUsers, userProvider);
             setRelatedUsers(usersMap);
 
-        } catch (e: any) {
-            setDataError(e.error);
-        } finally {
-            setDataLoading(false);
-        }
+            return data;
+        }, []);
     };
 
     const processActivities = (): { paginated: ProcessedActivity[], total: number } => {
-        if (!access.currentUser) return {paginated: [], total: 0};
+        if (!access.currentUser || !rawActivities) return {paginated: [], total: 0};
 
         const mapped: ProcessedActivity[] = rawActivities
             .map(act => {
@@ -113,14 +108,11 @@ export function useUserConversations(link?: string) {
         return {paginated, total};
     };
 
-    const fetchMessages = async (tUser: UserResponse, pageToFetch: number = 1, append: boolean = false) => {
-        try {
-            if (!append) setDataLoading(true);
-            else setLoadingEarlier(true);
-
+    const fetchMessagesData = (tUser: UserResponse, pageToFetch: number = 1, append: boolean = false) => {
+        if (append) setLoadingEarlier(true);
+        fetchMsgs(async () => {
             const filter = new ConversationFilterQuery();
             filter.userId = tUser.id;
-
             const indexDto = new ConversationIndexQuery();
             indexDto.filter = filter;
             indexDto.page = pageToFetch;
@@ -131,17 +123,15 @@ export function useUserConversations(link?: string) {
             setHasMoreMessages(data.length === 20);
 
             if (append) {
-                setMessages(prev => [...prev, ...data]);
+                const current = messages || [];
+                return [...current, ...data];
             } else {
-                setMessages(data);
                 setTimeout(scrollToBottom, 100);
+                return data;
             }
-        } catch (e: any) {
-            setDataError(e.error);
-        } finally {
-            setDataLoading(false);
-            setLoadingEarlier(false);
-        }
+        }, messages || []).finally(() => {
+            if (append) setLoadingEarlier(false);
+        });
     };
 
     const pollUpdates = async (tUser: UserResponse) => {
@@ -154,12 +144,13 @@ export function useUserConversations(link?: string) {
             const data = await conversationProvider.index(indexDto);
 
             setMessages(prev => {
-                const newMessages = data.filter(newMsg => !prev.some(oldMsg => oldMsg.id === newMsg.id));
+                const current = prev || [];
+                const newMessages = data.filter(newMsg => !current.some(oldMsg => oldMsg.id === newMsg.id));
                 if (newMessages.length > 0) {
                     setTimeout(scrollToBottom, 100);
-                    return [...newMessages, ...prev];
+                    return [...newMessages, ...current];
                 }
-                return prev;
+                return current;
             });
 
             const actFilter = new ConversationActivityFilterQuery();
@@ -177,9 +168,7 @@ export function useUserConversations(link?: string) {
                 if (diffMs <= 10000 && diffMs >= -10000) {
                     setIsTyping(true);
                     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-                    typingTimeoutRef.current = setTimeout(() => {
-                        setIsTyping(false);
-                    }, 5000 - diffMs);
+                    typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 5000 - diffMs);
                 } else {
                     setIsTyping(false);
                 }
@@ -195,7 +184,7 @@ export function useUserConversations(link?: string) {
             if (access.isMyProfile) {
                 fetchActivities(access.currentUser);
             } else {
-                fetchMessages(access.targetUser, 1, false);
+                fetchMessagesData(access.targetUser, 1, false);
             }
         }
     }, [access.authLoading, access.authError, access.targetUser]);
@@ -210,7 +199,7 @@ export function useUserConversations(link?: string) {
         if (!access.targetUser) return;
         const nextPage = chatPage + 1;
         setChatPage(nextPage);
-        fetchMessages(access.targetUser, nextPage, true);
+        fetchMessagesData(access.targetUser, nextPage, true);
     };
 
     const handleSendMessage = async (e: React.ChangeEvent<HTMLFormElement>) => {
@@ -218,18 +207,13 @@ export function useUserConversations(link?: string) {
         if (!messageInput.trim() || !access.targetUser || !canSendMessages) return;
 
         setIsSending(true);
-        try {
-            const body = new ConversationBody(messageInput);
-            await conversationProvider.create(access.targetUser.id, body);
+        wrap(async () => {
+            await conversationProvider.create(access.targetUser!.id, new ConversationBody(messageInput));
             setMessageInput('');
             setIsTyping(false);
-            await fetchMessages(access.targetUser, 1, false);
+            await fetchMessagesData(access.targetUser!, 1, false);
             setTimeout(scrollToBottom, 100);
-        } catch (e: any) {
-            alert(e.error);
-        } finally {
-            setIsSending(false);
-        }
+        }).finally(() => setIsSending(false));
     };
 
     const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -243,15 +227,15 @@ export function useUserConversations(link?: string) {
         }
     };
 
-    const {paginated: paginatedActivities, total: totalActivities} = processActivities();
+    const {paginated, total} = processActivities();
 
     return {
         ...access,
         canSendMessages,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
-        activities: paginatedActivities,
-        totalActivities,
+        loading: access.authLoading || actLoading || msgLoading,
+        error: access.authError || actError || msgError,
+        activities: paginated,
+        totalActivities: total,
         activityPage: activityList.page,
         activityLimit: activityList.limit,
         activitySort: activityList.sort,
@@ -263,7 +247,7 @@ export function useUserConversations(link?: string) {
             activityList.setFilters({ search });
             activityList.setPage(1);
         },
-        messages, messageInput, isSending, isTyping, hasMoreMessages, loadingEarlier, chatEndRef,
+        messages: messages || [], messageInput, isSending, isTyping, hasMoreMessages, loadingEarlier, chatEndRef,
         handleTyping, handleSendMessage, loadEarlierMessages
     };
 }

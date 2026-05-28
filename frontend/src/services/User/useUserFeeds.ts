@@ -8,16 +8,14 @@ import {FeedIndexQuery} from '../../api/queries/FeedIndexQuery';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {useListFilters} from '../../utils/hooks/useListFilters';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useUserFeeds(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
-
-    const [feeds, setFeeds] = useState<FeedResponse[]>([]);
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
-
     const list = useListFilters(new FeedFilterQuery());
+    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
+
+    const { data: feeds, loading, error, executeFetch } = useDataFetch<FeedResponse[]>();
 
     const userProvider = new UserProvider();
     const feedProvider = new FeedProvider();
@@ -30,10 +28,8 @@ export function useUserFeeds(link?: string) {
         ]);
     };
 
-    const fetchFeeds = async (userId: string) => {
-        setDataLoading(true);
-        setDataError(null);
-        try {
+    const fetchFeeds = (userId: string) => {
+        executeFetch(async () => {
             const filterDto = new FeedFilterQuery();
             filterDto.userId = userId;
             filterDto.text = list.filters.text;
@@ -53,16 +49,11 @@ export function useUserFeeds(link?: string) {
                 ]);
             }));
 
-            setFeeds(detailedFeeds);
-
             const updatedUsers = await fetchRelatedUsers(extractUserIds(detailedFeeds), relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
-        } catch (err: any) {
-            setDataError(err.error);
-        } finally {
-            setDataLoading(false);
-        }
+            return detailedFeeds;
+        }, []);
     };
 
     useEffect(() => {
@@ -78,9 +69,10 @@ export function useUserFeeds(link?: string) {
     return {
         ...access,
         ...list,
-        feeds, relatedUsers,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
+        feeds: feeds || [],
+        relatedUsers,
+        loading: access.authLoading || loading,
+        error: access.authError || error,
         refreshFeeds
     };
 }

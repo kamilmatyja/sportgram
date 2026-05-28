@@ -7,38 +7,30 @@ import {TrainingFilterQuery} from '../../api/queries/TrainingFilterQuery';
 import {TrainingIndexQuery} from '../../api/queries/TrainingIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useTrainingDetails(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
-    const [training, setTraining] = useState<TrainingResponse | null>(null);
+    const { data: training, loading, error, executeFetch } = useDataFetch<TrainingResponse>();
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-
     const [isParticipantOfTraining, setIsParticipantOfTraining] = useState<boolean>(false);
-
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
 
     const trainingProvider = new TrainingProvider();
     const userProvider = new UserProvider();
 
-    const fetchTrainingData = async () => {
+    const fetchTrainingData = () => {
         if (!link || !access.currentUser) return;
 
-        setDataLoading(true);
-        setDataError(null);
-
-        try {
+        executeFetch(async () => {
             const filterDto = new TrainingFilterQuery();
             filterDto.link = link;
             const indexDto = new TrainingIndexQuery();
             indexDto.filter = filterDto;
 
             const trainings = await trainingProvider.index(indexDto);
-
             if (trainings.length === 0) {
-                setDataError('noTrainings');
-                return;
+                throw { error: 'noTrainings' };
             }
 
             const targetTraining = await trainingProvider.details(trainings[0].id, [
@@ -48,8 +40,6 @@ export function useTrainingDetails(link?: string) {
                 'trainingParticipants'
             ]);
 
-            setTraining(targetTraining);
-
             const participantCheck = targetTraining.participants?.some(p => p.userId === access.currentUser!.id) ?? false;
             setIsParticipantOfTraining(participantCheck);
 
@@ -57,11 +47,8 @@ export function useTrainingDetails(link?: string) {
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
-        } catch (err: any) {
-            setDataError(err.error);
-        } finally {
-            setDataLoading(false);
-        }
+            return targetTraining;
+        }, null as unknown as TrainingResponse);
     };
 
     useEffect(() => {
@@ -70,9 +57,7 @@ export function useTrainingDetails(link?: string) {
         }
     }, [link, access.authLoading, access.authError]);
 
-    const refreshTraining = () => {
-        fetchTrainingData();
-    };
+    const refreshTraining = () => fetchTrainingData();
 
     return {
         ...access,
@@ -80,8 +65,8 @@ export function useTrainingDetails(link?: string) {
         training,
         relatedUsers,
         isParticipantOfTraining,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
+        loading: access.authLoading || loading,
+        error: access.authError || error,
         refreshTraining
     };
 }

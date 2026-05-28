@@ -21,7 +21,7 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
     const {t} = useTranslation();
     const addModal = useModal();
     const manageModal = useModal<PushSubscriptionResponse>();
-    const { loading, globalError, wrap, resetErrors } = useFormState();
+    const { loading, globalError, wrap, resetErrors, setGlobalError } = useFormState();
 
     const pushSubscriptionProvider = new PushSubscriptionProvider();
 
@@ -70,7 +70,7 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
             await pushSubscriptionProvider.create(pushDto);
             addModal.close();
             onSuccess();
-        }).catch(() => {});
+        }).catch((e: any) => setGlobalError(e.message || e.error));
     };
 
     const openManageModal = (subscription: PushSubscriptionResponse) => {

@@ -8,24 +8,20 @@ import {TrainingIndexQuery} from '../../api/queries/TrainingIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useListFilters} from '../../utils/hooks/useListFilters';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useUserTrainings(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
-
-    const [trainings, setTrainings] = useState<TrainingResponse[]>([]);
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
-
     const list = useListFilters(new TrainingFilterQuery());
+
+    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
+    const { data: trainings, loading, error, executeFetch } = useDataFetch<TrainingResponse[]>();
 
     const userProvider = new UserProvider();
     const trainingProvider = new TrainingProvider();
 
-    const fetchTrainings = async (userId: string) => {
-        setDataLoading(true);
-        setDataError(null);
-        try {
+    const fetchTrainings = (userId: string) => {
+        executeFetch(async () => {
             const filterDto = new TrainingFilterQuery();
             filterDto.userId = userId;
             filterDto.title = list.filters.title;
@@ -46,17 +42,12 @@ export function useUserTrainings(link?: string) {
                 ]);
             }));
 
-            setTrainings(detailedTrainings);
-
             const userIds = detailedTrainings.flatMap(t => t.participants.map(p => p.userId));
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
-        } catch (err: any) {
-            setDataError(err.error);
-        } finally {
-            setDataLoading(false);
-        }
+            return detailedTrainings;
+        }, []);
     };
 
     useEffect(() => {
@@ -72,9 +63,10 @@ export function useUserTrainings(link?: string) {
     return {
         ...access,
         ...list,
-        trainings, relatedUsers,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
+        trainings: trainings || [],
+        relatedUsers,
+        loading: access.authLoading || loading,
+        error: access.authError || error,
         refreshTrainings
     };
 }

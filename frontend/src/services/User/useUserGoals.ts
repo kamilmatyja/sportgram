@@ -8,24 +8,20 @@ import {GoalIndexQuery} from '../../api/queries/GoalIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useListFilters} from '../../utils/hooks/useListFilters';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useUserGoals(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
-
-    const [goals, setGoals] = useState<GoalResponse[]>([]);
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
-
     const list = useListFilters(new GoalFilterQuery());
+
+    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
+    const { data: goals, loading, error, executeFetch } = useDataFetch<GoalResponse[]>();
 
     const userProvider = new UserProvider();
     const goalProvider = new GoalProvider();
 
-    const fetchGoals = async (userId: string) => {
-        setDataLoading(true);
-        setDataError(null);
-        try {
+    const fetchGoals = (userId: string) => {
+        executeFetch(async () => {
             const filterDto = new GoalFilterQuery();
             filterDto.userId = userId;
             filterDto.text = list.filters.text;
@@ -46,17 +42,12 @@ export function useUserGoals(link?: string) {
                 return await goalProvider.details(goal.id, ['goalParticipants', 'goalParticipantResults']);
             }));
 
-            setGoals(detailedGoals);
-
             const userIds = detailedGoals.flatMap(g => g.participants.map(p => p.userId));
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
-        } catch (err: any) {
-            setDataError(err.error);
-        } finally {
-            setDataLoading(false);
-        }
+            return detailedGoals;
+        }, []);
     };
 
     useEffect(() => {
@@ -72,9 +63,10 @@ export function useUserGoals(link?: string) {
     return {
         ...access,
         ...list,
-        goals, relatedUsers,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
+        goals: goals || [],
+        relatedUsers,
+        loading: access.authLoading || loading,
+        error: access.authError || error,
         refreshGoals
     };
 }

@@ -5,28 +5,28 @@ import {FeedReactionBody} from '../../api/body/FeedReactionBody';
 import {StatusBody} from '../../api/body/StatusBody';
 import {FeedResponse} from '../../api/responses/FeedResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
+import {useActionState} from '../../utils/hooks/useActionState';
 
 export function useFeedInteractions(
     feeds: FeedResponse[],
     currentUser: UserResponse | null,
     refreshSingleFeed: (feedId: string) => void
 ) {
-    const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const { actionLoading, runAction } = useActionState();
+
     const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editCommentText, setEditCommentText] = useState<string>('');
 
     const feedProvider = new FeedProvider();
 
-    const handleReaction = async (feedId: string, reactionType: number) => {
+    const handleReaction = (feedId: string, reactionType: number) => {
         if (!currentUser) return;
-        setActionLoading(feedId);
         const feed = feeds.find(f => f.id === feedId);
         if (!feed) return;
 
-        const myReaction = feed.reactions?.find(r => r.userId === currentUser.id);
-
-        try {
+        runAction(feedId, async () => {
+            const myReaction = feed.reactions?.find(r => r.userId === currentUser.id);
             if (myReaction) {
                 if (myReaction.reaction === reactionType) {
                     await feedProvider.deleteReaction(myReaction.id);
@@ -37,44 +37,30 @@ export function useFeedInteractions(
                 await feedProvider.createReaction(feedId, new FeedReactionBody(reactionType));
             }
             refreshSingleFeed(feedId);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
     const handleCommentInput = (feedId: string, value: string) => {
         setCommentInputs(prev => ({...prev, [feedId]: value}));
     };
 
-    const handleAddComment = async (e: React.SyntheticEvent<HTMLFormElement>, feedId: string) => {
+    const handleAddComment = (e: React.SyntheticEvent<HTMLFormElement>, feedId: string) => {
         e.preventDefault();
         const text = commentInputs[feedId]?.trim();
         if (!text) return;
 
-        setActionLoading(feedId);
-        try {
+        runAction(feedId, async () => {
             await feedProvider.createComment(feedId, new FeedCommentBody(text));
             setCommentInputs(prev => ({...prev, [feedId]: ''}));
             refreshSingleFeed(feedId);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
-    const handleDeleteComment = async (feedId: string, commentId: string) => {
-        setActionLoading(feedId);
-        try {
+    const handleDeleteComment = (feedId: string, commentId: string) => {
+        runAction(feedId, async () => {
             await feedProvider.deleteComment(commentId);
             refreshSingleFeed(feedId);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
     const startEditingComment = (commentId: string, currentText: string) => {
@@ -82,97 +68,55 @@ export function useFeedInteractions(
         setEditCommentText(currentText);
     };
 
-    const handleUpdateComment = async (feedId: string, commentId: string) => {
+    const handleUpdateComment = (feedId: string, commentId: string) => {
         if (!editCommentText.trim()) return;
-        setActionLoading(feedId);
-        try {
+        runAction(feedId, async () => {
             await feedProvider.updateComment(commentId, new FeedCommentBody(editCommentText));
             setEditingCommentId(null);
             setEditCommentText('');
             refreshSingleFeed(feedId);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
-    const handleUpdateTableComment = async (feedId: string, commentId: string, newText: string) => {
+    const handleUpdateTableComment = (feedId: string, commentId: string, newText: string) => {
         if (!newText.trim()) return;
-        setActionLoading(feedId);
-        try {
+        runAction(feedId, async () => {
             await feedProvider.updateComment(commentId, new FeedCommentBody(newText));
             setEditingCommentId(null);
             setEditCommentText('');
             refreshSingleFeed(feedId);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
-    const handleCommentStatusSubmit = async (commentId: string, newStatus: number) => {
-        setActionLoading('comment-status');
-        try {
+    const handleCommentStatusSubmit = (commentId: string, newStatus: number) => {
+        runAction('comment-status', async () => {
             await feedProvider.updateCommentStatus(commentId, new StatusBody(newStatus));
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
-    const handleUpdateReaction = async (reactionId: string, type: number) => {
-        setActionLoading('reaction-update');
-        try {
+    const handleUpdateReaction = (reactionId: string, type: number) => {
+        runAction('reaction-update', async () => {
             await feedProvider.updateReaction(reactionId, new FeedReactionBody(type));
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
-    const handleReactionStatusSubmit = async (reactionId: string, newStatus: number) => {
-        setActionLoading('reaction-status');
-        try {
+    const handleReactionStatusSubmit = (reactionId: string, newStatus: number) => {
+        runAction('reaction-status', async () => {
             await feedProvider.updateReactionStatus(reactionId, new StatusBody(newStatus));
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
-    const handleDeleteReaction = async (reactionId: string) => {
-        setActionLoading('reaction-delete');
-        try {
+    const handleDeleteReaction = (reactionId: string) => {
+        runAction('reaction-delete', async () => {
             await feedProvider.deleteReaction(reactionId);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
     return {
-        actionLoading,
-        commentInputs,
-        editingCommentId,
-        editCommentText,
-        setEditCommentText,
-        setEditingCommentId,
-        handleReaction,
-        handleCommentInput,
-        handleAddComment,
-        handleDeleteComment,
-        startEditingComment,
-        handleUpdateComment,
-        handleUpdateTableComment,
-        handleCommentStatusSubmit,
-        handleUpdateReaction,
-        handleReactionStatusSubmit,
-        handleDeleteReaction
+        actionLoading, commentInputs, editingCommentId, editCommentText,
+        setEditCommentText, setEditingCommentId, handleReaction, handleCommentInput,
+        handleAddComment, handleDeleteComment, startEditingComment, handleUpdateComment,
+        handleUpdateTableComment, handleCommentStatusSubmit, handleUpdateReaction,
+        handleReactionStatusSubmit, handleDeleteReaction
     };
 }

@@ -17,7 +17,7 @@ export function useRegister() {
     const [registerFormData, setRegisterFormData] = useState(new RegisterBody('', '', '', 0, 0, '', '', '', []));
     const [codeFormData, setCodeFormData] = useState(new CodeBody(''));
 
-    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
+    const { loading, globalError, fieldErrors, wrap} = useFormState();
     const [resendSuccess, setResendSuccess] = useState<boolean>(false);
 
     const navigate = useNavigate();
@@ -28,12 +28,9 @@ export function useRegister() {
 
     const handleRegisterSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        resetErrors();
-
         await wrap(async () => {
             await userProviders.createNano(registerFormData);
-            const dto = new EmailBody(registerFormData.email);
-            const res = await registerProvider.register(dto);
+            const res = await registerProvider.register(new EmailBody(registerFormData.email));
 
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('register_id', res.id);
@@ -45,8 +42,6 @@ export function useRegister() {
     const handleCodeSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!registerId) return;
-        resetErrors();
-
         await wrap(async () => {
             await registerProvider.confirm(registerId, codeFormData);
 
@@ -54,17 +49,13 @@ export function useRegister() {
             const password = sessionStorage.getItem('password') || '';
 
             if (password) {
-                const dto = new SignBody(email, password, false);
-                const res = await signProvider.sign(dto);
-
+                const res = await signProvider.sign(new SignBody(email, password, false));
                 sessionStorage.setItem('step', '2');
                 sessionStorage.setItem('sign_id', res.id);
                 sessionStorage.removeItem('register_id');
                 navigate('/sign');
             } else {
-                const dto = new EmailBody(email);
-                const res = await passwordResetProvider.passwordReset(dto);
-
+                const res = await passwordResetProvider.passwordReset(new EmailBody(email));
                 sessionStorage.setItem('step', '2');
                 sessionStorage.setItem('password_reset_id', res.id);
                 sessionStorage.removeItem('register_id');
@@ -76,8 +67,6 @@ export function useRegister() {
     const handleResend = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         if (!registerId) return;
-        resetErrors();
-
         await wrap(async () => {
             await registerProvider.resend(registerId);
             setResendSuccess(true);
@@ -98,23 +87,12 @@ export function useRegister() {
     return {
         step,
         registerProps: {
-            formData: registerFormData,
-            handleChange: handleRegisterChange,
-            onSubmit: handleRegisterSubmit,
-            loading,
-            globalError,
-            fieldErrors
+            formData: registerFormData, handleChange: handleRegisterChange, onSubmit: handleRegisterSubmit,
+            loading, globalError, fieldErrors
         },
         verificationProps: {
-            formData: codeFormData,
-            handleChange: handleCodeChange,
-            onSubmit: handleCodeSubmit,
-            loading,
-            globalError,
-            fieldErrors,
-            onCancel: clearSessionDataAndGoToStep1,
-            onResend: handleResend,
-            resendSuccess
+            formData: codeFormData, handleChange: handleCodeChange, onSubmit: handleCodeSubmit,
+            loading, globalError, fieldErrors, onCancel: clearSessionDataAndGoToStep1, onResend: handleResend, resendSuccess
         }
     };
 }

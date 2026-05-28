@@ -1,33 +1,23 @@
-import {useState} from 'react';
 import {GoalProvider} from '../../api/providers/GoalProvider';
 import {StatusBody} from '../../api/body/StatusBody';
+import {useActionState} from '../../utils/hooks/useActionState';
 
 export function useGoalInteractions(refreshGoals: () => void) {
-    const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const { actionLoading, runAction } = useActionState();
     const goalProvider = new GoalProvider();
 
-    const handleParticipantStatusSubmit = async (participantId: string, newStatus: number) => {
-        setActionLoading(participantId);
-        try {
+    const handleParticipantStatusSubmit = (participantId: string, newStatus: number) => {
+        runAction(participantId, async () => {
             await goalProvider.updateParticipantStatus(participantId, new StatusBody(newStatus));
             refreshGoals();
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
-    const handleResultStatusSubmit = async (resultId: string, newStatus: number) => {
-        setActionLoading(resultId);
-        try {
+    const handleResultStatusSubmit = (resultId: string, newStatus: number) => {
+        runAction(resultId, async () => {
             await goalProvider.updateParticipantResultStatus(resultId, new StatusBody(newStatus));
             refreshGoals();
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(null);
-        }
+        }).catch(() => {});
     };
 
     return {

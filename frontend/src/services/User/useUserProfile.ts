@@ -4,54 +4,44 @@ import {FriendBody} from '../../api/body/FriendBody';
 import {StatusBody} from '../../api/body/StatusBody';
 import {useTranslation} from '../../context/TranslationContext';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {useActionState} from '../../utils/hooks/useActionState';
 
 export function useUserProfile(link?: string) {
     const {t} = useTranslation();
-    const accessOptions = { targetLink: link, requireFriendship: false };
-    const access = useAppAccess(accessOptions);
+    const access = useAppAccess({ targetLink: link, requireFriendship: false });
+    const { actionLoading, runAction } = useActionState();
 
-    const [actionLoading, setActionLoading] = useState<boolean>(false);
     const [triggerRefresh, setTriggerRefresh] = useState<number>(0);
-
     const friendProvider = new FriendProvider();
 
-    const handleAddFriend = async () => {
+    const handleAddFriend = () => {
         if (!access.targetUser || !access.currentUser) return;
-        setActionLoading(true);
-        try {
-            await friendProvider.create(new FriendBody(access.targetUser.id));
+        runAction('add-friend', async () => {
+            await friendProvider.create(new FriendBody(access.targetUser!.id));
             setTriggerRefresh(prev => prev + 1);
-        } catch (e: any) {
+        }).catch((e: any) => {
             if (e.error) alert(t(e.error) !== e.error ? t(e.error) : e.error);
-        } finally {
-            setActionLoading(false);
-        }
+        });
     };
 
-    const handleUpdateFriendStatus = async (newStatus: number) => {
+    const handleUpdateFriendStatus = (newStatus: number) => {
         if (!access.friendship || !access.targetUser) return;
-        setActionLoading(true);
-        try {
-            await friendProvider.updateStatus(access.friendship.id, new StatusBody(newStatus));
+        runAction('update-friend', async () => {
+            await friendProvider.updateStatus(access.friendship!.id, new StatusBody(newStatus));
             setTriggerRefresh(prev => prev + 1);
-        } catch (e: any) {
+        }).catch((e: any) => {
             if (e.error) alert(t(e.error) !== e.error ? t(e.error) : e.error);
-        } finally {
-            setActionLoading(false);
-        }
+        });
     };
 
-    const refreshProfile = () => {
-        setTriggerRefresh(prev => prev + 1);
-    };
+    const refreshProfile = () => setTriggerRefresh(prev => prev + 1);
 
     return {
         ...access,
         user: access.targetUser,
         loading: access.authLoading,
         error: access.authError,
-        actionLoading,
-        handleAddFriend, handleUpdateFriendStatus, refreshProfile,
-        triggerRefresh
+        actionLoading: actionLoading !== null,
+        handleAddFriend, handleUpdateFriendStatus, refreshProfile, triggerRefresh
     };
 }

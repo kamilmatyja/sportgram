@@ -1,25 +1,21 @@
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import {StoryProvider} from '../../api/providers/StoryProvider';
 import {StoryResponse} from '../../api/responses/StoryResponse';
 import {StoryFilterQuery} from '../../api/queries/StoryFilterQuery';
 import {StoryIndexQuery} from '../../api/queries/StoryIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {useListFilters} from '../../utils/hooks/useListFilters';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useUserStories(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
-
-    const [stories, setStories] = useState<StoryResponse[]>([]);
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
-
     const list = useListFilters(new StoryFilterQuery());
     const storyProvider = new StoryProvider();
 
-    const fetchStories = async (userId: string) => {
-        setDataLoading(true);
-        setDataError(null);
-        try {
+    const { data: stories, loading, error, executeFetch } = useDataFetch<StoryResponse[]>();
+
+    const fetchStories = (userId: string) => {
+        executeFetch(async () => {
             const filterDto = new StoryFilterQuery();
             filterDto.userId = userId;
             filterDto.text = list.filters.text;
@@ -31,13 +27,8 @@ export function useUserStories(link?: string) {
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
 
-            const data = await storyProvider.index(indexDto);
-            setStories(data);
-        } catch (err: any) {
-            setDataError(err.error);
-        } finally {
-            setDataLoading(false);
-        }
+            return await storyProvider.index(indexDto);
+        }, []);
     };
 
     useEffect(() => {
@@ -53,9 +44,9 @@ export function useUserStories(link?: string) {
     return {
         ...access,
         ...list,
-        stories,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
+        stories: stories || [],
+        loading: access.authLoading || loading,
+        error: access.authError || error,
         refreshStories
     };
 }

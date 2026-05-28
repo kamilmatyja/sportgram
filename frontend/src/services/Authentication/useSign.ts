@@ -15,7 +15,7 @@ export function useSign() {
     const [signFormData, setSignFormData] = useState(new SignBody('', '', false));
     const [codeFormData, setCodeFormData] = useState(new CodeBody(''));
 
-    const { loading, globalError, fieldErrors, wrap, resetErrors, setGlobalError } = useFormState();
+    const { loading, globalError, fieldErrors, wrap, setGlobalError } = useFormState();
     const [resendSuccess, setResendSuccess] = useState<boolean>(false);
 
     const navigate = useNavigate();
@@ -26,16 +26,16 @@ export function useSign() {
 
     const handleSignSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        resetErrors();
-
-        await wrap(async () => {
-            const res = await signProvider.sign(signFormData);
-            sessionStorage.setItem('step', '2');
-            sessionStorage.setItem('sign_id', res.id);
-            sessionStorage.setItem('email', signFormData.email);
-            sessionStorage.setItem('password', signFormData.password);
-            sessionStorage.removeItem('token');
-        }).catch(async (err: any) => {
+        try {
+            await wrap(async () => {
+                const res = await signProvider.sign(signFormData);
+                sessionStorage.setItem('step', '2');
+                sessionStorage.setItem('sign_id', res.id);
+                sessionStorage.setItem('email', signFormData.email);
+                sessionStorage.setItem('password', signFormData.password);
+                sessionStorage.removeItem('token');
+            });
+        } catch (err: any) {
             if (err.error === 'User account is not confirmed.') {
                 try {
                     const dto = new EmailBody(signFormData.email);
@@ -50,14 +50,12 @@ export function useSign() {
                     setGlobalError(registerErr.error);
                 }
             }
-        });
+        }
     };
 
     const handleCodeSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!signId) return;
-        resetErrors();
-
         await wrap(async () => {
             const res = await signProvider.confirm(signId, codeFormData);
             sessionStorage.setItem('token', res.token);
@@ -73,8 +71,6 @@ export function useSign() {
     const handleResend = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         if (!signId) return;
-        resetErrors();
-
         await wrap(async () => {
             await signProvider.resend(signId);
             setResendSuccess(true);
@@ -96,23 +92,12 @@ export function useSign() {
     return {
         step,
         signProps: {
-            formData: signFormData,
-            handleChange: handleSignChange,
-            onSubmit: handleSignSubmit,
-            loading,
-            globalError,
-            fieldErrors
+            formData: signFormData, handleChange: handleSignChange, onSubmit: handleSignSubmit,
+            loading, globalError, fieldErrors
         },
         verificationProps: {
-            formData: codeFormData,
-            handleChange: handleCodeChange,
-            onSubmit: handleCodeSubmit,
-            loading,
-            globalError,
-            fieldErrors,
-            onCancel: clearSessionDataAndGoToStep1,
-            onResend: handleResend,
-            resendSuccess
+            formData: codeFormData, handleChange: handleCodeChange, onSubmit: handleCodeSubmit,
+            loading, globalError, fieldErrors, onCancel: clearSessionDataAndGoToStep1, onResend: handleResend, resendSuccess
         }
     };
 }

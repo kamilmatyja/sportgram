@@ -7,44 +7,36 @@ import {GoalFilterQuery} from '../../api/queries/GoalFilterQuery';
 import {GoalIndexQuery} from '../../api/queries/GoalIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useGoalDetails(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
-    const [goal, setGoal] = useState<GoalResponse | null>(null);
+    const { data: goal, loading, error, executeFetch } = useDataFetch<GoalResponse>();
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
     const [isParticipantOfGoal, setIsParticipantOfGoal] = useState<boolean>(false);
-
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
 
     const goalProvider = new GoalProvider();
     const userProvider = new UserProvider();
 
-    const fetchGoalData = async () => {
+    const fetchGoalData = () => {
         if (!link || !access.currentUser || !access.targetUser) return;
 
-        setDataLoading(true);
-        setDataError(null);
-        try {
+        executeFetch(async () => {
             const filterDto = new GoalFilterQuery();
             filterDto.link = link;
             const indexDto = new GoalIndexQuery();
             indexDto.filter = filterDto;
 
             const goals = await goalProvider.index(indexDto);
-
             if (goals.length === 0) {
-                setDataError('noGoals');
-                return;
+                throw { error: 'noGoals' };
             }
 
             const targetGoal = await goalProvider.details(goals[0].id, [
                 'goalParticipants',
                 'goalParticipantResults'
             ]);
-
-            setGoal(targetGoal);
 
             const participantCheck = targetGoal.participants?.some(p => p.userId === access.currentUser!.id) ?? false;
             setIsParticipantOfGoal(participantCheck);
@@ -53,11 +45,8 @@ export function useGoalDetails(link?: string) {
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
-        } catch (err: any) {
-            setDataError(err.error);
-        } finally {
-            setDataLoading(false);
-        }
+            return targetGoal;
+        }, null as unknown as GoalResponse);
     };
 
     useEffect(() => {
@@ -66,9 +55,7 @@ export function useGoalDetails(link?: string) {
         }
     }, [link, access.authLoading, access.authError]);
 
-    const refreshGoal = () => {
-        fetchGoalData();
-    };
+    const refreshGoal = () => fetchGoalData();
 
     return {
         ...access,
@@ -76,8 +63,8 @@ export function useGoalDetails(link?: string) {
         goal,
         relatedUsers,
         isParticipantOfGoal,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
+        loading: access.authLoading || loading,
+        error: access.authError || error,
         refreshGoal
     };
 }

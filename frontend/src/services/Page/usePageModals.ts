@@ -132,6 +132,6 @@ export function usePageModals(onSuccess: () => void) {
         showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit, availableUsers,
         showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
         handleEditSubmit, handleStatusSubmit, handleDelete,
-        currentPage: manageModal.data, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
+        currentPageObj: manageModal.data, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
     };
 }

@@ -15,7 +15,7 @@ export function usePasswordReset() {
     const [passwordResetFormData, setPasswordResetFormData] = useState(new EmailBody(''));
     const [codeFormData, setCodeFormData] = useState(new PasswordResetBody('', ''));
 
-    const { loading, globalError, fieldErrors, wrap, resetErrors, setGlobalError } = useFormState();
+    const { loading, globalError, fieldErrors, wrap, setGlobalError } = useFormState();
     const [resendSuccess, setResendSuccess] = useState<boolean>(false);
 
     const navigate = useNavigate();
@@ -25,14 +25,14 @@ export function usePasswordReset() {
 
     const handlePasswordResetSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        resetErrors();
-
-        await wrap(async () => {
-            const res = await passwordResetProvider.passwordReset(passwordResetFormData);
-            sessionStorage.setItem('step', '2');
-            sessionStorage.setItem('password_reset_id', res.id);
-            sessionStorage.setItem('email', passwordResetFormData.email);
-        }).catch(async (err: any) => {
+        try {
+            await wrap(async () => {
+                const res = await passwordResetProvider.passwordReset(passwordResetFormData);
+                sessionStorage.setItem('step', '2');
+                sessionStorage.setItem('password_reset_id', res.id);
+                sessionStorage.setItem('email', passwordResetFormData.email);
+            });
+        } catch (err: any) {
             if (err.error === 'User account is not confirmed.') {
                 try {
                     const res = await registerProvider.register(passwordResetFormData);
@@ -45,19 +45,16 @@ export function usePasswordReset() {
                     setGlobalError(registerErr.error);
                 }
             }
-        });
+        }
     };
 
     const handleCodeSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!passwordResetId) return;
-        resetErrors();
-
         await wrap(async () => {
             await passwordResetProvider.confirm(passwordResetId, codeFormData);
             const email = sessionStorage.getItem('email') || '';
-            const dto = new SignBody(email, codeFormData.password, false);
-            const res = await signProvider.sign(dto);
+            const res = await signProvider.sign(new SignBody(email, codeFormData.password, false));
 
             sessionStorage.setItem('step', '2');
             sessionStorage.setItem('sign_id', res.id);
@@ -69,8 +66,6 @@ export function usePasswordReset() {
     const handleResend = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         if (!passwordResetId) return;
-        resetErrors();
-
         await wrap(async () => {
             await passwordResetProvider.resend(passwordResetId);
             setResendSuccess(true);
@@ -90,23 +85,12 @@ export function usePasswordReset() {
     return {
         step,
         passwordResetProps: {
-            formData: passwordResetFormData,
-            handleChange: handlePasswordResetChange,
-            onSubmit: handlePasswordResetSubmit,
-            loading,
-            globalError,
-            fieldErrors
+            formData: passwordResetFormData, handleChange: handlePasswordResetChange, onSubmit: handlePasswordResetSubmit,
+            loading, globalError, fieldErrors
         },
         verificationProps: {
-            formData: codeFormData,
-            handleChange: handleCodeChange,
-            onSubmit: handleCodeSubmit,
-            loading,
-            globalError,
-            fieldErrors,
-            onCancel: clearSessionDataAndGoToStep1,
-            onResend: handleResend,
-            resendSuccess
+            formData: codeFormData, handleChange: handleCodeChange, onSubmit: handleCodeSubmit,
+            loading, globalError, fieldErrors, onCancel: clearSessionDataAndGoToStep1, onResend: handleResend, resendSuccess
         }
     };
 }

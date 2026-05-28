@@ -12,6 +12,7 @@ import {UserResponse} from '../../api/responses/UserResponse';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useListFilters} from '../../utils/hooks/useListFilters';
+import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useStatistics() {
     const access = useAppAccess();
@@ -21,12 +22,9 @@ export function useStatistics() {
 
     const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
     const [activeTab, setActiveTab] = useState<'records' | 'progress'>('records');
-    const [data, setData] = useState<StatisticResponse[]>([]);
-
-    const [dataLoading, setDataLoading] = useState<boolean>(true);
-    const [dataError, setDataError] = useState<string | null>(null);
 
     const list = useListFilters(new StatisticFilterQuery());
+    const { data, loading, error, executeFetch } = useDataFetch<StatisticResponse[]>();
 
     const loadAvailableUsers = async (currentUsr: UserResponse) => {
         const fFilter = new FriendFilterQuery();
@@ -58,12 +56,10 @@ export function useStatistics() {
         }
     };
 
-    const fetchStatistics = async () => {
+    const fetchStatistics = () => {
         if (!list.filters.userIds || list.filters.userIds.length === 0) return;
 
-        setDataLoading(true);
-        setDataError(null);
-        try {
+        executeFetch(async () => {
             const filterDto = new StatisticFilterQuery();
             filterDto.userIds = list.filters.userIds;
             filterDto.discipline = list.filters.discipline ? Number(list.filters.discipline) : undefined;
@@ -75,29 +71,17 @@ export function useStatistics() {
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
 
-            let responseData: StatisticResponse[] = [];
             if (activeTab === 'records') {
-                responseData = await statisticProvider.indexRecords(indexDto);
+                return await statisticProvider.indexRecords(indexDto);
             } else {
-                responseData = await statisticProvider.indexProgress(indexDto);
+                return await statisticProvider.indexProgress(indexDto);
             }
-
-            setData(responseData);
-        } catch (err: any) {
-            setDataError(err.error);
-        } finally {
-            setDataLoading(false);
-        }
+        }, []);
     };
 
     useEffect(() => {
-        if (!access.authLoading && access.currentUser) {
-            if (access.authError) {
-                setDataError(access.authError);
-                setDataLoading(false);
-            } else {
-                loadAvailableUsers(access.currentUser);
-            }
+        if (!access.authLoading && access.currentUser && !access.authError) {
+            loadAvailableUsers(access.currentUser);
         }
     }, [access.authLoading, access.currentUser]);
 
@@ -120,9 +104,9 @@ export function useStatistics() {
     return {
         ...access,
         ...list,
-        availableUsers, activeTab, setActiveTab, data,
-        loading: access.authLoading || dataLoading,
-        error: access.authError || dataError,
+        availableUsers, activeTab, setActiveTab, data: data || [],
+        loading: access.authLoading || loading,
+        error: access.authError || error,
         handleUsersChange
     };
 }
