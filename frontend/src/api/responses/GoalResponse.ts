@@ -3,6 +3,7 @@ import {GoalParticipantResponse} from './GoalParticipantResponse';
 export class GoalResponse {
     id!: string;
     userId!: string;
+    feedId!: string;
     createdAt!: string;
     updatedAt!: string;
     startedAt!: string | null;

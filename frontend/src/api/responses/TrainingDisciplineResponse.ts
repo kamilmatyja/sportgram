@@ -2,7 +2,9 @@ import {TrainingDisciplineDistanceResponse} from './TrainingDisciplineDistanceRe
 
 export class TrainingDisciplineResponse {
     id!: string;
-    trainingParticipantId!: string;
+    trainingId!: string;
+    createdAt!: string;
+    updatedAt!: string;
     discipline!: number;
     distances!: TrainingDisciplineDistanceResponse[];
 }
