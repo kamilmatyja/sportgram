@@ -2,7 +2,7 @@
 
 namespace App\EventSubscriber;
 
-use App\SaveValidationException;
+use App\Exception\SaveValidationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\{ControllerEvent, ExceptionEvent, ResponseEvent};
