@@ -10,11 +10,13 @@ import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useTrainingDetails(link?: string) {
-    const access = useAppAccess({ targetLink: link, requireFriendship: true });
+    const access = useAppAccess();
 
     const { data: training, loading, error, executeFetch } = useDataFetch<TrainingResponse>();
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
     const [isParticipantOfTraining, setIsParticipantOfTraining] = useState<boolean>(false);
+    const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
+    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
 
     const trainingProvider = new TrainingProvider();
     const userProvider = new UserProvider();
@@ -40,10 +42,14 @@ export function useTrainingDetails(link?: string) {
                 'trainingParticipants'
             ]);
 
+            const owner = await userProvider.details(targetTraining.userId);
+            setOwnerUser(owner);
+            setIsMyProfile(access.currentUser!.id === owner.id);
+
             const participantCheck = targetTraining.participants?.some(p => p.userId === access.currentUser!.id) ?? false;
             setIsParticipantOfTraining(participantCheck);
 
-            const userIds = targetTraining.participants.map(p => p.userId);
+            const userIds = targetTraining.participants?.map(p => p.userId) || [];
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
@@ -52,19 +58,20 @@ export function useTrainingDetails(link?: string) {
     };
 
     useEffect(() => {
-        if (!access.authLoading && !access.authError) {
+        if (!access.authLoading && !access.authError && access.currentUser) {
             fetchTrainingData();
         }
-    }, [link, access.authLoading, access.authError]);
+    }, [link, access.authLoading, access.authError, access.currentUser]);
 
     const refreshTraining = () => fetchTrainingData();
 
     return {
         ...access,
-        ownerUser: access.targetUser,
+        ownerUser,
         training,
         relatedUsers,
         isParticipantOfTraining,
+        isMyProfile,
         loading: access.authLoading || loading,
         error: access.authError || error,
         refreshTraining

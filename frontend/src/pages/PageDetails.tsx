@@ -46,7 +46,7 @@ export default function PageDetails() {
                 availableUsers={modalsService.availableUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
-                currentPageObj={modalsService.currentPage}
+                currentPageObj={modalsService.currentPageObj}
                 isMyProfile={detailsProps.isMyProfile}
                 isAdmin={detailsProps.isAdmin}
                 closeModal={modalsService.closeManageModal}

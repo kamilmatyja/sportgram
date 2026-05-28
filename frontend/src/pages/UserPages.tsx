@@ -59,7 +59,7 @@ export default function UserPages() {
                 availableUsers={modalsService.availableUsers}
                 handleParticipantsChange={modalsService.handleParticipantsChange}
                 show={modalsService.showManage}
-                currentPageObj={modalsService.currentPage}
+                currentPageObj={modalsService.currentPageObj}
                 isMyProfile={pagesService.isMyProfile}
                 isAdmin={pagesService.isAdmin}
                 closeModal={modalsService.closeManageModal}

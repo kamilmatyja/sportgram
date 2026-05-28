@@ -28,7 +28,7 @@ export function useGoalModals(onSuccess: () => void) {
     const userProvider = new UserProvider();
     const friendProvider = new FriendProvider();
 
-    const loadAvailableFriends = async (currentUsr: UserResponse) => {
+    const loadAvailableFriends = async (currentUsr: UserResponse, goalObj?: GoalResponse | null) => {
         const fFilter = new FriendFilterQuery();
         fFilter.userIds = [currentUsr.id];
         fFilter.status = FriendStatusEnum.ACCEPTED;
@@ -37,14 +37,19 @@ export function useGoalModals(onSuccess: () => void) {
 
         const myFriends = await friendProvider.index(fIndexDto);
 
-        const acceptedFriendIds = new Set<string>();
+        const userIdsToFetch = new Set<string>();
         myFriends.forEach(f => {
-            if (f.senderUserId !== currentUsr.id) acceptedFriendIds.add(f.senderUserId);
-            if (f.receiverUserId !== currentUsr.id) acceptedFriendIds.add(f.receiverUserId);
+            if (f.senderUserId !== currentUsr.id) userIdsToFetch.add(f.senderUserId);
+            if (f.receiverUserId !== currentUsr.id) userIdsToFetch.add(f.receiverUserId);
         });
 
-        if (acceptedFriendIds.size > 0) {
-            const usersMap = await fetchRelatedUsers(Array.from(acceptedFriendIds), {}, userProvider);
+        if (goalObj && goalObj.participants) {
+            goalObj.participants.forEach(p => userIdsToFetch.add(p.userId));
+        }
+
+        const idsArray = Array.from(userIdsToFetch);
+        if (idsArray.length > 0) {
+            const usersMap = await fetchRelatedUsers(idsArray, {}, userProvider);
             setAvailableUsers(Object.values(usersMap));
         } else {
             setAvailableUsers([]);
@@ -70,21 +75,30 @@ export function useGoalModals(onSuccess: () => void) {
     };
 
     const openManageModal = async (goal: GoalResponse) => {
-        manageModal.open(goal);
-        setFormData(new GoalBody(
-            goal.startedAt ? goal.startedAt.substring(0, 16) : null,
-            goal.endedAt ? goal.endedAt.substring(0, 16) : null,
-            goal.text,
-            goal.link,
-            goal.discipline,
-            goal.distance,
-            goal.time,
-            goal.participants.map(p => p.userId)
-        ));
         resetErrors();
+        manageModal.open(goal);
+
         await wrap(async () => {
-            if (currentUser) { await loadAvailableFriends(currentUser); }
-        }).catch(() => {});
+            const fullGoal = await goalProvider.details(goal.id, ['goalParticipants']);
+            manageModal.setData(fullGoal);
+
+            setFormData(new GoalBody(
+                fullGoal.startedAt ? fullGoal.startedAt.substring(0, 16) : null,
+                fullGoal.endedAt ? fullGoal.endedAt.substring(0, 16) : null,
+                fullGoal.text,
+                fullGoal.link,
+                fullGoal.discipline,
+                fullGoal.distance,
+                fullGoal.time,
+                fullGoal.participants ? fullGoal.participants.map(p => p.userId) : []
+            ));
+
+            if (currentUser) {
+                await loadAvailableFriends(currentUser, fullGoal);
+            }
+        }).catch(() => {
+            manageModal.close();
+        });
     };
 
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {

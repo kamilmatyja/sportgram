@@ -10,17 +10,19 @@ import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useDataFetch} from '../../utils/hooks/useDataFetch';
 
 export function useGoalDetails(link?: string) {
-    const access = useAppAccess({ targetLink: link, requireFriendship: true });
+    const access = useAppAccess();
 
     const { data: goal, loading, error, executeFetch } = useDataFetch<GoalResponse>();
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
     const [isParticipantOfGoal, setIsParticipantOfGoal] = useState<boolean>(false);
+    const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
+    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
 
     const goalProvider = new GoalProvider();
     const userProvider = new UserProvider();
 
     const fetchGoalData = () => {
-        if (!link || !access.currentUser || !access.targetUser) return;
+        if (!link || !access.currentUser) return;
 
         executeFetch(async () => {
             const filterDto = new GoalFilterQuery();
@@ -37,6 +39,10 @@ export function useGoalDetails(link?: string) {
                 'goalParticipants',
                 'goalParticipantResults'
             ]);
+
+            const owner = await userProvider.details(targetGoal.userId);
+            setOwnerUser(owner);
+            setIsMyProfile(access.currentUser!.id === owner.id);
 
             const participantCheck = targetGoal.participants?.some(p => p.userId === access.currentUser!.id) ?? false;
             setIsParticipantOfGoal(participantCheck);
@@ -59,10 +65,11 @@ export function useGoalDetails(link?: string) {
 
     return {
         ...access,
-        ownerUser: access.targetUser,
+        ownerUser,
         goal,
         relatedUsers,
         isParticipantOfGoal,
+        isMyProfile,
         loading: access.authLoading || loading,
         error: access.authError || error,
         refreshGoal

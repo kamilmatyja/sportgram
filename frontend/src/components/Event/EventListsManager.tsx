@@ -57,6 +57,9 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
     const distanceObj = eventObj.disciplines.flatMap(d => d.distances).find(d => d.id === selectedDistanceId);
 
     const toggleRow = (listId: string) => {
+        if (activeResultListId === listId) {
+            setActiveResultListId(null);
+        }
         setExpandedRows(prev => ({...prev, [listId]: !prev[listId]}));
     };
 
@@ -73,6 +76,7 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
         setResultFormData(new EventResultBody(0, subRes));
         setActiveResultId(null);
         setActiveResultListId(list.id);
+        setExpandedRows(prev => ({...prev, [list.id]: true}));
     };
 
     const openEditResultForm = (list: EventDisciplineDistanceListResponse, resultId: string) => {
@@ -87,6 +91,7 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
         setResultFormData(new EventResultBody(resultObj.time, subRes));
         setActiveResultId(resultId);
         setActiveResultListId(list.id);
+        setExpandedRows(prev => ({...prev, [list.id]: true}));
     };
 
     const saveResult = async () => {
@@ -139,7 +144,8 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                             const u = listUsers[list.userId];
                             const hasResult = list.results && list.results.length > 0;
                             const result = hasResult ? list.results[0] : null;
-                            const isExpanded = expandedRows[list.id];
+                            const isFormOpen = activeResultListId === list.id;
+                            const isExpanded = expandedRows[list.id] || isFormOpen;
 
                             return (
                                 <React.Fragment key={list.id}>
@@ -158,11 +164,12 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                         </td>
                                         <td>{formatDate(list.createdAt)}</td>
                                         <td>
-                                            {hasResult ? (
+                                            {hasResult || isFormOpen ? (
                                                 <button className="btn btn-sm btn-outline-secondary py-0"
                                                         onClick={() => toggleRow(list.id)}>
                                                     {isExpanded ? <i className="bi bi-chevron-up"></i> :
-                                                        <i className="bi bi-chevron-down"></i>} {t('time')}: {result?.time} [s]
+                                                        <i className="bi bi-chevron-down"></i>}
+                                                    {hasResult ? ` ${t('time')}: ${result?.time} [s]` : ` ${t('resultFormTitle')}`}
                                                 </button>
                                             ) : <span className="text-muted small">-</span>}
                                         </td>
@@ -181,101 +188,95 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                                             </div>
                                         </td>
                                     </tr>
-                                    {isExpanded && result && (
+
+                                    {isExpanded && (hasResult || isFormOpen) && (
                                         <tr className="bg-light">
                                             <td colSpan={5} className="p-3">
-                                                <div className="border rounded border-profile-primary bg-white p-3">
-                                                    <div
-                                                        className="d-flex justify-content-between align-items-center mb-2">
-                                                        <strong
-                                                            className="text-profile-primary">{t('eventTypes.eventDisciplineResult')}</strong>
-                                                        {(isMyProfile || isAdmin) && (
-                                                            <div>
-                                                                <button
-                                                                    className="btn btn-sm btn-outline-secondary me-1 py-0"
-                                                                    onClick={() => openEditResultForm(list, result.id)}>
-                                                                    <i className="bi bi-pencil"></i></button>
-                                                                <button className="btn btn-sm btn-outline-danger py-0"
-                                                                        disabled={interactions.actionLoading === 'delete_result'}
-                                                                        onClick={() => deleteResult(result.id)}><i
-                                                                    className="bi bi-trash"></i></button>
+                                                {isFormOpen ? (
+                                                    <div className="border rounded border-profile-primary bg-white p-3">
+                                                        <h6 className="text-profile-primary">{t('resultFormTitle')}</h6>
+                                                        <div className="mb-2">
+                                                            <label className="form-label mb-0 small">{t('finalTimeSeconds')}</label>
+                                                            <input type="number" className="form-control form-control-sm"
+                                                                   value={resultFormData.time}
+                                                                   onChange={e => setResultFormData((prev: any) => ({
+                                                                       ...prev,
+                                                                       time: parseInt(e.target.value) || 0
+                                                                   }))}/>
+                                                        </div>
+                                                        {resultFormData.subResults.length > 0 &&
+                                                            <strong className="small">{t('subDistances')}:</strong>}
+                                                        {resultFormData.subResults.map((sr, idx) => {
+                                                            const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
+                                                            return (
+                                                                <div key={idx}
+                                                                     className="d-flex align-items-center gap-2 mb-1">
+                                                                    <span className="small text-muted w-50">{t('forDistance')} {sdMeta?.subDistance || '?'} [m]:</span>
+                                                                    <input type="number"
+                                                                           className="form-control form-control-sm w-50"
+                                                                           placeholder={t('timeSeconds')} value={sr.time}
+                                                                           onChange={e => {
+                                                                               const newSubs = [...resultFormData.subResults];
+                                                                               newSubs[idx].time = parseInt(e.target.value) || 0;
+                                                                               setResultFormData((prev: any) => ({
+                                                                                   ...prev,
+                                                                                   subResults: newSubs
+                                                                               }));
+                                                                           }}/>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        <div className="mt-2 text-end">
+                                                            <button className="btn btn-sm btn-secondary me-2"
+                                                                    onClick={() => setActiveResultListId(null)}>{t('cancel')}</button>
+                                                            <button className="btn btn-sm btn-profile-primary"
+                                                                    onClick={saveResult}
+                                                                    disabled={interactions.actionLoading !== null}>{t('saveResultBtn')}</button>
+                                                        </div>
+                                                    </div>
+                                                ) : result ? (
+                                                    <div className="border rounded border-profile-primary bg-white p-3">
+                                                        <div className="d-flex justify-content-between align-items-center mb-2">
+                                                            <strong className="text-profile-primary">{t('eventTypes.eventDisciplineResult')}</strong>
+                                                            {(isMyProfile || isAdmin) && (
+                                                                <div>
+                                                                    <button className="btn btn-sm btn-outline-secondary me-1 py-0"
+                                                                            onClick={() => openEditResultForm(list, result.id)}>
+                                                                        <i className="bi bi-pencil"></i>
+                                                                    </button>
+                                                                    <button className="btn btn-sm btn-outline-danger py-0"
+                                                                            disabled={interactions.actionLoading === 'delete_result'}
+                                                                            onClick={() => deleteResult(result.id)}>
+                                                                        <i className="bi bi-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div><strong>{t('finalTimeSeconds')}:</strong> {result.time} [s]</div>
+                                                        {result.subResults && result.subResults.length > 0 && (
+                                                            <div className="mt-2">
+                                                                <strong className="small">{t('subDistances')}:</strong>
+                                                                <ul className="mb-0 list-unstyled ms-3">
+                                                                    {result.subResults.map(sr => {
+                                                                        const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
+                                                                        return (
+                                                                            <li key={sr.id} className="small text-muted">
+                                                                                <i className="bi bi-stopwatch me-1"></i>
+                                                                                {t('forDistance')} {sdMeta?.subDistance || '?'} [m]
+                                                                                - {sr.time} [s]
+                                                                            </li>
+                                                                        );
+                                                                    })}
+                                                                </ul>
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div><strong>{t('finalTimeSeconds')}:</strong> {result.time} [s]
-                                                    </div>
-                                                    {result.subResults && result.subResults.length > 0 && (
-                                                        <div className="mt-2">
-                                                            <strong className="small">{t('subDistances')}:</strong>
-                                                            <ul className="mb-0 list-unstyled ms-3">
-                                                                {result.subResults.map(sr => {
-                                                                    const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
-                                                                    return (
-                                                                        <li key={sr.id} className="small text-muted">
-                                                                            <i className="bi bi-stopwatch me-1"></i>
-                                                                            {t('forDistance')} {sdMeta?.subDistance || '?'} [m]
-                                                                            - {sr.time} [s]
-                                                                        </li>
-                                                                    );
-                                                                })}
-                                                            </ul>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                ) : null}
                                             </td>
                                         </tr>
                                     )}
 
-                                    {activeResultListId === list.id && (
-                                        <tr className="bg-light">
-                                            <td colSpan={5} className="p-3">
-                                                <div className="border rounded border-profile-primary bg-white p-3">
-                                                    <h6 className="text-profile-primary">{t('resultFormTitle')}</h6>
-                                                    <div className="mb-2">
-                                                        <label
-                                                            className="form-label mb-0 small">{t('finalTimeSeconds')}</label>
-                                                        <input type="number" className="form-control form-control-sm"
-                                                               value={resultFormData.time}
-                                                               onChange={e => setResultFormData((prev: any) => ({
-                                                                   ...prev,
-                                                                   time: parseInt(e.target.value) || 0
-                                                               }))}/>
-                                                    </div>
-                                                    {resultFormData.subResults.length > 0 &&
-                                                        <strong className="small">{t('subDistances')}:</strong>}
-                                                    {resultFormData.subResults.map((sr, idx) => {
-                                                        const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
-                                                        return (
-                                                            <div key={idx}
-                                                                 className="d-flex align-items-center gap-2 mb-1">
-                                                                <span
-                                                                    className="small text-muted w-50">{t('forDistance')} {sdMeta?.subDistance || '?'} [m]:</span>
-                                                                <input type="number"
-                                                                       className="form-control form-control-sm w-50"
-                                                                       placeholder={t('timeSeconds')} value={sr.time}
-                                                                       onChange={e => {
-                                                                           const newSubs = [...resultFormData.subResults];
-                                                                           newSubs[idx].time = parseInt(e.target.value) || 0;
-                                                                           setResultFormData((prev: any) => ({
-                                                                               ...prev,
-                                                                               subResults: newSubs
-                                                                           }));
-                                                                       }}/>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                    <div className="mt-2 text-end">
-                                                        <button className="btn btn-sm btn-secondary me-2"
-                                                                onClick={() => setActiveResultListId(null)}>{t('cancel')}</button>
-                                                        <button className="btn btn-sm btn-profile-primary"
-                                                                onClick={saveResult}
-                                                                disabled={interactions.actionLoading !== null}>{t('saveResultBtn')}</button>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                    {list.status === SaveStatusEnum.ACCEPTED && !hasResult && !activeResultListId && (isMyProfile || isAdmin) && (
+                                    {list.status === SaveStatusEnum.ACCEPTED && !hasResult && !isFormOpen && (isMyProfile || isAdmin) && (
                                         <tr>
                                             <td colSpan={5} className="text-end border-bottom">
                                                 <button className="btn btn-sm btn-profile-outline-primary"

@@ -228,8 +228,8 @@ export function useUserConversations(link?: string) {
     return {
         ...access,
         canSendMessages,
-        loading: access.authLoading || actLoading || msgLoading,
-        error: access.authError || actError || msgError,
+        loading: access.authLoading || (access.isMyProfile ? actLoading : msgLoading),
+        error: access.authError || (access.isMyProfile ? actError : msgError),
         activities: paginated,
         totalActivities: total,
         activityPage: activityList.page,

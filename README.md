@@ -116,6 +116,9 @@ npm run dev
 - /statistics (statystyki - tylko dla zalogowanych)
 
 12. Brakuje:
+- uproszczenie tłumaczeń
+- weryfikacja obiektów response
+- dodanie includów do list
 - wysyłka email nie działa
 - wysyłka push wiadomości nie działa
 - kamera na froncie

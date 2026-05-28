@@ -31,7 +31,7 @@ export function useTrainingModals(onSuccess: () => void) {
     const userProvider = new UserProvider();
     const friendProvider = new FriendProvider();
 
-    const loadAvailableFriends = async (currentUsr: UserResponse) => {
+    const loadAvailableFriends = async (currentUsr: UserResponse, trainingObj?: TrainingResponse | null) => {
         const fFilter = new FriendFilterQuery();
         fFilter.userIds = [currentUsr.id];
         fFilter.status = FriendStatusEnum.ACCEPTED;
@@ -39,14 +39,19 @@ export function useTrainingModals(onSuccess: () => void) {
         fIndexDto.filter = fFilter;
 
         const myFriends = await friendProvider.index(fIndexDto);
-        const acceptedFriendIds = new Set<string>();
+        const userIdsToFetch = new Set<string>();
         myFriends.forEach(f => {
-            if (f.senderUserId !== currentUsr.id) acceptedFriendIds.add(f.senderUserId);
-            if (f.receiverUserId !== currentUsr.id) acceptedFriendIds.add(f.receiverUserId);
+            if (f.senderUserId !== currentUsr.id) userIdsToFetch.add(f.senderUserId);
+            if (f.receiverUserId !== currentUsr.id) userIdsToFetch.add(f.receiverUserId);
         });
 
-        if (acceptedFriendIds.size > 0) {
-            const usersMap = await fetchRelatedUsers(Array.from(acceptedFriendIds), {}, userProvider);
+        if (trainingObj && trainingObj.participants) {
+            trainingObj.participants.forEach(p => userIdsToFetch.add(p.userId));
+        }
+
+        const idsArray = Array.from(userIdsToFetch);
+        if (idsArray.length > 0) {
+            const usersMap = await fetchRelatedUsers(idsArray, {}, userProvider);
             setAvailableUsers(Object.values(usersMap));
         } else {
             setAvailableUsers([]);
@@ -72,39 +77,52 @@ export function useTrainingModals(onSuccess: () => void) {
     };
 
     const openManageModal = async (tr: TrainingResponse) => {
+        resetErrors();
         manageModal.open(tr);
 
-        const disciplinesMapped: TrainingDiscipline[] = tr.disciplines.map(d => ({
-            discipline: d.discipline,
-            distances: d.distances.map(dist => ({
-                distance: dist.distance,
-                time: dist.time,
-                subDistances: dist.subDistances.map(sub => ({
-                    subDistance: sub.subDistance,
-                    time: sub.time,
-                    lat: sub.lat,
-                    lng: sub.lng,
-                    accuracy: sub.accuracy,
-                    speed: sub.speed
-                }))
-            }))
-        }));
-
-        setFormData(new TrainingBody(
-            tr.startedAt.substring(0, 16),
-            tr.endedAt.substring(0, 16),
-            tr.title,
-            tr.description,
-            tr.link,
-            tr.location,
-            disciplinesMapped,
-            tr.participants.map(p => p.userId)
-        ));
-
-        resetErrors();
         await wrap(async () => {
-            if (currentUser) await loadAvailableFriends(currentUser);
-        }).catch(() => {});
+            const fullTraining = await trainingProvider.details(tr.id, [
+                'trainingDisciplines',
+                'trainingDisciplineDistances',
+                'trainingDisciplineSubDistances',
+                'trainingParticipants'
+            ]);
+
+            manageModal.setData(fullTraining);
+
+            const disciplinesMapped: TrainingDiscipline[] = (fullTraining.disciplines || []).map(d => ({
+                discipline: d.discipline,
+                distances: (d.distances || []).map(dist => ({
+                    distance: dist.distance,
+                    time: dist.time,
+                    subDistances: (dist.subDistances || []).map(sub => ({
+                        subDistance: sub.subDistance,
+                        time: sub.time,
+                        lat: sub.lat,
+                        lng: sub.lng,
+                        accuracy: sub.accuracy,
+                        speed: sub.speed
+                    }))
+                }))
+            }));
+
+            setFormData(new TrainingBody(
+                fullTraining.startedAt ? fullTraining.startedAt.substring(0, 16) : '',
+                fullTraining.endedAt ? fullTraining.endedAt.substring(0, 16) : '',
+                fullTraining.title,
+                fullTraining.description,
+                fullTraining.link,
+                fullTraining.location,
+                disciplinesMapped,
+                fullTraining.participants ? fullTraining.participants.map(p => p.userId) : []
+            ));
+
+            if (currentUser) {
+                await loadAvailableFriends(currentUser, fullTraining);
+            }
+        }).catch(() => {
+            manageModal.close();
+        });
     };
 
     const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
