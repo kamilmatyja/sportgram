@@ -236,7 +236,7 @@ readonly class EventService
                 $event->pageParticipant->user,
                 NotificationTypeEnum::EventList,
                 $event->title,
-                '/events/' . $event->link . '/' . $eventDiscipline->discipline->value . '/' . $eventDisciplineDistance->distance . '/lists',
+                '/events/' . $event->link,
             ),
         );
 
@@ -259,7 +259,7 @@ readonly class EventService
                 $event->pageParticipant->user,
                 NotificationTypeEnum::EventListStatus,
                 $event->title,
-                '/events/' . $event->link . '/' . $eventDiscipline->discipline->value . '/' . $eventDisciplineDistance->distance . '/lists',
+                '/events/' . $event->link,
             ),
         );
 
@@ -268,7 +268,7 @@ readonly class EventService
                 $eventDisciplineList->user,
                 NotificationTypeEnum::EventListStatus,
                 $event->title,
-                '/events/' . $event->link . '/' . $eventDiscipline->discipline->value . '/' . $eventDisciplineDistance->distance . '/lists',
+                '/events/' . $event->link,
             ),
         );
 
@@ -342,7 +342,7 @@ readonly class EventService
                 $eventDisciplineList->user,
                 NotificationTypeEnum::EventResult,
                 $event->title,
-                '/events/' . $event->link . '/' . $eventDiscipline->discipline->value . '/' . $eventDisciplineDistance->distance . '/results',
+                '/events/' . $event->link,
             ),
         );
 

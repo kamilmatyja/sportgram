@@ -12,6 +12,8 @@ use OpenApi\Attributes as OA;
         'feedId',
         'createdAt',
         'updatedAt',
+        'distance',
+        'time',
         'status',
     ],
     properties: [

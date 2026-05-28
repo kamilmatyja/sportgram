@@ -140,7 +140,7 @@ readonly class FeedService
                 $feedComment->user,
                 NotificationTypeEnum::FeedCommentStatus,
                 $feedComment->text,
-                '/users/' . $feedComment->feed->user->link,
+                '/users/' . $feedComment->user->link,
             ),
         );
 
@@ -210,7 +210,7 @@ readonly class FeedService
                 $feedReaction->user,
                 NotificationTypeEnum::FeedReactionStatus,
                 $feedReaction->feed->text,
-                '/users/' . $feedReaction->feed->user->link,
+                '/users/' . $feedReaction->user->link,
             ),
         );
 

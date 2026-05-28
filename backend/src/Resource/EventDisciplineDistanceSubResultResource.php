@@ -9,6 +9,7 @@ use OpenApi\Attributes as OA;
     required: [
         'id',
         'eventDisciplineSubDistanceId',
+        'eventDisciplineResultId',
         'userId',
         'createdAt',
         'updatedAt',
@@ -23,6 +24,12 @@ use OpenApi\Attributes as OA;
         ),
         new OA\Property(
             property: 'eventDisciplineSubDistanceId',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
+        new OA\Property(
+            property: 'eventDisciplineResultId',
             type: 'string',
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
@@ -46,6 +53,7 @@ class EventDisciplineDistanceSubResultResource
         return [
             'id' => $eventDisciplineSubResult->id->toString(),
             'eventDisciplineSubDistanceId' => $eventDisciplineSubResult->eventDisciplineSubDistance->id->toString(),
+            'eventDisciplineResultId' => $eventDisciplineSubResult->eventDisciplineResult->id->toString(),
             'userId' => $eventDisciplineSubResult->user->id->toString(),
             'createdAt' => $eventDisciplineSubResult->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $eventDisciplineSubResult->updatedAt->format('Y-m-d\TH:i:s'),

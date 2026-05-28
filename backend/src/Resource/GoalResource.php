@@ -11,6 +11,7 @@ use OpenApi\Attributes as OA;
     required: [
         'id',
         'userId',
+        'feedId',
         'createdAt',
         'updatedAt',
         'text',
@@ -28,6 +29,12 @@ use OpenApi\Attributes as OA;
         ),
         new OA\Property(
             property: 'userId',
+            type: 'string',
+            format: 'uuid',
+            example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+        ),
+        new OA\Property(
+            property: 'feedId',
             type: 'string',
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
@@ -57,6 +64,7 @@ class GoalResource
         $data = [
             'id' => $goal->id->toString(),
             'userId' => $goal->user->id->toString(),
+            'feedId' => $goal->feed->id->toString(),
             'createdAt' => $goal->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $goal->updatedAt->format('Y-m-d\TH:i:s'),
             'startedAt' => $goal->startedAt?->format('Y-m-d\TH:i:s'),

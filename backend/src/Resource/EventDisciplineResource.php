@@ -45,7 +45,7 @@ class EventDisciplineResource
     {
         $data = [
             'id' => $eventDiscipline->id->toString(),
-            'pageParticipantId' => $eventDiscipline->event->id->toString(),
+            'eventId' => $eventDiscipline->event->id->toString(),
             'createdAt' => $eventDiscipline->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $eventDiscipline->updatedAt->format('Y-m-d\TH:i:s'),
             'discipline' => $eventDiscipline->discipline->value,

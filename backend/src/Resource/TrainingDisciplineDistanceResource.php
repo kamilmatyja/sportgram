@@ -11,7 +11,10 @@ use OpenApi\Attributes as OA;
     required: [
         'id',
         'trainingDisciplineId',
+        'createdAt',
+        'updatedAt',
         'distance',
+        'time',
     ],
     properties: [
         new OA\Property(
@@ -25,6 +28,8 @@ use OpenApi\Attributes as OA;
             type: 'string',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
         ),
+        new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', example: '2026-04-22T10:00:00'),
+        new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time', example: '2026-04-22T12:00:00'),
         new OA\Property(property: 'distance', type: 'integer', example: 100),
         new OA\Property(property: 'time', type: 'integer', example: 60),
         new OA\Property(
@@ -42,6 +47,8 @@ class TrainingDisciplineDistanceResource
         $data = [
             'id' => $distance->id->toString(),
             'trainingDisciplineId' => $distance->trainingDiscipline->id->toString(),
+            'createdAt' => $distance->createdAt->format('Y-m-d\TH:i:s'),
+            'updatedAt' => $distance->updatedAt->format('Y-m-d\TH:i:s'),
             'distance' => $distance->distance,
             'time' => $distance->time,
         ];
