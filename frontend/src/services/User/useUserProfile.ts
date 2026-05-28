@@ -1,62 +1,26 @@
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {FriendProvider} from '../../api/providers/FriendProvider';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {FriendResponse} from '../../api/responses/FriendResponse';
 import {FriendBody} from '../../api/body/FriendBody';
 import {StatusBody} from '../../api/body/StatusBody';
 import {useTranslation} from '../../context/TranslationContext';
-import {profileAccess} from '../../utils/profileAccess.ts';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 export function useUserProfile(link?: string) {
     const {t} = useTranslation();
-    const {checkAccess} = profileAccess();
+    const accessOptions = { targetLink: link, requireFriendship: false };
+    const access = useAppAccess(accessOptions);
 
-    const [user, setUser] = useState<UserResponse | null>(null);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
-    const [friendship, setFriendship] = useState<FriendResponse | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
     const [actionLoading, setActionLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
-    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const [triggerRefresh, setTriggerRefresh] = useState<number>(0);
 
     const friendProvider = new FriendProvider();
 
-    const fetchProfileData = async () => {
-        try {
-            setLoading(true);
-
-            if (!link) {
-                setError('userNotFound');
-                return;
-            }
-
-            const access = await checkAccess({ link }, { requireFriendship: false });
-
-            setCurrentUser(access.currentUser);
-            setUser(access.targetUser);
-            setIsMyProfile(access.isMyProfile);
-            setIsAdmin(access.isAdmin);
-            setFriendship(access.friendship);
-        } catch (err: any) {
-            setError(err.error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (link) {
-            fetchProfileData();
-        }
-    }, [link]);
-
     const handleAddFriend = async () => {
-        if (!user || !currentUser) return;
+        if (!access.targetUser || !access.currentUser) return;
         setActionLoading(true);
         try {
-            await friendProvider.create(new FriendBody(user.id));
-            await fetchProfileData();
+            await friendProvider.create(new FriendBody(access.targetUser.id));
+            setTriggerRefresh(prev => prev + 1);
         } catch (e: any) {
             if (e.error) alert(t(e.error) !== e.error ? t(e.error) : e.error);
         } finally {
@@ -65,11 +29,11 @@ export function useUserProfile(link?: string) {
     };
 
     const handleUpdateFriendStatus = async (newStatus: number) => {
-        if (!friendship || !user) return;
+        if (!access.friendship || !access.targetUser) return;
         setActionLoading(true);
         try {
-            await friendProvider.updateStatus(friendship.id, new StatusBody(newStatus));
-            await fetchProfileData();
+            await friendProvider.updateStatus(access.friendship.id, new StatusBody(newStatus));
+            setTriggerRefresh(prev => prev + 1);
         } catch (e: any) {
             if (e.error) alert(t(e.error) !== e.error ? t(e.error) : e.error);
         } finally {
@@ -78,14 +42,16 @@ export function useUserProfile(link?: string) {
     };
 
     const refreshProfile = () => {
-        if (link) {
-            fetchProfileData();
-        }
+        setTriggerRefresh(prev => prev + 1);
     };
 
     return {
-        user, currentUser, friendship, loading, actionLoading, error,
-        handleAddFriend, handleUpdateFriendStatus,
-        isMyProfile, isAdmin, refreshProfile
+        ...access,
+        user: access.targetUser,
+        loading: access.authLoading,
+        error: access.authError,
+        actionLoading,
+        handleAddFriend, handleUpdateFriendStatus, refreshProfile,
+        triggerRefresh
     };
 }

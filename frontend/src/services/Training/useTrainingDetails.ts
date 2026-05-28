@@ -7,35 +7,29 @@ import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {TrainingFilterQuery} from '../../api/queries/TrainingFilterQuery';
 import {TrainingIndexQuery} from '../../api/queries/TrainingIndexQuery';
-import {profileAccess} from '../../utils/profileAccess';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 export function useTrainingDetails(link?: string) {
-    const {checkAccess} = profileAccess();
+    const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
     const [training, setTraining] = useState<TrainingResponse | null>(null);
-    const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
 
-    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isParticipantOfTraining, setIsParticipantOfTraining] = useState<boolean>(false);
 
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [dataLoading, setDataLoading] = useState<boolean>(true);
+    const [dataError, setDataError] = useState<string | null>(null);
 
     const trainingProvider = new TrainingProvider();
     const userProvider = new UserProvider();
 
     const fetchTrainingData = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            if (!link) {
-                setError('unauthorizedEdit');
-                return;
-            }
+        if (!link || !access.currentUser) return;
 
+        setDataLoading(true);
+        setDataError(null);
+
+        try {
             const filterDto = new TrainingFilterQuery();
             filterDto.link = link;
             const indexDto = new TrainingIndexQuery();
@@ -44,7 +38,7 @@ export function useTrainingDetails(link?: string) {
             const trainings = await trainingProvider.index(indexDto);
 
             if (trainings.length === 0) {
-                setError('noTrainings');
+                setDataError('noTrainings');
                 return;
             }
 
@@ -55,15 +49,9 @@ export function useTrainingDetails(link?: string) {
                 'trainingParticipants'
             ]);
 
-            const access = await checkAccess({ id: targetTraining.userId }, { requireFriendship: true });
-
             setTraining(targetTraining);
-            setCurrentUser(access.currentUser);
-            setOwnerUser(access.targetUser);
-            setIsAdmin(access.isAdmin);
-            setIsMyProfile(access.isMyProfile);
 
-            const participantCheck = targetTraining.participants?.some(p => p.userId === access.currentUser.id) ?? false;
+            const participantCheck = targetTraining.participants?.some(p => p.userId === access.currentUser!.id) ?? false;
             setIsParticipantOfTraining(participantCheck);
 
             const userIdsToFetch = Array.from(new Set(targetTraining.participants.map(p => p.userId)));
@@ -82,22 +70,30 @@ export function useTrainingDetails(link?: string) {
             }
 
         } catch (err: any) {
-            setError(err.error);
+            setDataError(err.error);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchTrainingData();
-    }, [link]);
+        if (!access.authLoading && !access.authError) {
+            fetchTrainingData();
+        }
+    }, [link, access.authLoading, access.authError]);
 
     const refreshTraining = () => {
         fetchTrainingData();
     };
 
     return {
-        training, ownerUser, currentUser, relatedUsers, isMyProfile, isAdmin, isParticipantOfTraining,
-        loading, error, refreshTraining
+        ...access,
+        ownerUser: access.targetUser,
+        training,
+        relatedUsers,
+        isParticipantOfTraining,
+        loading: access.authLoading || dataLoading,
+        error: access.authError || dataError,
+        refreshTraining
     };
 }

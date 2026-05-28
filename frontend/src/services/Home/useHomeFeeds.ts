@@ -4,21 +4,22 @@ import {UserProvider} from '../../api/providers/UserProvider';
 import {FeedResponse} from '../../api/responses/FeedResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {FeedIndexQuery} from '../../api/queries/FeedIndexQuery';
-import {useCheckPermission} from '../../utils/checkPermission';
 import {FeedFilterQuery} from '../../api/queries/FeedFilterQuery';
 import {fetchRelatedUsersFromIds} from '../../utils/fetchRelatedUsers';
 import {useFeedInteractions} from '../Feed/useFeedInteractions';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 export function useHomeFeeds(targetUserId?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const accessOptions = targetUserId ? { targetId: targetUserId, requireFriendship: true } : {};
+    const access = useAppAccess(accessOptions);
+
     const [feeds, setFeeds] = useState<FeedResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
 
     const [page, setPage] = useState<number>(1);
     const [limit] = useState<number>(20);
     const [hasMore, setHasMore] = useState<boolean>(true);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [dataLoading, setDataLoading] = useState<boolean>(true);
     const [loadingMore, setLoadingMore] = useState<boolean>(false);
 
     const feedProvider = new FeedProvider();
@@ -35,7 +36,7 @@ export function useHomeFeeds(targetUserId?: string) {
     };
 
     const fetchFeeds = async (pageNumber: number, append: boolean = false) => {
-        if (!append) setLoading(true);
+        if (!append) setDataLoading(true);
         else setLoadingMore(true);
 
         try {
@@ -69,22 +70,17 @@ export function useHomeFeeds(targetUserId?: string) {
         } catch (err) {
             console.error(err);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
             setLoadingMore(false);
         }
     };
 
     useEffect(() => {
-        const init = async () => {
-            const user = await getCurrentUser();
-            if (user) {
-                setCurrentUser(user);
-                setPage(1);
-                await fetchFeeds(1, false);
-            }
-        };
-        init();
-    }, [targetUserId]);
+        if (!access.authLoading && !access.authError && access.currentUser) {
+            setPage(1);
+            fetchFeeds(1, false);
+        }
+    }, [access.authLoading, access.authError, targetUserId]);
 
     const handleLoadMore = () => {
         const nextPage = page + 1;
@@ -105,13 +101,13 @@ export function useHomeFeeds(targetUserId?: string) {
         }
     };
 
-    const interactions = useFeedInteractions(feeds, currentUser, refreshSingleFeed);
+    const interactions = useFeedInteractions(feeds, access.currentUser, refreshSingleFeed);
 
     return {
+        ...access,
         feeds,
         relatedUsers,
-        currentUser,
-        loading,
+        loading: access.authLoading || dataLoading,
         loadingMore,
         hasMore,
         handleLoadMore,

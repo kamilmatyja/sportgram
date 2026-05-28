@@ -6,23 +6,21 @@ import {PageResponse} from '../../api/responses/PageResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {EventResponse} from '../../api/responses/EventResponse';
 import {PageFollowResponse} from '../../api/responses/PageFollowResponse';
-import {useCheckPermission} from '../../utils/checkPermission';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
 import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
 import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
 import {EventIndexQuery} from '../../api/queries/EventIndexQuery';
-import {RoleEnum} from '../../enums/RoleEnum';
 import {PageFollowStatusEnum} from '../../enums/PageFollowStatusEnum';
 import {StatusBody} from '../../api/body/StatusBody';
 
 export function usePageDetails(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
+    const access = useAppAccess();
 
     const [pageObj, setPageObj] = useState<PageResponse | null>(null);
     const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
 
     const [events, setEvents] = useState<EventResponse[]>([]);
@@ -33,14 +31,13 @@ export function usePageDetails(link?: string) {
     const [eventsLoading, setEventsLoading] = useState<boolean>(false);
 
     const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isParticipantOfPage, setIsParticipantOfPage] = useState<boolean>(false);
 
     const [myFollow, setMyFollow] = useState<PageFollowResponse | null>(null);
     const [followLoading, setFollowLoading] = useState<boolean>(false);
 
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [dataLoading, setDataLoading] = useState<boolean>(true);
+    const [dataError, setDataError] = useState<string | null>(null);
 
     const pageProvider = new PageProvider();
     const userProvider = new UserProvider();
@@ -71,20 +68,11 @@ export function usePageDetails(link?: string) {
     };
 
     const fetchPageData = async () => {
-        setLoading(true);
-        setError(null);
+        if (!link || !access.currentUser) return;
+
+        setDataLoading(true);
+        setDataError(null);
         try {
-            const currentUsr = await getCurrentUser();
-            setCurrentUser(currentUsr);
-
-            if (!currentUsr || !link) {
-                setError('unauthorizedEdit');
-                return;
-            }
-
-            const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-            setIsAdmin(adminCheck);
-
             const filterDto = new PageFilterQuery();
             filterDto.link = link;
             const indexDto = new PageIndexQuery();
@@ -93,7 +81,7 @@ export function usePageDetails(link?: string) {
             const pagesData = await pageProvider.index(indexDto);
 
             if (pagesData.length === 0) {
-                setError('noPages');
+                setDataError('noPages');
                 return;
             }
 
@@ -107,13 +95,12 @@ export function usePageDetails(link?: string) {
             const owner = await userProvider.details(targetPage.userId);
             setOwnerUser(owner);
 
-            const isOwner = currentUsr.id === owner.id;
-            setIsMyProfile(isOwner);
+            setIsMyProfile(access.currentUser.id === owner.id);
 
-            const participantCheck = targetPage.participants?.some(p => p.userId === currentUsr.id) ?? false;
+            const participantCheck = targetPage.participants?.some(p => p.userId === access.currentUser!.id) ?? false;
             setIsParticipantOfPage(participantCheck);
 
-            const existingFollow = targetPage.follows?.find(f => f.userId === currentUsr.id) || null;
+            const existingFollow = targetPage.follows?.find(f => f.userId === access.currentUser!.id) || null;
             setMyFollow(existingFollow);
 
             const userIdsToFetch = new Set<string>();
@@ -138,15 +125,17 @@ export function usePageDetails(link?: string) {
             await fetchEvents(targetPage.id);
 
         } catch (err: any) {
-            setError(err.error);
+            setDataError(err.error);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchPageData();
-    }, [link]);
+        if (!access.authLoading && !access.authError) {
+            fetchPageData();
+        }
+    }, [link, access.authLoading, access.authError]);
 
     useEffect(() => {
         if (pageObj) {
@@ -172,7 +161,7 @@ export function usePageDetails(link?: string) {
     const handleEventNextPage = () => setEventPage(prev => prev + 1);
 
     const handleToggleFollow = async () => {
-        if (!pageObj || !currentUser) return;
+        if (!pageObj || !access.currentUser) return;
         setFollowLoading(true);
         try {
             if (!myFollow) {
@@ -196,18 +185,17 @@ export function usePageDetails(link?: string) {
     };
 
     return {
+        ...access,
         pageObj,
         ownerUser,
-        currentUser,
         relatedUsers,
         isMyProfile,
-        isAdmin,
         isParticipantOfPage,
         myFollow,
         followLoading,
         handleToggleFollow,
-        loading,
-        error,
+        loading: access.authLoading || dataLoading,
+        error: access.authError || dataError,
         events,
         eventsLoading,
         eventPage,

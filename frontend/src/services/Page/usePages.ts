@@ -3,30 +3,25 @@ import {PageProvider} from '../../api/providers/PageProvider';
 import {PageResponse} from '../../api/responses/PageResponse';
 import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
 import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
-import {useCheckPermission} from '../../utils/checkPermission';
-import {RoleEnum} from '../../enums/RoleEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 export function usePages() {
-    const {getCurrentUser} = useCheckPermission();
+    const access = useAppAccess();
     const pageProvider = new PageProvider();
 
     const [pages, setPages] = useState<PageResponse[]>([]);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
-    const [isOrganizer, setIsOrganizer] = useState<boolean>(false);
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
     const [page, setPage] = useState<number>(1);
     const [limit, setLimit] = useState<number>(10);
     const [sort, setSort] = useState<string>('createdAt:desc');
     const [filters, setFilters] = useState(new PageFilterQuery());
 
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [dataLoading, setDataLoading] = useState<boolean>(true);
+    const [dataError, setDataError] = useState<string | null>(null);
 
     const fetchPages = async () => {
-        setLoading(true);
-        setError(null);
+        setDataLoading(true);
+        setDataError(null);
         try {
             const filterDto = new PageFilterQuery();
             filterDto.title = filters.title;
@@ -42,33 +37,17 @@ export function usePages() {
             const data = await pageProvider.index(indexDto);
             setPages(data);
         } catch (err: any) {
-            setError(err.error);
+            setDataError(err.error);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     };
 
     useEffect(() => {
-        const init = async () => {
-            try {
-                setLoading(true);
-                const currentUsr = await getCurrentUser();
-                setCurrentUser(currentUsr);
-
-                if (currentUsr) {
-                    setIsOrganizer(currentUsr.roles?.some((r: any) => r.role === RoleEnum.ORGANIZER) ?? false);
-                    setIsAdmin(currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false);
-                }
-
-                await fetchPages();
-            } catch (err: any) {
-                setError(err.error);
-                setLoading(false);
-            }
-        };
-
-        init();
-    }, [page, limit, sort, filters]);
+        if (!access.authLoading && !access.authError) {
+            fetchPages();
+        }
+    }, [access.authLoading, access.authError, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
@@ -88,7 +67,11 @@ export function usePages() {
     const handleNextPage = () => setPage(prev => prev + 1);
 
     return {
-        pages, currentUser, isOrganizer, isAdmin, page, limit, sort, filters, loading, error,
+        ...access,
+        pages,
+        page, limit, sort, filters,
+        loading: access.authLoading || dataLoading,
+        error: access.authError || dataError,
         handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, fetchPages
     };
 }

@@ -6,7 +6,6 @@ import {EventResponse} from '../../api/responses/EventResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {PageResponse} from '../../api/responses/PageResponse';
 import {EventDisciplineDistanceListResponse} from '../../api/responses/EventDisciplineDistanceListResponse';
-import {useCheckPermission} from '../../utils/checkPermission';
 import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
 import {EventIndexQuery} from '../../api/queries/EventIndexQuery';
 import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
@@ -14,24 +13,18 @@ import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
 import {EventListIndexQuery} from '../../api/queries/EventListIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {RoleEnum} from '../../enums/RoleEnum';
 import {StatusBody} from '../../api/body/StatusBody';
 import {EventListFilterQuery} from '../../api/queries/EventListFilterQuery';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 export function useEventDetails(link?: string) {
-    const {getCurrentUser} = useCheckPermission();
-
+    const access = useAppAccess();
     const [eventObj, setEventObj] = useState<EventResponse | null>(null);
     const [ownerPage, setOwnerPage] = useState<PageResponse | null>(null);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
-
-    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
-    const [isParticipant, setIsParticipant] = useState<boolean>(false);
     const [userEnrollments, setUserEnrollments] = useState<string[]>([]);
 
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [dataLoading, setDataLoading] = useState<boolean>(true);
+    const [dataError, setDataError] = useState<string | null>(null);
 
     const [showListsModal, setShowListsModal] = useState(false);
     const [selectedDistanceId, setSelectedDistanceId] = useState<string>('');
@@ -45,23 +38,12 @@ export function useEventDetails(link?: string) {
     const userProvider = new UserProvider();
 
     const fetchEventData = async () => {
-        setLoading(true);
-        setError(null);
+        if (!link || !access.currentUser) return;
+
+        setDataLoading(true);
+        setDataError(null);
+
         try {
-            const currentUsr = await getCurrentUser();
-            setCurrentUser(currentUsr);
-
-            if (!currentUsr || !link) {
-                setError('unauthorizedEdit');
-                return;
-            }
-
-            const adminCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-            setIsAdmin(adminCheck);
-
-            const participantCheck = currentUsr.roles?.some((r: any) => r.role === RoleEnum.PARTICIPANT) ?? false;
-            setIsParticipant(participantCheck);
-
             const filterDto = new EventFilterQuery();
             filterDto.link = link;
             const indexDto = new EventIndexQuery();
@@ -70,7 +52,7 @@ export function useEventDetails(link?: string) {
             const events = await eventProvider.index(indexDto);
 
             if (events.length === 0) {
-                setError('noEvents');
+                setDataError('noEvents');
                 return;
             }
 
@@ -82,11 +64,10 @@ export function useEventDetails(link?: string) {
 
             setEventObj(targetEvent);
 
-            let isOwner = false;
             let targetPage = null;
 
             const pageFilterDto = new PageFilterQuery();
-            pageFilterDto.userId = currentUsr.id;
+            pageFilterDto.userId = access.currentUser.id;
             const pageIndexDto = new PageIndexQuery();
             pageIndexDto.filter = pageFilterDto;
             pageIndexDto.limit = 100;
@@ -96,21 +77,19 @@ export function useEventDetails(link?: string) {
             for (const p of myPages) {
                 const pDetails = await pageProvider.details(p.id, ['pageParticipants']);
                 if (pDetails.participants?.some(part => part.id === targetEvent.pageParticipantId)) {
-                    isOwner = true;
                     targetPage = pDetails;
                     break;
                 }
             }
 
-            setIsMyProfile(isOwner);
             setOwnerPage(targetPage);
 
-            if (participantCheck) {
+            if (access.isParticipant) {
                 const enrollments: string[] = [];
                 const distIds = targetEvent.disciplines.flatMap(d => d.distances.map(dist => dist.id));
                 await Promise.all(distIds.map(async (distId) => {
                     const lFilter = new EventListFilterQuery();
-                    lFilter.userId = currentUsr.id;
+                    lFilter.userId = access.currentUser!.id;
                     const lIndex = new EventListIndexQuery();
                     lIndex.filter = lFilter;
                     const lists = await eventProvider.indexList(distId, lIndex);
@@ -122,15 +101,17 @@ export function useEventDetails(link?: string) {
             }
 
         } catch (err: any) {
-            setError(err.error);
+            setDataError(err.error);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchEventData();
-    }, [link]);
+        if (!access.authLoading && !access.authError) {
+            fetchEventData();
+        }
+    }, [link, access.authLoading, access.authError]);
 
     const fetchDistanceLists = async (distId: string) => {
         setListsLoading(true);
@@ -221,16 +202,16 @@ export function useEventDetails(link?: string) {
         fetchEventData();
     };
 
+    const isMyProfileResolved = ownerPage !== null;
+
     return {
+        ...access,
         eventObj,
         ownerPage,
-        currentUser,
-        isMyProfile,
-        isAdmin,
-        isParticipant,
         userEnrollments,
-        loading,
-        error,
+        isMyProfile: isMyProfileResolved,
+        loading: access.authLoading || dataLoading,
+        error: access.authError || dataError,
         showListsModal,
         openListsModal,
         closeListsModal,

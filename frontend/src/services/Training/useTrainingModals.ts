@@ -7,7 +7,7 @@ import {StatusBody} from '../../api/body/StatusBody';
 import {TrainingResponse} from '../../api/responses/TrainingResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {createFormHandler} from '../../utils/formHandler';
-import {useCheckPermission} from '../../utils/checkPermission';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
@@ -18,6 +18,8 @@ import {TrainingDistance} from '../../api/body/TrainingDistance';
 import {TrainingSubDistance} from '../../api/body/TrainingSubDistance';
 
 export function useTrainingModals(onSuccess: () => void) {
+    const { currentUser } = useAppAccess();
+
     const [showAdd, setShowAdd] = useState(false);
     const [showManage, setShowManage] = useState(false);
 
@@ -33,11 +35,10 @@ export function useTrainingModals(onSuccess: () => void) {
     const trainingProvider = new TrainingProvider();
     const userProvider = new UserProvider();
     const friendProvider = new FriendProvider();
-    const {getCurrentUser} = useCheckPermission();
 
-    const loadAvailableFriends = async (currentUser: UserResponse) => {
+    const loadAvailableFriends = async (currentUsr: UserResponse) => {
         const fFilter = new FriendFilterQuery();
-        fFilter.userIds = [currentUser.id];
+        fFilter.userIds = [currentUsr.id];
         fFilter.status = FriendStatusEnum.ACCEPTED;
         const fIndexDto = new FriendIndexQuery();
         fIndexDto.filter = fFilter;
@@ -45,8 +46,8 @@ export function useTrainingModals(onSuccess: () => void) {
         const myFriends = await friendProvider.index(fIndexDto);
         const acceptedFriendIds = new Set<string>();
         myFriends.forEach(f => {
-            if (f.senderUserId !== currentUser.id) acceptedFriendIds.add(f.senderUserId);
-            if (f.receiverUserId !== currentUser.id) acceptedFriendIds.add(f.receiverUserId);
+            if (f.senderUserId !== currentUsr.id) acceptedFriendIds.add(f.senderUserId);
+            if (f.receiverUserId !== currentUsr.id) acceptedFriendIds.add(f.receiverUserId);
         });
 
         if (acceptedFriendIds.size > 0) {
@@ -69,8 +70,9 @@ export function useTrainingModals(onSuccess: () => void) {
         setLoading(true);
 
         try {
-            const currentUser = await getCurrentUser();
-            if (currentUser) await loadAvailableFriends(currentUser);
+            if (currentUser) {
+                await loadAvailableFriends(currentUser);
+            }
         } catch (e: any) {
             setGlobalError(e.error);
         } finally {
@@ -133,7 +135,6 @@ export function useTrainingModals(onSuccess: () => void) {
         setLoading(true);
 
         try {
-            const currentUser = await getCurrentUser();
             if (currentUser) await loadAvailableFriends(currentUser);
         } catch (e: any) {
             setGlobalError(e.error);

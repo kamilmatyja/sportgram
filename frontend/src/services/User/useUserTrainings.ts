@@ -7,33 +7,28 @@ import {TrainingFilterQuery} from '../../api/queries/TrainingFilterQuery';
 import {TrainingIndexQuery} from '../../api/queries/TrainingIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {profileAccess} from '../../utils/profileAccess.ts';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 export function useUserTrainings(link?: string) {
-    const {checkAccess} = profileAccess();
+    const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
     const [trainings, setTrainings] = useState<TrainingResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-    const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
-    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
-    const [isParticipant, setIsParticipant] = useState<boolean>(false);
 
     const [page, setPage] = useState<number>(1);
     const [limit, setLimit] = useState<number>(10);
     const [sort, setSort] = useState<string>('createdAt:desc');
     const [filters, setFilters] = useState(new TrainingFilterQuery());
 
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [dataLoading, setDataLoading] = useState<boolean>(true);
+    const [dataError, setDataError] = useState<string | null>(null);
 
     const userProvider = new UserProvider();
     const trainingProvider = new TrainingProvider();
 
     const fetchTrainings = async (userId: string) => {
-        setLoading(true);
-        setError(null);
+        setDataLoading(true);
+        setDataError(null);
         try {
             const filterDto = new TrainingFilterQuery();
             filterDto.userId = userId;
@@ -78,39 +73,17 @@ export function useUserTrainings(link?: string) {
                 setRelatedUsers(usersMap);
             }
         } catch (err: any) {
-            setError(err.error);
+            setDataError(err.error);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     };
 
     useEffect(() => {
-        const init = async () => {
-            setLoading(true);
-            try {
-                if (!link) {
-                    setError('userNotFound');
-                    return;
-                }
-
-                const access = await checkAccess({ link }, { requireFriendship: true });
-
-                setCurrentUser(access.currentUser);
-                setTargetUser(access.targetUser);
-                setIsAdmin(access.isAdmin);
-                setIsParticipant(access.isParticipant);
-                setIsMyProfile(access.isMyProfile);
-
-                await fetchTrainings(access.targetUser.id);
-            } catch (err: any) {
-                setError(err.error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        init();
-    }, [link, page, limit, sort, filters]);
+        if (!access.authLoading && !access.authError && access.targetUser) {
+            fetchTrainings(access.targetUser.id);
+        }
+    }, [access.authLoading, access.authError, access.targetUser, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
@@ -130,12 +103,14 @@ export function useUserTrainings(link?: string) {
     const handleNextPage = () => setPage(prev => prev + 1);
 
     const refreshTrainings = () => {
-        if (targetUser) fetchTrainings(targetUser.id);
+        if (access.targetUser) fetchTrainings(access.targetUser.id);
     };
 
     return {
-        trainings, relatedUsers, targetUser, currentUser, isMyProfile, isAdmin, isParticipant,
-        page, limit, sort, filters, loading, error,
+        ...access,
+        trainings, relatedUsers, page, limit, sort, filters,
+        loading: access.authLoading || dataLoading,
+        error: access.authError || dataError,
         handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshTrainings
     };
 }

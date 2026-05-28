@@ -1,9 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {UserProvider} from '../../api/providers/UserProvider';
 import {ConversationProvider} from '../../api/providers/ConversationProvider';
-import {UserResponse} from '../../api/responses/UserResponse';
+import {UserProvider} from '../../api/providers/UserProvider';
 import {ConversationResponse} from '../../api/responses/ConversationResponse';
 import {ConversationActivityResponse} from '../../api/responses/ConversationActivityResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {ConversationIndexQuery} from '../../api/queries/ConversationIndexQuery';
@@ -11,22 +11,19 @@ import {ConversationFilterQuery} from '../../api/queries/ConversationFilterQuery
 import {ConversationActivityIndexQuery} from '../../api/queries/ConversationActivityIndexQuery';
 import {ConversationActivityFilterQuery} from '../../api/queries/ConversationActivityFilterQuery';
 import {ConversationBody} from '../../api/body/ConversationBody';
-import {profileAccess} from '../../utils/profileAccess.ts';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 export interface ProcessedActivity extends ConversationActivityResponse {
     otherUser: UserResponse;
 }
 
 export function useUserConversations(link?: string) {
-    const {checkAccess} = profileAccess();
+    const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
-    const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
-    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
     const [canSendMessages, setCanSendMessages] = useState<boolean>(false);
 
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [dataLoading, setDataLoading] = useState<boolean>(true);
+    const [dataError, setDataError] = useState<string | null>(null);
 
     const [rawActivities, setRawActivities] = useState<ConversationActivityResponse[]>([]);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
@@ -56,7 +53,7 @@ export function useUserConversations(link?: string) {
 
     const fetchActivities = async (currentUsr: UserResponse) => {
         try {
-            setLoading(true);
+            setDataLoading(true);
             const indexDto = new ConversationActivityIndexQuery();
             indexDto.limit = 100;
 
@@ -82,18 +79,18 @@ export function useUserConversations(link?: string) {
                 setRelatedUsers(usersMap);
             }
         } catch (e: any) {
-            setError(e.error);
+            setDataError(e.error);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     };
 
     const processActivities = (): { paginated: ProcessedActivity[], total: number } => {
-        if (!currentUser) return {paginated: [], total: 0};
+        if (!access.currentUser) return {paginated: [], total: 0};
 
         const mapped: ProcessedActivity[] = rawActivities
             .map(act => {
-                const otherId = act.senderUserId === currentUser.id ? act.receiverUserId : act.senderUserId;
+                const otherId = act.senderUserId === access.currentUser!.id ? act.receiverUserId : act.senderUserId;
                 return {...act, otherUser: relatedUsers[otherId]};
             })
             .filter(act => act.otherUser !== undefined);
@@ -135,7 +132,7 @@ export function useUserConversations(link?: string) {
 
     const fetchMessages = async (tUser: UserResponse, pageToFetch: number = 1, append: boolean = false) => {
         try {
-            if (!append) setLoading(true);
+            if (!append) setDataLoading(true);
             else setLoadingEarlier(true);
 
             const filter = new ConversationFilterQuery();
@@ -157,9 +154,9 @@ export function useUserConversations(link?: string) {
                 setTimeout(scrollToBottom, 100);
             }
         } catch (e: any) {
-            setError(e.error);
+            setDataError(e.error);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
             setLoadingEarlier(false);
         }
     };
@@ -214,65 +211,40 @@ export function useUserConversations(link?: string) {
     };
 
     useEffect(() => {
-        const init = async () => {
-            setLoading(true);
-            try {
-                if (!link) {
-                    setError('userNotFound');
-                    return;
-                }
-
-                const access = await checkAccess({ link }, { requireFriendship: true });
-
-                setCurrentUser(access.currentUser);
-                setTargetUser(access.targetUser);
-                setIsMyProfile(access.isMyProfile);
-
-                if (access.isMyProfile) {
-                    await fetchActivities(access.currentUser);
-                } else {
-                    if (!access.isAdmin && !access.friendship) {
-                        setError('accessDenied');
-                        setLoading(false);
-                        return;
-                    }
-                    setCanSendMessages(!!access.friendship);
-                    await fetchMessages(access.targetUser, 1, false);
-                }
-            } catch (err: any) {
-                setError(err.error);
-            } finally {
-                setLoading(false);
+        if (!access.authLoading && !access.authError && access.currentUser && access.targetUser) {
+            setCanSendMessages(!!access.friendship);
+            if (access.isMyProfile) {
+                fetchActivities(access.currentUser);
+            } else {
+                fetchMessages(access.targetUser, 1, false);
             }
-        };
-
-        init();
-    }, [link]);
+        }
+    }, [access.authLoading, access.authError, access.targetUser]);
 
     useEffect(() => {
-        if (isMyProfile || !targetUser || !currentUser) return;
-        const intervalId = setInterval(() => pollUpdates(targetUser), 3000);
+        if (access.isMyProfile || !access.targetUser || !access.currentUser) return;
+        const intervalId = setInterval(() => pollUpdates(access.targetUser!), 3000);
         return () => clearInterval(intervalId);
-    }, [isMyProfile, targetUser, currentUser]);
+    }, [access.isMyProfile, access.targetUser, access.currentUser]);
 
     const loadEarlierMessages = () => {
-        if (!targetUser) return;
+        if (!access.targetUser) return;
         const nextPage = chatPage + 1;
         setChatPage(nextPage);
-        fetchMessages(targetUser, nextPage, true);
+        fetchMessages(access.targetUser, nextPage, true);
     };
 
     const handleSendMessage = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (!messageInput.trim() || !targetUser || !canSendMessages) return;
+        if (!messageInput.trim() || !access.targetUser || !canSendMessages) return;
 
         setIsSending(true);
         try {
             const body = new ConversationBody(messageInput);
-            await conversationProvider.create(targetUser.id, body);
+            await conversationProvider.create(access.targetUser.id, body);
             setMessageInput('');
             setIsTyping(false);
-            await fetchMessages(targetUser, 1, false);
+            await fetchMessages(access.targetUser, 1, false);
             setTimeout(scrollToBottom, 100);
         } catch (e: any) {
             alert(e.error);
@@ -283,11 +255,11 @@ export function useUserConversations(link?: string) {
 
     const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
         setMessageInput(e.target.value);
-        if (!targetUser || !canSendMessages) return;
+        if (!access.targetUser || !canSendMessages) return;
 
         const now = Date.now();
         if (now - lastTypingPatch.current > 3000) {
-            conversationProvider.updateActivityUpdatedAt(targetUser.id).catch(() => {});
+            conversationProvider.updateActivityUpdatedAt(access.targetUser.id).catch(() => {});
             lastTypingPatch.current = now;
         }
     };
@@ -295,8 +267,10 @@ export function useUserConversations(link?: string) {
     const {paginated: paginatedActivities, total: totalActivities} = processActivities();
 
     return {
-        targetUser, currentUser, isMyProfile, canSendMessages, loading, error,
-
+        ...access,
+        canSendMessages,
+        loading: access.authLoading || dataLoading,
+        error: access.authError || dataError,
         activities: paginatedActivities,
         totalActivities,
         activityPage,
@@ -307,7 +281,6 @@ export function useUserConversations(link?: string) {
         setActivityLimit,
         setActivitySort,
         setActivitySearch,
-
         messages, messageInput, isSending, isTyping, hasMoreMessages, loadingEarlier, chatEndRef,
         handleTyping, handleSendMessage, loadEarlierMessages
     };

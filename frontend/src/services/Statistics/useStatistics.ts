@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {useCheckPermission} from '../../utils/checkPermission';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {StatisticProvider} from '../../api/providers/StatisticProvider';
 import {FriendProvider} from '../../api/providers/FriendProvider';
 import {UserProvider} from '../../api/providers/UserProvider';
@@ -14,15 +14,13 @@ import {UserResponse} from '../../api/responses/UserResponse';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 
 export function useStatistics() {
-    const {getCurrentUser} = useCheckPermission();
+    const access = useAppAccess();
 
     const statisticProvider = new StatisticProvider();
     const friendProvider = new FriendProvider();
     const userProvider = new UserProvider();
 
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
-
     const [activeTab, setActiveTab] = useState<'records' | 'progress'>('records');
     const [data, setData] = useState<StatisticResponse[]>([]);
 
@@ -31,8 +29,8 @@ export function useStatistics() {
     const [sort, setSort] = useState<string>('createdAt:desc');
     const [filters, setFilters] = useState<StatisticFilterQuery>(new StatisticFilterQuery());
 
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [dataLoading, setDataLoading] = useState<boolean>(true);
+    const [dataError, setDataError] = useState<string | null>(null);
 
     const loadAvailableUsers = async (currentUsr: UserResponse) => {
         const fFilter = new FriendFilterQuery();
@@ -72,8 +70,8 @@ export function useStatistics() {
     const fetchStatistics = async () => {
         if (!filters.userIds || filters.userIds.length === 0) return;
 
-        setLoading(true);
-        setError(null);
+        setDataLoading(true);
+        setDataError(null);
         try {
             const filterDto = new StatisticFilterQuery();
             filterDto.userIds = filters.userIds;
@@ -95,37 +93,28 @@ export function useStatistics() {
 
             setData(responseData);
         } catch (err: any) {
-            setError(err.error);
+            setDataError(err.error);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     };
 
     useEffect(() => {
-        const init = async () => {
-            setLoading(true);
-            try {
-                const currentUsr = await getCurrentUser();
-                if (!currentUsr) {
-                    setError('accessDenied');
-                    setLoading(false);
-                    return;
-                }
-                setCurrentUser(currentUsr);
-                await loadAvailableUsers(currentUsr);
-            } catch (err: any) {
-                setError(err.error);
-                setLoading(false);
+        if (!access.authLoading && access.currentUser) {
+            if (access.authError) {
+                setDataError(access.authError);
+                setDataLoading(false);
+            } else {
+                loadAvailableUsers(access.currentUser);
             }
-        };
-        init();
-    }, []);
+        }
+    }, [access.authLoading, access.currentUser]);
 
     useEffect(() => {
-        if (currentUser && filters.userIds && filters.userIds.length > 0) {
+        if (access.currentUser && filters.userIds && filters.userIds.length > 0) {
             fetchStatistics();
         }
-    }, [currentUser, activeTab, page, limit, sort, filters]);
+    }, [access.currentUser, activeTab, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
@@ -134,8 +123,8 @@ export function useStatistics() {
 
     const handleUsersChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selected = Array.from(e.target.selectedOptions).map(o => o.value);
-        if (selected.length === 0 && currentUser) {
-            setFilters(prev => ({...prev, userIds: [currentUser.id]}));
+        if (selected.length === 0 && access.currentUser) {
+            setFilters(prev => ({...prev, userIds: [access.currentUser!.id]}));
         } else {
             setFilters(prev => ({...prev, userIds: selected}));
         }
@@ -155,7 +144,10 @@ export function useStatistics() {
     const handleNextPage = () => setPage(prev => prev + 1);
 
     return {
-        currentUser, availableUsers, activeTab, setActiveTab, data, page, limit, sort, filters, loading, error,
+        ...access,
+        availableUsers, activeTab, setActiveTab, data, page, limit, sort, filters,
+        loading: access.authLoading || dataLoading,
+        error: access.authError || dataError,
         handleFilterChange, handleUsersChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage
     };
 }

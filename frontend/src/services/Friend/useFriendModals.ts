@@ -6,12 +6,14 @@ import {StatusBody} from '../../api/body/StatusBody';
 import {FriendResponse} from '../../api/responses/FriendResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {createFormHandler} from '../../utils/formHandler';
-import {useCheckPermission} from '../../utils/checkPermission';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 
 export function useFriendModals(onSuccess: () => void) {
+    const { currentUser } = useAppAccess();
+
     const [showAdd, setShowAdd] = useState(false);
     const [showManage, setShowManage] = useState(false);
     const [currentFriend, setCurrentFriend] = useState<FriendResponse | null>(null);
@@ -25,7 +27,6 @@ export function useFriendModals(onSuccess: () => void) {
 
     const friendProvider = new FriendProvider();
     const userProvider = new UserProvider();
-    const {getCurrentUser} = useCheckPermission();
 
     const openAddModal = async () => {
         setFormData(new FriendBody(''));
@@ -34,7 +35,6 @@ export function useFriendModals(onSuccess: () => void) {
         setLoading(true);
 
         try {
-            const currentUser = await getCurrentUser();
             if (currentUser) {
                 const uIndexDto = new UserIndexQuery();
                 uIndexDto.limit = 100;

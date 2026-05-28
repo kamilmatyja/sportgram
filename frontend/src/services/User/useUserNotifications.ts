@@ -1,32 +1,28 @@
 import React, {useEffect, useState} from 'react';
 import {NotificationProvider} from '../../api/providers/NotificationProvider';
 import {NotificationResponse} from '../../api/responses/NotificationResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
 import {NotificationFilterQuery} from '../../api/queries/NotificationFilterQuery';
 import {NotificationIndexQuery} from '../../api/queries/NotificationIndexQuery';
-import {profileAccess} from '../../utils/profileAccess.ts';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 export function useUserNotifications(link?: string) {
-    const {checkAccess} = profileAccess();
+    const access = useAppAccess({ targetLink: link, requireOwner: true });
 
     const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
-    const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
-    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
 
     const [page, setPage] = useState<number>(1);
     const [limit, setLimit] = useState<number>(10);
     const [sort, setSort] = useState<string>('createdAt:desc');
     const [filters, setFilters] = useState(new NotificationFilterQuery());
 
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [dataLoading, setDataLoading] = useState<boolean>(true);
+    const [dataError, setDataError] = useState<string | null>(null);
 
     const notificationProvider = new NotificationProvider();
 
     const fetchNotifications = async () => {
-        setLoading(true);
-        setError(null);
+        setDataLoading(true);
+        setDataError(null);
         try {
             const filterDto = new NotificationFilterQuery();
             filterDto.text = filters.text;
@@ -41,37 +37,17 @@ export function useUserNotifications(link?: string) {
             const data = await notificationProvider.index(indexDto);
             setNotifications(data);
         } catch (err: any) {
-            setError(err.error);
+            setDataError(err.error);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     };
 
     useEffect(() => {
-        const init = async () => {
-            setLoading(true);
-            try {
-                if (!link) {
-                    setError('userNotFound');
-                    return;
-                }
-
-                const access = await checkAccess({ link }, { requireOwner: true });
-
-                setCurrentUser(access.currentUser);
-                setTargetUser(access.targetUser);
-                setIsMyProfile(access.isMyProfile);
-
-                await fetchNotifications();
-            } catch (err: any) {
-                setError(err.error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        init();
-    }, [link, page, limit, sort, filters]);
+        if (!access.authLoading && !access.authError && access.targetUser) {
+            fetchNotifications();
+        }
+    }, [access.authLoading, access.authError, access.targetUser, page, limit, sort, filters]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
@@ -91,11 +67,14 @@ export function useUserNotifications(link?: string) {
     const handleNextPage = () => setPage(prev => prev + 1);
 
     const refreshNotifications = () => {
-        if (targetUser) fetchNotifications();
+        if (access.targetUser) fetchNotifications();
     };
 
     return {
-        notifications, targetUser, currentUser, isMyProfile, page, limit, sort, filters, loading, error,
+        ...access,
+        notifications, page, limit, sort, filters,
+        loading: access.authLoading || dataLoading,
+        error: access.authError || dataError,
         handleFilterChange, handleSortChange, handleLimitChange, handlePrevPage, handleNextPage, refreshNotifications
     };
 }

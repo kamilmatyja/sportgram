@@ -7,7 +7,7 @@ import {StatusBody} from '../../api/body/StatusBody';
 import {PageResponse} from '../../api/responses/PageResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {createFormHandler} from '../../utils/formHandler';
-import {useCheckPermission} from '../../utils/checkPermission';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
@@ -15,6 +15,8 @@ import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 
 export function usePageModals(onSuccess: () => void) {
+    const { currentUser } = useAppAccess();
+
     const [showAdd, setShowAdd] = useState(false);
     const [showManage, setShowManage] = useState(false);
 
@@ -30,11 +32,10 @@ export function usePageModals(onSuccess: () => void) {
     const pageProvider = new PageProvider();
     const userProvider = new UserProvider();
     const friendProvider = new FriendProvider();
-    const {getCurrentUser} = useCheckPermission();
 
-    const loadAvailableFriends = async (currentUser: UserResponse, pageObj?: PageResponse | null) => {
+    const loadAvailableFriends = async (currentUsr: UserResponse, pageObj?: PageResponse | null) => {
         const fFilter = new FriendFilterQuery();
-        fFilter.userIds = [currentUser.id];
+        fFilter.userIds = [currentUsr.id];
         fFilter.status = FriendStatusEnum.ACCEPTED;
         const fIndexDto = new FriendIndexQuery();
         fIndexDto.filter = fFilter;
@@ -43,8 +44,8 @@ export function usePageModals(onSuccess: () => void) {
 
         const userIdsToFetch = new Set<string>();
         myFriends.forEach(f => {
-            if (f.senderUserId !== currentUser.id) userIdsToFetch.add(f.senderUserId);
-            if (f.receiverUserId !== currentUser.id) userIdsToFetch.add(f.receiverUserId);
+            if (f.senderUserId !== currentUsr.id) userIdsToFetch.add(f.senderUserId);
+            if (f.receiverUserId !== currentUsr.id) userIdsToFetch.add(f.receiverUserId);
         });
 
         if (pageObj) {
@@ -72,7 +73,6 @@ export function usePageModals(onSuccess: () => void) {
         setLoading(true);
 
         try {
-            const currentUser = await getCurrentUser();
             if (currentUser) {
                 await loadAvailableFriends(currentUser);
             }
@@ -119,7 +119,6 @@ export function usePageModals(onSuccess: () => void) {
         setLoading(true);
 
         try {
-            const currentUser = await getCurrentUser();
             if (currentUser) {
                 await loadAvailableFriends(currentUser, page);
             }

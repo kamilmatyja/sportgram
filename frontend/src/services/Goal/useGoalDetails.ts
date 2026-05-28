@@ -7,35 +7,27 @@ import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {GoalFilterQuery} from '../../api/queries/GoalFilterQuery';
 import {GoalIndexQuery} from '../../api/queries/GoalIndexQuery';
-import {profileAccess} from '../../utils/profileAccess';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 export function useGoalDetails(link?: string) {
-    const {checkAccess} = profileAccess();
+    const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
     const [goal, setGoal] = useState<GoalResponse | null>(null);
-    const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
-    const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-
-    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isParticipantOfGoal, setIsParticipantOfGoal] = useState<boolean>(false);
 
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [dataLoading, setDataLoading] = useState<boolean>(true);
+    const [dataError, setDataError] = useState<string | null>(null);
 
     const goalProvider = new GoalProvider();
     const userProvider = new UserProvider();
 
     const fetchGoalData = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            if (!link) {
-                setError('unauthorizedEdit');
-                return;
-            }
+        if (!link || !access.currentUser || !access.targetUser) return;
 
+        setDataLoading(true);
+        setDataError(null);
+        try {
             const filterDto = new GoalFilterQuery();
             filterDto.link = link;
             const indexDto = new GoalIndexQuery();
@@ -44,7 +36,7 @@ export function useGoalDetails(link?: string) {
             const goals = await goalProvider.index(indexDto);
 
             if (goals.length === 0) {
-                setError('noGoals');
+                setDataError('noGoals');
                 return;
             }
 
@@ -53,15 +45,9 @@ export function useGoalDetails(link?: string) {
                 'goalParticipantResults'
             ]);
 
-            const access = await checkAccess({ id: targetGoal.userId }, { requireFriendship: true });
-
             setGoal(targetGoal);
-            setCurrentUser(access.currentUser);
-            setOwnerUser(access.targetUser);
-            setIsAdmin(access.isAdmin);
-            setIsMyProfile(access.isMyProfile);
 
-            const participantCheck = targetGoal.participants?.some(p => p.userId === access.currentUser.id) ?? false;
+            const participantCheck = targetGoal.participants?.some(p => p.userId === access.currentUser!.id) ?? false;
             setIsParticipantOfGoal(participantCheck);
 
             const userIdsToFetch = Array.from(new Set(targetGoal.participants.map(p => p.userId)));
@@ -80,22 +66,30 @@ export function useGoalDetails(link?: string) {
             }
 
         } catch (err: any) {
-            setError(err.error);
+            setDataError(err.error);
         } finally {
-            setLoading(false);
+            setDataLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchGoalData();
-    }, [link]);
+        if (!access.authLoading && !access.authError) {
+            fetchGoalData();
+        }
+    }, [link, access.authLoading, access.authError]);
 
     const refreshGoal = () => {
         fetchGoalData();
     };
 
     return {
-        goal, ownerUser, currentUser, relatedUsers, isMyProfile, isAdmin, isParticipantOfGoal,
-        loading, error, refreshGoal
+        ...access,
+        ownerUser: access.targetUser,
+        goal,
+        relatedUsers,
+        isParticipantOfGoal,
+        loading: access.authLoading || dataLoading,
+        error: access.authError || dataError,
+        refreshGoal
     };
 }
