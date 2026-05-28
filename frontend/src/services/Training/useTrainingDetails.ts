@@ -29,18 +29,19 @@ export function useTrainingDetails(link?: string) {
             filterDto.link = link;
             const indexDto = new TrainingIndexQuery();
             indexDto.filter = filterDto;
+            indexDto.include =  [
+                'trainingDisciplines',
+                'trainingDisciplineDistances',
+                'trainingDisciplineSubDistances',
+                'trainingParticipants'
+            ];
 
             const trainings = await trainingProvider.index(indexDto);
             if (trainings.length === 0) {
                 throw { error: 'noRecords' };
             }
 
-            const targetTraining = await trainingProvider.details(trainings[0].id, [
-                'trainingDisciplines',
-                'trainingDisciplineDistances',
-                'trainingDisciplineSubDistances',
-                'trainingParticipants'
-            ]);
+            const targetTraining = trainings[0];
 
             const owner = await userProvider.details(targetTraining.userId);
             setOwnerUser(owner);

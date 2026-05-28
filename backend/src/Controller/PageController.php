@@ -107,11 +107,13 @@ class PageController extends AbstractController
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
         PageIndexDto $dto,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        PageDetailsQueryDto $include,
         PageService $service,
     ): JsonResponse {
         $pages = $service->index($dto);
 
-        $data = PageResource::fromEntityCollection($pages, $dto->include);
+        $data = PageResource::fromEntityCollection($pages, $include);
 
         return ApiResponse::elements($data);
     }

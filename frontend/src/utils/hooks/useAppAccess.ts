@@ -51,11 +51,12 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
                 const uIndex = new UserIndexQuery();
                 uIndex.limit = 1;
                 uIndex.filter = uFilter;
+                uIndex.include = ['userRoles', 'userDisciplines'];
 
                 const currentUserArr = await userProvider.index(uIndex);
                 if (currentUserArr.length === 0) throw { error: 'unauthorizedEdit' };
 
-                const currentUsr = await userProvider.details(currentUserArr[0].id, ['userRoles', 'userDisciplines']);
+                const currentUsr = currentUserArr[0];
                 setCurrentUser(currentUsr);
 
                 const isAdmin = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
@@ -73,9 +74,10 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
                     tFilter.link = targetLink;
                     const tIndex = new UserIndexQuery();
                     tIndex.filter = tFilter;
+                    tIndex.include = ['userRoles', 'userDisciplines'];
                     const targetUsers = await userProvider.index(tIndex);
                     if (targetUsers.length === 0) throw { error: 'userNotFound' };
-                    tUser = await userProvider.details(targetUsers[0].id, ['userRoles', 'userDisciplines']);
+                    tUser = targetUsers[0];
                 } else if (targetId) {
                     tUser = await userProvider.details(targetId, ['userRoles', 'userDisciplines']);
                 } else {

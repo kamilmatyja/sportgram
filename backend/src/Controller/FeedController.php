@@ -105,11 +105,13 @@ class FeedController extends AbstractController
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
         FeedIndexDto $dto,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        FeedDetailsQueryDto $include,
         FeedService $service,
     ): JsonResponse {
         $feeds = $service->index($dto);
 
-        $data = FeedResource::fromEntityCollection($feeds, $dto->include);
+        $data = FeedResource::fromEntityCollection($feeds, $include);
 
         return ApiResponse::elements($data);
     }

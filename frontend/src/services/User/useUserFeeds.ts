@@ -40,19 +40,16 @@ export function useUserFeeds(link?: string) {
             indexDto.limit = list.limit;
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
+            indexDto.include = [
+                'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
+            ];
 
             const data = await feedProvider.index(indexDto);
 
-            const detailedFeeds = await Promise.all(data.map(async (feed) => {
-                return await feedProvider.details(feed.id, [
-                    'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
-                ]);
-            }));
-
-            const updatedUsers = await fetchRelatedUsers(extractUserIds(detailedFeeds), relatedUsers, userProvider);
+            const updatedUsers = await fetchRelatedUsers(extractUserIds(data), relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
-            return detailedFeeds;
+            return data;
         }, []);
     };
 

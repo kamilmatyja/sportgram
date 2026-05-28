@@ -19,14 +19,13 @@ export function useEventInteractions(refreshEvents: () => void) {
     }> => {
         const indexQuery = new EventListIndexQuery();
         indexQuery.limit = 100;
+        indexQuery.include = ['eventListResults', 'eventListSubResults'];
         const lists = await eventProvider.indexList(distId, indexQuery);
 
-        const detailedLists = await Promise.all(lists.map(l => eventProvider.detailsList(l.id, ['eventListResults', 'eventListSubResults'])));
-
-        const userIds = detailedLists.map(l => l.userId);
+        const userIds = lists.map(l => l.userId);
         const usersMap = await fetchRelatedUsers(userIds, {}, userProvider);
 
-        return {lists: detailedLists, users: usersMap};
+        return {lists: lists, users: usersMap};
     };
 
     const handleListStatusSubmit = (listId: string, status: number) => {

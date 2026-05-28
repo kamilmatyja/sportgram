@@ -42,17 +42,18 @@ export function useEventDetails(link?: string) {
             filterDto.link = link;
             const indexDto = new EventIndexQuery();
             indexDto.filter = filterDto;
+            indexDto.include = [
+                'eventDisciplines',
+                'eventDisciplineDistances',
+                'eventDisciplineSubDistances'
+            ];
 
             const events = await eventProvider.index(indexDto);
             if (events.length === 0) {
                 throw { error: 'noRecords' };
             }
 
-            const targetEvent = await eventProvider.details(events[0].id, [
-                'eventDisciplines',
-                'eventDisciplineDistances',
-                'eventDisciplineSubDistances'
-            ]);
+            const targetEvent = events[0];
 
             let targetPage = null;
             const pageFilterDto = new PageFilterQuery();
@@ -60,13 +61,13 @@ export function useEventDetails(link?: string) {
             const pageIndexDto = new PageIndexQuery();
             pageIndexDto.filter = pageFilterDto;
             pageIndexDto.limit = 100;
+            pageIndexDto.include = ['pageParticipants'];
 
             const myPages = await pageProvider.index(pageIndexDto);
 
             for (const p of myPages) {
-                const pDetails = await pageProvider.details(p.id, ['pageParticipants']);
-                if (pDetails.participants?.some(part => part.id === targetEvent.pageParticipantId)) {
-                    targetPage = pDetails;
+                if (p.participants?.some(part => part.id === targetEvent.pageParticipantId)) {
+                    targetPage = p;
                     break;
                 }
             }
@@ -101,17 +102,14 @@ export function useEventDetails(link?: string) {
         fetchLists(async () => {
             const indexQuery = new EventListIndexQuery();
             indexQuery.limit = 100;
+            indexQuery.include = ['eventListResults', 'eventListSubResults'];
             const lists = await eventProvider.indexList(distId, indexQuery);
 
-            const detailedLists = await Promise.all(lists.map(async (l) => {
-                return await eventProvider.detailsList(l.id, ['eventListResults', 'eventListSubResults']);
-            }));
-
-            const userIds = detailedLists.map(l => l.userId);
+            const userIds = lists.map(l => l.userId);
             const updatedUsers = await fetchRelatedUsers(userIds, listUsers, userProvider);
             setListUsers(updatedUsers);
 
-            return detailedLists;
+            return lists;
         }, []);
     };
 

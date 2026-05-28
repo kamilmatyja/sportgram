@@ -35,18 +35,15 @@ export function useUserGoals(link?: string) {
             indexDto.limit = list.limit;
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
+            indexDto.include = ['goalParticipants', 'goalParticipantResults'];
 
             const data = await goalProvider.index(indexDto);
 
-            const detailedGoals = await Promise.all(data.map(async (goal) => {
-                return await goalProvider.details(goal.id, ['goalParticipants', 'goalParticipantResults']);
-            }));
-
-            const userIds = detailedGoals.flatMap(g => g.participants.map(p => p.userId));
+            const userIds = data.flatMap(g => g.participants.map(p => p.userId));
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
-            return detailedGoals;
+            return data;
         }, []);
     };
 

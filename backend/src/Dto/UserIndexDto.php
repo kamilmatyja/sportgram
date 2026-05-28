@@ -13,7 +13,6 @@ use Symfony\Component\Validator\Constraints as Assert;
         new OA\Property(property: 'limit', type: 'integer', example: 10, nullable: true),
         new OA\Property(property: 'sort', type: 'string', example: 'createdAt:desc', nullable: true),
         new OA\Property(property: 'filter', ref: new Model(type: UserFilterDto::class), nullable: true),
-        new OA\Property(property: 'include', ref: new Model(type: UserDetailsQueryDto::class), nullable: true),
     ],
     type: 'object',
 )]
@@ -31,9 +30,6 @@ class UserIndexDto
 
     #[Assert\Valid]
     public UserFilterDto $filter;
-
-    #[Assert\Valid]
-    public ?UserDetailsQueryDto $include = null;
 
     public function __construct()
     {

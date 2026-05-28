@@ -29,16 +29,17 @@ export function useGoalDetails(link?: string) {
             filterDto.link = link;
             const indexDto = new GoalIndexQuery();
             indexDto.filter = filterDto;
+            indexDto.include = [
+                'goalParticipants',
+                'goalParticipantResults'
+            ];
 
             const goals = await goalProvider.index(indexDto);
             if (goals.length === 0) {
                 throw { error: 'noRecords' };
             }
 
-            const targetGoal = await goalProvider.details(goals[0].id, [
-                'goalParticipants',
-                'goalParticipantResults'
-            ]);
+            const targetGoal = goals[0];
 
             const owner = await userProvider.details(targetGoal.userId);
             setOwnerUser(owner);

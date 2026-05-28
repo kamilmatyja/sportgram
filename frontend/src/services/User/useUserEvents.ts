@@ -27,11 +27,9 @@ export function useUserEvents(link?: string) {
             indexDto.limit = list.limit;
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
+            indexDto.include = ['eventDisciplines', 'eventDisciplineDistances', 'eventDisciplineSubDistances'];
 
-            const data = await eventProvider.index(indexDto);
-            return await Promise.all(data.map(async (ev) => {
-                return await eventProvider.details(ev.id, ['eventDisciplines', 'eventDisciplineDistances', 'eventDisciplineSubDistances']);
-            }));
+            return await eventProvider.index(indexDto);
         }, []);
     };
 

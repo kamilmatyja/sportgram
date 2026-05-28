@@ -101,11 +101,13 @@ class TrainingController extends AbstractController
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
         TrainingIndexDto $dto,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        TrainingDetailsQueryDto $include,
         TrainingService $service,
     ): JsonResponse {
         $trainings = $service->index($dto);
 
-        $data = TrainingResource::fromEntityCollection($trainings, $dto->include);
+        $data = TrainingResource::fromEntityCollection($trainings, $include);
 
         return ApiResponse::elements($data);
     }

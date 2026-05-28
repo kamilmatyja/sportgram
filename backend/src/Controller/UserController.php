@@ -119,11 +119,13 @@ class UserController extends AbstractController
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
         UserIndexDto $dto,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        UserDetailsQueryDto $include,
         UserService $service,
     ): JsonResponse {
         $users = $service->index($dto);
 
-        $data = UserResource::fromEntityCollection($users, $dto->include);
+        $data = UserResource::fromEntityCollection($users, $include);
 
         return ApiResponse::elements($data);
     }

@@ -114,11 +114,13 @@ class EventController extends AbstractController
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
         EventIndexDto $dto,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        EventDetailsQueryDto $include,
         EventService $service,
     ): JsonResponse {
         $events = $service->index($dto);
 
-        $data = EventResource::fromEntityCollection($events, $dto->include);
+        $data = EventResource::fromEntityCollection($events, $include);
 
         return ApiResponse::elements($data);
     }
@@ -205,11 +207,13 @@ class EventController extends AbstractController
         Uuid $id,
         #[MapQueryString(validationFailedStatusCode: 400)]
         EventListIndexDto $dto,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        EventListDetailsQueryDto $include,
         EventService $service,
     ): JsonResponse {
         $eventDisciplineDistanceLists = $service->indexList($id, $dto);
 
-        $data = EventDisciplineDistanceListResource::fromEntityCollection($eventDisciplineDistanceLists, $dto->include);
+        $data = EventDisciplineDistanceListResource::fromEntityCollection($eventDisciplineDistanceLists, $include);
 
         return ApiResponse::elements($data);
     }

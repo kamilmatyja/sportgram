@@ -101,11 +101,13 @@ class GoalController extends AbstractController
     final public function index(
         #[MapQueryString(validationFailedStatusCode: 400)]
         GoalIndexDto $dto,
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        GoalDetailsQueryDto $include,
         GoalService $service,
     ): JsonResponse {
         $goals = $service->index($dto);
 
-        $data = GoalResource::fromEntityCollection($goals, $dto->include);
+        $data = GoalResource::fromEntityCollection($goals, $include);
 
         return ApiResponse::elements($data);
     }

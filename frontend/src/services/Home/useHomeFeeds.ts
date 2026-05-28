@@ -51,23 +51,22 @@ export function useHomeFeeds(targetUserId?: string) {
             }
 
             indexDto.filter = filter;
+            indexDto.include = [
+                'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
+            ];
 
             const data = await feedProvider.index(indexDto);
 
-            const detailedFeeds = await Promise.all(data.map(f => feedProvider.details(f.id, [
-                'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
-            ])));
-
             setHasMore(data.length === list.limit);
 
-            const updatedUsers = await fetchRelatedUsers(extractUserIds(detailedFeeds), relatedUsers, userProvider);
+            const updatedUsers = await fetchRelatedUsers(extractUserIds(data), relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
             if (append) {
                 const current = feeds || [];
-                return [...current, ...detailedFeeds.filter(df => !current.some(pf => pf.id === df.id))];
+                return [...current, ...data.filter(df => !current.some(pf => pf.id === df.id))];
             }
-            return detailedFeeds;
+            return data;
         }, feeds || []).finally(() => {
             if (append) setLoadingMore(false);
         });

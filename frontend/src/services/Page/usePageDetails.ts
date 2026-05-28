@@ -61,16 +61,17 @@ export function usePageDetails(link?: string) {
             filterDto.link = link;
             const indexDto = new PageIndexQuery();
             indexDto.filter = filterDto;
+            indexDto.include = [
+                'pageParticipants',
+                'pageFollows'
+            ];
 
             const pagesData = await pageProvider.index(indexDto);
             if (pagesData.length === 0) {
                 throw { error: 'noRecords' };
             }
 
-            const targetPage = await pageProvider.details(pagesData[0].id, [
-                'pageParticipants',
-                'pageFollows'
-            ]);
+            const targetPage = pagesData[0];
 
             const owner = await userProvider.details(targetPage.userId);
             setOwnerUser(owner);

@@ -33,14 +33,11 @@ export function useUserPages(link?: string) {
             indexDto.limit = list.limit;
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
+            indexDto.include = ['pageParticipants', 'pageFollows'];
 
             const data = await pageProvider.index(indexDto);
 
-            const detailedPages = await Promise.all(data.map(async (p) => {
-                return await pageProvider.details(p.id, ['pageParticipants', 'pageFollows']);
-            }));
-
-            const userIds = detailedPages.flatMap(p => [
+            const userIds = data.flatMap(p => [
                 ...p.participants.map(part => part.userId),
                 ...(p.follows?.map(f => f.userId) || [])
             ]);
@@ -48,7 +45,7 @@ export function useUserPages(link?: string) {
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
-            return detailedPages;
+            return data;
         }, []);
     };
 

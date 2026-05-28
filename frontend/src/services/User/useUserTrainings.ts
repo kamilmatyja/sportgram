@@ -33,20 +33,17 @@ export function useUserTrainings(link?: string) {
             indexDto.limit = list.limit;
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
+            indexDto.include = [
+                'trainingDisciplines', 'trainingDisciplineDistances', 'trainingDisciplineSubDistances', 'trainingParticipants'
+            ];
 
             const data = await trainingProvider.index(indexDto);
 
-            const detailedTrainings = await Promise.all(data.map(async (tr) => {
-                return await trainingProvider.details(tr.id, [
-                    'trainingDisciplines', 'trainingDisciplineDistances', 'trainingDisciplineSubDistances', 'trainingParticipants'
-                ]);
-            }));
-
-            const userIds = detailedTrainings.flatMap(t => t.participants.map(p => p.userId));
+            const userIds = data.flatMap(t => t.participants.map(p => p.userId));
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
-            return detailedTrainings;
+            return data;
         }, []);
     };
 
