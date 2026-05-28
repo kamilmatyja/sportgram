@@ -5,4 +5,5 @@ export class PageIndexQuery {
     limit?: number = 10;
     sort?: string = 'createdAt:desc';
     filter?: PageFilterQuery | null = null;
+    include: string[] = [];
 }

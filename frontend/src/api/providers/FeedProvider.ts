@@ -26,7 +26,7 @@ export class FeedProvider {
     }
 
     async index(dto: FeedIndexQuery): Promise<FeedResponse[]> {
-        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/feeds?${params.toString()}`, {method: 'GET'});
     }
 

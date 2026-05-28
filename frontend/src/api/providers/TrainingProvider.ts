@@ -24,7 +24,7 @@ export class TrainingProvider {
     }
 
     async index(dto: TrainingIndexQuery): Promise<TrainingResponse[]> {
-        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/trainings?${params.toString()}`, {method: 'GET'});
     }
 

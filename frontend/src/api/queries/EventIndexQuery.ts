@@ -5,4 +5,5 @@ export class EventIndexQuery {
     limit?: number = 10;
     sort?: string = 'createdAt:desc';
     filter?: EventFilterQuery | null = null;
+    include: string[] = [];
 }

@@ -30,7 +30,7 @@ export class UserProvider {
     }
 
     async index(dto: UserIndexQuery): Promise<UserResponse[]> {
-        const queryString = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
+        const queryString = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/users?${queryString}`, {method: 'GET'});
     }
 

@@ -5,4 +5,5 @@ export class TrainingIndexQuery {
     limit?: number = 10;
     sort?: string = 'createdAt:desc';
     filter?: TrainingFilterQuery | null = null;
+    include: string[] = [];
 }

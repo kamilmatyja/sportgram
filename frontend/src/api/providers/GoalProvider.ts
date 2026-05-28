@@ -24,7 +24,7 @@ export class GoalProvider {
     }
 
     async index(dto: GoalIndexQuery): Promise<GoalResponse[]> {
-        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/goals?${params.toString()}`, {method: 'GET'});
     }
 

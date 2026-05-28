@@ -5,4 +5,5 @@ export class GoalIndexQuery {
     limit?: number = 10;
     sort?: string = 'createdAt:desc';
     filter?: GoalFilterQuery | null = null;
+    include: string[] = [];
 }

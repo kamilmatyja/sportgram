@@ -5,4 +5,5 @@ export class FeedIndexQuery {
     limit?: number = 10;
     sort?: string = 'createdAt:desc';
     filter?: FeedFilterQuery | null = null;
+    include: string[] = [];
 }

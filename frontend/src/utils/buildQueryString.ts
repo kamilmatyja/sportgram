@@ -4,8 +4,9 @@ export function buildQueryString(include: string[] = []): string {
     return params.toString() ? `?${params.toString()}` : '';
 }
 
-export function buildIndexParams(page?: number, limit?: number, sort?: string, filter?: Record<string, any>): URLSearchParams {
+export function buildIndexParams(page?: number, limit?: number, sort?: string, filter?: Record<string, any>, include: string[] = []): URLSearchParams {
     const params = new URLSearchParams();
+
     if (page) params.append('page', page.toString());
     if (limit) params.append('limit', limit.toString());
     if (sort) params.append('sort', sort);
@@ -21,6 +22,11 @@ export function buildIndexParams(page?: number, limit?: number, sort?: string, f
             }
         });
     }
+
+    if (include.length > 0) {
+        include.forEach(inc => params.append('include[]', inc));
+    }
+
     return params;
 }
 

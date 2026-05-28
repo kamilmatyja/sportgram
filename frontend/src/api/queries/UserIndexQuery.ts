@@ -5,4 +5,5 @@ export class UserIndexQuery {
     limit?: number = 10;
     sort?: string = 'createdAt:desc';
     filter?: UserFilterQuery | null = null;
+    include: string[] = [];
 }

@@ -27,7 +27,7 @@ export class EventProvider {
     }
 
     async index(dto: EventIndexQuery): Promise<EventResponse[]> {
-        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/events?${params.toString()}`, {method: 'GET'});
     }
 
@@ -52,7 +52,7 @@ export class EventProvider {
     }
 
     async indexList(id: string, dto: EventListIndexQuery): Promise<EventDisciplineDistanceListResponse[]> {
-        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/event-discipline-distances/${id}?${params.toString()}`, {method: 'GET'});
     }
 

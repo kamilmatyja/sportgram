@@ -26,7 +26,7 @@ export class PageProvider {
     }
 
     async index(dto: PageIndexQuery): Promise<PageResponse[]> {
-        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
+        const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/pages?${params.toString()}`, {method: 'GET'});
     }
 
