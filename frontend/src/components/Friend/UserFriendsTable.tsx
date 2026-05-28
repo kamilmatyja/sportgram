@@ -65,7 +65,11 @@ export const UserFriendsTable: React.FC<UserFriendsTableProps> = ({
                                     </a>
                                 ) : friend.receiverUserId}
                             </td>
-                            <td>{FriendStatusEnum.getOptions(t).find(opt => String(opt.value) === String(friend.status))?.label || friend.status}</td>
+                            <td>
+                                <span className="badge bg-light text-dark border profile-theme-border">
+                                    {FriendStatusEnum.getOptions(t).find(opt => String(opt.value) === String(friend.status))?.label || friend.status}
+                                </span>
+                            </td>
                             <td>{formatDate(friend.createdAt)}</td>
                             <td className="text-end">
                                 {isMyProfile && (

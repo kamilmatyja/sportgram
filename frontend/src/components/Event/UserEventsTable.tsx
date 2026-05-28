@@ -73,7 +73,11 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
                             <td>{ev.location}</td>
                             <td>{formatDate(ev.startedAt)}</td>
                             <td>{formatDate(ev.endedAt)}</td>
-                            <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(ev.status))?.label || ev.status}</td>
+                            <td>
+                                <span className="badge bg-light text-dark border profile-theme-border">
+                                    {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(ev.status))?.label || ev.status}
+                                </span>
+                            </td>
                             <td>
                                 <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(ev.id)}>
                                     {expandedRow === ev.id ? <i className="bi bi-chevron-up"></i> :

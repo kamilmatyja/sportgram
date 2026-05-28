@@ -189,8 +189,7 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
                                                             ) : list.userId}
                                                         </td>
                                                         <td>
-                                                            <span
-                                                                className="badge bg-light text-dark border profile-theme-border">
+                                                            <span className="badge bg-light text-dark border profile-theme-border">
                                                                 {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(list.status))?.label || list.status}
                                                             </span>
                                                         </td>

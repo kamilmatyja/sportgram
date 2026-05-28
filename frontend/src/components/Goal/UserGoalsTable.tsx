@@ -77,7 +77,11 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
                             <td>{DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(goal.discipline))?.label || goal.discipline}</td>
                             <td>{goal.distance}</td>
                             <td>{goal.time ? goal.time : '-'}</td>
-                            <td>{GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}</td>
+                            <td>
+                                <span className="badge bg-light text-dark border profile-theme-border">
+                                    {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}
+                                </span>
+                            </td>
                             <td>{formatDate(goal.startedAt)}</td>
                             <td>{formatDate(goal.endedAt)}</td>
                             <td>

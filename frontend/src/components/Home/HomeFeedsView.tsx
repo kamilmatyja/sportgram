@@ -41,7 +41,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = (props) => {
     return (
         <div className="container mt-4 mb-5 mx-auto feed-container">
             {feeds.length === 0 ? (
-                <div className="text-center text-muted p-5 bg-light rounded border">
+                <div className="text-center text-muted">
                     {t('noFeeds')}
                 </div>
             ) : (

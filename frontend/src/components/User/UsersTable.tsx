@@ -59,7 +59,11 @@ export const UsersTable: React.FC<UsersTableProps> = ({users}) => {
                         <td>{u.email}</td>
                         <td>{GenderEnum.getOptions(t).find(opt => String(opt.value) === String(u.gender))?.label || u.gender}</td>
                         <td>{CountryEnum.getOptions(t).find(opt => String(opt.value) === String(u.country))?.label || u.country}</td>
-                        <td>{UserStatusEnum.getOptions(t).find(opt => String(opt.value) === String(u.status))?.label || u.status}</td>
+                        <td>
+                            <span className="badge bg-light text-dark border profile-theme-border">
+                                {UserStatusEnum.getOptions(t).find(opt => String(opt.value) === String(u.status))?.label || u.status}
+                            </span>
+                        </td>
                         <td>{formatDate(u.createdAt)}</td>
                         <td className="text-end">
                             <a href={`/users/${u.link}`} className="btn btn-sm btn-outline-primary"

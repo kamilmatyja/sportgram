@@ -245,7 +245,7 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                                 <div className="mb-4 border-bottom pb-3">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('eventStatus')}: </strong>
-                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
+                                        <span className="badge bg-light text-dark border profile-theme-border">
                                             {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(currentEvent.status))?.label || currentEvent.status}
                                         </span>
                                         {ElementStatusEnum.getOptions(t)

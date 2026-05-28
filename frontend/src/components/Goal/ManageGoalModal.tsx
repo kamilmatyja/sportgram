@@ -157,7 +157,7 @@ export const ManageGoalModal: React.FC<ManageGoalModalProps> = ({
                                 <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('goalStatus')}: </strong>
-                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
+                                        <span className="badge bg-light text-dark border profile-theme-border">
                                             {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}
                                         </span>
                                         {GoalStatusEnum.getOptions(t)

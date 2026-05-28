@@ -263,7 +263,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                 <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('trainingStatus')}: </strong>
-                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
+                                        <span className="badge bg-light text-dark border profile-theme-border">
                                             {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(currentTraining.status))?.label || currentTraining.status}
                                         </span>
                                         {ElementStatusEnum.getOptions(t)

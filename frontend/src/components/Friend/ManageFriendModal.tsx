@@ -47,7 +47,7 @@ export const ManageFriendModal: React.FC<ManageFriendModalProps> = ({
 
                             <div className="d-flex flex-wrap gap-2 align-items-center">
                                 <strong>{t('status')}: </strong>
-                                <span className="me-2 badge bg-light text-dark border profile-theme-border">
+                                <span className="badge bg-light text-dark border profile-theme-border">
                                     {FriendStatusEnum.getOptions(t).find(opt => String(opt.value) === String(friend.status))?.label || friend.status}
                                 </span>
                                 {FriendStatusEnum.getOptions(t)

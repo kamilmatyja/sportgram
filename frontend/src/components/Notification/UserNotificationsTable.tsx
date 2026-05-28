@@ -54,7 +54,11 @@ export const UserNotificationsTable: React.FC<UserNotificationsTableProps> = ({
                                 notif.text
                             )}
                         </td>
-                        <td>{NotificationStatusEnum.getOptions(t).find(opt => String(opt.value) === String(notif.status))?.label || notif.status}</td>
+                        <td>
+                            <span className="badge bg-light text-dark border profile-theme-border">
+                                {NotificationStatusEnum.getOptions(t).find(opt => String(opt.value) === String(notif.status))?.label || notif.status}
+                            </span>
+                        </td>
                         <td>{formatDate(notif.createdAt)}</td>
                         <td className="text-end">
                             {isMyProfile && (

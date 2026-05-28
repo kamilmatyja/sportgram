@@ -54,7 +54,11 @@ export const UserStoriesTable: React.FC<UserStoriesTableProps> = ({
                             )}
                         </td>
                         <td>{story.text}</td>
-                        <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(story.status))?.label || story.status}</td>
+                        <td>
+                            <span className="badge bg-light text-dark border profile-theme-border">
+                                {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(story.status))?.label || story.status}
+                            </span>
+                        </td>
                         <td>{formatDate(story.createdAt)}</td>
                         <td className="text-end">
                             {(isMyProfile || isAdmin) && (

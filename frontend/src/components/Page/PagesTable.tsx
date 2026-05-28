@@ -55,7 +55,11 @@ export const PagesTable: React.FC<PagesTableProps> = ({pages}) => {
                             </a>
                         </td>
                         <td>{pageObj.link}</td>
-                        <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}</td>
+                        <td>
+                            <span className="badge bg-light text-dark border profile-theme-border">
+                                {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}
+                            </span>
+                        </td>
                         <td>{formatDate(pageObj.createdAt)}</td>
                         <td className="text-end">
                             <a href={`/pages/${pageObj.link}`} className="btn btn-sm btn-outline-primary"

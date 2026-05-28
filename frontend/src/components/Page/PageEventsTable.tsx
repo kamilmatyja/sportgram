@@ -106,7 +106,11 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                                         <td>{ev.location}</td>
                                         <td>{formatDate(ev.startedAt)}</td>
                                         <td>{formatDate(ev.endedAt)}</td>
-                                        <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(ev.status))?.label || ev.status}</td>
+                                        <td>
+                                            <span className="badge bg-light text-dark border profile-theme-border">
+                                                {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(ev.status))?.label || ev.status}
+                                            </span>
+                                        </td>
                                     </tr>
                                 ))}
                                 </tbody>

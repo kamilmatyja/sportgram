@@ -82,7 +82,11 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
                                 </a>
                             </td>
                             <td>{pageObj.link}</td>
-                            <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}</td>
+                            <td>
+                                <span className="badge bg-light text-dark border profile-theme-border">
+                                    {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}
+                                </span>
+                            </td>
                             <td>{formatDate(pageObj.createdAt)}</td>
                             <td>
                                 <button className="btn btn-sm btn-outline-secondary"

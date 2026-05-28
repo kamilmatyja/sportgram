@@ -42,13 +42,22 @@ class FriendRepository extends BaseRepository
     {
         $qb = $this->createQueryBuilder('f');
 
-        $qb->andWhere(
-            $qb->expr()->orX(
-                $qb->expr()->in('f.senderUser', ':userIds'),
-                $qb->expr()->in('f.receiverUser', ':userIds'),
-            ),
-        )
-            ->setParameter('userIds', $dto->filter->userIds);
+        if (count($dto->filter->userIds) > 1) {
+            $qb->andWhere(
+                $qb->expr()->andX(
+                    $qb->expr()->in('f.senderUser', ':userIds'),
+                    $qb->expr()->in('f.receiverUser', ':userIds'),
+                ),
+            );
+        } else {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->in('f.senderUser', ':userIds'),
+                    $qb->expr()->in('f.receiverUser', ':userIds'),
+                ),
+            );
+        }
+        $qb->setParameter('userIds', $dto->filter->userIds);
 
         if ($dto->filter->status) {
             $qb->andWhere('f.status = :status')

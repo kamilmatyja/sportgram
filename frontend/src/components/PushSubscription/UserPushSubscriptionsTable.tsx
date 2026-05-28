@@ -50,7 +50,11 @@ export const UserPushSubscriptionsTable: React.FC<UserPushSubscriptionsTableProp
                     <tr key={sub.id}>
                         <td>{sub.userAgent || '-'}</td>
                         <td>{sub.endpoint}</td>
-                        <td>{PushSubscriptionStatusEnum.getOptions(t).find(opt => String(opt.value) === String(sub.status))?.label || sub.status}</td>
+                        <td>
+                            <span className="badge bg-light text-dark border profile-theme-border">
+                                {PushSubscriptionStatusEnum.getOptions(t).find(opt => String(opt.value) === String(sub.status))?.label || sub.status}
+                            </span>
+                        </td>
                         <td>{formatDate(sub.createdAt)}</td>
                         <td className="text-end">
                             {(isMyProfile || isAdmin) && (

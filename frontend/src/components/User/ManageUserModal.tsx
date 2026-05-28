@@ -237,9 +237,9 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                     <h6 className="mb-3">{t('manageUserStatus')}</h6>
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('userStatus')}: </strong>
-                                        <span className="me-2 badge bg-light text-dark border profile-theme-border">
-                                        {UserStatusEnum.getOptions(t).find(opt => String(opt.value) === String(managedUser.status))?.label || managedUser.status}
-                                    </span>
+                                        <span className="badge bg-light text-dark border profile-theme-border">
+                                            {UserStatusEnum.getOptions(t).find(opt => String(opt.value) === String(managedUser.status))?.label || managedUser.status}
+                                        </span>
                                         {UserStatusEnum.getNanoOptions(t)
                                             .filter(opt => opt.value !== managedUser.status)
                                             .map(opt => (

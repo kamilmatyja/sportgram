@@ -74,7 +74,11 @@ export const UserTrainingsTable: React.FC<UserTrainingsTableProps> = ({
                             <td>{tr.location}</td>
                             <td>{formatDate(tr.startedAt)}</td>
                             <td>{formatDate(tr.endedAt)}</td>
-                            <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(tr.status))?.label || tr.status}</td>
+                            <td>
+                                <span className="badge bg-light text-dark border profile-theme-border">
+                                    {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(tr.status))?.label || tr.status}
+                                </span>
+                            </td>
                             <td>
                                 <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(tr.id)}>
                                     {expandedRow === tr.id ? <i className="bi bi-chevron-up"></i> :

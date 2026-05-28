@@ -74,9 +74,9 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
                             )}
                         </td>
                         <td>
-                                <span className="badge bg-light text-dark border profile-theme-border">
-                                    {ElementStatusEnum.getOptions(t).find(o => o.value === r.status)?.label || r.status}
-                                </span>
+                            <span className="badge bg-light text-dark border profile-theme-border">
+                                {ElementStatusEnum.getOptions(t).find(o => o.value === r.status)?.label || r.status}
+                            </span>
                         </td>
                         <td>{formatDate(r.createdAt)}</td>
                         <td className="text-end">

@@ -85,7 +85,11 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                             </td>
                             <td>{getFeedTypeLabel(feed)}</td>
                             <td>{feed.text}</td>
-                            <td>{ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}</td>
+                            <td>
+                                <span className="badge bg-light text-dark border profile-theme-border">
+                                    {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}
+                                </span>
+                            </td>
                             <td>{formatDate(feed.createdAt)}</td>
                             <td>
                                 <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(feed.id)}>

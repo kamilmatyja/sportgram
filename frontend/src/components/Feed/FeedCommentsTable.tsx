@@ -78,9 +78,9 @@ export const FeedCommentsTable: React.FC<FeedCommentsTableProps> = ({
                             ) : c.text}
                         </td>
                         <td>
-                                <span className="badge bg-light text-dark border profile-theme-border">
-                                    {ElementStatusEnum.getOptions(t).find(o => o.value === c.status)?.label || c.status}
-                                </span>
+                            <span className="badge bg-light text-dark border profile-theme-border">
+                                {ElementStatusEnum.getOptions(t).find(o => o.value === c.status)?.label || c.status}
+                            </span>
                         </td>
                         <td>{formatDate(c.createdAt)}</td>
                         <td className="text-end">
