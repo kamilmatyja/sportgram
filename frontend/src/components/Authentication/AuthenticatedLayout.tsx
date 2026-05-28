@@ -2,21 +2,20 @@ import React, {useEffect, useState} from 'react';
 import {Link, NavLink} from 'react-router-dom';
 import {useAuth} from '../../context/AuthContext';
 import {useTranslation} from '../../context/TranslationContext';
-import {useCheckPermission} from '../../utils/checkPermission';
+import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}) => {
     const {logout} = useAuth();
     const {t} = useTranslation();
     const [isNavOpen, setIsNavOpen] = useState<boolean>(false);
     const [userLink, setUserLink] = useState<string | null>(null);
-    const {getCurrentUser} = useCheckPermission();
+    const {currentUser} = useAppAccess();
 
     useEffect(() => {
-        (async () => {
-            const user = await getCurrentUser();
-            if (user && user.link) setUserLink(user.link);
-        })();
-    }, [getCurrentUser]);
+        if (currentUser && currentUser.link) {
+            setUserLink(currentUser.link);
+        }
+    }, [currentUser]);
 
     const toggleNav = () => setIsNavOpen(!isNavOpen);
     const closeNav = () => setIsNavOpen(false);
