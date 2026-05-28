@@ -233,7 +233,7 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                             )}
 
                             {isAdmin && (
-                                <div className="mb-4">
+                                <div className="mb-2">
                                     <div className="d-flex flex-wrap gap-2 align-items-center">
                                         <strong>{t('status')}: </strong>
                                         <span className="badge bg-light text-dark border profile-theme-border">
