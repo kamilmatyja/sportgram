@@ -71,7 +71,12 @@ export const FeedCard: React.FC<FeedCardProps> = ({
                      className="w-100 object-fit-cover feed-image-max"/>
             )}
 
-            <div className="card-footer bg-white pt-3 pb-2 border-top-0">
+            <div className="card-footer bg-white pt-2 pb-2 border-top-0">
+                <div className="d-flex justify-content-between text-muted small px-2 pb-2">
+                    <span>{feed.reactions?.length || 0} {t('reactions').toLowerCase()}</span>
+                    <span>{feed.comments?.length || 0} {t('comments').toLowerCase()}</span>
+                </div>
+
                 <FeedReactions
                     feed={feed}
                     myReactionType={myReaction?.reaction}

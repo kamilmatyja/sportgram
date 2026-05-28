@@ -116,7 +116,6 @@ npm run dev
 - /statistics (statystyki - tylko dla zalogowanych)
 
 12. Brakuje:
-- licznik polubień
 - dodanie includów do list
 - wysyłka email nie działa
 - wysyłka push wiadomości nie działa

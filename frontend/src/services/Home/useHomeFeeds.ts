@@ -10,7 +10,7 @@ import {useFeedInteractions} from '../Feed/useFeedInteractions';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {useListFilters} from '../../utils/hooks/useListFilters';
 import {useDataFetch} from '../../utils/hooks/useDataFetch';
-import {ElementStatusEnum} from "../../enums/ElementStatusEnum.ts";
+import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 
 export function useHomeFeeds(targetUserId?: string) {
     const accessOptions = targetUserId ? { targetId: targetUserId, requireFriendship: true } : {};
@@ -43,12 +43,14 @@ export function useHomeFeeds(targetUserId?: string) {
             indexDto.limit = list.limit;
             indexDto.sort = list.sort;
 
+            const filter = new FeedFilterQuery();
+            filter.status = ElementStatusEnum.ACTIVE;
+
             if (targetUserId) {
-                const filter = new FeedFilterQuery();
                 filter.userId = targetUserId;
-                filter.status = ElementStatusEnum.ACTIVE;
-                indexDto.filter = filter;
             }
+
+            indexDto.filter = filter;
 
             const data = await feedProvider.index(indexDto);
 

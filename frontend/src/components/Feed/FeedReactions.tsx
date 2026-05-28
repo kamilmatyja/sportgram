@@ -36,6 +36,8 @@ export const FeedReactions: React.FC<FeedReactionsProps> = ({feed, myReactionTyp
         <div className="d-flex flex-wrap gap-1 border-top border-bottom py-2 justify-content-between">
             {FeedReactionEnum.getOptions(t).map(opt => {
                 const isActive = myReactionType === opt.value;
+                const reactionCount = feed.reactions?.filter(r => r.reaction === opt.value).length || 0;
+
                 return (
                     <button
                         key={opt.value}
@@ -45,6 +47,7 @@ export const FeedReactions: React.FC<FeedReactionsProps> = ({feed, myReactionTyp
                     >
                         <i className={`${getReactionIcon(opt.value)} me-1`}></i>
                         <span className="d-none d-sm-inline">{opt.label}</span>
+                        {reactionCount > 0 && <span className="ms-1 small">({reactionCount})</span>}
                     </button>
                 );
             })}
