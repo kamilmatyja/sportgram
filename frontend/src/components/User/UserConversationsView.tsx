@@ -2,8 +2,8 @@ import React from 'react';
 import {useTranslation} from '../../context/TranslationContext';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {ConversationResponse} from '../../api/responses/ConversationResponse';
+import {ConversationActivityResponse} from '../../api/responses/ConversationActivityResponse';
 import {ColorEnum} from '../../enums/ColorEnum';
-import {ProcessedActivity} from '../../services/User/useUserConversations';
 import {UserSubpageHeader} from './UserSubpageHeader';
 import {ConversationActivityList} from '../Conversation/ConversationActivityList';
 import {ChatWindow} from '../Conversation/ChatWindow';
@@ -16,7 +16,7 @@ interface UserConversationsViewProps {
     loading: boolean;
     error: string | null;
 
-    activities: ProcessedActivity[];
+    activities: (ConversationActivityResponse & { otherUser: UserResponse })[];
     totalActivities: number;
     activityPage: number;
     activityLimit: number;

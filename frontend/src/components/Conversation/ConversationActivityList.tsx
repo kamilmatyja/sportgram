@@ -1,12 +1,13 @@
 import React from 'react';
 import {useTranslation} from '../../context/TranslationContext';
-import {ProcessedActivity} from '../../services/User/useUserConversations';
+import {ConversationActivityResponse} from '../../api/responses/ConversationActivityResponse';
+import {UserResponse} from '../../api/responses/UserResponse';
 import {PaginationEnum} from '../../enums/PaginationEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {Pagination} from '../Common/Pagination';
 
 interface ConversationActivityListProps {
-    activities: ProcessedActivity[];
+    activities: (ConversationActivityResponse & { otherUser: UserResponse })[];
     totalActivities: number;
     activityPage: number;
     activityLimit: number;

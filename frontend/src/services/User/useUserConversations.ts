@@ -15,10 +15,6 @@ import {useListFilters} from '../../utils/hooks/useListFilters';
 import {useDataFetch} from '../../utils/hooks/useDataFetch';
 import {useFormState} from '../../utils/hooks/useFormState';
 
-export interface ProcessedActivity extends ConversationActivityResponse {
-    otherUser: UserResponse;
-}
-
 export function useUserConversations(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
@@ -63,17 +59,17 @@ export function useUserConversations(link?: string) {
         }, []);
     };
 
-    const processActivities = (): { paginated: ProcessedActivity[], total: number } => {
+    const processActivities = (): { paginated: (ConversationActivityResponse & { otherUser: UserResponse })[], total: number } => {
         if (!access.currentUser || !rawActivities) return {paginated: [], total: 0};
 
-        const mapped: ProcessedActivity[] = rawActivities
+        const mapped = rawActivities
             .map(act => {
                 const otherId = act.senderUserId === access.currentUser!.id ? act.receiverUserId : act.senderUserId;
                 return {...act, otherUser: relatedUsers[otherId]};
             })
-            .filter(act => act.otherUser !== undefined);
+            .filter(act => act.otherUser !== undefined) as (ConversationActivityResponse & { otherUser: UserResponse })[];
 
-        const uniqueMap = new Map<string, ProcessedActivity>();
+        const uniqueMap = new Map<string, ConversationActivityResponse & { otherUser: UserResponse }>();
         for (const act of mapped) {
             if (!uniqueMap.has(act.otherUser.id)) {
                 uniqueMap.set(act.otherUser.id, act);
