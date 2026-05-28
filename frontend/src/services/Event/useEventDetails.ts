@@ -11,11 +11,10 @@ import {EventIndexQuery} from '../../api/queries/EventIndexQuery';
 import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
 import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
 import {EventListIndexQuery} from '../../api/queries/EventListIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {StatusBody} from '../../api/body/StatusBody';
 import {EventListFilterQuery} from '../../api/queries/EventListFilterQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function useEventDetails(link?: string) {
     const access = useAppAccess();
@@ -126,20 +125,9 @@ export function useEventDetails(link?: string) {
 
             setDistanceLists(detailedLists);
 
-            const userIds = Array.from(new Set(detailedLists.map(l => l.userId)));
-            if (userIds.length > 0) {
-                const uq = new UserIndexQuery();
-                uq.limit = userIds.length;
-                const uf = new UserFilterQuery();
-                uf.userIds = userIds;
-                uq.filter = uf;
-                const users = await userProvider.index(uq);
-                const map: Record<string, UserResponse> = {};
-                users.forEach(u => map[u.id] = u);
-                setListUsers(map);
-            } else {
-                setListUsers({});
-            }
+            const userIds = detailedLists.map(l => l.userId);
+            const updatedUsers = await fetchRelatedUsers(userIds, listUsers, userProvider);
+            setListUsers(updatedUsers);
         } catch (e) {
             console.error(e);
         } finally {

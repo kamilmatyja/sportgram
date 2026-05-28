@@ -5,7 +5,7 @@ import {FeedResponse} from '../../api/responses/FeedResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {FeedFilterQuery} from '../../api/queries/FeedFilterQuery';
 import {FeedIndexQuery} from '../../api/queries/FeedIndexQuery';
-import {fetchRelatedUsersFromIds} from '../../utils/fetchRelatedUsers';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
 export function useUserFeeds(link?: string) {
@@ -25,14 +25,12 @@ export function useUserFeeds(link?: string) {
     const userProvider = new UserProvider();
     const feedProvider = new FeedProvider();
 
-    const extractUserIds = (feedData: FeedResponse[]): Set<string> => {
-        const userIds = new Set<string>();
-        feedData.forEach(feed => {
-            userIds.add(feed.userId);
-            feed.comments?.forEach(c => userIds.add(c.userId));
-            feed.reactions?.forEach(r => userIds.add(r.userId));
-        });
-        return userIds;
+    const extractUserIds = (feedData: FeedResponse[]): string[] => {
+        return feedData.flatMap(feed => [
+            feed.userId,
+            ...(feed.comments?.map(c => c.userId) || []),
+            ...(feed.reactions?.map(r => r.userId) || [])
+        ]);
     };
 
     const fetchFeeds = async (userId: string) => {
@@ -66,7 +64,7 @@ export function useUserFeeds(link?: string) {
 
             setFeeds(detailedFeeds);
 
-            const updatedUsers = await fetchRelatedUsersFromIds(extractUserIds(detailedFeeds), relatedUsers, userProvider);
+            const updatedUsers = await fetchRelatedUsers(extractUserIds(detailedFeeds), relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
         } catch (err: any) {

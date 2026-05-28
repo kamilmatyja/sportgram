@@ -3,11 +3,10 @@ import {GoalProvider} from '../../api/providers/GoalProvider';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {GoalResponse} from '../../api/responses/GoalResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {GoalFilterQuery} from '../../api/queries/GoalFilterQuery';
 import {GoalIndexQuery} from '../../api/queries/GoalIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function useGoalDetails(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -50,20 +49,9 @@ export function useGoalDetails(link?: string) {
             const participantCheck = targetGoal.participants?.some(p => p.userId === access.currentUser!.id) ?? false;
             setIsParticipantOfGoal(participantCheck);
 
-            const userIdsToFetch = Array.from(new Set(targetGoal.participants.map(p => p.userId)));
-            if (userIdsToFetch.length > 0) {
-                const uFilter = new UserFilterQuery();
-                uFilter.userIds = userIdsToFetch;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                uIndexDto.limit = userIdsToFetch.length;
-                const usersData = await userProvider.index(uIndexDto);
-                const usersMap = usersData.reduce((acc, curr) => {
-                    acc[curr.id] = curr;
-                    return acc;
-                }, {} as Record<string, UserResponse>);
-                setRelatedUsers(usersMap);
-            }
+            const userIds = targetGoal.participants.map(p => p.userId);
+            const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
+            setRelatedUsers(updatedUsers);
 
         } catch (err: any) {
             setDataError(err.error);

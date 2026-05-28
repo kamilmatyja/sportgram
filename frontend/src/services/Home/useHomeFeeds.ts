@@ -5,7 +5,7 @@ import {FeedResponse} from '../../api/responses/FeedResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {FeedIndexQuery} from '../../api/queries/FeedIndexQuery';
 import {FeedFilterQuery} from '../../api/queries/FeedFilterQuery';
-import {fetchRelatedUsersFromIds} from '../../utils/fetchRelatedUsers';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 import {useFeedInteractions} from '../Feed/useFeedInteractions';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
 
@@ -25,14 +25,12 @@ export function useHomeFeeds(targetUserId?: string) {
     const feedProvider = new FeedProvider();
     const userProvider = new UserProvider();
 
-    const extractUserIds = (feedData: FeedResponse[]): Set<string> => {
-        const userIds = new Set<string>();
-        feedData.forEach(feed => {
-            userIds.add(feed.userId);
-            feed.comments?.forEach(c => userIds.add(c.userId));
-            feed.reactions?.forEach(r => userIds.add(r.userId));
-        });
-        return userIds;
+    const extractUserIds = (feedData: FeedResponse[]): string[] => {
+        return feedData.flatMap(feed => [
+            feed.userId,
+            ...(feed.comments?.map(c => c.userId) || []),
+            ...(feed.reactions?.map(r => r.userId) || [])
+        ]);
     };
 
     const fetchFeeds = async (pageNumber: number, append: boolean = false) => {
@@ -65,7 +63,7 @@ export function useHomeFeeds(targetUserId?: string) {
                 setFeeds(detailedFeeds);
             }
 
-            const updatedUsers = await fetchRelatedUsersFromIds(extractUserIds(detailedFeeds), relatedUsers, userProvider);
+            const updatedUsers = await fetchRelatedUsers(extractUserIds(detailedFeeds), relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
         } catch (err) {
             console.error(err);
@@ -94,7 +92,7 @@ export function useHomeFeeds(targetUserId?: string) {
                 'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
             ]);
             setFeeds(prev => prev.map(f => f.id === feedId ? updatedFeed : f));
-            const updatedUsers = await fetchRelatedUsersFromIds(extractUserIds([updatedFeed]), relatedUsers, userProvider);
+            const updatedUsers = await fetchRelatedUsers(extractUserIds([updatedFeed]), relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
         } catch (e) {
             console.error(e);

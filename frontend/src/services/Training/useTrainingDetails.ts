@@ -3,11 +3,10 @@ import {TrainingProvider} from '../../api/providers/TrainingProvider';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {TrainingResponse} from '../../api/responses/TrainingResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {TrainingFilterQuery} from '../../api/queries/TrainingFilterQuery';
 import {TrainingIndexQuery} from '../../api/queries/TrainingIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function useTrainingDetails(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -54,20 +53,9 @@ export function useTrainingDetails(link?: string) {
             const participantCheck = targetTraining.participants?.some(p => p.userId === access.currentUser!.id) ?? false;
             setIsParticipantOfTraining(participantCheck);
 
-            const userIdsToFetch = Array.from(new Set(targetTraining.participants.map(p => p.userId)));
-            if (userIdsToFetch.length > 0) {
-                const uFilter = new UserFilterQuery();
-                uFilter.userIds = userIdsToFetch;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                uIndexDto.limit = userIdsToFetch.length;
-                const usersData = await userProvider.index(uIndexDto);
-                const usersMap = usersData.reduce((acc, curr) => {
-                    acc[curr.id] = curr;
-                    return acc;
-                }, {} as Record<string, UserResponse>);
-                setRelatedUsers(usersMap);
-            }
+            const userIds = targetTraining.participants.map(p => p.userId);
+            const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
+            setRelatedUsers(updatedUsers);
 
         } catch (err: any) {
             setDataError(err.error);

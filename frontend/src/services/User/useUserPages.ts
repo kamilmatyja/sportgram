@@ -5,9 +5,8 @@ import {PageResponse} from '../../api/responses/PageResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
 import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function useUserPages(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -53,26 +52,14 @@ export function useUserPages(link?: string) {
 
             setPages(detailedPages);
 
-            const userIdsToFetch = new Set<string>();
-            detailedPages.forEach(p => {
-                p.participants.forEach(part => userIdsToFetch.add(part.userId));
-                p.follows?.forEach(f => userIdsToFetch.add(f.userId));
-            });
+            const userIds = detailedPages.flatMap(p => [
+                ...p.participants.map(part => part.userId),
+                ...(p.follows?.map(f => f.userId) || [])
+            ]);
 
-            const idsArray = Array.from(userIdsToFetch);
-            if (idsArray.length > 0) {
-                const uFilter = new UserFilterQuery();
-                uFilter.userIds = idsArray;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                uIndexDto.limit = idsArray.length;
-                const usersData = await userProvider.index(uIndexDto);
-                const usersMap = usersData.reduce((acc, curr) => {
-                    acc[curr.id] = curr;
-                    return acc;
-                }, {} as Record<string, UserResponse>);
-                setRelatedUsers(usersMap);
-            }
+            const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
+            setRelatedUsers(updatedUsers);
+
         } catch (err: any) {
             setDataError(err.error);
         } finally {

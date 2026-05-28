@@ -7,11 +7,10 @@ import {StatisticFilterQuery} from '../../api/queries/StatisticFilterQuery';
 import {StatisticIndexQuery} from '../../api/queries/StatisticIndexQuery';
 import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {StatisticResponse} from '../../api/responses/StatisticResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function useStatistics() {
     const access = useAppAccess();
@@ -51,13 +50,8 @@ export function useStatistics() {
         const usersList: UserResponse[] = [currentUsr];
 
         if (acceptedFriendIds.size > 0) {
-            const uFilter = new UserFilterQuery();
-            uFilter.userIds = Array.from(acceptedFriendIds);
-            const uIndexDto = new UserIndexQuery();
-            uIndexDto.filter = uFilter;
-            uIndexDto.limit = 100;
-            const acceptedFriendsUsers = await userProvider.index(uIndexDto);
-            usersList.push(...acceptedFriendsUsers);
+            const usersMap = await fetchRelatedUsers(Array.from(acceptedFriendIds), {}, userProvider);
+            usersList.push(...Object.values(usersMap));
         }
 
         setAvailableUsers(usersList);

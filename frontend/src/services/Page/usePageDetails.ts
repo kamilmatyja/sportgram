@@ -7,14 +7,13 @@ import {UserResponse} from '../../api/responses/UserResponse';
 import {EventResponse} from '../../api/responses/EventResponse';
 import {PageFollowResponse} from '../../api/responses/PageFollowResponse';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
 import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
 import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
 import {EventIndexQuery} from '../../api/queries/EventIndexQuery';
 import {PageFollowStatusEnum} from '../../enums/PageFollowStatusEnum';
 import {StatusBody} from '../../api/body/StatusBody';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function usePageDetails(link?: string) {
     const access = useAppAccess();
@@ -103,24 +102,13 @@ export function usePageDetails(link?: string) {
             const existingFollow = targetPage.follows?.find(f => f.userId === access.currentUser!.id) || null;
             setMyFollow(existingFollow);
 
-            const userIdsToFetch = new Set<string>();
-            targetPage.participants.forEach(p => userIdsToFetch.add(p.userId));
-            targetPage.follows?.forEach(f => userIdsToFetch.add(f.userId));
+            const userIds = [
+                ...targetPage.participants.map(p => p.userId),
+                ...(targetPage.follows?.map(f => f.userId) || [])
+            ];
 
-            const idsArray = Array.from(userIdsToFetch);
-            if (idsArray.length > 0) {
-                const uFilter = new UserFilterQuery();
-                uFilter.userIds = idsArray;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                uIndexDto.limit = idsArray.length;
-                const usersData = await userProvider.index(uIndexDto);
-                const usersMap = usersData.reduce((acc, curr) => {
-                    acc[curr.id] = curr;
-                    return acc;
-                }, {} as Record<string, UserResponse>);
-                setRelatedUsers(usersMap);
-            }
+            const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
+            setRelatedUsers(updatedUsers);
 
             await fetchEvents(targetPage.id);
 

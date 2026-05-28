@@ -4,10 +4,9 @@ import {UserProvider} from '../../api/providers/UserProvider';
 import {StatusBody} from '../../api/body/StatusBody';
 import {EventResultBody} from '../../api/body/EventResultBody';
 import {EventListIndexQuery} from '../../api/queries/EventListIndexQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {EventDisciplineDistanceListResponse} from '../../api/responses/EventDisciplineDistanceListResponse';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function useEventInteractions(refreshEvents: () => void) {
     const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -26,18 +25,8 @@ export function useEventInteractions(refreshEvents: () => void) {
             return await eventProvider.detailsList(l.id, ['eventListResults', 'eventListSubResults']);
         }));
 
-        let usersMap: Record<string, UserResponse> = {};
-        const userIds = Array.from(new Set(detailedLists.map(l => l.userId)));
-
-        if (userIds.length > 0) {
-            const uq = new UserIndexQuery();
-            uq.limit = userIds.length;
-            const uf = new UserFilterQuery();
-            uf.userIds = userIds;
-            uq.filter = uf;
-            const users = await userProvider.index(uq);
-            users.forEach(u => usersMap[u.id] = u);
-        }
+        const userIds = detailedLists.map(l => l.userId);
+        const usersMap = await fetchRelatedUsers(userIds, {}, userProvider);
 
         return {lists: detailedLists, users: usersMap};
     };

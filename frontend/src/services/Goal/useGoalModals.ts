@@ -8,11 +8,10 @@ import {GoalResponse} from '../../api/responses/GoalResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {createFormHandler} from '../../utils/formHandler';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function useGoalModals(onSuccess: () => void) {
     const { currentUser } = useAppAccess();
@@ -49,12 +48,8 @@ export function useGoalModals(onSuccess: () => void) {
         });
 
         if (acceptedFriendIds.size > 0) {
-            const uFilter = new UserFilterQuery();
-            uFilter.userIds = Array.from(acceptedFriendIds);
-            const uIndexDto = new UserIndexQuery();
-            uIndexDto.filter = uFilter;
-            const acceptedFriendsUsers = await userProvider.index(uIndexDto);
-            setAvailableUsers(acceptedFriendsUsers);
+            const usersMap = await fetchRelatedUsers(Array.from(acceptedFriendIds), {}, userProvider);
+            setAvailableUsers(Object.values(usersMap));
         } else {
             setAvailableUsers([]);
         }

@@ -11,11 +11,10 @@ import {useAppAccess} from '../../utils/hooks/useAppAccess';
 import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {TrainingDiscipline} from '../../api/body/TrainingDiscipline';
 import {TrainingDistance} from '../../api/body/TrainingDistance';
 import {TrainingSubDistance} from '../../api/body/TrainingSubDistance';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function useTrainingModals(onSuccess: () => void) {
     const { currentUser } = useAppAccess();
@@ -51,13 +50,8 @@ export function useTrainingModals(onSuccess: () => void) {
         });
 
         if (acceptedFriendIds.size > 0) {
-            const uFilter = new UserFilterQuery();
-            uFilter.userIds = Array.from(acceptedFriendIds);
-            const uIndexDto = new UserIndexQuery();
-            uIndexDto.filter = uFilter;
-            uIndexDto.limit = acceptedFriendIds.size;
-            const acceptedFriendsUsers = await userProvider.index(uIndexDto);
-            setAvailableUsers(acceptedFriendsUsers);
+            const usersMap = await fetchRelatedUsers(Array.from(acceptedFriendIds), {}, userProvider);
+            setAvailableUsers(Object.values(usersMap));
         } else {
             setAvailableUsers([]);
         }

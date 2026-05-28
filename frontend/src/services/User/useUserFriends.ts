@@ -2,12 +2,11 @@ import React, {useEffect, useState} from 'react';
 import {FriendProvider} from '../../api/providers/FriendProvider';
 import {UserProvider} from '../../api/providers/UserProvider';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {FriendResponse} from '../../api/responses/FriendResponse';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function useUserFriends(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -43,28 +42,9 @@ export function useUserFriends(link?: string) {
             const data = await friendProvider.index(indexDto);
             setFriends(data);
 
-            const userIdsToFetch = Array.from(
-                new Set(data.flatMap(f => [f.senderUserId, f.receiverUserId]))
-            );
-
-            if (userIdsToFetch.length > 0) {
-                const uFilter = new UserFilterQuery();
-                uFilter.userIds = userIdsToFetch;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                uIndexDto.limit = userIdsToFetch.length;
-
-                const usersData = await userProvider.index(uIndexDto);
-
-                const usersMap = usersData.reduce((acc, curr) => {
-                    acc[curr.id] = curr;
-                    return acc;
-                }, {} as Record<string, UserResponse>);
-
-                setRelatedUsers(usersMap);
-            } else {
-                setRelatedUsers({});
-            }
+            const userIdsToFetch = data.flatMap(f => [f.senderUserId, f.receiverUserId]);
+            const updatedUsers = await fetchRelatedUsers(userIdsToFetch, relatedUsers, userProvider);
+            setRelatedUsers(updatedUsers);
 
         } catch (err: any) {
             setDataError(err.error);

@@ -5,9 +5,8 @@ import {GoalResponse} from '../../api/responses/GoalResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {GoalFilterQuery} from '../../api/queries/GoalFilterQuery';
 import {GoalIndexQuery} from '../../api/queries/GoalIndexQuery';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function useUserGoals(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -55,23 +54,10 @@ export function useUserGoals(link?: string) {
 
             setGoals(detailedGoals);
 
-            const userIdsToFetch = Array.from(
-                new Set(detailedGoals.flatMap(g => g.participants.map(p => p.userId)))
-            );
+            const userIds = detailedGoals.flatMap(g => g.participants.map(p => p.userId));
+            const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
+            setRelatedUsers(updatedUsers);
 
-            if (userIdsToFetch.length > 0) {
-                const uFilter = new UserFilterQuery();
-                uFilter.userIds = userIdsToFetch;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                uIndexDto.limit = userIdsToFetch.length;
-                const usersData = await userProvider.index(uIndexDto);
-                const usersMap = usersData.reduce((acc, curr) => {
-                    acc[curr.id] = curr;
-                    return acc;
-                }, {} as Record<string, UserResponse>);
-                setRelatedUsers(usersMap);
-            }
         } catch (err: any) {
             setDataError(err.error);
         } finally {

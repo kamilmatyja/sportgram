@@ -8,11 +8,10 @@ import {PageResponse} from '../../api/responses/PageResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {createFormHandler} from '../../utils/formHandler';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
 import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export function usePageModals(onSuccess: () => void) {
     const { currentUser } = useAppAccess();
@@ -54,13 +53,8 @@ export function usePageModals(onSuccess: () => void) {
 
         const idsArray = Array.from(userIdsToFetch);
         if (idsArray.length > 0) {
-            const uFilter = new UserFilterQuery();
-            uFilter.userIds = idsArray;
-            const uIndexDto = new UserIndexQuery();
-            uIndexDto.filter = uFilter;
-            uIndexDto.limit = idsArray.length;
-            const fetchedUsers = await userProvider.index(uIndexDto);
-            setAvailableUsers(fetchedUsers);
+            const usersMap = await fetchRelatedUsers(idsArray, {}, userProvider);
+            setAvailableUsers(Object.values(usersMap));
         } else {
             setAvailableUsers([]);
         }

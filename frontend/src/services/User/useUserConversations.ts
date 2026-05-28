@@ -4,14 +4,13 @@ import {UserProvider} from '../../api/providers/UserProvider';
 import {ConversationResponse} from '../../api/responses/ConversationResponse';
 import {ConversationActivityResponse} from '../../api/responses/ConversationActivityResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
 import {ConversationIndexQuery} from '../../api/queries/ConversationIndexQuery';
 import {ConversationFilterQuery} from '../../api/queries/ConversationFilterQuery';
 import {ConversationActivityIndexQuery} from '../../api/queries/ConversationActivityIndexQuery';
 import {ConversationActivityFilterQuery} from '../../api/queries/ConversationActivityFilterQuery';
 import {ConversationBody} from '../../api/body/ConversationBody';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
 
 export interface ProcessedActivity extends ConversationActivityResponse {
     otherUser: UserResponse;
@@ -60,24 +59,10 @@ export function useUserConversations(link?: string) {
             const data = await conversationProvider.indexActivity(indexDto);
             setRawActivities(data);
 
-            const otherUserIds = Array.from(
-                new Set(data.map(act => act.senderUserId === currentUsr.id ? act.receiverUserId : act.senderUserId))
-            );
+            const otherUserIds = data.map(act => act.senderUserId === currentUsr.id ? act.receiverUserId : act.senderUserId);
+            const usersMap = await fetchRelatedUsers(otherUserIds, relatedUsers, userProvider);
+            setRelatedUsers(usersMap);
 
-            if (otherUserIds.length > 0) {
-                const uFilter = new UserFilterQuery();
-                uFilter.userIds = otherUserIds;
-                const uIndexDto = new UserIndexQuery();
-                uIndexDto.filter = uFilter;
-                uIndexDto.limit = otherUserIds.length;
-                const usersData = await userProvider.index(uIndexDto);
-
-                const usersMap = usersData.reduce((acc, curr) => {
-                    acc[curr.id] = curr;
-                    return acc;
-                }, {} as Record<string, UserResponse>);
-                setRelatedUsers(usersMap);
-            }
         } catch (e: any) {
             setDataError(e.error);
         } finally {
