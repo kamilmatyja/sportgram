@@ -114,7 +114,7 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
                 setRoles({ isAdmin, isOrganizer, isParticipant, isMyProfile, isFriend });
 
             } catch (err: any) {
-                setAuthError(err.error || 'error');
+                setAuthError(err.error);
             } finally {
                 setAuthLoading(false);
             }

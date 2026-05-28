@@ -13,7 +13,7 @@ export function useFormState() {
             return await apiCall();
         } catch (err: any) {
             if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error || err.message || 'Unknown error');
+            else setGlobalError(err.error || err.message);
             throw err;
         } finally {
             setLoading(false);

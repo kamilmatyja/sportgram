@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import {useTranslation} from '../../context/TranslationContext';
 import {EventProvider} from '../../api/providers/EventProvider';
 import {PageProvider} from '../../api/providers/PageProvider';
 import {EventBody} from '../../api/body/EventBody';
@@ -17,11 +16,9 @@ import {useModal} from '../../utils/hooks/useModal';
 import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useEventModals(onSuccess: () => void, currentUser: UserResponse | null) {
-    const {t} = useTranslation();
-
     const addModal = useModal();
     const manageModal = useModal<EventResponse>();
-    const { loading, globalError, fieldErrors, wrap, resetErrors, setGlobalError } = useFormState();
+    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
 
     const [myPages, setMyPages] = useState<PageResponse[]>([]);
     const [selectedPageId, setSelectedPageId] = useState<string>('');
@@ -56,7 +53,6 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!selectedPageId) {
-            setGlobalError(t('selectPageForEvent'));
             return;
         }
         wrap(async () => {

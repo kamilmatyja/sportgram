@@ -5,18 +5,16 @@ import {UserUpdateBody} from '../../api/body/UserUpdateBody';
 import {StatusBody} from '../../api/body/StatusBody';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {createFormHandler} from '../../utils/formHandler';
-import {useTranslation} from '../../context/TranslationContext';
 import {useNavigate} from 'react-router-dom';
 import {useModal} from '../../utils/hooks/useModal';
 import {useFormState} from '../../utils/hooks/useFormState';
 
 export function useUserModals(onSuccess: () => void) {
-    const {t} = useTranslation();
     const navigate = useNavigate();
 
     const addModal = useModal();
     const manageModal = useModal<UserResponse>();
-    const { loading, globalError, fieldErrors, wrap, resetErrors, setGlobalError } = useFormState();
+    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
 
     const [addFormData, setAddFormData] = useState(new UserCreateBody('', '', '', 0, 0, '', '', '', 0, 0, 0, 0, '', '', '', [], []));
     const [updateFormData, setUpdateFormData] = useState(new UserUpdateBody('', '', '', 0, 0, '', '', 0, 0, 0, 0, '', '', '', [], null, []));
@@ -32,7 +30,6 @@ export function useUserModals(onSuccess: () => void) {
     const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!addFormData.profilePhoto || !addFormData.backgroundPhoto) {
-            setGlobalError(t('photosRequired'));
             return;
         }
         wrap(async () => {

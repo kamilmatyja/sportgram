@@ -13,7 +13,7 @@ export function useDataFetch<T>() {
             setData(result);
             return result;
         } catch (err: any) {
-            setError(err.error || 'Wystąpił błąd');
+            setError(err.error);
             setData(fallbackData);
             throw err;
         } finally {
