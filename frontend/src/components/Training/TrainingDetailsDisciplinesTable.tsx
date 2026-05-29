@@ -10,20 +10,6 @@ interface TrainingDetailsDisciplinesTableProps {
 export const TrainingDetailsDisciplinesTable: React.FC<TrainingDetailsDisciplinesTableProps> = ({disciplines}) => {
     const {t} = useTranslation();
 
-    if (disciplines.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -36,7 +22,11 @@ export const TrainingDetailsDisciplinesTable: React.FC<TrainingDetailsDiscipline
                 </tr>
                 </thead>
                 <tbody>
-                {disciplines.flatMap(disc =>
+                {disciplines.length === 0 ? (
+                    <tr>
+                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : disciplines.flatMap(disc =>
                     disc.distances.map(dist => (
                         <tr key={dist.id}>
                             <td>{DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(disc.discipline))?.label || disc.discipline}</td>

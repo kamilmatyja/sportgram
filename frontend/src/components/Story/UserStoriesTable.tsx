@@ -16,20 +16,6 @@ export const UserStoriesTable: React.FC<UserStoriesTableProps> = ({
                                                                   }) => {
     const {t} = useTranslation();
 
-    if (stories.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -43,7 +29,11 @@ export const UserStoriesTable: React.FC<UserStoriesTableProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {stories.map(story => (
+                {stories.length === 0 ? (
+                    <tr>
+                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : stories.map(story => (
                     <tr key={story.id}>
                         <td className="text-center align-middle feed-photo-cell">
                             {story.photo ? (

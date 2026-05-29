@@ -19,20 +19,6 @@ export const UserPushSubscriptionsTable: React.FC<UserPushSubscriptionsTableProp
                                                                                       }) => {
     const {t} = useTranslation();
 
-    if (subscriptions.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -46,7 +32,11 @@ export const UserPushSubscriptionsTable: React.FC<UserPushSubscriptionsTableProp
                 </tr>
                 </thead>
                 <tbody>
-                {subscriptions.map(sub => (
+                {subscriptions.length === 0 ? (
+                    <tr>
+                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : subscriptions.map(sub => (
                     <tr key={sub.id}>
                         <td>{sub.userAgent || '-'}</td>
                         <td>{sub.endpoint}</td>

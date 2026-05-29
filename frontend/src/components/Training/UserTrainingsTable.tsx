@@ -34,20 +34,6 @@ export const UserTrainingsTable: React.FC<UserTrainingsTableProps> = ({
         setExpandedRow(prev => prev === id ? null : id);
     };
 
-    if (trainings.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={7} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -63,7 +49,11 @@ export const UserTrainingsTable: React.FC<UserTrainingsTableProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {trainings.map(tr => (
+                {trainings.length === 0 ? (
+                    <tr>
+                        <td colSpan={7} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : trainings.map(tr => (
                     <React.Fragment key={tr.id}>
                         <tr>
                             <td>

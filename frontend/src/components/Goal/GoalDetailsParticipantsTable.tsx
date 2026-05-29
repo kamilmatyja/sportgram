@@ -23,20 +23,6 @@ export const GoalDetailsParticipantsTable: React.FC<GoalDetailsParticipantsTable
                                                                                           }) => {
     const {t} = useTranslation();
 
-    if (participants.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -49,7 +35,11 @@ export const GoalDetailsParticipantsTable: React.FC<GoalDetailsParticipantsTable
                 </tr>
                 </thead>
                 <tbody>
-                {participants.map(p => {
+                {participants.length === 0 ? (
+                    <tr>
+                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : participants.map(p => {
                     const u = relatedUsers[p.userId];
                     const isOwnerOfRecord = currentUser?.id === p.userId;
 

@@ -19,22 +19,6 @@ export const StatisticsTable: React.FC<StatisticsTableProps> = ({data, available
         return u ? `${u.firstName} ${u.lastName}` : id;
     };
 
-    if (data.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={5} className="text-center text-muted">
-                            {t('noRecords')}
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -48,7 +32,11 @@ export const StatisticsTable: React.FC<StatisticsTableProps> = ({data, available
                 </tr>
                 </thead>
                 <tbody>
-                {data.map((stat, idx) => (
+                {data.length === 0 ? (
+                    <tr>
+                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : data.map((stat, idx) => (
                     <tr key={idx}>
                         <td className="fw-bold">
                             <Link to={`/users/${availableUsers.find(au => au.id === stat.userId)?.link || stat.userId}`}

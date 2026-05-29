@@ -36,20 +36,6 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
         setExpandedRow(prev => prev === id ? null : id);
     };
 
-    if (pages.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={7} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -65,7 +51,11 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {pages.map(pageObj => (
+                {pages.length === 0 ? (
+                    <tr>
+                        <td colSpan={7} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : pages.map(pageObj => (
                     <React.Fragment key={pageObj.id}>
                         <tr>
                             <td className="text-center align-middle feed-photo-cell">

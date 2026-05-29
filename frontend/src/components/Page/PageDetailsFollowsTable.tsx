@@ -23,20 +23,6 @@ export const PageDetailsFollowsTable: React.FC<PageDetailsFollowsTableProps> = (
                                                                                 }) => {
     const {t} = useTranslation();
 
-    if (!follows || follows.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -49,7 +35,11 @@ export const PageDetailsFollowsTable: React.FC<PageDetailsFollowsTableProps> = (
                 </tr>
                 </thead>
                 <tbody>
-                {follows.map(f => {
+                {follows.length === 0 ? (
+                    <tr>
+                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : follows.map(f => {
                     const u = relatedUsers[f.userId];
                     const isOwner = currentUser?.id === f.userId;
 

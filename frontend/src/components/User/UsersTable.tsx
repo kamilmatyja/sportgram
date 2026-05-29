@@ -13,20 +13,6 @@ interface UsersTableProps {
 export const UsersTable: React.FC<UsersTableProps> = ({users}) => {
     const {t} = useTranslation();
 
-    if (users.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover">
-                    <tbody>
-                    <tr>
-                        <td colSpan={9} className="text-center">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -44,7 +30,11 @@ export const UsersTable: React.FC<UsersTableProps> = ({users}) => {
                 </tr>
                 </thead>
                 <tbody>
-                {users.map(u => (
+                {users.length === 0 ? (
+                    <tr>
+                        <td colSpan={9} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : users.map(u => (
                     <tr key={u.id}>
                         <td className="text-center">
                             {u.profilePhoto ? (

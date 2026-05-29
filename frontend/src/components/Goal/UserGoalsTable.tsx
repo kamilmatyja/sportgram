@@ -35,20 +35,6 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
         setExpandedRow(prev => prev === id ? null : id);
     };
 
-    if (goals.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={8} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -66,7 +52,11 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {goals.map(goal => (
+                {goals.length === 0 ? (
+                    <tr>
+                        <td colSpan={9} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : goals.map(goal => (
                     <React.Fragment key={goal.id}>
                         <tr>
                             <td>

@@ -12,20 +12,6 @@ interface EventsTableProps {
 export const EventsTable: React.FC<EventsTableProps> = ({events}) => {
     const {t} = useTranslation();
 
-    if (events.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={7} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -41,7 +27,11 @@ export const EventsTable: React.FC<EventsTableProps> = ({events}) => {
                 </tr>
                 </thead>
                 <tbody>
-                {events.map(ev => (
+                {events.length === 0 ? (
+                    <tr>
+                        <td colSpan={7} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : events.map(ev => (
                     <tr key={ev.id}>
                         <td className="text-center align-middle feed-photo-cell">
                             {ev.photo ? (

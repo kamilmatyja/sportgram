@@ -30,10 +30,6 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
     const {t} = useTranslation();
     const [editingId, setEditingId] = useState<string | null>(null);
 
-    if (!reactions || reactions.length === 0) {
-        return <div className="text-muted small p-2">{t('noRecords')}</div>;
-    }
-
     return (
         <table className="table table-sm table-borderless align-middle mb-0">
             <thead className="table-light">
@@ -46,7 +42,11 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
             </tr>
             </thead>
             <tbody>
-            {reactions.map(r => {
+            {reactions.length === 0 ? (
+                <tr>
+                    <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
+                </tr>
+            ) : reactions.map(r => {
                 const author = relatedUsers[r.userId];
                 const isOwner = currentUser?.id === r.userId;
                 const canChangeStatus = isOwner || isAdmin;

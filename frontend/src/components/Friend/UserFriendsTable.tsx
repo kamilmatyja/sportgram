@@ -17,20 +17,6 @@ export const UserFriendsTable: React.FC<UserFriendsTableProps> = ({
                                                                   }) => {
     const {t} = useTranslation();
 
-    if (friends.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -44,7 +30,11 @@ export const UserFriendsTable: React.FC<UserFriendsTableProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {friends.map(friend => {
+                {friends.length === 0 ? (
+                    <tr>
+                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : friends.map(friend => {
                     const sender = relatedUsers[friend.senderUserId];
                     const receiver = relatedUsers[friend.receiverUserId];
 

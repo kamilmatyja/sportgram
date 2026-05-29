@@ -26,10 +26,6 @@ export const TrainingParticipantsTable: React.FC<TrainingParticipantsTableProps>
                                                                                     }) => {
     const {t} = useTranslation();
 
-    if (!participants || participants.length === 0) {
-        return <div className="text-muted small p-2">{t('noRecords')}</div>;
-    }
-
     return (
         <div className="table-responsive">
             <table className="table table-sm table-borderless align-middle mb-0">
@@ -42,7 +38,11 @@ export const TrainingParticipantsTable: React.FC<TrainingParticipantsTableProps>
                 </tr>
                 </thead>
                 <tbody>
-                {participants.map(p => {
+                {participants.length === 0 ? (
+                    <tr>
+                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : participants.map(p => {
                     const u = relatedUsers[p.userId];
                     const isOwner = currentUser?.id === p.userId;
                     const canManage = isMyProfile || isAdmin || isOwner;

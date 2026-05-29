@@ -32,10 +32,6 @@ export const FeedCommentsTable: React.FC<FeedCommentsTableProps> = ({
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editText, setEditText] = useState('');
 
-    if (!comments || comments.length === 0) {
-        return <div className="text-muted small p-2">{t('noRecords')}</div>;
-    }
-
     const startEdit = (id: string, text: string) => {
         setEditingId(id);
         setEditText(text);
@@ -58,7 +54,11 @@ export const FeedCommentsTable: React.FC<FeedCommentsTableProps> = ({
             </tr>
             </thead>
             <tbody>
-            {comments.map(c => {
+            {comments.length === 0 ? (
+                <tr>
+                    <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
+                </tr>
+            ) : comments.map(c => {
                 const author = relatedUsers[c.userId];
                 const isOwner = currentUser?.id === c.userId;
                 const canChangeStatus = isOwner || isAdmin;

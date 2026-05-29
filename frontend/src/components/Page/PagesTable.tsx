@@ -11,20 +11,6 @@ interface PagesTableProps {
 export const PagesTable: React.FC<PagesTableProps> = ({pages}) => {
     const {t} = useTranslation();
 
-    if (pages.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={6} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -39,7 +25,11 @@ export const PagesTable: React.FC<PagesTableProps> = ({pages}) => {
                 </tr>
                 </thead>
                 <tbody>
-                {pages.map(pageObj => (
+                {pages.length === 0 ? (
+                    <tr>
+                        <td colSpan={6} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : pages.map(pageObj => (
                     <tr key={pageObj.id}>
                         <td className="text-center align-middle feed-photo-cell">
                             {pageObj.profilePhoto ? (

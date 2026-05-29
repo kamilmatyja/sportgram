@@ -28,20 +28,6 @@ export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = (
         userId: p.userId
     })));
 
-    if (allResults.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={6} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -56,7 +42,11 @@ export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = (
                 </tr>
                 </thead>
                 <tbody>
-                {allResults.map(r => {
+                {allResults.length === 0 ? (
+                    <tr>
+                        <td colSpan={6} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : allResults.map(r => {
                     const u = relatedUsers[r.userId];
                     const isOwnerOfRecord = currentUser?.id === r.userId;
 

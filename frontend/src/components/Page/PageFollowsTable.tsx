@@ -26,10 +26,6 @@ export const PageFollowsTable: React.FC<PageFollowsTableProps> = ({
                                                                   }) => {
     const {t} = useTranslation();
 
-    if (!follows || follows.length === 0) {
-        return <div className="text-muted small p-2">{t('noRecords')}</div>;
-    }
-
     return (
         <div className="table-responsive">
             <table className="table table-sm table-borderless align-middle mb-0">
@@ -42,7 +38,11 @@ export const PageFollowsTable: React.FC<PageFollowsTableProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {follows.map(f => {
+                {follows.length === 0 ? (
+                    <tr>
+                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : follows.map(f => {
                     const u = relatedUsers[f.userId];
                     const isOwner = currentUser?.id === f.userId;
                     const canManage = isMyProfile || isAdmin || isOwner;

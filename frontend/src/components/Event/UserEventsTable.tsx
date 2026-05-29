@@ -28,20 +28,6 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
         setExpandedRow(prev => prev === id ? null : id);
     };
 
-    if (events.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={8} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -58,7 +44,11 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {events.map(ev => (
+                {events.length === 0 ? (
+                    <tr>
+                        <td colSpan={8} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : events.map(ev => (
                     <React.Fragment key={ev.id}>
                         <tr>
                             <td className="text-center align-middle feed-photo-cell">

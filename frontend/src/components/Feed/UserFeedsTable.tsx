@@ -45,20 +45,6 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
         return t('feedTypes.regular');
     };
 
-    if (feeds.length === 0) {
-        return (
-            <div className="table-responsive-custom">
-                <table className="table table-bordered table-hover align-middle mb-0">
-                    <tbody>
-                    <tr>
-                        <td colSpan={7} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
-
     return (
         <div className="table-responsive-custom">
             <table className="table table-bordered table-hover align-middle mb-0">
@@ -74,7 +60,11 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                 </tr>
                 </thead>
                 <tbody>
-                {feeds.map(feed => (
+                {feeds.length === 0 ? (
+                    <tr>
+                        <td colSpan={7} className="text-center text-muted">{t('noRecords')}</td>
+                    </tr>
+                ) : feeds.map(feed => (
                     <React.Fragment key={feed.id}>
                         <tr>
                             <td className="text-center feed-photo-cell">
