@@ -9,6 +9,7 @@ import {LanguageEnum} from '../../enums/LanguageEnum';
 import {ThemeEnum} from '../../enums/ThemeEnum';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
 import {UserStatusEnum} from '../../enums/UserStatusEnum';
+import {RoleEnum} from '../../enums/RoleEnum';
 
 interface ManageUserModalProps {
     themeColor?: number;
@@ -154,7 +155,7 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                     </div>
 
                                     <div className="row">
-                                        <div className="col-md-4 mb-3">
+                                        <div className="col-md-6 mb-3">
                                             <label className="form-label">{t('language')}</label>
                                             <select name="language" className="form-select"
                                                     value={formData.language || ''}
@@ -164,7 +165,7 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                                                                                value={opt.value}>{opt.label}</option>)}
                                             </select>
                                         </div>
-                                        <div className="col-md-4 mb-3">
+                                        <div className="col-md-6 mb-3">
                                             <label className="form-label">{t('theme')}</label>
                                             <select name="theme" className="form-select" value={formData.theme || ''}
                                                     onChange={handleChange} required>
@@ -173,7 +174,10 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                                                                             value={opt.value}>{opt.label}</option>)}
                                             </select>
                                         </div>
-                                        <div className="col-md-4 mb-3">
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="col-md-6 mb-3">
                                             <label className="form-label">{t('color')}</label>
                                             <select name="color" className="form-select" value={formData.color || ''}
                                                     onChange={handleChange} required>
@@ -181,6 +185,23 @@ export const ManageUserModal: React.FC<ManageUserModalProps> = ({
                                                 {ColorEnum.getOptions(t).map(opt => <option key={opt.value}
                                                                                             value={opt.value}>{opt.label}</option>)}
                                             </select>
+                                        </div>
+                                        <div className="col-md-6 mb-3">
+                                            <label className="form-label">{t('role')}</label>
+                                            <select
+                                                name="roles"
+                                                className={`form-select ${fieldErrors.roles ? 'is-invalid' : ''}`}
+                                                value={Array.isArray(formData.roles) ? formData.roles.map(String) : []}
+                                                onChange={handleChange}
+                                                required
+                                                multiple
+                                            >
+                                                {(isAdmin ? RoleEnum.getOptions(t) : RoleEnum.getNanoOptions(t)).map((opt: any) => (
+                                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                ))}
+                                            </select>
+                                            {fieldErrors.roles &&
+                                                <div className="invalid-feedback d-block">{fieldErrors.roles}</div>}
                                         </div>
                                     </div>
 

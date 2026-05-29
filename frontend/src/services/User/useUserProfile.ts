@@ -1,4 +1,3 @@
-import {useState} from 'react';
 import {FriendProvider} from '../../api/providers/FriendProvider';
 import {FriendBody} from '../../api/body/FriendBody';
 import {StatusBody} from '../../api/body/StatusBody';
@@ -11,14 +10,13 @@ export function useUserProfile(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: false });
     const { actionLoading, runAction } = useActionState();
 
-    const [triggerRefresh, setTriggerRefresh] = useState<number>(0);
     const friendProvider = new FriendProvider();
 
     const handleAddFriend = () => {
         if (!access.targetUser || !access.currentUser) return;
         runAction('add-friend', async () => {
             await friendProvider.create(new FriendBody(access.targetUser!.id));
-            setTriggerRefresh(prev => prev + 1);
+            await access.refreshAccess();
         }).catch((e: any) => {
             if (e.error) alert(t(e.error) !== e.error ? t(e.error) : e.error);
         });
@@ -28,13 +26,15 @@ export function useUserProfile(link?: string) {
         if (!access.friendship || !access.targetUser) return;
         runAction('update-friend', async () => {
             await friendProvider.updateStatus(access.friendship!.id, new StatusBody(newStatus));
-            setTriggerRefresh(prev => prev + 1);
+            await access.refreshAccess();
         }).catch((e: any) => {
             if (e.error) alert(t(e.error) !== e.error ? t(e.error) : e.error);
         });
     };
 
-    const refreshProfile = () => setTriggerRefresh(prev => prev + 1);
+    const refreshProfile = async () => {
+        await access.refreshAccess();
+    };
 
     return {
         ...access,
@@ -42,6 +42,6 @@ export function useUserProfile(link?: string) {
         loading: access.authLoading,
         error: access.authError,
         actionLoading: actionLoading !== null,
-        handleAddFriend, handleUpdateFriendStatus, refreshProfile, triggerRefresh
+        handleAddFriend, handleUpdateFriendStatus, refreshProfile
     };
 }

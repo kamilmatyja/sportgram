@@ -117,8 +117,6 @@ npm run dev
 
 12. Brakuje:
 - wyświetlić listę stories na home / profilu
-- edycja usera z poziomu profilu nie aktualizuje profilu i formularza edycji / zmiana status znajomości też nie odświerza profilu
-- brak roli w edycji użytkownika
 - wysyłka email nie działa
 - wysyłka push wiadomości nie działa
 - kamera na froncie

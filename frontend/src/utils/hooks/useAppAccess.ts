@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { UserProvider } from '../../api/providers/UserProvider';
 import { FriendProvider } from '../../api/providers/FriendProvider';
 import { useAuth } from '../../context/AuthContext';
@@ -36,98 +36,99 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
     const [authLoading, setAuthLoading] = useState<boolean>(true);
     const [authError, setAuthError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const initAccess = async () => {
-            setAuthLoading(true);
-            setAuthError(null);
-            try {
-                if (!signId) throw { error: 'unauthorizedEdit' };
+    const refreshAccess = useCallback(async () => {
+        setAuthLoading(true);
+        setAuthError(null);
+        try {
+            if (!signId) throw { error: 'unauthorizedEdit' };
 
-                const userProvider = new UserProvider();
-                const friendProvider = new FriendProvider();
+            const userProvider = new UserProvider();
+            const friendProvider = new FriendProvider();
 
-                const uFilter = new UserFilterQuery();
-                uFilter.signId = signId;
-                const uIndex = new UserIndexQuery();
-                uIndex.limit = 1;
-                uIndex.filter = uFilter;
-                uIndex.include = ['userRoles', 'userDisciplines'];
+            const uFilter = new UserFilterQuery();
+            uFilter.signId = signId;
+            const uIndex = new UserIndexQuery();
+            uIndex.limit = 1;
+            uIndex.filter = uFilter;
+            uIndex.include = ['userRoles', 'userDisciplines'];
 
-                const currentUserArr = await userProvider.index(uIndex);
-                if (currentUserArr.length === 0) throw { error: 'unauthorizedEdit' };
+            const currentUserArr = await userProvider.index(uIndex);
+            if (currentUserArr.length === 0) throw { error: 'unauthorizedEdit' };
 
-                const currentUsr = currentUserArr[0];
-                setCurrentUser(currentUsr);
+            const currentUsr = currentUserArr[0];
+            setCurrentUser(currentUsr);
 
-                const isAdmin = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
-                const isOrganizer = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ORGANIZER) ?? false;
-                const isParticipant = currentUsr.roles?.some((r: any) => r.role === RoleEnum.PARTICIPANT) ?? false;
+            const isAdmin = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
+            const isOrganizer = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ORGANIZER) ?? false;
+            const isParticipant = currentUsr.roles?.some((r: any) => r.role === RoleEnum.PARTICIPANT) ?? false;
 
-                if (!targetLink && !targetId) {
-                    setRoles({ isAdmin, isOrganizer, isParticipant, isMyProfile: false, isFriend: false });
-                    return;
-                }
-
-                let tUser: UserResponse;
-                if (targetLink) {
-                    const tFilter = new UserFilterQuery();
-                    tFilter.link = targetLink;
-                    const tIndex = new UserIndexQuery();
-                    tIndex.filter = tFilter;
-                    tIndex.include = ['userRoles', 'userDisciplines'];
-                    const targetUsers = await userProvider.index(tIndex);
-                    if (targetUsers.length === 0) throw { error: 'userNotFound' };
-                    tUser = targetUsers[0];
-                } else if (targetId) {
-                    tUser = await userProvider.details(targetId, ['userRoles', 'userDisciplines']);
-                } else {
-                    throw { error: 'userNotFound' };
-                }
-                setTargetUser(tUser);
-
-                const isMyProfile = currentUsr.id === tUser.id;
-                let isFriend = false;
-                let foundFriendship = null;
-
-                if (!isMyProfile) {
-                    const fFilter = new FriendFilterQuery();
-                    fFilter.userIds = [tUser.id, currentUsr.id];
-                    const fIndex = new FriendIndexQuery();
-                    fIndex.filter = fFilter;
-                    const friends = await friendProvider.index(fIndex);
-
-                    foundFriendship = friends.find(f =>
-                        (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
-                        (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
-                    ) || null;
-
-                    isFriend = foundFriendship?.status === FriendStatusEnum.ACCEPTED;
-                    setFriendship(foundFriendship);
-                }
-
-                if (requireOwner && !isMyProfile && !isAdmin) {
-                    throw { error: 'accessDenied' };
-                }
-
-                if (requireFriendship && !isMyProfile && !isAdmin && !isFriend) {
-                    throw { error: 'accessDenied' };
-                }
-
-                setRoles({ isAdmin, isOrganizer, isParticipant, isMyProfile, isFriend });
-
-            } catch (err: any) {
-                setAuthError(err.error);
-            } finally {
-                setAuthLoading(false);
+            if (!targetLink && !targetId) {
+                setRoles({ isAdmin, isOrganizer, isParticipant, isMyProfile: false, isFriend: false });
+                return;
             }
-        };
 
-        initAccess();
+            let tUser: UserResponse;
+            if (targetLink) {
+                const tFilter = new UserFilterQuery();
+                tFilter.link = targetLink;
+                const tIndex = new UserIndexQuery();
+                tIndex.filter = tFilter;
+                tIndex.include = ['userRoles', 'userDisciplines'];
+                const targetUsers = await userProvider.index(tIndex);
+                if (targetUsers.length === 0) throw { error: 'userNotFound' };
+                tUser = targetUsers[0];
+            } else if (targetId) {
+                tUser = await userProvider.details(targetId, ['userRoles', 'userDisciplines']);
+            } else {
+                throw { error: 'userNotFound' };
+            }
+            setTargetUser(tUser);
+
+            const isMyProfile = currentUsr.id === tUser.id;
+            let isFriend = false;
+            let foundFriendship = null;
+
+            if (!isMyProfile) {
+                const fFilter = new FriendFilterQuery();
+                fFilter.userIds = [tUser.id, currentUsr.id];
+                const fIndex = new FriendIndexQuery();
+                fIndex.filter = fFilter;
+                const friends = await friendProvider.index(fIndex);
+
+                foundFriendship = friends.find(f =>
+                    (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
+                    (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
+                ) || null;
+
+                isFriend = foundFriendship?.status === FriendStatusEnum.ACCEPTED;
+                setFriendship(foundFriendship);
+            }
+
+            if (requireOwner && !isMyProfile && !isAdmin) {
+                throw { error: 'accessDenied' };
+            }
+
+            if (requireFriendship && !isMyProfile && !isAdmin && !isFriend) {
+                throw { error: 'accessDenied' };
+            }
+
+            setRoles({ isAdmin, isOrganizer, isParticipant, isMyProfile, isFriend });
+
+        } catch (err: any) {
+            setAuthError(err.error);
+        } finally {
+            setAuthLoading(false);
+        }
     }, [targetLink, targetId, requireFriendship, requireOwner, signId]);
+
+    useEffect(() => {
+        refreshAccess();
+    }, [refreshAccess]);
 
     return {
         currentUser, targetUser, friendship,
         ...roles,
-        authLoading, authError
+        authLoading, authError,
+        refreshAccess
     };
 }
