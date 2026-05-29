@@ -116,7 +116,6 @@ npm run dev
 - /statistics (statystyki - tylko dla zalogowanych)
 
 12. Brakuje:
-- wyświetlić listę stories na home / profilu
 - wysyłka email nie działa
 - wysyłka push wiadomości nie działa
 - kamera na froncie

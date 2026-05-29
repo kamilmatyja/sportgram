@@ -113,7 +113,6 @@ export function useUserConversations(link?: string) {
             indexDto.filter = filter;
             indexDto.page = pageToFetch;
             indexDto.limit = 20;
-            indexDto.sort = 'createdAt:desc';
 
             const data = await conversationProvider.index(indexDto);
             setHasMoreMessages(data.length === 20);

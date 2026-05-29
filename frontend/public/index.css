@@ -143,3 +143,71 @@ html, body {
     overflow-y: auto;
     flex: 1 1 auto;
 }
+
+.stories-carousel {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    scrollbar-width: none;
+}
+
+.stories-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+.story-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    min-width: 72px;
+    max-width: 72px;
+}
+
+.story-avatar-container {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    padding: 3px;
+    margin-bottom: 0.25rem;
+}
+
+.story-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.story-viewer-img {
+    width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
+    background: #000;
+}
+
+.story-viewer-backdrop {
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.story-viewer-header {
+    z-index: 10;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), transparent);
+}
+
+.story-viewer-avatar {
+    width: 40px;
+    height: 40px;
+}
+
+.story-viewer-nav-btn {
+    z-index: 20;
+    width: 48px;
+    height: 48px;
+}
+
+.story-viewer-container {
+    min-height: 300px;
+}
