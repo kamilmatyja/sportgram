@@ -18,6 +18,7 @@ interface UserGoalsViewProps {
     relatedUsers: Record<string, UserResponse>;
     isMyProfile: boolean;
     isAdmin: boolean;
+    isParticipant: boolean;
     loading: boolean;
     error: string | null;
     page: number;
@@ -42,6 +43,7 @@ export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
                                                                 relatedUsers,
                                                                 isMyProfile,
                                                                 isAdmin,
+                                                                isParticipant,
                                                                 loading,
                                                                 error,
                                                                 page,
@@ -76,7 +78,7 @@ export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
                 <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-4">
                         <h4 className="mb-0 text-profile-primary fw-bold">{t('goals')}</h4>
-                        {isMyProfile && (
+                        {(isMyProfile && isParticipant) && (
                             <button className="btn btn-profile-primary" onClick={onAddClick}>
                                 {t('addGoal')}
                             </button>

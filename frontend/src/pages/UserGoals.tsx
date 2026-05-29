@@ -22,6 +22,7 @@ export default function UserGoals() {
                 relatedUsers={goalsService.relatedUsers}
                 isMyProfile={goalsService.isMyProfile}
                 isAdmin={goalsService.isAdmin}
+                isParticipant={goalsService.isParticipant}
                 loading={goalsService.loading}
                 error={goalsService.error}
                 page={goalsService.page}
