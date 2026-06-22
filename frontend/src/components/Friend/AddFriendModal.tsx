@@ -3,6 +3,8 @@ import {useTranslation} from '../../context/TranslationContext';
 import {FriendBody} from '../../api/body/FriendBody';
 import {ColorEnum} from '../../enums/ColorEnum';
 import {UserResponse} from '../../api/responses/UserResponse';
+import {Modal, Form, Button, Alert} from 'react-bootstrap';
+import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
 
 interface AddFriendModalProps {
     user: UserResponse | null;
@@ -33,52 +35,45 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
     if (!show || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
+    const userOptions: SelectOption[] = availableUsers.map(u => ({
+        value: u.id,
+        label: `${u.firstName} ${u.lastName} (${u.link})`
+    }));
 
     return (
-        <>
-            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
-                <div className="modal-dialog modal-lg">
-                    <div className="modal-content">
-                        <form onSubmit={handleSubmit}>
-                            <div className="modal-header">
-                                <h5 className="modal-title">{t('addFriend')}</h5>
-                                <button type="button" className="btn-close" onClick={closeModal}></button>
-                            </div>
-                            <div className="modal-body">
-                                {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
-                                <div className="mb-3">
-                                    <label className="form-label">{t('user')}</label>
-                                    <select
-                                        name="receiverUserId"
-                                        className={`form-select ${fieldErrors.receiverUserId ? 'is-invalid' : ''}`}
-                                        value={formData.receiverUserId}
-                                        onChange={handleChange}
-                                        required
-                                    >
-                                        <option value="">{t('selectUser')}</option>
-                                        {availableUsers.map(u => (
-                                            <option key={u.id} value={u.id}>
-                                                {u.firstName} {u.lastName} ({u.link})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {fieldErrors.receiverUserId &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.receiverUserId}</div>}
-                                </div>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary"
-                                        onClick={closeModal}>{t('cancel')}</button>
-                                <button type="submit" className="btn btn-profile-primary"
-                                        disabled={loading || availableUsers.length === 0}>
-                                    {loading ? t('sending') : t('addFriend')}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div className="modal-backdrop show"></div>
-        </>
+        <Modal show={show} onHide={closeModal} size="lg" className={themeClass} backdrop="static">
+            <Modal.Header closeButton>
+                <Modal.Title>{t('addFriend')}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form id="add-friend-form" onSubmit={handleSubmit}>
+                    {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('user')}</Form.Label>
+                        <Form.Select
+                            name="receiverUserId"
+                            value={formData.receiverUserId}
+                            onChange={handleChange}
+                            isInvalid={!!fieldErrors.receiverUserId}
+                            required
+                        >
+                            <SelectOptions options={userOptions} placeholder={t('selectUser')} />
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                            {fieldErrors.receiverUserId}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={closeModal} disabled={loading}>
+                    {t('cancel')}
+                </Button>
+                <Button variant="profile-primary" type="submit" form="add-friend-form" disabled={loading || availableUsers.length === 0}>
+                    {loading ? t('sending') : t('addFriend')}
+                </Button>
+            </Modal.Footer>
+        </Modal>
     );
 };

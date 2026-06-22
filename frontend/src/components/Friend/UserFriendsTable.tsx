@@ -1,9 +1,13 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {useTranslation} from '../../context/TranslationContext';
 import {FriendResponse} from '../../api/responses/FriendResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Table, Stack, Button, Badge} from 'react-bootstrap';
 
 interface UserFriendsTableProps {
     friends: FriendResponse[];
@@ -18,63 +22,62 @@ export const UserFriendsTable: React.FC<UserFriendsTableProps> = ({
     const {t} = useTranslation();
 
     return (
-        <div className="table-responsive-custom">
-            <table className="table table-bordered table-hover align-middle mb-0">
-                <thead className="table-light">
-                <tr>
-                    <th>{t('sender')}</th>
-                    <th>{t('receiver')}</th>
-                    <th>{t('status')}</th>
-                    <th>{t('createdAt')}</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                {friends.length === 0 ? (
-                    <tr>
-                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                ) : friends.map(friend => {
-                    const sender = relatedUsers[friend.senderUserId];
-                    const receiver = relatedUsers[friend.receiverUserId];
+        <Stack className="table-responsive-custom">
+            <Table bordered hover className="align-middle mb-0">
+                <TableHead className="table-light">
+                    <TableRow>
+                        <TableHeaderCell>{t('sender')}</TableHeaderCell>
+                        <TableHeaderCell>{t('receiver')}</TableHeaderCell>
+                        <TableHeaderCell>{t('status')}</TableHeaderCell>
+                        <TableHeaderCell>{t('createdAt')}</TableHeaderCell>
+                        <TableHeaderCell />
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {friends.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={5} className="text-center text-muted">{t('noRecords')}</TableCell>
+                        </TableRow>
+                    ) : friends.map(friend => {
+                        const sender = relatedUsers[friend.senderUserId];
+                        const receiver = relatedUsers[friend.receiverUserId];
 
-                    return (
-                        <tr key={friend.id}>
-                            <td>
-                                {sender ? (
-                                    <a href={`/users/${sender.link}`} className="btn btn-link p-0 text-decoration-none">
-                                        {sender.firstName} {sender.lastName}
-                                    </a>
-                                ) : friend.senderUserId}
-                            </td>
-                            <td>
-                                {receiver ? (
-                                    <a href={`/users/${receiver.link}`}
-                                       className="btn btn-link p-0 text-decoration-none">
-                                        {receiver.firstName} {receiver.lastName}
-                                    </a>
-                                ) : friend.receiverUserId}
-                            </td>
-                            <td>
-                                <span className="badge bg-light text-dark border profile-theme-border">
-                                    {FriendStatusEnum.getOptions(t).find(opt => String(opt.value) === String(friend.status))?.label || friend.status}
-                                </span>
-                            </td>
-                            <td>{formatDate(friend.createdAt)}</td>
-                            <td className="text-end">
-                                {isMyProfile && (
-                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
-                                            onClick={() => onManageClick(friend)}>
-                                        <i className="bi bi-gear" aria-hidden="true"></i>
-                                        <span className="visually-hidden">{t('manage')}</span>
-                                    </button>
-                                )}
-                            </td>
-                        </tr>
-                    );
-                })}
-                </tbody>
-            </table>
-        </div>
+                        return (
+                            <TableRow key={friend.id}>
+                                <TableCell>
+                                    {sender ? (
+                                        <Link to={`/users/${sender.link}`} className="btn btn-link p-0 text-decoration-none">
+                                            {sender.firstName} {sender.lastName}
+                                        </Link>
+                                    ) : friend.senderUserId}
+                                </TableCell>
+                                <TableCell>
+                                    {receiver ? (
+                                        <Link to={`/users/${receiver.link}`} className="btn btn-link p-0 text-decoration-none">
+                                            {receiver.firstName} {receiver.lastName}
+                                        </Link>
+                                    ) : friend.receiverUserId}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge bg="light" text="dark" className="border profile-theme-border">
+                                        {FriendStatusEnum.getOptions(t).find(opt => String(opt.value) === String(friend.status))?.label || friend.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>{formatDate(friend.createdAt)}</TableCell>
+                                <TableCell className="text-end">
+                                    {isMyProfile && (
+                                        <Button variant="profile-outline-primary" size="sm" title={t('manage')}
+                                                onClick={() => onManageClick(friend)}>
+                                            <BootstrapIcon name="gear" aria-hidden="true" />
+                                            <Stack as="span" className="visually-hidden">{t('manage')}</Stack>
+                                        </Button>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        );
+                    })}
+                </TableBody>
+            </Table>
+        </Stack>
     );
 };

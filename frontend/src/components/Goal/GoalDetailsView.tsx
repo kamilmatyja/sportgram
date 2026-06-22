@@ -9,6 +9,8 @@ import {formatDate} from '../../utils/dateFormat';
 import {UserSubpageHeader} from '../User/UserSubpageHeader';
 import {GoalDetailsParticipantsTable} from './GoalDetailsParticipantsTable';
 import {GoalDetailsResultsTable} from './GoalDetailsResultsTable';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import {Container, Card, Stack, Row, Col, Badge, Button, Spinner, Alert} from 'react-bootstrap';
 
 interface GoalDetailsViewProps {
     goal: GoalResponse | null;
@@ -37,73 +39,80 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                                                                 }) => {
     const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center">
-        <div className="spinner-border text-profile-primary"/>
-    </div>;
-    if (error || !goal || !ownerUser) return <div
-        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (loading) return (
+        <Container className="mt-5 text-center">
+            <Spinner animation="border" className="text-profile-primary" />
+        </Container>
+    );
+
+    if (error || !goal || !ownerUser) return (
+        <Container className="mt-5">
+            <Alert variant="danger">{error ? t(error) : t('error')}</Alert>
+        </Container>
+    );
 
     const themeClass = ColorEnum.getClass(ownerUser.color);
     const canManage = isMyProfile || isAdmin;
 
     return (
-        <div className={`container mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={ownerUser}/>
+        <Container className={`mt-4 mb-5 ${themeClass}`}>
+            <UserSubpageHeader user={ownerUser} />
 
-            <div className="card shadow-sm mb-4">
-                <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h4 className="mb-3 text-profile-primary fw-bold"><i
-                            className="bi bi-info-circle me-2"></i>{t('basicInformation')}</h4>
+            <Card className="shadow-sm mb-4">
+                <Card.Body>
+                    <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+                        <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">
+                            <BootstrapIcon name="info-circle" className="me-2" />{t('basicInformation')}
+                        </Card.Title>
                         {canManage && (
-                            <button className="btn btn-profile-primary" onClick={() => onManageClick(goal)}>
-                                <i className="bi bi-gear me-1"></i> {t('manage')}
-                            </button>
+                            <Button variant="profile-primary" onClick={() => onManageClick(goal)}>
+                                <BootstrapIcon name="gear" className="me-1" /> {t('manage')}
+                            </Button>
                         )}
-                    </div>
+                    </Stack>
 
-                    <div className="mb-2">
-                        <p className="mb-4 text-break fs-5">{goal.text}</p>
+                    <Stack className="mb-2">
+                        <Card.Text className="mb-4 text-break fs-5">{goal.text}</Card.Text>
 
-                        <div className="row g-3">
-                            <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('discipline')}</div>
-                                <div className="fw-medium">
+                        <Row className="g-3">
+                            <Col sm={6} md={4}>
+                                <Stack className="text-muted small mb-1">{t('discipline')}</Stack>
+                                <Stack className="fw-medium">
                                     {DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(goal.discipline))?.label || goal.discipline}
-                                </div>
-                            </div>
-                            <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('distance')}</div>
-                                <div className="fw-medium">{goal.distance} [m]</div>
-                            </div>
-                            <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('time')}</div>
-                                <div className="fw-medium">{goal.time ? `${goal.time} [s]` : '-'}</div>
-                            </div>
-                            <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('startedAt')}</div>
-                                <div className="fw-medium">{goal.startedAt ? formatDate(goal.startedAt) : '-'}</div>
-                            </div>
-                            <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('endedAt')}</div>
-                                <div className="fw-medium">{goal.endedAt ? formatDate(goal.endedAt) : '-'}</div>
-                            </div>
-                            <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('status')}</div>
-                                <div>
-                                    <span className="badge bg-light text-dark border profile-theme-border">
+                                </Stack>
+                            </Col>
+                            <Col sm={6} md={4}>
+                                <Stack className="text-muted small mb-1">{t('distance')}</Stack>
+                                <Stack className="fw-medium">{goal.distance} [m]</Stack>
+                            </Col>
+                            <Col sm={6} md={4}>
+                                <Stack className="text-muted small mb-1">{t('time')}</Stack>
+                                <Stack className="fw-medium">{goal.time ? `${goal.time} [s]` : '-'}</Stack>
+                            </Col>
+                            <Col sm={6} md={4}>
+                                <Stack className="text-muted small mb-1">{t('startedAt')}</Stack>
+                                <Stack className="fw-medium">{goal.startedAt ? formatDate(goal.startedAt) : '-'}</Stack>
+                            </Col>
+                            <Col sm={6} md={4}>
+                                <Stack className="text-muted small mb-1">{t('endedAt')}</Stack>
+                                <Stack className="fw-medium">{goal.endedAt ? formatDate(goal.endedAt) : '-'}</Stack>
+                            </Col>
+                            <Col sm={6} md={4}>
+                                <Stack className="text-muted small mb-1">{t('status')}</Stack>
+                                <Stack>
+                                    <Badge bg="light" text="dark" className="border profile-theme-border">
                                         {GoalStatusEnum.getOptions(t).find(opt => String(opt.value) === String(goal.status))?.label || goal.status}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                                    </Badge>
+                                </Stack>
+                            </Col>
+                        </Row>
+                    </Stack>
+                </Card.Body>
+            </Card>
 
-            <div className="card shadow-sm mb-4">
-                <div className="card-body">
-                    <h5 className="mb-3 text-profile-primary fw-bold">{t('participants')}</h5>
+            <Card className="shadow-sm mb-4">
+                <Card.Body>
+                    <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">{t('participants')}</Card.Title>
                     <GoalDetailsParticipantsTable
                         participants={goal.participants || []}
                         relatedUsers={relatedUsers}
@@ -111,12 +120,12 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                         actionLoading={interactions.actionLoading}
                         onUpdateStatus={interactions.handleParticipantStatusSubmit}
                     />
-                </div>
-            </div>
+                </Card.Body>
+            </Card>
 
-            <div className="card shadow-sm">
-                <div className="card-body">
-                    <h5 className="mb-3 text-profile-primary fw-bold">{t('results')}</h5>
+            <Card className="shadow-sm">
+                <Card.Body>
+                    <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">{t('results')}</Card.Title>
                     <GoalDetailsResultsTable
                         participants={goal.participants || []}
                         relatedUsers={relatedUsers}
@@ -124,8 +133,8 @@ export const GoalDetailsView: React.FC<GoalDetailsViewProps> = ({
                         actionLoading={interactions.actionLoading}
                         onUpdateStatus={interactions.handleResultStatusSubmit}
                     />
-                </div>
-            </div>
-        </div>
+                </Card.Body>
+            </Card>
+        </Container>
     );
 };

@@ -1,8 +1,12 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {useTranslation} from '../../context/TranslationContext';
 import {GoalParticipantResponse} from '../../api/responses/GoalParticipantResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {SaveStatusEnum} from '../../enums/SaveStatusEnum';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Table, Stack, Button, Badge} from 'react-bootstrap';
 
 interface GoalParticipantsTableProps {
     participants: GoalParticipantResponse[];
@@ -24,91 +28,98 @@ export const GoalParticipantsTable: React.FC<GoalParticipantsTableProps> = ({
     const {t} = useTranslation();
 
     return (
-        <div className="table-responsive">
-            <table className="table table-sm table-borderless align-middle mb-0">
-                <thead className="table-light">
-                <tr>
-                    <th>{t('user')}</th>
-                    <th>{t('status')}</th>
-                    <th>{t('manage')}</th>
-                </tr>
-                </thead>
-                <tbody>
-                {participants.length === 0 ? (
-                    <tr>
-                        <td colSpan={3} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                ) : participants.map(p => {
-                    const u = relatedUsers[p.userId];
-                    const isOwner = currentUser?.id === p.userId;
+        <Stack className="table-responsive">
+            <Table size="sm" borderless className="align-middle mb-0">
+                <TableHead className="table-light">
+                    <TableRow>
+                        <TableHeaderCell>{t('user')}</TableHeaderCell>
+                        <TableHeaderCell>{t('status')}</TableHeaderCell>
+                        <TableHeaderCell>{t('manage')}</TableHeaderCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {participants.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={3} className="text-center text-muted">{t('noRecords')}</TableCell>
+                        </TableRow>
+                    ) : participants.map(p => {
+                        const u = relatedUsers[p.userId];
+                        const isOwner = currentUser?.id === p.userId;
 
-                    return (
-                        <React.Fragment key={p.id}>
-                            <tr>
-                                <td>
-                                    {u ? (
-                                        <a href={`/users/${u.link}`} className="text-decoration-none">
-                                            {u.firstName} {u.lastName}
-                                        </a>
-                                    ) : p.userId}
-                                </td>
-                                <td>
-                                    <span className="badge bg-light text-dark border profile-theme-border">
-                                        {SaveStatusEnum.getOptions(t).find(opt => opt.value === p.status)?.label || p.status}
-                                    </span>
-                                </td>
-                                <td>
-                                    {isOwner && SaveStatusEnum.getOptions(t)
-                                        .filter(opt => opt.value !== p.status && opt.value !== SaveStatusEnum.PENDING)
-                                        .map(opt => (
-                                            <button
-                                                key={opt.value}
-                                                className="btn btn-xs btn-profile-outline-primary py-0 px-2 me-1"
-                                                disabled={actionLoading === p.id}
-                                                onClick={() => onUpdateParticipantStatus(p.id, opt.value)}
-                                            >
-                                                {opt.label}
-                                            </button>
-                                        ))}
-                                </td>
-                            </tr>
-                            {p.results && p.results.length > 0 && p.results.map(r => (
-                                <tr key={r.id} className="bg-light border-bottom">
-                                    <td className="text-end text-muted small pe-3">
-                                        <i className="bi bi-arrow-return-right me-1"></i>
-                                        {t('results')}:
-                                    </td>
-                                    <td colSpan={2}>
-                                        <div className="d-flex align-items-center gap-3">
-                                            <span
-                                                className="small"><strong>{t('distance')}:</strong> {r.distance}m</span>
-                                            <span className="small"><strong>{t('time')}:</strong> {r.time}s</span>
-                                            <span className="badge bg-light text-dark border ms-2">
-                                                {SaveStatusEnum.getOptions(t).find(opt => opt.value === r.status)?.label || r.status}
-                                            </span>
-                                            <div className="ms-auto">
-                                                {isOwner && SaveStatusEnum.getOptions(t)
-                                                    .filter(opt => opt.value !== r.status && opt.value !== SaveStatusEnum.PENDING)
-                                                    .map(opt => (
-                                                        <button
-                                                            key={opt.value}
-                                                            className="btn btn-xs btn-outline-secondary py-0 px-2 ms-1"
-                                                            disabled={actionLoading === r.id}
-                                                            onClick={() => onUpdateResultStatus(r.id, opt.value)}
-                                                        >
-                                                            {opt.label}
-                                                        </button>
-                                                    ))}
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </React.Fragment>
-                    );
-                })}
-                </tbody>
-            </table>
-        </div>
+                        return (
+                            <React.Fragment key={p.id}>
+                                <TableRow>
+                                    <TableCell>
+                                        {u ? (
+                                            <Link to={`/users/${u.link}`} className="text-decoration-none">
+                                                {u.firstName} {u.lastName}
+                                            </Link>
+                                        ) : p.userId}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge bg="light" text="dark" className="border profile-theme-border">
+                                            {SaveStatusEnum.getOptions(t).find(opt => opt.value === p.status)?.label || p.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        {isOwner && SaveStatusEnum.getOptions(t)
+                                            .filter(opt => opt.value !== p.status && opt.value !== SaveStatusEnum.PENDING)
+                                            .map(opt => (
+                                                <Button
+                                                    key={opt.value}
+                                                    variant="profile-outline-primary"
+                                                    size="sm"
+                                                    className="btn-xs py-0 px-2 me-1"
+                                                    disabled={actionLoading === p.id}
+                                                    onClick={() => onUpdateParticipantStatus(p.id, opt.value)}
+                                                >
+                                                    {opt.label}
+                                                </Button>
+                                            ))}
+                                    </TableCell>
+                                </TableRow>
+                                {p.results && p.results.length > 0 && p.results.map(r => (
+                                    <TableRow key={r.id} className="bg-light border-bottom">
+                                        <TableCell className="text-end text-muted small pe-3">
+                                            <BootstrapIcon name="arrow-return-right" className="me-1" />
+                                            {t('results')}:
+                                        </TableCell>
+                                        <TableCell colSpan={2}>
+                                            <Stack direction="horizontal" gap={3} className="align-items-center">
+                                                <Stack as="span" className="small">
+                                                    <Stack as="strong">{t('distance')}:</Stack> {r.distance}m
+                                                </Stack>
+                                                <Stack as="span" className="small">
+                                                    <Stack as="strong">{t('time')}:</Stack> {r.time}s
+                                                </Stack>
+                                                <Badge bg="light" text="dark" className="border ms-2">
+                                                    {SaveStatusEnum.getOptions(t).find(opt => opt.value === r.status)?.label || r.status}
+                                                </Badge>
+                                                <Stack className="ms-auto" direction="horizontal">
+                                                    {isOwner && SaveStatusEnum.getOptions(t)
+                                                        .filter(opt => opt.value !== r.status && opt.value !== SaveStatusEnum.PENDING)
+                                                        .map(opt => (
+                                                            <Button
+                                                                key={opt.value}
+                                                                variant="outline-secondary"
+                                                                size="sm"
+                                                                className="btn-xs py-0 px-2 ms-1"
+                                                                disabled={actionLoading === r.id}
+                                                                onClick={() => onUpdateResultStatus(r.id, opt.value)}
+                                                            >
+                                                                {opt.label}
+                                                            </Button>
+                                                        ))}
+                                                </Stack>
+                                            </Stack>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </React.Fragment>
+                        );
+                    })}
+                </TableBody>
+            </Table>
+        </Stack>
     );
 };

@@ -5,6 +5,8 @@ import {GoalParticipantResponse} from '../../api/responses/GoalParticipantRespon
 import {UserResponse} from '../../api/responses/UserResponse';
 import {SaveStatusEnum} from '../../enums/SaveStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Table, Stack, Button, Badge} from 'react-bootstrap';
 
 interface GoalDetailsParticipantsTableProps {
     participants: GoalParticipantResponse[];
@@ -24,61 +26,63 @@ export const GoalDetailsParticipantsTable: React.FC<GoalDetailsParticipantsTable
     const {t} = useTranslation();
 
     return (
-        <div className="table-responsive-custom">
-            <table className="table table-bordered table-hover align-middle mb-0">
-                <thead className="table-light">
-                <tr>
-                    <th>{t('user')}</th>
-                    <th>{t('status')}</th>
-                    <th>{t('createdAt')}</th>
-                    <th className="text-end">{t('manage')}</th>
-                </tr>
-                </thead>
-                <tbody>
-                {participants.length === 0 ? (
-                    <tr>
-                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                ) : participants.map(p => {
-                    const u = relatedUsers[p.userId];
-                    const isOwnerOfRecord = currentUser?.id === p.userId;
+        <Stack className="table-responsive-custom">
+            <Table bordered hover className="align-middle mb-0">
+                <TableHead className="table-light">
+                    <TableRow>
+                        <TableHeaderCell>{t('user')}</TableHeaderCell>
+                        <TableHeaderCell>{t('status')}</TableHeaderCell>
+                        <TableHeaderCell>{t('createdAt')}</TableHeaderCell>
+                        <TableHeaderCell className="text-end">{t('manage')}</TableHeaderCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {participants.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={4} className="text-center text-muted">{t('noRecords')}</TableCell>
+                        </TableRow>
+                    ) : participants.map(p => {
+                        const u = relatedUsers[p.userId];
+                        const isOwnerOfRecord = currentUser?.id === p.userId;
 
-                    return (
-                        <tr key={p.id}>
-                            <td>
-                                {u ? (
-                                    <Link to={`/users/${u.link}`} className="text-decoration-none">
-                                        {u.firstName} {u.lastName}
-                                    </Link>
-                                ) : p.userId}
-                            </td>
-                            <td>
-                                <span className="badge bg-light text-dark border profile-theme-border">
-                                    {SaveStatusEnum.getOptions(t).find(opt => opt.value === p.status)?.label || p.status}
-                                </span>
-                            </td>
-                            <td>{formatDate(p.createdAt)}</td>
-                            <td className="text-end">
-                                <div className="d-flex justify-content-end gap-1 flex-wrap">
-                                    {isOwnerOfRecord && SaveStatusEnum.getOptions(t)
-                                        .filter(opt => opt.value !== p.status && opt.value !== SaveStatusEnum.PENDING)
-                                        .map(opt => (
-                                            <button
-                                                key={opt.value}
-                                                className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                disabled={actionLoading === p.id}
-                                                onClick={() => onUpdateStatus(p.id, opt.value)}
-                                            >
-                                                {opt.label}
-                                            </button>
-                                        ))}
-                                </div>
-                            </td>
-                        </tr>
-                    );
-                })}
-                </tbody>
-            </table>
-        </div>
+                        return (
+                            <TableRow key={p.id}>
+                                <TableCell>
+                                    {u ? (
+                                        <Link to={`/users/${u.link}`} className="text-decoration-none">
+                                            {u.firstName} {u.lastName}
+                                        </Link>
+                                    ) : p.userId}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge bg="light" text="dark" className="border profile-theme-border">
+                                        {SaveStatusEnum.getOptions(t).find(opt => opt.value === p.status)?.label || p.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>{formatDate(p.createdAt)}</TableCell>
+                                <TableCell className="text-end">
+                                    <Stack direction="horizontal" className="justify-content-end gap-1 flex-wrap">
+                                        {isOwnerOfRecord && SaveStatusEnum.getOptions(t)
+                                            .filter(opt => opt.value !== p.status && opt.value !== SaveStatusEnum.PENDING)
+                                            .map(opt => (
+                                                <Button
+                                                    key={opt.value}
+                                                    variant="profile-outline-primary"
+                                                    size="sm"
+                                                    className="btn-xs py-0 px-2"
+                                                    disabled={actionLoading === p.id}
+                                                    onClick={() => onUpdateStatus(p.id, opt.value)}
+                                                >
+                                                    {opt.label}
+                                                </Button>
+                                            ))}
+                                    </Stack>
+                                </TableCell>
+                            </TableRow>
+                        );
+                    })}
+                </TableBody>
+            </Table>
+        </Stack>
     );
 };
