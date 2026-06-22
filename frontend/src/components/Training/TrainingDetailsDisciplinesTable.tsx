@@ -2,6 +2,9 @@ import React from 'react';
 import {useTranslation} from '../../context/TranslationContext';
 import {TrainingDisciplineResponse} from '../../api/responses/TrainingDisciplineResponse';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Table, Stack} from 'react-bootstrap';
+import BootstrapIcon from '../Common/BootstrapIcon';
 
 interface TrainingDetailsDisciplinesTableProps {
     disciplines: TrainingDisciplineResponse[];
@@ -11,46 +14,46 @@ export const TrainingDetailsDisciplinesTable: React.FC<TrainingDetailsDiscipline
     const {t} = useTranslation();
 
     return (
-        <div className="table-responsive-custom">
-            <table className="table table-bordered table-hover align-middle mb-0">
-                <thead className="table-light">
-                <tr>
-                    <th>{t('discipline')}</th>
-                    <th>{t('distance')} [m]</th>
-                    <th>{t('timeSeconds')}</th>
-                    <th>{t('subDistances')}</th>
-                </tr>
-                </thead>
-                <tbody>
-                {disciplines.length === 0 ? (
-                    <tr>
-                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                ) : disciplines.flatMap(disc =>
-                    disc.distances.map(dist => (
-                        <tr key={dist.id}>
-                            <td>{DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(disc.discipline))?.label || disc.discipline}</td>
-                            <td>{dist.distance}</td>
-                            <td>{dist.time}</td>
-                            <td>
-                                {dist.subDistances && dist.subDistances.length > 0 ? (
-                                    <ul className="mb-0 list-unstyled small">
-                                        {dist.subDistances.map(sub => (
-                                            <li key={sub.id}>
-                                                <i className="bi bi-dash me-1"></i>
-                                                {sub.subDistance} [m] - {sub.time} [s]
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <span className="text-muted">-</span>
-                                )}
-                            </td>
-                        </tr>
-                    ))
-                )}
-                </tbody>
-            </table>
-        </div>
+        <Stack className="table-responsive-custom">
+            <Table bordered hover className="align-middle mb-0">
+                <TableHead className="table-light">
+                    <TableRow>
+                        <TableHeaderCell>{t('discipline')}</TableHeaderCell>
+                        <TableHeaderCell>{t('distance')} [m]</TableHeaderCell>
+                        <TableHeaderCell>{t('timeSeconds')}</TableHeaderCell>
+                        <TableHeaderCell>{t('subDistances')}</TableHeaderCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {disciplines.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={4} className="text-center text-muted">{t('noRecords')}</TableCell>
+                        </TableRow>
+                    ) : disciplines.flatMap(disc =>
+                        disc.distances.map(dist => (
+                            <TableRow key={dist.id}>
+                                <TableCell>{DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(disc.discipline))?.label || disc.discipline}</TableCell>
+                                <TableCell>{dist.distance}</TableCell>
+                                <TableCell>{dist.time}</TableCell>
+                                <TableCell>
+                                    {dist.subDistances && dist.subDistances.length > 0 ? (
+                                        <Stack as="ul" className="mb-0 list-unstyled small">
+                                            {dist.subDistances.map(sub => (
+                                                <Stack as="li" key={sub.id}>
+                                                    <BootstrapIcon name="dash" className="me-1" />
+                                                    {sub.subDistance} [m] - {sub.time} [s]
+                                                </Stack>
+                                            ))}
+                                        </Stack>
+                                    ) : (
+                                        <Stack as="span" className="text-muted">-</Stack>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    )}
+                </TableBody>
+            </Table>
+        </Stack>
     );
 };

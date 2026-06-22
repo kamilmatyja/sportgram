@@ -8,6 +8,8 @@ import {formatDate} from '../../utils/dateFormat';
 import {UserSubpageHeader} from '../User/UserSubpageHeader';
 import {TrainingDetailsParticipantsTable} from './TrainingDetailsParticipantsTable';
 import {TrainingDetailsDisciplinesTable} from './TrainingDetailsDisciplinesTable';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import {Container, Card, Stack, Row, Col, Badge, Button, Spinner, Alert} from 'react-bootstrap';
 
 interface TrainingDetailsViewProps {
     training: TrainingResponse | null;
@@ -36,66 +38,73 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
                                                                         }) => {
     const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center">
-        <div className="spinner-border text-profile-primary"/>
-    </div>;
-    if (error || !training || !ownerUser) return <div
-        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (loading) return (
+        <Container className="mt-5 text-center">
+            <Spinner animation="border" className="text-profile-primary" />
+        </Container>
+    );
+
+    if (error || !training || !ownerUser) return (
+        <Container className="mt-5">
+            <Alert variant="danger">{error ? t(error) : t('error')}</Alert>
+        </Container>
+    );
 
     const themeClass = ColorEnum.getClass(ownerUser.color);
     const canManage = isMyProfile || isAdmin;
 
     return (
-        <div className={`container mt-4 mb-5 ${themeClass}`}>
+        <Container className={`mt-4 mb-5 ${themeClass}`}>
             <UserSubpageHeader user={ownerUser}/>
 
-            <div className="card shadow-sm mb-4">
-                <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h4 className="mb-3 text-profile-primary fw-bold"><i
-                            className="bi bi-info-circle me-2"></i>{t('basicInformation')}</h4>
+            <Card className="shadow-sm mb-4">
+                <Card.Body>
+                    <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+                        <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">
+                            <BootstrapIcon name="info-circle" className="me-2" />{t('basicInformation')}
+                        </Card.Title>
                         {canManage && (
-                            <button className="btn btn-profile-primary" onClick={() => onManageClick(training)}>
-                                <i className="bi bi-gear me-1"></i> {t('manage')}
-                            </button>
+                            <Button variant="profile-primary" onClick={() => onManageClick(training)}>
+                                <BootstrapIcon name="gear" className="me-1" /> {t('manage')}
+                            </Button>
                         )}
-                    </div>
+                    </Stack>
 
-                    <div className="mb-2">
-                        <h4 className="mb-3 fw-bold">{training.title}</h4>
-                        <p className="mb-4 text-break fs-5">{training.description}</p>
+                    <Stack className="mb-2">
+                        <Card.Title as="h4" className="mb-3 fw-bold">{training.title}</Card.Title>
+                        <Card.Text className="mb-4 text-break fs-5">{training.description}</Card.Text>
 
-                        <div className="row g-3">
-                            <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('location')}</div>
-                                <div className="fw-medium">
-                                    <i className="bi bi-geo-alt me-1"></i> {training.location}
-                                </div>
-                            </div>
-                            <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('startedAt')}</div>
-                                <div className="fw-medium">{formatDate(training.startedAt)}</div>
-                            </div>
-                            <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('endedAt')}</div>
-                                <div className="fw-medium">{formatDate(training.endedAt)}</div>
-                            </div>
-                            <div className="col-sm-6 col-md-4">
-                                <div className="text-muted small mb-1">{t('status')}</div>
-                                <div>
-                                    <span className="badge bg-light text-dark border profile-theme-border">
+                        <Row className="g-3">
+                            <Col sm={6} md={4}>
+                                <Stack className="text-muted small mb-1">{t('location')}</Stack>
+                                <Stack className="fw-medium" direction="horizontal">
+                                    <BootstrapIcon name="geo-alt" className="me-1" /> {training.location}
+                                </Stack>
+                            </Col>
+                            <Col sm={6} md={4}>
+                                <Stack className="text-muted small mb-1">{t('startedAt')}</Stack>
+                                <Stack className="fw-medium">{formatDate(training.startedAt)}</Stack>
+                            </Col>
+                            <Col sm={6} md={4}>
+                                <Stack className="text-muted small mb-1">{t('endedAt')}</Stack>
+                                <Stack className="fw-medium">{formatDate(training.endedAt)}</Stack>
+                            </Col>
+                            <Col sm={6} md={4}>
+                                <Stack className="text-muted small mb-1">{t('status')}</Stack>
+                                <Stack>
+                                    <Badge bg="light" text="dark" className="border profile-theme-border">
                                         {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(training.status))?.label || training.status}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                                    </Badge>
+                                </Stack>
+                            </Col>
+                        </Row>
+                    </Stack>
+                </Card.Body>
+            </Card>
 
-            <div className="card shadow-sm mb-4">
-                <div className="card-body">
-                    <h5 className="mb-3 text-profile-primary fw-bold">{t('participants')}</h5>
+            <Card className="shadow-sm mb-4">
+                <Card.Body>
+                    <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">{t('participants')}</Card.Title>
                     <TrainingDetailsParticipantsTable
                         participants={training.participants || []}
                         relatedUsers={relatedUsers}
@@ -103,15 +112,15 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
                         actionLoading={interactions.actionLoading}
                         onUpdateStatus={interactions.handleParticipantStatusSubmit}
                     />
-                </div>
-            </div>
+                </Card.Body>
+            </Card>
 
-            <div className="card shadow-sm">
-                <div className="card-body">
-                    <h5 className="mb-3 text-profile-primary fw-bold">{t('results')}</h5>
+            <Card className="shadow-sm">
+                <Card.Body>
+                    <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">{t('results')}</Card.Title>
                     <TrainingDetailsDisciplinesTable disciplines={training.disciplines || []}/>
-                </div>
-            </div>
-        </div>
+                </Card.Body>
+            </Card>
+        </Container>
     );
 };
