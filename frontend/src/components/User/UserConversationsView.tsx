@@ -7,6 +7,7 @@ import {ColorEnum} from '../../enums/ColorEnum';
 import {UserSubpageHeader} from './UserSubpageHeader';
 import {ConversationActivityList} from '../Conversation/ConversationActivityList';
 import {ChatWindow} from '../Conversation/ChatWindow';
+import {Container, Spinner, Alert} from 'react-bootstrap';
 
 interface UserConversationsViewProps {
     targetUser: UserResponse | null;
@@ -71,24 +72,26 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
 
     if (loading && !targetUser && !isMyProfile) {
         return (
-            <div className="container mt-5 text-center">
-                <div className="spinner-border text-profile-primary"/>
-            </div>
+            <Container className="mt-5 text-center">
+                <Spinner animation="border" className="text-profile-primary" />
+            </Container>
         );
     }
 
     if (error || !targetUser || !currentUser) {
         return (
-            <div className="container mt-5 alert alert-danger">
-                {error ? t(error) : t('userNotFound')}
-            </div>
+            <Container className="mt-5">
+                <Alert variant="danger">
+                    {error ? t(error) : t('userNotFound')}
+                </Alert>
+            </Container>
         );
     }
 
     const themeClass = ColorEnum.getClass(targetUser.color);
 
     return (
-        <div className={`container mt-4 mb-5 ${themeClass}`}>
+        <Container className={`mt-4 mb-5 ${themeClass}`}>
             <UserSubpageHeader user={targetUser}/>
 
             {isMyProfile ? (
@@ -122,6 +125,6 @@ export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
                     canSendMessages={canSendMessages}
                 />
             )}
-        </div>
+        </Container>
     );
 };

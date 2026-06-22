@@ -3,7 +3,7 @@ import {useTranslation} from '../../context/TranslationContext';
 import {EventResponse} from '../../api/responses/EventResponse';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Card, Table, Button, Stack} from 'react-bootstrap';
 
 interface EventDisciplinesTableProps {

@@ -7,7 +7,7 @@ import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {PageParticipantsTable} from './PageParticipantsTable';
 import {PageFollowsTable} from './PageFollowsTable';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Table, Stack, Image, Badge, Button, Card, Nav} from 'react-bootstrap';
 import BootstrapIcon from '../Common/BootstrapIcon';
 

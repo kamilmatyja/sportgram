@@ -6,7 +6,7 @@ import {UserResponse} from '../../api/responses/UserResponse';
 import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {TrainingParticipantsTable} from './TrainingParticipantsTable';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Stack, Table, Badge, Button, Card} from 'react-bootstrap';
 import BootstrapIcon from '../Common/BootstrapIcon';
 

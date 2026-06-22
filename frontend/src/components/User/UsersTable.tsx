@@ -5,6 +5,10 @@ import {GenderEnum} from '../../enums/GenderEnum';
 import {CountryEnum} from '../../enums/CountryEnum';
 import {UserStatusEnum} from '../../enums/UserStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
+import {Link} from 'react-router-dom';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {Stack, Table, Image, Badge} from 'react-bootstrap';
+import BootstrapIcon from '../Common/BootstrapIcon';
 
 interface UsersTableProps {
     users: UserResponse[];
@@ -14,58 +18,58 @@ export const UsersTable: React.FC<UsersTableProps> = ({users}) => {
     const {t} = useTranslation();
 
     return (
-        <div className="table-responsive-custom">
-            <table className="table table-bordered table-hover align-middle mb-0">
-                <thead className="table-light">
-                <tr>
-                    <th>{t('photo')}</th>
-                    <th>{t('firstName')}</th>
-                    <th>{t('lastName')}</th>
-                    <th>{t('email')}</th>
-                    <th>{t('gender')}</th>
-                    <th>{t('country')}</th>
-                    <th>{t('status')}</th>
-                    <th>{t('createdAt')}</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                {users.length === 0 ? (
-                    <tr>
-                        <td colSpan={9} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                ) : users.map(u => (
-                    <tr key={u.id}>
-                        <td className="text-center">
-                            {u.profilePhoto ? (
-                                <img src={`data:image/webp;base64,${u.profilePhoto}`} alt="avatar"
-                                     className="rounded-circle object-fit-cover feed-avatar-32"/>
-                            ) : (
-                                <span className="text-muted">-</span>
-                            )}
-                        </td>
-                        <td>{u.firstName}</td>
-                        <td>{u.lastName}</td>
-                        <td>{u.email}</td>
-                        <td>{GenderEnum.getOptions(t).find(opt => String(opt.value) === String(u.gender))?.label || u.gender}</td>
-                        <td>{CountryEnum.getOptions(t).find(opt => String(opt.value) === String(u.country))?.label || u.country}</td>
-                        <td>
-                            <span className="badge bg-light text-dark border profile-theme-border">
-                                {UserStatusEnum.getOptions(t).find(opt => String(opt.value) === String(u.status))?.label || u.status}
-                            </span>
-                        </td>
-                        <td>{formatDate(u.createdAt)}</td>
-                        <td className="text-end">
-                            <a href={`/users/${u.link}`} className="btn btn-sm btn-outline-primary"
-                               title={t('profile')}>
-                                <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-                                <span className="visually-hidden">{t('profile')}</span>
-                            </a>
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        </div>
+        <Stack className="table-responsive-custom">
+            <Table bordered hover className="align-middle mb-0">
+                <TableHead className="table-light">
+                    <TableRow>
+                        <TableHeaderCell>{t('photo')}</TableHeaderCell>
+                        <TableHeaderCell>{t('firstName')}</TableHeaderCell>
+                        <TableHeaderCell>{t('lastName')}</TableHeaderCell>
+                        <TableHeaderCell>{t('email')}</TableHeaderCell>
+                        <TableHeaderCell>{t('gender')}</TableHeaderCell>
+                        <TableHeaderCell>{t('country')}</TableHeaderCell>
+                        <TableHeaderCell>{t('status')}</TableHeaderCell>
+                        <TableHeaderCell>{t('createdAt')}</TableHeaderCell>
+                        <TableHeaderCell></TableHeaderCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {users.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={9} className="text-center text-muted">{t('noRecords')}</TableCell>
+                        </TableRow>
+                    ) : users.map(u => (
+                        <TableRow key={u.id}>
+                            <TableCell className="text-center">
+                                {u.profilePhoto ? (
+                                    <Image src={`data:image/webp;base64,${u.profilePhoto}`} alt="avatar"
+                                           className="rounded-circle object-fit-cover feed-avatar-32"/>
+                                ) : (
+                                    <Stack as="span" className="text-muted">-</Stack>
+                                )}
+                            </TableCell>
+                            <TableCell>{u.firstName}</TableCell>
+                            <TableCell>{u.lastName}</TableCell>
+                            <TableCell>{u.email}</TableCell>
+                            <TableCell>{GenderEnum.getOptions(t).find(opt => String(opt.value) === String(u.gender))?.label || u.gender}</TableCell>
+                            <TableCell>{CountryEnum.getOptions(t).find(opt => String(opt.value) === String(u.country))?.label || u.country}</TableCell>
+                            <TableCell>
+                                <Badge bg="light" text="dark" className="border profile-theme-border">
+                                    {UserStatusEnum.getOptions(t).find(opt => String(opt.value) === String(u.status))?.label || u.status}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>{formatDate(u.createdAt)}</TableCell>
+                            <TableCell className="text-end">
+                                <Link to={`/users/${u.link}`} className="btn btn-sm btn-outline-primary"
+                                      title={t('profile')}>
+                                    <BootstrapIcon name="box-arrow-in-right" aria-hidden="true" />
+                                    <Stack as="span" className="visually-hidden">{t('profile')}</Stack>
+                                </Link>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </Stack>
     );
 };

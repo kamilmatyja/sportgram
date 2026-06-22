@@ -7,7 +7,7 @@ import {formatDate} from '../../utils/dateFormat';
 import {FeedCommentsTable} from './FeedCommentsTable';
 import {FeedReactionsTable} from './FeedReactionsTable';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Stack, Table, Image, Badge, Button, Card, Nav} from 'react-bootstrap';
 
 interface UserFeedsTableProps {

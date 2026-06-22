@@ -5,7 +5,7 @@ import {PageParticipantResponse} from '../../api/responses/PageParticipantRespon
 import {UserResponse} from '../../api/responses/UserResponse';
 import {SaveStatusEnum} from '../../enums/SaveStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Table, Stack, Button, Badge} from 'react-bootstrap';
 
 interface PageDetailsParticipantsTableProps {

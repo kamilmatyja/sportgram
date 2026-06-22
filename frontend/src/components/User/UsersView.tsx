@@ -5,6 +5,7 @@ import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
 import {UsersFilterBar} from './UsersFilterBar';
 import {UsersTable} from './UsersTable';
 import {Pagination} from '../Common/Pagination';
+import {Container, Stack, Button, Spinner, Alert} from 'react-bootstrap';
 
 interface UsersViewProps {
     filters: UserFilterQuery;
@@ -30,15 +31,15 @@ export default function UsersView({
     const {t} = useTranslation();
 
     return (
-        <div className="container mt-5 mb-5">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2 className="mb-0 profile-theme-text fw-bold">{t('userTitle')}</h2>
+        <Container className="mt-5 mb-5">
+            <Stack direction="horizontal" className="justify-content-between align-items-center mb-3">
+                <Stack as="h2" className="mb-0 profile-theme-text fw-bold">{t('userTitle')}</Stack>
                 {isAdmin && (
-                    <button className="btn btn-profile-primary" onClick={onAddUserClick}>
+                    <Button variant="profile-primary" onClick={onAddUserClick}>
                         {t('addUser')}
-                    </button>
+                    </Button>
                 )}
-            </div>
+            </Stack>
 
             <UsersFilterBar
                 filters={filters}
@@ -50,24 +51,24 @@ export default function UsersView({
             />
 
             {loading ? (
-                <div className="text-center">
-                    <div className="spinner-border text-profile-primary"/>
-                </div>
+                <Stack className="text-center">
+                    <Spinner animation="border" className="text-profile-primary"/>
+                </Stack>
             ) : error ? (
-                <div className="alert alert-danger">{error}</div>
+                <Alert variant="danger">{error}</Alert>
             ) : (
                 <>
                     <UsersTable users={users}/>
-                    <div className="mt-3">
+                    <Stack className="mt-3">
                         <Pagination
                             page={page}
                             hasMore={users.length >= limit}
                             onPrevPage={onPrevPage}
                             onNextPage={onNextPage}
                         />
-                    </div>
+                    </Stack>
                 </>
             )}
-        </div>
+        </Container>
     );
 }

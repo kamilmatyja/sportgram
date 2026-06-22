@@ -2,7 +2,7 @@ import React from 'react';
 import {useTranslation} from '../../context/TranslationContext';
 import {TrainingDisciplineResponse} from '../../api/responses/TrainingDisciplineResponse';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Table, Stack} from 'react-bootstrap';
 import BootstrapIcon from '../Common/BootstrapIcon';
 

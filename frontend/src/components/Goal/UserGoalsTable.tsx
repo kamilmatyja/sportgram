@@ -8,7 +8,7 @@ import {GoalStatusEnum} from '../../enums/GoalStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {GoalParticipantsTable} from './GoalParticipantsTable';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Table, Stack, Button, Badge, Card} from 'react-bootstrap';
 
 interface UserGoalsTableProps {

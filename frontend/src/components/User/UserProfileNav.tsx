@@ -1,6 +1,9 @@
 import React from 'react';
 import {useTranslation} from '../../context/TranslationContext';
 import {UserResponse} from '../../api/responses/UserResponse';
+import {Link} from 'react-router-dom';
+import {Stack} from 'react-bootstrap';
+import BootstrapIcon from '../Common/BootstrapIcon';
 
 interface UserProfileNavProps {
     user: UserResponse;
@@ -11,42 +14,41 @@ export const UserProfileNav: React.FC<UserProfileNavProps> = ({user, isMyProfile
     const {t} = useTranslation();
 
     return (
-        <div className="d-flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2">
-            <a href={`/users/${user.link}/feeds`} className="btn btn-profile-outline-primary text-nowrap">
-                <i className="bi bi-list-ul me-1"></i> {t('feeds')}
-            </a>
-            <a href={`/users/${user.link}/stories`} className="btn btn-profile-outline-primary text-nowrap">
-                <i className="bi bi-collection-play me-1"></i> {t('stories')}
-            </a>
-            <a href={`/users/${user.link}/friends`} className="btn btn-profile-outline-primary text-nowrap">
-                <i className="bi bi-people me-1"></i> {t('friend')}
-            </a>
-            <a href={`/users/${user.link}/goals`} className="btn btn-profile-outline-primary text-nowrap">
-                <i className="bi bi-bullseye me-1"></i> {t('goals')}
-            </a>
-            <a href={`/users/${user.link}/pages`} className="btn btn-profile-outline-primary text-nowrap">
-                <i className="bi bi-file-earmark-text me-1"></i> {t('pages')}
-            </a>
-            <a href={`/users/${user.link}/events`} className="btn btn-profile-outline-primary text-nowrap">
-                <i className="bi bi-calendar-event me-1"></i> {t('events')}
-            </a>
-            <a href={`/users/${user.link}/trainings`} className="btn btn-profile-outline-primary text-nowrap">
-                <i className="bi bi-bar-chart-steps me-1"></i> {t('trainings')}
-            </a>
+        <Stack direction="horizontal" className="flex-wrap gap-2 mb-4 overflow-x-auto pb-2">
+            <Link to={`/users/${user.link}/feeds`} className="btn btn-profile-outline-primary text-nowrap">
+                <BootstrapIcon name="list-ul" className="me-1" /> {t('feeds')}
+            </Link>
+            <Link to={`/users/${user.link}/stories`} className="btn btn-profile-outline-primary text-nowrap">
+                <BootstrapIcon name="collection-play" className="me-1" /> {t('stories')}
+            </Link>
+            <Link to={`/users/${user.link}/friends`} className="btn btn-profile-outline-primary text-nowrap">
+                <BootstrapIcon name="people" className="me-1" /> {t('friend')}
+            </Link>
+            <Link to={`/users/${user.link}/goals`} className="btn btn-profile-outline-primary text-nowrap">
+                <BootstrapIcon name="bullseye" className="me-1" /> {t('goals')}
+            </Link>
+            <Link to={`/users/${user.link}/pages`} className="btn btn-profile-outline-primary text-nowrap">
+                <BootstrapIcon name="file-earmark-text" className="me-1" /> {t('pages')}
+            </Link>
+            <Link to={`/users/${user.link}/events`} className="btn btn-profile-outline-primary text-nowrap">
+                <BootstrapIcon name="calendar-event" className="me-1" /> {t('events')}
+            </Link>
+            <Link to={`/users/${user.link}/trainings`} className="btn btn-profile-outline-primary text-nowrap">
+                <BootstrapIcon name="bar-chart-steps" className="me-1" /> {t('trainings')}
+            </Link>
             {isMyProfile && (
-                <a href={`/users/${user.link}/notifications`} className="btn btn-profile-outline-primary text-nowrap">
-                    <i className="bi bi-bell me-1"></i> {t('notifications')}
-                </a>
+                <Link to={`/users/${user.link}/notifications`} className="btn btn-profile-outline-primary text-nowrap">
+                    <BootstrapIcon name="bell" className="me-1" /> {t('notifications')}
+                </Link>
             )}
             {isMyProfile && (
-                <a href={`/users/${user.link}/push-subscriptions`}
-                   className="btn btn-profile-outline-primary text-nowrap">
-                    <i className="bi bi-broadcast-pin me-1"></i> {t('pushSubscriptions')}
-                </a>
+                <Link to={`/users/${user.link}/push-subscriptions`} className="btn btn-profile-outline-primary text-nowrap">
+                    <BootstrapIcon name="broadcast-pin" className="me-1" /> {t('pushSubscriptions')}
+                </Link>
             )}
-            <a href={`/users/${user.link}/conversations`} className="btn btn-profile-outline-primary text-nowrap">
-                <i className="bi bi-chat-dots me-1"></i> {t('conversations')}
-            </a>
-        </div>
+            <Link to={`/users/${user.link}/conversations`} className="btn btn-profile-outline-primary text-nowrap">
+                <BootstrapIcon name="chat-dots" className="me-1" /> {t('conversations')}
+            </Link>
+        </Stack>
     );
 };

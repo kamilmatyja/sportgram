@@ -6,7 +6,7 @@ import {UserResponse} from '../../api/responses/UserResponse';
 import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Table, Stack, Button, Form, Badge} from 'react-bootstrap';
 
 interface FeedCommentsTableProps {

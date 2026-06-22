@@ -3,6 +3,8 @@ import {useTranslation} from '../../context/TranslationContext';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {FriendResponse} from '../../api/responses/FriendResponse';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
+import {Card, Stack, Image, Button, Dropdown, Spinner} from 'react-bootstrap';
+import BootstrapIcon from '../Common/BootstrapIcon';
 
 interface UserProfileHeaderProps {
     user: UserResponse;
@@ -39,72 +41,63 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
     }, []);
 
     return (
-        <div className="card shadow-sm mb-4">
-            <div
-                className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
+        <Card className="shadow-sm mb-4">
+            <Stack className="card-img-top bg-secondary position-relative overflow-hidden border-top border-4 profile-theme-border profile-bg-container">
                 {user.backgroundPhoto && (
-                    <img src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background"
-                         className="w-100 h-100 object-fit-cover"/>
+                    <Image src={`data:image/webp;base64,${user.backgroundPhoto}`} alt="Background"
+                           className="w-100 h-100 object-fit-cover"/>
                 )}
-            </div>
-            <div
-                className="card-body position-relative pt-5 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end gap-3">
-                <div>
+            </Stack>
+            <Card.Body
+                className="position-relative pt-5 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end gap-3">
+                <Stack>
                     {user.profilePhoto ? (
-                        <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile"
-                             className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
+                        <Image src={`data:image/webp;base64,${user.profilePhoto}`} alt="Profile"
+                               className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar object-fit-cover"/>
                     ) : (
-                        <div
-                            className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar d-flex align-items-center justify-content-center">
-                            <i className="bi bi-person fs-1 text-muted"></i>
-                        </div>
+                        <Stack
+                            className="rounded-circle border border-4 profile-theme-border bg-white position-absolute profile-avatar align-items-center justify-content-center">
+                            <BootstrapIcon name="person" className="fs-1 text-muted" />
+                        </Stack>
                     )}
-                    <div className="mt-4 mt-md-3">
-                        <h2 className="mb-0 profile-theme-text fw-bold">{user.firstName} {user.lastName}</h2>
-                        <p className="text-muted mb-0">@{user.link}</p>
-                    </div>
-                </div>
+                    <Stack className="mt-4 mt-md-3">
+                        <Card.Title as="h2" className="mb-0 profile-theme-text fw-bold">{user.firstName} {user.lastName}</Card.Title>
+                        <Card.Text as="p" className="text-muted mb-0">@{user.link}</Card.Text>
+                    </Stack>
+                </Stack>
 
-                <div className="d-flex flex-wrap gap-2 align-items-center">
+                <Stack direction="horizontal" className="flex-wrap gap-2 align-items-center">
                     {!isMyProfile && !friendship && (
-                        <button className="btn btn-profile-outline-primary" onClick={handleAddFriend} disabled={actionLoading}>
-                            {actionLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-person-plus me-1"></i>}
+                        <Button variant="profile-outline-primary" onClick={handleAddFriend} disabled={actionLoading}>
+                            {actionLoading ? <Spinner animation="border" size="sm" className="me-2" /> : <BootstrapIcon name="person-plus" className="me-1" />}
                             {t('addFriend')}
-                        </button>
+                        </Button>
                     )}
 
                     {!isMyProfile && friendship && (
-                        <div className="dropdown" ref={dropdownRef}>
-                            <button
-                                className="btn btn-profile-outline-primary dropdown-toggle"
-                                type="button"
-                                onClick={() => setDropdownOpen(!dropdownOpen)}
-                                disabled={actionLoading}
-                            >
-                                {actionLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : null}
+                        <Dropdown show={dropdownOpen} onToggle={setDropdownOpen} ref={dropdownRef as any}>
+                            <Dropdown.Toggle variant="profile-outline-primary" disabled={actionLoading}>
+                                {actionLoading ? <Spinner animation="border" size="sm" className="me-2" /> : null}
                                 {t('status')}: {FriendStatusEnum.getOptions(t).find(opt => opt.value === friendship.status)?.label}
-                            </button>
-                            <ul className={`dropdown-menu dropdown-menu-end ${dropdownOpen ? 'show' : ''}`}>
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu align="end">
                                 {(friendship.senderUserId === currentUser?.id || friendship.receiverUserId === currentUser?.id) && (
                                     FriendStatusEnum.getNanoOptions(t).map(opt => (
                                         opt.value !== friendship.status && (
-                                            <li key={opt.value}>
-                                                <button className="dropdown-item"
-                                                        onClick={() => {
-                                                            setDropdownOpen(false);
-                                                            handleUpdateFriendStatus(opt.value);
-                                                        }}>
-                                                    {opt.label}
-                                                </button>
-                                            </li>
+                                            <Dropdown.Item key={opt.value} onClick={() => {
+                                                setDropdownOpen(false);
+                                                handleUpdateFriendStatus(opt.value);
+                                            }}>
+                                                {opt.label}
+                                            </Dropdown.Item>
                                         )
                                     ))
                                 )}
-                            </ul>
-                        </div>
+                            </Dropdown.Menu>
+                        </Dropdown>
                     )}
-                </div>
-            </div>
-        </div>
+                </Stack>
+            </Card.Body>
+        </Card>
     );
 };

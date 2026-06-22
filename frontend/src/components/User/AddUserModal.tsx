@@ -8,6 +8,8 @@ import {ThemeEnum} from '../../enums/ThemeEnum';
 import {ColorEnum} from '../../enums/ColorEnum';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
 import {UserCreateBody} from '../../api/body/UserCreateBody';
+import {Modal, Form, Button, Row, Col, Alert} from 'react-bootstrap';
+import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
 
 interface AddUserModalProps {
     themeColor?: number;
@@ -38,195 +40,180 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
 
     const themeClass = themeColor ? ColorEnum.getClass(themeColor) : '';
 
+    const genderOptions = GenderEnum.getOptions(t) as SelectOption[];
+    const countryOptions = CountryEnum.getOptions(t) as SelectOption[];
+    const languageOptions = LanguageEnum.getOptions(t) as SelectOption[];
+    const themeOptions = ThemeEnum.getOptions(t) as SelectOption[];
+    const colorOptions = ColorEnum.getOptions(t) as SelectOption[];
+    const roleOptions = RoleEnum.getOptions(t) as SelectOption[];
+    const disciplineOptions = DisciplineEnum.getOptions(t) as SelectOption[];
+
     return (
-        <>
-            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
-                <div className="modal-dialog modal-lg">
-                    <div className="modal-content">
-                        <form onSubmit={handleSubmit}>
-                            <div className="modal-header">
-                                <h5 className="modal-title">{t('addUser')}</h5>
-                                <button type="button" className="btn-close" onClick={closeModal}></button>
-                            </div>
-                            <div className="modal-body">
-                                {globalError && <div className="alert alert-danger">{globalError}</div>}
+        <Modal show={show} onHide={closeModal} size="lg" className={themeClass} backdrop="static">
+            <Modal.Header closeButton>
+                <Modal.Title>{t('addUser')}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form id="add-user-form" onSubmit={handleSubmit}>
+                    {globalError && <Alert variant="danger">{globalError}</Alert>}
 
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('firstName')}</label>
-                                        <input name="firstName"
-                                               className={`form-control ${fieldErrors.firstName ? 'is-invalid' : ''}`}
-                                               value={formData.firstName || ''} onChange={handleChange} required/>
-                                        {fieldErrors.firstName &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.firstName}</div>}
-                                    </div>
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('lastName')}</label>
-                                        <input name="lastName"
-                                               className={`form-control ${fieldErrors.lastName ? 'is-invalid' : ''}`}
-                                               value={formData.lastName || ''} onChange={handleChange} required/>
-                                        {fieldErrors.lastName &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.lastName}</div>}
-                                    </div>
-                                </div>
+                    <Row className="mb-3">
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('firstName')}</Form.Label>
+                                <Form.Control name="firstName" value={formData.firstName || ''} onChange={handleChange} isInvalid={!!fieldErrors.firstName} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.firstName}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('lastName')}</Form.Label>
+                                <Form.Control name="lastName" value={formData.lastName || ''} onChange={handleChange} isInvalid={!!fieldErrors.lastName} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.lastName}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                    </Row>
 
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('email')}</label>
-                                        <input type="email" name="email"
-                                               className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`}
-                                               value={formData.email || ''} onChange={handleChange} required/>
-                                        {fieldErrors.email &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
-                                    </div>
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('password')}</label>
-                                        <input type="password" name="password"
-                                               className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
-                                               value={formData.password || ''} onChange={handleChange} required
-                                               minLength={8}/>
-                                        {fieldErrors.password &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
-                                    </div>
-                                </div>
+                    <Row className="mb-3">
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('email')}</Form.Label>
+                                <Form.Control type="email" name="email" value={formData.email || ''} onChange={handleChange} isInvalid={!!fieldErrors.email} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.email}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('password')}</Form.Label>
+                                <Form.Control type="password" name="password" minLength={8} value={formData.password || ''} onChange={handleChange} isInvalid={!!fieldErrors.password} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.password}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                    </Row>
 
-                                <div className="row">
-                                    <div className="col-md-4 mb-3">
-                                        <label className="form-label">{t('phone')}</label>
-                                        <input type="number" name="phone"
-                                               className={`form-control ${fieldErrors.phone ? 'is-invalid' : ''}`}
-                                               value={formData.phone || ''} onChange={handleChange} required/>
-                                        {fieldErrors.phone &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.phone}</div>}
-                                    </div>
-                                    <div className="col-md-4 mb-3">
-                                        <label className="form-label">{t('birthAt')}</label>
-                                        <input type="date" name="birthAt"
-                                               className={`form-control ${fieldErrors.birthAt ? 'is-invalid' : ''}`}
-                                               value={formData.birthAt || ''} onChange={handleChange} required/>
-                                        {fieldErrors.birthAt &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.birthAt}</div>}
-                                    </div>
-                                    <div className="col-md-4 mb-3">
-                                        <label className="form-label">{t('link')}</label>
-                                        <input type="text" name="link"
-                                               className={`form-control ${fieldErrors.link ? 'is-invalid' : ''}`}
-                                               value={formData.link || ''} onChange={handleChange} required/>
-                                        {fieldErrors.link &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
-                                    </div>
-                                </div>
+                    <Row className="mb-3">
+                        <Col md={4}>
+                            <Form.Group>
+                                <Form.Label>{t('phone')}</Form.Label>
+                                <Form.Control type="number" name="phone" value={formData.phone || ''} onChange={handleChange} isInvalid={!!fieldErrors.phone} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.phone}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                            <Form.Group>
+                                <Form.Label>{t('birthAt')}</Form.Label>
+                                <Form.Control type="date" name="birthAt" value={formData.birthAt || ''} onChange={handleChange} isInvalid={!!fieldErrors.birthAt} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.birthAt}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                            <Form.Group>
+                                <Form.Label>{t('link')}</Form.Label>
+                                <Form.Control type="text" name="link" value={formData.link || ''} onChange={handleChange} isInvalid={!!fieldErrors.link} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.link}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                    </Row>
 
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('gender')}</label>
-                                        <select name="gender" className="form-select" value={formData.gender || ''}
-                                                onChange={handleChange} required>
-                                            <option value="">{t('gender')}</option>
-                                            {GenderEnum.getOptions(t).map(opt => <option key={opt.value}
-                                                                                         value={opt.value}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('country')}</label>
-                                        <select name="country" className="form-select" value={formData.country || ''}
-                                                onChange={handleChange} required>
-                                            <option value="">{t('country')}</option>
-                                            {CountryEnum.getOptions(t).map(opt => <option key={opt.value}
-                                                                                          value={opt.value}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('language')}</label>
-                                        <select name="language" className="form-select" value={formData.language || ''}
-                                                onChange={handleChange} required>
-                                            <option value="">{t('language')}</option>
-                                            {LanguageEnum.getOptions(t).map(opt => <option key={opt.value}
-                                                                                           value={opt.value}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('theme')}</label>
-                                        <select name="theme" className="form-select" value={formData.theme || ''}
-                                                onChange={handleChange} required>
-                                            <option value="">{t('theme')}</option>
-                                            {ThemeEnum.getOptions(t).map(opt => <option key={opt.value}
-                                                                                        value={opt.value}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('color')}</label>
-                                        <select name="color" className="form-select" value={formData.color || ''}
-                                                onChange={handleChange} required>
-                                            <option value="">{t('color')}</option>
-                                            {ColorEnum.getOptions(t).map(opt => <option key={opt.value}
-                                                                                        value={opt.value}>{opt.label}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('role')}</label>
-                                        <select name="roles" className="form-select"
-                                                value={Array.isArray(formData.roles) ? formData.roles.map(String) : []}
-                                                onChange={handleChange} multiple required>
-                                            {RoleEnum.getOptions(t).map(opt => (
-                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label">{t('discipline')}</label>
-                                    <select name="disciplines"
-                                            className={`form-select ${fieldErrors.disciplines ? 'is-invalid' : ''}`}
-                                            value={Array.isArray(formData.disciplines) ? formData.disciplines.map(String) : []}
-                                            onChange={handleChange} multiple>
-                                        {DisciplineEnum.getOptions(t).map(opt => (
-                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                        ))}
-                                    </select>
-                                    {fieldErrors.disciplines &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.disciplines}</div>}
-                                </div>
+                    <Row className="mb-3">
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('gender')}</Form.Label>
+                                <Form.Select name="gender" value={formData.gender || ''} onChange={handleChange} isInvalid={!!fieldErrors.gender} required>
+                                    <SelectOptions options={genderOptions} placeholder={t('gender')} />
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">{fieldErrors.gender}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('country')}</Form.Label>
+                                <Form.Select name="country" value={formData.country || ''} onChange={handleChange} isInvalid={!!fieldErrors.country} required>
+                                    <SelectOptions options={countryOptions} placeholder={t('country')} />
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">{fieldErrors.country}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                    </Row>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t('bio')}</label>
-                                    <textarea name="bio"
-                                              className={`form-control ${fieldErrors.bio ? 'is-invalid' : ''}`} rows={4}
-                                              value={formData.bio || ''} onChange={handleChange} required/>
-                                    {fieldErrors.bio &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.bio}</div>}
-                                </div>
+                    <Row className="mb-3">
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('language')}</Form.Label>
+                                <Form.Select name="language" value={formData.language || ''} onChange={handleChange} isInvalid={!!fieldErrors.language} required>
+                                    <SelectOptions options={languageOptions} placeholder={t('language')} />
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">{fieldErrors.language}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('theme')}</Form.Label>
+                                <Form.Select name="theme" value={formData.theme || ''} onChange={handleChange} isInvalid={!!fieldErrors.theme} required>
+                                    <SelectOptions options={themeOptions} placeholder={t('theme')} />
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">{fieldErrors.theme}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                    </Row>
 
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('profilePhoto')}</label>
-                                        <input type="file" accept="image/*" className="form-control" name="profilePhoto"
-                                               onChange={handleChange} required/>
-                                    </div>
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">{t('backgroundPhoto')}</label>
-                                        <input type="file" accept="image/*" className="form-control"
-                                               name="backgroundPhoto" onChange={handleChange} required/>
-                                    </div>
-                                </div>
+                    <Row className="mb-3">
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('color')}</Form.Label>
+                                <Form.Select name="color" value={formData.color || ''} onChange={handleChange} isInvalid={!!fieldErrors.color} required>
+                                    <SelectOptions options={colorOptions} placeholder={t('color')} />
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">{fieldErrors.color}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('role')}</Form.Label>
+                                <Form.Select name="roles" multiple value={Array.isArray(formData.roles) ? formData.roles.map(String) : []} onChange={handleChange} isInvalid={!!fieldErrors.roles} required>
+                                    <SelectOptions options={roleOptions} />
+                                </Form.Select>
+                                <Form.Control.Feedback type="invalid">{fieldErrors.roles}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                    </Row>
 
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary"
-                                        onClick={closeModal}>{t('cancel')}</button>
-                                <button type="submit" className="btn btn-profile-primary" disabled={loading}>
-                                    {loading ? t('sending') : t('addUser')}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div className="modal-backdrop show"></div>
-        </>
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('discipline')}</Form.Label>
+                        <Form.Select name="disciplines" multiple value={Array.isArray(formData.disciplines) ? formData.disciplines.map(String) : []} onChange={handleChange} isInvalid={!!fieldErrors.disciplines}>
+                            <SelectOptions options={disciplineOptions} />
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">{fieldErrors.disciplines}</Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('bio')}</Form.Label>
+                        <Form.Control as="textarea" name="bio" rows={4} value={formData.bio || ''} onChange={handleChange} isInvalid={!!fieldErrors.bio} required />
+                        <Form.Control.Feedback type="invalid">{fieldErrors.bio}</Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Row className="mb-3">
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('profilePhoto')}</Form.Label>
+                                <Form.Control type="file" accept="image/*" name="profilePhoto" onChange={handleChange as any} required />
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('backgroundPhoto')}</Form.Label>
+                                <Form.Control type="file" accept="image/*" name="backgroundPhoto" onChange={handleChange as any} required />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={closeModal} disabled={loading}>{t('cancel')}</Button>
+                <Button variant="profile-primary" type="submit" form="add-user-form" disabled={loading}>
+                    {loading ? t('sending') : t('addUser')}
+                </Button>
+            </Modal.Footer>
+        </Modal>
     );
 };

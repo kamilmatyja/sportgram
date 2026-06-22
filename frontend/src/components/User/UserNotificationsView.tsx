@@ -9,6 +9,8 @@ import {ColorEnum} from '../../enums/ColorEnum';
 import {UserSubpageHeader} from './UserSubpageHeader';
 import {Pagination} from '../Common/Pagination';
 import {UserNotificationsTable} from '../Notification/UserNotificationsTable';
+import {Container, Card, Stack, Form, Spinner, Alert} from 'react-bootstrap';
+import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
 
 interface UserNotificationsViewProps {
     user: UserResponse | null;
@@ -47,49 +49,59 @@ export const UserNotificationsView: React.FC<UserNotificationsViewProps> = ({
                                                                             }) => {
     const {t} = useTranslation();
 
-    if (loading && notifications.length === 0) return <div className="container mt-5 text-center">
-        <div className="spinner-border text-profile-primary"/>
-    </div>;
-    if (error || !user) return <div
-        className="container mt-5 alert alert-danger">{error ? t(error) : t('userNotFound')}</div>;
+    if (loading && notifications.length === 0) return (
+        <Container className="mt-5 text-center">
+            <Spinner animation="border" className="text-profile-primary" />
+        </Container>
+    );
+    if (error || !user) return (
+        <Container className="mt-5">
+            <Alert variant="danger">{error ? t(error) : t('userNotFound')}</Alert>
+        </Container>
+    );
 
     const themeClass = ColorEnum.getClass(user.color);
+    const statusOptions = NotificationStatusEnum.getOptions(t) as SelectOption[];
+    const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
+    const sortOptions: SelectOption[] = [
+        {value: 'createdAt:desc', label: t('sortCreatedDesc')},
+        {value: 'createdAt:asc', label: t('sortCreatedAsc')},
+    ];
 
     return (
-        <div className={`container mt-4 mb-5 ${themeClass}`}>
+        <Container className={`mt-4 mb-5 ${themeClass}`}>
             <UserSubpageHeader user={user}/>
 
-            <div className="card shadow-sm">
-                <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h4 className="mb-0 text-profile-primary fw-bold">{t('notifications')}</h4>
-                    </div>
+            <Card className="shadow-sm">
+                <Card.Body>
+                    <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+                        <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">{t('notifications')}</Card.Title>
+                    </Stack>
 
-                    <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                        <input name="text" placeholder={t('text')} value={filters.text || ''} onChange={onFilterChange}
-                               className="form-control w-auto"/>
-                        <select name="status" value={filters.status || ''} onChange={onFilterChange}
-                                className="form-select w-auto">
-                            <option value="">{t('status')}</option>
-                            {NotificationStatusEnum.getOptions(t).map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                        </select>
-                        <select value={sort} onChange={onSortChange} className="form-select w-auto ms-auto">
-                            <option value="createdAt:desc">{t('sortCreatedDesc')}</option>
-                            <option value="createdAt:asc">{t('sortCreatedAsc')}</option>
-                        </select>
-                        <select value={limit} onChange={onLimitChange} className="form-select w-auto">
-                            {PaginationEnum.getOptions(t).map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                        </select>
-                    </div>
+                    <Stack direction="horizontal" gap={3} className="mb-3 flex-wrap align-items-center">
+                        <Form.Control
+                            name="text"
+                            placeholder={t('text')}
+                            value={filters.text || ''}
+                            onChange={e => onFilterChange(e as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)}
+                            className="w-auto"
+                        />
+                        <Form.Select name="status" value={filters.status || ''} onChange={onFilterChange}
+                                     className="w-auto">
+                            <SelectOptions options={statusOptions} placeholder={t('status')} />
+                        </Form.Select>
+                        <Form.Select value={sort} onChange={onSortChange} className="w-auto ms-auto">
+                            <SelectOptions options={sortOptions} />
+                        </Form.Select>
+                        <Form.Select value={limit} onChange={onLimitChange} className="w-auto">
+                            <SelectOptions options={limitOptions} />
+                        </Form.Select>
+                    </Stack>
 
                     {loading ? (
-                        <div className="text-center my-4">
-                            <div className="spinner-border text-profile-primary"/>
-                        </div>
+                        <Stack className="text-center my-4">
+                            <Spinner animation="border" className="text-profile-primary"/>
+                        </Stack>
                     ) : (
                         <>
                             <UserNotificationsTable
@@ -97,14 +109,14 @@ export const UserNotificationsView: React.FC<UserNotificationsViewProps> = ({
                                 isMyProfile={isMyProfile}
                                 onManageClick={onManageClick}
                             />
-                            <div className="mt-3">
+                            <Stack className="mt-3">
                                 <Pagination page={page} hasMore={notifications.length >= limit} onPrevPage={onPrevPage}
                                             onNextPage={onNextPage}/>
-                            </div>
+                            </Stack>
                         </>
                     )}
-                </div>
-            </div>
-        </div>
+                </Card.Body>
+            </Card>
+        </Container>
     );
 };

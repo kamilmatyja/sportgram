@@ -6,7 +6,7 @@ import {formatDate} from '../../utils/dateFormat';
 import {EventListsManager} from './EventListsManager';
 import {Link} from 'react-router-dom';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Stack, Table, Image, Badge, Button, Card} from 'react-bootstrap';
 
 interface UserEventsTableProps {

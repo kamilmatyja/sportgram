@@ -5,7 +5,7 @@ import {TrainingParticipantResponse} from '../../api/responses/TrainingParticipa
 import {UserResponse} from '../../api/responses/UserResponse';
 import {SaveStatusEnum} from '../../enums/SaveStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Stack, Table, Badge, Button} from 'react-bootstrap';
 
 interface TrainingParticipantsTableProps {

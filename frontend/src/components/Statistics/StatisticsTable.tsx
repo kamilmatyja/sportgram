@@ -5,7 +5,7 @@ import {UserResponse} from '../../api/responses/UserResponse';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {Link} from 'react-router-dom';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
 import {Table, Stack} from 'react-bootstrap';
 
 interface StatisticsTableProps {
