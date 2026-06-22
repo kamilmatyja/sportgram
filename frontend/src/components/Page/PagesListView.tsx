@@ -5,6 +5,7 @@ import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
 import {Pagination} from '../Common/Pagination';
 import {PagesFilterBar} from './PagesFilterBar';
 import {PagesTable} from './PagesTable';
+import {Container, Stack, Card, Button, Spinner, Alert} from 'react-bootstrap';
 
 interface PagesListViewProps {
     pages: PageResponse[];
@@ -42,15 +43,15 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
     const {t} = useTranslation();
 
     return (
-        <div className="container mt-5 mb-5">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="mb-0 text-profile-primary fw-bold">{t('pages')}</h2>
+        <Container className="mt-5 mb-5">
+            <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+                <Card.Title as="h2" className="mb-0 text-profile-primary fw-bold">{t('pages')}</Card.Title>
                 {isOrganizer && (
-                    <button className="btn btn-primary" onClick={onAddClick}>
+                    <Button variant="profile-primary" onClick={onAddClick}>
                         {t('addPage')}
-                    </button>
+                    </Button>
                 )}
-            </div>
+            </Stack>
 
             <PagesFilterBar
                 filters={filters}
@@ -62,24 +63,24 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
             />
 
             {loading && pages.length === 0 ? (
-                <div className="text-center mt-4">
-                    <div className="spinner-border text-primary"/>
-                </div>
+                <Stack className="text-center mt-4">
+                    <Spinner animation="border" className="text-profile-primary"/>
+                </Stack>
             ) : error ? (
-                <div className="alert alert-danger mt-3">{t(error)}</div>
+                <Alert variant="danger" className="mt-3">{t(error)}</Alert>
             ) : (
                 <>
                     <PagesTable pages={pages}/>
-                    <div className="mt-3">
+                    <Stack className="mt-3">
                         <Pagination
                             page={page}
                             hasMore={pages.length >= limit}
                             onPrevPage={onPrevPage}
                             onNextPage={onNextPage}
                         />
-                    </div>
+                    </Stack>
                 </>
             )}
-        </div>
+        </Container>
     );
 };

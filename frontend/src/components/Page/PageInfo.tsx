@@ -4,6 +4,8 @@ import {PageResponse} from '../../api/responses/PageResponse';
 import {PageFollowResponse} from '../../api/responses/PageFollowResponse';
 import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {PageFollowStatusEnum} from '../../enums/PageFollowStatusEnum';
+import {Card, Stack, Badge, Button, Spinner} from 'react-bootstrap';
+import BootstrapIcon from '../Common/BootstrapIcon';
 
 interface PageInfoProps {
     pageObj: PageResponse;
@@ -25,45 +27,46 @@ export const PageInfo: React.FC<PageInfoProps> = ({
     const {t} = useTranslation();
 
     return (
-        <div className="card shadow-sm mb-4">
-            <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4 className="mb-0 text-profile-primary fw-bold">
-                        <i className="bi bi-info-circle me-2"></i>{t('basicInformation')}
-                    </h4>
+        <Card className="shadow-sm mb-4">
+            <Card.Body>
+                <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+                    <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">
+                        <BootstrapIcon name="info-circle" className="me-2" />{t('basicInformation')}
+                    </Card.Title>
                     {canManage && (
-                        <button className="btn btn-profile-primary" onClick={() => onManageClick(pageObj)}>
-                            <i className="bi bi-gear me-1"></i> {t('manage')}
-                        </button>
+                        <Button variant="profile-primary" onClick={() => onManageClick(pageObj)}>
+                            <BootstrapIcon name="gear" className="me-1" /> {t('manage')}
+                        </Button>
                     )}
-                </div>
+                </Stack>
 
-                <h4 className="mb-3 fw-bold">{pageObj.title}</h4>
-                <p className="mb-4 text-break fs-5">{pageObj.description}</p>
+                <Card.Title as="h4" className="mb-3 fw-bold">{pageObj.title}</Card.Title>
+                <Card.Text as="p" className="mb-4 text-break fs-5">{pageObj.description}</Card.Text>
 
-                <div className="d-flex align-items-center gap-2 mt-2 mb-4">
-                    <strong>{t('status')}: </strong>
-                    <span className="badge bg-light text-dark border profile-theme-border">
+                <Stack direction="horizontal" gap={2} className="align-items-center mt-2 mb-4">
+                    <Stack as="strong">{t('status')}: </Stack>
+                    <Badge bg="light" text="dark" className="border profile-theme-border">
                         {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}
-                    </span>
-                </div>
+                    </Badge>
+                </Stack>
 
-                <div className="d-flex align-items-center gap-2 mt-3 pt-3 border-top">
-                    <button
-                        className={`btn btn-sm ${myFollow?.status === PageFollowStatusEnum.ACCEPTED ? 'btn-outline-danger' : 'btn-profile-primary'}`}
+                <Stack direction="horizontal" gap={2} className="align-items-center mt-3 pt-3 border-top">
+                    <Button
+                        variant={myFollow?.status === PageFollowStatusEnum.ACCEPTED ? 'outline-danger' : 'profile-primary'}
+                        size="sm"
                         onClick={handleToggleFollow}
                         disabled={followLoading}
                     >
                         {followLoading ? (
-                            <span className="spinner-border spinner-border-sm"/>
+                            <Spinner animation="border" size="sm" />
                         ) : myFollow?.status === PageFollowStatusEnum.ACCEPTED ? (
-                            <><i className="bi bi-dash-circle me-1"></i> {t('unfollowPage')}</>
+                            <><BootstrapIcon name="dash-circle" className="me-1" /> {t('unfollowPage')}</>
                         ) : (
-                            <><i className="bi bi-plus-circle me-1"></i> {t('followPage')}</>
+                            <><BootstrapIcon name="plus-circle" className="me-1" /> {t('followPage')}</>
                         )}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </Stack>
+            </Card.Body>
+        </Card>
     );
 };

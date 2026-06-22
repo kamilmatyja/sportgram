@@ -11,6 +11,9 @@ import {PageInfo} from './PageInfo';
 import {PageDetailsParticipantsTable} from './PageDetailsParticipantsTable';
 import {PageDetailsFollowsTable} from './PageDetailsFollowsTable';
 import {PageEventsTable} from './PageEventsTable';
+import {Container, Card, Stack, Spinner, Alert} from 'react-bootstrap';
+import {Link} from 'react-router-dom';
+import BootstrapIcon from '../Common/BootstrapIcon';
 
 interface PageDetailsViewProps {
     pageObj: PageResponse | null;
@@ -70,26 +73,32 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                                                                 }) => {
     const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center">
-        <div className="spinner-border text-profile-primary"/>
-    </div>;
-    if (error || !pageObj || !ownerUser) return <div
-        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (loading) return (
+        <Container className="mt-5 text-center">
+            <Spinner animation="border" className="text-profile-primary" />
+        </Container>
+    );
+
+    if (error || !pageObj || !ownerUser) return (
+        <Container className="mt-5">
+            <Alert variant="danger">{error ? t(error) : t('error')}</Alert>
+        </Container>
+    );
 
     const themeClass = ColorEnum.getClass(pageObj.color);
     const canManage = isMyProfile || isAdmin || isParticipantOfPage;
 
     return (
-        <div className={`container mt-4 mb-5 ${themeClass}`} tabIndex={-1}>
+        <Container className={`mt-4 mb-5 ${themeClass}`} tabIndex={-1}>
             <PageHeader
                 pageObj={pageObj}
             />
 
-            <div className="d-flex flex-wrap gap-2 mb-4 overflow-x-auto pb-2">
-                <a href="/pages" className="btn btn-profile-outline-primary">
-                    <i className="bi bi-arrow-left me-1"></i> {t('pages')}
-                </a>
-            </div>
+            <Stack direction="horizontal" className="flex-wrap gap-2 mb-4 overflow-x-auto pb-2">
+                <Link to="/pages" className="btn btn-profile-outline-primary">
+                    <BootstrapIcon name="arrow-left" className="me-1" /> {t('pages')}
+                </Link>
+            </Stack>
 
             <PageInfo
                 pageObj={pageObj}
@@ -100,9 +109,9 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                 onManageClick={onManageClick}
             />
 
-            <div className="card shadow-sm mb-4">
-                <div className="card-body">
-                    <h5 className="mb-3 text-profile-primary fw-bold">{t('participants')}</h5>
+            <Card className="shadow-sm mb-4">
+                <Card.Body>
+                    <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">{t('participants')}</Card.Title>
                     <PageDetailsParticipantsTable
                         participants={pageObj.participants || []}
                         relatedUsers={relatedUsers}
@@ -110,12 +119,12 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                         actionLoading={interactions.actionLoading}
                         onUpdateStatus={interactions.handleParticipantStatusSubmit}
                     />
-                </div>
-            </div>
+                </Card.Body>
+            </Card>
 
-            <div className="card shadow-sm mb-4">
-                <div className="card-body">
-                    <h5 className="mb-3 text-profile-primary fw-bold">{t('pageFollows')}</h5>
+            <Card className="shadow-sm mb-4">
+                <Card.Body>
+                    <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">{t('pageFollows')}</Card.Title>
                     <PageDetailsFollowsTable
                         follows={pageObj.follows || []}
                         relatedUsers={relatedUsers}
@@ -123,8 +132,8 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                         actionLoading={interactions.actionLoading}
                         onUpdateStatus={interactions.handleFollowStatusSubmit}
                     />
-                </div>
-            </div>
+                </Card.Body>
+            </Card>
 
             <PageEventsTable
                 events={events}
@@ -139,6 +148,6 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = ({
                 handleEventPrevPage={handleEventPrevPage}
                 handleEventNextPage={handleEventNextPage}
             />
-        </div>
+        </Container>
     );
 };

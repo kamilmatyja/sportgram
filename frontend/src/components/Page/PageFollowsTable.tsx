@@ -1,9 +1,12 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {useTranslation} from '../../context/TranslationContext';
 import {PageFollowResponse} from '../../api/responses/PageFollowResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {PageFollowStatusEnum} from '../../enums/PageFollowStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Table, Stack, Button, Badge} from 'react-bootstrap';
 
 interface PageFollowsTableProps {
     follows: PageFollowResponse[];
@@ -27,60 +30,62 @@ export const PageFollowsTable: React.FC<PageFollowsTableProps> = ({
     const {t} = useTranslation();
 
     return (
-        <div className="table-responsive">
-            <table className="table table-sm table-borderless align-middle mb-0">
-                <thead className="table-light">
-                <tr>
-                    <th>{t('user')}</th>
-                    <th>{t('status')}</th>
-                    <th>{t('createdAt')}</th>
-                    <th className="text-end">{t('manage')}</th>
-                </tr>
-                </thead>
-                <tbody>
-                {follows.length === 0 ? (
-                    <tr>
-                        <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                ) : follows.map(f => {
-                    const u = relatedUsers[f.userId];
-                    const isOwner = currentUser?.id === f.userId;
-                    const canManage = isMyProfile || isAdmin || isOwner;
+        <Stack className="table-responsive">
+            <Table size="sm" borderless className="align-middle mb-0">
+                <TableHead className="table-light">
+                    <TableRow>
+                        <TableHeaderCell>{t('user')}</TableHeaderCell>
+                        <TableHeaderCell>{t('status')}</TableHeaderCell>
+                        <TableHeaderCell>{t('createdAt')}</TableHeaderCell>
+                        <TableHeaderCell className="text-end">{t('manage')}</TableHeaderCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {follows.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={4} className="text-center text-muted">{t('noRecords')}</TableCell>
+                        </TableRow>
+                    ) : follows.map(f => {
+                        const u = relatedUsers[f.userId];
+                        const isOwner = currentUser?.id === f.userId;
+                        const canManage = isMyProfile || isAdmin || isOwner;
 
-                    return (
-                        <tr key={f.id}>
-                            <td>
-                                {u ? (
-                                    <a href={`/users/${u.link}`} className="text-decoration-none">
-                                        {u.firstName} {u.lastName}
-                                    </a>
-                                ) : f.userId}
-                            </td>
-                            <td>
-                                <span className="badge bg-light text-dark border profile-theme-border">
-                                    {PageFollowStatusEnum.getOptions(t).find(opt => opt.value === f.status)?.label || f.status}
-                                </span>
-                            </td>
-                            <td>{formatDate(f.createdAt)}</td>
-                            <td className="text-end">
-                                {canManage && PageFollowStatusEnum.getOptions(t)
-                                    .filter(opt => opt.value !== f.status && opt.value !== PageFollowStatusEnum.PENDING)
-                                    .map(opt => (
-                                        <button
-                                            key={opt.value}
-                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2 ms-1"
-                                            disabled={actionLoading === f.id}
-                                            onClick={() => onUpdateStatus(f.id, opt.value)}
-                                        >
-                                            {opt.label}
-                                        </button>
-                                    ))}
-                            </td>
-                        </tr>
-                    );
-                })}
-                </tbody>
-            </table>
-        </div>
+                        return (
+                            <TableRow key={f.id}>
+                                <TableCell>
+                                    {u ? (
+                                        <Link to={`/users/${u.link}`} className="text-decoration-none">
+                                            {u.firstName} {u.lastName}
+                                        </Link>
+                                    ) : f.userId}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge bg="light" text="dark" className="border profile-theme-border">
+                                        {PageFollowStatusEnum.getOptions(t).find(opt => opt.value === f.status)?.label || f.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>{formatDate(f.createdAt)}</TableCell>
+                                <TableCell className="text-end">
+                                    {canManage && PageFollowStatusEnum.getOptions(t)
+                                        .filter(opt => opt.value !== f.status && opt.value !== PageFollowStatusEnum.PENDING)
+                                        .map(opt => (
+                                            <Button
+                                                key={opt.value}
+                                                variant="profile-outline-primary"
+                                                size="sm"
+                                                className="btn-xs py-0 px-2 ms-1"
+                                                disabled={actionLoading === f.id}
+                                                onClick={() => onUpdateStatus(f.id, opt.value)}
+                                            >
+                                                {opt.label}
+                                            </Button>
+                                        ))}
+                                </TableCell>
+                            </TableRow>
+                        );
+                    })}
+                </TableBody>
+            </Table>
+        </Stack>
     );
 };

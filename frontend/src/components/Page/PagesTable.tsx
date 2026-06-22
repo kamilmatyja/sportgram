@@ -1,8 +1,12 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {useTranslation} from '../../context/TranslationContext';
 import {PageResponse} from '../../api/responses/PageResponse';
 import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Table, Stack, Image, Badge} from 'react-bootstrap';
+import BootstrapIcon from '../Common/BootstrapIcon';
 
 interface PagesTableProps {
     pages: PageResponse[];
@@ -12,56 +16,56 @@ export const PagesTable: React.FC<PagesTableProps> = ({pages}) => {
     const {t} = useTranslation();
 
     return (
-        <div className="table-responsive-custom">
-            <table className="table table-bordered table-hover align-middle mb-0">
-                <thead className="table-light">
-                <tr>
-                    <th>{t('photo')}</th>
-                    <th>{t('title')}</th>
-                    <th>{t('link')}</th>
-                    <th>{t('status')}</th>
-                    <th>{t('createdAt')}</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                {pages.length === 0 ? (
-                    <tr>
-                        <td colSpan={6} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                ) : pages.map(pageObj => (
-                    <tr key={pageObj.id}>
-                        <td className="text-center align-middle feed-photo-cell">
-                            {pageObj.profilePhoto ? (
-                                <img src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="page"
-                                     className="rounded-circle img-fluid feed-photo"/>
-                            ) : (
-                                <span className="text-muted">-</span>
-                            )}
-                        </td>
-                        <td>
-                            <a href={`/pages/${pageObj.link}`} className="btn btn-link p-0 text-decoration-none">
-                                {pageObj.title}
-                            </a>
-                        </td>
-                        <td>{pageObj.link}</td>
-                        <td>
-                            <span className="badge bg-light text-dark border profile-theme-border">
-                                {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}
-                            </span>
-                        </td>
-                        <td>{formatDate(pageObj.createdAt)}</td>
-                        <td className="text-end">
-                            <a href={`/pages/${pageObj.link}`} className="btn btn-sm btn-outline-primary"
-                               title={t('profile')}>
-                                <i className="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-                                <span className="visually-hidden">{t('profile')}</span>
-                            </a>
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        </div>
+        <Stack className="table-responsive-custom">
+            <Table bordered hover className="align-middle mb-0">
+                <TableHead className="table-light">
+                    <TableRow>
+                        <TableHeaderCell>{t('photo')}</TableHeaderCell>
+                        <TableHeaderCell>{t('title')}</TableHeaderCell>
+                        <TableHeaderCell>{t('link')}</TableHeaderCell>
+                        <TableHeaderCell>{t('status')}</TableHeaderCell>
+                        <TableHeaderCell>{t('createdAt')}</TableHeaderCell>
+                        <TableHeaderCell></TableHeaderCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {pages.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={6} className="text-center text-muted">{t('noRecords')}</TableCell>
+                        </TableRow>
+                    ) : pages.map(pageObj => (
+                        <TableRow key={pageObj.id}>
+                            <TableCell className="text-center align-middle feed-photo-cell">
+                                {pageObj.profilePhoto ? (
+                                    <Image src={`data:image/webp;base64,${pageObj.profilePhoto}`} alt="page"
+                                           className="rounded-circle img-fluid feed-photo"/>
+                                ) : (
+                                    <Stack as="span" className="text-muted">-</Stack>
+                                )}
+                            </TableCell>
+                            <TableCell>
+                                <Link to={`/pages/${pageObj.link}`} className="btn btn-link p-0 text-decoration-none">
+                                    {pageObj.title}
+                                </Link>
+                            </TableCell>
+                            <TableCell>{pageObj.link}</TableCell>
+                            <TableCell>
+                                <Badge bg="light" text="dark" className="border profile-theme-border">
+                                    {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(pageObj.status))?.label || pageObj.status}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>{formatDate(pageObj.createdAt)}</TableCell>
+                            <TableCell className="text-end">
+                                <Link to={`/pages/${pageObj.link}`} className="btn btn-sm btn-outline-primary"
+                                      title={t('profile')}>
+                                    <BootstrapIcon name="box-arrow-in-right" aria-hidden="true" />
+                                    <Stack as="span" className="visually-hidden">{t('profile')}</Stack>
+                                </Link>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </Stack>
     );
 };

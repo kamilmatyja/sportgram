@@ -6,6 +6,10 @@ import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {PaginationEnum} from '../../enums/PaginationEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {Pagination} from '../Common/Pagination';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Card, Stack, Form, Table, Image, Badge, Spinner} from 'react-bootstrap';
+import {Link} from 'react-router-dom';
+import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
 
 interface PageEventsTableProps {
     events: EventResponse[];
@@ -35,94 +39,111 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                                                                     handleEventNextPage
                                                                 }) => {
     const {t} = useTranslation();
+    const statusOptions = ElementStatusEnum.getOptions(t) as SelectOption[];
+    const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
+    const sortOptions: SelectOption[] = [
+        {value: 'createdAt:desc', label: t('sortCreatedDesc')},
+        {value: 'createdAt:asc', label: t('sortCreatedAsc')},
+        {value: 'startedAt:desc', label: `${t('startedAt')} Z-A`},
+        {value: 'startedAt:asc', label: `${t('startedAt')} A-Z`},
+    ];
 
     return (
-        <div className="card shadow-sm">
-            <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h5 className="mb-0 text-profile-primary fw-bold">{t('events')}</h5>
-                </div>
+        <Card className="shadow-sm">
+            <Card.Body>
+                <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+                    <Card.Title as="h5" className="mb-0 text-profile-primary fw-bold">{t('events')}</Card.Title>
+                </Stack>
 
-                <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                    <input name="title" placeholder={t('title')} value={eventFilters.title || ''}
-                           onChange={handleEventFilterChange} className="form-control w-auto"/>
-                    <input name="link" placeholder={t('link')} value={eventFilters.link || ''}
-                           onChange={handleEventFilterChange} className="form-control w-auto"/>
-                    <select name="status" value={eventFilters.status || ''} onChange={handleEventFilterChange}
-                            className="form-select w-auto">
-                        <option value="">{t('status')}</option>
-                        {ElementStatusEnum.getOptions(t).map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                    </select>
-                    <select value={eventSort} onChange={handleEventSortChange} className="form-select w-auto ms-auto">
-                        <option value="createdAt:desc">{t('sortCreatedDesc')}</option>
-                        <option value="createdAt:asc">{t('sortCreatedAsc')}</option>
-                        <option value="startedAt:desc">{t('startedAt')} Z-A</option>
-                        <option value="startedAt:asc">{t('startedAt')} A-Z</option>
-                    </select>
-                    <select value={eventLimit} onChange={handleEventLimitChange} className="form-select w-auto">
-                        {PaginationEnum.getOptions(t).map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                    </select>
-                </div>
+                <Stack direction="horizontal" gap={3} className="mb-3 flex-wrap align-items-center">
+                    <Form.Control
+                        name="title"
+                        placeholder={t('title')}
+                        value={eventFilters.title || ''}
+                        onChange={e => handleEventFilterChange(e as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)}
+                        className="w-auto"
+                    />
+                    <Form.Control
+                        name="link"
+                        placeholder={t('link')}
+                        value={eventFilters.link || ''}
+                        onChange={e => handleEventFilterChange(e as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)}
+                        className="w-auto"
+                    />
+                    <Form.Select
+                        name="status"
+                        value={eventFilters.status || ''}
+                        onChange={e => handleEventFilterChange(e as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)}
+                        className="w-auto"
+                    >
+                        <SelectOptions options={statusOptions} placeholder={t('status')} />
+                    </Form.Select>
+                    <Form.Select value={eventSort} onChange={handleEventSortChange} className="w-auto ms-auto">
+                        <SelectOptions options={sortOptions} />
+                    </Form.Select>
+                    <Form.Select value={eventLimit} onChange={handleEventLimitChange} className="w-auto">
+                        <SelectOptions options={limitOptions} />
+                    </Form.Select>
+                </Stack>
 
                 {eventsLoading && events.length === 0 ? (
-                    <div className="text-center my-4">
-                        <div className="spinner-border text-profile-primary"/>
-                    </div>
+                    <Stack className="text-center my-4">
+                        <Spinner animation="border" className="text-profile-primary" />
+                    </Stack>
                 ) : (
                     <>
-                        <div className="table-responsive-custom">
-                            <table className="table table-bordered table-hover align-middle mb-0">
-                                <thead className="table-light">
-                                <tr>
-                                    <th>{t('photo')}</th>
-                                    <th>{t('title')}</th>
-                                    <th>{t('location')}</th>
-                                    <th>{t('startedAt')}</th>
-                                    <th>{t('endedAt')}</th>
-                                    <th>{t('status')}</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {events.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={6} className="text-center text-muted">{t('noRecords')}</td>
-                                    </tr>
-                                ) : events.map(ev => (
-                                    <tr key={ev.id}>
-                                        <td className="text-center align-middle feed-photo-cell">
-                                            <img src={`data:image/webp;base64,${ev.photo}`} alt="Photo"
-                                                 className="w-100 h-100 object-fit-cover"/>
-                                        </td>
-                                        <td>
-                                            <a href={`/events/${ev.link}`}
-                                               className="btn btn-link p-0 text-decoration-none">
-                                                {ev.title}
-                                            </a>
-                                        </td>
-                                        <td>{ev.location}</td>
-                                        <td>{formatDate(ev.startedAt)}</td>
-                                        <td>{formatDate(ev.endedAt)}</td>
-                                        <td>
-                                            <span className="badge bg-light text-dark border profile-theme-border">
-                                                {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(ev.status))?.label || ev.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="mt-3">
+                        <Stack className="table-responsive-custom">
+                            <Table bordered hover className="align-middle mb-0">
+                                <TableHead className="table-light">
+                                    <TableRow>
+                                        <TableHeaderCell>{t('photo')}</TableHeaderCell>
+                                        <TableHeaderCell>{t('title')}</TableHeaderCell>
+                                        <TableHeaderCell>{t('location')}</TableHeaderCell>
+                                        <TableHeaderCell>{t('startedAt')}</TableHeaderCell>
+                                        <TableHeaderCell>{t('endedAt')}</TableHeaderCell>
+                                        <TableHeaderCell>{t('status')}</TableHeaderCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {events.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center text-muted">{t('noRecords')}</TableCell>
+                                        </TableRow>
+                                    ) : events.map(ev => (
+                                        <TableRow key={ev.id}>
+                                            <TableCell className="text-center align-middle feed-photo-cell">
+                                                {ev.photo ? (
+                                                    <Image src={`data:image/webp;base64,${ev.photo}`} alt="Photo"
+                                                           className="w-100 h-100 object-fit-cover"/>
+                                                ) : (
+                                                    <Stack as="span" className="text-muted">-</Stack>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Link to={`/events/${ev.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                    {ev.title}
+                                                </Link>
+                                            </TableCell>
+                                            <TableCell>{ev.location}</TableCell>
+                                            <TableCell>{formatDate(ev.startedAt)}</TableCell>
+                                            <TableCell>{formatDate(ev.endedAt)}</TableCell>
+                                            <TableCell>
+                                                <Badge bg="light" text="dark" className="border profile-theme-border">
+                                                    {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(ev.status))?.label || ev.status}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Stack>
+                        <Stack className="mt-3">
                             <Pagination page={eventPage} hasMore={events.length >= eventLimit}
                                         onPrevPage={handleEventPrevPage} onNextPage={handleEventNextPage}/>
-                        </div>
+                        </Stack>
                     </>
                 )}
-            </div>
-        </div>
+            </Card.Body>
+        </Card>
     );
 };
