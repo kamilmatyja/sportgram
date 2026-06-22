@@ -5,7 +5,7 @@ import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {Link} from 'react-router-dom';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Stack, Table, Image, Badge} from 'react-bootstrap';
 
 interface EventsTableProps {

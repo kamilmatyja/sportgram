@@ -3,7 +3,7 @@ import {useTranslation} from '../../context/TranslationContext';
 import {PushSubscriptionResponse} from '../../api/responses/PushSubscriptionResponse';
 import {PushSubscriptionStatusEnum} from '../../enums/PushSubscriptionStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Stack, Table, Badge, Button} from 'react-bootstrap';
 import BootstrapIcon from '../Common/BootstrapIcon';
 

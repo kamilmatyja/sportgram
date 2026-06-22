@@ -8,7 +8,8 @@ import {formatDate} from '../../utils/dateFormat';
 import {Pagination} from '../Common/Pagination';
 import BootstrapIcon from '../Common/BootstrapIcon';
 import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
-import {Card, Stack, Form, Image, Spinner, Row, Col, Alert} from 'react-bootstrap';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
+import {Card, Stack, Form, Image, Spinner, Table} from 'react-bootstrap';
 
 interface ConversationActivityListProps {
     activities: (ConversationActivityResponse & { otherUser: UserResponse })[];
@@ -85,22 +86,25 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                     </Stack>
                 ) : (
                     <>
-                        <Stack gap={2} className="table-responsive-custom">
-                            <Row className="g-2 px-2 py-2 rounded bg-light fw-semibold text-muted">
-                                <Col xs={2} sm={1}>{t('photo')}</Col>
-                                <Col xs={5} sm={4}>{t('user')}</Col>
-                                <Col xs={5} sm={3}>{t('link')}</Col>
-                                <Col sm={3} className="d-none d-sm-block">{t('lastActivity')}</Col>
-                                <Col sm={1} className="d-none d-sm-block" />
-                            </Row>
-
-                            {activities.length === 0 ? (
-                                <Alert variant="light" className="mb-0 text-center text-muted">{t('noRecords')}</Alert>
-                            ) : activities.map(act => (
-                                <Card key={act.otherUser.id} className="border-0 shadow-sm">
-                                    <Card.Body className="py-2 px-3">
-                                        <Row className="g-2 align-items-center">
-                                            <Col xs={2} sm={1} className="text-center feed-photo-cell">
+                        <Stack className="table-responsive-custom">
+                            <Table bordered hover className="align-middle mb-0">
+                                <TableHead className="table-light">
+                                    <TableRow>
+                                        <TableHeaderCell>{t('photo')}</TableHeaderCell>
+                                        <TableHeaderCell>{t('user')}</TableHeaderCell>
+                                        <TableHeaderCell>{t('link')}</TableHeaderCell>
+                                        <TableHeaderCell>{t('lastActivity')}</TableHeaderCell>
+                                        <TableHeaderCell className="text-end">{t('chat')}</TableHeaderCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {activities.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-center text-muted">{t('noRecords')}</TableCell>
+                                        </TableRow>
+                                    ) : activities.map(act => (
+                                        <TableRow key={act.otherUser.id}>
+                                            <TableCell className="text-center align-middle feed-photo-cell">
                                                 {act.otherUser.profilePhoto ? (
                                                     <Image
                                                         src={`data:image/webp;base64,${act.otherUser.profilePhoto}`}
@@ -110,38 +114,30 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                                         className="feed-photo"
                                                     />
                                                 ) : (
-                                                    <Stack className="text-muted align-items-center">-</Stack>
+                                                    <Stack as="span" className="text-muted">-</Stack>
                                                 )}
-                                            </Col>
-                                            <Col xs={5} sm={4}>
-                                                <Link to={`/users/${act.otherUser.link}`}
-                                                      className="btn btn-link p-0 text-decoration-none">
+                                            </TableCell>
+                                            <TableCell>
+                                                <Link to={`/users/${act.otherUser.link}`} className="btn btn-link p-0 text-decoration-none">
                                                     {act.otherUser.firstName} {act.otherUser.lastName}
                                                 </Link>
-                                            </Col>
-                                            <Col xs={5} sm={3}>@{act.otherUser.link}</Col>
-                                            <Col sm={3} className="d-none d-sm-block">{formatDate(act.updatedAt)}</Col>
-                                            <Col sm={1} className="d-none d-sm-flex justify-content-end">
-                                                <Link to={`/users/${act.otherUser.link}/conversations`} title={t('chat')}
-                                                      className="btn btn-sm btn-profile-outline-primary">
+                                            </TableCell>
+                                            <TableCell>@{act.otherUser.link}</TableCell>
+                                            <TableCell>{formatDate(act.updatedAt)}</TableCell>
+                                            <TableCell className="text-end">
+                                                <Link
+                                                    to={`/users/${act.otherUser.link}/conversations`}
+                                                    title={t('chat')}
+                                                    className="btn btn-sm btn-profile-outline-primary"
+                                                >
                                                     <BootstrapIcon name="chat-dots" className="me-1" />
                                                     <Stack as="span" className="visually-hidden">{t('chat')}</Stack>
                                                 </Link>
-                                            </Col>
-                                            <Col xs={12} className="d-sm-none">
-                                                <Stack direction="horizontal" className="justify-content-between align-items-center">
-                                                    <Card.Text className="mb-0 text-muted">{formatDate(act.updatedAt)}</Card.Text>
-                                                    <Link to={`/users/${act.otherUser.link}/conversations`} title={t('chat')}
-                                                          className="btn btn-sm btn-profile-outline-primary">
-                                                        <BootstrapIcon name="chat-dots" className="me-1" />
-                                                        <Stack as="span" className="visually-hidden">{t('chat')}</Stack>
-                                                    </Link>
-                                                </Stack>
-                                            </Col>
-                                        </Row>
-                                    </Card.Body>
-                                </Card>
-                            ))}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         </Stack>
                         <Stack className="mt-3">
                             <Pagination

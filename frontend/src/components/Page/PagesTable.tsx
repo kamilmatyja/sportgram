@@ -4,7 +4,7 @@ import {useTranslation} from '../../context/TranslationContext';
 import {PageResponse} from '../../api/responses/PageResponse';
 import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Table, Stack, Image, Badge} from 'react-bootstrap';
 import BootstrapIcon from '../Common/BootstrapIcon';
 

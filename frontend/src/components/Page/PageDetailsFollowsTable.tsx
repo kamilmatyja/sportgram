@@ -5,7 +5,7 @@ import {PageFollowResponse} from '../../api/responses/PageFollowResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {PageFollowStatusEnum} from '../../enums/PageFollowStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Table, Stack, Button, Badge} from 'react-bootstrap';
 
 interface PageDetailsFollowsTableProps {

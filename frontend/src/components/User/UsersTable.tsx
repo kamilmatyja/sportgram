@@ -6,7 +6,7 @@ import {CountryEnum} from '../../enums/CountryEnum';
 import {UserStatusEnum} from '../../enums/UserStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {Link} from 'react-router-dom';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Stack, Table, Image, Badge} from 'react-bootstrap';
 import BootstrapIcon from '../Common/BootstrapIcon';
 

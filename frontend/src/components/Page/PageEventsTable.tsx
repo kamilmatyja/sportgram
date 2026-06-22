@@ -6,7 +6,7 @@ import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {PaginationEnum} from '../../enums/PaginationEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {Pagination} from '../Common/Pagination';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Card, Stack, Form, Table, Image, Badge, Spinner} from 'react-bootstrap';
 import {Link} from 'react-router-dom';
 import SelectOptions, {type SelectOption} from '../Common/SelectOptions';

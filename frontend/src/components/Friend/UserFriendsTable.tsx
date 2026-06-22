@@ -6,7 +6,7 @@ import {UserResponse} from '../../api/responses/UserResponse';
 import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Table, Stack, Button, Badge} from 'react-bootstrap';
 
 interface UserFriendsTableProps {

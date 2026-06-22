@@ -10,7 +10,7 @@ import {formatDate} from '../../utils/dateFormat';
 import {EventResultBody} from '../../api/body/EventResultBody';
 import {EventSubResult} from '../../api/body/EventSubResult';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Modal, Stack, Spinner, Table, Image, Button, Badge, Form, Card} from 'react-bootstrap';
 
 interface EventListsModalProps {

@@ -8,7 +8,7 @@ import {FeedReactionEnum} from '../../enums/FeedReactionEnum';
 import {formatDate} from '../../utils/dateFormat';
 import BootstrapIcon from '../Common/BootstrapIcon';
 import SelectOptions from '../Common/SelectOptions';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Table, Stack, Button, Form, Badge} from 'react-bootstrap';
 
 interface FeedReactionsTableProps {

@@ -68,7 +68,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = (props) => {
                             {loadingMore ? <Spinner animation="border" size="sm" /> : t('loadMore')}
                         </Button>
                     ) : (
-                        <Stack as="span" className="text-muted">{t('noRecords')}</Stack>
+                        <Stack as="span" className="text-center text-muted">{t('noRecords')}</Stack>
                     )}
                 </Stack>
             )}

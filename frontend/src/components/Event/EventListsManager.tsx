@@ -11,7 +11,7 @@ import {EventResultBody} from '../../api/body/EventResultBody';
 import {EventSubResult} from '../../api/body/EventSubResult';
 import BootstrapIcon from '../Common/BootstrapIcon';
 import SelectOptions from '../Common/SelectOptions';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Stack, Form, Spinner, Table, Button, Badge, Card} from 'react-bootstrap';
 
 interface EventListsManagerProps {

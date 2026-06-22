@@ -5,7 +5,7 @@ import {NotificationResponse} from '../../api/responses/NotificationResponse';
 import {NotificationStatusEnum} from '../../enums/NotificationStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table.tsx';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
 import {Stack, Table, Badge, Button} from 'react-bootstrap';
 
 interface UserNotificationsTableProps {
