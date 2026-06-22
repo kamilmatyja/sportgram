@@ -3,6 +3,7 @@ import {useTranslation} from '../../context/TranslationContext';
 import {FeedResponse} from '../../api/responses/FeedResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {FeedCard} from '../Feed/FeedCard';
+import {Container, Stack, Spinner, Button} from 'react-bootstrap';
 
 interface HomeFeedsViewProps {
     feeds: FeedResponse[];
@@ -32,18 +33,18 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = (props) => {
 
     if (loading && feeds.length === 0) {
         return (
-            <div className="container mt-5 text-center">
-                <div className="spinner-border text-profile-primary"/>
-            </div>
+            <Container className="mt-5 text-center">
+                <Spinner animation="border" className="text-profile-primary" />
+            </Container>
         );
     }
 
     return (
-        <div className="container mt-4 mb-5 mx-auto feed-container">
+        <Container className="mt-4 mb-5 mx-auto feed-container">
             {feeds.length === 0 ? (
-                <div className="text-center text-muted">
+                <Stack className="text-center text-muted">
                     {t('noRecords')}
-                </div>
+                </Stack>
             ) : (
                 feeds.map(feed => (
                     <FeedCard
@@ -61,17 +62,16 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = (props) => {
             )}
 
             {feeds.length > 0 && (
-                <div className="text-center mt-4">
+                <Stack className="text-center mt-4 align-items-center">
                     {hasMore ? (
-                        <button className="btn btn-profile-outline-primary" onClick={handleLoadMore}
-                                disabled={loadingMore}>
-                            {loadingMore ? <span className="spinner-border spinner-border-sm"/> : t('loadMore')}
-                        </button>
+                        <Button variant="profile-outline-primary" onClick={handleLoadMore} disabled={loadingMore}>
+                            {loadingMore ? <Spinner animation="border" size="sm" /> : t('loadMore')}
+                        </Button>
                     ) : (
-                        <span className="text-muted">{t('noRecords')}</span>
+                        <Stack as="span" className="text-muted">{t('noRecords')}</Stack>
                     )}
-                </div>
+                </Stack>
             )}
-        </div>
+        </Container>
     );
 };

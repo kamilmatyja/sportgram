@@ -4,6 +4,7 @@ import {NotificationResponse} from '../../api/responses/NotificationResponse';
 import {NotificationStatusEnum} from '../../enums/NotificationStatusEnum';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {ColorEnum} from '../../enums/ColorEnum';
+import {Modal, Button, Stack, Badge, Alert} from 'react-bootstrap';
 
 interface ManageNotificationModalProps {
     user: UserResponse | null;
@@ -34,49 +35,42 @@ export const ManageNotificationModal: React.FC<ManageNotificationModalProps> = (
     const themeClass = ColorEnum.getClass(user.color);
 
     return (
-        <>
-            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
-                <div className="modal-dialog modal-lg">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">{t('manage')}</h5>
-                            <button type="button" className="btn-close" onClick={closeModal}></button>
-                        </div>
-                        <div className="modal-body">
-                            {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
+        <Modal show={show} onHide={closeModal} size="lg" className={themeClass} backdrop="static">
+            <Modal.Header closeButton>
+                <Modal.Title>{t('manage')}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
 
-                            <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{t('status')}: </strong>
-                                <span className="badge bg-light text-dark border profile-theme-border">
-                                    {NotificationStatusEnum.getOptions(t).find(opt => String(opt.value) === String(notification.status))?.label || notification.status}
-                                </span>
-                                {NotificationStatusEnum.getOptions(t)
-                                    .filter(opt => opt.value !== notification.status)
-                                    .map(opt => (
-                                        <button
-                                            key={opt.value}
-                                            type="button"
-                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                            disabled={loading}
-                                            onClick={() => handleStatusSubmit(opt.value)}
-                                        >
-                                            {loading ? t('loading') : opt.label}
-                                        </button>
-                                    ))}
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={loading}>
-                                {t('cancel')}
-                            </button>
-                            <button type="button" className="btn btn-danger" onClick={handleDelete} disabled={loading}>
-                                {loading ? t('sending') : t('delete')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="modal-backdrop show"></div>
-        </>
+                <Stack direction="horizontal" className="flex-wrap gap-2 align-items-center">
+                    <Stack as="strong">{t('status')}: </Stack>
+                    <Badge bg="light" text="dark" className="border profile-theme-border">
+                        {NotificationStatusEnum.getOptions(t).find(opt => String(opt.value) === String(notification.status))?.label || notification.status}
+                    </Badge>
+                    {NotificationStatusEnum.getOptions(t)
+                        .filter(opt => opt.value !== notification.status)
+                        .map(opt => (
+                            <Button
+                                key={opt.value}
+                                variant="profile-outline-primary"
+                                size="sm"
+                                className="btn-xs py-0 px-2"
+                                disabled={loading}
+                                onClick={() => handleStatusSubmit(opt.value)}
+                            >
+                                {loading ? t('loading') : opt.label}
+                            </Button>
+                        ))}
+                </Stack>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={closeModal} disabled={loading}>
+                    {t('cancel')}
+                </Button>
+                <Button variant="danger" onClick={handleDelete} disabled={loading}>
+                    {loading ? t('sending') : t('delete')}
+                </Button>
+            </Modal.Footer>
+        </Modal>
     );
 };
