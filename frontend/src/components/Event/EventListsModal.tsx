@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {useTranslation} from '../../context/TranslationContext';
+import {Link} from 'react-router-dom';
 import {EventResponse} from '../../api/responses/EventResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {EventDisciplineDistanceListResponse} from '../../api/responses/EventDisciplineDistanceListResponse';
@@ -8,6 +9,9 @@ import {ColorEnum} from '../../enums/ColorEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {EventResultBody} from '../../api/body/EventResultBody';
 import {EventSubResult} from '../../api/body/EventSubResult';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Modal, Stack, Spinner, Table, Image, Button, Badge, Form, Card} from 'react-bootstrap';
 
 interface EventListsModalProps {
     show: boolean;
@@ -31,24 +35,9 @@ interface EventListsModalProps {
 }
 
 export const EventListsModal: React.FC<EventListsModalProps> = ({
-                                                                    show,
-                                                                    onClose,
-                                                                    eventObj,
-                                                                    ownerPage,
-                                                                    selectedDistanceId,
-                                                                    lists,
-                                                                    relatedUsers,
-                                                                    currentUser,
-                                                                    isEventOwner,
-                                                                    isAdmin,
-                                                                    isParticipant,
-                                                                    loading,
-                                                                    actionLoading,
-                                                                    onEnroll,
-                                                                    onUpdateStatus,
-                                                                    onDelete,
-                                                                    interactions,
-                                                                    refreshLists
+                                                                    show, onClose, eventObj, ownerPage, selectedDistanceId, lists, relatedUsers,
+                                                                    currentUser, isEventOwner, isAdmin, isParticipant, loading, actionLoading,
+                                                                    onEnroll, onUpdateStatus, onDelete, interactions, refreshLists
                                                                 }) => {
     const {t} = useTranslation();
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
@@ -115,249 +104,208 @@ export const EventListsModal: React.FC<EventListsModalProps> = ({
     };
 
     return (
-        <>
-            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
-                <div className="modal-dialog modal-xl modal-dialog-scrollable">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">
-                                {t('eventTypes.eventDisciplineList')} - {distanceObj?.distance} [m]
-                            </h5>
-                            <button type="button" className="btn-close" onClick={handleClose}
-                                    disabled={actionLoading}></button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <span>{t('participants')} ({lists.length})</span>
-                                {(isParticipant && !isEnrolled) && (
-                                    <button className="btn btn-sm btn-profile-primary" onClick={onEnroll}
-                                            disabled={actionLoading}>
-                                        {actionLoading ?
-                                            <span className="spinner-border spinner-border-sm"/> : t('saveUp')}
-                                    </button>
-                                )}
-                            </div>
+        <Modal show={show} onHide={handleClose} size="xl" scrollable className={themeClass}>
+            <Modal.Header closeButton>
+                <Modal.Title>{t('eventTypes.eventDisciplineList')} - {distanceObj?.distance} [m]</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Stack direction="horizontal" className="justify-content-between align-items-center mb-3">
+                    <Stack as="span">{t('participants')} ({lists.length})</Stack>
+                    {(isParticipant && !isEnrolled) && (
+                        <Button variant="profile-primary" size="sm" onClick={onEnroll} disabled={actionLoading}>
+                            {actionLoading ? <Spinner animation="border" size="sm" /> : t('saveUp')}
+                        </Button>
+                    )}
+                </Stack>
 
-                            {loading ? (
-                                <div className="text-center my-4">
-                                    <div className="spinner-border text-profile-primary"/>
-                                </div>
-                            ) : (
-                                <div className="table-responsive-custom">
-                                    <table className="table table-bordered table-hover align-middle mb-0">
-                                        <thead className="table-light">
-                                        <tr>
-                                            <th>{t('photo')}</th>
-                                            <th>{t('user')}</th>
-                                            <th>{t('status')}</th>
-                                            <th>{t('createdAt')}</th>
-                                            <th>{t('eventTypes.eventDisciplineResult')}</th>
-                                            <th className="text-end">{t('manage')}</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {lists.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={6}
-                                                    className="text-center text-muted">{t('noRecords')}</td>
-                                            </tr>
-                                        ) : lists.map(list => {
-                                            const u = relatedUsers[list.userId];
-                                            const hasResult = list.results && list.results.length > 0;
-                                            const result = hasResult ? list.results[0] : null;
-                                            const isFormOpen = activeResultListId === list.id;
-                                            const isExpanded = expandedRows[list.id] || isFormOpen;
+                {loading ? (
+                    <Stack className="text-center my-4">
+                        <Spinner animation="border" className="text-profile-primary" />
+                    </Stack>
+                ) : (
+                    <Stack className="table-responsive-custom">
+                        <Table bordered hover className="align-middle mb-0">
+                            <TableHead className="table-light">
+                            <TableRow>
+                                <TableHeaderCell>{t('photo')}</TableHeaderCell>
+                                <TableHeaderCell>{t('user')}</TableHeaderCell>
+                                <TableHeaderCell>{t('status')}</TableHeaderCell>
+                                <TableHeaderCell>{t('createdAt')}</TableHeaderCell>
+                                <TableHeaderCell>{t('eventTypes.eventDisciplineResult')}</TableHeaderCell>
+                                <TableHeaderCell className="text-end">{t('manage')}</TableHeaderCell>
+                            </TableRow>
+                            </TableHead>
+                            <TableBody>
+                            {lists.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="text-center text-muted">{t('noRecords')}</TableCell>
+                                </TableRow>
+                            ) : lists.map(list => {
+                                const u = relatedUsers[list.userId];
+                                const hasResult = list.results && list.results.length > 0;
+                                const result = hasResult ? list.results[0] : null;
+                                const isFormOpen = activeResultListId === list.id;
+                                const isExpanded = expandedRows[list.id] || isFormOpen;
 
-                                            return (
-                                                <React.Fragment key={list.id}>
-                                                    <tr>
-                                                        <td className="text-center align-middle feed-photo-cell">
-                                                            {u?.profilePhoto ? (
-                                                                <img src={`data:image/webp;base64,${u.profilePhoto}`}
-                                                                     alt="User"
-                                                                     className="rounded-circle img-fluid feed-photo"/>
-                                                            ) : (
-                                                                <span className="text-muted">-</span>
-                                                            )}
-                                                        </td>
-                                                        <td>
-                                                            {u ? (
-                                                                <a href={`/users/${u.link}`}
-                                                                   className="btn btn-link p-0 text-decoration-none">
-                                                                    {u.firstName} {u.lastName}
-                                                                </a>
-                                                            ) : list.userId}
-                                                        </td>
-                                                        <td>
-                                                            <span className="badge bg-light text-dark border profile-theme-border">
-                                                                {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(list.status))?.label || list.status}
-                                                            </span>
-                                                        </td>
-                                                        <td>{formatDate(list.createdAt)}</td>
-                                                        <td>
-                                                            {hasResult || isFormOpen ? (
-                                                                <button
-                                                                    className="btn btn-sm btn-outline-secondary py-0"
-                                                                    onClick={() => handleToggleRow(list.id)}>
-                                                                    {isExpanded ? <i className="bi bi-chevron-up"></i> :
-                                                                        <i className="bi bi-chevron-down"></i>}
-                                                                    {hasResult ? ` ${t('time')}: ${result?.time} [s]` : ` ${t('resultFormTitle')}`}
-                                                                </button>
-                                                            ) : (
-                                                                <span className="text-muted small">-</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="text-end">
-                                                            <div className="d-flex justify-content-end gap-1 flex-wrap">
-                                                                {(isEventOwner || isAdmin) && SaveStatusEnum.getOptions(t)
-                                                                    .filter(opt => opt.value !== list.status)
-                                                                    .filter(opt => opt.value !== SaveStatusEnum.PENDING)
-                                                                    .map(opt => (
-                                                                        <button
-                                                                            key={opt.value}
-                                                                            className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                                            onClick={() => onUpdateStatus(list.id, opt.value)}
-                                                                            disabled={actionLoading}
-                                                                        >
-                                                                            {opt.label}
-                                                                        </button>
-                                                                    ))}
+                                return (
+                                    <React.Fragment key={list.id}>
+                                        <TableRow>
+                                            <TableCell className="text-center align-middle feed-photo-cell">
+                                                {u?.profilePhoto ? (
+                                                    <Image src={`data:image/webp;base64,${u.profilePhoto}`} alt="User" roundedCircle fluid className="feed-photo" />
+                                                ) : (
+                                                    <Stack as="span" className="text-muted">-</Stack>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {u ? (
+                                                    <Link to={`/users/${u.link}`} className="btn btn-link p-0 text-decoration-none">
+                                                        {u.firstName} {u.lastName}
+                                                    </Link>
+                                                ) : list.userId}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge bg="light" text="dark" className="border profile-theme-border">
+                                                    {SaveStatusEnum.getOptions(t).find(opt => String(opt.value) === String(list.status))?.label || list.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>{formatDate(list.createdAt)}</TableCell>
+                                            <TableCell>
+                                                {hasResult || isFormOpen ? (
+                                                    <Button variant="outline-secondary" size="sm" className="py-0" onClick={() => handleToggleRow(list.id)}>
+                                                        <BootstrapIcon name={isExpanded ? 'chevron-up' : 'chevron-down'} />
+                                                        {hasResult ? ` ${t('time')}: ${result?.time} [s]` : ` ${t('resultFormTitle')}`}
+                                                    </Button>
+                                                ) : (
+                                                    <Stack as="span" className="text-muted small">-</Stack>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-end">
+                                                <Stack direction="horizontal" className="justify-content-end gap-1 flex-wrap">
+                                                    {(isEventOwner || isAdmin) && SaveStatusEnum.getOptions(t)
+                                                        .filter(opt => opt.value !== list.status)
+                                                        .filter(opt => opt.value !== SaveStatusEnum.PENDING)
+                                                        .map(opt => (
+                                                            <Button
+                                                                key={opt.value}
+                                                                variant="profile-outline-primary"
+                                                                className="btn-xs py-0 px-2"
+                                                                onClick={() => onUpdateStatus(list.id, opt.value)}
+                                                                disabled={actionLoading}
+                                                            >
+                                                                {opt.label}
+                                                            </Button>
+                                                        ))}
 
-                                                                {list.status === SaveStatusEnum.ACCEPTED && !hasResult && !isFormOpen && (isEventOwner || isAdmin) && (
-                                                                    <button
-                                                                        className="btn btn-xs btn-profile-primary py-0 px-2"
-                                                                        onClick={() => openAddResultForm(list)}
-                                                                        disabled={actionLoading}
-                                                                    >
-                                                                        <i className="bi bi-plus-circle me-1"></i> {t('add')}
-                                                                    </button>
+                                                    {list.status === SaveStatusEnum.ACCEPTED && !hasResult && !isFormOpen && (isEventOwner || isAdmin) && (
+                                                        <Button
+                                                            variant="profile-primary"
+                                                            className="btn-xs py-0 px-2"
+                                                            onClick={() => openAddResultForm(list)}
+                                                            disabled={actionLoading}
+                                                        >
+                                                            <BootstrapIcon name="plus-circle" className="me-1" /> {t('add')}
+                                                        </Button>
+                                                    )}
+
+                                                    {(isEventOwner || isAdmin || list.userId === currentUser?.id) && (
+                                                        <Button
+                                                            variant="outline-danger"
+                                                            size="sm"
+                                                            className="py-0 px-2 ms-1"
+                                                            onClick={() => onDelete(list.id)}
+                                                            disabled={actionLoading}>
+                                                            <BootstrapIcon name="trash" />
+                                                        </Button>
+                                                    )}
+                                                </Stack>
+                                            </TableCell>
+                                        </TableRow>
+                                        {isExpanded && (hasResult || isFormOpen) && (
+                                            <TableRow className="bg-light">
+                                                <TableCell colSpan={6} className="p-0">
+                                                    {isFormOpen ? (
+                                                        <Stack className="border rounded border-profile-primary bg-white p-3 m-2">
+                                                            <Card.Title as="h6" className="text-profile-primary">{t('resultFormTitle')}</Card.Title>
+                                                            <Form.Group className="mb-2">
+                                                                <Form.Label className="mb-0 small">{t('finalTimeSeconds')}</Form.Label>
+                                                                <Form.Control type="number" size="sm" value={resultFormData.time}
+                                                                              onChange={e => setResultFormData((prev: any) => ({
+                                                                                  ...prev,
+                                                                                  time: parseInt(e.target.value) || 0
+                                                                              }))}/>
+                                                            </Form.Group>
+                                                            {resultFormData.subResults.length > 0 && <Stack as="strong" className="small">{t('subDistances')}:</Stack>}
+                                                            {resultFormData.subResults.map((sr, idx) => {
+                                                                const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
+                                                                return (
+                                                                    <Stack key={idx} direction="horizontal" gap={2} className="align-items-center mb-1">
+                                                                        <Stack as="span" className="small text-muted w-50">{t('forDistance')} {sdMeta?.subDistance || '?'} [m]:</Stack>
+                                                                        <Form.Control type="number" size="sm" className="w-50" placeholder={t('timeSeconds')} value={sr.time}
+                                                                                      onChange={e => {
+                                                                                          const newSubs = [...resultFormData.subResults];
+                                                                                          newSubs[idx].time = parseInt(e.target.value) || 0;
+                                                                                          setResultFormData((prev: any) => ({
+                                                                                              ...prev,
+                                                                                              subResults: newSubs
+                                                                                          }));
+                                                                                      }}/>
+                                                                    </Stack>
+                                                                );
+                                                            })}
+                                                            <Stack direction="horizontal" className="mt-2 justify-content-end">
+                                                                <Button variant="secondary" size="sm" className="me-2" onClick={() => setActiveResultListId(null)}>{t('cancel')}</Button>
+                                                                <Button variant="profile-primary" size="sm" onClick={saveResult} disabled={interactions.actionLoading !== null}>{t('save')}</Button>
+                                                            </Stack>
+                                                        </Stack>
+                                                    ) : result ? (
+                                                        <Stack className="p-3 border rounded border-profile-primary m-2 bg-white">
+                                                            <Stack direction="horizontal" className="justify-content-between align-items-center mb-2">
+                                                                <Stack as="strong" className="text-profile-primary">{t('eventTypes.eventDisciplineResult')}</Stack>
+                                                                {(isEventOwner || isAdmin) && (
+                                                                    <Stack direction="horizontal">
+                                                                        <Button variant="outline-secondary" size="sm" className="me-1 py-0" onClick={() => openEditResultForm(list, result.id)}>
+                                                                            <BootstrapIcon name="pencil" />
+                                                                        </Button>
+                                                                        <Button variant="outline-danger" size="sm" className="py-0" disabled={interactions.actionLoading === 'delete_result'} onClick={() => deleteResult(result.id)}>
+                                                                            <BootstrapIcon name="trash" />
+                                                                        </Button>
+                                                                    </Stack>
                                                                 )}
-
-                                                                {(isEventOwner || isAdmin || list.userId === currentUser?.id) && (
-                                                                    <button
-                                                                        className="btn btn-sm btn-outline-danger py-0 px-2 ms-1"
-                                                                        onClick={() => onDelete(list.id)}
-                                                                        disabled={actionLoading}>
-                                                                        <i className="bi bi-trash"></i>
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    {isExpanded && (hasResult || isFormOpen) && (
-                                                        <tr className="bg-light">
-                                                            <td colSpan={6} className="p-0">
-                                                                {isFormOpen ? (
-                                                                    <div
-                                                                        className="border rounded border-profile-primary bg-white p-3 m-2">
-                                                                        <h6 className="text-profile-primary">{t('resultFormTitle')}</h6>
-                                                                        <div className="mb-2">
-                                                                            <label
-                                                                                className="form-label mb-0 small">{t('finalTimeSeconds')}</label>
-                                                                            <input type="number"
-                                                                                   className="form-control form-control-sm"
-                                                                                   value={resultFormData.time}
-                                                                                   onChange={e => setResultFormData((prev: any) => ({
-                                                                                       ...prev,
-                                                                                       time: parseInt(e.target.value) || 0
-                                                                                   }))}/>
-                                                                        </div>
-                                                                        {resultFormData.subResults.length > 0 && <strong
-                                                                            className="small">{t('subDistances')}:</strong>}
-                                                                        {resultFormData.subResults.map((sr, idx) => {
+                                                            </Stack>
+                                                                            <Stack direction="horizontal" gap={1}>
+                                                                                <Stack as="span" className="fw-bold">{t('finalTimeSeconds')}:</Stack>
+                                                                                <Stack as="span">{result.time} [s]</Stack>
+                                                                            </Stack>
+                                                            {result.subResults && result.subResults.length > 0 && (
+                                                                <Stack className="mt-2">
+                                                                    <Stack as="strong" className="small">{t('subDistances')}:</Stack>
+                                                                    <Stack as="ul" className="mb-0 list-unstyled ms-3">
+                                                                        {result.subResults.map(sr => {
                                                                             const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
                                                                             return (
-                                                                                <div key={idx}
-                                                                                     className="d-flex align-items-center gap-2 mb-1">
-                                                                                    <span
-                                                                                        className="small text-muted w-50">{t('forDistance')} {sdMeta?.subDistance || '?'} [m]:</span>
-                                                                                    <input type="number"
-                                                                                           className="form-control form-control-sm w-50"
-                                                                                           placeholder={t('timeSeconds')}
-                                                                                           value={sr.time}
-                                                                                           onChange={e => {
-                                                                                               const newSubs = [...resultFormData.subResults];
-                                                                                               newSubs[idx].time = parseInt(e.target.value) || 0;
-                                                                                               setResultFormData((prev: any) => ({
-                                                                                                   ...prev,
-                                                                                                   subResults: newSubs
-                                                                                               }));
-                                                                                           }}/>
-                                                                                </div>
+                                                                                <Stack as="li" key={sr.id} className="small text-muted">
+                                                                                    <BootstrapIcon name="stopwatch" className="me-1" />
+                                                                                    {t('forDistance')} {sdMeta?.subDistance || '?'} [m] - {sr.time} [s]
+                                                                                </Stack>
                                                                             );
                                                                         })}
-                                                                        <div className="mt-2 text-end">
-                                                                            <button
-                                                                                className="btn btn-sm btn-secondary me-2"
-                                                                                onClick={() => setActiveResultListId(null)}>{t('cancel')}</button>
-                                                                            <button
-                                                                                className="btn btn-sm btn-profile-primary"
-                                                                                onClick={saveResult}
-                                                                                disabled={interactions.actionLoading !== null}>{t('save')}</button>
-                                                                        </div>
-                                                                    </div>
-                                                                ) : result ? (
-                                                                    <div
-                                                                        className="p-3 border rounded border-profile-primary m-2 bg-white">
-                                                                        <div
-                                                                            className="d-flex justify-content-between align-items-center mb-2">
-                                                                            <strong
-                                                                                className="text-profile-primary">{t('eventTypes.eventDisciplineResult')}</strong>
-                                                                            {(isEventOwner || isAdmin) && (
-                                                                                <div>
-                                                                                    <button
-                                                                                        className="btn btn-sm btn-outline-secondary me-1 py-0"
-                                                                                        onClick={() => openEditResultForm(list, result.id)}>
-                                                                                        <i className="bi bi-pencil"></i>
-                                                                                    </button>
-                                                                                    <button
-                                                                                        className="btn btn-sm btn-outline-danger py-0"
-                                                                                        disabled={interactions.actionLoading === 'delete_result'}
-                                                                                        onClick={() => deleteResult(result.id)}>
-                                                                                        <i className="bi bi-trash"></i>
-                                                                                    </button>
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                        <div>
-                                                                            <strong>{t('finalTimeSeconds')}:</strong> {result.time} [s]
-                                                                        </div>
-                                                                        {result.subResults && result.subResults.length > 0 && (
-                                                                            <div className="mt-2">
-                                                                                <strong
-                                                                                    className="small">{t('subDistances')}:</strong>
-                                                                                <ul className="mb-0 list-unstyled ms-3">
-                                                                                    {result.subResults.map(sr => {
-                                                                                        const sdMeta = distanceObj?.subDistances.find(sd => sd.id === sr.eventDisciplineSubDistanceId);
-                                                                                        return (
-                                                                                            <li key={sr.id}
-                                                                                                className="small text-muted">
-                                                                                                <i className="bi bi-stopwatch me-1"></i>
-                                                                                                {t('forDistance')} {sdMeta?.subDistance || '?'} [m]
-                                                                                                - {sr.time} [s]
-                                                                                            </li>
-                                                                                        );
-                                                                                    })}
-                                                                                </ul>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                ) : null}
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                </React.Fragment>
-                                            );
-                                        })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="modal-backdrop show"></div>
-        </>
+                                                                    </Stack>
+                                                                </Stack>
+                                                            )}
+                                                        </Stack>
+                                                    ) : null}
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </React.Fragment>
+                                );
+                            })}
+                            </TableBody>
+                        </Table>
+                    </Stack>
+                )}
+            </Modal.Body>
+        </Modal>
     );
 };

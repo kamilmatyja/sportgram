@@ -4,6 +4,9 @@ import {EventBody} from '../../api/body/EventBody';
 import {ColorEnum} from '../../enums/ColorEnum';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
 import {PageResponse} from '../../api/responses/PageResponse';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
+import {Modal, Form, Button, Row, Col, InputGroup, Stack, Card} from 'react-bootstrap';
 
 interface AddEventModalProps {
     themeColor?: number;
@@ -30,227 +33,163 @@ interface AddEventModalProps {
 }
 
 export const AddEventModal: React.FC<AddEventModalProps> = ({
-                                                                themeColor,
-                                                                show,
-                                                                myPages,
-                                                                selectedPageId,
-                                                                setSelectedPageId,
-                                                                closeModal,
-                                                                loading,
-                                                                globalError,
-                                                                fieldErrors,
-                                                                formData,
-                                                                handleChange,
-                                                                handleSubmit,
-                                                                addDiscipline,
-                                                                updateDisciplineType,
-                                                                removeDiscipline,
-                                                                addDistance,
-                                                                updateDistanceValue,
-                                                                removeDistance,
-                                                                addSubDistance,
-                                                                updateSubDistanceValue,
+                                                                themeColor, show, myPages, selectedPageId, setSelectedPageId, closeModal,
+                                                                loading, globalError, fieldErrors, formData, handleChange, handleSubmit,
+                                                                addDiscipline, updateDisciplineType, removeDiscipline, addDistance,
+                                                                updateDistanceValue, removeDistance, addSubDistance, updateSubDistanceValue,
                                                                 removeSubDistance
                                                             }) => {
     const {t} = useTranslation();
     if (!show) return null;
 
     const themeClass = themeColor ? ColorEnum.getClass(themeColor) : '';
+    const pageOptions: SelectOption[] = myPages.map((page) => ({value: page.id, label: page.title}));
+    const disciplineOptions = DisciplineEnum.getOptions(t) as SelectOption[];
 
     return (
-        <>
-            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
-                <div className="modal-dialog modal-lg">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">{t('addEvent')}</h5>
-                            <button type="button" className="btn-close" onClick={closeModal}></button>
-                        </div>
-                        <div className="modal-body">
-                            <form id="add-event-form" onSubmit={handleSubmit}>
-                                {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
+        <Modal show={show} onHide={closeModal} size="lg" className={themeClass} backdrop="static">
+            <Modal.Header closeButton>
+                <Modal.Title>{t('addEvent')}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form id="add-event-form" onSubmit={handleSubmit}>
+                    {globalError && <Stack className="alert alert-danger">{t(globalError)}</Stack>}
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t('page')}</label>
-                                    <select className="form-select" value={selectedPageId}
-                                            onChange={e => setSelectedPageId(e.target.value)} required>
-                                        <option value="">{t('selectPage')}</option>
-                                        {myPages.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
-                                    </select>
-                                </div>
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('page')}</Form.Label>
+                        <Form.Select value={selectedPageId} onChange={e => setSelectedPageId(e.target.value)} required>
+                            <SelectOptions options={pageOptions} placeholder={t('selectPage')} />
+                        </Form.Select>
+                    </Form.Group>
 
-                                <div className="row mb-3">
-                                    <div className="col-md-6">
-                                        <label className="form-label">{t('startedAt')}</label>
-                                        <input type="datetime-local" name="startedAt"
-                                               className={`form-control ${fieldErrors.startedAt ? 'is-invalid' : ''}`}
-                                               value={formData.startedAt} onChange={handleChange} required/>
-                                        {fieldErrors.startedAt &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.startedAt}</div>}
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className="form-label">{t('endedAt')}</label>
-                                        <input type="datetime-local" name="endedAt"
-                                               className={`form-control ${fieldErrors.endedAt ? 'is-invalid' : ''}`}
-                                               value={formData.endedAt} onChange={handleChange} required/>
-                                        {fieldErrors.endedAt &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.endedAt}</div>}
-                                    </div>
-                                </div>
+                    <Row className="mb-3">
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('startedAt')}</Form.Label>
+                                <Form.Control type="datetime-local" name="startedAt" value={formData.startedAt} onChange={handleChange} isInvalid={!!fieldErrors.startedAt} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.startedAt}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('endedAt')}</Form.Label>
+                                <Form.Control type="datetime-local" name="endedAt" value={formData.endedAt} onChange={handleChange} isInvalid={!!fieldErrors.endedAt} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.endedAt}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                    </Row>
 
-                                <div className="row mb-3">
-                                    <div className="col-md-6">
-                                        <label className="form-label">{t('title')}</label>
-                                        <input type="text" name="title"
-                                               className={`form-control ${fieldErrors.title ? 'is-invalid' : ''}`}
-                                               value={formData.title} onChange={handleChange} required/>
-                                        {fieldErrors.title &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.title}</div>}
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label className="form-label">{t('link')}</label>
-                                        <input type="text" name="link"
-                                               className={`form-control ${fieldErrors.link ? 'is-invalid' : ''}`}
-                                               value={formData.link} onChange={handleChange} required/>
-                                        {fieldErrors.link &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.link}</div>}
-                                    </div>
-                                </div>
+                    <Row className="mb-3">
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('title')}</Form.Label>
+                                <Form.Control type="text" name="title" value={formData.title} onChange={handleChange} isInvalid={!!fieldErrors.title} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.title}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group>
+                                <Form.Label>{t('link')}</Form.Label>
+                                <Form.Control type="text" name="link" value={formData.link} onChange={handleChange} isInvalid={!!fieldErrors.link} required />
+                                <Form.Control.Feedback type="invalid">{fieldErrors.link}</Form.Control.Feedback>
+                            </Form.Group>
+                        </Col>
+                    </Row>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t('location')}</label>
-                                    <input type="text" name="location"
-                                           className={`form-control ${fieldErrors.location ? 'is-invalid' : ''}`}
-                                           value={formData.location} onChange={handleChange} required/>
-                                    {fieldErrors.location &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.location}</div>}
-                                </div>
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('location')}</Form.Label>
+                        <Form.Control type="text" name="location" value={formData.location} onChange={handleChange} isInvalid={!!fieldErrors.location} required />
+                        <Form.Control.Feedback type="invalid">{fieldErrors.location}</Form.Control.Feedback>
+                    </Form.Group>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t('description')}</label>
-                                    <textarea name="description"
-                                              className={`form-control ${fieldErrors.description ? 'is-invalid' : ''}`}
-                                              value={formData.description} onChange={handleChange} required rows={3}/>
-                                    {fieldErrors.description &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.description}</div>}
-                                </div>
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('description')}</Form.Label>
+                        <Form.Control as="textarea" name="description" value={formData.description} onChange={handleChange} isInvalid={!!fieldErrors.description} required rows={3} />
+                        <Form.Control.Feedback type="invalid">{fieldErrors.description}</Form.Control.Feedback>
+                    </Form.Group>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t('rules')}</label>
-                                    <textarea name="rules"
-                                              className={`form-control ${fieldErrors.rules ? 'is-invalid' : ''}`}
-                                              value={formData.rules} onChange={handleChange} required rows={3}/>
-                                    {fieldErrors.rules &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.rules}</div>}
-                                </div>
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('rules')}</Form.Label>
+                        <Form.Control as="textarea" name="rules" value={formData.rules} onChange={handleChange} isInvalid={!!fieldErrors.rules} required rows={3} />
+                        <Form.Control.Feedback type="invalid">{fieldErrors.rules}</Form.Control.Feedback>
+                    </Form.Group>
 
-                                <div className="mb-3">
-                                    <label className="form-label">{t('photo')}</label>
-                                    <input type="file" accept="image/*" name="photo"
-                                           className={`form-control ${fieldErrors.photo ? 'is-invalid' : ''}`}
-                                           onChange={handleChange} required/>
-                                    {fieldErrors.photo &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.photo}</div>}
-                                </div>
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('photo')}</Form.Label>
+                        <Form.Control type="file" accept="image/*" name="photo" onChange={handleChange as any} isInvalid={!!fieldErrors.photo} required />
+                        <Form.Control.Feedback type="invalid">{fieldErrors.photo}</Form.Control.Feedback>
+                    </Form.Group>
 
-                                <div className="d-flex justify-content-between align-items-center mt-4 mb-3">
-                                    <h6 className="card-title text-profile-primary mb-0">{t('disciplinesAndDistances')}</h6>
-                                    <button type="button" className="btn btn-sm btn-profile-outline-primary"
-                                            onClick={addDiscipline}>
+                    <Stack direction="horizontal" className="justify-content-between align-items-center mt-4 mb-3">
+                        <Card.Title as="h6" className="text-profile-primary mb-0">{t('disciplinesAndDistances')}</Card.Title>
+                        <Button variant="profile-outline-primary" size="sm" onClick={addDiscipline}>{t('add')}</Button>
+                    </Stack>
+
+                    {formData.disciplines?.map((disc, dIndex) => (
+                        <Stack key={dIndex} className="border rounded p-3 mb-3 bg-white">
+                            <Stack direction="horizontal" className="justify-content-between align-items-end mb-3">
+                                <Stack className="flex-grow-1 me-3">
+                                    <Form.Label>{t('discipline')}</Form.Label>
+                                    <Form.Select value={disc.discipline} onChange={e => updateDisciplineType(dIndex, parseInt(e.target.value))}>
+                                        <SelectOptions options={disciplineOptions} />
+                                    </Form.Select>
+                                </Stack>
+                                <Button variant="outline-danger" onClick={() => removeDiscipline(dIndex)}>
+                                    <BootstrapIcon name="trash" />
+                                </Button>
+                            </Stack>
+
+                            <Stack className="ps-4 border-start border-2 border-profile-primary">
+                                <Stack direction="horizontal" className="justify-content-between mb-2">
+                                    <Stack as="span" className="fw-bold">{t('distances')}</Stack>
+                                    <Button variant="profile-outline-primary" size="sm" onClick={() => addDistance(dIndex)}>
                                         {t('add')}
-                                    </button>
-                                </div>
+                                    </Button>
+                                </Stack>
 
-                                {formData.disciplines?.map((disc, dIndex) => (
-                                    <div key={dIndex} className="border rounded p-3 mb-3 bg-white">
-                                        <div className="d-flex justify-content-between align-items-end mb-3">
-                                            <div className="flex-grow-1 me-3">
-                                                <label className="form-label">{t('discipline')}</label>
-                                                <select className="form-select" value={disc.discipline}
-                                                        onChange={e => updateDisciplineType(dIndex, parseInt(e.target.value))}>
-                                                    {DisciplineEnum.getOptions(t).map(opt => <option key={opt.value}
-                                                                                                     value={opt.value}>{opt.label}</option>)}
-                                                </select>
-                                            </div>
-                                            <button type="button" className="btn btn-outline-danger"
-                                                    onClick={() => removeDiscipline(dIndex)}>
-                                                <i className="bi bi-trash"></i>
-                                            </button>
-                                        </div>
+                                {disc.distances?.map((dist, distIndex) => (
+                                    <Card key={distIndex} className="mb-2 shadow-none border">
+                                        <Card.Body className="p-2">
+                                            <Stack direction="horizontal" gap={2} className="align-items-center mb-2">
+                                                <InputGroup size="sm" className="w-50">
+                                                    <InputGroup.Text>{t('distanceMeters')}</InputGroup.Text>
+                                                    <Form.Control type="number" value={dist.distance} onChange={e => updateDistanceValue(dIndex, distIndex, parseInt(e.target.value) || 0)} />
+                                                </InputGroup>
+                                                <Button variant="outline-danger" size="sm" onClick={() => removeDistance(dIndex, distIndex)}>
+                                                    <BootstrapIcon name="trash" />
+                                                </Button>
+                                            </Stack>
 
-                                        <div className="ps-4 border-start border-2 border-profile-primary">
-                                            <div className="d-flex justify-content-between mb-2">
-                                                <span className="fw-bold">{t('distances')}</span>
-                                                <button type="button" className="btn btn-sm btn-profile-outline-primary"
-                                                        onClick={() => addDistance(dIndex)}>
-                                                    {t('add')}
-                                                </button>
-                                            </div>
-
-                                            {disc.distances?.map((dist, distIndex) => (
-                                                <div key={distIndex} className="card mb-2 shadow-none border">
-                                                    <div className="card-body p-2">
-                                                        <div className="d-flex align-items-center gap-2 mb-2">
-                                                            <div className="input-group input-group-sm w-50">
-                                                                <span
-                                                                    className="input-group-text">{t('distanceMeters')}</span>
-                                                                <input type="number" className="form-control"
-                                                                       value={dist.distance}
-                                                                       onChange={e => updateDistanceValue(dIndex, distIndex, parseInt(e.target.value) || 0)}/>
-                                                            </div>
-                                                            <button type="button"
-                                                                    className="btn btn-sm btn-outline-danger"
-                                                                    onClick={() => removeDistance(dIndex, distIndex)}><i
-                                                                className="bi bi-trash"></i></button>
-                                                        </div>
-
-                                                        <div className="ps-3 border-start">
-                                                            <div className="d-flex justify-content-between mb-2">
-                                                                <small
-                                                                    className="text-muted">{t('subDistances')}</small>
-                                                                <button type="button"
-                                                                        className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                                        onClick={() => addSubDistance(dIndex, distIndex)}>
-                                                                    {t('add')}
-                                                                </button>
-                                                            </div>
-                                                            {dist.subDistances?.map((sub, subIndex) => (
-                                                                <div key={subIndex}
-                                                                     className="d-flex align-items-center gap-2 mt-1">
-                                                                    <input type="number"
-                                                                           className="form-control form-control-sm w-50"
-                                                                           placeholder={t('subDistanceMeters')}
-                                                                           value={sub.subDistance}
-                                                                           onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, parseInt(e.target.value) || 0)}/>
-                                                                    <button type="button"
-                                                                            className="btn btn-sm btn-outline-danger"
-                                                                            onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
-                                                                        <i
-                                                                            className="bi bi-trash"></i></button>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                            <Stack className="ps-3 border-start">
+                                                <Stack direction="horizontal" className="justify-content-between mb-2">
+                                                    <Stack as="small" className="text-muted">{t('subDistances')}</Stack>
+                                                    <Button variant="profile-outline-primary" className="btn-xs py-0 px-2" onClick={() => addSubDistance(dIndex, distIndex)}>
+                                                        {t('add')}
+                                                    </Button>
+                                                </Stack>
+                                                {dist.subDistances?.map((sub, subIndex) => (
+                                                    <Stack key={subIndex} direction="horizontal" gap={2} className="align-items-center mt-1">
+                                                        <Form.Control type="number" size="sm" className="w-50" placeholder={t('subDistanceMeters')} value={sub.subDistance} onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, parseInt(e.target.value) || 0)} />
+                                                        <Button variant="outline-danger" size="sm" onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
+                                                            <BootstrapIcon name="trash" />
+                                                        </Button>
+                                                    </Stack>
+                                                ))}
+                                            </Stack>
+                                        </Card.Body>
+                                    </Card>
                                 ))}
-
-                            </form>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary"
-                                    onClick={closeModal}>{t('cancel')}</button>
-                            <button type="submit" className="btn btn-profile-primary" disabled={loading}
-                                    form="add-event-form">
-                                {loading ? t('sending') : t('addEvent')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="modal-backdrop show"></div>
-        </>
+                            </Stack>
+                        </Stack>
+                    ))}
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={closeModal}>{t('cancel')}</Button>
+                <Button variant="profile-primary" type="submit" form="add-event-form" disabled={loading}>
+                    {loading ? t('sending') : t('addEvent')}
+                </Button>
+            </Modal.Footer>
+        </Modal>
     );
 };

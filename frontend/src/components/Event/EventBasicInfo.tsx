@@ -3,6 +3,8 @@ import {useTranslation} from '../../context/TranslationContext';
 import {EventResponse} from '../../api/responses/EventResponse';
 import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import {Card, Stack, Button, Image, Row, Col, Badge} from 'react-bootstrap';
 
 interface EventBasicInfoProps {
     eventObj: EventResponse;
@@ -14,59 +16,58 @@ export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({eventObj, canMana
     const {t} = useTranslation();
 
     return (
-        <div className="card shadow-sm mb-4">
-            <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4 className="mb-0 text-profile-primary fw-bold">
-                        <i className="bi bi-info-circle me-2"></i>{t('basicInformation')}
-                    </h4>
+        <Card className="shadow-sm mb-4">
+            <Card.Body>
+                <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+                    <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">
+                        <BootstrapIcon name="info-circle" className="me-2" />{t('basicInformation')}
+                    </Card.Title>
                     {canManage && (
-                        <button className="btn btn-profile-primary" onClick={() => onManageClick(eventObj)}>
-                            <i className="bi bi-gear me-1"></i> {t('manage')}
-                        </button>
+                        <Button variant="profile-primary" onClick={() => onManageClick(eventObj)}>
+                            <BootstrapIcon name="gear" className="me-1" /> {t('manage')}
+                        </Button>
                     )}
-                </div>
+                </Stack>
 
-                <h4 className="mb-3 fw-bold">{eventObj.title}</h4>
-                <p className="mb-4 text-break fs-5">{eventObj.description}</p>
+                <Card.Title as="h4" className="mb-3 fw-bold">{eventObj.title}</Card.Title>
+                <Card.Text className="mb-4 text-break fs-5">{eventObj.description}</Card.Text>
 
-                <div className="text-center mb-4">
+                <Stack className="text-center mb-4">
                     {eventObj.photo && (
-                        <img src={`data:image/webp;base64,${eventObj.photo}`} alt="Event photo"
-                             className="img-fluid rounded shadow-sm event-details-photo"/>
+                        <Image src={`data:image/webp;base64,${eventObj.photo}`} alt="Event photo" fluid rounded shadow-sm className="event-details-photo" />
                     )}
-                </div>
+                </Stack>
 
-                <div className="row g-3 mb-4 border-bottom pb-4">
-                    <div className="col-md-6">
-                        <div className="text-muted small mb-1">{t('location')}</div>
-                        <div className="fw-medium">
-                            <i className="bi bi-geo-alt me-1 text-profile-primary"></i> {eventObj.location}
-                        </div>
-                    </div>
-                    <div className="col-md-6">
-                        <div className="text-muted small mb-1">{t('status')}</div>
-                        <div>
-                            <span className="badge bg-light text-dark border profile-theme-border">
+                <Row className="g-3 mb-4 border-bottom pb-4">
+                    <Col md={6}>
+                        <Stack className="text-muted small mb-1">{t('location')}</Stack>
+                        <Stack className="fw-medium" direction="horizontal">
+                            <BootstrapIcon name="geo-alt" className="me-1 text-profile-primary" /> {eventObj.location}
+                        </Stack>
+                    </Col>
+                    <Col md={6}>
+                        <Stack className="text-muted small mb-1">{t('status')}</Stack>
+                        <Stack>
+                            <Badge bg="light" text="dark" className="border profile-theme-border">
                                 {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(eventObj.status))?.label || eventObj.status}
-                            </span>
-                        </div>
-                    </div>
-                    <div className="col-md-6">
-                        <div className="text-muted small mb-1">{t('startedAt')}</div>
-                        <div className="fw-medium">{formatDate(eventObj.startedAt)}</div>
-                    </div>
-                    <div className="col-md-6">
-                        <div className="text-muted small mb-1">{t('endedAt')}</div>
-                        <div className="fw-medium">{formatDate(eventObj.endedAt)}</div>
-                    </div>
-                </div>
+                            </Badge>
+                        </Stack>
+                    </Col>
+                    <Col md={6}>
+                        <Stack className="text-muted small mb-1">{t('startedAt')}</Stack>
+                        <Stack className="fw-medium">{formatDate(eventObj.startedAt)}</Stack>
+                    </Col>
+                    <Col md={6}>
+                        <Stack className="text-muted small mb-1">{t('endedAt')}</Stack>
+                        <Stack className="fw-medium">{formatDate(eventObj.endedAt)}</Stack>
+                    </Col>
+                </Row>
 
-                <div className="mb-2">
-                    <h5 className="fw-bold">{t('rules')}</h5>
-                    <p className="text-break mb-0">{eventObj.rules}</p>
-                </div>
-            </div>
-        </div>
+                <Stack className="mb-2">
+                    <Stack as="h5" className="fw-bold">{t('rules')}</Stack>
+                    <Card.Text className="text-break mb-0">{eventObj.rules}</Card.Text>
+                </Stack>
+            </Card.Body>
+        </Card>
     );
 };

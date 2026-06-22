@@ -7,6 +7,7 @@ import {ColorEnum} from '../../enums/ColorEnum';
 import {EventPageHeader} from './EventPageHeader';
 import {EventBasicInfo} from './EventBasicInfo';
 import {EventDisciplinesTable} from './EventDisciplinesTable';
+import {Container, Spinner, Alert} from 'react-bootstrap';
 
 interface EventDetailsViewProps {
     eventObj: EventResponse | null;
@@ -33,31 +34,26 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
                                                                   }) => {
     const {t} = useTranslation();
 
-    if (loading) return <div className="container mt-5 text-center">
-        <div className="spinner-border text-profile-primary"/>
-    </div>;
-    if (error || !eventObj || !ownerPage || !currentUser) return <div
-        className="container mt-5 alert alert-danger">{error ? t(error) : t('error')}</div>;
+    if (loading) return (
+        <Container className="mt-5 text-center">
+            <Spinner animation="border" className="text-profile-primary" />
+        </Container>
+    );
+
+    if (error || !eventObj || !ownerPage || !currentUser) return (
+        <Container className="mt-5">
+            <Alert variant="danger">{error ? t(error) : t('error')}</Alert>
+        </Container>
+    );
 
     const themeClass = ColorEnum.getClass(ownerPage.color);
     const canManage = isMyProfile || isAdmin;
 
     return (
-        <div className={`container mt-4 mb-5 ${themeClass}`} tabIndex={-1}>
-            <EventPageHeader
-                ownerPage={ownerPage}
-            />
-
-            <EventBasicInfo
-                eventObj={eventObj}
-                canManage={canManage}
-                onManageClick={onManageClick}
-            />
-
-            <EventDisciplinesTable
-                eventObj={eventObj}
-                openListsModal={openListsModal}
-            />
-        </div>
+        <Container className={`mt-4 mb-5 ${themeClass}`} tabIndex={-1}>
+            <EventPageHeader ownerPage={ownerPage} />
+            <EventBasicInfo eventObj={eventObj} canManage={canManage} onManageClick={onManageClick} />
+            <EventDisciplinesTable eventObj={eventObj} openListsModal={openListsModal} />
+        </Container>
     );
 };

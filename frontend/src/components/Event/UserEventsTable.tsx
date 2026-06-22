@@ -4,6 +4,10 @@ import {EventResponse} from '../../api/responses/EventResponse';
 import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {EventListsManager} from './EventListsManager';
+import {Link} from 'react-router-dom';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Stack, Table, Image, Badge, Button, Card} from 'react-bootstrap';
 
 interface UserEventsTableProps {
     events: EventResponse[];
@@ -29,79 +33,80 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
     };
 
     return (
-        <div className="table-responsive-custom">
-            <table className="table table-bordered table-hover align-middle mb-0">
-                <thead className="table-light">
-                <tr>
-                    <th>{t('photo')}</th>
-                    <th>{t('title')}</th>
-                    <th>{t('location')}</th>
-                    <th>{t('startedAt')}</th>
-                    <th>{t('endedAt')}</th>
-                    <th>{t('status')}</th>
-                    <th>{t('details')}</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
+        <Stack className="table-responsive-custom">
+            <Table bordered hover className="align-middle mb-0">
+                <TableHead className="table-light">
+                <TableRow>
+                    <TableHeaderCell>{t('photo')}</TableHeaderCell>
+                    <TableHeaderCell>{t('title')}</TableHeaderCell>
+                    <TableHeaderCell>{t('location')}</TableHeaderCell>
+                    <TableHeaderCell>{t('startedAt')}</TableHeaderCell>
+                    <TableHeaderCell>{t('endedAt')}</TableHeaderCell>
+                    <TableHeaderCell>{t('status')}</TableHeaderCell>
+                    <TableHeaderCell>{t('details')}</TableHeaderCell>
+                    <TableHeaderCell />
+                </TableRow>
+                </TableHead>
+                <TableBody>
                 {events.length === 0 ? (
-                    <tr>
-                        <td colSpan={8} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
+                    <TableRow>
+                        <TableCell colSpan={8} className="text-center text-muted">{t('noRecords')}</TableCell>
+                    </TableRow>
                 ) : events.map(ev => (
                     <React.Fragment key={ev.id}>
-                        <tr>
-                            <td className="text-center align-middle feed-photo-cell">
-                                <img src={`data:image/webp;base64,${ev.photo}`} alt="Photo"
-                                     className="w-100 h-100 object-fit-cover"/>
-                            </td>
-                            <td>
-                                <a href={`/events/${ev.link}`} className="btn btn-link p-0 text-decoration-none">
-                                    {ev.title}
-                                </a>
-                            </td>
-                            <td>{ev.location}</td>
-                            <td>{formatDate(ev.startedAt)}</td>
-                            <td>{formatDate(ev.endedAt)}</td>
-                            <td>
-                                <span className="badge bg-light text-dark border profile-theme-border">
-                                    {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(ev.status))?.label || ev.status}
-                                </span>
-                            </td>
-                            <td>
-                                <button className="btn btn-sm btn-outline-secondary" onClick={() => toggleRow(ev.id)}>
-                                    {expandedRow === ev.id ? <i className="bi bi-chevron-up"></i> :
-                                        <i className="bi bi-chevron-down"></i>} {t('lists')} / {t('results')}
-                                </button>
-                            </td>
-                            <td className="text-end">
-                                {(isMyProfile || isAdmin) && (
-                                    <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
-                                            onClick={() => onManageClick(ev)}>
-                                        <i className="bi bi-gear" aria-hidden="true"></i>
-                                        <span className="visually-hidden">{t('manage')}</span>
-                                    </button>
+                        <TableRow>
+                            <TableCell className="text-center align-middle feed-photo-cell">
+                                {ev.photo ? (
+                                    <Image src={`data:image/webp;base64,${ev.photo}`} alt="Photo" className="w-100 h-100 object-fit-cover" />
+                                ) : (
+                                    <Stack as="span" className="text-muted">-</Stack>
                                 )}
-                            </td>
-                        </tr>
+                            </TableCell>
+                            <TableCell>
+                                <Link to={`/events/${ev.link}`} className="btn btn-link p-0 text-decoration-none">
+                                    {ev.title}
+                                </Link>
+                            </TableCell>
+                            <TableCell>{ev.location}</TableCell>
+                            <TableCell>{formatDate(ev.startedAt)}</TableCell>
+                            <TableCell>{formatDate(ev.endedAt)}</TableCell>
+                            <TableCell>
+                                <Badge bg="light" text="dark" className="border profile-theme-border">
+                                    {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(ev.status))?.label || ev.status}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>
+                                <Button variant="outline-secondary" size="sm" onClick={() => toggleRow(ev.id)}>
+                                    <BootstrapIcon name={expandedRow === ev.id ? 'chevron-up' : 'chevron-down'} /> {t('lists')} / {t('results')}
+                                </Button>
+                            </TableCell>
+                            <TableCell className="text-end">
+                                {(isMyProfile || isAdmin) && (
+                                    <Button variant="profile-outline-primary" size="sm" title={t('manage')} onClick={() => onManageClick(ev)}>
+                                        <BootstrapIcon name="gear" aria-hidden="true" />
+                                        <Stack as="span" className="visually-hidden">{t('manage')}</Stack>
+                                    </Button>
+                                )}
+                            </TableCell>
+                        </TableRow>
                         {expandedRow === ev.id && (
-                            <tr className="bg-light">
-                                <td colSpan={8} className="p-0">
-                                    <div className="border rounded border-profile-primary bg-white m-3">
+                            <TableRow className="bg-light">
+                                <TableCell colSpan={8} className="p-0">
+                                    <Card className="border rounded border-profile-primary bg-white m-3">
                                         <EventListsManager
                                             eventObj={ev}
                                             isMyProfile={isMyProfile}
                                             isAdmin={isAdmin}
                                             interactions={interactions}
                                         />
-                                    </div>
-                                </td>
-                            </tr>
+                                    </Card>
+                                </TableCell>
+                            </TableRow>
                         )}
                     </React.Fragment>
                 ))}
-                </tbody>
-            </table>
-        </div>
+                </TableBody>
+            </Table>
+        </Stack>
     );
 };

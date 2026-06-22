@@ -5,6 +5,7 @@ import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
 import {Pagination} from '../Common/Pagination';
 import {EventsFilterBar} from './EventsFilterBar';
 import {EventsTable} from './EventsTable';
+import {Container, Stack, Card, Button, Spinner, Alert} from 'react-bootstrap';
 
 interface EventsListViewProps {
     events: EventResponse[];
@@ -42,15 +43,15 @@ export const EventsListView: React.FC<EventsListViewProps> = ({
     const {t} = useTranslation();
 
     return (
-        <div className="container mt-5 mb-5">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="mb-0 text-profile-primary fw-bold">{t('events')}</h2>
+        <Container className="mt-5 mb-5">
+            <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+                <Card.Title as="h2" className="mb-0 text-profile-primary fw-bold">{t('events')}</Card.Title>
                 {isOrganizer && (
-                    <button className="btn btn-profile-primary" onClick={onAddClick}>
+                    <Button variant="profile-primary" onClick={onAddClick}>
                         {t('addEvent')}
-                    </button>
+                    </Button>
                 )}
-            </div>
+            </Stack>
 
             <EventsFilterBar
                 filters={filters}
@@ -62,24 +63,24 @@ export const EventsListView: React.FC<EventsListViewProps> = ({
             />
 
             {loading && events.length === 0 ? (
-                <div className="text-center mt-4">
-                    <div className="spinner-border text-profile-primary"/>
-                </div>
+                <Stack className="text-center mt-4">
+                    <Spinner animation="border" className="text-profile-primary" />
+                </Stack>
             ) : error ? (
-                <div className="alert alert-danger mt-3">{t(error)}</div>
+                <Alert variant="danger" className="mt-3">{t(error)}</Alert>
             ) : (
                 <>
                     <EventsTable events={events}/>
-                    <div className="mt-3">
+                    <Stack className="mt-3">
                         <Pagination
                             page={page}
                             hasMore={events.length >= limit}
                             onPrevPage={onPrevPage}
                             onNextPage={onNextPage}
                         />
-                    </div>
+                    </Stack>
                 </>
             )}
-        </div>
+        </Container>
     );
 };

@@ -2,6 +2,9 @@ import React from 'react';
 import {useTranslation} from '../../context/TranslationContext';
 import {EventResponse} from '../../api/responses/EventResponse';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Card, Table, Button, Stack} from 'react-bootstrap';
 
 interface EventDisciplinesTableProps {
     eventObj: EventResponse;
@@ -14,61 +17,59 @@ export const EventDisciplinesTable: React.FC<EventDisciplinesTableProps> = ({
     const {t} = useTranslation();
 
     return (
-        <div className="card shadow-sm mb-4">
-            <div className="card-body">
-                <h5 className="mb-3 text-profile-primary fw-bold">{t('disciplinesAndDistances')}</h5>
+        <Card className="shadow-sm mb-4">
+            <Card.Body>
+                <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">{t('disciplinesAndDistances')}</Card.Title>
 
-                <div className="table-responsive-custom">
-                    <table className="table table-bordered table-hover align-middle mb-0">
-                        <thead className="table-light">
-                        <tr>
-                            <th>{t('discipline')}</th>
-                            <th>{t('distance')} [m]</th>
-                            <th>{t('subDistances')}</th>
-                            <th className="text-end">{t('manage')}</th>
-                        </tr>
-                        </thead>
-                        <tbody>
+                <Stack className="table-responsive-custom">
+                    <Table bordered hover className="align-middle mb-0">
+                        <TableHead className="table-light">
+                        <TableRow>
+                            <TableHeaderCell>{t('discipline')}</TableHeaderCell>
+                            <TableHeaderCell>{t('distance')} [m]</TableHeaderCell>
+                            <TableHeaderCell>{t('subDistances')}</TableHeaderCell>
+                            <TableHeaderCell className="text-end">{t('manage')}</TableHeaderCell>
+                        </TableRow>
+                        </TableHead>
+                        <TableBody>
                         {eventObj.disciplines.length === 0 ? (
-                            <tr>
-                                <td colSpan={4} className="text-center text-muted">{t('noRecords')}</td>
-                            </tr>
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center text-muted">{t('noRecords')}</TableCell>
+                            </TableRow>
                         ) : eventObj.disciplines.flatMap(disc =>
                             disc.distances.map(dist => (
-                                <tr key={dist.id}>
-                                    <td>{DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(disc.discipline))?.label || disc.discipline}</td>
-                                    <td>{dist.distance}</td>
-                                    <td>
+                                <TableRow key={dist.id}>
+                                    <TableCell>{DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(disc.discipline))?.label || disc.discipline}</TableCell>
+                                    <TableCell>{dist.distance}</TableCell>
+                                    <TableCell>
                                         {dist.subDistances && dist.subDistances.length > 0 ? (
-                                            <ul className="mb-0 list-unstyled small">
+                                            <Stack as="ul" className="mb-0 list-unstyled small">
                                                 {dist.subDistances.map(sub => (
-                                                    <li key={sub.id}>
-                                                        <i className="bi bi-dash me-1"></i>
+                                                    <Stack as="li" key={sub.id}>
+                                                        <BootstrapIcon name="dash" className="me-1" />
                                                         {sub.subDistance} [m]
-                                                    </li>
+                                                    </Stack>
                                                 ))}
-                                            </ul>
+                                            </Stack>
                                         ) : (
-                                            <span className="text-muted">-</span>
+                                            <Stack as="span" className="text-muted">-</Stack>
                                         )}
-                                    </td>
-                                    <td className="text-end">
-                                        <div className="d-flex justify-content-end gap-2 flex-wrap">
-                                            <button className="btn btn-sm btn-profile-outline-primary"
-                                                    onClick={() => openListsModal(dist.id)}>
-                                                <i className="bi bi-list-ul me-1"></i>
-                                                <span
-                                                    className="visually-hidden">{t('eventTypes.eventDisciplineList')}</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                    <TableCell className="text-end">
+                                        <Stack direction="horizontal" className="justify-content-end gap-2 flex-wrap">
+                                            <Button variant="profile-outline-primary" size="sm" onClick={() => openListsModal(dist.id)}>
+                                                <BootstrapIcon name="list-ul" className="me-1" />
+                                                <Stack as="span" className="visually-hidden">{t('eventTypes.eventDisciplineList')}</Stack>
+                                            </Button>
+                                        </Stack>
+                                    </TableCell>
+                                </TableRow>
                             ))
                         )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                        </TableBody>
+                    </Table>
+                </Stack>
+            </Card.Body>
+        </Card>
     );
 };
