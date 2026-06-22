@@ -1,10 +1,14 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {useTranslation} from '../../context/TranslationContext';
 import {ConversationActivityResponse} from '../../api/responses/ConversationActivityResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {PaginationEnum} from '../../enums/PaginationEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {Pagination} from '../Common/Pagination';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
+import {Card, Stack, Form, Image, Spinner, Row, Col, Alert} from 'react-bootstrap';
 
 interface ConversationActivityListProps {
     activities: (ConversationActivityResponse & { otherUser: UserResponse })[];
@@ -34,16 +38,24 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                                                                       setActivitySearch
                                                                                   }) => {
     const {t} = useTranslation();
+    const sortOptions: SelectOption[] = [
+        {value: 'updatedAt:desc', label: t('sortCreatedDesc')},
+        {value: 'updatedAt:asc', label: t('sortCreatedAsc')},
+        {value: 'user:asc', label: t('sortUserAsc')},
+        {value: 'user:desc', label: t('sortUserDesc')},
+    ];
+
+    const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
 
     return (
-        <div className="card shadow-sm">
-            <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h4 className="mb-0 text-profile-primary fw-bold">{t('conversations')}</h4>
-                </div>
+        <Card className="shadow-sm">
+            <Card.Body>
+                <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+                    <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">{t('conversations')}</Card.Title>
+                </Stack>
 
-                <div className="mb-3 d-flex flex-wrap gap-3 align-items-center">
-                    <input
+                <Stack direction="horizontal" gap={3} className="mb-3 flex-wrap align-items-center">
+                    <Form.Control
                         type="text"
                         placeholder={t('search')}
                         value={activitySearch}
@@ -51,90 +63,97 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                             setActivitySearch(e.target.value);
                             setActivityPage(1);
                         }}
-                        className="form-control w-auto"
+                        className="w-auto"
                     />
-                    <select value={activitySort} onChange={e => {
+                    <Form.Select value={activitySort} onChange={e => {
                         setActivitySort(e.target.value);
                         setActivityPage(1);
-                    }} className="form-select w-auto ms-auto">
-                        <option value="updatedAt:desc">{t('sortCreatedDesc')}</option>
-                        <option value="updatedAt:asc">{t('sortCreatedAsc')}</option>
-                        <option value="user:asc">{t('sortUserAsc')}</option>
-                        <option value="user:desc">{t('sortUserDesc')}</option>
-                    </select>
-                    <select value={activityLimit} onChange={e => {
+                    }} className="w-auto ms-auto">
+                        <SelectOptions options={sortOptions} />
+                    </Form.Select>
+                    <Form.Select value={activityLimit} onChange={e => {
                         setActivityLimit(Number(e.target.value));
                         setActivityPage(1);
-                    }} className="form-select w-auto">
-                        {PaginationEnum.getOptions(t).map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                    </select>
-                </div>
+                    }} className="w-auto">
+                        <SelectOptions options={limitOptions} />
+                    </Form.Select>
+                </Stack>
 
                 {loading ? (
-                    <div className="text-center my-4">
-                        <div className="spinner-border text-profile-primary"/>
-                    </div>
+                    <Stack className="text-center my-4 align-items-center">
+                        <Spinner animation="border" className="text-profile-primary" />
+                    </Stack>
                 ) : (
                     <>
-                        <div className="table-responsive-custom">
-                            <table className="table table-bordered table-hover align-middle mb-0">
-                                <thead className="table-light">
-                                <tr>
-                                    <th>{t('photo')}</th>
-                                    <th>{t('user')}</th>
-                                    <th>{t('link')}</th>
-                                    <th>{t('lastActivity')}</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {activities.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
-                                    </tr>
-                                ) : activities.map(act => (
-                                    <tr key={act.otherUser.id}>
-                                        <td className="text-center align-middle feed-photo-cell">
-                                            {act.otherUser.profilePhoto ? (
-                                                <img src={`data:image/webp;base64,${act.otherUser.profilePhoto}`}
-                                                     alt="avatar" className="rounded-circle img-fluid feed-photo"/>
-                                            ) : (
-                                                <span className="text-muted">-</span>
-                                            )}
-                                        </td>
-                                        <td>
-                                            <a href={`/users/${act.otherUser.link}`}
-                                               className="btn btn-link p-0 text-decoration-none">
-                                                {act.otherUser.firstName} {act.otherUser.lastName}
-                                            </a>
-                                        </td>
-                                        <td>@{act.otherUser.link}</td>
-                                        <td>{formatDate(act.updatedAt)}</td>
-                                        <td className="text-end">
-                                            <a href={`/users/${act.otherUser.link}/conversations`} title={t('chat')}
-                                               className="btn btn-sm btn-profile-outline-primary">
-                                                <i className="bi bi-chat-dots me-1"></i>
-                                                <span className="visually-hidden">{t('chat')}</span>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="mt-3">
+                        <Stack gap={2} className="table-responsive-custom">
+                            <Row className="g-2 px-2 py-2 rounded bg-light fw-semibold text-muted">
+                                <Col xs={2} sm={1}>{t('photo')}</Col>
+                                <Col xs={5} sm={4}>{t('user')}</Col>
+                                <Col xs={5} sm={3}>{t('link')}</Col>
+                                <Col sm={3} className="d-none d-sm-block">{t('lastActivity')}</Col>
+                                <Col sm={1} className="d-none d-sm-block" />
+                            </Row>
+
+                            {activities.length === 0 ? (
+                                <Alert variant="light" className="mb-0 text-center text-muted">{t('noRecords')}</Alert>
+                            ) : activities.map(act => (
+                                <Card key={act.otherUser.id} className="border-0 shadow-sm">
+                                    <Card.Body className="py-2 px-3">
+                                        <Row className="g-2 align-items-center">
+                                            <Col xs={2} sm={1} className="text-center feed-photo-cell">
+                                                {act.otherUser.profilePhoto ? (
+                                                    <Image
+                                                        src={`data:image/webp;base64,${act.otherUser.profilePhoto}`}
+                                                        alt="avatar"
+                                                        roundedCircle
+                                                        fluid
+                                                        className="feed-photo"
+                                                    />
+                                                ) : (
+                                                    <Stack className="text-muted align-items-center">-</Stack>
+                                                )}
+                                            </Col>
+                                            <Col xs={5} sm={4}>
+                                                <Link to={`/users/${act.otherUser.link}`}
+                                                      className="btn btn-link p-0 text-decoration-none">
+                                                    {act.otherUser.firstName} {act.otherUser.lastName}
+                                                </Link>
+                                            </Col>
+                                            <Col xs={5} sm={3}>@{act.otherUser.link}</Col>
+                                            <Col sm={3} className="d-none d-sm-block">{formatDate(act.updatedAt)}</Col>
+                                            <Col sm={1} className="d-none d-sm-flex justify-content-end">
+                                                <Link to={`/users/${act.otherUser.link}/conversations`} title={t('chat')}
+                                                      className="btn btn-sm btn-profile-outline-primary">
+                                                    <BootstrapIcon name="chat-dots" className="me-1" />
+                                                    <Stack as="span" className="visually-hidden">{t('chat')}</Stack>
+                                                </Link>
+                                            </Col>
+                                            <Col xs={12} className="d-sm-none">
+                                                <Stack direction="horizontal" className="justify-content-between align-items-center">
+                                                    <Card.Text className="mb-0 text-muted">{formatDate(act.updatedAt)}</Card.Text>
+                                                    <Link to={`/users/${act.otherUser.link}/conversations`} title={t('chat')}
+                                                          className="btn btn-sm btn-profile-outline-primary">
+                                                        <BootstrapIcon name="chat-dots" className="me-1" />
+                                                        <Stack as="span" className="visually-hidden">{t('chat')}</Stack>
+                                                    </Link>
+                                                </Stack>
+                                            </Col>
+                                        </Row>
+                                    </Card.Body>
+                                </Card>
+                            ))}
+                        </Stack>
+                        <Stack className="mt-3">
                             <Pagination
                                 page={activityPage}
                                 hasMore={(activityPage * activityLimit) < totalActivities}
                                 onPrevPage={() => setActivityPage(Math.max(activityPage - 1, 1))}
                                 onNextPage={() => setActivityPage(activityPage + 1)}
                             />
-                        </div>
+                        </Stack>
                     </>
                 )}
-            </div>
-        </div>
+            </Card.Body>
+        </Card>
     );
 };
