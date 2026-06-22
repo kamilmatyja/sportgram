@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import {formatDate} from '../../utils/dateFormat';
 import {FlatStory} from './StoriesCarousel';
+import {Modal, Button, Image, Stack} from 'react-bootstrap';
+import BootstrapIcon from '../Common/BootstrapIcon';
 
 interface StoryViewerModalProps {
     show: boolean;
@@ -31,48 +33,43 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({ show, storie
     const user = currentStory.user;
 
     return (
-        <>
-            <div className="modal d-block story-viewer-backdrop" tabIndex={-1}>
-                <div className="modal-dialog modal-lg modal-dialog-centered">
-                    <div className="modal-content bg-dark text-white border-0 position-relative">
+        <Modal show={show} onHide={onClose} dialogClassName="modal-lg modal-dialog-centered" backdropClassName="story-viewer-backdrop" contentClassName="bg-dark text-white border-0 position-relative">
+            <Stack className="position-absolute top-0 w-100 p-3 d-flex flex-row justify-content-between align-items-center story-viewer-header">
+                <Stack direction="horizontal" gap={2} className="align-items-center">
+                    {user.profilePhoto ? (
+                        <Image src={`data:image/webp;base64,${user.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover story-viewer-avatar" />
+                    ) : (
+                        <Stack className="bg-secondary rounded-circle d-flex align-items-center justify-content-center story-viewer-avatar">
+                            <BootstrapIcon name="person" />
+                        </Stack>
+                    )}
+                    <Stack>
+                        <Stack as="strong" className="d-block">{user.firstName} {user.lastName}</Stack>
+                        <Stack as="small" className="text-light opacity-75">{formatDate(currentStory.createdAt)}</Stack>
+                    </Stack>
+                </Stack>
+                <Button variant="link" className="text-white fs-4 p-0 text-decoration-none" onClick={onClose}>
+                    <BootstrapIcon name="x-lg" />
+                </Button>
+            </Stack>
 
-                        <div className="position-absolute top-0 w-100 p-3 d-flex justify-content-between align-items-center story-viewer-header">
-                            <div className="d-flex align-items-center gap-2">
-                                {user.profilePhoto ? (
-                                    <img src={`data:image/webp;base64,${user.profilePhoto}`} alt="avatar" className="rounded-circle object-fit-cover story-viewer-avatar" />
-                                ) : (
-                                    <div className="bg-secondary rounded-circle d-flex align-items-center justify-content-center story-viewer-avatar">
-                                        <i className="bi bi-person"></i>
-                                    </div>
-                                )}
-                                <div>
-                                    <strong className="d-block">{user.firstName} {user.lastName}</strong>
-                                    <small className="text-light opacity-75">{formatDate(currentStory.createdAt)}</small>
-                                </div>
-                            </div>
-                            <button className="btn btn-link text-white fs-4 p-0 text-decoration-none" onClick={onClose}><i className="bi bi-x-lg"></i></button>
-                        </div>
+            <Stack className="position-relative d-flex justify-content-center bg-black align-items-center story-viewer-container">
+                <Image src={`data:image/webp;base64,${currentStory.photo}`} className="story-viewer-img" alt="Story" />
 
-                        <div className="position-relative d-flex justify-content-center bg-black align-items-center story-viewer-container">
-                            <img src={`data:image/webp;base64,${currentStory.photo}`} className="story-viewer-img" alt="Story" />
+                {currentIndex > 0 && (
+                    <Button variant="dark" className="position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle shadow opacity-75 d-flex align-items-center justify-content-center story-viewer-nav-btn" onClick={handlePrev}>
+                        <BootstrapIcon name="chevron-left" className="fs-4" />
+                    </Button>
+                )}
 
-                            {currentIndex > 0 && (
-                                <button className="btn btn-dark position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle shadow opacity-75 d-flex align-items-center justify-content-center story-viewer-nav-btn" onClick={handlePrev}>
-                                    <i className="bi bi-chevron-left fs-4"></i>
-                                </button>
-                            )}
+                <Button variant="dark" className="position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle shadow opacity-75 d-flex align-items-center justify-content-center story-viewer-nav-btn" onClick={handleNext}>
+                    <BootstrapIcon name={currentIndex < stories.length - 1 ? "chevron-right" : "check-lg"} className="fs-4" />
+                </Button>
+            </Stack>
 
-                            <button className="btn btn-dark position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle shadow opacity-75 d-flex align-items-center justify-content-center story-viewer-nav-btn" onClick={handleNext}>
-                                <i className={currentIndex < stories.length - 1 ? "bi bi-chevron-right fs-4" : "bi bi-check-lg fs-4"}></i>
-                            </button>
-                        </div>
-
-                        <div className="p-3 text-center fs-5">
-                            {currentStory.text}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
+            <Stack className="p-3 text-center fs-5">
+                {currentStory.text}
+            </Stack>
+        </Modal>
     );
 };

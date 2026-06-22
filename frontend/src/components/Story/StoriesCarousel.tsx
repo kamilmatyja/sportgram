@@ -4,6 +4,8 @@ import {StoryViewerModal} from './StoryViewerModal';
 import {StoryResponse} from '../../api/responses/StoryResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {ColorEnum} from '../../enums/ColorEnum';
+import {Container, Card, Stack, Image} from 'react-bootstrap';
+import BootstrapIcon from '../Common/BootstrapIcon';
 
 export type FlatStory = StoryResponse & { user: UserResponse };
 
@@ -32,28 +34,28 @@ export const StoriesCarousel: React.FC<{ targetUserId?: string }> = ({ targetUse
     }).filter(item => item.user !== undefined);
 
     return (
-        <div className="container mt-4 feed-container">
-            <div className="card shadow-sm border-0">
-                <div className="card-body p-2 stories-carousel">
+        <Container className="mt-4 feed-container">
+            <Card className="shadow-sm border-0">
+                <Card.Body className="p-2 stories-carousel">
                     {carouselItems.map(item => {
                         const themeClass = ColorEnum.getClass(item.user.color);
                         return (
-                            <div key={item.user.id} className="story-item" onClick={() => setActiveStoryIndex(item.firstStoryIndex)}>
-                                <div className={`story-avatar-container profile-theme-bg ${themeClass}`}>
+                            <Stack key={item.user.id} className="story-item" onClick={() => setActiveStoryIndex(item.firstStoryIndex)}>
+                                <Stack className={`story-avatar-container profile-theme-bg ${themeClass}`}>
                                     {item.user.profilePhoto ? (
-                                        <img src={`data:image/webp;base64,${item.user.profilePhoto}`} className="story-avatar" alt="Story" />
+                                        <Image src={`data:image/webp;base64,${item.user.profilePhoto}`} className="story-avatar" alt="Story" />
                                     ) : (
-                                        <div className="story-avatar bg-secondary d-flex align-items-center justify-content-center text-white">
-                                            <i className="bi bi-person"></i>
-                                        </div>
+                                        <Stack className="story-avatar bg-secondary d-flex align-items-center justify-content-center text-white">
+                                            <BootstrapIcon name="person" />
+                                        </Stack>
                                     )}
-                                </div>
-                                <small className="text-truncate w-100 text-center">{item.user.firstName}</small>
-                            </div>
+                                </Stack>
+                                <Stack as="small" className="text-truncate w-100 text-center">{item.user.firstName}</Stack>
+                            </Stack>
                         );
                     })}
-                </div>
-            </div>
+                </Card.Body>
+            </Card>
 
             <StoryViewerModal
                 show={activeStoryIndex !== null}
@@ -61,6 +63,6 @@ export const StoriesCarousel: React.FC<{ targetUserId?: string }> = ({ targetUse
                 initialIndex={activeStoryIndex ?? 0}
                 onClose={() => setActiveStoryIndex(null)}
             />
-        </div>
+        </Container>
     );
 };

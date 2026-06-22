@@ -6,6 +6,7 @@ import {StatisticFilterQuery} from '../../api/queries/StatisticFilterQuery';
 import {Pagination} from '../Common/Pagination';
 import {StatisticsFilterBar} from './StatisticsFilterBar';
 import {StatisticsTable} from './StatisticsTable';
+import {Container, Card, Nav, Button, Stack, Spinner, Alert} from 'react-bootstrap';
 
 interface StatisticsViewProps {
     currentUser: UserResponse | null;
@@ -49,41 +50,43 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
     const {t} = useTranslation();
 
     if (!currentUser) return (
-        <div className="container mt-5 text-center">
-            <div className="spinner-border text-profile-primary"/>
-        </div>
+        <Container className="mt-5 text-center">
+            <Spinner animation="border" className="text-profile-primary" />
+        </Container>
     );
 
     return (
-        <div className="container mt-4 mb-5">
-            <div className="card shadow-sm">
-                <div className="card-header bg-white border-bottom-0 pt-4 pb-0">
-                    <ul className="nav nav-tabs">
-                        <li className="nav-item">
-                            <button
-                                className={`nav-link ${activeTab === 'records' ? 'active fw-bold' : 'text-muted'}`}
+        <Container className="mt-4 mb-5">
+            <Card className="shadow-sm">
+                <Card.Header className="bg-white border-bottom-0 pt-4 pb-0">
+                    <Nav variant="tabs">
+                        <Nav.Item>
+                            <Button
+                                variant="link"
+                                className={`nav-link text-decoration-none ${activeTab === 'records' ? 'active fw-bold' : 'text-muted'}`}
                                 onClick={() => {
                                     setActiveTab('records');
                                     handleSortChange({target: {value: 'time:asc'}} as any);
                                 }}
                             >
                                 {t('records')}
-                            </button>
-                        </li>
-                        <li className="nav-item">
-                            <button
-                                className={`nav-link ${activeTab === 'progress' ? 'active fw-bold' : 'text-muted'}`}
+                            </Button>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Button
+                                variant="link"
+                                className={`nav-link text-decoration-none ${activeTab === 'progress' ? 'active fw-bold' : 'text-muted'}`}
                                 onClick={() => {
                                     setActiveTab('progress');
                                     handleSortChange({target: {value: 'createdAt:desc'}} as any);
                                 }}
                             >
                                 {t('progress')}
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-                <div className="card-body pt-4">
+                            </Button>
+                        </Nav.Item>
+                    </Nav>
+                </Card.Header>
+                <Card.Body className="pt-4">
                     <StatisticsFilterBar
                         filters={filters}
                         sort={sort}
@@ -98,11 +101,11 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                     />
 
                     {loading && data.length === 0 ? (
-                        <div className="text-center">
-                            <div className="spinner-border text-profile-primary"/>
-                        </div>
+                        <Stack className="text-center">
+                            <Spinner animation="border" className="text-profile-primary" />
+                        </Stack>
                     ) : error ? (
-                        <div className="alert alert-danger">{t(error)}</div>
+                        <Alert variant="danger">{t(error)}</Alert>
                     ) : (
                         <>
                             <StatisticsTable
@@ -110,18 +113,18 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                                 availableUsers={availableUsers}
                             />
 
-                            <div className="mt-3">
+                            <Stack className="mt-3">
                                 <Pagination
                                     page={page}
                                     hasMore={data.length >= limit}
                                     onPrevPage={handlePrevPage}
                                     onNextPage={handleNextPage}
                                 />
-                            </div>
+                            </Stack>
                         </>
                     )}
-                </div>
-            </div>
-        </div>
+                </Card.Body>
+            </Card>
+        </Container>
     );
 };

@@ -5,6 +5,8 @@ import {UserResponse} from '../../api/responses/UserResponse';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
 import {formatDate} from '../../utils/dateFormat';
 import {Link} from 'react-router-dom';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Table, Stack} from 'react-bootstrap';
 
 interface StatisticsTableProps {
     data: StatisticResponse[];
@@ -20,38 +22,38 @@ export const StatisticsTable: React.FC<StatisticsTableProps> = ({data, available
     };
 
     return (
-        <div className="table-responsive-custom">
-            <table className="table table-bordered table-hover align-middle mb-0">
-                <thead className="table-light">
-                <tr>
-                    <th>{t('user')}</th>
-                    <th>{t('discipline')}</th>
-                    <th>{t('distance')} [m]</th>
-                    <th>{t('timeSeconds')}</th>
-                    <th>{t('createdAt')}</th>
-                </tr>
-                </thead>
-                <tbody>
-                {data.length === 0 ? (
-                    <tr>
-                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                ) : data.map((stat, idx) => (
-                    <tr key={idx}>
-                        <td className="fw-bold">
-                            <Link to={`/users/${availableUsers.find(au => au.id === stat.userId)?.link || stat.userId}`}
-                                  className="btn btn-link p-0 text-decoration-none">
-                                {getUserName(stat.userId)}
-                            </Link>
-                        </td>
-                        <td>{DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(stat.discipline))?.label || stat.discipline}</td>
-                        <td>{stat.distance}</td>
-                        <td>{stat.time}</td>
-                        <td>{formatDate(stat.createdAt)}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        </div>
+        <Stack className="table-responsive-custom">
+            <Table bordered hover className="align-middle mb-0">
+                <TableHead className="table-light">
+                    <TableRow>
+                        <TableHeaderCell>{t('user')}</TableHeaderCell>
+                        <TableHeaderCell>{t('discipline')}</TableHeaderCell>
+                        <TableHeaderCell>{t('distance')} [m]</TableHeaderCell>
+                        <TableHeaderCell>{t('timeSeconds')}</TableHeaderCell>
+                        <TableHeaderCell>{t('createdAt')}</TableHeaderCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {data.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={5} className="text-center text-muted">{t('noRecords')}</TableCell>
+                        </TableRow>
+                    ) : data.map((stat, idx) => (
+                        <TableRow key={idx}>
+                            <TableCell className="fw-bold">
+                                <Link to={`/users/${availableUsers.find(au => au.id === stat.userId)?.link || stat.userId}`}
+                                      className="btn btn-link p-0 text-decoration-none">
+                                    {getUserName(stat.userId)}
+                                </Link>
+                            </TableCell>
+                            <TableCell>{DisciplineEnum.getOptions(t).find(opt => String(opt.value) === String(stat.discipline))?.label || stat.discipline}</TableCell>
+                            <TableCell>{stat.distance}</TableCell>
+                            <TableCell>{stat.time}</TableCell>
+                            <TableCell>{formatDate(stat.createdAt)}</TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </Stack>
     );
 };

@@ -3,6 +3,9 @@ import {useTranslation} from '../../context/TranslationContext';
 import {PushSubscriptionResponse} from '../../api/responses/PushSubscriptionResponse';
 import {PushSubscriptionStatusEnum} from '../../enums/PushSubscriptionStatusEnum';
 import {formatDate} from '../../utils/dateFormat';
+import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Html';
+import {Stack, Table, Badge, Button} from 'react-bootstrap';
+import BootstrapIcon from '../Common/BootstrapIcon';
 
 interface UserPushSubscriptionsTableProps {
     subscriptions: PushSubscriptionResponse[];
@@ -20,45 +23,45 @@ export const UserPushSubscriptionsTable: React.FC<UserPushSubscriptionsTableProp
     const {t} = useTranslation();
 
     return (
-        <div className="table-responsive-custom">
-            <table className="table table-bordered table-hover align-middle mb-0">
-                <thead className="table-light">
-                <tr>
-                    <th>{t('browserDevice')}</th>
-                    <th>{t('endpoint')}</th>
-                    <th>{t('status')}</th>
-                    <th>{t('createdAt')}</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                {subscriptions.length === 0 ? (
-                    <tr>
-                        <td colSpan={5} className="text-center text-muted">{t('noRecords')}</td>
-                    </tr>
-                ) : subscriptions.map(sub => (
-                    <tr key={sub.id}>
-                        <td>{sub.userAgent || '-'}</td>
-                        <td>{sub.endpoint}</td>
-                        <td>
-                            <span className="badge bg-light text-dark border profile-theme-border">
-                                {PushSubscriptionStatusEnum.getOptions(t).find(opt => String(opt.value) === String(sub.status))?.label || sub.status}
-                            </span>
-                        </td>
-                        <td>{formatDate(sub.createdAt)}</td>
-                        <td className="text-end">
-                            {(isMyProfile || isAdmin) && (
-                                <button className="btn btn-sm btn-profile-outline-primary" title={t('manage')}
-                                        onClick={() => onManageClick(sub)}>
-                                    <i className="bi bi-gear" aria-hidden="true"></i>
-                                    <span className="visually-hidden">{t('manage')}</span>
-                                </button>
-                            )}
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        </div>
+        <Stack className="table-responsive-custom">
+            <Table bordered hover className="align-middle mb-0">
+                <TableHead className="table-light">
+                    <TableRow>
+                        <TableHeaderCell>{t('browserDevice')}</TableHeaderCell>
+                        <TableHeaderCell>{t('endpoint')}</TableHeaderCell>
+                        <TableHeaderCell>{t('status')}</TableHeaderCell>
+                        <TableHeaderCell>{t('createdAt')}</TableHeaderCell>
+                        <TableHeaderCell />
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {subscriptions.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={5} className="text-center text-muted">{t('noRecords')}</TableCell>
+                        </TableRow>
+                    ) : subscriptions.map(sub => (
+                        <TableRow key={sub.id}>
+                            <TableCell>{sub.userAgent || '-'}</TableCell>
+                            <TableCell>{sub.endpoint}</TableCell>
+                            <TableCell>
+                                <Badge bg="light" text="dark" className="border profile-theme-border">
+                                    {PushSubscriptionStatusEnum.getOptions(t).find(opt => String(opt.value) === String(sub.status))?.label || sub.status}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>{formatDate(sub.createdAt)}</TableCell>
+                            <TableCell className="text-end">
+                                {(isMyProfile || isAdmin) && (
+                                    <Button variant="profile-outline-primary" size="sm" title={t('manage')}
+                                            onClick={() => onManageClick(sub)}>
+                                        <BootstrapIcon name="gear" aria-hidden="true" />
+                                        <Stack as="span" className="visually-hidden">{t('manage')}</Stack>
+                                    </Button>
+                                )}
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </Stack>
     );
 };

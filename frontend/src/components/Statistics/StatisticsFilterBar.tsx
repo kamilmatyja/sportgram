@@ -4,6 +4,8 @@ import {StatisticFilterQuery} from '../../api/queries/StatisticFilterQuery';
 import {DisciplineEnum} from '../../enums/DisciplineEnum';
 import {PaginationEnum} from '../../enums/PaginationEnum';
 import {UserResponse} from '../../api/responses/UserResponse';
+import {Row, Col, Form, Stack} from 'react-bootstrap';
+import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
 
 interface StatisticsFilterBarProps {
     filters: StatisticFilterQuery;
@@ -32,74 +34,71 @@ export const StatisticsFilterBar: React.FC<StatisticsFilterBarProps> = ({
                                                                         }) => {
     const {t} = useTranslation();
 
+    const userOptions: SelectOption[] = availableUsers.map(u => ({
+        value: u.id,
+        label: `${u.firstName} ${u.lastName} ${currentUser && u.id === currentUser.id ? `(${t('profile')})` : ''}`
+    }));
+
+    const disciplineOptions = DisciplineEnum.getOptions(t) as SelectOption[];
+    const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
+
+    const recordsSortOptions: SelectOption[] = [
+        {value: 'time:asc', label: `${t('timeSeconds')} 0-9`},
+        {value: 'time:desc', label: `${t('timeSeconds')} 9-0`},
+        {value: 'distance:desc', label: `${t('distance')} 9-0`},
+        {value: 'distance:asc', label: `${t('distance')} 0-9`}
+    ];
+
+    const progressSortOptions: SelectOption[] = [
+        {value: 'createdAt:desc', label: t('sortCreatedDesc')},
+        {value: 'createdAt:asc', label: t('sortCreatedAsc')},
+        {value: 'time:desc', label: `${t('timeSeconds')} 9-0`},
+        {value: 'time:asc', label: `${t('timeSeconds')} 0-9`}
+    ];
+
+    const sortOptions = activeTab === 'progress' ? progressSortOptions : recordsSortOptions;
+
     return (
-        <div className="row mb-4">
-            <div className="col-12 col-lg-3 mb-3 mb-lg-0">
-                <label className="form-label fw-bold">{t('selectFriends')}</label>
-                <select
-                    multiple
-                    className="form-select"
-                    value={filters.userIds || []}
-                    onChange={onUsersChange}
-                >
-                    {availableUsers.map(u => (
-                        <option key={u.id} value={u.id}>
-                            {u.firstName} {u.lastName} {currentUser && u.id === currentUser.id ? `(${t('profile')})` : ''}
-                        </option>
-                    ))}
-                </select>
-            </div>
+        <Row className="mb-4">
+            <Col xs={12} lg={3} className="mb-3 mb-lg-0">
+                <Form.Group>
+                    <Form.Label className="fw-bold">{t('selectFriends')}</Form.Label>
+                    <Form.Select multiple value={filters.userIds || []} onChange={onUsersChange}>
+                        <SelectOptions options={userOptions} />
+                    </Form.Select>
+                </Form.Group>
+            </Col>
 
-            <div className="col-12 col-lg-9 d-flex flex-wrap gap-3 align-items-end">
-                <div>
-                    <label className="form-label small text-muted mb-1">{t('discipline')}</label>
-                    <select name="discipline" value={filters.discipline || ''} onChange={onFilterChange}
-                            className="form-select w-auto">
-                        <option value="">{t('selectOption')}</option>
-                        {DisciplineEnum.getOptions(t).map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                    </select>
-                </div>
+            <Col xs={12} lg={9} className="d-flex flex-wrap gap-3 align-items-end">
+                <Form.Group>
+                    <Form.Label className="small text-muted mb-1">{t('discipline')}</Form.Label>
+                    <Form.Select name="discipline" value={filters.discipline || ''} onChange={onFilterChange as any} className="w-auto">
+                        <SelectOptions options={disciplineOptions} placeholder={t('selectOption')} />
+                    </Form.Select>
+                </Form.Group>
 
-                <div>
-                    <label className="form-label small text-muted mb-1">{t('distance')}</label>
-                    <input type="number" name="distance" placeholder={t('distanceMeters')}
-                           value={filters.distance || ''} onChange={onFilterChange} className="form-control w-auto"/>
-                </div>
+                <Form.Group>
+                    <Form.Label className="small text-muted mb-1">{t('distance')}</Form.Label>
+                    <Form.Control type="number" name="distance" placeholder={t('distanceMeters')}
+                                  value={filters.distance || ''} onChange={onFilterChange as any} className="w-auto" />
+                </Form.Group>
 
-                <div className="ms-auto d-flex gap-3">
-                    <div>
-                        <label className="form-label small text-muted mb-1">{t('sortCreatedDesc').split(' ')[0]}</label>
-                        <select value={sort} onChange={onSortChange} className="form-select w-auto">
-                            {activeTab === 'progress' ? (
-                                <>
-                                    <option value="createdAt:desc">{t('sortCreatedDesc')}</option>
-                                    <option value="createdAt:asc">{t('sortCreatedAsc')}</option>
-                                    <option value="time:desc">{t('timeSeconds')} 9-0</option>
-                                    <option value="time:asc">{t('timeSeconds')} 0-9</option>
-                                </>
-                            ) : (
-                                <>
-                                    <option value="time:asc">{t('timeSeconds')} 0-9</option>
-                                    <option value="time:desc">{t('timeSeconds')} 9-0</option>
-                                    <option value="distance:desc">{t('distance')} 9-0</option>
-                                    <option value="distance:asc">{t('distance')} 0-9</option>
-                                </>
-                            )}
-                        </select>
-                    </div>
+                <Stack direction="horizontal" gap={3} className="ms-auto">
+                    <Form.Group>
+                        <Form.Label className="small text-muted mb-1">{t('sortCreatedDesc').split(' ')[0]}</Form.Label>
+                        <Form.Select value={sort} onChange={onSortChange as any} className="w-auto">
+                            <SelectOptions options={sortOptions} />
+                        </Form.Select>
+                    </Form.Group>
 
-                    <div>
-                        <label className="form-label small text-muted mb-1">{t('page')}</label>
-                        <select value={limit} onChange={onLimitChange} className="form-select w-auto">
-                            {PaginationEnum.getOptions(t).map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    <Form.Group>
+                        <Form.Label className="small text-muted mb-1">{t('page')}</Form.Label>
+                        <Form.Select value={limit} onChange={onLimitChange as any} className="w-auto">
+                            <SelectOptions options={limitOptions} />
+                        </Form.Select>
+                    </Form.Group>
+                </Stack>
+            </Col>
+        </Row>
     );
 };

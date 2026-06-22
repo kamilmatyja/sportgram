@@ -3,6 +3,7 @@ import {useTranslation} from '../../context/TranslationContext';
 import {StoryBody} from '../../api/body/StoryBody';
 import {ColorEnum} from '../../enums/ColorEnum';
 import {UserResponse} from '../../api/responses/UserResponse';
+import {Modal, Form, Button, Alert} from 'react-bootstrap';
 
 interface AddStoryModalProps {
     user: UserResponse | null;
@@ -33,46 +34,31 @@ export const AddStoryModal: React.FC<AddStoryModalProps> = ({
     const themeClass = ColorEnum.getClass(user.color);
 
     return (
-        <>
-            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
-                <div className="modal-dialog modal-lg">
-                    <div className="modal-content">
-                        <form onSubmit={handleSubmit}>
-                            <div className="modal-header">
-                                <h5 className="modal-title">{t('addStory')}</h5>
-                                <button type="button" className="btn-close" onClick={closeModal}></button>
-                            </div>
-                            <div className="modal-body">
-                                {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
-                                <div className="mb-3">
-                                    <label className="form-label">{t('text')}</label>
-                                    <textarea name="text"
-                                              className={`form-control ${fieldErrors.text ? 'is-invalid' : ''}`}
-                                              value={formData.text} onChange={handleChange} required rows={4}/>
-                                    {fieldErrors.text &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.text}</div>}
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label">{t('photo')}</label>
-                                    <input type="file" accept="image/*" name="photo"
-                                           className={`form-control ${fieldErrors.photo ? 'is-invalid' : ''}`}
-                                           onChange={handleChange} required/>
-                                    {fieldErrors.photo &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.photo}</div>}
-                                </div>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary"
-                                        onClick={closeModal}>{t('cancel')}</button>
-                                <button type="submit" className="btn btn-profile-primary" disabled={loading}>
-                                    {loading ? t('sending') : t('addStory')}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div className="modal-backdrop show"></div>
-        </>
+        <Modal show={show} onHide={closeModal} size="lg" className={themeClass} backdrop="static">
+            <Modal.Header closeButton>
+                <Modal.Title>{t('addStory')}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form id="add-story-form" onSubmit={handleSubmit}>
+                    {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('text')}</Form.Label>
+                        <Form.Control as="textarea" name="text" value={formData.text} onChange={handleChange} isInvalid={!!fieldErrors.text} required rows={4} />
+                        <Form.Control.Feedback type="invalid">{fieldErrors.text}</Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>{t('photo')}</Form.Label>
+                        <Form.Control type="file" accept="image/*" name="photo" onChange={handleChange as any} isInvalid={!!fieldErrors.photo} required />
+                        <Form.Control.Feedback type="invalid">{fieldErrors.photo}</Form.Control.Feedback>
+                    </Form.Group>
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={closeModal}>{t('cancel')}</Button>
+                <Button variant="profile-primary" type="submit" form="add-story-form" disabled={loading}>
+                    {loading ? t('sending') : t('addStory')}
+                </Button>
+            </Modal.Footer>
+        </Modal>
     );
 };

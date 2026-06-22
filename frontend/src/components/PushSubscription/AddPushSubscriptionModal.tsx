@@ -2,6 +2,7 @@ import React from 'react';
 import {useTranslation} from '../../context/TranslationContext';
 import {ColorEnum} from '../../enums/ColorEnum';
 import {UserResponse} from '../../api/responses/UserResponse';
+import {Modal, Button, Stack, Alert} from 'react-bootstrap';
 
 interface AddPushSubscriptionModalProps {
     user: UserResponse | null;
@@ -26,31 +27,21 @@ export const AddPushSubscriptionModal: React.FC<AddPushSubscriptionModalProps> =
     const themeClass = ColorEnum.getClass(user.color);
 
     return (
-        <>
-            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
-                <div className="modal-dialog modal-lg">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">{t('addSubscription')}</h5>
-                            <button type="button" className="btn-close" onClick={closeModal}></button>
-                        </div>
-                        <div className="modal-body">
-                            {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
-                            <p>{t('pushSubscriptionInfo')}</p>
-                            <p className="text-muted small">{t('pushPermissionWillBeAsked')}</p>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary"
-                                    onClick={closeModal}>{t('cancel')}</button>
-                            <button type="button" className="btn btn-profile-primary" onClick={handleSubscribeDevice}
-                                    disabled={loading}>
-                                {loading ? t('sending') : t('subscribeThisDevice')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="modal-backdrop show"></div>
-        </>
+        <Modal show={show} onHide={closeModal} size="lg" className={themeClass} backdrop="static">
+            <Modal.Header closeButton>
+                <Modal.Title>{t('addSubscription')}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
+                <Stack as="p">{t('pushSubscriptionInfo')}</Stack>
+                <Stack as="p" className="text-muted small">{t('pushPermissionWillBeAsked')}</Stack>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={closeModal}>{t('cancel')}</Button>
+                <Button variant="profile-primary" onClick={handleSubscribeDevice} disabled={loading}>
+                    {loading ? t('sending') : t('subscribeThisDevice')}
+                </Button>
+            </Modal.Footer>
+        </Modal>
     );
 };
