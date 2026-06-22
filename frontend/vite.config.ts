@@ -12,17 +12,4 @@ export default defineConfig({
             },
         },
     },
-    build: {
-        rollupOptions: {
-            input: {
-                main: './index.html',
-                sw: './src/sw.ts'
-            },
-            output: {
-                entryFileNames: assetInfo => {
-                    return assetInfo.name === 'sw' ? 'sw.js' : 'assets/[name]-[hash].js';
-                }
-            }
-        }
-    }
 })

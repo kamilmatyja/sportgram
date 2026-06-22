@@ -1,6 +1,8 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {useTranslation} from '../../context/TranslationContext';
 import {EmailBody} from '../../api/body/EmailBody';
+import {Container, Row, Col, Card, Form, Button, Alert, Stack} from 'react-bootstrap';
 
 interface PasswordResetFormViewProps {
     formData: EmailBody;
@@ -12,50 +14,49 @@ interface PasswordResetFormViewProps {
 }
 
 export const PasswordResetFormView: React.FC<PasswordResetFormViewProps> = ({
-                                                                                formData,
-                                                                                handleChange,
-                                                                                onSubmit,
-                                                                                loading,
-                                                                                fieldErrors,
-                                                                                globalError
+                                                                                formData, handleChange, onSubmit, loading, fieldErrors, globalError
                                                                             }) => {
     const {t} = useTranslation();
 
     return (
-        <div className="container mt-5">
-            <div className="row justify-content-center">
-                <div className="col-12 col-md-8 col-lg-5">
-                    <div className="card shadow-sm">
-                        <div className="card-body p-4">
-                            <h2 className="text-center mb-4">{t('passwordReset')}</h2>
-                            <form onSubmit={onSubmit}>
-                                {globalError && <div className="alert alert-danger">{globalError}</div>}
-                                <div className="mb-3">
-                                    <label className="form-label">{t('email')}</label>
-                                    <input
+        <Container className="mt-5">
+            <Row className="justify-content-center">
+                <Col xs={12} md={8} lg={5}>
+                    <Card className="shadow-sm">
+                        <Card.Body className="p-4">
+                            <Card.Title as="h2" className="text-center mb-4">{t('passwordReset')}</Card.Title>
+                            <Form onSubmit={onSubmit}>
+                                {globalError && <Alert variant="danger">{globalError}</Alert>}
+
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('email')}</Form.Label>
+                                    <Form.Control
                                         type="email"
                                         name="email"
-                                        className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`}
                                         value={formData.email || ''}
                                         onChange={handleChange}
+                                        isInvalid={!!fieldErrors.email}
                                         required
                                     />
-                                    {fieldErrors.email &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
-                                </div>
-                                <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                                    <Form.Control.Feedback type="invalid">
+                                        {fieldErrors.email}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+
+                                <Button variant="primary" type="submit" className="w-100" disabled={loading}>
                                     {loading ? t('sending') : t('save')}
-                                </button>
-                            </form>
-                            <div className="mt-3 text-center">
-                                <a href="/sign" className="btn btn-link">{t('sign')}</a>
-                                <span className="mx-2">|</span>
-                                <a href="/register" className="btn btn-link">{t('register')}</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                                </Button>
+                            </Form>
+
+                            <Stack direction="horizontal" gap={2} className="mt-3 justify-content-center align-items-center">
+                                <Link to="/sign" className="btn btn-link">{t('sign')}</Link>
+                                <Card.Text className="mb-0 text-muted">|</Card.Text>
+                                <Link to="/register" className="btn btn-link">{t('register')}</Link>
+                            </Stack>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+        </Container>
     );
 };

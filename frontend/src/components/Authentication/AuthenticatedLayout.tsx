@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {Link, NavLink} from 'react-router-dom';
+import {NavLink} from 'react-router-dom';
 import {useAuth} from '../../context/AuthContext';
 import {useTranslation} from '../../context/TranslationContext';
 import {useAppAccess} from '../../utils/hooks/useAppAccess';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import {Navbar, Nav, Container, Button, Stack} from 'react-bootstrap';
 
 const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}) => {
     const {logout} = useAuth();
@@ -17,107 +19,72 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
         }
     }, [currentUser]);
 
-    const toggleNav = () => setIsNavOpen(!isNavOpen);
     const closeNav = () => setIsNavOpen(false);
 
     return (
         <>
-            <nav className="navbar navbar-expand-lg bg-white shadow-sm mb-4 border-bottom sticky-top">
-                <div className="container">
-                    <Link to="/" className="navbar-brand fw-bold text-primary" onClick={closeNav}>
+            <Navbar
+                expanded={isNavOpen}
+                onToggle={setIsNavOpen}
+                expand="lg"
+                bg="white"
+                className="shadow-sm mb-4 border-bottom sticky-top"
+            >
+                <Container>
+                    <Navbar.Brand as={NavLink} to="/" className="fw-bold text-primary" onClick={closeNav}>
                         {t('brand.sportgram')}
-                    </Link>
+                    </Navbar.Brand>
 
-                    <button
-                        className="navbar-toggler border-0"
-                        type="button"
-                        onClick={toggleNav}
-                        aria-expanded={isNavOpen}
-                        aria-label={t('navToggle')}
-                    >
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
+                    <Navbar.Toggle aria-controls="basic-navbar-nav" className="border-0" />
 
-                    <div className={`collapse navbar-collapse ${isNavOpen ? 'show' : ''}`}>
-                        <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-1 mt-3 mt-lg-0">
-                            <li className="nav-item">
-                                <NavLink
-                                    to="/"
-                                    end
-                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
-                                    onClick={closeNav}
-                                >
-                                    <i className="bi bi-house-door me-2 d-lg-none"></i>{t('navHome')}
+                    <Navbar.Collapse id="basic-navbar-nav">
+                        <Nav className="me-auto mb-2 mb-lg-0 gap-1 mt-3 mt-lg-0">
+                            <NavLink to="/" end onClick={closeNav}
+                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
+                                <BootstrapIcon name="house-door" className="me-2 d-lg-none" />{t('navHome')}
+                            </NavLink>
+                            <NavLink to="/users" end onClick={closeNav}
+                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
+                                <BootstrapIcon name="people" className="me-2 d-lg-none" />{t('navUsers')}
+                            </NavLink>
+                            <NavLink to="/pages" end onClick={closeNav}
+                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
+                                <BootstrapIcon name="file-earmark-text" className="me-2 d-lg-none" />{t('navPages')}
+                            </NavLink>
+                            <NavLink to="/events" end onClick={closeNav}
+                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
+                                <BootstrapIcon name="calendar-event" className="me-2 d-lg-none" />{t('navEvents')}
+                            </NavLink>
+                            <NavLink to="/statistics" end onClick={closeNav}
+                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
+                                <BootstrapIcon name="graph-up" className="me-2 d-lg-none" />{t('navStatistics')}
+                            </NavLink>
+                            {userLink && (
+                                <NavLink to={`/users/${userLink}`} end onClick={closeNav}
+                                         className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
+                                    <BootstrapIcon name="person" className="me-2 d-lg-none" />{t('navProfile')}
                                 </NavLink>
-                            </li>
-                            <li className="nav-item">
-                                <NavLink
-                                    to="/users"
-                                    end
-                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
-                                    onClick={closeNav}
-                                >
-                                    <i className="bi bi-people me-2 d-lg-none"></i>{t('navUsers')}
-                                </NavLink>
-                            </li>
-                            <li className="nav-item">
-                                <NavLink
-                                    to="/pages"
-                                    end
-                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
-                                    onClick={closeNav}
-                                >
-                                    <i className="bi bi-file-earmark-text me-2 d-lg-none"></i>{t('navPages')}
-                                </NavLink>
-                            </li>
-                            <li className="nav-item">
-                                <NavLink
-                                    to="/events"
-                                    end
-                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
-                                    onClick={closeNav}
-                                >
-                                    <i className="bi bi-calendar-event me-2 d-lg-none"></i>{t('navEvents')}
-                                </NavLink>
-                            </li>
-                            <li className="nav-item">
-                                <NavLink
-                                    to="/statistics"
-                                    end
-                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
-                                    onClick={closeNav}
-                                >
-                                    <i className="bi bi-graph-up me-2 d-lg-none"></i>{t('navStatistics')}
-                                </NavLink>
-                            </li>
-                            <li className="nav-item">
-                                <NavLink
-                                    to={`/users/${userLink}`}
-                                    end
-                                    className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}
-                                    onClick={closeNav}
-                                >
-                                    <i className="bi bi-person me-2 d-lg-none"></i>{t('navProfile')}
-                                </NavLink>
-                            </li>
-                        </ul>
+                            )}
+                        </Nav>
 
-                        <div className="d-flex align-items-center gap-2 mt-3 mt-lg-0 pt-3 pt-lg-0">
-                            <button
-                                className="btn btn-sm btn-danger w-100 w-lg-auto text-start text-lg-center"
+                        <Stack direction="horizontal" gap={2} className="align-items-center mt-3 mt-lg-0 pt-3 pt-lg-0">
+                            <Button
+                                variant="danger"
+                                size="sm"
+                                className="w-100 w-lg-auto text-start text-lg-center"
                                 onClick={() => {
                                     closeNav();
                                     logout();
                                 }}
                                 title={t('logout')}
                             >
-                                <i className="bi bi-box-arrow-right"></i>
-                                <span className="d-inline-block d-lg-none ms-2">{t('logout')}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+                                <BootstrapIcon name="box-arrow-right" />
+                                <Navbar.Text className="d-inline-block d-lg-none ms-2 mb-0">{t('logout')}</Navbar.Text>
+                            </Button>
+                        </Stack>
+                    </Navbar.Collapse>
+                </Container>
+            </Navbar>
             {children}
         </>
     );

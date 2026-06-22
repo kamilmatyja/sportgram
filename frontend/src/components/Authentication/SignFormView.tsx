@@ -1,6 +1,8 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {useTranslation} from '../../context/TranslationContext';
 import {SignBody} from '../../api/body/SignBody';
+import {Container, Row, Col, Card, Form, Button, Alert, Stack} from 'react-bootstrap';
 
 interface SignFormViewProps {
     formData: SignBody;
@@ -12,76 +14,76 @@ interface SignFormViewProps {
 }
 
 export const SignFormView: React.FC<SignFormViewProps> = ({
-                                                              formData,
-                                                              handleChange,
-                                                              onSubmit,
-                                                              loading,
-                                                              fieldErrors,
-                                                              globalError
+                                                              formData, handleChange, onSubmit, loading, fieldErrors, globalError
                                                           }) => {
     const {t} = useTranslation();
 
     return (
-        <div className="container mt-5">
-            <div className="row justify-content-center">
-                <div className="col-12 col-md-8 col-lg-5">
-                    <div className="card shadow-sm">
-                        <div className="card-body p-4">
-                            <h2 className="text-center mb-4">{t('sign')}</h2>
-                            <form onSubmit={onSubmit}>
-                                {globalError && <div className="alert alert-danger">{globalError}</div>}
-                                <div className="mb-3">
-                                    <label className="form-label">{t('email')}</label>
-                                    <input
-                                        name="email"
+        <Container className="mt-5">
+            <Row className="justify-content-center">
+                <Col xs={12} md={8} lg={5}>
+                    <Card className="shadow-sm">
+                        <Card.Body className="p-4">
+                            <Card.Title as="h2" className="text-center mb-4">{t('sign')}</Card.Title>
+                            <Form onSubmit={onSubmit}>
+                                {globalError && <Alert variant="danger">{globalError}</Alert>}
+
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('email')}</Form.Label>
+                                    <Form.Control
                                         type="email"
-                                        className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`}
+                                        name="email"
                                         value={formData.email || ''}
                                         onChange={handleChange}
+                                        isInvalid={!!fieldErrors.email}
                                         required
                                     />
-                                    {fieldErrors.email &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.email}</div>}
-                                </div>
-                                <div className="mb-3">
-                                    <label className="form-label">{t('password')}</label>
-                                    <input
+                                    <Form.Control.Feedback type="invalid">
+                                        {fieldErrors.email}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+
+                                <Form.Group className="mb-3">
+                                    <Form.Label>{t('password')}</Form.Label>
+                                    <Form.Control
                                         type="password"
                                         name="password"
-                                        className={`form-control ${fieldErrors.password ? 'is-invalid' : ''}`}
                                         value={formData.password || ''}
                                         onChange={handleChange}
                                         minLength={8}
                                         maxLength={64}
+                                        isInvalid={!!fieldErrors.password}
                                         required
                                     />
-                                    {fieldErrors.password &&
-                                        <div className="invalid-feedback d-block">{fieldErrors.password}</div>}
-                                </div>
-                                <div className="mb-3 form-check">
-                                    <input
+                                    <Form.Control.Feedback type="invalid">
+                                        {fieldErrors.password}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+
+                                <Form.Group className="mb-3" controlId="rememberMe">
+                                    <Form.Check
                                         type="checkbox"
                                         name="rememberMe"
-                                        className="form-check-input"
-                                        id="rememberMe"
+                                        label={t('rememberMe')}
                                         checked={formData.rememberMe || false}
                                         onChange={handleChange}
                                     />
-                                    <label className="form-check-label" htmlFor="rememberMe">{t('rememberMe')}</label>
-                                </div>
-                                <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+                                </Form.Group>
+
+                                <Button variant="primary" type="submit" className="w-100" disabled={loading}>
                                     {loading ? t('sending') : t('save')}
-                                </button>
-                            </form>
-                            <div className="mt-3 text-center">
-                                <a href="/register" className="btn btn-link">{t('register')}</a>
-                                <span className="mx-2">|</span>
-                                <a href="/password-reset" className="btn btn-link">{t('passwordReset')}</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                                </Button>
+                            </Form>
+
+                            <Stack direction="horizontal" gap={2} className="mt-3 justify-content-center align-items-center">
+                                <Link to="/register" className="btn btn-link">{t('register')}</Link>
+                                <Card.Text className="mb-0 text-muted">|</Card.Text>
+                                <Link to="/password-reset" className="btn btn-link">{t('passwordReset')}</Link>
+                            </Stack>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+        </Container>
     );
 };

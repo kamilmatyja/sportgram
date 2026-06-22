@@ -1,14 +1,13 @@
 import React from 'react';
 import {useTranslation} from '../../context/TranslationContext';
+import {Spinner, Container} from 'react-bootstrap';
 
 const AuthenticationLoading: React.FC = () => {
     const {t} = useTranslation();
     return (
-        <div className="min-vh-100 d-flex justify-content-center align-items-center bg-light">
-            <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">{t('auth.loading')}</span>
-            </div>
-        </div>
+        <Container fluid className="min-vh-100 d-flex justify-content-center align-items-center bg-light">
+            <Spinner animation="border" variant="primary" role="status" aria-label={t('auth.loading')} />
+        </Container>
     );
 };
 

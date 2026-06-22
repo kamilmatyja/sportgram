@@ -41,27 +41,33 @@ cd frontend
 npm install
 ```
 
-5. Uruchom frontend:
+5. Zbuduj frontend:
+
+```bash
+npm run build
+```
+
+6. Uruchom frontend:
 
 ```bash
 npm run dev
 ```
 
-6. Otwórz:
+7. Otwórz:
 
 - API: `http://localhost:8080`
 - Dokumentacja API json `http://localhost:8080/api/doc.json`
 - Dokumentacja API swagger `http://localhost:8080/api/doc`
 - Frontend: `http://localhost:5173`
 
-7. Migracje:
+8. Migracje:
 
 ```bash
 docker compose exec php php bin/console doctrine:migrations:diff
 docker compose exec php php bin/console doctrine:migrations:migrate -n
 ```
 
-8. Testy:
+9. Testy:
 
 ```bash
 docker compose exec php vendor/bin/phpunit
@@ -69,13 +75,13 @@ docker compose exec php bin/phpunit --coverage-html var/coverage
 docker compose exec php vendor/bin/phpunit tests/Factory/FactorySmokeTest.php --testdox
 ```
 
-9. Formatowanie kodu:
+10. Formatowanie kodu:
 
 ```bash
 docker compose exec php vendor/bin/php-cs-fixer fix
 ```
 
-10. Ponowne uruchomienie:
+11. Ponowne uruchomienie:
 
 ```bash
 docker compose up -d
@@ -83,7 +89,7 @@ cd frontend
 npm run dev
 ```
 
-11. Podstrony:
+12. Podstrony:
 
 - / (strona główna, dla niezalogowanych pokazuje przyciski do logowania / rejestracji, a dla zalogowanych pokazuje
   listy: stories / feeds)
@@ -115,13 +121,14 @@ npm run dev
 - /events/{event-link} (profil wydarzenia - tylko dla zalogowanych)
 - /statistics (statystyki - tylko dla zalogowanych)
 
-12. Brakuje:
+13. Brakuje:
 - wysyłka email nie działa
 - wysyłka push wiadomości nie działa
 - kamera na froncie
 - gps na froncie przy dodawaniu treningu
 - działająca zmiana języka / motywu
 - zapisywanie wyświetleń encji po wejściu na jakiś profil
+- informacje o typie feeda do wyświetlenia
 - informacje o wyświetleniach przy encjach
 - informacje o ilości follow na profilach
 - informacje o ilości znajomych na profilach
