@@ -2,6 +2,8 @@ import React from 'react';
 import {useTranslation} from '../../context/TranslationContext';
 import {FeedReactionEnum} from '../../enums/FeedReactionEnum';
 import {FeedResponse} from '../../api/responses/FeedResponse';
+import BootstrapIcon from '../Common/BootstrapIcon';
+import {Stack, Button} from 'react-bootstrap';
 
 interface FeedReactionsProps {
     feed: FeedResponse;
@@ -13,44 +15,47 @@ interface FeedReactionsProps {
 export const FeedReactions: React.FC<FeedReactionsProps> = ({feed, myReactionType, isFeedLoading, onReact}) => {
     const {t} = useTranslation();
 
-    const getReactionIcon = (type: number) => {
+    const getReactionIcon = (type: number): { name: string; className: string } => {
         switch (type) {
             case FeedReactionEnum.LIKE:
-                return 'bi-hand-thumbs-up-fill text-profile-primary';
+                return { name: 'hand-thumbs-up-fill', className: 'text-profile-primary' };
             case FeedReactionEnum.LOVE:
-                return 'bi-heart-fill text-danger';
+                return { name: 'heart-fill', className: 'text-danger' };
             case FeedReactionEnum.HAHA:
-                return 'bi-emoji-laughing-fill text-warning';
+                return { name: 'emoji-laughing-fill', className: 'text-warning' };
             case FeedReactionEnum.WOW:
-                return 'bi-emoji-surprise-fill text-warning';
+                return { name: 'emoji-surprise-fill', className: 'text-warning' };
             case FeedReactionEnum.SAD:
-                return 'bi-emoji-frown-fill text-warning';
+                return { name: 'emoji-frown-fill', className: 'text-warning' };
             case FeedReactionEnum.ANGRY:
-                return 'bi-emoji-angry-fill text-danger';
+                return { name: 'emoji-angry-fill', className: 'text-danger' };
             default:
-                return 'bi-hand-thumbs-up';
+                return { name: 'hand-thumbs-up', className: '' };
         }
     };
 
     return (
-        <div className="d-flex flex-wrap gap-1 border-top border-bottom py-2 justify-content-between">
+        <Stack direction="horizontal" className="flex-wrap gap-1 border-top border-bottom py-2 justify-content-between">
             {FeedReactionEnum.getOptions(t).map(opt => {
                 const isActive = myReactionType === opt.value;
                 const reactionCount = feed.reactions?.filter(r => r.reaction === opt.value).length || 0;
+                const icon = getReactionIcon(opt.value);
 
                 return (
-                    <button
+                    <Button
                         key={opt.value}
-                        className={`btn btn-sm flex-grow-1 ${isActive ? 'bg-light fw-bold profile-theme-text' : 'btn-light bg-transparent'}`}
+                        variant={isActive ? 'light' : 'light'}
+                        size="sm"
+                        className={`flex-grow-1 ${isActive ? 'bg-light fw-bold profile-theme-text' : 'bg-transparent'}`}
                         disabled={isFeedLoading}
                         onClick={() => onReact(feed.id, opt.value)}
                     >
-                        <i className={`${getReactionIcon(opt.value)} me-1`}></i>
-                        <span className="d-none d-sm-inline">{opt.label}</span>
-                        {reactionCount > 0 && <span className="ms-1 small">({reactionCount})</span>}
-                    </button>
+                        <BootstrapIcon name={icon.name} className={`${icon.className} me-1`} />
+                        <Stack as="span" className="d-none d-sm-inline">{opt.label}</Stack>
+                        {reactionCount > 0 && <Stack as="span" className="ms-1 small">({reactionCount})</Stack>}
+                    </Button>
                 );
             })}
-        </div>
+        </Stack>
     );
 };

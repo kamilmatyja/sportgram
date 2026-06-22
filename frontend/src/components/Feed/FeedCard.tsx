@@ -1,10 +1,12 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import {useTranslation} from '../../context/TranslationContext';
 import {FeedResponse} from '../../api/responses/FeedResponse';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {formatDate} from '../../utils/dateFormat';
 import {FeedReactions} from './FeedReactions';
 import {FeedComments} from './FeedComments';
+import {Card, Stack, Image, Badge} from 'react-bootstrap';
 
 interface FeedCardProps {
     feed: FeedResponse;
@@ -31,51 +33,61 @@ export const FeedCard: React.FC<FeedCardProps> = ({
     const author = relatedUsers[feed.userId];
     const myReaction = feed.reactions?.find(r => r.userId === currentUser?.id);
 
-    const getFeedTypeLabel = (feed: FeedResponse) => {
-        if (feed.eventDisciplineList) return t('feedTypes.eventDisciplineList');
-        if (feed.eventDisciplineResult) return t('feedTypes.eventDisciplineResult');
-        if (feed.goal) return t('feedTypes.goal');
-        if (feed.goalParticipantResult) return t('feedTypes.goalParticipantResult');
-        if (feed.training) return t('feedTypes.training');
+    const getFeedTypeLabel = (feedObj: FeedResponse) => {
+        if (feedObj.eventDisciplineList) return t('feedTypes.eventDisciplineList');
+        if (feedObj.eventDisciplineResult) return t('feedTypes.eventDisciplineResult');
+        if (feedObj.goal) return t('feedTypes.goal');
+        if (feedObj.goalParticipantResult) return t('feedTypes.goalParticipantResult');
+        if (feedObj.training) return t('feedTypes.training');
         return t('feedTypes.regular');
     };
 
     return (
-        <div className="card shadow-sm mb-4">
-            <div className="card-header bg-white d-flex align-items-center gap-3 border-bottom-0 pt-3">
+        <Card className="shadow-sm mb-4">
+            <Card.Header className="bg-white d-flex align-items-center gap-3 border-bottom-0 pt-3">
                 {author?.profilePhoto ? (
-                    <img src={`data:image/webp;base64,${author.profilePhoto}`} alt="avatar"
-                         className="rounded-circle object-fit-cover feed-avatar-48 border profile-theme-border"/>
+                    <Image
+                        src={`data:image/webp;base64,${author.profilePhoto}`}
+                        alt="avatar"
+                        roundedCircle
+                        className="object-fit-cover feed-avatar-48 border profile-theme-border"
+                    />
                 ) : (
-                    <div className="bg-secondary rounded-circle feed-avatar-48"></div>
+                    <Stack className="bg-secondary rounded-circle feed-avatar-48" />
                 )}
-                <div className="flex-grow-1">
-                    <a href={`/users/${author?.link || feed.userId}`}
-                       className="fw-bold text-decoration-none text-body d-block">
+                <Stack className="flex-grow-1">
+                    <Link
+                        to={`/users/${author?.link || feed.userId}`}
+                        className="fw-bold text-decoration-none text-body d-block"
+                    >
                         {author ? `${author.firstName} ${author.lastName}` : feed.userId}
-                    </a>
-                    <div className="d-flex align-items-center gap-2">
-                        <small className="text-muted">{formatDate(feed.createdAt)}</small>
-                        <span
-                            className="badge bg-light text-dark border profile-theme-border">{getFeedTypeLabel(feed)}</span>
-                    </div>
-                </div>
-            </div>
+                    </Link>
+                    <Stack direction="horizontal" gap={2} className="align-items-center">
+                        <Stack as="small" className="text-muted">{formatDate(feed.createdAt)}</Stack>
+                        <Badge bg="light" text="dark" className="border profile-theme-border">
+                            {getFeedTypeLabel(feed)}
+                        </Badge>
+                    </Stack>
+                </Stack>
+            </Card.Header>
 
-            <div className="card-body py-2">
-                {feed.text && <p className="card-text text-break">{feed.text}</p>}
-            </div>
+            <Card.Body className="py-2">
+                {feed.text && <Card.Text className="text-break">{feed.text}</Card.Text>}
+            </Card.Body>
 
             {feed.photo && (
-                <img src={`data:image/webp;base64,${feed.photo}`} alt="feed"
-                     className="w-100 object-fit-cover feed-image-max"/>
+                <Image
+                    src={`data:image/webp;base64,${feed.photo}`}
+                    alt="feed"
+                    className="w-100 object-fit-cover feed-image-max"
+                />
             )}
 
-            <div className="card-footer bg-white pt-2 pb-2 border-top-0">
-                <div className="d-flex justify-content-between text-muted small px-2 pb-2">
-                    <span>{feed.reactions?.length || 0} {t('reactions').toLowerCase()}</span>
-                    <span>{feed.comments?.length || 0} {t('comments').toLowerCase()}</span>
-                </div>
+            <Card.Footer className="bg-white pt-2 pb-2 border-top-0">
+                <Stack direction="horizontal" className="justify-content-between text-muted small px-2 pb-2">
+                    <Stack as="span">{feed.reactions?.length || 0} {t('reactions').toLowerCase()}</Stack>
+                    <Stack as="span">{feed.comments?.length || 0} {t('comments').toLowerCase()}</Stack>
+                </Stack>
 
                 <FeedReactions
                     feed={feed}
@@ -99,7 +111,7 @@ export const FeedCard: React.FC<FeedCardProps> = ({
                     onUpdateComment={interactions.handleUpdateComment}
                     setEditCommentText={interactions.setEditCommentText}
                 />
-            </div>
-        </div>
+            </Card.Footer>
+        </Card>
     );
 };

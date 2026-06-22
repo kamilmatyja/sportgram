@@ -5,6 +5,7 @@ import {FeedResponse} from '../../api/responses/FeedResponse';
 import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
 import {UserResponse} from '../../api/responses/UserResponse';
 import {ColorEnum} from '../../enums/ColorEnum';
+import {Modal, Form, Button, Stack, Alert, Badge} from 'react-bootstrap';
 
 interface ManageFeedModalProps {
     user: UserResponse | null;
@@ -45,87 +46,88 @@ export const ManageFeedModal: React.FC<ManageFeedModalProps> = ({
     const themeClass = ColorEnum.getClass(user.color);
 
     return (
-        <>
-            <div className={`modal d-block ${themeClass}`} tabIndex={-1}>
-                <div className="modal-dialog modal-lg">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">{t('manage')}</h5>
-                            <button type="button" className="btn-close" onClick={closeModal}></button>
-                        </div>
-                        <div className="modal-body">
-                            {globalError && <div className="alert alert-danger">{t(globalError)}</div>}
+        <Modal show={show} onHide={closeModal} size="lg" className={themeClass} backdrop="static">
+            <Modal.Header closeButton>
+                <Modal.Title>{t('manage')}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
 
-                            {isMyProfile && (
-                                <form id="edit-feed-form" onSubmit={handleEditSubmit}
-                                      className="mb-4 pb-3 border-bottom">
-                                    <div className="mb-3">
-                                        <label className="form-label">{t('text')}</label>
-                                        <textarea name="text"
-                                                  className={`form-control ${fieldErrors.text ? 'is-invalid' : ''}`}
-                                                  value={formData.text || ''} onChange={handleChange} required
-                                                  rows={3}/>
-                                        {fieldErrors.text &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.text}</div>}
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label">{t('photo')}</label>
-                                        <input type="file" accept="image/*" name="photo"
-                                               className={`form-control ${fieldErrors.photo ? 'is-invalid' : ''}`}
-                                               onChange={handleChange}/>
-                                        <div className="form-text">{t('photoOptional')}</div>
-                                        {fieldErrors.photo &&
-                                            <div className="invalid-feedback d-block">{fieldErrors.photo}</div>}
-                                    </div>
-                                </form>
-                            )}
+                {isMyProfile && (
+                    <Form id="edit-feed-form" onSubmit={handleEditSubmit} className="mb-4 pb-3 border-bottom">
+                        <Form.Group className="mb-3">
+                            <Form.Label>{t('text')}</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                name="text"
+                                value={formData.text || ''}
+                                onChange={handleChange}
+                                isInvalid={!!fieldErrors.text}
+                                required
+                                rows={3}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {fieldErrors.text}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>{t('photo')}</Form.Label>
+                            <Form.Control
+                                type="file"
+                                accept="image/*"
+                                name="photo"
+                                onChange={handleChange as any}
+                                isInvalid={!!fieldErrors.photo}
+                            />
+                            <Form.Text>{t('photoOptional')}</Form.Text>
+                            <Form.Control.Feedback type="invalid">
+                                {fieldErrors.photo}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+                    </Form>
+                )}
 
-                            {(isMyProfile || isAdmin) && (
-                                <div className="mb-2">
-                                    <div className="d-flex flex-wrap gap-2 align-items-center">
-                                        <strong>{t('status')}: </strong>
-                                        <span className="badge bg-light text-dark border profile-theme-border">
-                                            {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}
-                                        </span>
-                                        {ElementStatusEnum.getOptions(t)
-                                            .filter(opt => opt.value !== feed.status)
-                                            .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
-                                            .map(opt => (
-                                                <button
-                                                    key={opt.value}
-                                                    type="button"
-                                                    className="btn btn-xs btn-profile-outline-primary py-0 px-2"
-                                                    disabled={loading}
-                                                    onClick={() => handleStatusSubmit(opt.value)}
-                                                >
-                                                    {loading ? t('loading') : opt.label}
-                                                </button>
-                                            ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={loading}>
-                                {t('cancel')}
-                            </button>
-                            {isMyProfile && (
-                                <>
-                                    <button type="button" className="btn btn-danger" onClick={handleDelete}
-                                            disabled={loading}>
-                                        {loading ? t('sending') : t('delete')}
-                                    </button>
-                                    <button type="submit" form="edit-feed-form" className="btn btn-profile-primary"
-                                            disabled={loading}>
-                                        {loading ? t('sending') : t('saveChanges')}
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="modal-backdrop show"></div>
-        </>
+                {(isMyProfile || isAdmin) && (
+                    <Stack className="mb-2">
+                        <Stack direction="horizontal" className="flex-wrap gap-2 align-items-center">
+                            <Stack as="strong">{t('status')}: </Stack>
+                            <Badge bg="light" text="dark" className="border profile-theme-border">
+                                {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(feed.status))?.label || feed.status}
+                            </Badge>
+                            {ElementStatusEnum.getOptions(t)
+                                .filter(opt => opt.value !== feed.status)
+                                .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
+                                .map(opt => (
+                                    <Button
+                                        key={opt.value}
+                                        variant="profile-outline-primary"
+                                        size="sm"
+                                        className="py-0 px-2 btn-xs"
+                                        disabled={loading}
+                                        onClick={() => handleStatusSubmit(opt.value)}
+                                    >
+                                        {loading ? t('loading') : opt.label}
+                                    </Button>
+                                ))}
+                        </Stack>
+                    </Stack>
+                )}
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={closeModal} disabled={loading}>
+                    {t('cancel')}
+                </Button>
+                {isMyProfile && (
+                    <>
+                        <Button variant="danger" onClick={handleDelete} disabled={loading}>
+                            {loading ? t('sending') : t('delete')}
+                        </Button>
+                        <Button variant="profile-primary" type="submit" form="edit-feed-form" disabled={loading}>
+                            {loading ? t('sending') : t('saveChanges')}
+                        </Button>
+                    </>
+                )}
+            </Modal.Footer>
+        </Modal>
     );
 };
