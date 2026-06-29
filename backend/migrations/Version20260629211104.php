@@ -1,0 +1,256 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20260629211104 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return '';
+    }
+
+    public function up(Schema $schema): void
+    {
+        // this up() migration is auto-generated, please modify it to your needs
+        $this->addSql('CREATE TABLE conversation_activity (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, sender_user_id UUID NOT NULL, receiver_user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_4C3AB64A2A98155E ON conversation_activity (sender_user_id)');
+        $this->addSql('CREATE INDEX IDX_4C3AB64ADA57E237 ON conversation_activity (receiver_user_id)');
+        $this->addSql('CREATE TABLE conversations (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, text TEXT NOT NULL, status INT NOT NULL, sender_user_id UUID NOT NULL, receiver_user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_C2521BF12A98155E ON conversations (sender_user_id)');
+        $this->addSql('CREATE INDEX IDX_C2521BF1DA57E237 ON conversations (receiver_user_id)');
+        $this->addSql('CREATE TABLE entries (id UUID NOT NULL, entity_id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, type INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_2DF8B3C5A76ED395 ON entries (user_id)');
+        $this->addSql('CREATE TABLE event_discipline_distances (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, distance INT NOT NULL, event_discipline_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_5A83C853810B97AD ON event_discipline_distances (event_discipline_id)');
+        $this->addSql('CREATE TABLE event_discipline_lists (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, status INT NOT NULL, event_discipline_distance_id UUID NOT NULL, feed_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_6951CF258A47C642 ON event_discipline_lists (event_discipline_distance_id)');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_6951CF2551A5BC03 ON event_discipline_lists (feed_id)');
+        $this->addSql('CREATE INDEX IDX_6951CF25A76ED395 ON event_discipline_lists (user_id)');
+        $this->addSql('CREATE TABLE event_discipline_results (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, time INT NOT NULL, event_discipline_list_id UUID NOT NULL, feed_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_CF4B4CDC6D46BE43 ON event_discipline_results (event_discipline_list_id)');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_CF4B4CDC51A5BC03 ON event_discipline_results (feed_id)');
+        $this->addSql('CREATE INDEX IDX_CF4B4CDCA76ED395 ON event_discipline_results (user_id)');
+        $this->addSql('CREATE TABLE event_discipline_sub_distances (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, sub_distance INT NOT NULL, event_discipline_distance_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_513BA7708A47C642 ON event_discipline_sub_distances (event_discipline_distance_id)');
+        $this->addSql('CREATE TABLE event_discipline_sub_results (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, time INT NOT NULL, event_discipline_sub_distance_id UUID NOT NULL, event_discipline_result_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_79255AC1E9E3C652 ON event_discipline_sub_results (event_discipline_sub_distance_id)');
+        $this->addSql('CREATE INDEX IDX_79255AC1DC899037 ON event_discipline_sub_results (event_discipline_result_id)');
+        $this->addSql('CREATE INDEX IDX_79255AC1A76ED395 ON event_discipline_sub_results (user_id)');
+        $this->addSql('CREATE TABLE event_disciplines (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, discipline INT NOT NULL, event_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_6948F5871F7E88B ON event_disciplines (event_id)');
+        $this->addSql('CREATE TABLE events (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, started_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, ended_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, link TEXT NOT NULL, rules TEXT NOT NULL, photo BYTEA NOT NULL, location TEXT NOT NULL, status INT NOT NULL, page_participant_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_5387574A36AC99F1 ON events (link)');
+        $this->addSql('CREATE INDEX IDX_5387574A2C86034D ON events (page_participant_id)');
+        $this->addSql('CREATE TABLE feed_comments (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, text TEXT NOT NULL, status INT NOT NULL, feed_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_7F4B018D51A5BC03 ON feed_comments (feed_id)');
+        $this->addSql('CREATE INDEX IDX_7F4B018DA76ED395 ON feed_comments (user_id)');
+        $this->addSql('CREATE TABLE feed_reactions (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, reaction INT NOT NULL, status INT NOT NULL, feed_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_70E19C6F51A5BC03 ON feed_reactions (feed_id)');
+        $this->addSql('CREATE INDEX IDX_70E19C6FA76ED395 ON feed_reactions (user_id)');
+        $this->addSql('CREATE TABLE feeds (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, text TEXT DEFAULT NULL, photo BYTEA DEFAULT NULL, status INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_5A29F52FA76ED395 ON feeds (user_id)');
+        $this->addSql('CREATE TABLE friends (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, status INT NOT NULL, sender_user_id UUID NOT NULL, receiver_user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_21EE70692A98155E ON friends (sender_user_id)');
+        $this->addSql('CREATE INDEX IDX_21EE7069DA57E237 ON friends (receiver_user_id)');
+        $this->addSql('CREATE TABLE goal_participant_results (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, distance INT NOT NULL, time INT NOT NULL, status INT NOT NULL, goal_participant_id UUID NOT NULL, feed_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_4C201EF916981853 ON goal_participant_results (goal_participant_id)');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_4C201EF951A5BC03 ON goal_participant_results (feed_id)');
+        $this->addSql('CREATE TABLE goal_participants (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, status INT NOT NULL, goal_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_5498E4F3667D1AFE ON goal_participants (goal_id)');
+        $this->addSql('CREATE INDEX IDX_5498E4F3A76ED395 ON goal_participants (user_id)');
+        $this->addSql('CREATE TABLE goals (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, started_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, ended_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, text TEXT NOT NULL, link TEXT NOT NULL, discipline INT NOT NULL, distance INT NOT NULL, time INT DEFAULT NULL, status INT NOT NULL, feed_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_C7241E2F36AC99F1 ON goals (link)');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_C7241E2F51A5BC03 ON goals (feed_id)');
+        $this->addSql('CREATE INDEX IDX_C7241E2FA76ED395 ON goals (user_id)');
+        $this->addSql('CREATE TABLE notifications (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, text TEXT NOT NULL, link TEXT DEFAULT NULL, status INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_6000B0D3A76ED395 ON notifications (user_id)');
+        $this->addSql('CREATE TABLE page_follows (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, status INT NOT NULL, page_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_B10361E6C4663E4 ON page_follows (page_id)');
+        $this->addSql('CREATE INDEX IDX_B10361E6A76ED395 ON page_follows (user_id)');
+        $this->addSql('CREATE TABLE page_participants (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, status INT NOT NULL, page_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_CF75DCDCC4663E4 ON page_participants (page_id)');
+        $this->addSql('CREATE INDEX IDX_CF75DCDCA76ED395 ON page_participants (user_id)');
+        $this->addSql('CREATE TABLE pages (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, link TEXT NOT NULL, profile_photo BYTEA NOT NULL, background_photo BYTEA NOT NULL, color INT NOT NULL, status INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_2074E57536AC99F1 ON pages (link)');
+        $this->addSql('CREATE INDEX IDX_2074E575A76ED395 ON pages (user_id)');
+        $this->addSql('CREATE TABLE push_subscriptions (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, endpoint TEXT NOT NULL, p256dh VARCHAR(256) NOT NULL, auth VARCHAR(256) NOT NULL, user_agent TEXT DEFAULT NULL, status INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_3FEC449DA76ED395 ON push_subscriptions (user_id)');
+        $this->addSql('CREATE TABLE stories (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, text TEXT NOT NULL, photo BYTEA NOT NULL, status INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_9C8B9D5FA76ED395 ON stories (user_id)');
+        $this->addSql('CREATE TABLE training_discipline_distances (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, distance INT NOT NULL, time INT NOT NULL, training_discipline_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_9CDB1DA0DBFB4890 ON training_discipline_distances (training_discipline_id)');
+        $this->addSql('CREATE TABLE training_discipline_sub_distances (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, sub_distance INT NOT NULL, time INT NOT NULL, lat INT DEFAULT NULL, lng INT DEFAULT NULL, accuracy INT DEFAULT NULL, speed INT DEFAULT NULL, training_discipline_distance_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_4ECF593B436F943F ON training_discipline_sub_distances (training_discipline_distance_id)');
+        $this->addSql('CREATE TABLE training_disciplines (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, discipline INT NOT NULL, training_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_976260FBEFD98D1 ON training_disciplines (training_id)');
+        $this->addSql('CREATE TABLE training_participants (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, status INT NOT NULL, training_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_697A5C9FBEFD98D1 ON training_participants (training_id)');
+        $this->addSql('CREATE INDEX IDX_697A5C9FA76ED395 ON training_participants (user_id)');
+        $this->addSql('CREATE TABLE trainings (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, started_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, ended_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, link TEXT NOT NULL, location TEXT NOT NULL, status INT NOT NULL, feed_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_66DC433036AC99F1 ON trainings (link)');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_66DC433051A5BC03 ON trainings (feed_id)');
+        $this->addSql('CREATE INDEX IDX_66DC4330A76ED395 ON trainings (user_id)');
+        $this->addSql('CREATE TABLE user_disciplines (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, discipline INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_406954DA76ED395 ON user_disciplines (user_id)');
+        $this->addSql('CREATE TABLE user_password_resets (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, code INT NOT NULL, attempt INT NOT NULL, status INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_8C06922EA76ED395 ON user_password_resets (user_id)');
+        $this->addSql('CREATE TABLE user_registers (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, code INT NOT NULL, attempt INT NOT NULL, status INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_16B6FD2A76ED395 ON user_registers (user_id)');
+        $this->addSql('CREATE TABLE user_roles (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, role INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_54FCD59FA76ED395 ON user_roles (user_id)');
+        $this->addSql('CREATE TABLE user_signs (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, code INT NOT NULL, attempt INT NOT NULL, status INT NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE INDEX IDX_A35695D9A76ED395 ON user_signs (user_id)');
+        $this->addSql('CREATE TABLE users (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, birth_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, first_name TEXT NOT NULL, last_name TEXT NOT NULL, gender INT NOT NULL, phone INT NOT NULL, email TEXT NOT NULL, password TEXT NOT NULL, link TEXT NOT NULL, language INT NOT NULL, country INT NOT NULL, theme INT NOT NULL, color INT NOT NULL, profile_photo BYTEA NOT NULL, background_photo BYTEA NOT NULL, bio TEXT NOT NULL, status INT NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_1483A5E9444F97DD ON users (phone)');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_1483A5E9E7927C74 ON users (email)');
+        $this->addSql('ALTER TABLE conversation_activity ADD CONSTRAINT FK_4C3AB64A2A98155E FOREIGN KEY (sender_user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE conversation_activity ADD CONSTRAINT FK_4C3AB64ADA57E237 FOREIGN KEY (receiver_user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE conversations ADD CONSTRAINT FK_C2521BF12A98155E FOREIGN KEY (sender_user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE conversations ADD CONSTRAINT FK_C2521BF1DA57E237 FOREIGN KEY (receiver_user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE entries ADD CONSTRAINT FK_2DF8B3C5A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_distances ADD CONSTRAINT FK_5A83C853810B97AD FOREIGN KEY (event_discipline_id) REFERENCES event_disciplines (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_lists ADD CONSTRAINT FK_6951CF258A47C642 FOREIGN KEY (event_discipline_distance_id) REFERENCES event_discipline_distances (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_lists ADD CONSTRAINT FK_6951CF2551A5BC03 FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_lists ADD CONSTRAINT FK_6951CF25A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_results ADD CONSTRAINT FK_CF4B4CDC6D46BE43 FOREIGN KEY (event_discipline_list_id) REFERENCES event_discipline_lists (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_results ADD CONSTRAINT FK_CF4B4CDC51A5BC03 FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_results ADD CONSTRAINT FK_CF4B4CDCA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_sub_distances ADD CONSTRAINT FK_513BA7708A47C642 FOREIGN KEY (event_discipline_distance_id) REFERENCES event_discipline_distances (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_sub_results ADD CONSTRAINT FK_79255AC1E9E3C652 FOREIGN KEY (event_discipline_sub_distance_id) REFERENCES event_discipline_sub_distances (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_sub_results ADD CONSTRAINT FK_79255AC1DC899037 FOREIGN KEY (event_discipline_result_id) REFERENCES event_discipline_results (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_discipline_sub_results ADD CONSTRAINT FK_79255AC1A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE event_disciplines ADD CONSTRAINT FK_6948F5871F7E88B FOREIGN KEY (event_id) REFERENCES events (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE events ADD CONSTRAINT FK_5387574A2C86034D FOREIGN KEY (page_participant_id) REFERENCES page_participants (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE feed_comments ADD CONSTRAINT FK_7F4B018D51A5BC03 FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE feed_comments ADD CONSTRAINT FK_7F4B018DA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE feed_reactions ADD CONSTRAINT FK_70E19C6F51A5BC03 FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE feed_reactions ADD CONSTRAINT FK_70E19C6FA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE feeds ADD CONSTRAINT FK_5A29F52FA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE friends ADD CONSTRAINT FK_21EE70692A98155E FOREIGN KEY (sender_user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE friends ADD CONSTRAINT FK_21EE7069DA57E237 FOREIGN KEY (receiver_user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE goal_participant_results ADD CONSTRAINT FK_4C201EF916981853 FOREIGN KEY (goal_participant_id) REFERENCES goal_participants (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE goal_participant_results ADD CONSTRAINT FK_4C201EF951A5BC03 FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE goal_participants ADD CONSTRAINT FK_5498E4F3667D1AFE FOREIGN KEY (goal_id) REFERENCES goals (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE goal_participants ADD CONSTRAINT FK_5498E4F3A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE goals ADD CONSTRAINT FK_C7241E2F51A5BC03 FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE goals ADD CONSTRAINT FK_C7241E2FA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE notifications ADD CONSTRAINT FK_6000B0D3A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE page_follows ADD CONSTRAINT FK_B10361E6C4663E4 FOREIGN KEY (page_id) REFERENCES pages (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE page_follows ADD CONSTRAINT FK_B10361E6A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE page_participants ADD CONSTRAINT FK_CF75DCDCC4663E4 FOREIGN KEY (page_id) REFERENCES pages (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE page_participants ADD CONSTRAINT FK_CF75DCDCA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE pages ADD CONSTRAINT FK_2074E575A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE push_subscriptions ADD CONSTRAINT FK_3FEC449DA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE stories ADD CONSTRAINT FK_9C8B9D5FA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE training_discipline_distances ADD CONSTRAINT FK_9CDB1DA0DBFB4890 FOREIGN KEY (training_discipline_id) REFERENCES training_disciplines (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE training_discipline_sub_distances ADD CONSTRAINT FK_4ECF593B436F943F FOREIGN KEY (training_discipline_distance_id) REFERENCES training_discipline_distances (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE training_disciplines ADD CONSTRAINT FK_976260FBEFD98D1 FOREIGN KEY (training_id) REFERENCES trainings (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE training_participants ADD CONSTRAINT FK_697A5C9FBEFD98D1 FOREIGN KEY (training_id) REFERENCES trainings (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE training_participants ADD CONSTRAINT FK_697A5C9FA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE trainings ADD CONSTRAINT FK_66DC433051A5BC03 FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE trainings ADD CONSTRAINT FK_66DC4330A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE user_disciplines ADD CONSTRAINT FK_406954DA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE user_password_resets ADD CONSTRAINT FK_8C06922EA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE user_registers ADD CONSTRAINT FK_16B6FD2A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE user_roles ADD CONSTRAINT FK_54FCD59FA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE user_signs ADD CONSTRAINT FK_A35695D9A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
+    }
+
+    public function down(Schema $schema): void
+    {
+        // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE conversation_activity DROP CONSTRAINT FK_4C3AB64A2A98155E');
+        $this->addSql('ALTER TABLE conversation_activity DROP CONSTRAINT FK_4C3AB64ADA57E237');
+        $this->addSql('ALTER TABLE conversations DROP CONSTRAINT FK_C2521BF12A98155E');
+        $this->addSql('ALTER TABLE conversations DROP CONSTRAINT FK_C2521BF1DA57E237');
+        $this->addSql('ALTER TABLE entries DROP CONSTRAINT FK_2DF8B3C5A76ED395');
+        $this->addSql('ALTER TABLE event_discipline_distances DROP CONSTRAINT FK_5A83C853810B97AD');
+        $this->addSql('ALTER TABLE event_discipline_lists DROP CONSTRAINT FK_6951CF258A47C642');
+        $this->addSql('ALTER TABLE event_discipline_lists DROP CONSTRAINT FK_6951CF2551A5BC03');
+        $this->addSql('ALTER TABLE event_discipline_lists DROP CONSTRAINT FK_6951CF25A76ED395');
+        $this->addSql('ALTER TABLE event_discipline_results DROP CONSTRAINT FK_CF4B4CDC6D46BE43');
+        $this->addSql('ALTER TABLE event_discipline_results DROP CONSTRAINT FK_CF4B4CDC51A5BC03');
+        $this->addSql('ALTER TABLE event_discipline_results DROP CONSTRAINT FK_CF4B4CDCA76ED395');
+        $this->addSql('ALTER TABLE event_discipline_sub_distances DROP CONSTRAINT FK_513BA7708A47C642');
+        $this->addSql('ALTER TABLE event_discipline_sub_results DROP CONSTRAINT FK_79255AC1E9E3C652');
+        $this->addSql('ALTER TABLE event_discipline_sub_results DROP CONSTRAINT FK_79255AC1DC899037');
+        $this->addSql('ALTER TABLE event_discipline_sub_results DROP CONSTRAINT FK_79255AC1A76ED395');
+        $this->addSql('ALTER TABLE event_disciplines DROP CONSTRAINT FK_6948F5871F7E88B');
+        $this->addSql('ALTER TABLE events DROP CONSTRAINT FK_5387574A2C86034D');
+        $this->addSql('ALTER TABLE feed_comments DROP CONSTRAINT FK_7F4B018D51A5BC03');
+        $this->addSql('ALTER TABLE feed_comments DROP CONSTRAINT FK_7F4B018DA76ED395');
+        $this->addSql('ALTER TABLE feed_reactions DROP CONSTRAINT FK_70E19C6F51A5BC03');
+        $this->addSql('ALTER TABLE feed_reactions DROP CONSTRAINT FK_70E19C6FA76ED395');
+        $this->addSql('ALTER TABLE feeds DROP CONSTRAINT FK_5A29F52FA76ED395');
+        $this->addSql('ALTER TABLE friends DROP CONSTRAINT FK_21EE70692A98155E');
+        $this->addSql('ALTER TABLE friends DROP CONSTRAINT FK_21EE7069DA57E237');
+        $this->addSql('ALTER TABLE goal_participant_results DROP CONSTRAINT FK_4C201EF916981853');
+        $this->addSql('ALTER TABLE goal_participant_results DROP CONSTRAINT FK_4C201EF951A5BC03');
+        $this->addSql('ALTER TABLE goal_participants DROP CONSTRAINT FK_5498E4F3667D1AFE');
+        $this->addSql('ALTER TABLE goal_participants DROP CONSTRAINT FK_5498E4F3A76ED395');
+        $this->addSql('ALTER TABLE goals DROP CONSTRAINT FK_C7241E2F51A5BC03');
+        $this->addSql('ALTER TABLE goals DROP CONSTRAINT FK_C7241E2FA76ED395');
+        $this->addSql('ALTER TABLE notifications DROP CONSTRAINT FK_6000B0D3A76ED395');
+        $this->addSql('ALTER TABLE page_follows DROP CONSTRAINT FK_B10361E6C4663E4');
+        $this->addSql('ALTER TABLE page_follows DROP CONSTRAINT FK_B10361E6A76ED395');
+        $this->addSql('ALTER TABLE page_participants DROP CONSTRAINT FK_CF75DCDCC4663E4');
+        $this->addSql('ALTER TABLE page_participants DROP CONSTRAINT FK_CF75DCDCA76ED395');
+        $this->addSql('ALTER TABLE pages DROP CONSTRAINT FK_2074E575A76ED395');
+        $this->addSql('ALTER TABLE push_subscriptions DROP CONSTRAINT FK_3FEC449DA76ED395');
+        $this->addSql('ALTER TABLE stories DROP CONSTRAINT FK_9C8B9D5FA76ED395');
+        $this->addSql('ALTER TABLE training_discipline_distances DROP CONSTRAINT FK_9CDB1DA0DBFB4890');
+        $this->addSql('ALTER TABLE training_discipline_sub_distances DROP CONSTRAINT FK_4ECF593B436F943F');
+        $this->addSql('ALTER TABLE training_disciplines DROP CONSTRAINT FK_976260FBEFD98D1');
+        $this->addSql('ALTER TABLE training_participants DROP CONSTRAINT FK_697A5C9FBEFD98D1');
+        $this->addSql('ALTER TABLE training_participants DROP CONSTRAINT FK_697A5C9FA76ED395');
+        $this->addSql('ALTER TABLE trainings DROP CONSTRAINT FK_66DC433051A5BC03');
+        $this->addSql('ALTER TABLE trainings DROP CONSTRAINT FK_66DC4330A76ED395');
+        $this->addSql('ALTER TABLE user_disciplines DROP CONSTRAINT FK_406954DA76ED395');
+        $this->addSql('ALTER TABLE user_password_resets DROP CONSTRAINT FK_8C06922EA76ED395');
+        $this->addSql('ALTER TABLE user_registers DROP CONSTRAINT FK_16B6FD2A76ED395');
+        $this->addSql('ALTER TABLE user_roles DROP CONSTRAINT FK_54FCD59FA76ED395');
+        $this->addSql('ALTER TABLE user_signs DROP CONSTRAINT FK_A35695D9A76ED395');
+        $this->addSql('DROP TABLE conversation_activity');
+        $this->addSql('DROP TABLE conversations');
+        $this->addSql('DROP TABLE entries');
+        $this->addSql('DROP TABLE event_discipline_distances');
+        $this->addSql('DROP TABLE event_discipline_lists');
+        $this->addSql('DROP TABLE event_discipline_results');
+        $this->addSql('DROP TABLE event_discipline_sub_distances');
+        $this->addSql('DROP TABLE event_discipline_sub_results');
+        $this->addSql('DROP TABLE event_disciplines');
+        $this->addSql('DROP TABLE events');
+        $this->addSql('DROP TABLE feed_comments');
+        $this->addSql('DROP TABLE feed_reactions');
+        $this->addSql('DROP TABLE feeds');
+        $this->addSql('DROP TABLE friends');
+        $this->addSql('DROP TABLE goal_participant_results');
+        $this->addSql('DROP TABLE goal_participants');
+        $this->addSql('DROP TABLE goals');
+        $this->addSql('DROP TABLE notifications');
+        $this->addSql('DROP TABLE page_follows');
+        $this->addSql('DROP TABLE page_participants');
+        $this->addSql('DROP TABLE pages');
+        $this->addSql('DROP TABLE push_subscriptions');
+        $this->addSql('DROP TABLE stories');
+        $this->addSql('DROP TABLE training_discipline_distances');
+        $this->addSql('DROP TABLE training_discipline_sub_distances');
+        $this->addSql('DROP TABLE training_disciplines');
+        $this->addSql('DROP TABLE training_participants');
+        $this->addSql('DROP TABLE trainings');
+        $this->addSql('DROP TABLE user_disciplines');
+        $this->addSql('DROP TABLE user_password_resets');
+        $this->addSql('DROP TABLE user_registers');
+        $this->addSql('DROP TABLE user_roles');
+        $this->addSql('DROP TABLE user_signs');
+        $this->addSql('DROP TABLE users');
+    }
+}
