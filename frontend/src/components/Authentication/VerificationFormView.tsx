@@ -1,11 +1,24 @@
 import React from 'react';
 import { useTranslation } from '../../context/TranslationContext';
+import {CodeBody} from '../../api/body/CodeBody';
 import { Container, Row, Col, Card, Form, Button, Alert, Stack } from 'react-bootstrap';
 
-export const VerificationFormView: React.FC<any> = ({
-                                                        formData, handleChange, onSubmit, loading, fieldErrors, globalError, onCancel, onResend, resendSuccess
-                                                    }) => {
-    const { t } = useTranslation();
+interface VerificationFormViewProps {
+    formData: CodeBody;
+    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
+    loading: boolean;
+    fieldErrors: Record<string, string | string[]>;
+    globalError: string;
+    onCancel: () => void;
+    onResend: (e: React.MouseEvent<HTMLButtonElement>) => void;
+    resendSuccess: boolean;
+}
+
+export const VerificationFormView: React.FC<VerificationFormViewProps> = ({
+                                                                              formData, handleChange, onSubmit, loading, fieldErrors, globalError, onCancel, onResend, resendSuccess
+                                                                          }) => {
+    const {t} = useTranslation();
 
     return (
         <Container className="py-5">

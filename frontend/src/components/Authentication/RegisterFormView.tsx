@@ -5,11 +5,22 @@ import { CountryEnum } from '../../enums/CountryEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import SelectOptions from '../Common/SelectOptions';
 import { Container, Row, Col, Card, Form, Button, Alert, Stack } from 'react-bootstrap';
+import {RegisterBody} from '../../api/body/RegisterBody';
+import {GenderEnum} from "../../enums/GenderEnum.ts";
 
-export const RegisterFormView: React.FC<any> = ({
-                                                    formData, handleChange, onSubmit, loading, fieldErrors, globalError
-                                                }) => {
-    const { t } = useTranslation();
+interface RegisterFormViewProps {
+    formData: RegisterBody;
+    handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+    onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
+    loading: boolean;
+    fieldErrors: Record<string, string | string[]>;
+    globalError: string;
+}
+
+export const RegisterFormView: React.FC<RegisterFormViewProps> = ({
+                                                                      formData, handleChange, onSubmit, loading, fieldErrors, globalError
+                                                                  }) => {
+    const {t} = useTranslation();
 
     return (
         <Container className="py-5">
@@ -60,6 +71,13 @@ export const RegisterFormView: React.FC<any> = ({
                                             </Form.Group>
                                         </Col>
                                     </Row>
+
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>{t('gender')}</Form.Label>
+                                        <Form.Select name="gender" value={formData.gender} onChange={handleChange} required>
+                                            <SelectOptions options={GenderEnum.getOptions(t) as any} placeholder={t('gender')} />
+                                        </Form.Select>
+                                    </Form.Group>
 
                                     <Form.Group>
                                         <Form.Label>{t('country')}</Form.Label>

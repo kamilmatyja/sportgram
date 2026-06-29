@@ -1,11 +1,21 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 import {useTranslation} from '../../context/TranslationContext';
+import {EmailBody} from '../../api/body/EmailBody';
 import {Container, Row, Col, Card, Form, Button, Alert, Stack} from 'react-bootstrap';
 
-export const PasswordResetFormView: React.FC<any> = ({
-                                                         formData, handleChange, onSubmit, loading, fieldErrors, globalError
-                                                     }) => {
+interface PasswordResetFormViewProps {
+    formData: EmailBody;
+    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
+    loading: boolean;
+    fieldErrors: Record<string, string | string[]>;
+    globalError: string;
+}
+
+export const PasswordResetFormView: React.FC<PasswordResetFormViewProps> = ({
+                                                                                formData, handleChange, onSubmit, loading, fieldErrors, globalError
+                                                                            }) => {
     const {t} = useTranslation();
 
     return (
