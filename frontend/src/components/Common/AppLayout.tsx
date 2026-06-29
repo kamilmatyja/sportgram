@@ -3,7 +3,7 @@ import { Container } from 'react-bootstrap';
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
-        <Container fluid className="min-vh-100">
+        <Container fluid className="min-vh-100 p-0">
             {children}
         </Container>
     );

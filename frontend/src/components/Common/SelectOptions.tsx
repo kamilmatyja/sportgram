@@ -1,4 +1,4 @@
-import {type FC} from 'react';
+import { type FC } from 'react';
 
 export interface SelectOption {
     value: string | number;
@@ -10,7 +10,7 @@ interface SelectOptionsProps {
     placeholder?: string;
 }
 
-const SelectOptions: FC<SelectOptionsProps> = ({options, placeholder}) => (
+const SelectOptions: FC<SelectOptionsProps> = ({ options, placeholder }) => (
     <>
         {placeholder !== undefined && <option value="">{placeholder}</option>}
         {options.map((option) => (

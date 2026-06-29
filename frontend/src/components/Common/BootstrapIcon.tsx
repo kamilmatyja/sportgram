@@ -1,12 +1,12 @@
-import {type FC} from 'react';
+import { type FC } from 'react';
 
 interface BootstrapIconProps {
     name: string;
     className?: string;
 }
 
-const BootstrapIcon: FC<BootstrapIconProps> = ({name, className = ''}) => (
-    <span className={`bi bi-${name}${className ? ` ${className}` : ''}`} aria-hidden="true" />
+const BootstrapIcon: FC<BootstrapIconProps> = ({ name, className = '' }) => (
+    <i className={`bi bi-${name} ${className}`} aria-hidden="true" />
 );
 
 export default BootstrapIcon;

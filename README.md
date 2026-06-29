@@ -129,3 +129,4 @@ docker compose exec php vendor/bin/php-cs-fixer fix
 - informacje o wyświetleniach przy encjach
 - informacje o ilości follow na profilach
 - informacje o ilości znajomych na profilach
+- raw style w komponentach

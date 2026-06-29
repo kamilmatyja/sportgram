@@ -1,12 +1,15 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {Container} from 'react-bootstrap';
+import { useTranslation } from '../../context/TranslationContext';
+import { Container, Stack } from 'react-bootstrap';
 
 const NotFound: React.FC = () => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     return (
-        <Container as="h1" className="text-center mt-5">
-            404 - {t('notFound')}
+        <Container className="py-5">
+            <Stack className="align-items-center text-center">
+                <h1 className="display-1 fw-bold text-muted">404</h1>
+                <p className="fs-4">{t('notFound')}</p>
+            </Stack>
         </Container>
     );
 };

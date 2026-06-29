@@ -17,9 +17,9 @@ export const Pagination: React.FC<PaginationProps> = ({ page, hasMore, onPrevPag
             <Button variant="outline-primary" disabled={page === 1} onClick={onPrevPage}>
                 {t('prev')}
             </Button>
-            <Stack direction="horizontal" className="fw-bold">
+            <div className="fw-bold">
                 {t('page')} {page}
-            </Stack>
+            </div>
             <Button variant="outline-primary" disabled={!hasMore} onClick={onNextPage}>
                 {t('next')}
             </Button>

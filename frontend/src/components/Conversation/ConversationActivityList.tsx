@@ -8,7 +8,7 @@ import { formatDate } from '../../utils/dateFormat';
 import { Pagination } from '../Common/Pagination';
 import BootstrapIcon from '../Common/BootstrapIcon';
 import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
-import {Card, Stack, Form, Image, Spinner, Table} from 'react-bootstrap';
+import { Card, Stack, Form, Image, Spinner, Table } from 'react-bootstrap';
 
 interface ConversationActivityListProps {
     activities: (ConversationActivityResponse & { otherUser: UserResponse })[];
@@ -38,18 +38,16 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
     ];
 
     return (
-        <Card className="shadow-sm">
+        <Card className="shadow-sm border-0">
             <Card.Body>
-                <Stack direction="horizontal" className="justify-content-between mb-4">
-                    <h4 className="fw-bold mb-0">{t('conversations')}</h4>
-                </Stack>
+                <h4 className="fw-bold mb-4">{t('conversations')}</h4>
 
-                <Stack direction="horizontal" gap={2} className="mb-3 flex-wrap">
+                <Stack direction="horizontal" gap={2} className="mb-4 flex-wrap">
                     <Form.Control
                         placeholder={t('search')}
                         value={activitySearch}
                         onChange={e => { setActivitySearch(e.target.value); setActivityPage(1); }}
-                        style={{ width: '200px' }}
+                        style={{ maxWidth: '250px' }}
                     />
                     <Form.Select value={activitySort} onChange={e => { setActivitySort(e.target.value); setActivityPage(1); }} style={{ width: 'auto' }} className="ms-auto">
                         <SelectOptions options={sortOptions} />
@@ -60,9 +58,9 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                 </Stack>
 
                 {loading ? (
-                    <div className="text-center my-5">
+                    <Stack className="align-items-center py-5">
                         <Spinner animation="border" variant="primary" />
-                    </div>
+                    </Stack>
                 ) : (
                     <>
                         <Table responsive hover className="align-middle">
@@ -75,7 +73,7 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                             </thead>
                             <tbody>
                             {activities.length === 0 ? (
-                                <tr><td colSpan={3} className="text-center text-muted">{t('noRecords')}</td></tr>
+                                <tr><td colSpan={3} className="text-center py-4 text-muted">{t('noRecords')}</td></tr>
                             ) : activities.map(act => (
                                 <tr key={act.otherUser.id}>
                                     <td>
@@ -86,12 +84,12 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                             ) : (
                                                 <div className="bg-secondary rounded-circle" style={{ width: 40, height: 40 }} />
                                             )}
-                                            <Link to={`/users/${act.otherUser.link}`} className="text-decoration-none fw-bold">
+                                            <Link to={`/users/${act.otherUser.link}`} className="text-decoration-none fw-bold text-dark">
                                                 {act.otherUser.firstName} {act.otherUser.lastName}
                                             </Link>
                                         </Stack>
                                     </td>
-                                    <td className="text-muted">{formatDate(act.updatedAt)}</td>
+                                    <td className="text-muted small">{formatDate(act.updatedAt)}</td>
                                     <td className="text-end">
                                         <Link to={`/users/${act.otherUser.link}/conversations`} className="outline-primary">
                                             <BootstrapIcon name="chat-dots" />
