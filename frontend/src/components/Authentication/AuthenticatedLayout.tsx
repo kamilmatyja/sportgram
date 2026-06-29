@@ -10,76 +10,41 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({children}
     const {logout} = useAuth();
     const {t} = useTranslation();
     const [isNavOpen, setIsNavOpen] = useState<boolean>(false);
-    const [userLink, setUserLink] = useState<string | null>(null);
     const {currentUser} = useAppAccess();
+    const [userLink, setUserLink] = useState<string | null>(null);
 
     useEffect(() => {
-        if (currentUser && currentUser.link) {
-            setUserLink(currentUser.link);
-        }
+        if (currentUser?.link) setUserLink(currentUser.link);
     }, [currentUser]);
 
     const closeNav = () => setIsNavOpen(false);
 
     return (
         <>
-            <Navbar
-                expanded={isNavOpen}
-                onToggle={setIsNavOpen}
-                expand="lg"
-                bg="white"
-                className="shadow-sm mb-4 border-bottom sticky-top"
-            >
+            <Navbar expanded={isNavOpen} onToggle={setIsNavOpen} expand="lg" bg="white" sticky="top" className="shadow-sm border-bottom mb-4">
                 <Container>
                     <Navbar.Brand as={NavLink} to="/" className="fw-bold text-primary" onClick={closeNav}>
                         {t('brand.sportgram')}
                     </Navbar.Brand>
 
-                    <Navbar.Toggle aria-controls="basic-navbar-nav" className="border-0" />
+                    <Navbar.Toggle />
 
-                    <Navbar.Collapse id="basic-navbar-nav">
-                        <Nav className="me-auto mb-2 mb-lg-0 gap-1 mt-3 mt-lg-0">
-                            <NavLink to="/" end onClick={closeNav}
-                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
-                                <BootstrapIcon name="house-door" className="me-2 d-lg-none" />{t('navHome')}
-                            </NavLink>
-                            <NavLink to="/users" end onClick={closeNav}
-                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
-                                <BootstrapIcon name="people" className="me-2 d-lg-none" />{t('navUsers')}
-                            </NavLink>
-                            <NavLink to="/pages" end onClick={closeNav}
-                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
-                                <BootstrapIcon name="file-earmark-text" className="me-2 d-lg-none" />{t('navPages')}
-                            </NavLink>
-                            <NavLink to="/events" end onClick={closeNav}
-                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
-                                <BootstrapIcon name="calendar-event" className="me-2 d-lg-none" />{t('navEvents')}
-                            </NavLink>
-                            <NavLink to="/statistics" end onClick={closeNav}
-                                     className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
-                                <BootstrapIcon name="graph-up" className="me-2 d-lg-none" />{t('navStatistics')}
-                            </NavLink>
+                    <Navbar.Collapse>
+                        <Nav className="me-auto gap-1 my-2 my-lg-0">
+                            <Nav.Link as={NavLink} to="/" end onClick={closeNav}>{t('navHome')}</Nav.Link>
+                            <Nav.Link as={NavLink} to="/users" end onClick={closeNav}>{t('navUsers')}</Nav.Link>
+                            <Nav.Link as={NavLink} to="/pages" end onClick={closeNav}>{t('navPages')}</Nav.Link>
+                            <Nav.Link as={NavLink} to="/events" end onClick={closeNav}>{t('navEvents')}</Nav.Link>
+                            <Nav.Link as={NavLink} to="/statistics" end onClick={closeNav}>{t('navStatistics')}</Nav.Link>
                             {userLink && (
-                                <NavLink to={`/users/${userLink}`} end onClick={closeNav}
-                                         className={({isActive}) => `nav-link rounded px-3 ${isActive ? 'active bg-light text-primary fw-bold' : ''}`}>
-                                    <BootstrapIcon name="person" className="me-2 d-lg-none" />{t('navProfile')}
-                                </NavLink>
+                                <Nav.Link as={NavLink} to={`/users/${userLink}`} end onClick={closeNav}>{t('navProfile')}</Nav.Link>
                             )}
                         </Nav>
 
-                        <Stack direction="horizontal" gap={2} className="align-items-center mt-3 mt-lg-0 pt-3 pt-lg-0">
-                            <Button
-                                variant="danger"
-                                size="sm"
-                                className="w-100 w-lg-auto text-start text-lg-center"
-                                onClick={() => {
-                                    closeNav();
-                                    logout();
-                                }}
-                                title={t('logout')}
-                            >
+                        <Stack direction="horizontal" gap={2}>
+                            <Button variant="danger" size="sm" className="w-100" onClick={() => { closeNav(); logout(); }}>
                                 <BootstrapIcon name="box-arrow-right" />
-                                <Navbar.Text className="d-inline-block d-lg-none ms-2 mb-0">{t('logout')}</Navbar.Text>
+                                <span className="ms-2 d-lg-none">{t('logout')}</span>
                             </Button>
                         </Stack>
                     </Navbar.Collapse>
