@@ -132,4 +132,3 @@ npm run fix
 - informacje o wyświetleniach przy encjach
 - informacje o ilości follow na profilach
 - informacje o ilości znajomych na profilach
-- raw style w komponentach

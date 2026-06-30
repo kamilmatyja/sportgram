@@ -26,7 +26,7 @@ export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = (
     const { t } = useTranslation();
 
     const allResults = participants.flatMap((p) =>
-        (p.results ?? []).map((r) => ({ ...r, userId: p.userId, user: p.user })),
+        (p.results ?? []).map((r) => ({ ...r, userId: p.userId })),
     );
 
     return (
@@ -50,7 +50,7 @@ export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = (
                         </TableRow>
                     ) : (
                         allResults.map((r) => {
-                            const u = r.user ?? relatedUsers?.[r.userId];
+                            const u = relatedUsers[r.userId];
                             const isOwner = currentUser?.id === r.userId;
 
                             return (
@@ -61,7 +61,7 @@ export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = (
                                                 {u.firstName} {u.lastName}
                                             </Link>
                                         ) : (
-                                            <span className="text-muted">-</span>
+                                            <Stack as="small" className="text-muted">-</Stack>
                                         )}
                                     </TableCell>
                                     <TableCell>{r.distance}</TableCell>

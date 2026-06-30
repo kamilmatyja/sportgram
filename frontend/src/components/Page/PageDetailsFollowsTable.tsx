@@ -44,7 +44,7 @@ export const PageDetailsFollowsTable: React.FC<PageDetailsFollowsTableProps> = (
                         </TableRow>
                     ) : (
                         follows.map((f) => {
-                            const u = f.user ?? relatedUsers?.[f.userId];
+                            const u = relatedUsers[f.userId];
                             const isOwner = currentUser?.id === f.userId;
 
                             return (
@@ -55,7 +55,7 @@ export const PageDetailsFollowsTable: React.FC<PageDetailsFollowsTableProps> = (
                                                 {u.firstName} {u.lastName}
                                             </Link>
                                         ) : (
-                                            <span className="text-muted">-</span>
+                                            <Stack as="small" className="text-muted">-</Stack>
                                         )}
                                     </TableCell>
                                     <TableCell>

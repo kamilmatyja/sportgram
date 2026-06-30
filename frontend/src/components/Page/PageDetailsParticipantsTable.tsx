@@ -44,7 +44,7 @@ export const PageDetailsParticipantsTable: React.FC<PageDetailsParticipantsTable
                         </TableRow>
                     ) : (
                         participants.map((p) => {
-                            const u = p.user ?? relatedUsers?.[p.userId];
+                            const u = relatedUsers[p.userId];
 
                             return (
                                 <TableRow key={p.id}>
@@ -54,7 +54,7 @@ export const PageDetailsParticipantsTable: React.FC<PageDetailsParticipantsTable
                                                 {u.firstName} {u.lastName}
                                             </Link>
                                         ) : (
-                                            <span className="text-muted">-</span>
+                                            <Stack as="small" className="text-muted">-</Stack>
                                         )}
                                     </TableCell>
                                     <TableCell>
