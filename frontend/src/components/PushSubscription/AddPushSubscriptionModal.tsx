@@ -1,8 +1,9 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {Modal, Button, Stack, Alert} from 'react-bootstrap';
+import { Modal, Button, Stack, Alert } from 'react-bootstrap';
+
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
 
 interface AddPushSubscriptionModalProps {
     user: UserResponse | null;
@@ -14,14 +15,14 @@ interface AddPushSubscriptionModalProps {
 }
 
 export const AddPushSubscriptionModal: React.FC<AddPushSubscriptionModalProps> = ({
-                                                                                      user,
-                                                                                      show,
-                                                                                      closeModal,
-                                                                                      loading,
-                                                                                      globalError,
-                                                                                      handleSubscribeDevice
-                                                                                  }) => {
-    const {t} = useTranslation();
+    user,
+    show,
+    closeModal,
+    loading,
+    globalError,
+    handleSubscribeDevice,
+}) => {
+    const { t } = useTranslation();
     if (!show || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
@@ -33,11 +34,19 @@ export const AddPushSubscriptionModal: React.FC<AddPushSubscriptionModalProps> =
             </Modal.Header>
             <Modal.Body>
                 {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
-                <Stack as="p">{t('pushSubscriptionInfo')}</Stack>
-                <Stack as="p" className="text-muted small">{t('pushPermissionWillBeAsked')}</Stack>
+                <Stack gap={3}>
+                    <Stack as="p" className="mb-0">
+                        {t('pushSubscriptionInfo')}
+                    </Stack>
+                    <Stack as="p" className="text-muted small mb-0">
+                        {t('pushPermissionWillBeAsked')}
+                    </Stack>
+                </Stack>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={closeModal}>{t('cancel')}</Button>
+                <Button variant="secondary" onClick={closeModal}>
+                    {t('cancel')}
+                </Button>
                 <Button variant="profile-primary" onClick={handleSubscribeDevice} disabled={loading}>
                     {loading ? t('sending') : t('subscribeThisDevice')}
                 </Button>

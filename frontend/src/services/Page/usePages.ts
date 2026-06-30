@@ -1,11 +1,12 @@
-import {useEffect} from 'react';
-import {PageProvider} from '../../api/providers/PageProvider';
-import {PageResponse} from '../../api/responses/PageResponse';
-import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
-import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect } from 'react';
+
+import { PageProvider } from '../../api/providers/PageProvider';
+import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
+import { PageIndexQuery } from '../../api/queries/PageIndexQuery';
+import { PageResponse } from '../../api/responses/PageResponse';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function usePages() {
     const access = useAppAccess();
@@ -42,6 +43,6 @@ export function usePages() {
         pages: data || [],
         loading: access.authLoading || loading,
         error: access.authError || error,
-        fetchPages
+        fetchPages,
     };
 }

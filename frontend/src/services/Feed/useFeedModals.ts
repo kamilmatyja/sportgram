@@ -1,11 +1,12 @@
-import React, {useState} from 'react';
-import {FeedProvider} from '../../api/providers/FeedProvider';
-import {FeedBody} from '../../api/body/FeedBody';
-import {StatusBody} from '../../api/body/StatusBody';
-import {FeedResponse} from '../../api/responses/FeedResponse';
-import {createFormHandler} from '../../utils/formHandler';
-import {useModal} from '../../utils/hooks/useModal';
-import {useFormState} from '../../utils/hooks/useFormState';
+import React, { useState } from 'react';
+
+import { FeedBody } from '../../api/body/FeedBody';
+import { StatusBody } from '../../api/body/StatusBody';
+import { FeedProvider } from '../../api/providers/FeedProvider';
+import { FeedResponse } from '../../api/responses/FeedResponse';
+import { createFormHandler } from '../../utils/formHandler';
+import { useFormState } from '../../utils/hooks/useFormState';
+import { useModal } from '../../utils/hooks/useModal';
 
 export function useFeedModals(onSuccess: () => void) {
     const addModal = useModal();
@@ -70,9 +71,21 @@ export function useFeedModals(onSuccess: () => void) {
     const handleChange = createFormHandler(setFormData);
 
     return {
-        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit,
-        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close, currentFeed: manageModal.data,
-        handleEditSubmit, handleStatusSubmit, handleDelete,
-        formData, handleChange, loading, globalError, fieldErrors
+        showAdd: addModal.isOpen,
+        openAddModal,
+        closeAddModal: addModal.close,
+        handleAddSubmit,
+        showManage: manageModal.isOpen,
+        openManageModal,
+        closeManageModal: manageModal.close,
+        currentFeed: manageModal.data,
+        handleEditSubmit,
+        handleStatusSubmit,
+        handleDelete,
+        formData,
+        handleChange,
+        loading,
+        globalError,
+        fieldErrors,
     };
 }

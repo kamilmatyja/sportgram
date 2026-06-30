@@ -6,8 +6,8 @@ export function useListFilters<TFilter>(initialFilter: TFilter, defaultSort = 'c
     const [sort, setSort] = useState<string>(defaultSort);
     const [filters, setFilters] = useState<TFilter>(initialFilter);
 
-    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
         setPage(1);
     };
 
@@ -20,18 +20,22 @@ export function useListFilters<TFilter>(initialFilter: TFilter, defaultSort = 'c
         setPage(1);
     };
 
-    const handlePrevPage = () => setPage(prev => Math.max(prev - 1, 1));
-    const handleNextPage = () => setPage(prev => prev + 1);
+    const handlePrevPage = () => setPage((prev) => Math.max(prev - 1, 1));
+    const handleNextPage = () => setPage((prev) => prev + 1);
 
     return {
-        page, setPage,
-        limit, setLimit,
-        sort, setSort,
-        filters, setFilters,
+        page,
+        setPage,
+        limit,
+        setLimit,
+        sort,
+        setSort,
+        filters,
+        setFilters,
         handleFilterChange,
         handleSortChange,
         handleLimitChange,
         handlePrevPage,
-        handleNextPage
+        handleNextPage,
     };
 }

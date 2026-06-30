@@ -1,11 +1,12 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {PageResponse} from '../../api/responses/PageResponse';
-import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
-import {Pagination} from '../Common/Pagination';
-import {PagesFilterBar} from './PagesFilterBar';
-import {PagesTable} from './PagesTable';
-import {Container, Stack, Card, Button, Spinner, Alert} from 'react-bootstrap';
+import { Container, Stack, Button, Spinner, Alert } from 'react-bootstrap';
+
+import { PagesFilterBar } from './PagesFilterBar';
+import { PagesTable } from './PagesTable';
+import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
+import { PageResponse } from '../../api/responses/PageResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { Pagination } from '../Common/Pagination';
 
 interface PagesListViewProps {
     pages: PageResponse[];
@@ -16,7 +17,7 @@ interface PagesListViewProps {
     limit: number;
     sort: string;
     filters: PageFilterQuery;
-    onFilterChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+    onFilterChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
     onSortChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     onLimitChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     onPrevPage: () => void;
@@ -25,29 +26,31 @@ interface PagesListViewProps {
 }
 
 export const PagesListView: React.FC<PagesListViewProps> = ({
-                                                                pages,
-                                                                isOrganizer,
-                                                                loading,
-                                                                error,
-                                                                page,
-                                                                limit,
-                                                                sort,
-                                                                filters,
-                                                                onFilterChange,
-                                                                onSortChange,
-                                                                onLimitChange,
-                                                                onPrevPage,
-                                                                onNextPage,
-                                                                onAddClick
-                                                            }) => {
-    const {t} = useTranslation();
+    pages,
+    isOrganizer,
+    loading,
+    error,
+    page,
+    limit,
+    sort,
+    filters,
+    onFilterChange,
+    onSortChange,
+    onLimitChange,
+    onPrevPage,
+    onNextPage,
+    onAddClick,
+}) => {
+    const { t } = useTranslation();
 
     return (
-        <Container className="mt-5 mb-5">
+        <Container className="py-5">
             <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
-                <Card.Title as="h2" className="mb-0 text-profile-primary fw-bold">{t('pages')}</Card.Title>
+                <Stack as="h2" className="mb-0 fw-bold text-primary">
+                    {t('pages')}
+                </Stack>
                 {isOrganizer && (
-                    <Button variant="profile-primary" onClick={onAddClick}>
+                    <Button variant="primary" onClick={onAddClick}>
                         {t('addPage')}
                     </Button>
                 )}
@@ -63,23 +66,21 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
             />
 
             {loading && pages.length === 0 ? (
-                <Stack className="text-center mt-4">
-                    <Spinner animation="border" className="text-profile-primary"/>
+                <Stack className="text-center p-5">
+                    <Spinner animation="border" variant="primary" />
                 </Stack>
             ) : error ? (
-                <Alert variant="danger" className="mt-3">{t(error)}</Alert>
+                <Alert variant="danger">{t(error)}</Alert>
             ) : (
-                <>
-                    <PagesTable pages={pages}/>
-                    <Stack className="mt-3">
-                        <Pagination
-                            page={page}
-                            hasMore={pages.length >= limit}
-                            onPrevPage={onPrevPage}
-                            onNextPage={onNextPage}
-                        />
-                    </Stack>
-                </>
+                <Stack gap={4}>
+                    <PagesTable pages={pages} />
+                    <Pagination
+                        page={page}
+                        hasMore={pages.length >= limit}
+                        onPrevPage={onPrevPage}
+                        onNextPage={onNextPage}
+                    />
+                </Stack>
             )}
         </Container>
     );

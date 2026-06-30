@@ -1,12 +1,13 @@
-import {useParams} from 'react-router-dom';
-import {usePageDetails} from '../services/Page/usePageDetails';
-import {usePageModals} from '../services/Page/usePageModals';
-import {usePageInteractions} from '../services/Page/usePageInteractions';
-import {PageDetailsView} from '../components/Page/PageDetailsView';
-import {ManagePageModal} from '../components/Page/ManagePageModal';
+import { useParams } from 'react-router-dom';
+
+import { ManagePageModal } from '../components/Page/ManagePageModal';
+import { PageDetailsView } from '../components/Page/PageDetailsView';
+import { usePageDetails } from '../services/Page/usePageDetails';
+import { usePageInteractions } from '../services/Page/usePageInteractions';
+import { usePageModals } from '../services/Page/usePageModals';
 
 export default function PageDetails() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
     const detailsProps = usePageDetails(link);
     const modalsService = usePageModals(detailsProps.refreshPage);
     const interactions = usePageInteractions(detailsProps.refreshPage);

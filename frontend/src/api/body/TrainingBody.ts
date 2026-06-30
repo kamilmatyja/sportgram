@@ -1,4 +1,4 @@
-import {TrainingDiscipline} from './TrainingDiscipline';
+import { TrainingDiscipline } from './TrainingDiscipline';
 
 export class TrainingBody {
     constructor(
@@ -9,7 +9,6 @@ export class TrainingBody {
         public link: string,
         public location: string,
         public disciplines: TrainingDiscipline[] = [],
-        public participants: string[] = []
-    ) {
-    }
+        public participants: string[] = [],
+    ) {}
 }

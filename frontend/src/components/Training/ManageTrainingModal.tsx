@@ -1,16 +1,17 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {TrainingBody} from '../../api/body/TrainingBody';
-import {TrainingResponse} from '../../api/responses/TrainingResponse';
-import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
-import {DisciplineEnum} from '../../enums/DisciplineEnum';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {TrainingDistance} from '../../api/body/TrainingDistance';
-import {TrainingSubDistance} from '../../api/body/TrainingSubDistance';
-import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
+import { Modal, Form, Button, Row, Col, InputGroup, Stack, Badge, Card, Alert } from 'react-bootstrap';
+
+import { TrainingBody } from '../../api/body/TrainingBody';
+import { TrainingDistance } from '../../api/body/TrainingDistance';
+import { TrainingSubDistance } from '../../api/body/TrainingSubDistance';
+import { TrainingResponse } from '../../api/responses/TrainingResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {Modal, Form, Button, Row, Col, InputGroup, Stack, Badge, Card, Alert} from 'react-bootstrap';
+import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
 
 interface ManageTrainingModalProps {
     user: UserResponse | null;
@@ -36,45 +37,50 @@ interface ManageTrainingModalProps {
     updateDistanceValue: (discIndex: number, distIndex: number, field: keyof TrainingDistance, val: number) => void;
     removeDistance: (discIndex: number, distIndex: number) => void;
     addSubDistance: (discIndex: number, distIndex: number) => void;
-    updateSubDistanceValue: (discIndex: number, distIndex: number, subIndex: number, field: keyof TrainingSubDistance, val: number) => void;
+    updateSubDistanceValue: (
+        discIndex: number,
+        distIndex: number,
+        subIndex: number,
+        field: keyof TrainingSubDistance,
+        val: number,
+    ) => void;
     removeSubDistance: (discIndex: number, distIndex: number, subIndex: number) => void;
 }
 
 export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
-                                                                            user,
-                                                                            availableUsers,
-                                                                            handleParticipantsChange,
-                                                                            show,
-                                                                            currentTraining,
-                                                                            isMyProfile,
-                                                                            isAdmin,
-                                                                            closeModal,
-                                                                            loading,
-                                                                            globalError,
-                                                                            fieldErrors,
-                                                                            formData,
-                                                                            handleChange,
-                                                                            handleEditSubmit,
-                                                                            handleStatusSubmit,
-                                                                            handleDelete,
-                                                                            addDiscipline,
-                                                                            updateDisciplineType,
-                                                                            removeDiscipline,
-                                                                            addDistance,
-                                                                            updateDistanceValue,
-                                                                            removeDistance,
-                                                                            addSubDistance,
-                                                                            updateSubDistanceValue,
-                                                                            removeSubDistance
-                                                                        }) => {
-    const {t} = useTranslation();
+    user,
+    availableUsers,
+    handleParticipantsChange,
+    show,
+    currentTraining,
+    isMyProfile,
+    isAdmin,
+    closeModal,
+    loading,
+    globalError,
+    formData,
+    handleChange,
+    handleEditSubmit,
+    handleStatusSubmit,
+    handleDelete,
+    addDiscipline,
+    updateDisciplineType,
+    removeDiscipline,
+    addDistance,
+    updateDistanceValue,
+    removeDistance,
+    addSubDistance,
+    updateSubDistanceValue,
+    removeSubDistance,
+}) => {
+    const { t } = useTranslation();
     if (!show || !currentTraining || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
     const disciplineOptions = DisciplineEnum.getOptions(t) as SelectOption[];
-    const userOptions: SelectOption[] = availableUsers.map(u => ({
+    const userOptions: SelectOption[] = availableUsers.map((u) => ({
         value: u.id,
-        label: `${u.firstName} ${u.lastName} (${u.link})`
+        label: `${u.firstName} ${u.lastName} (${u.link})`,
     }));
 
     return (
@@ -86,7 +92,7 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                 {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
 
                 {isMyProfile && (
-                    <Form id="edit-training-form" onSubmit={handleEditSubmit} className="mb-4 pb-3 border-bottom">
+                    <Form id="edit-training-form" onSubmit={handleEditSubmit} className="mb-4 border-bottom pb-4">
                         <Row className="mb-3">
                             <Col md={6}>
                                 <Form.Group>
@@ -96,10 +102,8 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                         name="startedAt"
                                         value={formData.startedAt}
                                         onChange={handleChange}
-                                        isInvalid={!!fieldErrors.startedAt}
                                         required
                                     />
-                                    <Form.Control.Feedback type="invalid">{fieldErrors.startedAt}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
@@ -110,14 +114,11 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                         name="endedAt"
                                         value={formData.endedAt}
                                         onChange={handleChange}
-                                        isInvalid={!!fieldErrors.endedAt}
                                         required
                                     />
-                                    <Form.Control.Feedback type="invalid">{fieldErrors.endedAt}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                         </Row>
-
                         <Row className="mb-3">
                             <Col md={6}>
                                 <Form.Group>
@@ -127,10 +128,8 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                         name="title"
                                         value={formData.title}
                                         onChange={handleChange}
-                                        isInvalid={!!fieldErrors.title}
                                         required
                                     />
-                                    <Form.Control.Feedback type="invalid">{fieldErrors.title}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
@@ -141,14 +140,11 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                         name="link"
                                         value={formData.link}
                                         onChange={handleChange}
-                                        isInvalid={!!fieldErrors.link}
                                         required
                                     />
-                                    <Form.Control.Feedback type="invalid">{fieldErrors.link}</Form.Control.Feedback>
                                 </Form.Group>
                             </Col>
                         </Row>
-
                         <Form.Group className="mb-3">
                             <Form.Label>{t('location')}</Form.Label>
                             <Form.Control
@@ -156,12 +152,9 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                 name="location"
                                 value={formData.location}
                                 onChange={handleChange}
-                                isInvalid={!!fieldErrors.location}
                                 required
                             />
-                            <Form.Control.Feedback type="invalid">{fieldErrors.location}</Form.Control.Feedback>
                         </Form.Group>
-
                         <Form.Group className="mb-3">
                             <Form.Label>{t('description')}</Form.Label>
                             <Form.Control
@@ -169,159 +162,215 @@ export const ManageTrainingModal: React.FC<ManageTrainingModalProps> = ({
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
-                                isInvalid={!!fieldErrors.description}
                                 required
                                 rows={3}
                             />
-                            <Form.Control.Feedback type="invalid">{fieldErrors.description}</Form.Control.Feedback>
                         </Form.Group>
-
-                        <Form.Group className="mb-3">
+                        <Form.Group className="mb-4">
                             <Form.Label>{t('participants')}</Form.Label>
                             <Form.Select
                                 name="participants"
-                                value={Array.isArray(formData.participants) ? formData.participants : []}
+                                value={formData.participants}
                                 onChange={handleParticipantsChange}
                                 multiple
-                                isInvalid={!!fieldErrors.participants}
                             >
                                 <SelectOptions options={userOptions} />
                             </Form.Select>
-                            <Form.Control.Feedback type="invalid">{fieldErrors.participants}</Form.Control.Feedback>
                         </Form.Group>
 
-                        <Stack direction="horizontal" className="justify-content-between align-items-center mt-4 mb-3">
-                            <Card.Title as="h6" className="text-profile-primary mb-0">{t('disciplinesAndDistances')}</Card.Title>
+                        <Stack direction="horizontal" className="justify-content-between align-items-center mb-3">
+                            <Stack as="h6" className="text-profile-primary mb-0 fw-bold">
+                                {t('disciplinesAndDistances')}
+                            </Stack>
                             <Button variant="profile-outline-primary" size="sm" onClick={addDiscipline}>
                                 {t('add')}
                             </Button>
                         </Stack>
 
-                        {formData.disciplines?.map((disc, dIndex) => (
-                            <Stack key={dIndex} className="border rounded p-3 mb-3 bg-white">
-                                <Stack direction="horizontal" className="justify-content-between align-items-end mb-3">
-                                    <Stack className="flex-grow-1 me-3">
-                                        <Form.Label>{t('discipline')}</Form.Label>
-                                        <Form.Select
-                                            value={disc.discipline}
-                                            onChange={e => updateDisciplineType(dIndex, parseInt(e.target.value))}
-                                        >
-                                            <SelectOptions options={disciplineOptions} />
-                                        </Form.Select>
-                                    </Stack>
-                                    <Button variant="outline-danger" onClick={() => removeDiscipline(dIndex)}>
-                                        <BootstrapIcon name="trash" />
-                                    </Button>
-                                </Stack>
-
-                                <Stack className="ps-4 border-start border-2 border-profile-primary">
-                                    <Stack direction="horizontal" className="justify-content-between mb-2">
-                                        <Stack as="span" className="fw-bold">{t('distances')}</Stack>
-                                        <Button variant="profile-outline-primary" size="sm" onClick={() => addDistance(dIndex)}>
-                                            {t('add')}
+                        {formData.disciplines?.map((disc, dIdx) => (
+                            <Card key={dIdx} className="mb-3">
+                                <Card.Body>
+                                    <Stack direction="horizontal" gap={3} className="mb-3 align-items-end">
+                                        <Stack className="flex-grow-1">
+                                            <Form.Label className="small">{t('discipline')}</Form.Label>
+                                            <Form.Select
+                                                value={disc.discipline}
+                                                onChange={(e) => updateDisciplineType(dIdx, parseInt(e.target.value))}
+                                            >
+                                                <SelectOptions options={disciplineOptions} />
+                                            </Form.Select>
+                                        </Stack>
+                                        <Button variant="outline-danger" onClick={() => removeDiscipline(dIdx)}>
+                                            <BootstrapIcon name="trash" />
                                         </Button>
                                     </Stack>
-
-                                    {disc.distances?.map((dist, distIndex) => (
-                                        <Card key={distIndex} className="mb-2 shadow-none border">
-                                            <Card.Body className="p-2">
-                                                <Stack direction="horizontal" gap={2} className="align-items-center mb-2">
+                                    <Stack className="ps-3 border-start border-primary border-2">
+                                        <Stack direction="horizontal" className="justify-content-between mb-2">
+                                            <Stack as="span" className="small fw-bold">
+                                                {t('distances')}
+                                            </Stack>
+                                            <Button
+                                                variant="profile-outline-primary"
+                                                size="sm"
+                                                onClick={() => addDistance(dIdx)}
+                                            >
+                                                {t('add')}
+                                            </Button>
+                                        </Stack>
+                                        {disc.distances?.map((dist, distIdx) => (
+                                            <Stack key={distIdx} gap={2} className="mb-2 p-2 border rounded">
+                                                <Stack direction="horizontal" gap={2}>
                                                     <InputGroup size="sm">
-                                                        <InputGroup.Text>{t('distanceMeters')}</InputGroup.Text>
+                                                        <InputGroup.Text>m</InputGroup.Text>
                                                         <Form.Control
                                                             type="number"
                                                             value={dist.distance}
-                                                            onChange={e => updateDistanceValue(dIndex, distIndex, 'distance', parseInt(e.target.value) || 0)}
+                                                            onChange={(e) =>
+                                                                updateDistanceValue(
+                                                                    dIdx,
+                                                                    distIdx,
+                                                                    'distance',
+                                                                    parseInt(e.target.value) || 0,
+                                                                )
+                                                            }
                                                         />
                                                     </InputGroup>
                                                     <InputGroup size="sm">
-                                                        <InputGroup.Text>{t('timeSeconds')}</InputGroup.Text>
+                                                        <InputGroup.Text>s</InputGroup.Text>
                                                         <Form.Control
                                                             type="number"
                                                             value={dist.time}
-                                                            onChange={e => updateDistanceValue(dIndex, distIndex, 'time', parseInt(e.target.value) || 0)}
+                                                            onChange={(e) =>
+                                                                updateDistanceValue(
+                                                                    dIdx,
+                                                                    distIdx,
+                                                                    'time',
+                                                                    parseInt(e.target.value) || 0,
+                                                                )
+                                                            }
                                                         />
                                                     </InputGroup>
-                                                    <Button variant="outline-danger" size="sm" onClick={() => removeDistance(dIndex, distIndex)}>
+                                                    <Button
+                                                        variant="outline-danger"
+                                                        size="sm"
+                                                        onClick={() => removeDistance(dIdx, distIdx)}
+                                                    >
                                                         <BootstrapIcon name="trash" />
                                                     </Button>
                                                 </Stack>
-
                                                 <Stack className="ps-3 border-start">
-                                                    <Stack direction="horizontal" className="justify-content-between mb-2">
-                                                        <Stack as="small" className="text-muted">{t('subDistances')}</Stack>
-                                                        <Button variant="profile-outline-primary" className="btn-xs py-0 px-2" onClick={() => addSubDistance(dIndex, distIndex)}>
+                                                    <Stack
+                                                        direction="horizontal"
+                                                        className="justify-content-between mb-1"
+                                                    >
+                                                        <Stack as="small" className="text-muted">
+                                                            {t('subDistances')}
+                                                        </Stack>
+                                                        <Button
+                                                            variant="profile-outline-primary"
+                                                            className="btn-xs py-0 px-2"
+                                                            onClick={() => addSubDistance(dIdx, distIdx)}
+                                                        >
                                                             {t('add')}
                                                         </Button>
                                                     </Stack>
-                                                    {dist.subDistances?.map((sub, subIndex) => (
-                                                        <Stack key={subIndex} direction="horizontal" gap={2} className="align-items-center mt-1">
+                                                    {dist.subDistances?.map((sub, sIdx) => (
+                                                        <Stack
+                                                            key={sIdx}
+                                                            direction="horizontal"
+                                                            gap={1}
+                                                            className="mt-1"
+                                                        >
                                                             <Form.Control
                                                                 type="number"
                                                                 size="sm"
-                                                                placeholder={t('subDistanceMeters')}
                                                                 value={sub.subDistance}
-                                                                onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'subDistance', parseInt(e.target.value) || 0)}
+                                                                onChange={(e) =>
+                                                                    updateSubDistanceValue(
+                                                                        dIdx,
+                                                                        distIdx,
+                                                                        sIdx,
+                                                                        'subDistance',
+                                                                        parseInt(e.target.value) || 0,
+                                                                    )
+                                                                }
                                                             />
                                                             <Form.Control
                                                                 type="number"
                                                                 size="sm"
-                                                                placeholder={t('timeSeconds')}
                                                                 value={sub.time}
-                                                                onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, 'time', parseInt(e.target.value) || 0)}
+                                                                onChange={(e) =>
+                                                                    updateSubDistanceValue(
+                                                                        dIdx,
+                                                                        distIdx,
+                                                                        sIdx,
+                                                                        'time',
+                                                                        parseInt(e.target.value) || 0,
+                                                                    )
+                                                                }
                                                             />
-                                                            <Button variant="outline-danger" size="sm" onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
+                                                            <Button
+                                                                variant="outline-danger"
+                                                                size="sm"
+                                                                onClick={() => removeSubDistance(dIdx, distIdx, sIdx)}
+                                                            >
                                                                 <BootstrapIcon name="trash" />
                                                             </Button>
                                                         </Stack>
                                                     ))}
                                                 </Stack>
-                                            </Card.Body>
-                                        </Card>
-                                    ))}
-                                </Stack>
-                            </Stack>
+                                            </Stack>
+                                        ))}
+                                    </Stack>
+                                </Card.Body>
+                            </Card>
                         ))}
                     </Form>
                 )}
 
-                {(isMyProfile || isAdmin) && (
-                    <Stack className="mb-2">
-                        <Stack direction="horizontal" className="flex-wrap gap-2 align-items-center">
-                            <Stack as="strong">{t('status')}: </Stack>
-                            <Badge bg="light" text="dark" className="border profile-theme-border">
-                                {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(currentTraining.status))?.label || currentTraining.status}
-                            </Badge>
-                            {ElementStatusEnum.getOptions(t)
-                                .filter(opt => opt.value !== currentTraining.status)
-                                .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
-                                .map(opt => (
+                <Stack direction="horizontal" gap={3} className="align-items-center p-2 bg-light rounded">
+                    <Stack as="strong" className="small">
+                        {t('status')}:
+                    </Stack>
+                    <Badge bg="light" text="dark" className="border profile-theme-border">
+                        {ElementStatusEnum.getOptions(t).find((opt) => opt.value === currentTraining.status)?.label ||
+                            currentTraining.status}
+                    </Badge>
+                    <Stack direction="horizontal" gap={1} className="ms-auto flex-wrap">
+                        {(isAdmin || isMyProfile) &&
+                            ElementStatusEnum.getOptions(t)
+                                .filter(
+                                    (opt) =>
+                                        opt.value !== currentTraining.status &&
+                                        (isAdmin || opt.value !== ElementStatusEnum.REJECTED),
+                                )
+                                .map((opt) => (
                                     <Button
                                         key={opt.value}
                                         variant="profile-outline-primary"
-                                        size="sm"
-                                        className="py-0 px-2 btn-xs"
-                                        disabled={loading}
+                                        className="btn-xs py-0 px-2"
                                         onClick={() => handleStatusSubmit(opt.value)}
+                                        disabled={loading}
                                     >
-                                        {loading ? t('loading') : opt.label}
+                                        {opt.label}
                                     </Button>
                                 ))}
-                        </Stack>
                     </Stack>
-                )}
+                </Stack>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={closeModal} disabled={loading}>{t('cancel')}</Button>
+                <Button variant="secondary" onClick={closeModal}>
+                    {t('cancel')}
+                </Button>
                 {isMyProfile && (
-                    <>
+                    <Stack direction="horizontal" gap={2}>
                         <Button variant="danger" onClick={handleDelete} disabled={loading}>
-                            {loading ? t('sending') : t('delete')}
+                            {t('delete')}
                         </Button>
                         <Button variant="profile-primary" type="submit" form="edit-training-form" disabled={loading}>
-                            {loading ? t('sending') : t('saveChanges')}
+                            {t('saveChanges')}
                         </Button>
-                    </>
+                    </Stack>
                 )}
             </Modal.Footer>
         </Modal>

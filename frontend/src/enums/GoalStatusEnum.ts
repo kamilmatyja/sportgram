@@ -11,7 +11,7 @@ export namespace GoalStatusEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`goalStatuses.${key.toLowerCase()}`)
+                label: t(`goalStatuses.${key.toLowerCase()}`),
             }));
     };
 }

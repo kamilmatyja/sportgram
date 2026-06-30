@@ -1,13 +1,14 @@
-import {useParams} from 'react-router-dom';
-import {useUserGoals} from '../services/User/useUserGoals';
-import {useGoalModals} from '../services/Goal/useGoalModals';
-import {useGoalInteractions} from '../services/Goal/useGoalInteractions';
-import {UserGoalsView} from '../components/User/UserGoalsView';
-import {AddGoalModal} from '../components/Goal/AddGoalModal';
-import {ManageGoalModal} from '../components/Goal/ManageGoalModal';
+import { useParams } from 'react-router-dom';
+
+import { AddGoalModal } from '../components/Goal/AddGoalModal';
+import { ManageGoalModal } from '../components/Goal/ManageGoalModal';
+import { UserGoalsView } from '../components/User/UserGoalsView';
+import { useGoalInteractions } from '../services/Goal/useGoalInteractions';
+import { useGoalModals } from '../services/Goal/useGoalModals';
+import { useUserGoals } from '../services/User/useUserGoals';
 
 export default function UserGoals() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const goalsService = useUserGoals(link);
     const modalsService = useGoalModals(goalsService.refreshGoals);
@@ -17,7 +18,6 @@ export default function UserGoals() {
         <>
             <UserGoalsView
                 user={goalsService.targetUser}
-                currentUser={goalsService.currentUser}
                 goals={goalsService.goals}
                 relatedUsers={goalsService.relatedUsers}
                 isMyProfile={goalsService.isMyProfile}
@@ -29,7 +29,6 @@ export default function UserGoals() {
                 limit={goalsService.limit}
                 sort={goalsService.sort}
                 filters={goalsService.filters}
-                actionLoading={interactions.actionLoading}
                 onFilterChange={goalsService.handleFilterChange}
                 onSortChange={goalsService.handleSortChange}
                 onLimitChange={goalsService.handleLimitChange}

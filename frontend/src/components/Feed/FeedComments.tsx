@@ -1,10 +1,11 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
-import {useTranslation} from '../../context/TranslationContext';
-import {FeedResponse} from '../../api/responses/FeedResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
+import { Stack, Image, Form, Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+
+import { FeedResponse } from '../../api/responses/FeedResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {Stack, Image, Form, Button, Card} from 'react-bootstrap';
 
 interface FeedCommentsProps {
     feed: FeedResponse;
@@ -24,60 +25,58 @@ interface FeedCommentsProps {
 }
 
 export const FeedComments: React.FC<FeedCommentsProps> = ({
-                                                              feed,
-                                                              currentUser,
-                                                              relatedUsers,
-                                                              isFeedLoading,
-                                                              editingCommentId,
-                                                              editCommentText,
-                                                              commentInputValue,
-                                                              onCommentInput,
-                                                              onAddComment,
-                                                              onDeleteComment,
-                                                              onStartEditing,
-                                                              onCancelEditing,
-                                                              onUpdateComment,
-                                                              setEditCommentText
-                                                          }) => {
-    const {t} = useTranslation();
+    feed,
+    currentUser,
+    relatedUsers,
+    isFeedLoading,
+    editingCommentId,
+    editCommentText,
+    commentInputValue,
+    onCommentInput,
+    onAddComment,
+    onDeleteComment,
+    onStartEditing,
+    onCancelEditing,
+    onUpdateComment,
+    setEditCommentText,
+}) => {
+    const { t } = useTranslation();
 
     return (
-        <Stack className="mt-3">
-            {feed.comments?.map(comment => {
-                const commentAuthor = relatedUsers[comment.userId];
+        <Stack gap={3} className="mt-3">
+            {feed.comments?.map((comment) => {
+                const commentAuthor = comment.user ?? relatedUsers?.[comment.userId];
                 const isMyComment = comment.userId === currentUser?.id;
                 const isEditing = editingCommentId === comment.id;
 
                 return (
-                    <Stack direction="horizontal" gap={2} key={comment.id} className="align-items-start mb-3">
+                    <Stack direction="horizontal" gap={2} key={comment.id} className="align-items-start">
                         {commentAuthor?.profilePhoto ? (
                             <Image
                                 src={`data:image/webp;base64,${commentAuthor.profilePhoto}`}
-                                alt="avatar"
                                 roundedCircle
-                                className="object-fit-cover flex-shrink-0 feed-avatar-32"
+                                className="object-fit-cover feed-avatar-32"
                             />
                         ) : (
-                            <Stack className="bg-secondary rounded-circle flex-shrink-0 feed-avatar-32" />
+                            <Stack className="bg-secondary rounded-circle feed-avatar-32" />
                         )}
 
                         <Stack className="flex-grow-1">
                             <Stack className="bg-light p-2 rounded-3">
                                 <Link
                                     to={`/users/${commentAuthor?.link || comment.userId}`}
-                                    className="fw-bold text-decoration-none text-body small d-block"
+                                    className="text-decoration-none text-body small"
                                 >
-                                    {commentAuthor ? `${commentAuthor.firstName} ${commentAuthor.lastName}` : comment.userId}
+                                    {commentAuthor ? `${commentAuthor.firstName} ${commentAuthor.lastName}` : '-'}
                                 </Link>
 
                                 {isEditing ? (
-                                    <Stack className="mt-1">
+                                    <Stack gap={1} className="mt-1">
                                         <Form.Control
                                             type="text"
                                             size="sm"
-                                            className="mb-1"
                                             value={editCommentText}
-                                            onChange={e => setEditCommentText(e.target.value)}
+                                            onChange={(e) => setEditCommentText(e.target.value)}
                                         />
                                         <Stack direction="horizontal" gap={1} className="justify-content-end">
                                             <Button
@@ -85,7 +84,6 @@ export const FeedComments: React.FC<FeedCommentsProps> = ({
                                                 size="sm"
                                                 className="py-0 px-2"
                                                 onClick={onCancelEditing}
-                                                disabled={isFeedLoading}
                                             >
                                                 {t('cancel')}
                                             </Button>
@@ -94,14 +92,15 @@ export const FeedComments: React.FC<FeedCommentsProps> = ({
                                                 size="sm"
                                                 className="py-0 px-2"
                                                 onClick={() => onUpdateComment(feed.id, comment.id)}
-                                                disabled={isFeedLoading}
                                             >
                                                 {t('save')}
                                             </Button>
                                         </Stack>
                                     </Stack>
                                 ) : (
-                                    <Card.Text as="span" className="small text-break mb-0">{comment.text}</Card.Text>
+                                    <Stack as="span" className="small text-break">
+                                        {comment.text}
+                                    </Stack>
                                 )}
                             </Stack>
 
@@ -130,35 +129,36 @@ export const FeedComments: React.FC<FeedCommentsProps> = ({
                 );
             })}
 
-            <Form onSubmit={(e) => onAddComment(e, feed.id)} className="d-flex gap-2 mt-3">
-                {currentUser?.profilePhoto ? (
-                    <Image
-                        src={`data:image/webp;base64,${currentUser.profilePhoto}`}
-                        alt="avatar"
-                        roundedCircle
-                        className="object-fit-cover flex-shrink-0 feed-avatar-32"
+            <Form onSubmit={(e) => onAddComment(e, feed.id)}>
+                <Stack direction="horizontal" gap={2}>
+                    {currentUser?.profilePhoto ? (
+                        <Image
+                            src={`data:image/webp;base64,${currentUser.profilePhoto}`}
+                            roundedCircle
+                            className="object-fit-cover feed-avatar-32"
+                        />
+                    ) : (
+                        <Stack className="bg-secondary rounded-circle feed-avatar-32" />
+                    )}
+                    <Form.Control
+                        type="text"
+                        size="sm"
+                        className="rounded-pill"
+                        placeholder={t('writeComment')}
+                        value={commentInputValue || ''}
+                        onChange={(e) => onCommentInput(feed.id, e.target.value)}
+                        disabled={isFeedLoading}
                     />
-                ) : (
-                    <Stack className="bg-secondary rounded-circle flex-shrink-0 feed-avatar-32" />
-                )}
-                <Form.Control
-                    type="text"
-                    size="sm"
-                    className="rounded-pill px-3"
-                    placeholder={t('writeComment')}
-                    value={commentInputValue || ''}
-                    onChange={e => onCommentInput(feed.id, e.target.value)}
-                    disabled={isFeedLoading}
-                />
-                <Button
-                    type="submit"
-                    variant="profile-primary"
-                    size="sm"
-                    className="rounded-circle px-2 d-flex align-items-center justify-content-center"
-                    disabled={isFeedLoading || !(commentInputValue?.trim())}
-                >
-                    <BootstrapIcon name="send-fill" />
-                </Button>
+                    <Button
+                        type="submit"
+                        variant="profile-primary"
+                        size="sm"
+                        className="rounded-circle px-2"
+                        disabled={isFeedLoading || !commentInputValue?.trim()}
+                    >
+                        <BootstrapIcon name="send-fill" />
+                    </Button>
+                </Stack>
             </Form>
         </Stack>
     );

@@ -16,7 +16,6 @@ export class UserCreateBody {
         public backgroundPhoto: string,
         public bio: string,
         public roles: number[],
-        public disciplines: number[] = []
-    ) {
-    }
+        public disciplines: number[] = [],
+    ) {}
 }

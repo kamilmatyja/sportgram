@@ -9,7 +9,7 @@ export namespace GenderEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`genders.${key.toLowerCase()}`)
+                label: t(`genders.${key.toLowerCase()}`),
             }));
     };
 }

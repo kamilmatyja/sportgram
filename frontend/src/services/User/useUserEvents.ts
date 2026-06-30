@@ -1,11 +1,12 @@
-import {useEffect} from 'react';
-import {EventProvider} from '../../api/providers/EventProvider';
-import {EventResponse} from '../../api/responses/EventResponse';
-import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
-import {EventIndexQuery} from '../../api/queries/EventIndexQuery';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect } from 'react';
+
+import { EventProvider } from '../../api/providers/EventProvider';
+import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
+import { EventIndexQuery } from '../../api/queries/EventIndexQuery';
+import { EventResponse } from '../../api/responses/EventResponse';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUserEvents(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -49,6 +50,6 @@ export function useUserEvents(link?: string) {
         events: events || [],
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshEvents
+        refreshEvents,
     };
 }

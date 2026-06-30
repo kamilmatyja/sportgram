@@ -5,7 +5,7 @@ export function useFormState() {
     const [globalError, setGlobalError] = useState('');
     const [fieldErrors, setFieldErrors] = useState<Record<string, string | string[]>>({});
 
-    const wrap = async <T,>(apiCall: () => Promise<T>): Promise<T | void> => {
+    const wrap = async <T>(apiCall: () => Promise<T>): Promise<T | void> => {
         setLoading(true);
         setGlobalError('');
         setFieldErrors({});

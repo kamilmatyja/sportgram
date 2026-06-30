@@ -1,12 +1,12 @@
-import {FriendProvider} from '../../api/providers/FriendProvider';
-import {FriendBody} from '../../api/body/FriendBody';
-import {StatusBody} from '../../api/body/StatusBody';
-import {useTranslation} from '../../context/TranslationContext';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {useActionState} from '../../utils/hooks/useActionState';
+import { FriendBody } from '../../api/body/FriendBody';
+import { StatusBody } from '../../api/body/StatusBody';
+import { FriendProvider } from '../../api/providers/FriendProvider';
+import { useTranslation } from '../../context/TranslationContext';
+import { useActionState } from '../../utils/hooks/useActionState';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
 
 export function useUserProfile(link?: string) {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const access = useAppAccess({ targetLink: link, requireFriendship: false });
     const { actionLoading, runAction } = useActionState();
 
@@ -42,6 +42,8 @@ export function useUserProfile(link?: string) {
         loading: access.authLoading,
         error: access.authError,
         actionLoading: actionLoading !== null,
-        handleAddFriend, handleUpdateFriendStatus, refreshProfile
+        handleAddFriend,
+        handleUpdateFriendStatus,
+        refreshProfile,
     };
 }

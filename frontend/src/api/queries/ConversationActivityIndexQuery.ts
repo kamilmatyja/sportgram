@@ -1,4 +1,4 @@
-import {ConversationActivityFilterQuery} from './ConversationActivityFilterQuery';
+import { ConversationActivityFilterQuery } from './ConversationActivityFilterQuery';
 
 export class ConversationActivityIndexQuery {
     page?: number = 1;

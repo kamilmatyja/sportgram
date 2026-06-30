@@ -9,8 +9,7 @@ export namespace ThemeEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`themes.${key.toLowerCase()}`)
+                label: t(`themes.${key.toLowerCase()}`),
             }));
     };
 }
-

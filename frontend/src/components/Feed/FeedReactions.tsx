@@ -1,9 +1,10 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {FeedReactionEnum} from '../../enums/FeedReactionEnum';
-import {FeedResponse} from '../../api/responses/FeedResponse';
+import { Stack, Button } from 'react-bootstrap';
+
+import { FeedResponse } from '../../api/responses/FeedResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import {Stack, Button} from 'react-bootstrap';
 
 interface FeedReactionsProps {
     feed: FeedResponse;
@@ -12,14 +13,13 @@ interface FeedReactionsProps {
     onReact: (feedId: string, type: number) => void;
 }
 
-export const FeedReactions: React.FC<FeedReactionsProps> = ({feed, myReactionType, isFeedLoading, onReact}) => {
-    const {t} = useTranslation();
+export const FeedReactions: React.FC<FeedReactionsProps> = ({ feed, myReactionType, isFeedLoading, onReact }) => {
+    const { t } = useTranslation();
 
     return (
         <Stack direction="horizontal" className="flex-wrap gap-1 border-top border-bottom py-2 justify-content-between">
-            {FeedReactionEnum.getOptions(t).map(opt => {
+            {FeedReactionEnum.getOptions(t).map((opt) => {
                 const isActive = myReactionType === opt.value;
-                const reactionCount = feed.reactions?.filter(r => r.reaction === opt.value).length || 0;
                 const icon = FeedReactionEnum.getClass(opt.value);
 
                 return (
@@ -27,13 +27,14 @@ export const FeedReactions: React.FC<FeedReactionsProps> = ({feed, myReactionTyp
                         key={opt.value}
                         variant={isActive ? 'light' : 'light'}
                         size="sm"
-                        className={`flex-grow-1 ${isActive ? 'bg-light fw-bold profile-theme-text' : 'bg-transparent'}`}
+                        className={`flex-grow-1 border-0 ${isActive ? 'fw-bold profile-theme-text' : 'text-muted'}`}
                         disabled={isFeedLoading}
                         onClick={() => onReact(feed.id, opt.value)}
                     >
                         <BootstrapIcon name={icon.name} className={`${icon.className} me-1`} />
-                        <Stack as="span" className="d-none d-sm-inline">{opt.label}</Stack>
-                        {reactionCount > 0 && <Stack as="span" className="ms-1 small">({reactionCount})</Stack>}
+                        <Stack as="span" className="d-none d-md-inline">
+                            {opt.label}
+                        </Stack>
                     </Button>
                 );
             })}

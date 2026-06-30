@@ -1,4 +1,3 @@
 export class ConversationBody {
-    constructor(public text: string) {
-    }
+    constructor(public text: string) {}
 }

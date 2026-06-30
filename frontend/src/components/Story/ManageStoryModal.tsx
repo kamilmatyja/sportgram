@@ -1,11 +1,12 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {StoryBody} from '../../api/body/StoryBody';
-import {StoryResponse} from '../../api/responses/StoryResponse';
-import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {Modal, Form, Button, Stack, Alert, Badge} from 'react-bootstrap';
+import { Modal, Form, Button, Stack, Alert, Badge } from 'react-bootstrap';
+
+import { StoryBody } from '../../api/body/StoryBody';
+import { StoryResponse } from '../../api/responses/StoryResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 
 interface ManageStoryModalProps {
     user: UserResponse | null;
@@ -25,22 +26,22 @@ interface ManageStoryModalProps {
 }
 
 export const ManageStoryModal: React.FC<ManageStoryModalProps> = ({
-                                                                      user,
-                                                                      show,
-                                                                      story,
-                                                                      isMyProfile,
-                                                                      isAdmin,
-                                                                      closeModal,
-                                                                      loading,
-                                                                      globalError,
-                                                                      fieldErrors,
-                                                                      formData,
-                                                                      handleChange,
-                                                                      handleEditSubmit,
-                                                                      handleStatusSubmit,
-                                                                      handleDelete
-                                                                  }) => {
-    const {t} = useTranslation();
+    user,
+    show,
+    story,
+    isMyProfile,
+    isAdmin,
+    closeModal,
+    loading,
+    globalError,
+    fieldErrors,
+    formData,
+    handleChange,
+    handleEditSubmit,
+    handleStatusSubmit,
+    handleDelete,
+}) => {
+    const { t } = useTranslation();
     if (!show || !story || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
@@ -54,54 +55,70 @@ export const ManageStoryModal: React.FC<ManageStoryModalProps> = ({
                 {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
 
                 {isMyProfile && (
-                    <Form id="edit-story-form" onSubmit={handleEditSubmit} className="mb-4 border-bottom pb-3">
+                    <Form id="edit-story-form" onSubmit={handleEditSubmit} className="mb-4 pb-4 border-bottom">
                         <Form.Group className="mb-3">
                             <Form.Label>{t('text')}</Form.Label>
-                            <Form.Control as="textarea" name="text" value={formData.text || ''} onChange={handleChange} isInvalid={!!fieldErrors.text} required rows={3} />
-                            <Form.Control.Feedback type="invalid">{fieldErrors.text}</Form.Control.Feedback>
+                            <Form.Control
+                                as="textarea"
+                                name="text"
+                                value={formData.text || ''}
+                                onChange={handleChange}
+                                isInvalid={!!fieldErrors.text}
+                                required
+                                rows={3}
+                            />
                         </Form.Group>
-                        <Form.Group className="mb-3">
+                        <Form.Group>
                             <Form.Label>{t('photo')}</Form.Label>
-                            <Form.Control type="file" accept="image/*" name="photo" onChange={handleChange as any} isInvalid={!!fieldErrors.photo} />
-                            <Form.Text>{t('photoOptional')}</Form.Text>
-                            <Form.Control.Feedback type="invalid">{fieldErrors.photo}</Form.Control.Feedback>
+                            <Form.Control type="file" accept="image/*" name="photo" onChange={handleChange as any} />
+                            <Form.Text className="text-muted small">{t('photoOptional')}</Form.Text>
                         </Form.Group>
                     </Form>
                 )}
 
-                {(isMyProfile || isAdmin) && (
-                    <Stack className="mb-2">
-                        <Stack direction="horizontal" className="flex-wrap gap-2 align-items-center">
-                            <Stack as="strong">{t('status')}: </Stack>
-                            <Badge bg="light" text="dark" className="border profile-theme-border">
-                                {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(story.status))?.label || story.status}
-                            </Badge>
-                            {ElementStatusEnum.getOptions(t)
-                                .filter(opt => opt.value !== story.status)
-                                .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
-                                .map(opt => (
-                                    <Button
-                                        key={opt.value}
-                                        variant="profile-outline-primary"
-                                        size="sm"
-                                        className="py-0 px-2 btn-xs"
-                                        disabled={loading}
-                                        onClick={() => handleStatusSubmit(opt.value)}
-                                    >
-                                        {loading ? t('loading') : opt.label}
-                                    </Button>
-                                ))}
-                        </Stack>
+                <Stack direction="horizontal" gap={3} className="align-items-center p-2 bg-light rounded">
+                    <Stack as="strong" className="small">
+                        {t('status')}:
                     </Stack>
-                )}
+                    <Badge bg="light" text="dark" className="border profile-theme-border">
+                        {ElementStatusEnum.getOptions(t).find((opt) => opt.value === story.status)?.label ||
+                            story.status}
+                    </Badge>
+                    <Stack direction="horizontal" gap={1} className="ms-auto flex-wrap">
+                        {ElementStatusEnum.getOptions(t)
+                            .filter(
+                                (opt) =>
+                                    opt.value !== story.status &&
+                                    (isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED)),
+                            )
+                            .map((opt) => (
+                                <Button
+                                    key={opt.value}
+                                    variant="profile-outline-primary"
+                                    size="sm"
+                                    className="py-0 px-2 btn-xs"
+                                    onClick={() => handleStatusSubmit(opt.value)}
+                                    disabled={loading}
+                                >
+                                    {opt.label}
+                                </Button>
+                            ))}
+                    </Stack>
+                </Stack>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={closeModal} disabled={loading}>{t('cancel')}</Button>
+                <Button variant="secondary" onClick={closeModal}>
+                    {t('cancel')}
+                </Button>
                 {isMyProfile && (
-                    <>
-                        <Button variant="danger" onClick={handleDelete} disabled={loading}>{loading ? t('sending') : t('delete')}</Button>
-                        <Button variant="profile-primary" type="submit" form="edit-story-form" disabled={loading}>{loading ? t('sending') : t('saveChanges')}</Button>
-                    </>
+                    <Stack direction="horizontal" gap={2}>
+                        <Button variant="danger" onClick={handleDelete} disabled={loading}>
+                            {t('delete')}
+                        </Button>
+                        <Button variant="profile-primary" type="submit" form="edit-story-form" disabled={loading}>
+                            {t('saveChanges')}
+                        </Button>
+                    </Stack>
                 )}
             </Modal.Footer>
         </Modal>

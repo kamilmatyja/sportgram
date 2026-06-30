@@ -16,7 +16,6 @@ export class UserUpdateBody {
         public bio: string,
         public roles: number[],
         public password?: string | null,
-        public disciplines: number[] = []
-    ) {
-    }
+        public disciplines: number[] = [],
+    ) {}
 }

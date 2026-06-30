@@ -1,13 +1,14 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {EventBody} from '../../api/body/EventBody';
-import {EventResponse} from '../../api/responses/EventResponse';
-import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
-import {DisciplineEnum} from '../../enums/DisciplineEnum';
-import {ColorEnum} from '../../enums/ColorEnum';
+import { Modal, Form, Button, Row, Col, InputGroup, Stack, Badge, Card, Alert } from 'react-bootstrap';
+
+import { EventBody } from '../../api/body/EventBody';
+import { EventResponse } from '../../api/responses/EventResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
-import {Modal, Form, Button, Row, Col, InputGroup, Stack, Badge, Card} from 'react-bootstrap';
+import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
 
 interface ManageEventModalProps {
     themeColor?: number;
@@ -36,13 +37,31 @@ interface ManageEventModalProps {
 }
 
 export const ManageEventModal: React.FC<ManageEventModalProps> = ({
-                                                                      themeColor, show, currentEvent, isMyProfile, isAdmin, closeModal,
-                                                                      loading, globalError, fieldErrors, formData, handleChange, handleEditSubmit,
-                                                                      handleStatusSubmit, handleDelete, addDiscipline, updateDisciplineType,
-                                                                      removeDiscipline, addDistance, updateDistanceValue, removeDistance,
-                                                                      addSubDistance, updateSubDistanceValue, removeSubDistance
-                                                                  }) => {
-    const {t} = useTranslation();
+    themeColor,
+    show,
+    currentEvent,
+    isMyProfile,
+    isAdmin,
+    closeModal,
+    loading,
+    globalError,
+    fieldErrors,
+    formData,
+    handleChange,
+    handleEditSubmit,
+    handleStatusSubmit,
+    handleDelete,
+    addDiscipline,
+    updateDisciplineType,
+    removeDiscipline,
+    addDistance,
+    updateDistanceValue,
+    removeDistance,
+    addSubDistance,
+    updateSubDistanceValue,
+    removeSubDistance,
+}) => {
+    const { t } = useTranslation();
     if (!show || !currentEvent) return null;
 
     const themeClass = themeColor ? ColorEnum.getClass(themeColor) : '';
@@ -54,160 +73,263 @@ export const ManageEventModal: React.FC<ManageEventModalProps> = ({
                 <Modal.Title>{t('manage')}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {globalError && <Stack className="alert alert-danger">{t(globalError)}</Stack>}
+                {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
 
                 {isMyProfile && (
-                    <Form id="edit-event-form" onSubmit={handleEditSubmit} className="mb-4 pb-3 border-bottom">
+                    <Form id="edit-event-form" onSubmit={handleEditSubmit} className="mb-4 pb-4 border-bottom">
                         <Row className="mb-3">
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>{t('startedAt')}</Form.Label>
-                                    <Form.Control type="datetime-local" name="startedAt" value={formData.startedAt} onChange={handleChange} isInvalid={!!fieldErrors.startedAt} required />
-                                    <Form.Control.Feedback type="invalid">{fieldErrors.startedAt}</Form.Control.Feedback>
+                                    <Form.Control
+                                        type="datetime-local"
+                                        name="startedAt"
+                                        value={formData.startedAt}
+                                        onChange={handleChange}
+                                        isInvalid={!!fieldErrors.startedAt}
+                                        required
+                                    />
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>{t('endedAt')}</Form.Label>
-                                    <Form.Control type="datetime-local" name="endedAt" value={formData.endedAt} onChange={handleChange} isInvalid={!!fieldErrors.endedAt} required />
-                                    <Form.Control.Feedback type="invalid">{fieldErrors.endedAt}</Form.Control.Feedback>
+                                    <Form.Control
+                                        type="datetime-local"
+                                        name="endedAt"
+                                        value={formData.endedAt}
+                                        onChange={handleChange}
+                                        isInvalid={!!fieldErrors.endedAt}
+                                        required
+                                    />
                                 </Form.Group>
                             </Col>
                         </Row>
-
                         <Row className="mb-3">
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>{t('title')}</Form.Label>
-                                    <Form.Control type="text" name="title" value={formData.title} onChange={handleChange} isInvalid={!!fieldErrors.title} required />
-                                    <Form.Control.Feedback type="invalid">{fieldErrors.title}</Form.Control.Feedback>
+                                    <Form.Control
+                                        type="text"
+                                        name="title"
+                                        value={formData.title}
+                                        onChange={handleChange}
+                                        isInvalid={!!fieldErrors.title}
+                                        required
+                                    />
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label>{t('link')}</Form.Label>
-                                    <Form.Control type="text" name="link" value={formData.link} onChange={handleChange} isInvalid={!!fieldErrors.link} required />
-                                    <Form.Control.Feedback type="invalid">{fieldErrors.link}</Form.Control.Feedback>
+                                    <Form.Control
+                                        type="text"
+                                        name="link"
+                                        value={formData.link}
+                                        onChange={handleChange}
+                                        isInvalid={!!fieldErrors.link}
+                                        required
+                                    />
                                 </Form.Group>
                             </Col>
                         </Row>
-
                         <Form.Group className="mb-3">
                             <Form.Label>{t('location')}</Form.Label>
-                            <Form.Control type="text" name="location" value={formData.location} onChange={handleChange} isInvalid={!!fieldErrors.location} required />
-                            <Form.Control.Feedback type="invalid">{fieldErrors.location}</Form.Control.Feedback>
+                            <Form.Control
+                                type="text"
+                                name="location"
+                                value={formData.location}
+                                onChange={handleChange}
+                                required
+                            />
                         </Form.Group>
-
                         <Form.Group className="mb-3">
                             <Form.Label>{t('description')}</Form.Label>
-                            <Form.Control as="textarea" name="description" value={formData.description} onChange={handleChange} isInvalid={!!fieldErrors.description} required rows={3} />
-                            <Form.Control.Feedback type="invalid">{fieldErrors.description}</Form.Control.Feedback>
+                            <Form.Control
+                                as="textarea"
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                rows={3}
+                                required
+                            />
                         </Form.Group>
-
                         <Form.Group className="mb-3">
                             <Form.Label>{t('rules')}</Form.Label>
-                            <Form.Control as="textarea" name="rules" value={formData.rules} onChange={handleChange} isInvalid={!!fieldErrors.rules} required rows={3} />
-                            <Form.Control.Feedback type="invalid">{fieldErrors.rules}</Form.Control.Feedback>
+                            <Form.Control
+                                as="textarea"
+                                name="rules"
+                                value={formData.rules}
+                                onChange={handleChange}
+                                rows={3}
+                                required
+                            />
                         </Form.Group>
-
                         <Form.Group className="mb-3">
                             <Form.Label>{t('photo')}</Form.Label>
-                            <Form.Control type="file" accept="image/*" name="photo" onChange={handleChange as any} isInvalid={!!fieldErrors.photo} />
-                            <Form.Text>{t('photoOptional')}</Form.Text>
-                            <Form.Control.Feedback type="invalid">{fieldErrors.photo}</Form.Control.Feedback>
+                            <Form.Control type="file" onChange={handleChange as any} />
+                            <Form.Text className="text-muted">{t('photoOptional')}</Form.Text>
                         </Form.Group>
 
-                        <Stack direction="horizontal" className="justify-content-between align-items-center mt-4 mb-3">
-                            <Card.Title as="h6" className="text-profile-primary mb-0">{t('disciplinesAndDistances')}</Card.Title>
-                            <Button variant="profile-outline-primary" size="sm" onClick={addDiscipline}>{t('add')}</Button>
+                        <Stack direction="horizontal" className="justify-content-between align-items-center my-3">
+                            <Stack as="h6" className="text-profile-primary mb-0 fw-bold">
+                                {t('disciplinesAndDistances')}
+                            </Stack>
+                            <Button variant="profile-outline-primary" size="sm" onClick={addDiscipline}>
+                                {t('add')}
+                            </Button>
                         </Stack>
 
-                        {formData.disciplines?.map((disc, dIndex) => (
-                            <Stack key={dIndex} className="border rounded p-3 mb-3 bg-white">
-                                <Stack direction="horizontal" className="justify-content-between align-items-end mb-3">
-                                    <Stack className="flex-grow-1 me-3">
-                                        <Form.Label>{t('discipline')}</Form.Label>
-                                        <Form.Select value={disc.discipline} onChange={e => updateDisciplineType(dIndex, parseInt(e.target.value))}>
-                                            <SelectOptions options={disciplineOptions} />
-                                        </Form.Select>
-                                    </Stack>
-                                    <Button variant="outline-danger" onClick={() => removeDiscipline(dIndex)}>
-                                        <BootstrapIcon name="trash" />
-                                    </Button>
-                                </Stack>
-
-                                <Stack className="ps-4 border-start border-2 border-profile-primary">
-                                    <Stack direction="horizontal" className="justify-content-between mb-2">
-                                        <Stack as="span" className="fw-bold">{t('distances')}</Stack>
-                                        <Button variant="profile-outline-primary" size="sm" onClick={() => addDistance(dIndex)}>
-                                            {t('add')}
+                        {formData.disciplines?.map((disc, dIdx) => (
+                            <Card key={dIdx} className="mb-3 border-2">
+                                <Card.Body>
+                                    <Stack direction="horizontal" gap={3} className="mb-3 align-items-end">
+                                        <Stack className="flex-grow-1">
+                                            <Form.Label className="small">{t('discipline')}</Form.Label>
+                                            <Form.Select
+                                                value={disc.discipline}
+                                                onChange={(e) => updateDisciplineType(dIdx, parseInt(e.target.value))}
+                                            >
+                                                <SelectOptions options={disciplineOptions} />
+                                            </Form.Select>
+                                        </Stack>
+                                        <Button variant="outline-danger" onClick={() => removeDiscipline(dIdx)}>
+                                            <BootstrapIcon name="trash" />
                                         </Button>
                                     </Stack>
-
-                                    {disc.distances?.map((dist, distIndex) => (
-                                        <Card key={distIndex} className="mb-2 shadow-none border">
-                                            <Card.Body className="p-2">
-                                                <Stack direction="horizontal" gap={2} className="align-items-center mb-2">
-                                                    <InputGroup size="sm" className="w-50">
+                                    <Stack className="ps-3 border-start border-primary border-2">
+                                        <Stack direction="horizontal" className="justify-content-between mb-2">
+                                            <Stack as="span" className="small fw-bold">
+                                                {t('distances')}
+                                            </Stack>
+                                            <Button
+                                                variant="profile-outline-primary"
+                                                size="sm"
+                                                onClick={() => addDistance(dIdx)}
+                                            >
+                                                {t('add')}
+                                            </Button>
+                                        </Stack>
+                                        {disc.distances?.map((dist, distIdx) => (
+                                            <Stack key={distIdx} gap={2} className="mb-2 p-2 border rounded">
+                                                <Stack direction="horizontal" gap={2}>
+                                                    <InputGroup size="sm">
                                                         <InputGroup.Text>{t('distanceMeters')}</InputGroup.Text>
-                                                        <Form.Control type="number" value={dist.distance} onChange={e => updateDistanceValue(dIndex, distIndex, parseInt(e.target.value) || 0)} />
+                                                        <Form.Control
+                                                            type="number"
+                                                            value={dist.distance}
+                                                            onChange={(e) =>
+                                                                updateDistanceValue(
+                                                                    dIdx,
+                                                                    distIdx,
+                                                                    parseInt(e.target.value) || 0,
+                                                                )
+                                                            }
+                                                        />
                                                     </InputGroup>
-                                                    <Button variant="outline-danger" size="sm" onClick={() => removeDistance(dIndex, distIndex)}>
+                                                    <Button
+                                                        variant="outline-danger"
+                                                        size="sm"
+                                                        onClick={() => removeDistance(dIdx, distIdx)}
+                                                    >
                                                         <BootstrapIcon name="trash" />
                                                     </Button>
                                                 </Stack>
-
                                                 <Stack className="ps-3 border-start">
-                                                    <Stack direction="horizontal" className="justify-content-between mb-2">
-                                                        <Stack as="small" className="text-muted">{t('subDistances')}</Stack>
-                                                        <Button variant="profile-outline-primary" className="btn-xs py-0 px-2" onClick={() => addSubDistance(dIndex, distIndex)}>
+                                                    <Stack direction="horizontal" className="justify-content-between">
+                                                        <Stack as="small" className="text-muted">
+                                                            {t('subDistances')}
+                                                        </Stack>
+                                                        <Button
+                                                            variant="profile-outline-primary"
+                                                            className="btn-xs py-0 px-2"
+                                                            onClick={() => addSubDistance(dIdx, distIdx)}
+                                                        >
                                                             {t('add')}
                                                         </Button>
                                                     </Stack>
-                                                    {dist.subDistances?.map((sub, subIndex) => (
-                                                        <Stack key={subIndex} direction="horizontal" gap={2} className="align-items-center mt-1">
-                                                            <Form.Control type="number" size="sm" className="w-50" placeholder={t('subDistanceMeters')} value={sub.subDistance} onChange={e => updateSubDistanceValue(dIndex, distIndex, subIndex, parseInt(e.target.value) || 0)} />
-                                                            <Button variant="outline-danger" size="sm" onClick={() => removeSubDistance(dIndex, distIndex, subIndex)}>
+                                                    {dist.subDistances?.map((sub, subIdx) => (
+                                                        <Stack
+                                                            key={subIdx}
+                                                            direction="horizontal"
+                                                            gap={2}
+                                                            className="mt-1 align-items-center"
+                                                        >
+                                                            <Form.Control
+                                                                type="number"
+                                                                size="sm"
+                                                                className="w-50"
+                                                                value={sub.subDistance}
+                                                                onChange={(e) =>
+                                                                    updateSubDistanceValue(
+                                                                        dIdx,
+                                                                        distIdx,
+                                                                        subIdx,
+                                                                        parseInt(e.target.value) || 0,
+                                                                    )
+                                                                }
+                                                            />
+                                                            <Button
+                                                                variant="outline-danger"
+                                                                size="sm"
+                                                                onClick={() => removeSubDistance(dIdx, distIdx, subIdx)}
+                                                            >
                                                                 <BootstrapIcon name="trash" />
                                                             </Button>
                                                         </Stack>
                                                     ))}
                                                 </Stack>
-                                            </Card.Body>
-                                        </Card>
-                                    ))}
-                                </Stack>
-                            </Stack>
+                                            </Stack>
+                                        ))}
+                                    </Stack>
+                                </Card.Body>
+                            </Card>
                         ))}
                     </Form>
                 )}
 
-                {(isMyProfile || isAdmin) && (
-                    <Stack className="mb-2">
-                        <Stack direction="horizontal" className="flex-wrap gap-2 align-items-center">
-                            <Stack as="span" className="fw-bold">{t('status')}:</Stack>
-                            <Badge bg="light" text="dark" className="border profile-theme-border">
-                                {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(currentEvent.status))?.label || currentEvent.status}
-                            </Badge>
-                            {ElementStatusEnum.getOptions(t)
-                                .filter(opt => opt.value !== currentEvent.status)
-                                .filter(opt => isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED))
-                                .map(opt => (
-                                    <Button key={opt.value} variant="profile-outline-primary" className="btn-xs py-0 px-2" disabled={loading} onClick={() => handleStatusSubmit(opt.value)}>
-                                        {loading ? t('loading') : opt.label}
-                                    </Button>
-                                ))}
-                        </Stack>
+                <Stack direction="horizontal" gap={3} className="align-items-center p-2 bg-light rounded">
+                    <Stack as="span" className="fw-bold small">
+                        {t('status')}:
                     </Stack>
-                )}
+                    <Badge bg="light" text="dark" className="border profile-theme-border">
+                        {ElementStatusEnum.getOptions(t).find((opt) => opt.value === currentEvent.status)?.label ||
+                            currentEvent.status}
+                    </Badge>
+                    <Stack direction="horizontal" gap={1} className="ms-auto flex-wrap">
+                        {ElementStatusEnum.getOptions(t)
+                            .filter(
+                                (opt) =>
+                                    opt.value !== currentEvent.status &&
+                                    (isAdmin || (isMyProfile && opt.value !== ElementStatusEnum.REJECTED)),
+                            )
+                            .map((opt) => (
+                                <Button
+                                    key={opt.value}
+                                    variant="profile-outline-primary"
+                                    className="btn-xs py-0 px-2"
+                                    onClick={() => handleStatusSubmit(opt.value)}
+                                    disabled={loading}
+                                >
+                                    {opt.label}
+                                </Button>
+                            ))}
+                    </Stack>
+                </Stack>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={closeModal} disabled={loading}>{t('cancel')}</Button>
+                <Button variant="secondary" onClick={closeModal}>
+                    {t('cancel')}
+                </Button>
                 {isMyProfile && (
-                    <>
-                        <Button variant="danger" onClick={handleDelete} disabled={loading}>{loading ? t('sending') : t('delete')}</Button>
-                        <Button variant="profile-primary" type="submit" form="edit-event-form" disabled={loading}>{loading ? t('sending') : t('saveChanges')}</Button>
-                    </>
+                    <Stack direction="horizontal" gap={2}>
+                        <Button variant="danger" onClick={handleDelete} disabled={loading}>
+                            {t('delete')}
+                        </Button>
+                        <Button variant="profile-primary" type="submit" form="edit-event-form" disabled={loading}>
+                            {t('saveChanges')}
+                        </Button>
+                    </Stack>
                 )}
             </Modal.Footer>
         </Modal>

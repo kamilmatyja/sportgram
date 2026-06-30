@@ -1,9 +1,10 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {StoryBody} from '../../api/body/StoryBody';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {Modal, Form, Button, Alert} from 'react-bootstrap';
+import { Modal, Form, Button, Alert } from 'react-bootstrap';
+
+import { StoryBody } from '../../api/body/StoryBody';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
 
 interface AddStoryModalProps {
     user: UserResponse | null;
@@ -18,17 +19,17 @@ interface AddStoryModalProps {
 }
 
 export const AddStoryModal: React.FC<AddStoryModalProps> = ({
-                                                                user,
-                                                                show,
-                                                                closeModal,
-                                                                loading,
-                                                                globalError,
-                                                                fieldErrors,
-                                                                formData,
-                                                                handleChange,
-                                                                handleSubmit
-                                                            }) => {
-    const {t} = useTranslation();
+    user,
+    show,
+    closeModal,
+    loading,
+    globalError,
+    fieldErrors,
+    formData,
+    handleChange,
+    handleSubmit,
+}) => {
+    const { t } = useTranslation();
     if (!show || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
@@ -41,20 +42,39 @@ export const AddStoryModal: React.FC<AddStoryModalProps> = ({
             <Modal.Body>
                 <Form id="add-story-form" onSubmit={handleSubmit}>
                     {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
+
                     <Form.Group className="mb-3">
                         <Form.Label>{t('text')}</Form.Label>
-                        <Form.Control as="textarea" name="text" value={formData.text} onChange={handleChange} isInvalid={!!fieldErrors.text} required rows={4} />
+                        <Form.Control
+                            as="textarea"
+                            name="text"
+                            value={formData.text}
+                            onChange={handleChange}
+                            isInvalid={!!fieldErrors.text}
+                            required
+                            rows={4}
+                        />
                         <Form.Control.Feedback type="invalid">{fieldErrors.text}</Form.Control.Feedback>
                     </Form.Group>
+
                     <Form.Group className="mb-3">
                         <Form.Label>{t('photo')}</Form.Label>
-                        <Form.Control type="file" accept="image/*" name="photo" onChange={handleChange as any} isInvalid={!!fieldErrors.photo} required />
+                        <Form.Control
+                            type="file"
+                            accept="image/*"
+                            name="photo"
+                            onChange={handleChange as any}
+                            isInvalid={!!fieldErrors.photo}
+                            required
+                        />
                         <Form.Control.Feedback type="invalid">{fieldErrors.photo}</Form.Control.Feedback>
                     </Form.Group>
                 </Form>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={closeModal}>{t('cancel')}</Button>
+                <Button variant="secondary" onClick={closeModal}>
+                    {t('cancel')}
+                </Button>
                 <Button variant="profile-primary" type="submit" form="add-story-form" disabled={loading}>
                     {loading ? t('sending') : t('addStory')}
                 </Button>

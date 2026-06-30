@@ -1,7 +1,7 @@
-import {useEvents} from '../services/Event/useEvents';
-import {useEventModals} from '../services/Event/useEventModals';
-import {EventsListView} from '../components/Event/EventsListView';
-import {AddEventModal} from '../components/Event/AddEventModal';
+import { AddEventModal } from '../components/Event/AddEventModal';
+import { EventsListView } from '../components/Event/EventsListView';
+import { useEventModals } from '../services/Event/useEventModals';
+import { useEvents } from '../services/Event/useEvents';
 
 export default function EventsList() {
     const eventsService = useEvents();

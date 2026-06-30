@@ -1,11 +1,12 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {UsersFilterBar} from './UsersFilterBar';
-import {UsersTable} from './UsersTable';
-import {Pagination} from '../Common/Pagination';
-import {Container, Stack, Button, Spinner, Alert} from 'react-bootstrap';
+import { Container, Stack, Button, Spinner, Alert } from 'react-bootstrap';
+
+import { UsersFilterBar } from './UsersFilterBar';
+import { UsersTable } from './UsersTable';
+import { UserFilterQuery } from '../../api/queries/UserFilterQuery';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { Pagination } from '../Common/Pagination';
 
 interface UsersViewProps {
     filters: UserFilterQuery;
@@ -25,17 +26,31 @@ interface UsersViewProps {
 }
 
 export default function UsersView({
-                                      filters, onFilterChange, sort, onSortChange, limit, onLimitChange,
-                                      users, loading, error, page, onPrevPage, onNextPage, isAdmin, onAddUserClick
-                                  }: UsersViewProps) {
-    const {t} = useTranslation();
+    filters,
+    onFilterChange,
+    sort,
+    onSortChange,
+    limit,
+    onLimitChange,
+    users,
+    loading,
+    error,
+    page,
+    onPrevPage,
+    onNextPage,
+    isAdmin,
+    onAddUserClick,
+}: UsersViewProps) {
+    const { t } = useTranslation();
 
     return (
-        <Container className="mt-5 mb-5">
-            <Stack direction="horizontal" className="justify-content-between align-items-center mb-3">
-                <Stack as="h2" className="mb-0 profile-theme-text fw-bold">{t('userTitle')}</Stack>
+        <Container className="py-5">
+            <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+                <Stack as="h2" className="mb-0 fw-bold text-primary">
+                    {t('userTitle')}
+                </Stack>
                 {isAdmin && (
-                    <Button variant="profile-primary" onClick={onAddUserClick}>
+                    <Button variant="primary" onClick={onAddUserClick}>
                         {t('addUser')}
                     </Button>
                 )}
@@ -50,24 +65,22 @@ export default function UsersView({
                 onLimitChange={onLimitChange}
             />
 
-            {loading ? (
-                <Stack className="text-center">
-                    <Spinner animation="border" className="text-profile-primary"/>
+            {loading && users.length === 0 ? (
+                <Stack className="text-center p-5">
+                    <Spinner animation="border" variant="primary" />
                 </Stack>
             ) : error ? (
                 <Alert variant="danger">{error}</Alert>
             ) : (
-                <>
-                    <UsersTable users={users}/>
-                    <Stack className="mt-3">
-                        <Pagination
-                            page={page}
-                            hasMore={users.length >= limit}
-                            onPrevPage={onPrevPage}
-                            onNextPage={onNextPage}
-                        />
-                    </Stack>
-                </>
+                <Stack gap={4}>
+                    <UsersTable users={users} />
+                    <Pagination
+                        page={page}
+                        hasMore={users.length >= limit}
+                        onPrevPage={onPrevPage}
+                        onNextPage={onNextPage}
+                    />
+                </Stack>
             )}
         </Container>
     );

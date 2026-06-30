@@ -1,14 +1,15 @@
-import {useEffect, useState} from 'react';
-import {FriendProvider} from '../../api/providers/FriendProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
-import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {FriendResponse} from '../../api/responses/FriendResponse';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect, useState } from 'react';
+
+import { FriendProvider } from '../../api/providers/FriendProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
+import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
+import { FriendResponse } from '../../api/responses/FriendResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUserFriends(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -34,7 +35,7 @@ export function useUserFriends(link?: string) {
 
             const data = await friendProvider.index(indexDto);
 
-            const userIdsToFetch = data.flatMap(f => [f.senderUserId, f.receiverUserId]);
+            const userIdsToFetch = data.flatMap((f) => [f.senderUserId, f.receiverUserId]);
             const updatedUsers = await fetchRelatedUsers(userIdsToFetch, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
@@ -59,6 +60,6 @@ export function useUserFriends(link?: string) {
         relatedUsers,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshFriends
+        refreshFriends,
     };
 }

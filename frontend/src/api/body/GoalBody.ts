@@ -11,7 +11,7 @@ export class GoalBody {
         discipline: string | number,
         distance: string | number,
         time: string | number | null,
-        public participants: string[] = []
+        public participants: string[] = [],
     ) {
         this.discipline = typeof discipline === 'string' ? parseInt(discipline, 10) : discipline;
         this.distance = typeof distance === 'string' ? parseInt(distance, 10) : distance;

@@ -1,6 +1,7 @@
-import {createContext, ReactNode, useContext, useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {SignProvider} from '../api/providers/SignProvider';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { SignProvider } from '../api/providers/SignProvider';
 
 interface AuthContextType {
     token: string | null;
@@ -17,11 +18,13 @@ interface AuthProviderProps {
     children: ReactNode;
 }
 
-export function AuthProvider({children}: AuthProviderProps) {
+export function AuthProvider({ children }: AuthProviderProps) {
     const navigate = useNavigate();
 
     const [token, setToken] = useState<string | null>(sessionStorage.getItem('token') || localStorage.getItem('token'));
-    const [signId, setSignId] = useState<string | null>(sessionStorage.getItem('success_sign_id') || localStorage.getItem('success_sign_id'));
+    const [signId, setSignId] = useState<string | null>(
+        sessionStorage.getItem('success_sign_id') || localStorage.getItem('success_sign_id'),
+    );
     const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
 
     const signProvider = new SignProvider();
@@ -37,9 +40,12 @@ export function AuthProvider({children}: AuthProviderProps) {
     useEffect(() => {
         if (!signId) return;
 
-        const interval = setInterval(() => {
-            refreshAuthToken(signId);
-        }, 4 * 60 * 1000);
+        const interval = setInterval(
+            () => {
+                refreshAuthToken(signId);
+            },
+            4 * 60 * 1000,
+        );
 
         return () => clearInterval(interval);
     }, [signId]);
@@ -77,11 +83,11 @@ export function AuthProvider({children}: AuthProviderProps) {
         setToken(null);
         setSignId(null);
 
-        navigate('/sign', {replace: true});
+        navigate('/sign', { replace: true });
     };
 
     return (
-        <AuthContext.Provider value={{token, signId, login, logout, isAuthLoading, isAuthenticated: !!token}}>
+        <AuthContext.Provider value={{ token, signId, login, logout, isAuthLoading, isAuthenticated: !!token }}>
             {children}
         </AuthContext.Provider>
     );

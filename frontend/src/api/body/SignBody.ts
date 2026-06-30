@@ -4,7 +4,7 @@ export class SignBody {
     constructor(
         public email: string,
         public password: string,
-        rememberMe: boolean | string | number
+        rememberMe: boolean | string | number,
     ) {
         this.rememberMe = Boolean(rememberMe);
     }

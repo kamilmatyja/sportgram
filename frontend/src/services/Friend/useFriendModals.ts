@@ -1,17 +1,18 @@
-import React, {useState} from 'react';
-import {FriendProvider} from '../../api/providers/FriendProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {FriendBody} from '../../api/body/FriendBody';
-import {StatusBody} from '../../api/body/StatusBody';
-import {FriendResponse} from '../../api/responses/FriendResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {createFormHandler} from '../../utils/formHandler';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {useModal} from '../../utils/hooks/useModal';
-import {useFormState} from '../../utils/hooks/useFormState';
+import React, { useState } from 'react';
+
+import { FriendBody } from '../../api/body/FriendBody';
+import { StatusBody } from '../../api/body/StatusBody';
+import { FriendProvider } from '../../api/providers/FriendProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
+import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
+import { UserIndexQuery } from '../../api/queries/UserIndexQuery';
+import { FriendResponse } from '../../api/responses/FriendResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { createFormHandler } from '../../utils/formHandler';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useFormState } from '../../utils/hooks/useFormState';
+import { useModal } from '../../utils/hooks/useModal';
 
 export function useFriendModals(onSuccess: () => void) {
     const { currentUser } = useAppAccess();
@@ -41,12 +42,12 @@ export function useFriendModals(onSuccess: () => void) {
                 const myFriends = await friendProvider.index(fIndexDto);
 
                 const friendIds = new Set<string>();
-                myFriends.forEach(f => {
+                myFriends.forEach((f) => {
                     friendIds.add(f.senderUserId);
                     friendIds.add(f.receiverUserId);
                 });
 
-                setAvailableUsers(allUsers.filter(u => u.id !== currentUser.id && !friendIds.has(u.id)));
+                setAvailableUsers(allUsers.filter((u) => u.id !== currentUser.id && !friendIds.has(u.id)));
             }
         }).catch(() => {});
         addModal.open();
@@ -87,9 +88,21 @@ export function useFriendModals(onSuccess: () => void) {
     const handleChange = createFormHandler(setFormData);
 
     return {
-        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit, availableUsers,
-        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
-        currentFriend: manageModal.data, handleStatusSubmit, handleDelete,
-        formData, handleChange, loading, globalError, fieldErrors
+        showAdd: addModal.isOpen,
+        openAddModal,
+        closeAddModal: addModal.close,
+        handleAddSubmit,
+        availableUsers,
+        showManage: manageModal.isOpen,
+        openManageModal,
+        closeManageModal: manageModal.close,
+        currentFriend: manageModal.data,
+        handleStatusSubmit,
+        handleDelete,
+        formData,
+        handleChange,
+        loading,
+        globalError,
+        fieldErrors,
     };
 }

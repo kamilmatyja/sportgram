@@ -1,13 +1,13 @@
-import {PushSubscriptionProvider} from '../../api/providers/PushSubscriptionProvider';
-import {PushSubscriptionBody} from '../../api/body/PushSubscriptionBody';
-import {PushSubscriptionResponse} from '../../api/responses/PushSubscriptionResponse';
-import {useTranslation} from '../../context/TranslationContext';
-import {PushSubscriptionStatusEnum} from '../../enums/PushSubscriptionStatusEnum';
-import {useModal} from '../../utils/hooks/useModal';
-import {useFormState} from '../../utils/hooks/useFormState';
+import { PushSubscriptionBody } from '../../api/body/PushSubscriptionBody';
+import { PushSubscriptionProvider } from '../../api/providers/PushSubscriptionProvider';
+import { PushSubscriptionResponse } from '../../api/responses/PushSubscriptionResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
+import { useFormState } from '../../utils/hooks/useFormState';
+import { useModal } from '../../utils/hooks/useModal';
 
 const urlB64ToUint8Array = (base64String: string) => {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
     const rawData = window.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
@@ -18,7 +18,7 @@ const urlB64ToUint8Array = (base64String: string) => {
 };
 
 export function usePushSubscriptionModals(onSuccess: () => void) {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const addModal = useModal();
     const manageModal = useModal<PushSubscriptionResponse>();
     const { loading, globalError, wrap, resetErrors, setGlobalError } = useFormState();
@@ -50,7 +50,7 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
 
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlB64ToUint8Array(vapidKey)
+                applicationServerKey: urlB64ToUint8Array(vapidKey),
             });
 
             const subData = JSON.parse(JSON.stringify(subscription));
@@ -64,7 +64,7 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
                 p256dh,
                 auth,
                 userAgent,
-                PushSubscriptionStatusEnum.ACTIVE
+                PushSubscriptionStatusEnum.ACTIVE,
             );
 
             await pushSubscriptionProvider.create(pushDto);
@@ -86,7 +86,7 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
                 manageModal.data!.p256dh,
                 manageModal.data!.auth,
                 manageModal.data!.userAgent,
-                newStatus
+                newStatus,
             );
             await pushSubscriptionProvider.update(manageModal.data!.id, updatedDto);
             manageModal.close();
@@ -104,9 +104,17 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
     };
 
     return {
-        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleSubscribeDevice,
-        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
+        showAdd: addModal.isOpen,
+        openAddModal,
+        closeAddModal: addModal.close,
+        handleSubscribeDevice,
+        showManage: manageModal.isOpen,
+        openManageModal,
+        closeManageModal: manageModal.close,
         currentSubscription: manageModal.data,
-        handleStatusSubmit, handleDelete, loading, globalError
+        handleStatusSubmit,
+        handleDelete,
+        loading,
+        globalError,
     };
 }

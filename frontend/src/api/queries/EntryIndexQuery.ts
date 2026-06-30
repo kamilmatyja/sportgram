@@ -1,4 +1,4 @@
-import {EntryFilterQuery} from './EntryFilterQuery';
+import { EntryFilterQuery } from './EntryFilterQuery';
 
 export class EntryIndexQuery {
     page?: number = 1;

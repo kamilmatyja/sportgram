@@ -1,4 +1,3 @@
 export class EmailBody {
-    constructor(public email: string) {
-    }
+    constructor(public email: string) {}
 }

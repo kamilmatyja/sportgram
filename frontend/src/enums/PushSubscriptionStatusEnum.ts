@@ -10,7 +10,7 @@ export namespace PushSubscriptionStatusEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`pushSubscriptionStatuses.${key.toLowerCase()}`)
+                label: t(`pushSubscriptionStatuses.${key.toLowerCase()}`),
             }));
     };
 }

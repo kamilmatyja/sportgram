@@ -1,4 +1,4 @@
-import {GoalFilterQuery} from './GoalFilterQuery';
+import { GoalFilterQuery } from './GoalFilterQuery';
 
 export class GoalIndexQuery {
     page?: number = 1;

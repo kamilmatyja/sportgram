@@ -1,10 +1,11 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {FriendBody} from '../../api/body/FriendBody';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {Modal, Form, Button, Alert} from 'react-bootstrap';
-import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
+import { Modal, Form, Button, Alert } from 'react-bootstrap';
+
+import { FriendBody } from '../../api/body/FriendBody';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
+import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
 
 interface AddFriendModalProps {
     user: UserResponse | null;
@@ -20,24 +21,24 @@ interface AddFriendModalProps {
 }
 
 export const AddFriendModal: React.FC<AddFriendModalProps> = ({
-                                                                  user,
-                                                                  show,
-                                                                  availableUsers,
-                                                                  closeModal,
-                                                                  loading,
-                                                                  globalError,
-                                                                  fieldErrors,
-                                                                  formData,
-                                                                  handleChange,
-                                                                  handleSubmit
-                                                              }) => {
-    const {t} = useTranslation();
+    user,
+    show,
+    availableUsers,
+    closeModal,
+    loading,
+    globalError,
+    fieldErrors,
+    formData,
+    handleChange,
+    handleSubmit,
+}) => {
+    const { t } = useTranslation();
     if (!show || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
-    const userOptions: SelectOption[] = availableUsers.map(u => ({
+    const userOptions: SelectOption[] = availableUsers.map((u) => ({
         value: u.id,
-        label: `${u.firstName} ${u.lastName} (${u.link})`
+        label: `${u.firstName} ${u.lastName} (${u.link})`,
     }));
 
     return (
@@ -60,9 +61,7 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                         >
                             <SelectOptions options={userOptions} placeholder={t('selectUser')} />
                         </Form.Select>
-                        <Form.Control.Feedback type="invalid">
-                            {fieldErrors.receiverUserId}
-                        </Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">{fieldErrors.receiverUserId}</Form.Control.Feedback>
                     </Form.Group>
                 </Form>
             </Modal.Body>
@@ -70,7 +69,12 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
                 <Button variant="secondary" onClick={closeModal} disabled={loading}>
                     {t('cancel')}
                 </Button>
-                <Button variant="profile-primary" type="submit" form="add-friend-form" disabled={loading || availableUsers.length === 0}>
+                <Button
+                    variant="profile-primary"
+                    type="submit"
+                    form="add-friend-form"
+                    disabled={loading || availableUsers.length === 0}
+                >
                     {loading ? t('sending') : t('addFriend')}
                 </Button>
             </Modal.Footer>

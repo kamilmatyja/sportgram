@@ -1,4 +1,4 @@
-import {UserFilterQuery} from './UserFilterQuery';
+import { UserFilterQuery } from './UserFilterQuery';
 
 export class UserIndexQuery {
     page?: number = 1;

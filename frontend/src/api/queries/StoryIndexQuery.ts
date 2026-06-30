@@ -1,4 +1,4 @@
-import {StoryFilterQuery} from './StoryFilterQuery';
+import { StoryFilterQuery } from './StoryFilterQuery';
 
 export class StoryIndexQuery {
     page?: number = 1;

@@ -1,14 +1,15 @@
-import {useEffect, useState} from 'react';
-import {FeedProvider} from '../../api/providers/FeedProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {FeedResponse} from '../../api/responses/FeedResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {FeedFilterQuery} from '../../api/queries/FeedFilterQuery';
-import {FeedIndexQuery} from '../../api/queries/FeedIndexQuery';
-import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect, useState } from 'react';
+
+import { FeedProvider } from '../../api/providers/FeedProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { FeedFilterQuery } from '../../api/queries/FeedFilterQuery';
+import { FeedIndexQuery } from '../../api/queries/FeedIndexQuery';
+import { FeedResponse } from '../../api/responses/FeedResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUserFeeds(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -21,10 +22,10 @@ export function useUserFeeds(link?: string) {
     const feedProvider = new FeedProvider();
 
     const extractUserIds = (feedData: FeedResponse[]): string[] => {
-        return feedData.flatMap(feed => [
+        return feedData.flatMap((feed) => [
             feed.userId,
-            ...(feed.comments?.map(c => c.userId) || []),
-            ...(feed.reactions?.map(r => r.userId) || [])
+            ...(feed.comments?.map((c) => c.userId) || []),
+            ...(feed.reactions?.map((r) => r.userId) || []),
         ]);
     };
 
@@ -41,7 +42,13 @@ export function useUserFeeds(link?: string) {
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
             indexDto.include = [
-                'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
+                'feedComments',
+                'feedReactions',
+                'eventDisciplineList',
+                'eventDisciplineResult',
+                'goal',
+                'goalParticipantResult',
+                'training',
             ];
 
             const data = await feedProvider.index(indexDto);
@@ -70,6 +77,6 @@ export function useUserFeeds(link?: string) {
         relatedUsers,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshFeeds
+        refreshFeeds,
     };
 }

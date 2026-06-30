@@ -1,6 +1,6 @@
-import {TrainingProvider} from '../../api/providers/TrainingProvider';
-import {StatusBody} from '../../api/body/StatusBody';
-import {useActionState} from '../../utils/hooks/useActionState';
+import { StatusBody } from '../../api/body/StatusBody';
+import { TrainingProvider } from '../../api/providers/TrainingProvider';
+import { useActionState } from '../../utils/hooks/useActionState';
 
 export function useTrainingInteractions(refreshTrainings: () => void) {
     const { actionLoading, runAction } = useActionState();
@@ -15,6 +15,6 @@ export function useTrainingInteractions(refreshTrainings: () => void) {
 
     return {
         actionLoading,
-        handleParticipantStatusSubmit
+        handleParticipantStatusSubmit,
     };
 }

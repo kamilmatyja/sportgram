@@ -1,15 +1,16 @@
-import React, {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {RegisterProvider} from '../../api/providers/RegisterProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {SignProvider} from '../../api/providers/SignProvider';
-import {PasswordResetProvider} from '../../api/providers/PasswordResetProvider';
-import {RegisterBody} from '../../api/body/RegisterBody';
-import {CodeBody} from '../../api/body/CodeBody';
-import {EmailBody} from '../../api/body/EmailBody';
-import {SignBody} from '../../api/body/SignBody';
-import {createFormHandler} from '../../utils/formHandler';
-import {useFormState} from '../../utils/hooks/useFormState';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { CodeBody } from '../../api/body/CodeBody';
+import { EmailBody } from '../../api/body/EmailBody';
+import { RegisterBody } from '../../api/body/RegisterBody';
+import { SignBody } from '../../api/body/SignBody';
+import { PasswordResetProvider } from '../../api/providers/PasswordResetProvider';
+import { RegisterProvider } from '../../api/providers/RegisterProvider';
+import { SignProvider } from '../../api/providers/SignProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { createFormHandler } from '../../utils/formHandler';
+import { useFormState } from '../../utils/hooks/useFormState';
 
 export function useRegister() {
     const step = Number(sessionStorage.getItem('step')) || 1;
@@ -17,7 +18,7 @@ export function useRegister() {
     const [registerFormData, setRegisterFormData] = useState(new RegisterBody('', '', '', 0, 0, '', '', '', []));
     const [codeFormData, setCodeFormData] = useState(new CodeBody(''));
 
-    const { loading, globalError, fieldErrors, wrap} = useFormState();
+    const { loading, globalError, fieldErrors, wrap } = useFormState();
     const [resendSuccess, setResendSuccess] = useState<boolean>(false);
 
     const navigate = useNavigate();
@@ -87,12 +88,23 @@ export function useRegister() {
     return {
         step,
         registerProps: {
-            formData: registerFormData, handleChange: handleRegisterChange, onSubmit: handleRegisterSubmit,
-            loading, globalError, fieldErrors
+            formData: registerFormData,
+            handleChange: handleRegisterChange,
+            onSubmit: handleRegisterSubmit,
+            loading,
+            globalError,
+            fieldErrors,
         },
         verificationProps: {
-            formData: codeFormData, handleChange: handleCodeChange, onSubmit: handleCodeSubmit,
-            loading, globalError, fieldErrors, onCancel: clearSessionDataAndGoToStep1, onResend: handleResend, resendSuccess
-        }
+            formData: codeFormData,
+            handleChange: handleCodeChange,
+            onSubmit: handleCodeSubmit,
+            loading,
+            globalError,
+            fieldErrors,
+            onCancel: clearSessionDataAndGoToStep1,
+            onResend: handleResend,
+            resendSuccess,
+        },
     };
 }

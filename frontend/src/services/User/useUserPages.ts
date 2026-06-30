@@ -1,14 +1,15 @@
-import {useEffect, useState} from 'react';
-import {PageProvider} from '../../api/providers/PageProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {PageResponse} from '../../api/responses/PageResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
-import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect, useState } from 'react';
+
+import { PageProvider } from '../../api/providers/PageProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
+import { PageIndexQuery } from '../../api/queries/PageIndexQuery';
+import { PageResponse } from '../../api/responses/PageResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUserPages(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -37,9 +38,9 @@ export function useUserPages(link?: string) {
 
             const data = await pageProvider.index(indexDto);
 
-            const userIds = data.flatMap(p => [
-                ...p.participants.map(part => part.userId),
-                ...(p.follows?.map(f => f.userId) || [])
+            const userIds = data.flatMap((p) => [
+                ...p.participants.map((part) => part.userId),
+                ...(p.follows?.map((f) => f.userId) || []),
             ]);
 
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
@@ -66,6 +67,6 @@ export function useUserPages(link?: string) {
         relatedUsers,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshPages
+        refreshPages,
     };
 }

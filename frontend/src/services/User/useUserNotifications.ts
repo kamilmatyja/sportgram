@@ -1,11 +1,12 @@
-import {useEffect} from 'react';
-import {NotificationProvider} from '../../api/providers/NotificationProvider';
-import {NotificationResponse} from '../../api/responses/NotificationResponse';
-import {NotificationFilterQuery} from '../../api/queries/NotificationFilterQuery';
-import {NotificationIndexQuery} from '../../api/queries/NotificationIndexQuery';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect } from 'react';
+
+import { NotificationProvider } from '../../api/providers/NotificationProvider';
+import { NotificationFilterQuery } from '../../api/queries/NotificationFilterQuery';
+import { NotificationIndexQuery } from '../../api/queries/NotificationIndexQuery';
+import { NotificationResponse } from '../../api/responses/NotificationResponse';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUserNotifications(link?: string) {
     const access = useAppAccess({ targetLink: link, requireOwner: true });
@@ -46,6 +47,6 @@ export function useUserNotifications(link?: string) {
         notifications: notifications || [],
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshNotifications
+        refreshNotifications,
     };
 }

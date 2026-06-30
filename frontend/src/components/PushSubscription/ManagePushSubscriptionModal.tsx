@@ -1,10 +1,11 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {PushSubscriptionResponse} from '../../api/responses/PushSubscriptionResponse';
-import {PushSubscriptionStatusEnum} from '../../enums/PushSubscriptionStatusEnum';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {Modal, Button, Stack, Badge, Alert} from 'react-bootstrap';
+import { Modal, Button, Stack, Badge, Alert } from 'react-bootstrap';
+
+import { PushSubscriptionResponse } from '../../api/responses/PushSubscriptionResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 
 interface ManagePushSubscriptionModalProps {
     user: UserResponse | null;
@@ -20,18 +21,18 @@ interface ManagePushSubscriptionModalProps {
 }
 
 export const ManagePushSubscriptionModal: React.FC<ManagePushSubscriptionModalProps> = ({
-                                                                                            user,
-                                                                                            show,
-                                                                                            subscription,
-                                                                                            isMyProfile,
-                                                                                            isAdmin,
-                                                                                            closeModal,
-                                                                                            loading,
-                                                                                            globalError,
-                                                                                            handleStatusSubmit,
-                                                                                            handleDelete
-                                                                                        }) => {
-    const {t} = useTranslation();
+    user,
+    show,
+    subscription,
+    isMyProfile,
+    isAdmin,
+    closeModal,
+    loading,
+    globalError,
+    handleStatusSubmit,
+    handleDelete,
+}) => {
+    const { t } = useTranslation();
     if (!show || !subscription || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
@@ -44,31 +45,38 @@ export const ManagePushSubscriptionModal: React.FC<ManagePushSubscriptionModalPr
             <Modal.Body>
                 {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
 
-                {(isMyProfile || isAdmin) && (
-                    <Stack direction="horizontal" className="flex-wrap gap-2 align-items-center">
-                        <Stack as="strong">{t('status')}: </Stack>
-                        <Badge bg="light" text="dark" className="border profile-theme-border">
-                            {PushSubscriptionStatusEnum.getOptions(t).find(opt => String(opt.value) === String(subscription.status))?.label || subscription.status}
-                        </Badge>
-                        {PushSubscriptionStatusEnum.getOptions(t)
-                            .filter(opt => opt.value !== subscription.status)
-                            .map(opt => (
-                                <Button
-                                    key={opt.value}
-                                    variant="profile-outline-primary"
-                                    size="sm"
-                                    className="py-0 px-2 btn-xs"
-                                    disabled={loading}
-                                    onClick={() => handleStatusSubmit(opt.value)}
-                                >
-                                    {loading ? t('loading') : opt.label}
-                                </Button>
-                            ))}
+                <Stack direction="horizontal" gap={3} className="align-items-center p-2 bg-light rounded">
+                    <Stack as="strong" className="small">
+                        {t('status')}:
                     </Stack>
-                )}
+                    <Badge bg="light" text="dark" className="border profile-theme-border">
+                        {PushSubscriptionStatusEnum.getOptions(t).find((opt) => opt.value === subscription.status)
+                            ?.label || subscription.status}
+                    </Badge>
+
+                    <Stack direction="horizontal" gap={1} className="ms-auto flex-wrap">
+                        {(isMyProfile || isAdmin) &&
+                            PushSubscriptionStatusEnum.getOptions(t)
+                                .filter((opt) => opt.value !== subscription.status)
+                                .map((opt) => (
+                                    <Button
+                                        key={opt.value}
+                                        variant="profile-outline-primary"
+                                        size="sm"
+                                        className="btn-xs py-0 px-2"
+                                        disabled={loading}
+                                        onClick={() => handleStatusSubmit(opt.value)}
+                                    >
+                                        {opt.label}
+                                    </Button>
+                                ))}
+                    </Stack>
+                </Stack>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={closeModal} disabled={loading}>{t('cancel')}</Button>
+                <Button variant="secondary" onClick={closeModal}>
+                    {t('cancel')}
+                </Button>
                 {isMyProfile && (
                     <Button variant="danger" onClick={handleDelete} disabled={loading}>
                         {loading ? t('sending') : t('delete')}

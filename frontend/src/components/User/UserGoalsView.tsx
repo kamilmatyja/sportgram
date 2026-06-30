@@ -1,21 +1,21 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {GoalResponse} from '../../api/responses/GoalResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {GoalFilterQuery} from '../../api/queries/GoalFilterQuery';
-import {GoalStatusEnum} from '../../enums/GoalStatusEnum';
-import {DisciplineEnum} from '../../enums/DisciplineEnum';
-import {PaginationEnum} from '../../enums/PaginationEnum';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {UserSubpageHeader} from './UserSubpageHeader';
-import {Pagination} from '../Common/Pagination';
-import {UserGoalsTable} from '../Goal/UserGoalsTable';
-import {Container, Card, Stack, Button, Form, Spinner, Alert} from 'react-bootstrap';
-import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
+import { Container, Card, Stack, Button, Form, Spinner, Alert } from 'react-bootstrap';
+
+import { UserSubpageHeader } from './UserSubpageHeader';
+import { GoalFilterQuery } from '../../api/queries/GoalFilterQuery';
+import { GoalResponse } from '../../api/responses/GoalResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
+import { PaginationEnum } from '../../enums/PaginationEnum';
+import { Pagination } from '../Common/Pagination';
+import SelectOptions from '../Common/SelectOptions';
+import { UserGoalsTable } from '../Goal/UserGoalsTable';
 
 interface UserGoalsViewProps {
     user: UserResponse | null;
-    currentUser: UserResponse | null;
     goals: GoalResponse[];
     relatedUsers: Record<string, UserResponse>;
     isMyProfile: boolean;
@@ -27,10 +27,9 @@ interface UserGoalsViewProps {
     limit: number;
     sort: string;
     filters: GoalFilterQuery;
-    actionLoading: string | null;
-    onFilterChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-    onSortChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-    onLimitChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    onFilterChange: (e: React.ChangeEvent<any>) => void;
+    onSortChange: (e: React.ChangeEvent<any>) => void;
+    onLimitChange: (e: React.ChangeEvent<any>) => void;
     onPrevPage: () => void;
     onNextPage: () => void;
     onAddClick: () => void;
@@ -39,114 +38,116 @@ interface UserGoalsViewProps {
 }
 
 export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
-                                                                user,
-                                                                currentUser,
-                                                                goals,
-                                                                relatedUsers,
-                                                                isMyProfile,
-                                                                isAdmin,
-                                                                isParticipant,
-                                                                loading,
-                                                                error,
-                                                                page,
-                                                                limit,
-                                                                sort,
-                                                                filters,
-                                                                actionLoading,
-                                                                onFilterChange,
-                                                                onSortChange,
-                                                                onLimitChange,
-                                                                onPrevPage,
-                                                                onNextPage,
-                                                                onAddClick,
-                                                                onManageClick,
-                                                                interactions
-                                                            }) => {
-    const {t} = useTranslation();
-
-    if (loading && goals.length === 0) return (
-        <Container className="mt-5 text-center">
-            <Spinner animation="border" className="text-profile-primary" />
-        </Container>
-    );
-    if (error || !user) return (
-        <Container className="mt-5">
-            <Alert variant="danger">{error ? t(error) : t('userNotFound')}</Alert>
-        </Container>
-    );
+    user,
+    goals,
+    relatedUsers,
+    isMyProfile,
+    isAdmin,
+    isParticipant,
+    loading,
+    error,
+    page,
+    limit,
+    sort,
+    filters,
+    onFilterChange,
+    onSortChange,
+    onLimitChange,
+    onPrevPage,
+    onNextPage,
+    onAddClick,
+    onManageClick,
+    interactions,
+}) => {
+    const { t } = useTranslation();
+    if (loading && goals.length === 0)
+        return (
+            <Container className="mt-5 text-center">
+                <Spinner animation="border" variant="primary" />
+            </Container>
+        );
+    if (error || !user)
+        return (
+            <Container className="mt-5">
+                <Alert variant="danger">{error ? t(error) : t('userNotFound')}</Alert>
+            </Container>
+        );
 
     const themeClass = ColorEnum.getClass(user.color);
-    const disciplineOptions = DisciplineEnum.getOptions(t) as SelectOption[];
-    const statusOptions = GoalStatusEnum.getOptions(t) as SelectOption[];
-    const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
-    const sortOptions: SelectOption[] = [
-        {value: 'createdAt:desc', label: t('sortCreatedDesc')},
-        {value: 'createdAt:asc', label: t('sortCreatedAsc')},
-        {value: 'startedAt:desc', label: `${t('startedAt')} Z-A`},
-        {value: 'startedAt:asc', label: `${t('startedAt')} A-Z`},
-    ];
-
     return (
         <Container className={`mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user}/>
-
+            <UserSubpageHeader user={user} />
             <Card className="shadow-sm">
                 <Card.Body>
                     <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
-                        <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">{t('goals')}</Card.Title>
-                        {(isMyProfile && isParticipant) && (
+                        <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">
+                            {t('goals')}
+                        </Card.Title>
+                        {isMyProfile && isParticipant && (
                             <Button variant="profile-primary" onClick={onAddClick}>
                                 {t('addGoal')}
                             </Button>
                         )}
                     </Stack>
-
-                    <Stack direction="horizontal" gap={3} className="mb-3 flex-wrap align-items-center">
+                    <Stack direction="horizontal" gap={2} className="mb-3 flex-wrap align-items-center">
                         <Form.Control
                             name="text"
                             placeholder={t('title')}
                             value={filters.text || ''}
-                            onChange={e => onFilterChange(e as React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)}
+                            onChange={onFilterChange}
                             className="w-auto"
                         />
-                        <Form.Select name="discipline" value={filters.discipline || ''} onChange={onFilterChange}
-                                     className="w-auto">
-                            <SelectOptions options={disciplineOptions} placeholder={t('discipline')} />
+                        <Form.Select
+                            name="discipline"
+                            value={filters.discipline || ''}
+                            onChange={onFilterChange}
+                            className="w-auto"
+                        >
+                            <SelectOptions
+                                options={DisciplineEnum.getOptions(t) as any}
+                                placeholder={t('discipline')}
+                            />
                         </Form.Select>
-                        <Form.Select name="status" value={filters.status || ''} onChange={onFilterChange}
-                                     className="w-auto">
-                            <SelectOptions options={statusOptions} placeholder={t('status')} />
+                        <Form.Select
+                            name="status"
+                            value={filters.status || ''}
+                            onChange={onFilterChange}
+                            className="w-auto"
+                        >
+                            <SelectOptions options={GoalStatusEnum.getOptions(t) as any} placeholder={t('status')} />
                         </Form.Select>
-                        <Form.Select value={sort} onChange={onSortChange} className="w-auto ms-auto">
-                            <SelectOptions options={sortOptions} />
+                        <Form.Select value={sort} onChange={onSortChange} className="ms-auto w-auto">
+                            <SelectOptions
+                                options={
+                                    [
+                                        { value: 'createdAt:desc', label: t('sortCreatedDesc') },
+                                        { value: 'createdAt:asc', label: t('sortCreatedAsc') },
+                                    ] as any
+                                }
+                            />
                         </Form.Select>
                         <Form.Select value={limit} onChange={onLimitChange} className="w-auto">
-                            <SelectOptions options={limitOptions} />
+                            <SelectOptions options={PaginationEnum.getOptions(t) as any} />
                         </Form.Select>
                     </Stack>
-
-                    {loading ? (
-                        <Stack className="text-center my-4">
-                            <Spinner animation="border" className="text-profile-primary"/>
-                        </Stack>
-                    ) : (
-                        <>
-                            <UserGoalsTable
-                                goals={goals}
-                                relatedUsers={relatedUsers}
-                                currentUser={currentUser}
-                                isMyProfile={isMyProfile}
-                                isAdmin={isAdmin}
-                                actionLoading={actionLoading}
-                                onManageClick={onManageClick}
-                                interactions={interactions}
-                            />
-                            <Stack className="mt-3">
-                                <Pagination page={page} hasMore={goals.length >= limit} onPrevPage={onPrevPage}
-                                            onNextPage={onNextPage}/>
-                            </Stack>
-                        </>
-                    )}
+                    <UserGoalsTable
+                        goals={goals}
+                        relatedUsers={relatedUsers}
+                        isMyProfile={isMyProfile}
+                        isAdmin={isAdmin}
+                        onManageClick={onManageClick}
+                        interactions={interactions}
+                        actionLoading={interactions.actionLoading}
+                    />
+                    <Stack className="mt-3">
+                        <Pagination
+                            page={page}
+                            hasMore={goals.length >= limit}
+                            onPrevPage={onPrevPage}
+                            onNextPage={onNextPage}
+                            variant="profile-outline-primary"
+                        />
+                    </Stack>
                 </Card.Body>
             </Card>
         </Container>

@@ -1,13 +1,14 @@
-import React, {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {SignProvider} from '../../api/providers/SignProvider';
-import {RegisterProvider} from '../../api/providers/RegisterProvider';
-import {SignBody} from '../../api/body/SignBody';
-import {CodeBody} from '../../api/body/CodeBody';
-import {EmailBody} from '../../api/body/EmailBody';
-import {useAuth} from '../../context/AuthContext';
-import {createFormHandler} from '../../utils/formHandler';
-import {useFormState} from '../../utils/hooks/useFormState';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { CodeBody } from '../../api/body/CodeBody';
+import { EmailBody } from '../../api/body/EmailBody';
+import { SignBody } from '../../api/body/SignBody';
+import { RegisterProvider } from '../../api/providers/RegisterProvider';
+import { SignProvider } from '../../api/providers/SignProvider';
+import { useAuth } from '../../context/AuthContext';
+import { createFormHandler } from '../../utils/formHandler';
+import { useFormState } from '../../utils/hooks/useFormState';
 
 export function useSign() {
     const step = Number(sessionStorage.getItem('step')) || 1;
@@ -19,7 +20,7 @@ export function useSign() {
     const [resendSuccess, setResendSuccess] = useState<boolean>(false);
 
     const navigate = useNavigate();
-    const {login} = useAuth();
+    const { login } = useAuth();
 
     const signProvider = new SignProvider();
     const registerProvider = new RegisterProvider();
@@ -92,12 +93,23 @@ export function useSign() {
     return {
         step,
         signProps: {
-            formData: signFormData, handleChange: handleSignChange, onSubmit: handleSignSubmit,
-            loading, globalError, fieldErrors
+            formData: signFormData,
+            handleChange: handleSignChange,
+            onSubmit: handleSignSubmit,
+            loading,
+            globalError,
+            fieldErrors,
         },
         verificationProps: {
-            formData: codeFormData, handleChange: handleCodeChange, onSubmit: handleCodeSubmit,
-            loading, globalError, fieldErrors, onCancel: clearSessionDataAndGoToStep1, onResend: handleResend, resendSuccess
-        }
+            formData: codeFormData,
+            handleChange: handleCodeChange,
+            onSubmit: handleCodeSubmit,
+            loading,
+            globalError,
+            fieldErrors,
+            onCancel: clearSessionDataAndGoToStep1,
+            onResend: handleResend,
+            resendSuccess,
+        },
     };
 }

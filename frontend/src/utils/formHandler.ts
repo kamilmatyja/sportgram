@@ -1,10 +1,11 @@
-import React, {ChangeEvent} from 'react';
-import {FileUtil} from './FileUtil';
+import React, { ChangeEvent } from 'react';
+
+import { FileUtil } from './FileUtil';
 
 export function createFormHandler<T>(setter: React.Dispatch<React.SetStateAction<T>>) {
     return async (e: ChangeEvent<any>) => {
         const target = e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-        const {name, type, value, checked, multiple, options, files} = target as any;
+        const { name, type, value, checked, multiple, options, files } = target as any;
 
         let newValue: any;
         if (type === 'file') {
@@ -17,7 +18,9 @@ export function createFormHandler<T>(setter: React.Dispatch<React.SetStateAction
         } else if (type === 'checkbox') {
             newValue = checked;
         } else if (multiple) {
-            newValue = Array.from(options).filter((o: any) => o.selected).map((o: any) => o.value);
+            newValue = Array.from(options)
+                .filter((o: any) => o.selected)
+                .map((o: any) => o.value);
             newValue = newValue.map((v: string) => Number(v));
         } else {
             if (typeof value === 'string' && value === '') {
@@ -28,6 +31,6 @@ export function createFormHandler<T>(setter: React.Dispatch<React.SetStateAction
                 newValue = value;
             }
         }
-        setter((prev: any) => ({...prev, [name]: newValue}));
+        setter((prev: any) => ({ ...prev, [name]: newValue }));
     };
 }

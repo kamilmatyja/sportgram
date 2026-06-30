@@ -1,4 +1,4 @@
-import {TrainingDisciplineSubDistanceResponse} from './TrainingDisciplineSubDistanceResponse';
+import { TrainingDisciplineSubDistanceResponse } from './TrainingDisciplineSubDistanceResponse';
 
 export class TrainingDisciplineDistanceResponse {
     id!: string;

@@ -1,14 +1,15 @@
-import React, {useState} from 'react';
-import {Link} from 'react-router-dom';
-import {useTranslation} from '../../context/TranslationContext';
-import {TrainingResponse} from '../../api/responses/TrainingResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
-import {formatDate} from '../../utils/dateFormat';
-import {TrainingParticipantsTable} from './TrainingParticipantsTable';
-import {TableHead, TableBody, TableRow, TableHeaderCell, TableCell} from '../Common/Table';
-import {Stack, Table, Badge, Button, Card} from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Stack, Table, Badge, Button, Card } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+
+import { TrainingParticipantsTable } from './TrainingParticipantsTable';
+import { TrainingResponse } from '../../api/responses/TrainingResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { formatDate } from '../../utils/dateFormat';
 import BootstrapIcon from '../Common/BootstrapIcon';
+import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface UserTrainingsTableProps {
     trainings: TrainingResponse[];
@@ -22,25 +23,21 @@ interface UserTrainingsTableProps {
 }
 
 export const UserTrainingsTable: React.FC<UserTrainingsTableProps> = ({
-                                                                          trainings,
-                                                                          relatedUsers,
-                                                                          currentUser,
-                                                                          isMyProfile,
-                                                                          isAdmin,
-                                                                          actionLoading,
-                                                                          onManageClick,
-                                                                          interactions
-                                                                      }) => {
-    const {t} = useTranslation();
+    trainings,
+    relatedUsers,
+    currentUser,
+    isMyProfile,
+    isAdmin,
+    actionLoading,
+    onManageClick,
+    interactions,
+}) => {
+    const { t } = useTranslation();
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
-
-    const toggleRow = (id: string) => {
-        setExpandedRow(prev => prev === id ? null : id);
-    };
 
     return (
         <Stack className="table-responsive-custom">
-            <Table bordered hover className="align-middle mb-0">
+            <Table bordered hover className="align-middle mb-0 shadow-sm">
                 <TableHead className="table-light">
                     <TableRow>
                         <TableHeaderCell>{t('title')}</TableHeaderCell>
@@ -49,65 +46,87 @@ export const UserTrainingsTable: React.FC<UserTrainingsTableProps> = ({
                         <TableHeaderCell>{t('endedAt')}</TableHeaderCell>
                         <TableHeaderCell>{t('status')}</TableHeaderCell>
                         <TableHeaderCell>{t('details')}</TableHeaderCell>
-                        <TableHeaderCell />
+                        <TableHeaderCell className="text-end" />
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {trainings.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center text-muted">{t('noRecords')}</TableCell>
+                            <TableCell colSpan={7} className="text-center text-muted">
+                                {t('noRecords')}
+                            </TableCell>
                         </TableRow>
-                    ) : trainings.map(tr => (
-                        <React.Fragment key={tr.id}>
-                            <TableRow>
-                                <TableCell>
-                                    <Link to={`/trainings/${tr.link}`} className="btn btn-link p-0 text-decoration-none">
-                                        {tr.title}
-                                    </Link>
-                                </TableCell>
-                                <TableCell>{tr.location}</TableCell>
-                                <TableCell>{formatDate(tr.startedAt)}</TableCell>
-                                <TableCell>{formatDate(tr.endedAt)}</TableCell>
-                                <TableCell>
-                                    <Badge bg="light" text="dark" className="border profile-theme-border">
-                                        {ElementStatusEnum.getOptions(t).find(opt => String(opt.value) === String(tr.status))?.label || tr.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <Button variant="outline-secondary" size="sm" onClick={() => toggleRow(tr.id)}>
-                                        <BootstrapIcon name={expandedRow === tr.id ? 'chevron-up' : 'chevron-down'} /> {t('participants')}
-                                    </Button>
-                                </TableCell>
-                                <TableCell className="text-end">
-                                    {(isMyProfile || isAdmin || tr.participants?.some(p => p.userId === currentUser?.id)) && (
-                                        <Button variant="profile-outline-primary" size="sm" title={t('manage')}
-                                                onClick={() => onManageClick(tr)}>
-                                            <BootstrapIcon name="gear" aria-hidden="true" />
-                                            <Stack as="span" className="visually-hidden">{t('manage')}</Stack>
-                                        </Button>
-                                    )}
-                                </TableCell>
-                            </TableRow>
-                            {expandedRow === tr.id && (
-                                <TableRow className="bg-light">
-                                    <TableCell colSpan={7} className="p-3">
-                                        <Card className="border rounded border-profile-primary bg-white p-3">
-                                            <Card.Title as="h6" className="mb-3 text-profile-primary">{t('participants')} ({tr.participants?.length || 0})</Card.Title>
-                                            <TrainingParticipantsTable
-                                                participants={tr.participants || []}
-                                                relatedUsers={relatedUsers}
-                                                currentUser={currentUser}
-                                                isMyProfile={isMyProfile}
-                                                isAdmin={isAdmin}
-                                                actionLoading={actionLoading}
-                                                onUpdateStatus={interactions.handleParticipantStatusSubmit}
+                    ) : (
+                        trainings.map((tr) => (
+                            <React.Fragment key={tr.id}>
+                                <TableRow>
+                                    <TableCell>
+                                        <Link to={`/trainings/${tr.link}`} className="text-decoration-none">
+                                            {tr.title}
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell className="small">{tr.location}</TableCell>
+                                    <TableCell className="small text-muted">{formatDate(tr.startedAt)}</TableCell>
+                                    <TableCell className="small text-muted">{formatDate(tr.endedAt)}</TableCell>
+                                    <TableCell>
+                                        <Badge bg="light" text="dark" className="border profile-theme-border">
+                                            {ElementStatusEnum.getOptions(t).find((o) => o.value === tr.status)
+                                                ?.label || tr.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            onClick={() => setExpandedRow(expandedRow === tr.id ? null : tr.id)}
+                                        >
+                                            <BootstrapIcon
+                                                name={expandedRow === tr.id ? 'chevron-up' : 'chevron-down'}
+                                                className="me-1"
                                             />
-                                        </Card>
+                                            {t('participants')}
+                                        </Button>
+                                    </TableCell>
+                                    <TableCell className="text-end">
+                                        {(isMyProfile ||
+                                            isAdmin ||
+                                            tr.participants?.some((p) => p.userId === currentUser?.id)) && (
+                                            <Button
+                                                variant="profile-outline-primary"
+                                                size="sm"
+                                                onClick={() => onManageClick(tr)}
+                                                className="rounded-circle shadow-sm"
+                                            >
+                                                <BootstrapIcon name="gear" />
+                                            </Button>
+                                        )}
                                     </TableCell>
                                 </TableRow>
-                            )}
-                        </React.Fragment>
-                    ))}
+                                {expandedRow === tr.id && (
+                                    <TableRow className="bg-light">
+                                        <TableCell colSpan={7} className="p-3">
+                                            <Card className="border-profile-primary shadow-sm">
+                                                <Card.Body>
+                                                    <Card.Title as="h6" className="text-profile-primary mb-3 fw-bold">
+                                                        {t('participants')} ({tr.participants?.length || 0})
+                                                    </Card.Title>
+                                                    <TrainingParticipantsTable
+                                                        participants={tr.participants || []}
+                                                        relatedUsers={relatedUsers}
+                                                        currentUser={currentUser}
+                                                        isMyProfile={isMyProfile}
+                                                        isAdmin={isAdmin}
+                                                        actionLoading={actionLoading}
+                                                        onUpdateStatus={interactions.handleParticipantStatusSubmit}
+                                                    />
+                                                </Card.Body>
+                                            </Card>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </React.Fragment>
+                        ))
+                    )}
                 </TableBody>
             </Table>
         </Stack>

@@ -1,4 +1,4 @@
-import {NotificationFilterQuery} from './NotificationFilterQuery';
+import { NotificationFilterQuery } from './NotificationFilterQuery';
 
 export class NotificationIndexQuery {
     page?: number = 1;

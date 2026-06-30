@@ -1,10 +1,10 @@
-import {FeedCommentResponse} from './FeedCommentResponse';
-import {FeedReactionResponse} from './FeedReactionResponse';
-import {EventDisciplineDistanceListResponse} from './EventDisciplineDistanceListResponse';
-import {EventDisciplineDistanceResultResponse} from './EventDisciplineDistanceResultResponse';
-import {GoalResponse} from './GoalResponse';
-import {GoalParticipantResultResponse} from './GoalParticipantResultResponse';
-import {TrainingResponse} from './TrainingResponse';
+import { EventDisciplineDistanceListResponse } from './EventDisciplineDistanceListResponse';
+import { EventDisciplineDistanceResultResponse } from './EventDisciplineDistanceResultResponse';
+import { FeedCommentResponse } from './FeedCommentResponse';
+import { FeedReactionResponse } from './FeedReactionResponse';
+import { GoalParticipantResultResponse } from './GoalParticipantResultResponse';
+import { GoalResponse } from './GoalResponse';
+import { TrainingResponse } from './TrainingResponse';
 
 export class FeedResponse {
     id!: string;

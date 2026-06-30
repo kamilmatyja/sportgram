@@ -1,12 +1,13 @@
-import {useParams} from 'react-router-dom';
-import {useUserPushSubscriptions} from '../services/User/useUserPushSubscriptions';
-import {usePushSubscriptionModals} from '../services/PushSubscription/usePushSubscriptionModals';
-import {UserPushSubscriptionsView} from '../components/User/UserPushSubscriptionsView';
-import {AddPushSubscriptionModal} from '../components/PushSubscription/AddPushSubscriptionModal';
-import {ManagePushSubscriptionModal} from '../components/PushSubscription/ManagePushSubscriptionModal';
+import { useParams } from 'react-router-dom';
+
+import { AddPushSubscriptionModal } from '../components/PushSubscription/AddPushSubscriptionModal';
+import { ManagePushSubscriptionModal } from '../components/PushSubscription/ManagePushSubscriptionModal';
+import { UserPushSubscriptionsView } from '../components/User/UserPushSubscriptionsView';
+import { usePushSubscriptionModals } from '../services/PushSubscription/usePushSubscriptionModals';
+import { useUserPushSubscriptions } from '../services/User/useUserPushSubscriptions';
 
 export default function UserPushSubscriptions() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const pushService = useUserPushSubscriptions(link);
     const modalsService = usePushSubscriptionModals(pushService.refreshSubscriptions);

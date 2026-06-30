@@ -1,4 +1,4 @@
-import {FriendFilterQuery} from './FriendFilterQuery';
+import { FriendFilterQuery } from './FriendFilterQuery';
 
 export class FriendIndexQuery {
     page?: number = 1;

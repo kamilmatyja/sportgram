@@ -6,7 +6,7 @@ export class PushSubscriptionBody {
         public p256dh: string,
         public auth: string,
         public userAgent: string | null,
-        status: string | number
+        status: string | number,
     ) {
         this.status = typeof status === 'string' ? parseInt(status, 10) : status;
     }

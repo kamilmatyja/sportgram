@@ -15,7 +15,7 @@ export namespace EntryTypeEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`entryTypes.${key.toLowerCase()}`)
+                label: t(`entryTypes.${key.toLowerCase()}`),
             }));
     };
 }

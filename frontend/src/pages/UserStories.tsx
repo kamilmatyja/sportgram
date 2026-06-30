@@ -1,12 +1,13 @@
-import {useParams} from 'react-router-dom';
-import {useUserStories} from '../services/User/useUserStories';
-import {useStoryModals} from '../services/Story/useStoryModals';
-import {UserStoriesView} from '../components/User/UserStoriesView';
-import {AddStoryModal} from '../components/Story/AddStoryModal';
-import {ManageStoryModal} from '../components/Story/ManageStoryModal';
+import { useParams } from 'react-router-dom';
+
+import { AddStoryModal } from '../components/Story/AddStoryModal';
+import { ManageStoryModal } from '../components/Story/ManageStoryModal';
+import { UserStoriesView } from '../components/User/UserStoriesView';
+import { useStoryModals } from '../services/Story/useStoryModals';
+import { useUserStories } from '../services/User/useUserStories';
 
 export default function UserStories() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const storiesService = useUserStories(link);
     const modalsService = useStoryModals(storiesService.refreshStories);

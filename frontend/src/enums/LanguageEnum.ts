@@ -9,8 +9,7 @@ export namespace LanguageEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`languages.${key.toLowerCase()}`)
+                label: t(`languages.${key.toLowerCase()}`),
             }));
     };
 }
-

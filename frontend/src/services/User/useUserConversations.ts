@@ -1,19 +1,20 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {ConversationProvider} from '../../api/providers/ConversationProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {ConversationResponse} from '../../api/responses/ConversationResponse';
-import {ConversationActivityResponse} from '../../api/responses/ConversationActivityResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {ConversationIndexQuery} from '../../api/queries/ConversationIndexQuery';
-import {ConversationFilterQuery} from '../../api/queries/ConversationFilterQuery';
-import {ConversationActivityIndexQuery} from '../../api/queries/ConversationActivityIndexQuery';
-import {ConversationActivityFilterQuery} from '../../api/queries/ConversationActivityFilterQuery';
-import {ConversationBody} from '../../api/body/ConversationBody';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
-import {useFormState} from '../../utils/hooks/useFormState';
+import React, { useEffect, useRef, useState } from 'react';
+
+import { ConversationBody } from '../../api/body/ConversationBody';
+import { ConversationProvider } from '../../api/providers/ConversationProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { ConversationActivityFilterQuery } from '../../api/queries/ConversationActivityFilterQuery';
+import { ConversationActivityIndexQuery } from '../../api/queries/ConversationActivityIndexQuery';
+import { ConversationFilterQuery } from '../../api/queries/ConversationFilterQuery';
+import { ConversationIndexQuery } from '../../api/queries/ConversationIndexQuery';
+import { ConversationActivityResponse } from '../../api/responses/ConversationActivityResponse';
+import { ConversationResponse } from '../../api/responses/ConversationResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useFormState } from '../../utils/hooks/useFormState';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUserConversations(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -21,8 +22,19 @@ export function useUserConversations(link?: string) {
     const [canSendMessages, setCanSendMessages] = useState<boolean>(false);
     const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
 
-    const { data: rawActivities, loading: actLoading, error: actError, executeFetch: fetchActs } = useDataFetch<ConversationActivityResponse[]>();
-    const { data: messages, setData: setMessages, loading: msgLoading, error: msgError, executeFetch: fetchMsgs } = useDataFetch<ConversationResponse[]>();
+    const {
+        data: rawActivities,
+        loading: actLoading,
+        error: actError,
+        executeFetch: fetchActs,
+    } = useDataFetch<ConversationActivityResponse[]>();
+    const {
+        data: messages,
+        setData: setMessages,
+        loading: msgLoading,
+        error: msgError,
+        executeFetch: fetchMsgs,
+    } = useDataFetch<ConversationResponse[]>();
     const { wrap } = useFormState();
 
     const activityList = useListFilters({ search: '' }, 'updatedAt:desc');
@@ -42,7 +54,7 @@ export function useUserConversations(link?: string) {
     const conversationProvider = new ConversationProvider();
 
     const scrollToBottom = () => {
-        chatEndRef.current?.scrollIntoView({behavior: 'smooth'});
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
     const fetchActivities = (currentUsr: UserResponse) => {
@@ -51,7 +63,9 @@ export function useUserConversations(link?: string) {
             indexDto.limit = 100;
             const data = await conversationProvider.indexActivity(indexDto);
 
-            const otherUserIds = data.map(act => act.senderUserId === currentUsr.id ? act.receiverUserId : act.senderUserId);
+            const otherUserIds = data.map((act) =>
+                act.senderUserId === currentUsr.id ? act.receiverUserId : act.senderUserId,
+            );
             const usersMap = await fetchRelatedUsers(otherUserIds, relatedUsers, userProvider);
             setRelatedUsers(usersMap);
 
@@ -59,15 +73,20 @@ export function useUserConversations(link?: string) {
         }, []);
     };
 
-    const processActivities = (): { paginated: (ConversationActivityResponse & { otherUser: UserResponse })[], total: number } => {
-        if (!access.currentUser || !rawActivities) return {paginated: [], total: 0};
+    const processActivities = (): {
+        paginated: (ConversationActivityResponse & { otherUser: UserResponse })[];
+        total: number;
+    } => {
+        if (!access.currentUser || !rawActivities) return { paginated: [], total: 0 };
 
         const mapped = rawActivities
-            .map(act => {
+            .map((act) => {
                 const otherId = act.senderUserId === access.currentUser!.id ? act.receiverUserId : act.senderUserId;
-                return {...act, otherUser: relatedUsers[otherId]};
+                return { ...act, otherUser: relatedUsers[otherId] };
             })
-            .filter(act => act.otherUser !== undefined) as (ConversationActivityResponse & { otherUser: UserResponse })[];
+            .filter((act) => act.otherUser !== undefined) as (ConversationActivityResponse & {
+            otherUser: UserResponse;
+        })[];
 
         const uniqueMap = new Map<string, ConversationActivityResponse & { otherUser: UserResponse }>();
         for (const act of mapped) {
@@ -79,10 +98,11 @@ export function useUserConversations(link?: string) {
 
         if (activityList.filters.search) {
             const search = activityList.filters.search.toLowerCase();
-            processed = processed.filter(act =>
-                act.otherUser.firstName.toLowerCase().includes(search) ||
-                act.otherUser.lastName.toLowerCase().includes(search) ||
-                act.otherUser.link.toLowerCase().includes(search)
+            processed = processed.filter(
+                (act) =>
+                    act.otherUser.firstName.toLowerCase().includes(search) ||
+                    act.otherUser.lastName.toLowerCase().includes(search) ||
+                    act.otherUser.link.toLowerCase().includes(search),
             );
         }
 
@@ -99,9 +119,12 @@ export function useUserConversations(link?: string) {
         });
 
         const total = processed.length;
-        const paginated = processed.slice((activityList.page - 1) * activityList.limit, activityList.page * activityList.limit);
+        const paginated = processed.slice(
+            (activityList.page - 1) * activityList.limit,
+            activityList.page * activityList.limit,
+        );
 
-        return {paginated, total};
+        return { paginated, total };
     };
 
     const fetchMessagesData = (tUser: UserResponse, pageToFetch: number = 1, append: boolean = false) => {
@@ -138,9 +161,9 @@ export function useUserConversations(link?: string) {
             indexDto.limit = 20;
             const data = await conversationProvider.index(indexDto);
 
-            setMessages(prev => {
+            setMessages((prev) => {
                 const current = prev || [];
-                const newMessages = data.filter(newMsg => !current.some(oldMsg => oldMsg.id === newMsg.id));
+                const newMessages = data.filter((newMsg) => !current.some((oldMsg) => oldMsg.id === newMsg.id));
                 if (newMessages.length > 0) {
                     setTimeout(scrollToBottom, 100);
                     return [...newMessages, ...current];
@@ -154,9 +177,11 @@ export function useUserConversations(link?: string) {
             actIndexDto.filter = actFilter;
             const acts = await conversationProvider.indexActivity(actIndexDto);
 
-            const targetActivity = acts.find(a => a.senderUserId === tUser.id);
+            const targetActivity = acts.find((a) => a.senderUserId === tUser.id);
             if (targetActivity) {
-                const timeStr = targetActivity.updatedAt.endsWith('Z') ? targetActivity.updatedAt : `${targetActivity.updatedAt}Z`;
+                const timeStr = targetActivity.updatedAt.endsWith('Z')
+                    ? targetActivity.updatedAt
+                    : `${targetActivity.updatedAt}Z`;
                 const serverTimeMs = new Date(timeStr).getTime();
                 const diffMs = Date.now() - serverTimeMs;
 
@@ -222,7 +247,7 @@ export function useUserConversations(link?: string) {
         }
     };
 
-    const {paginated, total} = processActivities();
+    const { paginated, total } = processActivities();
 
     return {
         ...access,
@@ -242,7 +267,15 @@ export function useUserConversations(link?: string) {
             activityList.setFilters({ search });
             activityList.setPage(1);
         },
-        messages: messages || [], messageInput, isSending, isTyping, hasMoreMessages, loadingEarlier, chatEndRef,
-        handleTyping, handleSendMessage, loadEarlierMessages
+        messages: messages || [],
+        messageInput,
+        isSending,
+        isTyping,
+        hasMoreMessages,
+        loadingEarlier,
+        chatEndRef,
+        handleTyping,
+        handleSendMessage,
+        loadEarlierMessages,
     };
 }

@@ -3,7 +3,7 @@ export class PasswordResetBody {
 
     constructor(
         code: string | number,
-        public password: string
+        public password: string,
     ) {
         this.code = typeof code === 'string' ? parseInt(code, 10) : code;
     }

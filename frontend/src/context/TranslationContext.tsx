@@ -1,8 +1,9 @@
-import {createContext, ReactNode, useContext, useState} from 'react';
-import {pl} from '../locales/pl';
-import {en} from '../locales/en';
+import { createContext, ReactNode, useContext, useState } from 'react';
 
-const translations: Record<string, any> = {pl, en};
+import { en } from '../locales/en';
+import { pl } from '../locales/pl';
+
+const translations: Record<string, any> = { pl, en };
 
 interface TranslationContextType {
     t: (path: string) => string;
@@ -16,7 +17,7 @@ interface TranslationProviderProps {
     children: ReactNode;
 }
 
-export const TranslationProvider = ({children}: TranslationProviderProps) => {
+export const TranslationProvider = ({ children }: TranslationProviderProps) => {
     const [lang, setLang] = useState<string>(localStorage.getItem('lang') || 'pl');
 
     const t = (path: string): string => {
@@ -29,11 +30,7 @@ export const TranslationProvider = ({children}: TranslationProviderProps) => {
         localStorage.setItem('lang', newLang);
     };
 
-    return (
-        <TranslationContext.Provider value={{t, lang, setLanguage}}>
-            {children}
-        </TranslationContext.Provider>
-    );
+    return <TranslationContext.Provider value={{ t, lang, setLanguage }}>{children}</TranslationContext.Provider>;
 };
 
 export const useTranslation = (): TranslationContextType => {

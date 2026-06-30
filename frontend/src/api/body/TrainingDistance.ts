@@ -1,4 +1,4 @@
-import {TrainingSubDistance} from './TrainingSubDistance';
+import { TrainingSubDistance } from './TrainingSubDistance';
 
 export class TrainingDistance {
     public distance!: number;

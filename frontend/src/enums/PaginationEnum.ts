@@ -11,7 +11,7 @@ export namespace PaginationEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([, value]) => ({
                 value: value as number,
-                label: value + ' / ' + t('perPage')
+                label: value + ' / ' + t('perPage'),
             }));
     };
 }

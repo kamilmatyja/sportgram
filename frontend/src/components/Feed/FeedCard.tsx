@@ -1,12 +1,13 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
-import {useTranslation} from '../../context/TranslationContext';
-import {FeedResponse} from '../../api/responses/FeedResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {formatDate} from '../../utils/dateFormat';
-import {FeedReactions} from './FeedReactions';
-import {FeedComments} from './FeedComments';
-import {Card, Stack, Image, Badge} from 'react-bootstrap';
+import { Card, Stack, Image, Badge } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+
+import { FeedComments } from './FeedComments';
+import { FeedReactions } from './FeedReactions';
+import { FeedResponse } from '../../api/responses/FeedResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { formatDate } from '../../utils/dateFormat';
 
 interface FeedCardProps {
     feed: FeedResponse;
@@ -20,18 +21,18 @@ interface FeedCardProps {
 }
 
 export const FeedCard: React.FC<FeedCardProps> = ({
-                                                      feed,
-                                                      currentUser,
-                                                      relatedUsers,
-                                                      isFeedLoading,
-                                                      commentInputValue,
-                                                      editingCommentId,
-                                                      editCommentText,
-                                                      interactions
-                                                  }) => {
-    const {t} = useTranslation();
-    const author = relatedUsers[feed.userId];
-    const myReaction = feed.reactions?.find(r => r.userId === currentUser?.id);
+    feed,
+    currentUser,
+    relatedUsers,
+    isFeedLoading,
+    commentInputValue,
+    editingCommentId,
+    editCommentText,
+    interactions,
+}) => {
+    const { t } = useTranslation();
+    const author = feed.user ?? relatedUsers?.[feed.userId];
+    const myReaction = feed.reactions?.find((r) => r.userId === currentUser?.id);
 
     const getFeedTypeLabel = (feedObj: FeedResponse) => {
         if (feedObj.eventDisciplineList) return t('feedTypes.eventDisciplineList');
@@ -48,23 +49,21 @@ export const FeedCard: React.FC<FeedCardProps> = ({
                 {author?.profilePhoto ? (
                     <Image
                         src={`data:image/webp;base64,${author.profilePhoto}`}
-                        alt="avatar"
                         roundedCircle
                         className="object-fit-cover feed-avatar-48 border profile-theme-border"
                     />
                 ) : (
                     <Stack className="bg-secondary rounded-circle feed-avatar-48" />
                 )}
-                <Stack className="flex-grow-1">
-                    <Link
-                        to={`/users/${author?.link || feed.userId}`}
-                        className="fw-bold text-decoration-none text-body d-block"
-                    >
-                        {author ? `${author.firstName} ${author.lastName}` : feed.userId}
+                <Stack>
+                    <Link to={`/users/${author?.link || feed.userId}`} className="text-decoration-none text-body">
+                        {author ? `${author.firstName} ${author.lastName}` : '-'}
                     </Link>
                     <Stack direction="horizontal" gap={2} className="align-items-center">
-                        <Stack as="small" className="text-muted">{formatDate(feed.createdAt)}</Stack>
-                        <Badge bg="light" text="dark" className="border profile-theme-border">
+                        <Stack as="small" className="text-muted small">
+                            {formatDate(feed.createdAt)}
+                        </Stack>
+                        <Badge bg="light" text="dark" className="border profile-theme-border fw-normal">
                             {getFeedTypeLabel(feed)}
                         </Badge>
                     </Stack>
@@ -76,17 +75,17 @@ export const FeedCard: React.FC<FeedCardProps> = ({
             </Card.Body>
 
             {feed.photo && (
-                <Image
-                    src={`data:image/webp;base64,${feed.photo}`}
-                    alt="feed"
-                    className="w-100 object-fit-cover feed-image-max"
-                />
+                <Image src={`data:image/webp;base64,${feed.photo}`} className="w-100 object-fit-cover feed-image-max" />
             )}
 
-            <Card.Footer className="bg-white pt-2 pb-2 border-top-0">
-                <Stack direction="horizontal" className="justify-content-between text-muted small px-2 pb-2">
-                    <Stack as="span">{feed.reactions?.length || 0} {t('reactions').toLowerCase()}</Stack>
-                    <Stack as="span">{feed.comments?.length || 0} {t('comments').toLowerCase()}</Stack>
+            <Card.Footer className="bg-white pt-2 pb-3 border-top-0">
+                <Stack direction="horizontal" className="justify-content-between text-muted small px-1 pb-2">
+                    <Stack as="span">
+                        {feed.reactions?.length || 0} {t('reactions').toLowerCase()}
+                    </Stack>
+                    <Stack as="span">
+                        {feed.comments?.length || 0} {t('comments').toLowerCase()}
+                    </Stack>
                 </Stack>
 
                 <FeedReactions

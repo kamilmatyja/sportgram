@@ -1,4 +1,3 @@
 export class FeedCommentBody {
-    constructor(public text: string) {
-    }
+    constructor(public text: string) {}
 }

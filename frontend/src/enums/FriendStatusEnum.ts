@@ -11,20 +11,16 @@ export namespace FriendStatusEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`friends.${key.toLowerCase()}`)
+                label: t(`friends.${key.toLowerCase()}`),
             }));
     };
 
-    export const getNanoOptions = (
-        t: (key: string) => string
-    ): { value: number; label: string }[] => {
+    export const getNanoOptions = (t: (key: string) => string): { value: number; label: string }[] => {
         return Object.entries(FriendStatusEnum)
-            .filter(([key, value]) =>
-                typeof value === 'number' && key !== 'PENDING'
-            )
+            .filter(([key, value]) => typeof value === 'number' && key !== 'PENDING')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`friends.${key.toLowerCase()}`)
+                label: t(`friends.${key.toLowerCase()}`),
             }));
     };
 }

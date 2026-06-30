@@ -1,4 +1,4 @@
-import {EntryCountFilterQuery} from './EntryCountFilterQuery';
+import { EntryCountFilterQuery } from './EntryCountFilterQuery';
 
 export class EntryCountIndexQuery {
     page?: number = 1;

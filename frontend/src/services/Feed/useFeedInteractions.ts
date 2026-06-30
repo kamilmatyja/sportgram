@@ -1,16 +1,17 @@
-import {useState} from 'react';
-import {FeedProvider} from '../../api/providers/FeedProvider';
-import {FeedCommentBody} from '../../api/body/FeedCommentBody';
-import {FeedReactionBody} from '../../api/body/FeedReactionBody';
-import {StatusBody} from '../../api/body/StatusBody';
-import {FeedResponse} from '../../api/responses/FeedResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {useActionState} from '../../utils/hooks/useActionState';
+import { useState } from 'react';
+
+import { FeedCommentBody } from '../../api/body/FeedCommentBody';
+import { FeedReactionBody } from '../../api/body/FeedReactionBody';
+import { StatusBody } from '../../api/body/StatusBody';
+import { FeedProvider } from '../../api/providers/FeedProvider';
+import { FeedResponse } from '../../api/responses/FeedResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useActionState } from '../../utils/hooks/useActionState';
 
 export function useFeedInteractions(
     feeds: FeedResponse[],
     currentUser: UserResponse | null,
-    refreshSingleFeed: (feedId: string) => void
+    refreshSingleFeed: (feedId: string) => void,
 ) {
     const { actionLoading, runAction } = useActionState();
 
@@ -22,11 +23,11 @@ export function useFeedInteractions(
 
     const handleReaction = (feedId: string, reactionType: number) => {
         if (!currentUser) return;
-        const feed = feeds.find(f => f.id === feedId);
+        const feed = feeds.find((f) => f.id === feedId);
         if (!feed) return;
 
         runAction(feedId, async () => {
-            const myReaction = feed.reactions?.find(r => r.userId === currentUser.id);
+            const myReaction = feed.reactions?.find((r) => r.userId === currentUser.id);
             if (myReaction) {
                 if (myReaction.reaction === reactionType) {
                     await feedProvider.deleteReaction(myReaction.id);
@@ -41,7 +42,7 @@ export function useFeedInteractions(
     };
 
     const handleCommentInput = (feedId: string, value: string) => {
-        setCommentInputs(prev => ({...prev, [feedId]: value}));
+        setCommentInputs((prev) => ({ ...prev, [feedId]: value }));
     };
 
     const handleAddComment = (e: React.SyntheticEvent<HTMLFormElement>, feedId: string) => {
@@ -51,7 +52,7 @@ export function useFeedInteractions(
 
         runAction(feedId, async () => {
             await feedProvider.createComment(feedId, new FeedCommentBody(text));
-            setCommentInputs(prev => ({...prev, [feedId]: ''}));
+            setCommentInputs((prev) => ({ ...prev, [feedId]: '' }));
             refreshSingleFeed(feedId);
         }).catch(() => {});
     };
@@ -113,10 +114,22 @@ export function useFeedInteractions(
     };
 
     return {
-        actionLoading, commentInputs, editingCommentId, editCommentText,
-        setEditCommentText, setEditingCommentId, handleReaction, handleCommentInput,
-        handleAddComment, handleDeleteComment, startEditingComment, handleUpdateComment,
-        handleUpdateTableComment, handleCommentStatusSubmit, handleUpdateReaction,
-        handleReactionStatusSubmit, handleDeleteReaction
+        actionLoading,
+        commentInputs,
+        editingCommentId,
+        editCommentText,
+        setEditCommentText,
+        setEditingCommentId,
+        handleReaction,
+        handleCommentInput,
+        handleAddComment,
+        handleDeleteComment,
+        startEditingComment,
+        handleUpdateComment,
+        handleUpdateTableComment,
+        handleCommentStatusSubmit,
+        handleUpdateReaction,
+        handleReactionStatusSubmit,
+        handleDeleteReaction,
     };
 }

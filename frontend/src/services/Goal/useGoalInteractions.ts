@@ -1,6 +1,6 @@
-import {GoalProvider} from '../../api/providers/GoalProvider';
-import {StatusBody} from '../../api/body/StatusBody';
-import {useActionState} from '../../utils/hooks/useActionState';
+import { StatusBody } from '../../api/body/StatusBody';
+import { GoalProvider } from '../../api/providers/GoalProvider';
+import { useActionState } from '../../utils/hooks/useActionState';
 
 export function useGoalInteractions(refreshGoals: () => void) {
     const { actionLoading, runAction } = useActionState();
@@ -23,6 +23,6 @@ export function useGoalInteractions(refreshGoals: () => void) {
     return {
         actionLoading,
         handleParticipantStatusSubmit,
-        handleResultStatusSubmit
+        handleResultStatusSubmit,
     };
 }

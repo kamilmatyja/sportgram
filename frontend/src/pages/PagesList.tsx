@@ -1,7 +1,7 @@
-import {usePages} from '../services/Page/usePages';
-import {usePageModals} from '../services/Page/usePageModals';
-import {PagesListView} from '../components/Page/PagesListView';
-import {AddPageModal} from '../components/Page/AddPageModal';
+import { AddPageModal } from '../components/Page/AddPageModal';
+import { PagesListView } from '../components/Page/PagesListView';
+import { usePageModals } from '../services/Page/usePageModals';
+import { usePages } from '../services/Page/usePages';
 
 export default function PagesList() {
     const pagesService = usePages();

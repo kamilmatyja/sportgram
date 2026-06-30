@@ -13,14 +13,12 @@ export class RegisterBody {
         public email: string,
         public password: string,
         country: string | number,
-        roles: (string | number)[]
+        roles: (string | number)[],
     ) {
         this.gender = typeof gender === 'string' ? parseInt(gender, 10) : gender;
         this.phone = typeof phone === 'string' ? parseInt(phone, 10) : phone;
         this.country = typeof country === 'string' ? parseInt(country, 10) : country;
 
-        this.roles = Array.isArray(roles)
-            ? roles.map(r => (typeof r === 'string' ? parseInt(r, 10) : r))
-            : [];
+        this.roles = Array.isArray(roles) ? roles.map((r) => (typeof r === 'string' ? parseInt(r, 10) : r)) : [];
     }
 }

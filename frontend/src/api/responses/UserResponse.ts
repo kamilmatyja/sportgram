@@ -1,5 +1,5 @@
-import {UserRoleResponse} from './UserRoleResponse';
-import {UserDisciplineResponse} from './UserDisciplineResponse';
+import { UserDisciplineResponse } from './UserDisciplineResponse';
+import { UserRoleResponse } from './UserRoleResponse';
 
 export class UserResponse {
     id!: string;

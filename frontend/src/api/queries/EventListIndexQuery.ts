@@ -1,4 +1,4 @@
-import {EventListFilterQuery} from './EventListFilterQuery';
+import { EventListFilterQuery } from './EventListFilterQuery';
 
 export class EventListIndexQuery {
     page?: number = 1;

@@ -1,15 +1,16 @@
 import { useEffect, useState, useCallback } from 'react';
-import { UserProvider } from '../../api/providers/UserProvider';
+
 import { FriendProvider } from '../../api/providers/FriendProvider';
-import { useAuth } from '../../context/AuthContext';
-import { RoleEnum } from '../../enums/RoleEnum';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
-import { UserIndexQuery } from '../../api/queries/UserIndexQuery';
-import { UserFilterQuery } from '../../api/queries/UserFilterQuery';
-import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
+import { UserProvider } from '../../api/providers/UserProvider';
 import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
-import { UserResponse } from '../../api/responses/UserResponse';
+import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
+import { UserFilterQuery } from '../../api/queries/UserFilterQuery';
+import { UserIndexQuery } from '../../api/queries/UserIndexQuery';
 import { FriendResponse } from '../../api/responses/FriendResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useAuth } from '../../context/AuthContext';
+import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import { RoleEnum } from '../../enums/RoleEnum';
 
 interface AppAccessOptions {
     targetLink?: string;
@@ -95,10 +96,12 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
                 fIndex.filter = fFilter;
                 const friends = await friendProvider.index(fIndex);
 
-                foundFriendship = friends.find(f =>
-                    (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
-                    (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id)
-                ) || null;
+                foundFriendship =
+                    friends.find(
+                        (f) =>
+                            (f.senderUserId === tUser.id && f.receiverUserId === currentUsr.id) ||
+                            (f.senderUserId === currentUsr.id && f.receiverUserId === tUser.id),
+                    ) || null;
 
                 isFriend = foundFriendship?.status === FriendStatusEnum.ACCEPTED;
                 setFriendship(foundFriendship);
@@ -113,7 +116,6 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
             }
 
             setRoles({ isAdmin, isOrganizer, isParticipant, isMyProfile, isFriend });
-
         } catch (err: any) {
             setAuthError(err.error);
         } finally {
@@ -126,9 +128,12 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
     }, [refreshAccess]);
 
     return {
-        currentUser, targetUser, friendship,
+        currentUser,
+        targetUser,
+        friendship,
         ...roles,
-        authLoading, authError,
-        refreshAccess
+        authLoading,
+        authError,
+        refreshAccess,
     };
 }

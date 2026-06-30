@@ -16,7 +16,7 @@ export namespace ColorEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`colors.${key.toLowerCase()}`)
+                label: t(`colors.${key.toLowerCase()}`),
             }));
     };
 

@@ -1,4 +1,4 @@
-import {GoalParticipantResultResponse} from './GoalParticipantResultResponse';
+import { GoalParticipantResultResponse } from './GoalParticipantResultResponse';
 
 export class GoalParticipantResponse {
     id!: string;

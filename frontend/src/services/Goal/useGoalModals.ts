@@ -1,19 +1,20 @@
-import React, {useState} from 'react';
-import {GoalProvider} from '../../api/providers/GoalProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {FriendProvider} from '../../api/providers/FriendProvider';
-import {GoalBody} from '../../api/body/GoalBody';
-import {StatusBody} from '../../api/body/StatusBody';
-import {GoalResponse} from '../../api/responses/GoalResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {createFormHandler} from '../../utils/formHandler';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
-import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
-import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
-import {useModal} from '../../utils/hooks/useModal';
-import {useFormState} from '../../utils/hooks/useFormState';
+import React, { useState } from 'react';
+
+import { GoalBody } from '../../api/body/GoalBody';
+import { StatusBody } from '../../api/body/StatusBody';
+import { FriendProvider } from '../../api/providers/FriendProvider';
+import { GoalProvider } from '../../api/providers/GoalProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
+import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
+import { GoalResponse } from '../../api/responses/GoalResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
+import { createFormHandler } from '../../utils/formHandler';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useFormState } from '../../utils/hooks/useFormState';
+import { useModal } from '../../utils/hooks/useModal';
 
 export function useGoalModals(onSuccess: () => void) {
     const { currentUser } = useAppAccess();
@@ -38,13 +39,13 @@ export function useGoalModals(onSuccess: () => void) {
         const myFriends = await friendProvider.index(fIndexDto);
 
         const userIdsToFetch = new Set<string>();
-        myFriends.forEach(f => {
+        myFriends.forEach((f) => {
             if (f.senderUserId !== currentUsr.id) userIdsToFetch.add(f.senderUserId);
             if (f.receiverUserId !== currentUsr.id) userIdsToFetch.add(f.receiverUserId);
         });
 
         if (goalObj && goalObj.participants) {
-            goalObj.participants.forEach(p => userIdsToFetch.add(p.userId));
+            goalObj.participants.forEach((p) => userIdsToFetch.add(p.userId));
         }
 
         const idsArray = Array.from(userIdsToFetch);
@@ -60,7 +61,9 @@ export function useGoalModals(onSuccess: () => void) {
         setFormData(new GoalBody(null, null, '', '', 0, 0, null, []));
         resetErrors();
         await wrap(async () => {
-            if (currentUser) { await loadAvailableFriends(currentUser); }
+            if (currentUser) {
+                await loadAvailableFriends(currentUser);
+            }
         }).catch(() => {});
         addModal.open();
     };
@@ -82,16 +85,18 @@ export function useGoalModals(onSuccess: () => void) {
             const fullGoal = await goalProvider.details(goal.id, ['goalParticipants']);
             manageModal.setData(fullGoal);
 
-            setFormData(new GoalBody(
-                fullGoal.startedAt ? fullGoal.startedAt.substring(0, 16) : null,
-                fullGoal.endedAt ? fullGoal.endedAt.substring(0, 16) : null,
-                fullGoal.text,
-                fullGoal.link,
-                fullGoal.discipline,
-                fullGoal.distance,
-                fullGoal.time,
-                fullGoal.participants ? fullGoal.participants.map(p => p.userId) : []
-            ));
+            setFormData(
+                new GoalBody(
+                    fullGoal.startedAt ? fullGoal.startedAt.substring(0, 16) : null,
+                    fullGoal.endedAt ? fullGoal.endedAt.substring(0, 16) : null,
+                    fullGoal.text,
+                    fullGoal.link,
+                    fullGoal.discipline,
+                    fullGoal.distance,
+                    fullGoal.time,
+                    fullGoal.participants ? fullGoal.participants.map((p) => p.userId) : [],
+                ),
+            );
 
             if (currentUser) {
                 await loadAvailableFriends(currentUser, fullGoal);
@@ -132,14 +137,28 @@ export function useGoalModals(onSuccess: () => void) {
     const handleChange = createFormHandler(setFormData);
 
     const handleParticipantsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selected = Array.from(e.target.selectedOptions).map(o => o.value);
-        setFormData(prev => ({...prev, participants: selected}));
+        const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
+        setFormData((prev) => ({ ...prev, participants: selected }));
     };
 
     return {
-        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit, availableUsers,
-        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
-        handleEditSubmit, handleStatusSubmit, handleDelete,
-        currentGoal: manageModal.data, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
+        showAdd: addModal.isOpen,
+        openAddModal,
+        closeAddModal: addModal.close,
+        handleAddSubmit,
+        availableUsers,
+        showManage: manageModal.isOpen,
+        openManageModal,
+        closeManageModal: manageModal.close,
+        handleEditSubmit,
+        handleStatusSubmit,
+        handleDelete,
+        currentGoal: manageModal.data,
+        formData,
+        handleChange,
+        handleParticipantsChange,
+        loading,
+        globalError,
+        fieldErrors,
     };
 }

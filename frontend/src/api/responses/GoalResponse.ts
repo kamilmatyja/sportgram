@@ -1,4 +1,4 @@
-import {GoalParticipantResponse} from './GoalParticipantResponse';
+import { GoalParticipantResponse } from './GoalParticipantResponse';
 
 export class GoalResponse {
     id!: string;

@@ -1,4 +1,6 @@
 export class FeedBody {
-    constructor(public text: string, public photo: string) {
-    }
+    constructor(
+        public text: string,
+        public photo: string,
+    ) {}
 }

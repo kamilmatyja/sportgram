@@ -1,10 +1,16 @@
 export function buildQueryString(include: string[] = []): string {
     const params = new URLSearchParams();
-    include.forEach(inc => params.append('include[]', inc));
+    include.forEach((inc) => params.append('include[]', inc));
     return params.toString() ? `?${params.toString()}` : '';
 }
 
-export function buildIndexParams(page?: number, limit?: number, sort?: string, filter?: Record<string, any>, include: string[] = []): URLSearchParams {
+export function buildIndexParams(
+    page?: number,
+    limit?: number,
+    sort?: string,
+    filter?: Record<string, any>,
+    include: string[] = [],
+): URLSearchParams {
     const params = new URLSearchParams();
 
     if (page) params.append('page', page.toString());
@@ -15,7 +21,7 @@ export function buildIndexParams(page?: number, limit?: number, sort?: string, f
         Object.entries(filter).forEach(([key, value]) => {
             if (value !== null && value !== undefined && value !== '') {
                 if (Array.isArray(value)) {
-                    value.forEach(v => params.append(`filter[${key}][]`, String(v)));
+                    value.forEach((v) => params.append(`filter[${key}][]`, String(v)));
                 } else {
                     params.append(`filter[${key}]`, String(value));
                 }
@@ -24,9 +30,8 @@ export function buildIndexParams(page?: number, limit?: number, sort?: string, f
     }
 
     if (include.length > 0) {
-        include.forEach(inc => params.append('include[]', inc));
+        include.forEach((inc) => params.append('include[]', inc));
     }
 
     return params;
 }
-

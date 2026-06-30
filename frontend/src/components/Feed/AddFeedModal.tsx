@@ -1,9 +1,10 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {FeedBody} from '../../api/body/FeedBody';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {Modal, Form, Button, Alert} from 'react-bootstrap';
+import { Modal, Form, Button, Alert } from 'react-bootstrap';
+
+import { FeedBody } from '../../api/body/FeedBody';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
 
 interface AddFeedModalProps {
     user: UserResponse | null;
@@ -18,17 +19,17 @@ interface AddFeedModalProps {
 }
 
 export const AddFeedModal: React.FC<AddFeedModalProps> = ({
-                                                              user,
-                                                              show,
-                                                              closeModal,
-                                                              loading,
-                                                              globalError,
-                                                              fieldErrors,
-                                                              formData,
-                                                              handleChange,
-                                                              handleSubmit
-                                                          }) => {
-    const {t} = useTranslation();
+    user,
+    show,
+    closeModal,
+    loading,
+    globalError,
+    fieldErrors,
+    formData,
+    handleChange,
+    handleSubmit,
+}) => {
+    const { t } = useTranslation();
     if (!show || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
@@ -53,9 +54,7 @@ export const AddFeedModal: React.FC<AddFeedModalProps> = ({
                             required
                             rows={4}
                         />
-                        <Form.Control.Feedback type="invalid">
-                            {fieldErrors.text}
-                        </Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">{fieldErrors.text}</Form.Control.Feedback>
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -68,9 +67,7 @@ export const AddFeedModal: React.FC<AddFeedModalProps> = ({
                             isInvalid={!!fieldErrors.photo}
                             required
                         />
-                        <Form.Control.Feedback type="invalid">
-                            {fieldErrors.photo}
-                        </Form.Control.Feedback>
+                        <Form.Control.Feedback type="invalid">{fieldErrors.photo}</Form.Control.Feedback>
                     </Form.Group>
                 </Form>
             </Modal.Body>

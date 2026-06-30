@@ -1,11 +1,12 @@
-import {useEffect} from 'react';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {UserIndexQuery} from '../../api/queries/UserIndexQuery';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {UserFilterQuery} from '../../api/queries/UserFilterQuery';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect } from 'react';
+
+import { UserProvider } from '../../api/providers/UserProvider';
+import { UserFilterQuery } from '../../api/queries/UserFilterQuery';
+import { UserIndexQuery } from '../../api/queries/UserIndexQuery';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUsers() {
     const access = useAppAccess();
@@ -46,6 +47,6 @@ export function useUsers() {
         users: data || [],
         loading: access.authLoading || loading,
         error: access.authError || error,
-        fetchUsers
+        fetchUsers,
     };
 }

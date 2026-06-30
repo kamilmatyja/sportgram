@@ -1,11 +1,12 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {EventResponse} from '../../api/responses/EventResponse';
-import {EventFilterQuery} from '../../api/queries/EventFilterQuery';
-import {Pagination} from '../Common/Pagination';
-import {EventsFilterBar} from './EventsFilterBar';
-import {EventsTable} from './EventsTable';
-import {Container, Stack, Card, Button, Spinner, Alert} from 'react-bootstrap';
+import { Container, Stack, Button, Spinner, Alert } from 'react-bootstrap';
+
+import { EventsFilterBar } from './EventsFilterBar';
+import { EventsTable } from './EventsTable';
+import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
+import { EventResponse } from '../../api/responses/EventResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { Pagination } from '../Common/Pagination';
 
 interface EventsListViewProps {
     events: EventResponse[];
@@ -16,7 +17,7 @@ interface EventsListViewProps {
     limit: number;
     sort: string;
     filters: EventFilterQuery;
-    onFilterChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+    onFilterChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
     onSortChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     onLimitChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     onPrevPage: () => void;
@@ -25,29 +26,31 @@ interface EventsListViewProps {
 }
 
 export const EventsListView: React.FC<EventsListViewProps> = ({
-                                                                  events,
-                                                                  isOrganizer,
-                                                                  loading,
-                                                                  error,
-                                                                  page,
-                                                                  limit,
-                                                                  sort,
-                                                                  filters,
-                                                                  onFilterChange,
-                                                                  onSortChange,
-                                                                  onLimitChange,
-                                                                  onPrevPage,
-                                                                  onNextPage,
-                                                                  onAddClick
-                                                              }) => {
-    const {t} = useTranslation();
+    events,
+    isOrganizer,
+    loading,
+    error,
+    page,
+    limit,
+    sort,
+    filters,
+    onFilterChange,
+    onSortChange,
+    onLimitChange,
+    onPrevPage,
+    onNextPage,
+    onAddClick,
+}) => {
+    const { t } = useTranslation();
 
     return (
-        <Container className="mt-5 mb-5">
+        <Container className="py-5">
             <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
-                <Card.Title as="h2" className="mb-0 text-profile-primary fw-bold">{t('events')}</Card.Title>
+                <Stack as="h2" className="mb-0 fw-bold text-primary">
+                    {t('events')}
+                </Stack>
                 {isOrganizer && (
-                    <Button variant="profile-primary" onClick={onAddClick}>
+                    <Button variant="primary" onClick={onAddClick}>
                         {t('addEvent')}
                     </Button>
                 )}
@@ -63,23 +66,21 @@ export const EventsListView: React.FC<EventsListViewProps> = ({
             />
 
             {loading && events.length === 0 ? (
-                <Stack className="text-center mt-4">
-                    <Spinner animation="border" className="text-profile-primary" />
+                <Stack className="text-center p-5">
+                    <Spinner animation="border" variant="primary" />
                 </Stack>
             ) : error ? (
-                <Alert variant="danger" className="mt-3">{t(error)}</Alert>
+                <Alert variant="danger">{t(error)}</Alert>
             ) : (
-                <>
-                    <EventsTable events={events}/>
-                    <Stack className="mt-3">
-                        <Pagination
-                            page={page}
-                            hasMore={events.length >= limit}
-                            onPrevPage={onPrevPage}
-                            onNextPage={onNextPage}
-                        />
-                    </Stack>
-                </>
+                <Stack gap={4}>
+                    <EventsTable events={events} />
+                    <Pagination
+                        page={page}
+                        hasMore={events.length >= limit}
+                        onPrevPage={onPrevPage}
+                        onNextPage={onNextPage}
+                    />
+                </Stack>
             )}
         </Container>
     );

@@ -1,4 +1,4 @@
-import {PageFilterQuery} from './PageFilterQuery';
+import { PageFilterQuery } from './PageFilterQuery';
 
 export class PageIndexQuery {
     page?: number = 1;

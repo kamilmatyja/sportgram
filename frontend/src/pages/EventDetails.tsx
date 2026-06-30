@@ -1,13 +1,14 @@
-import {useParams} from 'react-router-dom';
-import {useEventDetails} from '../services/Event/useEventDetails';
-import {useEventModals} from '../services/Event/useEventModals';
-import {useEventInteractions} from '../services/Event/useEventInteractions';
-import {EventDetailsView} from '../components/Event/EventDetailsView';
-import {EventListsModal} from '../components/Event/EventListsModal';
-import {ManageEventModal} from '../components/Event/ManageEventModal';
+import { useParams } from 'react-router-dom';
+
+import { EventDetailsView } from '../components/Event/EventDetailsView';
+import { EventListsModal } from '../components/Event/EventListsModal';
+import { ManageEventModal } from '../components/Event/ManageEventModal';
+import { useEventDetails } from '../services/Event/useEventDetails';
+import { useEventInteractions } from '../services/Event/useEventInteractions';
+import { useEventModals } from '../services/Event/useEventModals';
 
 export default function EventDetails() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
     const detailsProps = useEventDetails(link);
     const modalsService = useEventModals(detailsProps.refreshEvent, detailsProps.currentUser);
 
@@ -73,7 +74,7 @@ export default function EventDetails() {
                 isAdmin={detailsProps.isAdmin}
                 isParticipant={detailsProps.isParticipant}
                 loading={detailsProps.listsLoading}
-                actionLoading={detailsProps.actionLoading || (interactions.actionLoading !== null)}
+                actionLoading={detailsProps.actionLoading || interactions.actionLoading !== null}
                 onEnroll={() => detailsProps.handleEnroll(detailsProps.selectedDistanceId)}
                 onUpdateStatus={detailsProps.handleListStatusUpdate}
                 onDelete={detailsProps.handleDeleteList}

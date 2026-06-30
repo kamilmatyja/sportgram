@@ -10,7 +10,7 @@ export namespace ElementStatusEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`elementStatuses.${key.toLowerCase()}`)
+                label: t(`elementStatuses.${key.toLowerCase()}`),
             }));
     };
 }

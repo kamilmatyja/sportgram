@@ -10,7 +10,7 @@ export namespace NotificationStatusEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`notificationStatuses.${key.toLowerCase()}`)
+                label: t(`notificationStatuses.${key.toLowerCase()}`),
             }));
     };
 }

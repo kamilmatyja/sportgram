@@ -1,4 +1,4 @@
-import {PushSubscriptionFilterQuery} from './PushSubscriptionFilterQuery';
+import { PushSubscriptionFilterQuery } from './PushSubscriptionFilterQuery';
 
 export class PushSubscriptionIndexQuery {
     page?: number = 1;

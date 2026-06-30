@@ -1,24 +1,21 @@
-import {useParams} from 'react-router-dom';
-import {useUserFeeds} from '../services/User/useUserFeeds';
-import {useFeedModals} from '../services/Feed/useFeedModals';
-import {useFeedInteractions} from '../services/Feed/useFeedInteractions';
-import {UserFeedsView} from '../components/User/UserFeedsView';
-import {AddFeedModal} from '../components/Feed/AddFeedModal';
-import {ManageFeedModal} from '../components/Feed/ManageFeedModal';
+import { useParams } from 'react-router-dom';
+
+import { AddFeedModal } from '../components/Feed/AddFeedModal';
+import { ManageFeedModal } from '../components/Feed/ManageFeedModal';
+import { UserFeedsView } from '../components/User/UserFeedsView';
+import { useFeedInteractions } from '../services/Feed/useFeedInteractions';
+import { useFeedModals } from '../services/Feed/useFeedModals';
+import { useUserFeeds } from '../services/User/useUserFeeds';
 
 export default function UserFeeds() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const feedsService = useUserFeeds(link);
     const modalsService = useFeedModals(feedsService.refreshFeeds);
 
-    const baseInteractions = useFeedInteractions(
-        feedsService.feeds,
-        feedsService.currentUser,
-        () => {
-            feedsService.refreshFeeds();
-        }
-    );
+    const baseInteractions = useFeedInteractions(feedsService.feeds, feedsService.currentUser, () => {
+        feedsService.refreshFeeds();
+    });
 
     const interactions = {
         ...baseInteractions,
@@ -37,7 +34,7 @@ export default function UserFeeds() {
         handleDeleteReaction: async (reactionId: string) => {
             await baseInteractions.handleDeleteReaction(reactionId);
             feedsService.refreshFeeds();
-        }
+        },
     };
 
     return (

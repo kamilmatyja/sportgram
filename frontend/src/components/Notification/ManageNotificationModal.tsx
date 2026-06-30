@@ -1,10 +1,11 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {NotificationResponse} from '../../api/responses/NotificationResponse';
-import {NotificationStatusEnum} from '../../enums/NotificationStatusEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {Modal, Button, Stack, Badge, Alert} from 'react-bootstrap';
+import { Modal, Button, Stack, Badge, Alert } from 'react-bootstrap';
+
+import { NotificationResponse } from '../../api/responses/NotificationResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { NotificationStatusEnum } from '../../enums/NotificationStatusEnum';
 
 interface ManageNotificationModalProps {
     user: UserResponse | null;
@@ -19,17 +20,17 @@ interface ManageNotificationModalProps {
 }
 
 export const ManageNotificationModal: React.FC<ManageNotificationModalProps> = ({
-                                                                                    user,
-                                                                                    show,
-                                                                                    notification,
-                                                                                    isMyProfile,
-                                                                                    closeModal,
-                                                                                    loading,
-                                                                                    globalError,
-                                                                                    handleStatusSubmit,
-                                                                                    handleDelete
-                                                                                }) => {
-    const {t} = useTranslation();
+    user,
+    show,
+    notification,
+    isMyProfile,
+    closeModal,
+    loading,
+    globalError,
+    handleStatusSubmit,
+    handleDelete,
+}) => {
+    const { t } = useTranslation();
     if (!show || !notification || !user || !isMyProfile) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
@@ -42,25 +43,31 @@ export const ManageNotificationModal: React.FC<ManageNotificationModalProps> = (
             <Modal.Body>
                 {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
 
-                <Stack direction="horizontal" className="flex-wrap gap-2 align-items-center">
-                    <Stack as="strong">{t('status')}: </Stack>
+                <Stack direction="horizontal" gap={3} className="align-items-center p-2 bg-light rounded">
+                    <Stack as="strong" className="small">
+                        {t('status')}:
+                    </Stack>
                     <Badge bg="light" text="dark" className="border profile-theme-border">
-                        {NotificationStatusEnum.getOptions(t).find(opt => String(opt.value) === String(notification.status))?.label || notification.status}
+                        {NotificationStatusEnum.getOptions(t).find(
+                            (opt) => String(opt.value) === String(notification.status),
+                        )?.label || notification.status}
                     </Badge>
-                    {NotificationStatusEnum.getOptions(t)
-                        .filter(opt => opt.value !== notification.status)
-                        .map(opt => (
-                            <Button
-                                key={opt.value}
-                                variant="profile-outline-primary"
-                                size="sm"
-                                className="btn-xs py-0 px-2"
-                                disabled={loading}
-                                onClick={() => handleStatusSubmit(opt.value)}
-                            >
-                                {loading ? t('loading') : opt.label}
-                            </Button>
-                        ))}
+                    <Stack direction="horizontal" gap={1} className="ms-auto flex-wrap">
+                        {NotificationStatusEnum.getOptions(t)
+                            .filter((opt) => opt.value !== notification.status)
+                            .map((opt) => (
+                                <Button
+                                    key={opt.value}
+                                    variant="profile-outline-primary"
+                                    size="sm"
+                                    className="btn-xs py-0 px-2"
+                                    disabled={loading}
+                                    onClick={() => handleStatusSubmit(opt.value)}
+                                >
+                                    {opt.label}
+                                </Button>
+                            ))}
+                    </Stack>
                 </Stack>
             </Modal.Body>
             <Modal.Footer>

@@ -1,19 +1,20 @@
-import React, {useState} from 'react';
-import {PageProvider} from '../../api/providers/PageProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {FriendProvider} from '../../api/providers/FriendProvider';
-import {PageBody} from '../../api/body/PageBody';
-import {StatusBody} from '../../api/body/StatusBody';
-import {PageResponse} from '../../api/responses/PageResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {createFormHandler} from '../../utils/formHandler';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
-import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
-import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
-import {useModal} from '../../utils/hooks/useModal';
-import {useFormState} from '../../utils/hooks/useFormState';
+import React, { useState } from 'react';
+
+import { PageBody } from '../../api/body/PageBody';
+import { StatusBody } from '../../api/body/StatusBody';
+import { FriendProvider } from '../../api/providers/FriendProvider';
+import { PageProvider } from '../../api/providers/PageProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
+import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
+import { PageResponse } from '../../api/responses/PageResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
+import { createFormHandler } from '../../utils/formHandler';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useFormState } from '../../utils/hooks/useFormState';
+import { useModal } from '../../utils/hooks/useModal';
 
 export function usePageModals(onSuccess: () => void) {
     const { currentUser } = useAppAccess();
@@ -38,13 +39,13 @@ export function usePageModals(onSuccess: () => void) {
         const myFriends = await friendProvider.index(fIndexDto);
 
         const userIdsToFetch = new Set<string>();
-        myFriends.forEach(f => {
+        myFriends.forEach((f) => {
             if (f.senderUserId !== currentUsr.id) userIdsToFetch.add(f.senderUserId);
             if (f.receiverUserId !== currentUsr.id) userIdsToFetch.add(f.receiverUserId);
         });
 
         if (pageObj) {
-            pageObj.participants.forEach(p => userIdsToFetch.add(p.userId));
+            pageObj.participants.forEach((p) => userIdsToFetch.add(p.userId));
         }
 
         const idsArray = Array.from(userIdsToFetch);
@@ -60,7 +61,9 @@ export function usePageModals(onSuccess: () => void) {
         setFormData(new PageBody('', '', '', '', '', 0, []));
         resetErrors();
         await wrap(async () => {
-            if (currentUser) { await loadAvailableFriends(currentUser); }
+            if (currentUser) {
+                await loadAvailableFriends(currentUser);
+            }
         }).catch(() => {});
         addModal.open();
     };
@@ -76,18 +79,22 @@ export function usePageModals(onSuccess: () => void) {
 
     const openManageModal = async (page: PageResponse) => {
         manageModal.open(page);
-        setFormData(new PageBody(
-            page.title,
-            page.description,
-            page.link,
-            '',
-            '',
-            page.color,
-            page.participants.map(p => p.userId)
-        ));
+        setFormData(
+            new PageBody(
+                page.title,
+                page.description,
+                page.link,
+                '',
+                '',
+                page.color,
+                page.participants.map((p) => p.userId),
+            ),
+        );
         resetErrors();
         await wrap(async () => {
-            if (currentUser) { await loadAvailableFriends(currentUser, page); }
+            if (currentUser) {
+                await loadAvailableFriends(currentUser, page);
+            }
         }).catch(() => {});
     };
 
@@ -96,7 +103,9 @@ export function usePageModals(onSuccess: () => void) {
         if (!manageModal.data) return;
         wrap(async () => {
             formData.profilePhoto = formData.profilePhoto ? formData.profilePhoto : manageModal.data!.profilePhoto;
-            formData.backgroundPhoto = formData.backgroundPhoto ? formData.backgroundPhoto : manageModal.data!.backgroundPhoto;
+            formData.backgroundPhoto = formData.backgroundPhoto
+                ? formData.backgroundPhoto
+                : manageModal.data!.backgroundPhoto;
             await pageProvider.update(manageModal.data!.id, formData);
             manageModal.close();
             onSuccess();
@@ -124,14 +133,28 @@ export function usePageModals(onSuccess: () => void) {
     const handleChange = createFormHandler(setFormData);
 
     const handleParticipantsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selected = Array.from(e.target.selectedOptions).map(o => o.value);
-        setFormData(prev => ({...prev, participants: selected}));
+        const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
+        setFormData((prev) => ({ ...prev, participants: selected }));
     };
 
     return {
-        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit, availableUsers,
-        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
-        handleEditSubmit, handleStatusSubmit, handleDelete,
-        currentPageObj: manageModal.data, formData, handleChange, handleParticipantsChange, loading, globalError, fieldErrors
+        showAdd: addModal.isOpen,
+        openAddModal,
+        closeAddModal: addModal.close,
+        handleAddSubmit,
+        availableUsers,
+        showManage: manageModal.isOpen,
+        openManageModal,
+        closeManageModal: manageModal.close,
+        handleEditSubmit,
+        handleStatusSubmit,
+        handleDelete,
+        currentPageObj: manageModal.data,
+        formData,
+        handleChange,
+        handleParticipantsChange,
+        loading,
+        globalError,
+        fieldErrors,
     };
 }

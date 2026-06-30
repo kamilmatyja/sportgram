@@ -1,14 +1,15 @@
-import {useEffect, useState} from 'react';
-import {TrainingProvider} from '../../api/providers/TrainingProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {TrainingResponse} from '../../api/responses/TrainingResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {TrainingFilterQuery} from '../../api/queries/TrainingFilterQuery';
-import {TrainingIndexQuery} from '../../api/queries/TrainingIndexQuery';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect, useState } from 'react';
+
+import { TrainingProvider } from '../../api/providers/TrainingProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { TrainingFilterQuery } from '../../api/queries/TrainingFilterQuery';
+import { TrainingIndexQuery } from '../../api/queries/TrainingIndexQuery';
+import { TrainingResponse } from '../../api/responses/TrainingResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUserTrainings(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -34,12 +35,15 @@ export function useUserTrainings(link?: string) {
             indexDto.sort = list.sort;
             indexDto.filter = filterDto;
             indexDto.include = [
-                'trainingDisciplines', 'trainingDisciplineDistances', 'trainingDisciplineSubDistances', 'trainingParticipants'
+                'trainingDisciplines',
+                'trainingDisciplineDistances',
+                'trainingDisciplineSubDistances',
+                'trainingParticipants',
             ];
 
             const data = await trainingProvider.index(indexDto);
 
-            const userIds = data.flatMap(t => t.participants.map(p => p.userId));
+            const userIds = data.flatMap((t) => t.participants.map((p) => p.userId));
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
@@ -64,6 +68,6 @@ export function useUserTrainings(link?: string) {
         relatedUsers,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshTrainings
+        refreshTrainings,
     };
 }

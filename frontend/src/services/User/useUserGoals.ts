@@ -1,14 +1,15 @@
-import {useEffect, useState} from 'react';
-import {GoalProvider} from '../../api/providers/GoalProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {GoalResponse} from '../../api/responses/GoalResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {GoalFilterQuery} from '../../api/queries/GoalFilterQuery';
-import {GoalIndexQuery} from '../../api/queries/GoalIndexQuery';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect, useState } from 'react';
+
+import { GoalProvider } from '../../api/providers/GoalProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { GoalFilterQuery } from '../../api/queries/GoalFilterQuery';
+import { GoalIndexQuery } from '../../api/queries/GoalIndexQuery';
+import { GoalResponse } from '../../api/responses/GoalResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUserGoals(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -39,7 +40,7 @@ export function useUserGoals(link?: string) {
 
             const data = await goalProvider.index(indexDto);
 
-            const userIds = data.flatMap(g => g.participants.map(p => p.userId));
+            const userIds = data.flatMap((g) => g.participants.map((p) => p.userId));
             const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
 
@@ -64,6 +65,6 @@ export function useUserGoals(link?: string) {
         relatedUsers,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshGoals
+        refreshGoals,
     };
 }

@@ -11,7 +11,7 @@ use OpenApi\Attributes as OA;
         'userId',
         'createdAt',
         'updatedAt',
-        'discipline'
+        'discipline',
     ],
     properties: [
         new OA\Property(

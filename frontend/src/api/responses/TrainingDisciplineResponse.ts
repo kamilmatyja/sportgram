@@ -1,4 +1,4 @@
-import {TrainingDisciplineDistanceResponse} from './TrainingDisciplineDistanceResponse';
+import { TrainingDisciplineDistanceResponse } from './TrainingDisciplineDistanceResponse';
 
 export class TrainingDisciplineResponse {
     id!: string;

@@ -1,4 +1,4 @@
-import {TrainingFilterQuery} from './TrainingFilterQuery';
+import { TrainingFilterQuery } from './TrainingFilterQuery';
 
 export class TrainingIndexQuery {
     page?: number = 1;

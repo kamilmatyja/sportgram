@@ -1,5 +1,5 @@
-import {TrainingDisciplineResponse} from './TrainingDisciplineResponse';
-import {TrainingParticipantResponse} from './TrainingParticipantResponse';
+import { TrainingDisciplineResponse } from './TrainingDisciplineResponse';
+import { TrainingParticipantResponse } from './TrainingParticipantResponse';
 
 export class TrainingResponse {
     id!: string;

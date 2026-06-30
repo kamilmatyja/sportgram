@@ -1,4 +1,4 @@
-import {EventDisciplineResponse} from './EventDisciplineResponse';
+import { EventDisciplineResponse } from './EventDisciplineResponse';
 
 export class EventResponse {
     id!: string;

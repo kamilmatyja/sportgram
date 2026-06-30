@@ -1,11 +1,12 @@
-import React, {useState} from 'react';
-import {StoryProvider} from '../../api/providers/StoryProvider';
-import {StoryBody} from '../../api/body/StoryBody';
-import {StatusBody} from '../../api/body/StatusBody';
-import {StoryResponse} from '../../api/responses/StoryResponse';
-import {createFormHandler} from '../../utils/formHandler';
-import {useModal} from '../../utils/hooks/useModal';
-import {useFormState} from '../../utils/hooks/useFormState';
+import React, { useState } from 'react';
+
+import { StatusBody } from '../../api/body/StatusBody';
+import { StoryBody } from '../../api/body/StoryBody';
+import { StoryProvider } from '../../api/providers/StoryProvider';
+import { StoryResponse } from '../../api/responses/StoryResponse';
+import { createFormHandler } from '../../utils/formHandler';
+import { useFormState } from '../../utils/hooks/useFormState';
+import { useModal } from '../../utils/hooks/useModal';
 
 export function useStoryModals(onSuccess: () => void) {
     const addModal = useModal();
@@ -69,9 +70,21 @@ export function useStoryModals(onSuccess: () => void) {
     const handleChange = createFormHandler(setFormData);
 
     return {
-        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit,
-        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
-        currentStory: manageModal.data, handleEditSubmit, handleStatusSubmit, handleDelete,
-        formData, handleChange, loading, globalError, fieldErrors
+        showAdd: addModal.isOpen,
+        openAddModal,
+        closeAddModal: addModal.close,
+        handleAddSubmit,
+        showManage: manageModal.isOpen,
+        openManageModal,
+        closeManageModal: manageModal.close,
+        currentStory: manageModal.data,
+        handleEditSubmit,
+        handleStatusSubmit,
+        handleDelete,
+        formData,
+        handleChange,
+        loading,
+        globalError,
+        fieldErrors,
     };
 }

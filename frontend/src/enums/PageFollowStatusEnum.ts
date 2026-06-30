@@ -11,7 +11,7 @@ export namespace PageFollowStatusEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`pageFollowStatuses.${key.toLowerCase()}`)
+                label: t(`pageFollowStatuses.${key.toLowerCase()}`),
             }));
     };
 }

@@ -13,7 +13,7 @@ export namespace FeedReactionEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`feedReactions.${key.toLowerCase()}`)
+                label: t(`feedReactions.${key.toLowerCase()}`),
             }));
     };
 

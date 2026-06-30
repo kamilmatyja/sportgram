@@ -1,13 +1,14 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {ConversationResponse} from '../../api/responses/ConversationResponse';
-import {ConversationActivityResponse} from '../../api/responses/ConversationActivityResponse';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {UserSubpageHeader} from './UserSubpageHeader';
-import {ConversationActivityList} from '../Conversation/ConversationActivityList';
-import {ChatWindow} from '../Conversation/ChatWindow';
-import {Container, Spinner, Alert} from 'react-bootstrap';
+import { Container, Spinner, Alert } from 'react-bootstrap';
+
+import { UserSubpageHeader } from './UserSubpageHeader';
+import { ConversationActivityResponse } from '../../api/responses/ConversationActivityResponse';
+import { ConversationResponse } from '../../api/responses/ConversationResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { ChatWindow } from '../Conversation/ChatWindow';
+import { ConversationActivityList } from '../Conversation/ConversationActivityList';
 
 interface UserConversationsViewProps {
     targetUser: UserResponse | null;
@@ -16,7 +17,6 @@ interface UserConversationsViewProps {
     canSendMessages: boolean;
     loading: boolean;
     error: string | null;
-
     activities: (ConversationActivityResponse & { otherUser: UserResponse })[];
     totalActivities: number;
     activityPage: number;
@@ -27,7 +27,6 @@ interface UserConversationsViewProps {
     setActivityLimit: (limit: number) => void;
     setActivitySort: (sort: string) => void;
     setActivitySearch: (search: string) => void;
-
     messages: ConversationResponse[];
     messageInput: string;
     isSending: boolean;
@@ -40,90 +39,32 @@ interface UserConversationsViewProps {
     loadEarlierMessages: () => void;
 }
 
-export const UserConversationsView: React.FC<UserConversationsViewProps> = ({
-                                                                                targetUser,
-                                                                                currentUser,
-                                                                                isMyProfile,
-                                                                                canSendMessages,
-                                                                                loading,
-                                                                                error,
-                                                                                activities,
-                                                                                totalActivities,
-                                                                                activityPage,
-                                                                                activityLimit,
-                                                                                activitySort,
-                                                                                activitySearch,
-                                                                                setActivityPage,
-                                                                                setActivityLimit,
-                                                                                setActivitySort,
-                                                                                setActivitySearch,
-                                                                                messages,
-                                                                                messageInput,
-                                                                                isSending,
-                                                                                isTyping,
-                                                                                hasMoreMessages,
-                                                                                loadingEarlier,
-                                                                                chatEndRef,
-                                                                                handleTyping,
-                                                                                handleSendMessage,
-                                                                                loadEarlierMessages
-                                                                            }) => {
-    const {t} = useTranslation();
+export const UserConversationsView: React.FC<UserConversationsViewProps> = (props) => {
+    const { t } = useTranslation();
+    const { targetUser, isMyProfile, loading, error } = props;
 
-    if (loading && !targetUser && !isMyProfile) {
+    if (loading && !targetUser && !isMyProfile)
         return (
             <Container className="mt-5 text-center">
-                <Spinner animation="border" className="text-profile-primary" />
+                <Spinner animation="border" variant="primary" />
             </Container>
         );
-    }
-
-    if (error || !targetUser || !currentUser) {
+    if (error || !targetUser || !props.currentUser)
         return (
             <Container className="mt-5">
-                <Alert variant="danger">
-                    {error ? t(error) : t('userNotFound')}
-                </Alert>
+                <Alert variant="danger">{error ? t(error) : t('userNotFound')}</Alert>
             </Container>
         );
-    }
 
     const themeClass = ColorEnum.getClass(targetUser.color);
 
     return (
         <Container className={`mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={targetUser}/>
-
+            <UserSubpageHeader user={targetUser} />
             {isMyProfile ? (
-                <ConversationActivityList
-                    activities={activities}
-                    totalActivities={totalActivities}
-                    activityPage={activityPage}
-                    activityLimit={activityLimit}
-                    activitySort={activitySort}
-                    activitySearch={activitySearch}
-                    loading={loading}
-                    setActivityPage={setActivityPage}
-                    setActivityLimit={setActivityLimit}
-                    setActivitySort={setActivitySort}
-                    setActivitySearch={setActivitySearch}
-                />
+                <ConversationActivityList {...props} paginationVariant="profile-outline-primary" />
             ) : (
-                <ChatWindow
-                    targetUser={targetUser}
-                    currentUser={currentUser}
-                    messages={messages}
-                    messageInput={messageInput}
-                    isSending={isSending}
-                    isTyping={isTyping}
-                    hasMoreMessages={hasMoreMessages}
-                    loadingEarlier={loadingEarlier}
-                    chatEndRef={chatEndRef}
-                    handleTyping={handleTyping}
-                    handleSendMessage={handleSendMessage}
-                    loadEarlierMessages={loadEarlierMessages}
-                    canSendMessages={canSendMessages}
-                />
+                <ChatWindow {...props} targetUser={targetUser} currentUser={props.currentUser} />
             )}
         </Container>
     );

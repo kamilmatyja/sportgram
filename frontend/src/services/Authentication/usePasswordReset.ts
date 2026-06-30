@@ -1,13 +1,14 @@
-import React, {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {PasswordResetProvider} from '../../api/providers/PasswordResetProvider';
-import {RegisterProvider} from '../../api/providers/RegisterProvider';
-import {SignProvider} from '../../api/providers/SignProvider';
-import {PasswordResetBody} from '../../api/body/PasswordResetBody';
-import {EmailBody} from '../../api/body/EmailBody';
-import {SignBody} from '../../api/body/SignBody';
-import {createFormHandler} from '../../utils/formHandler';
-import {useFormState} from '../../utils/hooks/useFormState';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { EmailBody } from '../../api/body/EmailBody';
+import { PasswordResetBody } from '../../api/body/PasswordResetBody';
+import { SignBody } from '../../api/body/SignBody';
+import { PasswordResetProvider } from '../../api/providers/PasswordResetProvider';
+import { RegisterProvider } from '../../api/providers/RegisterProvider';
+import { SignProvider } from '../../api/providers/SignProvider';
+import { createFormHandler } from '../../utils/formHandler';
+import { useFormState } from '../../utils/hooks/useFormState';
 
 export function usePasswordReset() {
     const step = Number(sessionStorage.getItem('step')) || 1;
@@ -85,12 +86,23 @@ export function usePasswordReset() {
     return {
         step,
         passwordResetProps: {
-            formData: passwordResetFormData, handleChange: handlePasswordResetChange, onSubmit: handlePasswordResetSubmit,
-            loading, globalError, fieldErrors
+            formData: passwordResetFormData,
+            handleChange: handlePasswordResetChange,
+            onSubmit: handlePasswordResetSubmit,
+            loading,
+            globalError,
+            fieldErrors,
         },
         verificationProps: {
-            formData: codeFormData, handleChange: handleCodeChange, onSubmit: handleCodeSubmit,
-            loading, globalError, fieldErrors, onCancel: clearSessionDataAndGoToStep1, onResend: handleResend, resendSuccess
-        }
+            formData: codeFormData,
+            handleChange: handleCodeChange,
+            onSubmit: handleCodeSubmit,
+            loading,
+            globalError,
+            fieldErrors,
+            onCancel: clearSessionDataAndGoToStep1,
+            onResend: handleResend,
+            resendSuccess,
+        },
     };
 }

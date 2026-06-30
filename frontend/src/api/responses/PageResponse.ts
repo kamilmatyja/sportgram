@@ -1,5 +1,5 @@
-import {PageFollowResponse} from './PageFollowResponse';
-import {PageParticipantResponse} from './PageParticipantResponse';
+import { PageFollowResponse } from './PageFollowResponse';
+import { PageParticipantResponse } from './PageParticipantResponse';
 
 export class PageResponse {
     id!: string;

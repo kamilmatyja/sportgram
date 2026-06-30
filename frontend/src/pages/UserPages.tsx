@@ -1,13 +1,14 @@
-import {useParams} from 'react-router-dom';
-import {useUserPages} from '../services/User/useUserPages';
-import {usePageModals} from '../services/Page/usePageModals';
-import {usePageInteractions} from '../services/Page/usePageInteractions';
-import {UserPagesView} from '../components/User/UserPagesView';
-import {AddPageModal} from '../components/Page/AddPageModal';
-import {ManagePageModal} from '../components/Page/ManagePageModal';
+import { useParams } from 'react-router-dom';
+
+import { AddPageModal } from '../components/Page/AddPageModal';
+import { ManagePageModal } from '../components/Page/ManagePageModal';
+import { UserPagesView } from '../components/User/UserPagesView';
+import { usePageInteractions } from '../services/Page/usePageInteractions';
+import { usePageModals } from '../services/Page/usePageModals';
+import { useUserPages } from '../services/User/useUserPages';
 
 export default function UserPages() {
-    const {link} = useParams<{ link: string }>();
+    const { link } = useParams<{ link: string }>();
 
     const pagesService = useUserPages(link);
     const modalsService = usePageModals(pagesService.refreshPages);
@@ -17,7 +18,6 @@ export default function UserPages() {
         <>
             <UserPagesView
                 user={pagesService.targetUser}
-                currentUser={pagesService.currentUser}
                 pages={pagesService.pages}
                 relatedUsers={pagesService.relatedUsers}
                 isMyProfile={pagesService.isMyProfile}

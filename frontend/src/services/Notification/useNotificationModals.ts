@@ -1,8 +1,8 @@
-import {NotificationProvider} from '../../api/providers/NotificationProvider';
-import {NotificationResponse} from '../../api/responses/NotificationResponse';
-import {StatusBody} from '../../api/body/StatusBody';
-import {useModal} from '../../utils/hooks/useModal';
-import {useFormState} from '../../utils/hooks/useFormState';
+import { StatusBody } from '../../api/body/StatusBody';
+import { NotificationProvider } from '../../api/providers/NotificationProvider';
+import { NotificationResponse } from '../../api/responses/NotificationResponse';
+import { useFormState } from '../../utils/hooks/useFormState';
+import { useModal } from '../../utils/hooks/useModal';
 
 export function useNotificationModals(onSuccess: () => void) {
     const manageModal = useModal<NotificationResponse>();
@@ -34,8 +34,13 @@ export function useNotificationModals(onSuccess: () => void) {
     };
 
     return {
-        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
+        showManage: manageModal.isOpen,
+        openManageModal,
+        closeManageModal: manageModal.close,
         currentNotification: manageModal.data,
-        handleStatusSubmit, handleDelete, loading, globalError
+        handleStatusSubmit,
+        handleDelete,
+        loading,
+        globalError,
     };
 }

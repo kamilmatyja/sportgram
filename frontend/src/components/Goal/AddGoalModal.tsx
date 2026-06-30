@@ -1,11 +1,12 @@
 import React from 'react';
-import {useTranslation} from '../../context/TranslationContext';
-import {GoalBody} from '../../api/body/GoalBody';
-import {ColorEnum} from '../../enums/ColorEnum';
-import {DisciplineEnum} from '../../enums/DisciplineEnum';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {Modal, Form, Button, Row, Col, Alert} from 'react-bootstrap';
-import SelectOptions, {type SelectOption} from '../Common/SelectOptions';
+import { Modal, Form, Button, Row, Col, Alert } from 'react-bootstrap';
+
+import { GoalBody } from '../../api/body/GoalBody';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
 
 interface AddGoalModalProps {
     user: UserResponse | null;
@@ -22,26 +23,26 @@ interface AddGoalModalProps {
 }
 
 export const AddGoalModal: React.FC<AddGoalModalProps> = ({
-                                                              user,
-                                                              show,
-                                                              availableUsers,
-                                                              closeModal,
-                                                              loading,
-                                                              globalError,
-                                                              fieldErrors,
-                                                              formData,
-                                                              handleChange,
-                                                              handleParticipantsChange,
-                                                              handleSubmit
-                                                          }) => {
-    const {t} = useTranslation();
+    user,
+    show,
+    availableUsers,
+    closeModal,
+    loading,
+    globalError,
+    fieldErrors,
+    formData,
+    handleChange,
+    handleParticipantsChange,
+    handleSubmit,
+}) => {
+    const { t } = useTranslation();
     if (!show || !user) return null;
 
     const themeClass = ColorEnum.getClass(user.color);
     const disciplineOptions = DisciplineEnum.getOptions(t) as SelectOption[];
-    const userOptions: SelectOption[] = availableUsers.map(u => ({
+    const userOptions: SelectOption[] = availableUsers.map((u) => ({
         value: u.id,
-        label: `${u.firstName} ${u.lastName} (${u.link})`
+        label: `${u.firstName} ${u.lastName} (${u.link})`,
     }));
 
     return (
@@ -153,11 +154,11 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                         <Form.Control.Feedback type="invalid">{fieldErrors.time}</Form.Control.Feedback>
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                         <Form.Label>{t('participants')}</Form.Label>
                         <Form.Select
                             name="participants"
-                            value={Array.isArray(formData.participants) ? formData.participants : []}
+                            value={formData.participants}
                             onChange={handleParticipantsChange}
                             multiple
                             isInvalid={!!fieldErrors.participants}
@@ -169,7 +170,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({
                 </Form>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={closeModal} disabled={loading}>
+                <Button variant="secondary" onClick={closeModal}>
                     {t('cancel')}
                 </Button>
                 <Button variant="profile-primary" type="submit" form="add-goal-form" disabled={loading}>

@@ -1,14 +1,14 @@
-import {UserResponse} from '../api/responses/UserResponse';
-import {UserProvider} from '../api/providers/UserProvider';
-import {UserFilterQuery} from '../api/queries/UserFilterQuery';
-import {UserIndexQuery} from '../api/queries/UserIndexQuery';
+import { UserProvider } from '../api/providers/UserProvider';
+import { UserFilterQuery } from '../api/queries/UserFilterQuery';
+import { UserIndexQuery } from '../api/queries/UserIndexQuery';
+import { UserResponse } from '../api/responses/UserResponse';
 
 export async function fetchRelatedUsers(
     userIds: string[],
     currentMap: Record<string, UserResponse>,
-    userProvider: UserProvider
+    userProvider: UserProvider,
 ): Promise<Record<string, UserResponse>> {
-    const idsToFetch = Array.from(new Set(userIds)).filter(id => !currentMap[id]);
+    const idsToFetch = Array.from(new Set(userIds)).filter((id) => !currentMap[id]);
 
     if (idsToFetch.length === 0) return currentMap;
 
@@ -22,7 +22,7 @@ export async function fetchRelatedUsers(
     const usersData = await userProvider.index(uIndexDto);
 
     const newMap = { ...currentMap };
-    usersData.forEach(u => {
+    usersData.forEach((u) => {
         newMap[u.id] = u;
     });
 

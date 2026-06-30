@@ -1,4 +1,4 @@
-import {PageFollowFilterQuery} from './PageFollowFilterQuery';
+import { PageFollowFilterQuery } from './PageFollowFilterQuery';
 
 export class PageFollowIndexQuery {
     page?: number = 1;

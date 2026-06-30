@@ -1,11 +1,12 @@
-import {useEffect} from 'react';
-import {StoryProvider} from '../../api/providers/StoryProvider';
-import {StoryResponse} from '../../api/responses/StoryResponse';
-import {StoryFilterQuery} from '../../api/queries/StoryFilterQuery';
-import {StoryIndexQuery} from '../../api/queries/StoryIndexQuery';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect } from 'react';
+
+import { StoryProvider } from '../../api/providers/StoryProvider';
+import { StoryFilterQuery } from '../../api/queries/StoryFilterQuery';
+import { StoryIndexQuery } from '../../api/queries/StoryIndexQuery';
+import { StoryResponse } from '../../api/responses/StoryResponse';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUserStories(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
@@ -47,6 +48,6 @@ export function useUserStories(link?: string) {
         stories: stories || [],
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshStories
+        refreshStories,
     };
 }

@@ -1,6 +1,6 @@
-import {PageProvider} from '../../api/providers/PageProvider';
-import {StatusBody} from '../../api/body/StatusBody';
-import {useActionState} from '../../utils/hooks/useActionState';
+import { StatusBody } from '../../api/body/StatusBody';
+import { PageProvider } from '../../api/providers/PageProvider';
+import { useActionState } from '../../utils/hooks/useActionState';
 
 export function usePageInteractions(refreshPages: () => void) {
     const { actionLoading, runAction } = useActionState();
@@ -23,6 +23,6 @@ export function usePageInteractions(refreshPages: () => void) {
     return {
         actionLoading,
         handleParticipantStatusSubmit,
-        handleFollowStatusSubmit
+        handleFollowStatusSubmit,
     };
 }

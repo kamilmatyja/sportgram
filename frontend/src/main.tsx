@@ -1,12 +1,13 @@
 import React from 'react';
-import {createRoot} from 'react-dom/client';
-import {BrowserRouter} from 'react-router-dom';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '../public/index.css';
 import App from './App';
-import {TranslationProvider} from './context/TranslationContext';
-import {ThemeProvider} from './context/ThemeContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { TranslationProvider } from './context/TranslationContext';
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -24,10 +25,10 @@ if (container) {
             <TranslationProvider>
                 <ThemeProvider>
                     <BrowserRouter>
-                        <App/>
+                        <App />
                     </BrowserRouter>
                 </ThemeProvider>
             </TranslationProvider>
-        </React.StrictMode>
+        </React.StrictMode>,
     );
 }

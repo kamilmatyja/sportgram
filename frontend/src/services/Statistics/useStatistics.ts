@@ -1,18 +1,19 @@
-import {useEffect, useState} from 'react';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {StatisticProvider} from '../../api/providers/StatisticProvider';
-import {FriendProvider} from '../../api/providers/FriendProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {StatisticFilterQuery} from '../../api/queries/StatisticFilterQuery';
-import {StatisticIndexQuery} from '../../api/queries/StatisticIndexQuery';
-import {FriendFilterQuery} from '../../api/queries/FriendFilterQuery';
-import {FriendIndexQuery} from '../../api/queries/FriendIndexQuery';
-import {StatisticResponse} from '../../api/responses/StatisticResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {FriendStatusEnum} from '../../enums/FriendStatusEnum';
-import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect, useState } from 'react';
+
+import { FriendProvider } from '../../api/providers/FriendProvider';
+import { StatisticProvider } from '../../api/providers/StatisticProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
+import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
+import { StatisticFilterQuery } from '../../api/queries/StatisticFilterQuery';
+import { StatisticIndexQuery } from '../../api/queries/StatisticIndexQuery';
+import { StatisticResponse } from '../../api/responses/StatisticResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useStatistics() {
     const access = useAppAccess();
@@ -37,7 +38,7 @@ export function useStatistics() {
         const myFriends = await friendProvider.index(fIndexDto);
 
         const acceptedFriendIds = new Set<string>();
-        myFriends.forEach(f => {
+        myFriends.forEach((f) => {
             if (f.senderUserId !== currentUsr.id) acceptedFriendIds.add(f.senderUserId);
             if (f.receiverUserId !== currentUsr.id) acceptedFriendIds.add(f.receiverUserId);
         });
@@ -52,7 +53,7 @@ export function useStatistics() {
         setAvailableUsers(usersList);
 
         if (!list.filters.userIds || list.filters.userIds.length === 0) {
-            list.setFilters(prev => ({...prev, userIds: [currentUsr.id]}));
+            list.setFilters((prev) => ({ ...prev, userIds: [currentUsr.id] }));
         }
     };
 
@@ -92,11 +93,11 @@ export function useStatistics() {
     }, [access.currentUser, activeTab, list.page, list.limit, list.sort, list.filters]);
 
     const handleUsersChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+        const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
         if (selected.length === 0 && access.currentUser) {
-            list.setFilters(prev => ({...prev, userIds: [access.currentUser!.id]}));
+            list.setFilters((prev) => ({ ...prev, userIds: [access.currentUser!.id] }));
         } else {
-            list.setFilters(prev => ({...prev, userIds: selected}));
+            list.setFilters((prev) => ({ ...prev, userIds: selected }));
         }
         list.setPage(1);
     };
@@ -104,9 +105,12 @@ export function useStatistics() {
     return {
         ...access,
         ...list,
-        availableUsers, activeTab, setActiveTab, data: data || [],
+        availableUsers,
+        activeTab,
+        setActiveTab,
+        data: data || [],
         loading: access.authLoading || loading,
         error: access.authError || error,
-        handleUsersChange
+        handleUsersChange,
     };
 }

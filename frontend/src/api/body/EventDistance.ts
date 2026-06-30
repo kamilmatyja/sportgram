@@ -1,4 +1,4 @@
-import {EventSubDistance} from './EventSubDistance';
+import { EventSubDistance } from './EventSubDistance';
 
 export class EventDistance {
     public distance!: number;

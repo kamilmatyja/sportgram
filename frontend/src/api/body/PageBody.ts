@@ -8,7 +8,7 @@ export class PageBody {
         public profilePhoto: string,
         public backgroundPhoto: string,
         color: string | number,
-        public participants: string[] = []
+        public participants: string[] = [],
     ) {
         this.color = typeof color === 'string' ? parseInt(color, 10) : color;
     }

@@ -1,19 +1,20 @@
-import React, {useState} from 'react';
-import {EventProvider} from '../../api/providers/EventProvider';
-import {PageProvider} from '../../api/providers/PageProvider';
-import {EventBody} from '../../api/body/EventBody';
-import {StatusBody} from '../../api/body/StatusBody';
-import {EventResponse} from '../../api/responses/EventResponse';
-import {PageResponse} from '../../api/responses/PageResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {EventDiscipline} from '../../api/body/EventDiscipline';
-import {EventDistance} from '../../api/body/EventDistance';
-import {EventSubDistance} from '../../api/body/EventSubDistance';
-import {createFormHandler} from '../../utils/formHandler';
-import {PageIndexQuery} from '../../api/queries/PageIndexQuery';
-import {PageFilterQuery} from '../../api/queries/PageFilterQuery';
-import {useModal} from '../../utils/hooks/useModal';
-import {useFormState} from '../../utils/hooks/useFormState';
+import React, { useState } from 'react';
+
+import { EventBody } from '../../api/body/EventBody';
+import { EventDiscipline } from '../../api/body/EventDiscipline';
+import { EventDistance } from '../../api/body/EventDistance';
+import { EventSubDistance } from '../../api/body/EventSubDistance';
+import { StatusBody } from '../../api/body/StatusBody';
+import { EventProvider } from '../../api/providers/EventProvider';
+import { PageProvider } from '../../api/providers/PageProvider';
+import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
+import { PageIndexQuery } from '../../api/queries/PageIndexQuery';
+import { EventResponse } from '../../api/responses/EventResponse';
+import { PageResponse } from '../../api/responses/PageResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { createFormHandler } from '../../utils/formHandler';
+import { useFormState } from '../../utils/hooks/useFormState';
+import { useModal } from '../../utils/hooks/useModal';
 
 export function useEventModals(onSuccess: () => void, currentUser: UserResponse | null) {
     const addModal = useModal();
@@ -64,27 +65,29 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
 
     const openManageModal = async (ev: EventResponse) => {
         manageModal.open(ev);
-        const disciplinesMapped: EventDiscipline[] = ev.disciplines.map(d => ({
+        const disciplinesMapped: EventDiscipline[] = ev.disciplines.map((d) => ({
             discipline: d.discipline,
-            distances: d.distances.map(dist => ({
+            distances: d.distances.map((dist) => ({
                 distance: dist.distance,
-                subDistances: dist.subDistances.map(sub => ({
-                    subDistance: sub.subDistance
-                }))
-            }))
+                subDistances: dist.subDistances.map((sub) => ({
+                    subDistance: sub.subDistance,
+                })),
+            })),
         }));
 
-        setFormData(new EventBody(
-            ev.startedAt.substring(0, 16),
-            ev.endedAt.substring(0, 16),
-            ev.title,
-            ev.description,
-            ev.link,
-            ev.rules,
-            '',
-            ev.location,
-            disciplinesMapped
-        ));
+        setFormData(
+            new EventBody(
+                ev.startedAt.substring(0, 16),
+                ev.endedAt.substring(0, 16),
+                ev.title,
+                ev.description,
+                ev.link,
+                ev.rules,
+                '',
+                ev.location,
+                disciplinesMapped,
+            ),
+        );
         resetErrors();
     };
 
@@ -121,19 +124,19 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
         const newDisc = new EventDiscipline();
         newDisc.discipline = 1;
         newDisc.distances = [];
-        setFormData(prev => ({...prev, disciplines: [...(prev.disciplines || []), newDisc]}));
+        setFormData((prev) => ({ ...prev, disciplines: [...(prev.disciplines || []), newDisc] }));
     };
 
     const updateDisciplineType = (index: number, type: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[index].discipline = type;
-        setFormData(prev => ({...prev, disciplines: discs}));
+        setFormData((prev) => ({ ...prev, disciplines: discs }));
     };
 
     const removeDiscipline = (index: number) => {
         const discs = [...(formData.disciplines || [])];
         discs.splice(index, 1);
-        setFormData(prev => ({...prev, disciplines: discs}));
+        setFormData((prev) => ({ ...prev, disciplines: discs }));
     };
 
     const addDistance = (discIndex: number) => {
@@ -142,50 +145,74 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
         newDist.distance = 0;
         newDist.subDistances = [];
         discs[discIndex].distances = [...(discs[discIndex].distances || []), newDist];
-        setFormData(prev => ({...prev, disciplines: discs}));
+        setFormData((prev) => ({ ...prev, disciplines: discs }));
     };
 
     const updateDistanceValue = (discIndex: number, distIndex: number, val: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[discIndex].distances![distIndex].distance = val;
-        setFormData(prev => ({...prev, disciplines: discs}));
+        setFormData((prev) => ({ ...prev, disciplines: discs }));
     };
 
     const removeDistance = (discIndex: number, distIndex: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[discIndex].distances!.splice(distIndex, 1);
-        setFormData(prev => ({...prev, disciplines: discs}));
+        setFormData((prev) => ({ ...prev, disciplines: discs }));
     };
 
     const addSubDistance = (discIndex: number, distIndex: number) => {
         const discs = [...(formData.disciplines || [])];
         const newSub = new EventSubDistance();
         newSub.subDistance = 0;
-        discs[discIndex].distances![distIndex].subDistances = [...(discs[discIndex].distances![distIndex].subDistances || []), newSub];
-        setFormData(prev => ({...prev, disciplines: discs}));
+        discs[discIndex].distances![distIndex].subDistances = [
+            ...(discs[discIndex].distances![distIndex].subDistances || []),
+            newSub,
+        ];
+        setFormData((prev) => ({ ...prev, disciplines: discs }));
     };
 
     const updateSubDistanceValue = (discIndex: number, distIndex: number, subIndex: number, val: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[discIndex].distances![distIndex].subDistances![subIndex].subDistance = val;
-        setFormData(prev => ({...prev, disciplines: discs}));
+        setFormData((prev) => ({ ...prev, disciplines: discs }));
     };
 
     const removeSubDistance = (discIndex: number, distIndex: number, subIndex: number) => {
         const discs = [...(formData.disciplines || [])];
         discs[discIndex].distances![distIndex].subDistances!.splice(subIndex, 1);
-        setFormData(prev => ({...prev, disciplines: discs}));
+        setFormData((prev) => ({ ...prev, disciplines: discs }));
     };
 
     const handleChange = createFormHandler(setFormData);
 
     return {
-        showAdd: addModal.isOpen, openAddModal, closeAddModal: addModal.close, handleAddSubmit,
-        myPages, selectedPageId, setSelectedPageId,
-        showManage: manageModal.isOpen, openManageModal, closeManageModal: manageModal.close,
-        handleEditSubmit, handleStatusSubmit, handleDelete,
-        currentEvent: manageModal.data, formData, handleChange, loading, globalError, fieldErrors,
-        addDiscipline, updateDisciplineType, removeDiscipline, addDistance, updateDistanceValue, removeDistance,
-        addSubDistance, updateSubDistanceValue, removeSubDistance
+        showAdd: addModal.isOpen,
+        openAddModal,
+        closeAddModal: addModal.close,
+        handleAddSubmit,
+        myPages,
+        selectedPageId,
+        setSelectedPageId,
+        showManage: manageModal.isOpen,
+        openManageModal,
+        closeManageModal: manageModal.close,
+        handleEditSubmit,
+        handleStatusSubmit,
+        handleDelete,
+        currentEvent: manageModal.data,
+        formData,
+        handleChange,
+        loading,
+        globalError,
+        fieldErrors,
+        addDiscipline,
+        updateDisciplineType,
+        removeDiscipline,
+        addDistance,
+        updateDistanceValue,
+        removeDistance,
+        addSubDistance,
+        updateSubDistanceValue,
+        removeSubDistance,
     };
 }

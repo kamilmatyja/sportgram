@@ -1,11 +1,12 @@
-import {useEffect} from 'react';
-import {PushSubscriptionProvider} from '../../api/providers/PushSubscriptionProvider';
-import {PushSubscriptionResponse} from '../../api/responses/PushSubscriptionResponse';
-import {PushSubscriptionFilterQuery} from '../../api/queries/PushSubscriptionFilterQuery';
-import {PushSubscriptionIndexQuery} from '../../api/queries/PushSubscriptionIndexQuery';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
+import { useEffect } from 'react';
+
+import { PushSubscriptionProvider } from '../../api/providers/PushSubscriptionProvider';
+import { PushSubscriptionFilterQuery } from '../../api/queries/PushSubscriptionFilterQuery';
+import { PushSubscriptionIndexQuery } from '../../api/queries/PushSubscriptionIndexQuery';
+import { PushSubscriptionResponse } from '../../api/responses/PushSubscriptionResponse';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
 
 export function useUserPushSubscriptions(link?: string) {
     const access = useAppAccess({ targetLink: link, requireOwner: true });
@@ -28,7 +29,7 @@ export function useUserPushSubscriptions(link?: string) {
             indexDto.filter = filterDto;
 
             const data = await pushSubscriptionProvider.index(indexDto);
-            return data.filter(sub => sub.userId === userId);
+            return data.filter((sub) => sub.userId === userId);
         }, []);
     };
 
@@ -48,6 +49,6 @@ export function useUserPushSubscriptions(link?: string) {
         subscriptions: subscriptions || [],
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshSubscriptions
+        refreshSubscriptions,
     };
 }

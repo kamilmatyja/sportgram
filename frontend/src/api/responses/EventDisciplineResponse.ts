@@ -1,4 +1,4 @@
-import {EventDisciplineDistanceResponse} from './EventDisciplineDistanceResponse';
+import { EventDisciplineDistanceResponse } from './EventDisciplineDistanceResponse';
 
 export class EventDisciplineResponse {
     id!: string;

@@ -1,16 +1,17 @@
-import {useEffect, useState} from 'react';
-import {FeedProvider} from '../../api/providers/FeedProvider';
-import {UserProvider} from '../../api/providers/UserProvider';
-import {FeedResponse} from '../../api/responses/FeedResponse';
-import {UserResponse} from '../../api/responses/UserResponse';
-import {FeedIndexQuery} from '../../api/queries/FeedIndexQuery';
-import {FeedFilterQuery} from '../../api/queries/FeedFilterQuery';
-import {fetchRelatedUsers} from '../../utils/fetchRelatedUsers';
-import {useFeedInteractions} from '../Feed/useFeedInteractions';
-import {useAppAccess} from '../../utils/hooks/useAppAccess';
-import {useListFilters} from '../../utils/hooks/useListFilters';
-import {useDataFetch} from '../../utils/hooks/useDataFetch';
-import {ElementStatusEnum} from '../../enums/ElementStatusEnum';
+import { useEffect, useState } from 'react';
+
+import { FeedProvider } from '../../api/providers/FeedProvider';
+import { UserProvider } from '../../api/providers/UserProvider';
+import { FeedFilterQuery } from '../../api/queries/FeedFilterQuery';
+import { FeedIndexQuery } from '../../api/queries/FeedIndexQuery';
+import { FeedResponse } from '../../api/responses/FeedResponse';
+import { UserResponse } from '../../api/responses/UserResponse';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
+import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useListFilters } from '../../utils/hooks/useListFilters';
+import { useFeedInteractions } from '../Feed/useFeedInteractions';
 
 export function useHomeFeeds(targetUserId?: string) {
     const accessOptions = targetUserId ? { targetId: targetUserId, requireFriendship: true } : {};
@@ -27,10 +28,10 @@ export function useHomeFeeds(targetUserId?: string) {
     const userProvider = new UserProvider();
 
     const extractUserIds = (feedData: FeedResponse[]): string[] => {
-        return feedData.flatMap(feed => [
+        return feedData.flatMap((feed) => [
             feed.userId,
-            ...(feed.comments?.map(c => c.userId) || []),
-            ...(feed.reactions?.map(r => r.userId) || [])
+            ...(feed.comments?.map((c) => c.userId) || []),
+            ...(feed.reactions?.map((r) => r.userId) || []),
         ]);
     };
 
@@ -52,7 +53,13 @@ export function useHomeFeeds(targetUserId?: string) {
 
             indexDto.filter = filter;
             indexDto.include = [
-                'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
+                'feedComments',
+                'feedReactions',
+                'eventDisciplineList',
+                'eventDisciplineResult',
+                'goal',
+                'goalParticipantResult',
+                'training',
             ];
 
             const data = await feedProvider.index(indexDto);
@@ -64,7 +71,7 @@ export function useHomeFeeds(targetUserId?: string) {
 
             if (append) {
                 const current = feeds || [];
-                return [...current, ...data.filter(df => !current.some(pf => pf.id === df.id))];
+                return [...current, ...data.filter((df) => !current.some((pf) => pf.id === df.id))];
             }
             return data;
         }, feeds || []).finally(() => {
@@ -88,9 +95,15 @@ export function useHomeFeeds(targetUserId?: string) {
     const refreshSingleFeed = async (feedId: string) => {
         try {
             const updatedFeed = await feedProvider.details(feedId, [
-                'feedComments', 'feedReactions', 'eventDisciplineList', 'eventDisciplineResult', 'goal', 'goalParticipantResult', 'training'
+                'feedComments',
+                'feedReactions',
+                'eventDisciplineList',
+                'eventDisciplineResult',
+                'goal',
+                'goalParticipantResult',
+                'training',
             ]);
-            setFeeds(prev => (prev || []).map(f => f.id === feedId ? updatedFeed : f));
+            setFeeds((prev) => (prev || []).map((f) => (f.id === feedId ? updatedFeed : f)));
             const updatedUsers = await fetchRelatedUsers(extractUserIds([updatedFeed]), relatedUsers, userProvider);
             setRelatedUsers(updatedUsers);
         } catch (e) {
@@ -109,6 +122,6 @@ export function useHomeFeeds(targetUserId?: string) {
         loadingMore,
         hasMore,
         handleLoadMore,
-        ...interactions
+        ...interactions,
     };
 }

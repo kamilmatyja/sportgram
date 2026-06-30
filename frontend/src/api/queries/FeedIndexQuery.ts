@@ -1,4 +1,4 @@
-import {FeedFilterQuery} from './FeedFilterQuery';
+import { FeedFilterQuery } from './FeedFilterQuery';
 
 export class FeedIndexQuery {
     page?: number = 1;

@@ -1,4 +1,4 @@
-import {EventDiscipline} from './EventDiscipline';
+import { EventDiscipline } from './EventDiscipline';
 
 export class EventBody {
     constructor(
@@ -10,7 +10,6 @@ export class EventBody {
         public rules: string,
         public photo: string,
         public location: string,
-        public disciplines: EventDiscipline[] = []
-    ) {
-    }
+        public disciplines: EventDiscipline[] = [],
+    ) {}
 }

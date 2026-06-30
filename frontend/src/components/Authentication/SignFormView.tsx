@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from '../../context/TranslationContext';
-import { SignBody } from '../../api/body/SignBody';
 import { Container, Row, Col, Card, Form, Button, Alert, Stack } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+
+import { SignBody } from '../../api/body/SignBody';
+import { useTranslation } from '../../context/TranslationContext';
 
 interface SignFormViewProps {
     formData: SignBody;
@@ -14,43 +15,78 @@ interface SignFormViewProps {
 }
 
 export const SignFormView: React.FC<SignFormViewProps> = ({
-                                                              formData, handleChange, onSubmit, loading, fieldErrors, globalError
-                                                          }) => {
+    formData,
+    handleChange,
+    onSubmit,
+    loading,
+    fieldErrors,
+    globalError,
+}) => {
     const { t } = useTranslation();
 
     return (
         <Container className="py-5">
             <Row className="justify-content-center">
-                <Col md={6} lg={4}>
+                <Col md={8} lg={5} xl={4}>
                     <Card className="shadow-sm">
                         <Card.Body className="p-4">
-                            <h2 className="text-center mb-4">{t('sign')}</h2>
+                            <Card.Title as="h2" className="text-center mb-4">
+                                {t('sign')}
+                            </Card.Title>
                             <Form onSubmit={onSubmit}>
                                 <Stack gap={3}>
-                                    {globalError && <Alert variant="danger">{globalError}</Alert>}
+                                    {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
 
                                     <Form.Group>
                                         <Form.Label>{t('email')}</Form.Label>
-                                        <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} isInvalid={!!fieldErrors.email} required />
-                                        <Form.Control.Feedback type="invalid">{fieldErrors.email}</Form.Control.Feedback>
+                                        <Form.Control
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            isInvalid={!!fieldErrors.email}
+                                            required
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {fieldErrors.email}
+                                        </Form.Control.Feedback>
                                     </Form.Group>
 
                                     <Form.Group>
                                         <Form.Label>{t('password')}</Form.Label>
-                                        <Form.Control type="password" name="password" value={formData.password} onChange={handleChange} isInvalid={!!fieldErrors.password} required />
-                                        <Form.Control.Feedback type="invalid">{fieldErrors.password}</Form.Control.Feedback>
+                                        <Form.Control
+                                            type="password"
+                                            name="password"
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            isInvalid={!!fieldErrors.password}
+                                            required
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {fieldErrors.password}
+                                        </Form.Control.Feedback>
                                     </Form.Group>
 
-                                    <Form.Check type="checkbox" name="rememberMe" label={t('rememberMe')} checked={formData.rememberMe} onChange={handleChange} />
+                                    <Form.Check
+                                        type="checkbox"
+                                        name="rememberMe"
+                                        label={t('rememberMe')}
+                                        checked={formData.rememberMe}
+                                        onChange={handleChange}
+                                    />
 
-                                    <Button variant="primary" type="submit" disabled={loading}>
+                                    <Button variant="primary" type="submit" disabled={loading} className="w-100">
                                         {loading ? t('sending') : t('save')}
                                     </Button>
 
-                                    <Stack direction="horizontal" gap={2} className="justify-content-center small">
-                                        <Link to="/register">{t('register')}</Link>
-                                        <span className="text-muted">|</span>
-                                        <Link to="/password-reset">{t('passwordReset')}</Link>
+                                    <Stack direction="horizontal" gap={2} className="justify-content-center small mt-2">
+                                        <Link to="/register" className="text-decoration-none">
+                                            {t('register')}
+                                        </Link>
+                                        <Stack as="span" className="text-muted"></Stack>
+                                        <Link to="/password-reset" className="text-decoration-none">
+                                            {t('passwordReset')}
+                                        </Link>
                                     </Stack>
                                 </Stack>
                             </Form>

@@ -10,7 +10,7 @@ export namespace SaveStatusEnum {
             .filter(([_, value]) => typeof value === 'number')
             .map(([key, value]) => ({
                 value: value as number,
-                label: t(`saveStatuses.${key.toLowerCase()}`)
+                label: t(`saveStatuses.${key.toLowerCase()}`),
             }));
     };
 }

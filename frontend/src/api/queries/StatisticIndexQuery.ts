@@ -1,4 +1,4 @@
-import {StatisticFilterQuery} from './StatisticFilterQuery';
+import { StatisticFilterQuery } from './StatisticFilterQuery';
 
 export class StatisticIndexQuery {
     page?: number = 1;
