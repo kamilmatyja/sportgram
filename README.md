@@ -4,11 +4,12 @@
 
 ## Technologie
 
-- Backend: PHP 8.5 + Symfony 8.0
-- Baza danych: PostgreSQL 18.3
-- Frontend: React 19.2 + Vite
+- Backend: PHP 8.5 + Symfony 8.1
+- Baza danych: PostgreSQL 18.6
+- Frontend: React 19.3 + Vite 8.3
 - UI: Bootstrap 5.3
 - PWA: manifest + Service Worker
+- Server: Ngnx 1.30
 - Funkcje urządzenia: powiadomienia i kamera
 
 ## Wymagania
@@ -43,6 +44,7 @@ docker compose up -d --build
 docker compose exec php composer install
 docker compose exec php php bin/console doctrine:migrations:migrate -n
 docker compose exec  php php bin/console lexik:jwt:generate-keypair
+docker compose exec php php bin/console app:generate-vapid-keys
 cd frontend
 npm install
 npm run build
@@ -71,6 +73,7 @@ npm run dev
 - Dokumentacja API JSON: `http://localhost:8080/api/doc.json`
 - Dokumentacja API Swagger: `http://localhost:8080/api/doc`
 - Frontend: `http://localhost:5173`
+- Mailpit (Webmail): `http://localhost:8025`
 
 ## Migracje
 
