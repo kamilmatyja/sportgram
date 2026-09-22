@@ -11,8 +11,8 @@ import { createFormHandler } from '../../utils/formHandler';
 import { useFormState } from '../../utils/hooks/useFormState';
 
 export function useSign() {
-    const step = Number(sessionStorage.getItem('step')) || 1;
-    const signId = sessionStorage.getItem('sign_id') || null;
+    const step = Number(localStorage.getItem('sign_step')) || 1;
+    const signId = localStorage.getItem('sign_id') || null;
     const [signFormData, setSignFormData] = useState(new SignBody('', '', false));
     const [codeFormData, setCodeFormData] = useState(new CodeBody(''));
 
@@ -30,22 +30,22 @@ export function useSign() {
         try {
             await wrap(async () => {
                 const res = await signProvider.sign(signFormData);
-                sessionStorage.setItem('step', '2');
-                sessionStorage.setItem('sign_id', res.id);
-                sessionStorage.setItem('email', signFormData.email);
-                sessionStorage.setItem('password', signFormData.password);
-                sessionStorage.removeItem('token');
+
+                localStorage.setItem('sign_step', '2');
+                localStorage.setItem('sign_id', res.id);
             });
         } catch (err: any) {
             if (err.error === 'User account is not confirmed.') {
                 try {
                     const dto = new EmailBody(signFormData.email);
                     const res = await registerProvider.register(dto);
-                    sessionStorage.setItem('step', '2');
-                    sessionStorage.setItem('register_id', res.id);
-                    sessionStorage.setItem('email', signFormData.email);
-                    sessionStorage.setItem('password', signFormData.password);
-                    sessionStorage.removeItem('sign_id');
+
+                    localStorage.setItem('register_step', '2');
+                    localStorage.setItem('register_id', res.id);
+                    localStorage.setItem('register_email', signFormData.email);
+                    localStorage.setItem('register_password', signFormData.password);
+                    localStorage.removeItem('sign_step');
+                    localStorage.removeItem('sign_id');
                     navigate('/register');
                 } catch (registerErr: any) {
                     setGlobalError(registerErr.error);
@@ -59,11 +59,9 @@ export function useSign() {
         if (!signId) return;
         await wrap(async () => {
             const res = await signProvider.confirm(signId, codeFormData);
-            sessionStorage.setItem('token', res.token);
-            sessionStorage.setItem('success_sign_id', signId);
-            sessionStorage.removeItem('step');
-            sessionStorage.removeItem('sign_id');
-            sessionStorage.removeItem('email');
+
+            localStorage.removeItem('sign_step');
+            localStorage.removeItem('sign_id');
             login(res.token, signId, signFormData.rememberMe);
             navigate('/');
         }).catch(() => {});
@@ -79,11 +77,8 @@ export function useSign() {
     };
 
     const clearSessionDataAndGoToStep1 = () => {
-        sessionStorage.setItem('step', '1');
-        sessionStorage.removeItem('sign_id');
-        sessionStorage.removeItem('email');
-        sessionStorage.removeItem('password');
-        sessionStorage.removeItem('token');
+        localStorage.removeItem('sign_step');
+        localStorage.removeItem('sign_id');
         navigate('/sign');
     };
 

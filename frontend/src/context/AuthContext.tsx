@@ -6,7 +6,7 @@ import { SignProvider } from '../api/providers/SignProvider';
 interface AuthContextType {
     token: string | null;
     signId: string | null;
-    login: (newToken: string, newSignId: string, rememberMe: boolean) => void;
+    login: (newToken: string, newSignId: string, rememberMe?: boolean) => void;
     logout: () => void;
     isAuthLoading: boolean;
     isAuthenticated: boolean;
@@ -21,10 +21,8 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
     const navigate = useNavigate();
 
-    const [token, setToken] = useState<string | null>(sessionStorage.getItem('token') || localStorage.getItem('token'));
-    const [signId, setSignId] = useState<string | null>(
-        sessionStorage.getItem('success_sign_id') || localStorage.getItem('success_sign_id'),
-    );
+    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [signId, setSignId] = useState<string | null>(localStorage.getItem('success_sign_id'));
     const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
 
     const signProvider = new SignProvider();
@@ -54,10 +52,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         try {
             const res = await signProvider.refresh(currentSignId);
 
-            const isRemembered = !!localStorage.getItem('success_sign_id');
-            const storage = isRemembered ? localStorage : sessionStorage;
-
-            storage.setItem('token', res.token);
+            localStorage.setItem('token', res.token);
             setToken(res.token);
         } catch (err) {
             logout();
@@ -67,10 +62,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     const login = (newToken: string, newSignId: string, rememberMe: boolean) => {
-        const storage = rememberMe ? localStorage : sessionStorage;
-
-        storage.setItem('token', newToken);
-        storage.setItem('success_sign_id', newSignId);
+        localStorage.setItem('token', newToken);
+        localStorage.setItem('success_sign_id', newSignId);
 
         setToken(newToken);
         setSignId(newSignId);
@@ -78,7 +71,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const logout = () => {
         localStorage.clear();
-        sessionStorage.clear();
 
         setToken(null);
         setSignId(null);

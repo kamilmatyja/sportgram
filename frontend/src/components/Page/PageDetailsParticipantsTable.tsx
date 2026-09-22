@@ -54,7 +54,9 @@ export const PageDetailsParticipantsTable: React.FC<PageDetailsParticipantsTable
                                                 {u.firstName} {u.lastName}
                                             </Link>
                                         ) : (
-                                            <Stack as="small" className="text-muted">-</Stack>
+                                            <Stack as="small" className="text-muted">
+                                                -
+                                            </Stack>
                                         )}
                                     </TableCell>
                                     <TableCell>

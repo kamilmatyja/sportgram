@@ -11,8 +11,8 @@ import { createFormHandler } from '../../utils/formHandler';
 import { useFormState } from '../../utils/hooks/useFormState';
 
 export function usePasswordReset() {
-    const step = Number(sessionStorage.getItem('step')) || 1;
-    const passwordResetId = sessionStorage.getItem('password_reset_id') || null;
+    const step = Number(localStorage.getItem('password_reset_step')) || 1;
+    const passwordResetId = localStorage.getItem('password_reset_id') || null;
     const [passwordResetFormData, setPasswordResetFormData] = useState(new EmailBody(''));
     const [codeFormData, setCodeFormData] = useState(new PasswordResetBody('', ''));
 
@@ -29,18 +29,22 @@ export function usePasswordReset() {
         try {
             await wrap(async () => {
                 const res = await passwordResetProvider.passwordReset(passwordResetFormData);
-                sessionStorage.setItem('step', '2');
-                sessionStorage.setItem('password_reset_id', res.id);
-                sessionStorage.setItem('email', passwordResetFormData.email);
+
+                localStorage.setItem('password_reset_step', '2');
+                localStorage.setItem('password_reset_id', res.id);
+                localStorage.setItem('password_reset_email', passwordResetFormData.email);
             });
         } catch (err: any) {
             if (err.error === 'User account is not confirmed.') {
                 try {
                     const res = await registerProvider.register(passwordResetFormData);
-                    sessionStorage.setItem('step', '2');
-                    sessionStorage.setItem('register_id', res.id);
-                    sessionStorage.setItem('email', passwordResetFormData.email);
-                    sessionStorage.removeItem('password_reset_id');
+
+                    localStorage.setItem('register_step', '2');
+                    localStorage.setItem('register_id', res.id);
+                    localStorage.setItem('register_email', passwordResetFormData.email);
+                    localStorage.removeItem('password_reset_step');
+                    localStorage.removeItem('password_reset_id');
+                    localStorage.removeItem('password_reset_email');
                     navigate('/register');
                 } catch (registerErr: any) {
                     setGlobalError(registerErr.error);
@@ -54,12 +58,15 @@ export function usePasswordReset() {
         if (!passwordResetId) return;
         await wrap(async () => {
             await passwordResetProvider.confirm(passwordResetId, codeFormData);
-            const email = sessionStorage.getItem('email') || '';
+
+            const email = localStorage.getItem('password_reset_email') || '';
             const res = await signProvider.sign(new SignBody(email, codeFormData.password, false));
 
-            sessionStorage.setItem('step', '2');
-            sessionStorage.setItem('sign_id', res.id);
-            sessionStorage.removeItem('password_reset_id');
+            localStorage.setItem('sign_step', '2');
+            localStorage.setItem('sign_id', res.id);
+            localStorage.removeItem('password_reset_step');
+            localStorage.removeItem('password_reset_id');
+            localStorage.removeItem('password_reset_email');
             navigate('/sign');
         }).catch(() => {});
     };
@@ -74,9 +81,9 @@ export function usePasswordReset() {
     };
 
     const clearSessionDataAndGoToStep1 = () => {
-        sessionStorage.setItem('step', '1');
-        sessionStorage.removeItem('password_reset_id');
-        sessionStorage.removeItem('email');
+        localStorage.removeItem('password_reset_step');
+        localStorage.removeItem('password_reset_id');
+        localStorage.removeItem('password_reset_email');
         navigate('/password-reset');
     };
 

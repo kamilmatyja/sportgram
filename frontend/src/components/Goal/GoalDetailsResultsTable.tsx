@@ -25,9 +25,7 @@ export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = (
 }) => {
     const { t } = useTranslation();
 
-    const allResults = participants.flatMap((p) =>
-        (p.results ?? []).map((r) => ({ ...r, userId: p.userId })),
-    );
+    const allResults = participants.flatMap((p) => (p.results ?? []).map((r) => ({ ...r, userId: p.userId })));
 
     return (
         <Stack className="table-responsive-custom">
@@ -61,7 +59,9 @@ export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = (
                                                 {u.firstName} {u.lastName}
                                             </Link>
                                         ) : (
-                                            <Stack as="small" className="text-muted">-</Stack>
+                                            <Stack as="small" className="text-muted">
+                                                -
+                                            </Stack>
                                         )}
                                     </TableCell>
                                     <TableCell>{r.distance}</TableCell>

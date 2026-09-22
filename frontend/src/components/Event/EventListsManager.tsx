@@ -47,6 +47,7 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
         setActiveResultListId(null);
         try {
             const res = await interactions.fetchDistanceLists(distId);
+
             setLists(res.lists);
             setListUsers(res.users);
         } catch (e) {

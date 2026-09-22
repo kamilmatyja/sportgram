@@ -107,7 +107,7 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                 <TableBody>
                                     {activities.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={3} className="text-center text-muted py-4">
+                                            <TableCell colSpan={3} className="text-center text-muted">
                                                 {t('noRecords')}
                                             </TableCell>
                                         </TableRow>

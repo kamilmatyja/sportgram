@@ -6,7 +6,7 @@ function buildAuthHeaders(additionalHeaders: Record<string, string> = {}): Recor
         Accept: 'application/json',
         ...additionalHeaders,
     };
-    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const token = localStorage.getItem('token');
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }

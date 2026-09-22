@@ -13,8 +13,8 @@ import { createFormHandler } from '../../utils/formHandler';
 import { useFormState } from '../../utils/hooks/useFormState';
 
 export function useRegister() {
-    const step = Number(sessionStorage.getItem('step')) || 1;
-    const registerId = sessionStorage.getItem('register_id') || null;
+    const step = Number(localStorage.getItem('register_step')) || 1;
+    const registerId = localStorage.getItem('register_id') || null;
     const [registerFormData, setRegisterFormData] = useState(new RegisterBody('', '', '', 0, 0, '', '', '', []));
     const [codeFormData, setCodeFormData] = useState(new CodeBody(''));
 
@@ -33,10 +33,10 @@ export function useRegister() {
             await userProviders.createNano(registerFormData);
             const res = await registerProvider.register(new EmailBody(registerFormData.email));
 
-            sessionStorage.setItem('step', '2');
-            sessionStorage.setItem('register_id', res.id);
-            sessionStorage.setItem('email', registerFormData.email);
-            sessionStorage.setItem('password', registerFormData.password);
+            localStorage.setItem('register_step', '2');
+            localStorage.setItem('register_id', res.id);
+            localStorage.setItem('register_email', registerFormData.email);
+            localStorage.setItem('register_password', registerFormData.password);
         }).catch(() => {});
     };
 
@@ -46,20 +46,28 @@ export function useRegister() {
         await wrap(async () => {
             await registerProvider.confirm(registerId, codeFormData);
 
-            const email = sessionStorage.getItem('email') || '';
-            const password = sessionStorage.getItem('password') || '';
+            const email = localStorage.getItem('register_email') || '';
+            const password = localStorage.getItem('register_password') || '';
 
             if (password) {
                 const res = await signProvider.sign(new SignBody(email, password, false));
-                sessionStorage.setItem('step', '2');
-                sessionStorage.setItem('sign_id', res.id);
-                sessionStorage.removeItem('register_id');
+
+                localStorage.setItem('sign_step', '2');
+                localStorage.setItem('sign_id', res.id);
+                localStorage.removeItem('register_step');
+                localStorage.removeItem('register_id');
+                localStorage.removeItem('register_email');
+                localStorage.removeItem('register_password');
                 navigate('/sign');
             } else {
                 const res = await passwordResetProvider.passwordReset(new EmailBody(email));
-                sessionStorage.setItem('step', '2');
-                sessionStorage.setItem('password_reset_id', res.id);
-                sessionStorage.removeItem('register_id');
+
+                localStorage.setItem('password_reset_step', '2');
+                localStorage.setItem('password_reset_id', res.id);
+                localStorage.setItem('password_reset_email', email);
+                localStorage.removeItem('register_step');
+                localStorage.removeItem('register_id');
+                localStorage.removeItem('register_email');
                 navigate('/password-reset');
             }
         }).catch(() => {});
@@ -75,10 +83,10 @@ export function useRegister() {
     };
 
     const clearSessionDataAndGoToStep1 = () => {
-        sessionStorage.setItem('step', '1');
-        sessionStorage.removeItem('register_id');
-        sessionStorage.removeItem('email');
-        sessionStorage.removeItem('password');
+        localStorage.removeItem('register_step');
+        localStorage.removeItem('register_id');
+        localStorage.removeItem('register_email');
+        localStorage.removeItem('register_password');
         navigate('/register');
     };
 
