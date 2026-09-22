@@ -53,6 +53,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
             const res = await signProvider.refresh(currentSignId);
 
             localStorage.setItem('token', res.token);
+
+            if (getCookie('remember_me') === '1') {
+                setCookie('token', res.token);
+            }
+
             setToken(res.token);
         } catch (err) {
             logout();
@@ -61,9 +66,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     };
 
-    const login = (newToken: string, newSignId: string, rememberMe: boolean) => {
+    const login = (newToken: string, newSignId: string, rememberMe?: boolean) => {
         localStorage.setItem('token', newToken);
         localStorage.setItem('success_sign_id', newSignId);
+
+        if (rememberMe) {
+            setCookie('remember_me', rememberMe ? '1' : '0');
+            setCookie('success_sign_id', newSignId);
+        }
 
         setToken(newToken);
         setSignId(newSignId);
@@ -71,12 +81,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const logout = () => {
         localStorage.clear();
+        deleteCookie('remember_me');
+        deleteCookie('success_sign_id');
 
         setToken(null);
         setSignId(null);
 
         navigate('/sign', { replace: true });
     };
+
+    const getCookie = (name: string): string | null => {
+        const match = document.cookie.match(new RegExp('(^|;\\s*)' + encodeURIComponent(name) + '=([^;]*)'));
+        return match ? decodeURIComponent(match[2]) : null;
+    }
+
+    const setCookie = (name: string, value: string, days: number = 30): void => {
+        let expires = '';
+        if (days > 0) {
+            const date = new Date();
+            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+            expires = `; expires=${date.toUTCString()}`;
+        }
+        document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value) || ''}${expires}; path=/; SameSite=Lax`;
+    }
+
+    const deleteCookie = (name: string): void => {
+        document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+    }
 
     return (
         <AuthContext.Provider value={{ token, signId, login, logout, isAuthLoading, isAuthenticated: !!token }}>
