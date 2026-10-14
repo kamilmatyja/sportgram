@@ -62,8 +62,7 @@ class TrainingRepository extends BaseRepository
                 ->setParameter('status', $dto->filter->status);
         }
 
-        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('t.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
+        $this->order($dto->sort, $qb, 't');
 
         return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }

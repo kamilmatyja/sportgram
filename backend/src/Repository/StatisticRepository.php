@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\TrainingDisciplineDistance;
 use App\Dto\{StatisticIndexDto, StatisticResultDto};
 use DateMalformedStringException;
 use DateTimeImmutable;
@@ -10,13 +11,11 @@ use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
-class StatisticRepository
+class StatisticRepository extends BaseRepository
 {
-    private Connection $connection;
-
     public function __construct(ManagerRegistry $registry)
     {
-        $this->connection = $registry->getManager()->getConnection();
+        parent::__construct($registry, TrainingDisciplineDistance::class);
     }
 
     /**
@@ -60,7 +59,7 @@ class StatisticRepository
         ) combined
         ORDER BY "userId", discipline, distance, time, "createdAt"';
 
-        $qb = $this->connection->createQueryBuilder();
+        $qb = $this->createQueryBuilder('stats');
         $qb->select('*')
             ->from('(' . $baseSql . ')', 'stats');
 
@@ -79,8 +78,7 @@ class StatisticRepository
                 ->setParameter('distance', $dto->filter->distance);
         }
 
-        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('stats."' . $field . '"', $direction === 'desc' ? 'DESC' : 'ASC');
+        $this->order($dto->sort, $qb, 'stats');
 
         $page = new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
 
@@ -142,7 +140,7 @@ class StatisticRepository
             JOIN users u ON er.user_id = u.id
         ) combined';
 
-        $qb = $this->connection->createQueryBuilder();
+        $qb = $this->createQueryBuilder('stats');
         $qb->select('*')
             ->from('(' . $baseSql . ')', 'stats');
 
@@ -161,8 +159,7 @@ class StatisticRepository
                 ->setParameter('distance', $dto->filter->distance);
         }
 
-        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('stats."' . $field . '"', $direction === 'desc' ? 'DESC' : 'ASC');
+        $this->order($dto->sort, $qb, 'stats');
 
         $page = new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
 

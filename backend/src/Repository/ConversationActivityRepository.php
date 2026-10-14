@@ -69,8 +69,7 @@ class ConversationActivityRepository extends BaseRepository
                 ->setParameter('userId', $userId);
         }
 
-        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('c.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
+        $this->order($dto->sort, $qb, 'c');
 
         return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }

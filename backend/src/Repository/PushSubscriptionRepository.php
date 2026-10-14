@@ -70,8 +70,7 @@ class PushSubscriptionRepository extends BaseRepository
                 ->setParameter('auth', $dto->filter->auth);
         }
 
-        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('p.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
+        $this->order($dto->sort, $qb, 'p');
 
         return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }

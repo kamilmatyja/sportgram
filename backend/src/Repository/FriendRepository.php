@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Dto\FriendIndexDto;
 use App\Entity\Friend;
 use App\Enum\FriendStatusEnum;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
@@ -64,8 +65,7 @@ class FriendRepository extends BaseRepository
                 ->setParameter('status', $dto->filter->status);
         }
 
-        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('f.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
+        $this->order($dto->sort, $qb, 'f');
 
         return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }

@@ -95,8 +95,7 @@ class UserRepository extends BaseRepository
                 ->setParameter('signId', $dto->filter->signId);
         }
 
-        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
-        $qb->orderBy('u.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
+        $this->order($dto->sort, $qb, 'u');
 
         return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
