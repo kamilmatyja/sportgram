@@ -13,7 +13,7 @@ use App\Entity\{Event,
     Feed,
     PageParticipant,
     User};
-use App\Enum\{DisciplineEnum, ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
+use App\Enum\{ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
 use App\Event\{EventProcessedEvent, NotificationEvent};
 use App\Repository\{EventDisciplineDistanceRepository,
     EventDisciplineListRepository,
@@ -25,7 +25,6 @@ use App\Repository\{EventDisciplineDistanceRepository,
     FeedRepository,
     PageRepository};
 use DateMalformedStringException;
-use DateTimeImmutable;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -66,8 +65,8 @@ readonly class EventService
 
         $event = new Event(
             $pageParticipant,
-            new DateTimeImmutable($dto->startedAt),
-            new DateTimeImmutable($dto->endedAt),
+            $dto->startedAt,
+            $dto->endedAt,
             $dto->title,
             $dto->description,
             $dto->link,
@@ -80,7 +79,7 @@ readonly class EventService
         $this->eventRepository->save($event);
 
         foreach ($dto->disciplines as $discipline) {
-            $eventDiscipline = new EventDiscipline($event, DisciplineEnum::from($discipline->discipline));
+            $eventDiscipline = new EventDiscipline($event, $discipline->discipline);
 
             $this->eventDisciplineRepository->save($eventDiscipline);
 
@@ -116,8 +115,8 @@ readonly class EventService
     {
         $event = $this->eventRepository->findById($eventId);
 
-        $event->startedAt = new DateTimeImmutable($dto->startedAt);
-        $event->endedAt = new DateTimeImmutable($dto->endedAt);
+        $event->startedAt = $dto->startedAt;
+        $event->endedAt = $dto->endedAt;
         $event->title = $dto->title;
         $event->description = $dto->description;
         $event->link = $dto->link;
@@ -142,7 +141,7 @@ readonly class EventService
         }
 
         foreach ($dto->disciplines as $discipline) {
-            $eventDiscipline = new EventDiscipline($event, DisciplineEnum::from($discipline->discipline));
+            $eventDiscipline = new EventDiscipline($event, $discipline->discipline);
 
             $this->eventDisciplineRepository->save($eventDiscipline);
 
@@ -171,7 +170,7 @@ readonly class EventService
     {
         $event = $this->eventRepository->findById($eventId);
 
-        $event->status = ElementStatusEnum::from($dto->status);
+        $event->status = $dto->status;
         $this->eventRepository->save($event);
 
         $this->eventDispatcher->dispatch(
@@ -247,7 +246,7 @@ readonly class EventService
     {
         $eventDisciplineList = $this->eventDisciplineListRepository->findById($eventDisciplineListId);
 
-        $eventDisciplineList->status = SaveStatusEnum::from($dto->status);
+        $eventDisciplineList->status = $dto->status;
         $this->eventDisciplineListRepository->save($eventDisciplineList);
 
         $eventDisciplineDistance = $eventDisciplineList->eventDisciplineDistance;

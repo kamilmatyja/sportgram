@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Dto\{GoalDto, GoalIndexDto, GoalStatusDto, SaveStatusDto};
 use App\Entity\{Feed, Goal, GoalParticipant, User};
-use App\Enum\{DisciplineEnum, ElementStatusEnum, GoalStatusEnum, NotificationTypeEnum, SaveStatusEnum};
+use App\Enum\{ElementStatusEnum, GoalStatusEnum, NotificationTypeEnum, SaveStatusEnum};
 use App\Event\NotificationEvent;
 use App\Repository\{FeedRepository,
     FriendRepository,
@@ -13,7 +13,6 @@ use App\Repository\{FeedRepository,
     GoalRepository,
     UserRepository};
 use DateMalformedStringException;
-use DateTimeImmutable;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -49,11 +48,11 @@ readonly class GoalService
         $goal = new Goal(
             $feed,
             $user,
-            new DateTimeImmutable($dto->startedAt),
-            new DateTimeImmutable($dto->endedAt),
+            $dto->startedAt,
+            $dto->endedAt,
             $dto->text,
             $dto->link,
-            DisciplineEnum::from($dto->discipline),
+            $dto->discipline,
             $dto->distance,
             $dto->time,
             GoalStatusEnum::Active,
@@ -100,11 +99,11 @@ readonly class GoalService
     {
         $goal = $this->goalRepository->findById($goalId);
 
-        $goal->startedAt = new DateTimeImmutable($dto->startedAt);
-        $goal->endedAt = new DateTimeImmutable($dto->endedAt);
+        $goal->startedAt = $dto->startedAt;
+        $goal->endedAt = $dto->endedAt;
         $goal->text = $dto->text;
         $goal->link = $dto->link;
-        $goal->discipline = DisciplineEnum::from($dto->discipline);
+        $goal->discipline = $dto->discipline;
         $goal->distance = $dto->distance;
         $goal->time = $dto->time;
 
@@ -156,7 +155,7 @@ readonly class GoalService
     {
         $goal = $this->goalRepository->findById($goalId);
 
-        $goal->status = GoalStatusEnum::from($dto->status);
+        $goal->status = $dto->status;
         $this->goalRepository->save($goal);
 
         foreach ($goal->participants as $participant) {
@@ -202,7 +201,7 @@ readonly class GoalService
     {
         $goalParticipant = $this->goalParticipantRepository->findById($goalParticipantId);
 
-        $goalParticipant->status = SaveStatusEnum::from($dto->status);
+        $goalParticipant->status = $dto->status;
         $this->goalParticipantRepository->save($goalParticipant);
 
         $goal = $goalParticipant->goal;
@@ -223,7 +222,7 @@ readonly class GoalService
     {
         $goalParticipantResult = $this->goalParticipantResultRepository->findById($goalParticipantResultId);
 
-        $goalParticipantResult->status = SaveStatusEnum::from($dto->status);
+        $goalParticipantResult->status = $dto->status;
         $this->goalParticipantResultRepository->save($goalParticipantResult);
 
         $goal = $goalParticipantResult->goalParticipant->goal;

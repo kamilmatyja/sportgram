@@ -5,6 +5,7 @@ namespace App\Dto;
 use App\Entity\{Goal, User};
 use App\Enum\DisciplineEnum;
 use App\Validator\{EntityExistsField, UniqueField};
+use DateTimeImmutable;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -32,10 +33,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 class GoalDto
 {
     #[Assert\DateTime(format: 'Y-m-d\TH:i')]
-    public ?string $startedAt = null;
+    public ?DateTimeImmutable $startedAt = null;
 
     #[Assert\DateTime(format: 'Y-m-d\TH:i')]
-    public ?string $endedAt = null;
+    public ?DateTimeImmutable $endedAt = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 1, max: 2048)]
@@ -49,7 +50,7 @@ class GoalDto
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [DisciplineEnum::class, 'values'])]
-    public int $discipline;
+    public DisciplineEnum $discipline;
 
     #[Assert\NotBlank]
     #[Assert\Type('integer')]

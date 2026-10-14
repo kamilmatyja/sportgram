@@ -29,7 +29,7 @@ class EntryDto
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [EntryTypeEnum::class, 'values'])]
-    public ?int $type = null;
+    public ?EntryTypeEnum $type = null;
 
     #[EntryEntityExists]
     final protected function getEntityValidationData(): array

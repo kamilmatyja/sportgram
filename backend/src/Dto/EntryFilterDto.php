@@ -46,5 +46,5 @@ class EntryFilterDto
     public array $entityIds = [];
 
     #[Assert\Choice(callback: [EntryTypeEnum::class, 'values'])]
-    public ?int $type = null;
+    public ?EntryTypeEnum $type = null;
 }

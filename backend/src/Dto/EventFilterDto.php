@@ -49,5 +49,5 @@ class EventFilterDto
     public ?string $title = null;
 
     #[Assert\Choice(callback: [ElementStatusEnum::class, 'values'])]
-    public ?int $status = null;
+    public ?ElementStatusEnum $status = null;
 }

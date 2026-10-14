@@ -17,5 +17,5 @@ class SaveStatusDto
 {
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [SaveStatusEnum::class, 'values'])]
-    public int $status;
+    public SaveStatusEnum $status;
 }

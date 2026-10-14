@@ -17,5 +17,5 @@ class PageFollowStatusDto
 {
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [PageFollowStatusEnum::class, 'values'])]
-    public int $status;
+    public PageFollowStatusEnum $status;
 }

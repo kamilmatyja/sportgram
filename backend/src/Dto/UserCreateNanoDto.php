@@ -5,6 +5,7 @@ namespace App\Dto;
 use App\Entity\User;
 use App\Enum\{CountryEnum, GenderEnum, RoleEnum};
 use App\Validator\{UniqueField};
+use DateTimeImmutable;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -37,7 +38,7 @@ class UserCreateNanoDto
 {
     #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d')]
-    public string $birthAt;
+    public DateTimeImmutable $birthAt;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 3, max: 64)]
@@ -49,7 +50,7 @@ class UserCreateNanoDto
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [GenderEnum::class, 'values'])]
-    public int $gender;
+    public GenderEnum $gender;
 
     #[Assert\NotBlank]
     #[Assert\Range(min: 100000000, max: 999999999)]
@@ -68,9 +69,9 @@ class UserCreateNanoDto
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [CountryEnum::class, 'values'])]
-    public int $country;
+    public CountryEnum $country;
 
-    /** @var int[] */
+    /** @var RoleEnum[] */
     #[Assert\NotBlank]
     #[Assert\All([
         new Assert\NotBlank(),
@@ -78,5 +79,5 @@ class UserCreateNanoDto
     ])]
     #[Assert\Count(min: 1)]
     #[Assert\Unique]
-    public array $roles;
+    public array $roles = [];
 }

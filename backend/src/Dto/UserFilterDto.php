@@ -45,17 +45,17 @@ class UserFilterDto
     public ?string $lastName = null;
 
     #[Assert\Choice(callback: [GenderEnum::class, 'values'])]
-    public ?int $gender = null;
+    public ?GenderEnum $gender = null;
 
     #[Assert\Email]
     #[Assert\Length(min: 5, max: 64)]
     public ?string $email = null;
 
     #[Assert\Choice(callback: [CountryEnum::class, 'values'])]
-    public ?int $country = null;
+    public ?CountryEnum $country = null;
 
     #[Assert\Choice(callback: [UserStatusEnum::class, 'values'])]
-    public ?int $status = null;
+    public ?UserStatusEnum $status = null;
 
     /** @var Uuid[] */
     #[Assert\All([

@@ -4,6 +4,7 @@ namespace App\Dto;
 
 use App\Entity\{Training, User};
 use App\Validator\{EntityExistsField, UniqueField};
+use DateTimeImmutable;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Uid\Uuid;
@@ -41,11 +42,11 @@ class TrainingDto
 {
     #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d\TH:i')]
-    public string $startedAt;
+    public DateTimeImmutable $startedAt;
 
     #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d\TH:i')]
-    public string $endedAt;
+    public DateTimeImmutable $endedAt;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 1, max: 256)]

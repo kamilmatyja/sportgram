@@ -47,5 +47,5 @@ class PageFollowFilterDto
     public array $pageIds = [];
 
     #[Assert\Choice(callback: [PageFollowStatusEnum::class, 'values'])]
-    public ?int $status = null;
+    public ?PageFollowStatusEnum $status = null;
 }

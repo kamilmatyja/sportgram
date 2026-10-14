@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Dto\{ElementStatusDto, FeedCommentDto, FeedDto, FeedIndexDto, FeedReactionDto};
 use App\Entity\{Feed, FeedComment, FeedReaction, User};
-use App\Enum\{ElementStatusEnum, FeedReactionEnum, NotificationTypeEnum};
+use App\Enum\{ElementStatusEnum, NotificationTypeEnum};
 use App\Event\NotificationEvent;
 use App\Repository\{FeedCommentRepository, FeedReactionRepository, FeedRepository, FriendRepository};
 use Doctrine\ORM\Tools\Pagination\WindowPage;
@@ -53,7 +53,7 @@ readonly class FeedService
     {
         $feed = $this->feedRepository->findById($feedId);
 
-        $feed->status = ElementStatusEnum::from($dto->status);
+        $feed->status = $dto->status;
         $this->feedRepository->save($feed);
 
         $this->eventDispatcher->dispatch(
@@ -132,7 +132,7 @@ readonly class FeedService
     {
         $feedComment = $this->feedCommentRepository->findById($feedCommentId);
 
-        $feedComment->status = ElementStatusEnum::from($dto->status);
+        $feedComment->status = $dto->status;
         $this->feedCommentRepository->save($feedComment);
 
         $this->eventDispatcher->dispatch(
@@ -171,7 +171,7 @@ readonly class FeedService
             throw new ValidatorException('User already reacted to this feed.');
         }
 
-        $feedReaction = new FeedReaction($feed, $user, FeedReactionEnum::from($dto->type), ElementStatusEnum::Active);
+        $feedReaction = new FeedReaction($feed, $user, $dto->type, ElementStatusEnum::Active);
 
         $this->feedReactionRepository->save($feedReaction);
 
@@ -191,7 +191,7 @@ readonly class FeedService
     {
         $feedReaction = $this->feedReactionRepository->findById($feedReactionId);
 
-        $feedReaction->reaction = FeedReactionEnum::from($dto->type);
+        $feedReaction->reaction = $dto->type;
 
         $this->feedReactionRepository->save($feedReaction);
 
@@ -202,7 +202,7 @@ readonly class FeedService
     {
         $feedReaction = $this->feedReactionRepository->findById($feedReactionId);
 
-        $feedReaction->status = ElementStatusEnum::from($dto->status);
+        $feedReaction->status = $dto->status;
         $this->feedReactionRepository->save($feedReaction);
 
         $this->eventDispatcher->dispatch(

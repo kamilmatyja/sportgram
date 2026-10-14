@@ -54,7 +54,7 @@ class PageDto
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [ColorEnum::class, 'values'])]
-    public int $color;
+    public ColorEnum $color;
 
     /** @var Uuid[] */
     #[Assert\All([

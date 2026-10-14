@@ -17,5 +17,5 @@ class FriendStatusDto
 {
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [FriendStatusEnum::class, 'allowed'])]
-    public int $status;
+    public FriendStatusEnum $status;
 }

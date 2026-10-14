@@ -17,5 +17,5 @@ class NotificationStatusDto
 {
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [NotificationStatusEnum::class, 'values'])]
-    public int $status;
+    public NotificationStatusEnum $status;
 }

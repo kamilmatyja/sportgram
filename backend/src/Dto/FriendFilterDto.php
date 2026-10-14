@@ -33,8 +33,8 @@ class FriendFilterDto
     ])]
     #[Assert\Count(min: 1)]
     #[Assert\Unique]
-    public array $userIds;
+    public array $userIds = [];
 
     #[Assert\Choice(callback: [FriendStatusEnum::class, 'values'])]
-    public ?int $status = null;
+    public ?FriendStatusEnum $status = null;
 }

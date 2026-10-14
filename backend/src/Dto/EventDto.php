@@ -4,6 +4,7 @@ namespace App\Dto;
 
 use App\Entity\Event;
 use App\Validator\UniqueField;
+use DateTimeImmutable;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -32,11 +33,11 @@ class EventDto
 {
     #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d\TH:i')]
-    public string $startedAt;
+    public DateTimeImmutable $startedAt;
 
     #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d\TH:i')]
-    public string $endedAt;
+    public DateTimeImmutable $endedAt;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 1, max: 256)]

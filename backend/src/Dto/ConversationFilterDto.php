@@ -30,5 +30,5 @@ class ConversationFilterDto
     public Uuid $userId;
 
     #[Assert\Choice(callback: [ConversationStatusEnum::class, 'values'])]
-    public ?int $status = null;
+    public ?ConversationStatusEnum $status = null;
 }

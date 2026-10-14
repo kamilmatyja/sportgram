@@ -10,7 +10,7 @@ use App\Entity\{Feed,
     TrainingDisciplineSubDistance,
     TrainingParticipant,
     User};
-use App\Enum\{DisciplineEnum, ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
+use App\Enum\{ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
 use App\Event\{NotificationEvent, TrainingProcessedEvent};
 use App\Repository\{FeedRepository,
     FriendRepository,
@@ -21,7 +21,6 @@ use App\Repository\{FeedRepository,
     TrainingRepository,
     UserRepository};
 use DateMalformedStringException;
-use DateTimeImmutable;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -59,8 +58,8 @@ readonly class TrainingService
         $training = new Training(
             $feed,
             $user,
-            new DateTimeImmutable($dto->startedAt),
-            new DateTimeImmutable($dto->endedAt),
+            $dto->startedAt,
+            $dto->endedAt,
             $dto->title,
             $dto->description,
             $dto->link,
@@ -74,7 +73,7 @@ readonly class TrainingService
         $trainingDistances = [];
 
         foreach ($dto->disciplines as $discipline) {
-            $trainingDiscipline = new TrainingDiscipline($training, DisciplineEnum::from($discipline->discipline));
+            $trainingDiscipline = new TrainingDiscipline($training, $discipline->discipline);
 
             $this->trainingDisciplineRepository->save($trainingDiscipline);
 
@@ -150,8 +149,8 @@ readonly class TrainingService
     {
         $training = $this->trainingRepository->findById($trainingId);
 
-        $training->startedAt = new DateTimeImmutable($dto->startedAt);
-        $training->endedAt = new DateTimeImmutable($dto->endedAt);
+        $training->startedAt = $dto->startedAt;
+        $training->endedAt = $dto->endedAt;
         $training->title = $dto->title;
         $training->description = $dto->description;
         $training->link = $dto->link;
@@ -170,7 +169,7 @@ readonly class TrainingService
         }
 
         foreach ($dto->disciplines as $discipline) {
-            $trainingDiscipline = new TrainingDiscipline($training, DisciplineEnum::from($discipline->discipline));
+            $trainingDiscipline = new TrainingDiscipline($training, $discipline->discipline);
 
             $this->trainingDisciplineRepository->save($trainingDiscipline);
 
@@ -243,7 +242,7 @@ readonly class TrainingService
     {
         $training = $this->trainingRepository->findById($trainingId);
 
-        $training->status = ElementStatusEnum::from($dto->status);
+        $training->status = $dto->status;
         $this->trainingRepository->save($training);
 
         foreach ($training->participants as $participant) {
@@ -292,7 +291,7 @@ readonly class TrainingService
     {
         $trainingParticipant = $this->trainingParticipantRepository->findById($participantId);
 
-        $trainingParticipant->status = SaveStatusEnum::from($dto->status);
+        $trainingParticipant->status = $dto->status;
         $this->trainingParticipantRepository->save($trainingParticipant);
 
         $training = $trainingParticipant->training;

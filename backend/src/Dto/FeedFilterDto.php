@@ -34,5 +34,5 @@ class FeedFilterDto
     public ?string $text = null;
 
     #[Assert\Choice(callback: [FriendStatusEnum::class, 'values'])]
-    public ?int $status = null;
+    public ?FriendStatusEnum $status = null;
 }

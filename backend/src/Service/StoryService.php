@@ -54,7 +54,7 @@ readonly class StoryService
     {
         $story = $this->storyRepository->findById($storyId);
 
-        $story->status = ElementStatusEnum::from($dto->status);
+        $story->status = $dto->status;
         $this->storyRepository->save($story);
 
         $this->eventDispatcher->dispatch(

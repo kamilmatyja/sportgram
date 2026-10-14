@@ -64,7 +64,7 @@ class EntryRepository extends BaseRepository
     final public function findCountEntries(EntryCountIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('e')
-            ->select('e.type as type, e.entityId, COUNT(e.id) as count');
+            ->select('e.type, e.entityId, COUNT(e.id) as count');
 
         if (! empty($dto->filter->entityIds)) {
             $qb->andWhere('e.entityId IN (:entityIds)')

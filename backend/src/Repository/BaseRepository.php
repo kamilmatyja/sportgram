@@ -2,7 +2,6 @@
 
 namespace App\Repository;
 
-use App\Dto\FriendIndexDto;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -21,7 +20,7 @@ abstract class BaseRepository extends ServiceEntityRepository
         return $entity;
     }
 
-    public function order(string $sort, QueryBuilder $qb, string $alias): void
+    final protected function order(string $sort, QueryBuilder $qb, string $alias): void
     {
         [$field, $direction] = array_pad(explode(':', $sort), 2, 'asc');
         $qb->orderBy($alias . '."' . $field . '"', $direction === 'desc' ? 'DESC' : 'ASC');

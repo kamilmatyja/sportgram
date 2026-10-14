@@ -36,7 +36,7 @@ class EntryEntityExistsValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, EntryEntityExists::class);
         }
 
-        if (! is_array($value) || ! isset($value['entityId'], $value['type']) || ! Uuid::isValid($value['entityId']) || ! EntryTypeEnum::tryFrom($value['type'])) {
+        if (! is_array($value) || ! isset($value['entityId'], $value['type'])) {
             throw new UnexpectedValueException($value, 'array with entityId and type');
         }
 

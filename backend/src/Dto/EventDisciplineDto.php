@@ -24,7 +24,7 @@ class EventDisciplineDto
 {
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [DisciplineEnum::class, 'values'])]
-    public int $discipline;
+    public DisciplineEnum $discipline;
 
     /** @var EventDisciplineDistanceDto[] */
     #[Assert\Valid]

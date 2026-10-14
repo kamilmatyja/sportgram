@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Dto\{NotificationIndexDto, NotificationStatusDto};
 use App\Entity\{Notification, User};
-use App\Enum\NotificationStatusEnum;
 use App\Repository\NotificationRepository;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -22,7 +21,7 @@ readonly class NotificationService
     {
         $notification = $this->notificationRepository->findById($storyId);
 
-        $notification->status = NotificationStatusEnum::from($dto->status);
+        $notification->status = $dto->status;
         $this->notificationRepository->save($notification);
 
         return $notification->id;

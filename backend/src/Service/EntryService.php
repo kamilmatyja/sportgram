@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Dto\{EntryCountIndexDto, EntryDto, EntryIndexDto};
 use App\Entity\{Entry, User};
-use App\Enum\EntryTypeEnum;
 use App\Repository\EntryRepository;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -23,7 +22,7 @@ readonly class EntryService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $entry = new Entry($user, $dto->entityId, EntryTypeEnum::from($dto->type));
+        $entry = new Entry($user, $dto->entityId, $dto->type);
 
         $this->entryRepository->save($entry);
 

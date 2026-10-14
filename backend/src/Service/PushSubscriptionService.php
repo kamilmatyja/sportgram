@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto};
 use App\Entity\{PushSubscription, User};
-use App\Enum\PushSubscriptionStatusEnum;
 use App\Repository\PushSubscriptionRepository;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -29,7 +28,7 @@ readonly class PushSubscriptionService
             $dto->p256dh,
             $dto->auth,
             $dto->userAgent,
-            PushSubscriptionStatusEnum::from($dto->status),
+            $dto->status,
         );
 
         $this->pushSubscriptionRepository->save($pushSubscription);
@@ -44,7 +43,7 @@ readonly class PushSubscriptionService
         $pushSubscription->endpoint = $dto->endpoint;
         $pushSubscription->p256dh = $dto->p256dh;
         $pushSubscription->auth = $dto->auth;
-        $pushSubscription->status = PushSubscriptionStatusEnum::from($dto->status);
+        $pushSubscription->status = $dto->status;
         $this->pushSubscriptionRepository->save($pushSubscription);
 
         return $pushSubscription->id;

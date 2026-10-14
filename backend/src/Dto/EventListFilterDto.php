@@ -30,5 +30,5 @@ class EventListFilterDto
     public ?Uuid $userId = null;
 
     #[Assert\Choice(callback: [SaveStatusEnum::class, 'values'])]
-    public ?int $status = null;
+    public ?SaveStatusEnum $status = null;
 }

@@ -20,5 +20,5 @@ class NotificationFilterDto
     public ?string $text = null;
 
     #[Assert\Choice(callback: [NotificationStatusEnum::class, 'values'])]
-    public ?int $status = null;
+    public ?NotificationStatusEnum $status = null;
 }

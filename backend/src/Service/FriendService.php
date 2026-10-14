@@ -58,7 +58,7 @@ readonly class FriendService
     {
         $friend = $this->friendRepository->findById($friendId);
 
-        $friend->status = FriendStatusEnum::from($dto->status);
+        $friend->status = $dto->status;
         $this->friendRepository->save($friend);
 
         $sender = $friend->senderUser;

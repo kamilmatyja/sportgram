@@ -5,7 +5,6 @@ namespace App\Repository;
 use App\Dto\FriendIndexDto;
 use App\Entity\Friend;
 use App\Enum\FriendStatusEnum;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;

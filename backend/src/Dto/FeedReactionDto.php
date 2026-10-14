@@ -17,5 +17,5 @@ class FeedReactionDto
 {
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [FeedReactionEnum::class, 'values'])]
-    public int $type;
+    public FeedReactionEnum $type;
 }

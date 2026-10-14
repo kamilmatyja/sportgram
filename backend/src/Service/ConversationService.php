@@ -72,7 +72,7 @@ readonly class ConversationService
     {
         $conversation = $this->conversationRepository->findById($conversationId);
 
-        $conversation->status = ConversationStatusEnum::from($dto->status);
+        $conversation->status = $dto->status;
         $this->conversationRepository->save($conversation);
 
         return $conversation->id;

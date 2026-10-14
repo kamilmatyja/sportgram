@@ -5,6 +5,7 @@ namespace App\Dto;
 use App\Entity\User;
 use App\Enum\{ColorEnum, CountryEnum, DisciplineEnum, GenderEnum, LanguageEnum, RoleEnum, ThemeEnum};
 use App\Validator\{Base64String, UniqueField};
+use DateTimeImmutable;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -58,7 +59,7 @@ class UserCreateDto
 {
     #[Assert\NotBlank]
     #[Assert\DateTime(format: 'Y-m-d')]
-    public string $birthAt;
+    public DateTimeImmutable $birthAt;
 
     #[Assert\NotBlank]
     #[Assert\Length(min: 3, max: 64)]
@@ -70,7 +71,7 @@ class UserCreateDto
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [GenderEnum::class, 'values'])]
-    public int $gender;
+    public GenderEnum $gender;
 
     #[Assert\NotBlank]
     #[Assert\Range(min: 100000000, max: 999999999)]
@@ -95,19 +96,19 @@ class UserCreateDto
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [LanguageEnum::class, 'values'])]
-    public int $language;
+    public LanguageEnum $language;
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [CountryEnum::class, 'values'])]
-    public int $country;
+    public CountryEnum $country;
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [ThemeEnum::class, 'values'])]
-    public int $theme;
+    public ThemeEnum $theme;
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [ColorEnum::class, 'values'])]
-    public int $color;
+    public ColorEnum $color;
 
     #[Assert\NotBlank]
     #[Base64String]
@@ -121,7 +122,7 @@ class UserCreateDto
     #[Assert\Length(min: 5, max: 2048)]
     public string $bio;
 
-    /** @var int[] */
+    /** @var RoleEnum[] */
     #[Assert\NotBlank]
     #[Assert\All([
         new Assert\NotBlank(),
@@ -129,9 +130,9 @@ class UserCreateDto
     ])]
     #[Assert\Count(min: 1)]
     #[Assert\Unique]
-    public array $roles;
+    public array $roles = [];
 
-    /** @var int[] */
+    /** @var DisciplineEnum[] */
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Choice(callback: [DisciplineEnum::class, 'values']),

@@ -36,5 +36,5 @@ class PushSubscriptionDto
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [PushSubscriptionStatusEnum::class, 'values'])]
-    public int $status;
+    public PushSubscriptionStatusEnum $status;
 }

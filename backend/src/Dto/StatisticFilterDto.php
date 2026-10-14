@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Enum\DisciplineEnum;
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -24,6 +25,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class StatisticFilterDto
 {
+    /** @var Uuid[] */
     #[Assert\NotBlank]
     #[Assert\All([
         new Assert\NotBlank(),
@@ -32,10 +34,10 @@ class StatisticFilterDto
     ])]
     #[Assert\Count(min: 1)]
     #[Assert\Unique]
-    public array $userIds;
+    public array $userIds = [];
 
     #[Assert\Choice(callback: [DisciplineEnum::class, 'values'])]
-    public ?int $discipline = null;
+    public ?DisciplineEnum $discipline = null;
 
     #[Assert\Positive]
     public ?int $distance = null;

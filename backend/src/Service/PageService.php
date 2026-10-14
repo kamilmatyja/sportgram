@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Dto\{ElementStatusDto, PageDto, PageFollowIndexDto, PageFollowStatusDto, PageIndexDto, SaveStatusDto};
 use App\Entity\{Page, PageFollow, PageParticipant, User};
-use App\Enum\{ColorEnum, ElementStatusEnum, NotificationTypeEnum, PageFollowStatusEnum, SaveStatusEnum};
+use App\Enum\{ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
 use App\Event\NotificationEvent;
 use App\Repository\{FriendRepository, PageFollowRepository, PageParticipantRepository, PageRepository, UserRepository};
 use Doctrine\ORM\Tools\Pagination\WindowPage;
@@ -38,7 +38,7 @@ readonly class PageService
             $dto->link,
             base64_decode($dto->profilePhoto, true),
             base64_decode($dto->backgroundPhoto, true),
-            ColorEnum::from($dto->color),
+            $dto->color,
             ElementStatusEnum::Active,
         );
 
@@ -85,7 +85,7 @@ readonly class PageService
         $page->link = $dto->link;
         $page->profilePhoto = base64_decode($dto->profilePhoto, true);
         $page->backgroundPhoto = base64_decode($dto->backgroundPhoto, true);
-        $page->color = ColorEnum::from($dto->color);
+        $page->color = $dto->color;
 
         /** @var User $user */
         $user = $this->security->getUser();
@@ -135,7 +135,7 @@ readonly class PageService
     {
         $page = $this->pageRepository->findById($pageId);
 
-        $page->status = ElementStatusEnum::from($dto->status);
+        $page->status = $dto->status;
         $this->pageRepository->save($page);
 
         foreach ($page->participants as $participant) {
@@ -181,7 +181,7 @@ readonly class PageService
     {
         $pageParticipant = $this->pageParticipantRepository->findById($pageParticipantId);
 
-        $pageParticipant->status = SaveStatusEnum::from($dto->status);
+        $pageParticipant->status = $dto->status;
         $this->pageParticipantRepository->save($pageParticipant);
 
         $page = $pageParticipant->page;
@@ -209,7 +209,7 @@ readonly class PageService
 
         $page = $this->pageRepository->findById($pageId);
 
-        $pageFollow = new PageFollow($page, $user, PageFollowStatusEnum::from($dto->status));
+        $pageFollow = new PageFollow($page, $user, $dto->status);
 
         $this->pageFollowRepository->save($pageFollow);
 
@@ -231,7 +231,7 @@ readonly class PageService
     {
         $pageFollow = $this->pageFollowRepository->findById($pageFollowId);
 
-        $pageFollow->status = PageFollowStatusEnum::from($dto->status);
+        $pageFollow->status = $dto->status;
         $this->pageFollowRepository->save($pageFollow);
 
         $page = $pageFollow->page;
