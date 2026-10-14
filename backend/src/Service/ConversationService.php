@@ -30,11 +30,9 @@ readonly class ConversationService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $receiverUserId = Uuid::fromString($userId);
+        $receiver = $this->userRepository->findById($userId);
 
-        $receiver = $this->userRepository->findById($receiverUserId);
-
-        if (! $this->friendRepository->isFriend($user->id, $receiverUserId)) {
+        if (! $this->friendRepository->isFriend($user->id, $userId)) {
             throw new ValidatorException('User is not friend.');
         }
 

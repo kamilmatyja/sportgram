@@ -26,7 +26,7 @@ class StatisticResource
     public static function fromEntity(StatisticResultDto $result): array
     {
         return [
-            'userId' => $result->userId->toString(),
+            'userId' => $result->userId,
             'createdAt' => $result->createdAt->format('Y-m-d\TH:i:s'),
             'discipline' => $result->discipline,
             'distance' => $result->distance,

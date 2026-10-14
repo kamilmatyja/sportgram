@@ -18,6 +18,18 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class PageIndexDto
 {
+    private const string SORT_TITLE_ASC = 'title:asc';
+
+    private const string SORT_TITLE_DESC = 'title:desc';
+
+    private const string SORT_STATUS_ASC = 'status:asc';
+
+    private const string SORT_STATUS_DESC = 'status:desc';
+
+    private const string SORT_CREATED_AT_ASC = 'createdAt:asc';
+
+    private const string SORT_CREATED_AT_DESC = 'createdAt:desc';
+
     #[Assert\Positive]
     #[Assert\Range(min: 1, max: 1000)]
     public int $page = 1;
@@ -25,8 +37,15 @@ class PageIndexDto
     #[Assert\Range(min: 1, max: 100)]
     public int $limit = 10;
 
-    #[Assert\Regex(pattern: '/^(title|status|createdAt)(:(asc|desc))?$/')]
-    public string $sort = 'createdAt:desc';
+    #[Assert\Choice(choices: [
+        self::SORT_TITLE_ASC,
+        self::SORT_TITLE_DESC,
+        self::SORT_STATUS_ASC,
+        self::SORT_STATUS_DESC,
+        self::SORT_CREATED_AT_ASC,
+        self::SORT_CREATED_AT_DESC,
+    ])]
+    public string $sort = self::SORT_CREATED_AT_DESC;
 
     #[Assert\Valid]
     public PageFilterDto $filter;

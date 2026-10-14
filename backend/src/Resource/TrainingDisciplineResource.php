@@ -43,8 +43,8 @@ class TrainingDisciplineResource
     public static function fromEntity(TrainingDiscipline $discipline, TrainingDetailsQueryDto $dto): array
     {
         $data = [
-            'id' => $discipline->id->toString(),
-            'trainingId' => $discipline->training->id->toString(),
+            'id' => $discipline->id,
+            'trainingId' => $discipline->training->id,
             'createdAt' => $discipline->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $discipline->updatedAt->format('Y-m-d\TH:i:s'),
             'discipline' => $discipline->discipline->value,

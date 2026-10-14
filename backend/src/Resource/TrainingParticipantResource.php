@@ -44,9 +44,9 @@ class TrainingParticipantResource
     public static function fromEntity(TrainingParticipant $trainingParticipant): array
     {
         return [
-            'id' => $trainingParticipant->id->toString(),
-            'trainingId' => $trainingParticipant->training->id->toString(),
-            'userId' => $trainingParticipant->user->id->toString(),
+            'id' => $trainingParticipant->id,
+            'trainingId' => $trainingParticipant->training->id,
+            'userId' => $trainingParticipant->user->id,
             'createdAt' => $trainingParticipant->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $trainingParticipant->updatedAt->format('Y-m-d\TH:i:s'),
             'status' => $trainingParticipant->status->value,

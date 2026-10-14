@@ -10,7 +10,7 @@ import { ColorEnum } from '../../enums/ColorEnum';
 import { NotificationStatusEnum } from '../../enums/NotificationStatusEnum';
 import { PaginationEnum } from '../../enums/PaginationEnum';
 import { Pagination } from '../Common/Pagination';
-import SelectOptions from '../Common/SelectOptions';
+import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
 import { UserNotificationsTable } from '../Notification/UserNotificationsTable';
 
 interface UserNotificationsViewProps {
@@ -49,6 +49,14 @@ export const UserNotificationsView: React.FC<UserNotificationsViewProps> = ({
     onManageClick,
 }) => {
     const { t } = useTranslation();
+    const sortOptions: SelectOption[] = [
+        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
+        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
+        { value: 'text:desc', label: `${t('text')} Z-A` },
+        { value: 'text:asc', label: `${t('text')} A-Z` },
+        { value: 'status:desc', label: `${t('status')} Z-A` },
+        { value: 'status:asc', label: `${t('status')} A-Z` },
+    ];
     if (loading && notifications.length === 0)
         return (
             <Container className="mt-5 text-center">
@@ -91,14 +99,7 @@ export const UserNotificationsView: React.FC<UserNotificationsViewProps> = ({
                             />
                         </Form.Select>
                         <Form.Select value={sort} onChange={onSortChange} className="ms-auto w-auto">
-                            <SelectOptions
-                                options={
-                                    [
-                                        { value: 'createdAt:desc', label: t('sortCreatedDesc') },
-                                        { value: 'createdAt:asc', label: t('sortCreatedAsc') },
-                                    ] as any
-                                }
-                            />
+                            <SelectOptions options={sortOptions} />
                         </Form.Select>
                         <Form.Select value={limit} onChange={onLimitChange} className="w-auto">
                             <SelectOptions options={PaginationEnum.getOptions(t) as any} />

@@ -28,10 +28,18 @@ export const EventsFilterBar: React.FC<EventsFilterBarProps> = ({
     const statusOptions = ElementStatusEnum.getOptions(t) as SelectOption[];
     const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
     const sortOptions: SelectOption[] = [
-        { value: 'createdAt:desc', label: t('sortCreatedDesc') },
-        { value: 'createdAt:asc', label: t('sortCreatedAsc') },
+        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
+        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
         { value: 'startedAt:desc', label: `${t('startedAt')} Z-A` },
         { value: 'startedAt:asc', label: `${t('startedAt')} A-Z` },
+        { value: 'endedAt:desc', label: `${t('endedAt')} Z-A` },
+        { value: 'endedAt:asc', label: `${t('endedAt')} A-Z` },
+        { value: 'title:desc', label: `${t('title')} Z-A` },
+        { value: 'title:asc', label: `${t('title')} A-Z` },
+        { value: 'location:desc', label: `${t('location')} Z-A` },
+        { value: 'location:asc', label: `${t('location')} A-Z` },
+        { value: 'status:desc', label: `${t('status')} Z-A` },
+        { value: 'status:asc', label: `${t('status')} A-Z` },
     ];
 
     return (

@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Enum\EntryTypeEnum;
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -33,9 +34,9 @@ class EntryFilterDto
 {
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    public ?string $userId = null;
+    public ?Uuid $userId = null;
 
-    /** @var string[] */
+    /** @var Uuid[] */
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),

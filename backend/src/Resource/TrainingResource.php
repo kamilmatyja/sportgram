@@ -68,9 +68,9 @@ class TrainingResource
     public static function fromEntity(Training $training, ?TrainingDetailsQueryDto $dto = null): array
     {
         $data = [
-            'id' => $training->id->toString(),
-            'feedId' => $training->feed->id->toString(),
-            'userId' => $training->user->id->toString(),
+            'id' => $training->id,
+            'feedId' => $training->feed->id,
+            'userId' => $training->user->id,
             'createdAt' => $training->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $training->updatedAt->format('Y-m-d\TH:i:s'),
             'startedAt' => $training->startedAt->format('Y-m-d\TH:i:s'),

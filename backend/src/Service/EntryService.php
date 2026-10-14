@@ -22,7 +22,7 @@ readonly class EntryService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $entry = new Entry($user, Uuid::fromString($dto->entityId), EntryTypeEnum::from($dto->type));
+        $entry = new Entry($user, $dto->entityId, EntryTypeEnum::from($dto->type));
 
         $this->entryRepository->save($entry);
 

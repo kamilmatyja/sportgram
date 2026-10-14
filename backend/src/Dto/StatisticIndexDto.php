@@ -18,6 +18,22 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class StatisticIndexDto
 {
+    private const string SORT_DISCIPLINE_ASC = 'discipline:asc';
+
+    private const string SORT_DISCIPLINE_DESC = 'discipline:desc';
+
+    private const string SORT_DISTANCE_ASC = 'distance:asc';
+
+    private const string SORT_DISTANCE_DESC = 'distance:desc';
+
+    private const string SORT_TIME_ASC = 'time:asc';
+
+    private const string SORT_TIME_DESC = 'time:desc';
+
+    private const string SORT_CREATED_AT_ASC = 'createdAt:asc';
+
+    private const string SORT_CREATED_AT_DESC = 'createdAt:desc';
+
     #[Assert\Positive]
     #[Assert\Range(min: 1, max: 1000)]
     public int $page = 1;
@@ -25,8 +41,17 @@ class StatisticIndexDto
     #[Assert\Range(min: 1, max: 100)]
     public int $limit = 10;
 
-    #[Assert\Regex(pattern: '/^(discipline|distance|time|createdAt)(:(asc|desc))?$/')]
-    public string $sort = 'createdAt:desc';
+    #[Assert\Choice(choices: [
+        self::SORT_DISCIPLINE_ASC,
+        self::SORT_DISCIPLINE_DESC,
+        self::SORT_DISTANCE_ASC,
+        self::SORT_DISTANCE_DESC,
+        self::SORT_TIME_ASC,
+        self::SORT_TIME_DESC,
+        self::SORT_CREATED_AT_ASC,
+        self::SORT_CREATED_AT_DESC,
+    ])]
+    public string $sort = self::SORT_CREATED_AT_DESC;
 
     #[Assert\Valid]
     public StatisticFilterDto $filter;

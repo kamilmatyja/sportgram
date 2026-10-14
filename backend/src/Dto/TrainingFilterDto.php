@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Enum\{ElementStatusEnum};
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -28,7 +29,7 @@ class TrainingFilterDto
 {
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    public ?string $userId = null;
+    public ?Uuid $userId = null;
 
     #[Assert\Length(min: 1, max: 64)]
     public ?string $link = null;

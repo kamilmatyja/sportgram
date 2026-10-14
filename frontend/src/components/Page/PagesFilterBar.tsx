@@ -28,10 +28,12 @@ export const PagesFilterBar: React.FC<PagesFilterBarProps> = ({
     const statusOptions = ElementStatusEnum.getOptions(t) as SelectOption[];
     const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
     const sortOptions: SelectOption[] = [
-        { value: 'createdAt:desc', label: t('sortCreatedDesc') },
-        { value: 'createdAt:asc', label: t('sortCreatedAsc') },
-        { value: 'title:asc', label: `${t('title')} A-Z` },
+        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
+        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
         { value: 'title:desc', label: `${t('title')} Z-A` },
+        { value: 'title:asc', label: `${t('title')} A-Z` },
+        { value: 'status:desc', label: `${t('status')} Z-A` },
+        { value: 'status:asc', label: `${t('status')} A-Z` },
     ];
 
     return (

@@ -28,7 +28,7 @@ class EntryCountResource
     public static function fromEntity(EntryCountDto $entry): array
     {
         return [
-            'entityId' => $entry->entityId->toString(),
+            'entityId' => $entry->entityId,
             'type' => $entry->type->value,
             'count' => $entry->count,
         ];

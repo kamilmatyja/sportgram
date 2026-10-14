@@ -9,7 +9,7 @@ import { useTranslation } from '../../context/TranslationContext';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { PaginationEnum } from '../../enums/PaginationEnum';
 import { Pagination } from '../Common/Pagination';
-import SelectOptions from '../Common/SelectOptions';
+import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
 import { UserPushSubscriptionsTable } from '../PushSubscription/UserPushSubscriptionsTable';
 
 interface UserPushSubscriptionsViewProps {
@@ -50,6 +50,12 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
     onManageClick,
 }) => {
     const { t } = useTranslation();
+    const sortOptions: SelectOption[] = [
+        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
+        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
+        { value: 'endpoint:desc', label: `${t('endpoint')} Z-A` },
+        { value: 'endpoint:asc', label: `${t('endpoint')} A-Z` },
+    ];
     if (loading && subscriptions.length === 0)
         return (
             <Container className="mt-5 text-center">
@@ -81,14 +87,7 @@ export const UserPushSubscriptionsView: React.FC<UserPushSubscriptionsViewProps>
                     </Stack>
                     <Stack direction="horizontal" gap={2} className="mb-3 flex-wrap">
                         <Form.Select value={sort} onChange={onSortChange} className="ms-auto w-auto">
-                            <SelectOptions
-                                options={
-                                    [
-                                        { value: 'createdAt:desc', label: t('sortCreatedDesc') },
-                                        { value: 'createdAt:asc', label: t('sortCreatedAsc') },
-                                    ] as any
-                                }
-                            />
+                            <SelectOptions options={sortOptions} />
                         </Form.Select>
                         <Form.Select value={limit} onChange={onLimitChange} className="w-auto">
                             <SelectOptions options={PaginationEnum.getOptions(t) as any} />

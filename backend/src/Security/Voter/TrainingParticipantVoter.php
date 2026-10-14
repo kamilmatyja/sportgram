@@ -39,7 +39,7 @@ class TrainingParticipantVoter extends Voter
 
         $trainingParticipant = $this->trainingParticipantRepository->findById($subject);
 
-        if ($trainingParticipant->user->id->toString() === $user->id->toString()) {
+        if ($trainingParticipant->user->id->equals($user->id)) {
             return true;
         }
 

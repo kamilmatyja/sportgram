@@ -6,6 +6,7 @@ use App\Entity\{Goal, User};
 use App\Enum\DisciplineEnum;
 use App\Validator\{EntityExistsField, UniqueField};
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -57,7 +58,7 @@ class GoalDto
     #[Assert\Type('integer')]
     public ?int $time = null;
 
-    /** @var string[] */
+    /** @var Uuid[] */
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),

@@ -11,7 +11,7 @@ import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
 import { PaginationEnum } from '../../enums/PaginationEnum';
 import { Pagination } from '../Common/Pagination';
-import SelectOptions from '../Common/SelectOptions';
+import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
 import { UserGoalsTable } from '../Goal/UserGoalsTable';
 
 interface UserGoalsViewProps {
@@ -60,6 +60,24 @@ export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
     interactions,
 }) => {
     const { t } = useTranslation();
+    const sortOptions: SelectOption[] = [
+        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
+        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
+        { value: 'startedAt:desc', label: `${t('startedAt')} Z-A` },
+        { value: 'startedAt:asc', label: `${t('startedAt')} A-Z` },
+        { value: 'endedAt:desc', label: `${t('endedAt')} Z-A` },
+        { value: 'endedAt:asc', label: `${t('endedAt')} A-Z` },
+        { value: 'text:desc', label: `${t('title')} Z-A` },
+        { value: 'text:asc', label: `${t('title')} A-Z` },
+        { value: 'discipline:desc', label: `${t('discipline')} Z-A` },
+        { value: 'discipline:asc', label: `${t('discipline')} A-Z` },
+        { value: 'distance:desc', label: `${t('distance')} 9-0` },
+        { value: 'distance:asc', label: `${t('distance')} 0-9` },
+        { value: 'time:desc', label: `${t('timeSeconds')} 9-0` },
+        { value: 'time:asc', label: `${t('timeSeconds')} 0-9` },
+        { value: 'status:desc', label: `${t('status')} Z-A` },
+        { value: 'status:asc', label: `${t('status')} A-Z` },
+    ];
     if (loading && goals.length === 0)
         return (
             <Container className="mt-5 text-center">
@@ -117,14 +135,7 @@ export const UserGoalsView: React.FC<UserGoalsViewProps> = ({
                             <SelectOptions options={GoalStatusEnum.getOptions(t) as any} placeholder={t('status')} />
                         </Form.Select>
                         <Form.Select value={sort} onChange={onSortChange} className="ms-auto w-auto">
-                            <SelectOptions
-                                options={
-                                    [
-                                        { value: 'createdAt:desc', label: t('sortCreatedDesc') },
-                                        { value: 'createdAt:asc', label: t('sortCreatedAsc') },
-                                    ] as any
-                                }
-                            />
+                            <SelectOptions options={sortOptions} />
                         </Form.Select>
                         <Form.Select value={limit} onChange={onLimitChange} className="w-auto">
                             <SelectOptions options={PaginationEnum.getOptions(t) as any} />

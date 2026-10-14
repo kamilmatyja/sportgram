@@ -45,8 +45,8 @@ class TrainingDisciplineDistanceResource
     public static function fromEntity(TrainingDisciplineDistance $distance, TrainingDetailsQueryDto $dto): array
     {
         $data = [
-            'id' => $distance->id->toString(),
-            'trainingDisciplineId' => $distance->trainingDiscipline->id->toString(),
+            'id' => $distance->id,
+            'trainingDisciplineId' => $distance->trainingDiscipline->id,
             'createdAt' => $distance->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $distance->updatedAt->format('Y-m-d\TH:i:s'),
             'distance' => $distance->distance,

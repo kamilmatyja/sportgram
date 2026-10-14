@@ -5,6 +5,7 @@ namespace App\Dto;
 use App\Enum\EntryTypeEnum;
 use App\Validator\EntryEntityExists;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -24,7 +25,7 @@ class EntryDto
 {
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    public ?string $entityId = null;
+    public ?Uuid $entityId = null;
 
     #[Assert\NotBlank]
     #[Assert\Choice(callback: [EntryTypeEnum::class, 'values'])]

@@ -4,4 +4,5 @@ export class ConversationActivityResponse {
     receiverUserId!: string;
     createdAt!: string;
     updatedAt!: string;
+    isWriting!: boolean;
 }

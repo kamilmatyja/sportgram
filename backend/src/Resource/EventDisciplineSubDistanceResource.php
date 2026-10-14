@@ -37,8 +37,8 @@ class EventDisciplineSubDistanceResource
     public static function fromEntity(EventDisciplineSubDistance $eventDisciplineSubDistance): array
     {
         return [
-            'id' => $eventDisciplineSubDistance->id->toString(),
-            'eventDisciplineDistanceId' => $eventDisciplineSubDistance->eventDisciplineDistance->id->toString(),
+            'id' => $eventDisciplineSubDistance->id,
+            'eventDisciplineDistanceId' => $eventDisciplineSubDistance->eventDisciplineDistance->id,
             'createdAt' => $eventDisciplineSubDistance->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $eventDisciplineSubDistance->updatedAt->format('Y-m-d\TH:i:s'),
             'subDistance' => $eventDisciplineSubDistance->subDistance,

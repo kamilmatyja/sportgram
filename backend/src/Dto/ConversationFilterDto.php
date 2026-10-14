@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Enum\ConversationStatusEnum;
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -26,7 +27,7 @@ class ConversationFilterDto
     #[Assert\NotBlank]
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    public string $userId;
+    public Uuid $userId;
 
     #[Assert\Choice(callback: [ConversationStatusEnum::class, 'values'])]
     public ?int $status = null;

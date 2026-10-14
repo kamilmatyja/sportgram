@@ -6,6 +6,7 @@ use App\Entity\{Page, User};
 use App\Enum\{ColorEnum};
 use App\Validator\{Base64String, EntityExistsField, UniqueField};
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -55,7 +56,7 @@ class PageDto
     #[Assert\Choice(callback: [ColorEnum::class, 'values'])]
     public int $color;
 
-    /** @var string[] */
+    /** @var Uuid[] */
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),

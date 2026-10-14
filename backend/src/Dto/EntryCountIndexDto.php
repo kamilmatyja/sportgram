@@ -18,6 +18,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class EntryCountIndexDto
 {
+    private const string SORT_TYPE_ASC = 'type:asc';
+
+    private const string SORT_TYPE_DESC = 'type:desc';
+
+    private const string SORT_COUNT_ASC = 'count:asc';
+
+    private const string SORT_COUNT_DESC = 'count:desc';
+
     #[Assert\Positive]
     #[Assert\Range(min: 1, max: 1000)]
     public int $page = 1;
@@ -25,8 +33,13 @@ class EntryCountIndexDto
     #[Assert\Range(min: 1, max: 100)]
     public int $limit = 10;
 
-    #[Assert\Regex(pattern: '/^(type|count)(:(asc|desc))?$/')]
-    public string $sort = 'count:desc';
+    #[Assert\Choice(choices: [
+        self::SORT_TYPE_ASC,
+        self::SORT_TYPE_DESC,
+        self::SORT_COUNT_ASC,
+        self::SORT_COUNT_DESC,
+    ])]
+    public string $sort = self::SORT_COUNT_DESC;
 
     #[Assert\Valid]
     public EntryCountFilterDto $filter;

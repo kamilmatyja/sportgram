@@ -44,9 +44,9 @@ class PageFollowResource
     public static function fromEntity(PageFollow $pageFollow): array
     {
         return [
-            'id' => $pageFollow->id->toString(),
-            'pageId' => $pageFollow->page->id->toString(),
-            'userId' => $pageFollow->user->id->toString(),
+            'id' => $pageFollow->id,
+            'pageId' => $pageFollow->page->id,
+            'userId' => $pageFollow->user->id,
             'createdAt' => $pageFollow->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $pageFollow->updatedAt->format('Y-m-d\TH:i:s'),
             'status' => $pageFollow->status->value,

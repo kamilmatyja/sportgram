@@ -61,8 +61,8 @@ class PageResource
     public static function fromEntity(Page $page, ?PageDetailsQueryDto $dto = null): array
     {
         $data = [
-            'id' => $page->id->toString(),
-            'userId' => $page->user->id->toString(),
+            'id' => $page->id,
+            'userId' => $page->user->id,
             'createdAt' => $page->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $page->updatedAt->format('Y-m-d\TH:i:s'),
             'title' => $page->title,

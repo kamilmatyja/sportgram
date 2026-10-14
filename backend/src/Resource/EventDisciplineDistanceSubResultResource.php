@@ -51,10 +51,10 @@ class EventDisciplineDistanceSubResultResource
     public static function fromEntity(EventDisciplineSubResult $eventDisciplineSubResult): array
     {
         return [
-            'id' => $eventDisciplineSubResult->id->toString(),
-            'eventDisciplineSubDistanceId' => $eventDisciplineSubResult->eventDisciplineSubDistance->id->toString(),
-            'eventDisciplineResultId' => $eventDisciplineSubResult->eventDisciplineResult->id->toString(),
-            'userId' => $eventDisciplineSubResult->user->id->toString(),
+            'id' => $eventDisciplineSubResult->id,
+            'eventDisciplineSubDistanceId' => $eventDisciplineSubResult->eventDisciplineSubDistance->id,
+            'eventDisciplineResultId' => $eventDisciplineSubResult->eventDisciplineResult->id,
+            'userId' => $eventDisciplineSubResult->user->id,
             'createdAt' => $eventDisciplineSubResult->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $eventDisciplineSubResult->updatedAt->format('Y-m-d\TH:i:s'),
             'time' => $eventDisciplineSubResult->time,

@@ -6,6 +6,7 @@ use App\Entity\{Page, User};
 use App\Enum\PageFollowStatusEnum;
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -33,9 +34,9 @@ class PageFollowFilterDto
     #[Assert\NotBlank]
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    public string $userId;
+    public Uuid $userId;
 
-    /** @var string[] */
+    /** @var Uuid[] */
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),

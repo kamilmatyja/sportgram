@@ -18,6 +18,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class ConversationActivityIndexDto
 {
+    private const string SORT_CREATED_AT_ASC = 'createdAt:asc';
+
+    private const string SORT_CREATED_AT_DESC = 'createdAt:desc';
+
+    private const string SORT_UPDATED_AT_ASC = 'updatedAt:asc';
+
+    private const string SORT_UPDATED_AT_DESC = 'updatedAt:desc';
+
     #[Assert\Positive]
     #[Assert\Range(min: 1, max: 1000)]
     public int $page = 1;
@@ -25,8 +33,13 @@ class ConversationActivityIndexDto
     #[Assert\Range(min: 1, max: 100)]
     public int $limit = 10;
 
-    #[Assert\Regex(pattern: '/^(createdAt)(:(asc|desc))?$/')]
-    public string $sort = 'createdAt:desc';
+    #[Assert\Choice(choices: [
+        self::SORT_CREATED_AT_ASC,
+        self::SORT_CREATED_AT_DESC,
+        self::SORT_UPDATED_AT_ASC,
+        self::SORT_UPDATED_AT_DESC,
+    ])]
+    public string $sort = self::SORT_UPDATED_AT_DESC;
 
     #[Assert\Valid]
     public ConversationActivityFilterDto $filter;

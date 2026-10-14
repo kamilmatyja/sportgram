@@ -48,9 +48,9 @@ class GoalParticipantResultResource
     public static function fromEntity(GoalParticipantResult $goalParticipantResult): array
     {
         return [
-            'id' => $goalParticipantResult->id->toString(),
-            'goalParticipantId' => $goalParticipantResult->goalParticipant->id->toString(),
-            'feedId' => $goalParticipantResult->feed->id->toString(),
+            'id' => $goalParticipantResult->id,
+            'goalParticipantId' => $goalParticipantResult->goalParticipant->id,
+            'feedId' => $goalParticipantResult->feed->id,
             'createdAt' => $goalParticipantResult->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $goalParticipantResult->updatedAt->format('Y-m-d\TH:i:s'),
             'distance' => $goalParticipantResult->distance,

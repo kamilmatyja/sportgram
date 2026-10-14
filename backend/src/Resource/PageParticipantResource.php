@@ -44,9 +44,9 @@ class PageParticipantResource
     public static function fromEntity(PageParticipant $pageParticipant): array
     {
         return [
-            'id' => $pageParticipant->id->toString(),
-            'pageId' => $pageParticipant->page->id->toString(),
-            'userId' => $pageParticipant->user->id->toString(),
+            'id' => $pageParticipant->id,
+            'pageId' => $pageParticipant->page->id,
+            'userId' => $pageParticipant->user->id,
             'createdAt' => $pageParticipant->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $pageParticipant->updatedAt->format('Y-m-d\TH:i:s'),
             'status' => $pageParticipant->status->value,

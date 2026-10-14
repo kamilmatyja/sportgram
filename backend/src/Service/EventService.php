@@ -318,7 +318,7 @@ readonly class EventService
 
         foreach ($dto->subResults as $subResult) {
             $eventDisciplineSubDistance = $this->eventDisciplineSubDistanceRepository->findById(
-                Uuid::fromString($subResult->eventDisciplineSubDistanceId),
+                $subResult->eventDisciplineSubDistanceId,
             );
 
             $eventDisciplineSubResult = new EventDisciplineSubResult(
@@ -361,7 +361,7 @@ readonly class EventService
 
         foreach ($dto->subResults as $subResult) {
             $eventDisciplineSubDistance = $this->eventDisciplineSubDistanceRepository->findById(
-                Uuid::fromString($subResult->eventDisciplineSubDistanceId),
+                $subResult->eventDisciplineSubDistanceId,
             );
             $eventDisciplineSubResult = new EventDisciplineSubResult(
                 $eventDisciplineSubDistance,

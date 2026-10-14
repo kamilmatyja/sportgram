@@ -4,6 +4,7 @@ namespace App\Dto;
 
 use App\Enum\EntryTypeEnum;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -22,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class EntryCountFilterDto
 {
-    /** @var string[] */
+    /** @var Uuid[] */
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),

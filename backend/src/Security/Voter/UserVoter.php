@@ -32,7 +32,7 @@ class UserVoter extends Voter
             return false;
         }
 
-        if ($user->id->toString() === $subject->toString()) {
+        if ($user->id->equals($subject)) {
             return true;
         }
 

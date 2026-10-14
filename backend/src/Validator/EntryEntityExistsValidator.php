@@ -40,8 +40,10 @@ class EntryEntityExistsValidator extends ConstraintValidator
             throw new UnexpectedValueException($value, 'array with entityId and type');
         }
 
-        $entityId = Uuid::fromString($value['entityId']);
-        $type = EntryTypeEnum::from($value['type']);
+        /** @var Uuid $entityId */
+        $entityId = $value['entityId'];
+        /** @var EntryTypeEnum $type */
+        $type = $value['type'];
 
         try {
             match ($type) {

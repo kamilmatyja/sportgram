@@ -3,6 +3,7 @@
 namespace App\Dto;
 
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -22,7 +23,7 @@ class EventSubResultDto
 {
     #[Assert\NotBlank]
     #[Assert\Uuid]
-    public string $eventDisciplineSubDistanceId;
+    public Uuid $eventDisciplineSubDistanceId;
 
     #[Assert\NotBlank]
     #[Assert\Type('integer')]

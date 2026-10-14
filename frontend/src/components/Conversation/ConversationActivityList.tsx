@@ -44,10 +44,10 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
     const { t } = useTranslation();
 
     const sortOptions: SelectOption[] = [
-        { value: 'updatedAt:desc', label: t('sortCreatedDesc') },
-        { value: 'updatedAt:asc', label: t('sortCreatedAsc') },
-        { value: 'user:asc', label: t('sortUserAsc') },
-        { value: 'user:desc', label: t('sortUserDesc') },
+        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
+        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
+        { value: 'updatedAt:desc', label: `${t('updatedAt')} Z-A` },
+        { value: 'updatedAt:asc', label: `${t('updatedAt')} A-Z` },
     ];
 
     return (

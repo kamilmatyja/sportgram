@@ -37,8 +37,8 @@ class UserRoleResource
     public static function fromEntity(UserRole $role): array
     {
         return [
-            'id' => $role->id->toString(),
-            'userId' => $role->user->id->toString(),
+            'id' => $role->id,
+            'userId' => $role->user->id,
             'createdAt' => $role->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $role->updatedAt->format('Y-m-d\TH:i:s'),
             'role' => $role->role->value,

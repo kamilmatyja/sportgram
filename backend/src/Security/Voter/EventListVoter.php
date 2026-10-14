@@ -46,8 +46,8 @@ class EventListVoter extends Voter
 
         $pageParticipant = $eventDisciplineList->eventDisciplineDistance->eventDiscipline->event->pageParticipant;
 
-        if ($pageParticipant->user->id->toString() === $user->id->toString()
-            || $eventDisciplineList->user->id->toString() === $user->id->toString()) {
+        if ($pageParticipant->user->id->equals($user->id)
+            || $eventDisciplineList->user->id->equals($user->id)) {
             return true;
         }
 

@@ -3,6 +3,7 @@
 namespace App\Resource;
 
 use App\Entity\ConversationActivity;
+use DateTime;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -12,6 +13,7 @@ use OpenApi\Attributes as OA;
         'receiverUserId',
         'createdAt',
         'updatedAt',
+        'isWriting',
     ],
     properties: [
         new OA\Property(
@@ -34,6 +36,7 @@ use OpenApi\Attributes as OA;
         ),
         new OA\Property(property: 'createdAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
         new OA\Property(property: 'updatedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37:00'),
+        new OA\Property(property: 'isWriting', type: 'boolean', example: false),
     ],
     type: 'object',
 )]
@@ -41,12 +44,15 @@ class ConversationActivityResource
 {
     public static function fromEntity(ConversationActivity $activity): array
     {
+        $isWriting = $activity->updatedAt >= new DateTime('-5 seconds');
+
         return [
-            'id' => $activity->id->toString(),
-            'senderUserId' => $activity->senderUser->id->toString(),
-            'receiverUserId' => $activity->receiverUser->id->toString(),
+            'id' => $activity->id,
+            'senderUserId' => $activity->senderUser->id,
+            'receiverUserId' => $activity->receiverUser->id,
             'createdAt' => $activity->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $activity->updatedAt->format('Y-m-d\TH:i:s'),
+            'isWriting' => $isWriting,
         ];
     }
 

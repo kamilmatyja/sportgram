@@ -20,6 +20,7 @@ services:
     working_dir: /var/www/backend
     volumes:
       - ./backend:/var/www/backend
+      - ./frontend:/var/www/frontend
     depends_on:
       - postgres
 

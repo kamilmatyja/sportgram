@@ -76,8 +76,8 @@ class FeedResource
     public static function fromEntity(Feed $feed, ?FeedDetailsQueryDto $dto = null): array
     {
         $data = [
-            'id' => $feed->id->toString(),
-            'userId' => $feed->user->id->toString(),
+            'id' => $feed->id,
+            'userId' => $feed->user->id,
             'createdAt' => $feed->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $feed->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $feed->text,

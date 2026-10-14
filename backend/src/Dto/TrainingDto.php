@@ -6,6 +6,7 @@ use App\Entity\{Training, User};
 use App\Validator\{EntityExistsField, UniqueField};
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -69,7 +70,7 @@ class TrainingDto
     #[Assert\Type('array')]
     public array $disciplines = [];
 
-    /** @var string[] */
+    /** @var Uuid[] */
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),

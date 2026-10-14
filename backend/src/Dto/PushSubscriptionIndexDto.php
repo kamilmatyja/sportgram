@@ -18,6 +18,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class PushSubscriptionIndexDto
 {
+    private const string SORT_ENDPOINT_ASC = 'endpoint:asc';
+
+    private const string SORT_ENDPOINT_DESC = 'endpoint:desc';
+
+    private const string SORT_CREATED_AT_ASC = 'createdAt:asc';
+
+    private const string SORT_CREATED_AT_DESC = 'createdAt:desc';
+
     #[Assert\Positive]
     #[Assert\Range(min: 1, max: 1000)]
     public int $page = 1;
@@ -25,8 +33,13 @@ class PushSubscriptionIndexDto
     #[Assert\Range(min: 1, max: 100)]
     public int $limit = 10;
 
-    #[Assert\Regex(pattern: '/^(endpoint|createdAt)(:(asc|desc))?$/')]
-    public string $sort = 'createdAt:desc';
+    #[Assert\Choice(choices: [
+        self::SORT_ENDPOINT_ASC,
+        self::SORT_ENDPOINT_DESC,
+        self::SORT_CREATED_AT_ASC,
+        self::SORT_CREATED_AT_DESC,
+    ])]
+    public string $sort = self::SORT_CREATED_AT_DESC;
 
     #[Assert\Valid]
     public PushSubscriptionFilterDto $filter;

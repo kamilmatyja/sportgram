@@ -104,12 +104,12 @@ readonly class TrainingService
             }
         }
 
-        if (! in_array($user->id->toString(), $dto->participants, true)) {
-            $dto->participants[] = $user->id->toString();
+        if (! in_array($user->id, $dto->participants)) {
+            $dto->participants[] = $user->id;
         }
 
         foreach ($dto->participants as $userId) {
-            $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
+            $participantUser = $this->userRepository->findById($userId);
 
             if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
                 $participantUser->id,
@@ -117,7 +117,7 @@ readonly class TrainingService
                 throw new ValidatorException('User is not friend.');
             }
 
-            $status = $userId === $user->id->toString() ? SaveStatusEnum::Accepted : SaveStatusEnum::Pending;
+            $status = $userId->equals($user->id) ? SaveStatusEnum::Accepted : SaveStatusEnum::Pending;
 
             $trainingParticipant = new TrainingParticipant($training, $participantUser, $status);
 
@@ -198,12 +198,12 @@ readonly class TrainingService
             }
         }
 
-        if (! in_array($training->user->id->toString(), $dto->participants, true)) {
-            $dto->participants[] = $training->user->id->toString();
+        if (! in_array($training->user->id, $dto->participants)) {
+            $dto->participants[] = $training->user->id;
         }
 
         $currentIds = array_map(
-            fn (TrainingParticipant $p) => $p->user->id->toString(),
+            fn (TrainingParticipant $p) => $p->user->id,
             $training->participants->toArray(),
         );
 
@@ -211,7 +211,7 @@ readonly class TrainingService
         $toRemove = array_diff($currentIds, $dto->participants);
 
         foreach ($training->participants as $participant) {
-            if (in_array($participant->user->id->toString(), $toRemove, true)) {
+            if (in_array($participant->user->id, $toRemove)) {
                 $this->trainingParticipantRepository->delete($participant);
             }
         }
@@ -220,7 +220,7 @@ readonly class TrainingService
         $user = $this->security->getUser();
 
         foreach ($toAdd as $userId) {
-            $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
+            $participantUser = $this->userRepository->findById($userId);
 
             if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
                 $participantUser->id,

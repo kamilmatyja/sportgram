@@ -46,8 +46,8 @@ class EventDisciplineDistanceResource
         ?EventDetailsQueryDto $dto = null,
     ): array {
         $data = [
-            'id' => $eventDisciplineDistance->id->toString(),
-            'eventDisciplineId' => $eventDisciplineDistance->eventDiscipline->id->toString(),
+            'id' => $eventDisciplineDistance->id,
+            'eventDisciplineId' => $eventDisciplineDistance->eventDiscipline->id,
             'createdAt' => $eventDisciplineDistance->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $eventDisciplineDistance->updatedAt->format('Y-m-d\TH:i:s'),
             'distance' => $eventDisciplineDistance->distance,

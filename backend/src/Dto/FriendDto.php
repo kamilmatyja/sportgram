@@ -5,6 +5,7 @@ namespace App\Dto;
 use App\Entity\User;
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -24,5 +25,5 @@ class FriendDto
     #[Assert\NotBlank]
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    public string $receiverUserId;
+    public Uuid $receiverUserId;
 }

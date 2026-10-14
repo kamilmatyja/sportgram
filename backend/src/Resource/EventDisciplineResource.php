@@ -44,8 +44,8 @@ class EventDisciplineResource
     public static function fromEntity(EventDiscipline $eventDiscipline, ?EventDetailsQueryDto $dto = null): array
     {
         $data = [
-            'id' => $eventDiscipline->id->toString(),
-            'eventId' => $eventDiscipline->event->id->toString(),
+            'id' => $eventDiscipline->id,
+            'eventId' => $eventDiscipline->event->id,
             'createdAt' => $eventDiscipline->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $eventDiscipline->updatedAt->format('Y-m-d\TH:i:s'),
             'discipline' => $eventDiscipline->discipline->value,

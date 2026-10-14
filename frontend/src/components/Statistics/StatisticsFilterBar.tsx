@@ -42,21 +42,16 @@ export const StatisticsFilterBar: React.FC<StatisticsFilterBarProps> = ({
 
     const disciplineOptions = DisciplineEnum.getOptions(t) as SelectOption[];
     const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
-
-    const sortOptions: SelectOption[] =
-        activeTab === 'progress'
-            ? [
-                  { value: 'createdAt:desc', label: t('sortCreatedDesc') },
-                  { value: 'createdAt:asc', label: t('sortCreatedAsc') },
-                  { value: 'time:desc', label: t('timeSeconds') + ' 9-0' },
-                  { value: 'time:asc', label: t('timeSeconds') + ' 0-9' },
-              ]
-            : [
-                  { value: 'time:asc', label: t('timeSeconds') + ' 0-9' },
-                  { value: 'time:desc', label: t('timeSeconds') + ' 9-0' },
-                  { value: 'distance:desc', label: t('distance') + ' 9-0' },
-                  { value: 'distance:asc', label: t('distance') + ' 0-9' },
-              ];
+    const sortOptions: SelectOption[] = [
+        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
+        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
+        { value: 'discipline:desc', label: `${t('discipline')} Z-A` },
+        { value: 'discipline:asc', label: `${t('discipline')} A-Z` },
+        { value: 'distance:desc', label: `${t('distance')} 9-0` },
+        { value: 'distance:asc', label: `${t('distance')} 0-9` },
+        { value: 'time:desc', label: `${t('timeSeconds')} 9-0` },
+        { value: 'time:asc', label: `${t('timeSeconds')} 0-9` },
+    ];
 
     return (
         <Row className="mb-4 g-3">

@@ -59,13 +59,11 @@ class EventDisciplineDistanceResultResource
         EventDisciplineResult $eventDisciplineResult,
         ?EventListDetailsQueryDto $dto = null,
     ): array {
-        $userId = $eventDisciplineResult->user->id->toString();
-
         $data = [
-            'id' => $eventDisciplineResult->id->toString(),
-            'eventDisciplineListId' => $eventDisciplineResult->eventDisciplineList->id->toString(),
-            'feedId' => $eventDisciplineResult->feed->id->toString(),
-            'userId' => $userId,
+            'id' => $eventDisciplineResult->id,
+            'eventDisciplineListId' => $eventDisciplineResult->eventDisciplineList->id,
+            'feedId' => $eventDisciplineResult->feed->id,
+            'userId' => $eventDisciplineResult->user->id,
             'createdAt' => $eventDisciplineResult->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $eventDisciplineResult->updatedAt->format('Y-m-d\TH:i:s'),
             'time' => $eventDisciplineResult->time,

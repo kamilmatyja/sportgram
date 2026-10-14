@@ -19,12 +19,12 @@ class ApiResponse extends JsonResponse
 
     public static function ok(Uuid $id): self
     {
-        return new self(['id' => $id->toString()], self::HTTP_OK);
+        return new self(['id' => $id], self::HTTP_OK);
     }
 
     public static function created(Uuid $id): self
     {
-        return new self(['id' => $id->toString()], self::HTTP_CREATED);
+        return new self(['id' => $id], self::HTTP_CREATED);
     }
 
     public static function error(string $error, int $status): self

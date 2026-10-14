@@ -42,8 +42,8 @@ class TrainingDisciplineSubDistanceResource
     public static function fromEntity(TrainingDisciplineSubDistance $subDistance): array
     {
         return [
-            'id' => $subDistance->id->toString(),
-            'trainingDisciplineDistanceId' => $subDistance->trainingDisciplineDistance->id->toString(),
+            'id' => $subDistance->id,
+            'trainingDisciplineDistanceId' => $subDistance->trainingDisciplineDistance->id,
             'createdAt' => $subDistance->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $subDistance->updatedAt->format('Y-m-d\TH:i:s'),
             'subDistance' => $subDistance->subDistance,

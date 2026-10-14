@@ -60,8 +60,8 @@ class EventResource
     public static function fromEntity(Event $event, ?EventDetailsQueryDto $dto = null): array
     {
         $data = [
-            'id' => $event->id->toString(),
-            'pageParticipantId' => $event->pageParticipant->id->toString(),
+            'id' => $event->id,
+            'pageParticipantId' => $event->pageParticipant->id,
             'createdAt' => $event->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $event->updatedAt->format('Y-m-d\TH:i:s'),
             'startedAt' => $event->startedAt->format('Y-m-d\TH:i:s'),

@@ -60,12 +60,12 @@ readonly class GoalService
 
         $this->goalRepository->save($goal);
 
-        if (! in_array($user->id->toString(), $dto->participants, true)) {
-            $dto->participants[] = $user->id->toString();
+        if (! in_array($user->id, $dto->participants)) {
+            $dto->participants[] = $user->id;
         }
 
         foreach ($dto->participants as $userId) {
-            $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
+            $participantUser = $this->userRepository->findById($userId);
 
             if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
                 $participantUser->id,
@@ -73,7 +73,7 @@ readonly class GoalService
                 throw new ValidatorException('User is not friend.');
             }
 
-            $status = $userId === $user->id->toString() ? SaveStatusEnum::Accepted : SaveStatusEnum::Pending;
+            $status = $userId->equals($user->id) ? SaveStatusEnum::Accepted : SaveStatusEnum::Pending;
 
             $goalParticipant = new GoalParticipant($goal, $participantUser, $status);
 
@@ -110,12 +110,12 @@ readonly class GoalService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        if (! in_array($user->id->toString(), $dto->participants, true)) {
-            $dto->participants[] = $user->id->toString();
+        if (! in_array($user->id, $dto->participants)) {
+            $dto->participants[] = $user->id;
         }
 
         $currentIds = array_map(
-            fn (GoalParticipant $p) => $p->user->id->toString(),
+            fn (GoalParticipant $p) => $p->user->id,
             $goal->participants->toArray(),
         );
 
@@ -123,7 +123,7 @@ readonly class GoalService
         $toRemove = array_diff($currentIds, $dto->participants);
 
         foreach ($goal->participants as $participant) {
-            if (in_array($participant->user->id->toString(), $toRemove, true)) {
+            if (in_array($participant->user->id, $toRemove)) {
                 if ($participant->results->count() > 0) {
                     throw new ValidatorException('Cannot delete goal participant with results.');
                 }
@@ -133,7 +133,7 @@ readonly class GoalService
         }
 
         foreach ($toAdd as $userId) {
-            $participantUser = $this->userRepository->findById(Uuid::fromString($userId));
+            $participantUser = $this->userRepository->findById($userId);
 
             if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
                 $participantUser->id,

@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Enum\FriendStatusEnum;
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -23,8 +24,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class FriendFilterDto
 {
-    /** @var string[] */
-
+    /** @var Uuid[] */
     #[Assert\NotBlank]
     #[Assert\All([
         new Assert\NotBlank(),

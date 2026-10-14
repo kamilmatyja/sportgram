@@ -37,8 +37,8 @@ class UserDisciplineResource
     public static function fromEntity(UserDiscipline $discipline): array
     {
         return [
-            'id' => $discipline->id->toString(),
-            'userId' => $discipline->user->id->toString(),
+            'id' => $discipline->id,
+            'userId' => $discipline->user->id,
             'createdAt' => $discipline->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $discipline->updatedAt->format('Y-m-d\TH:i:s'),
             'discipline' => $discipline->discipline->value,

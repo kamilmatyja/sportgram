@@ -60,10 +60,10 @@ class EventDisciplineDistanceListResource
         ?EventListDetailsQueryDto $dto = null,
     ): array {
         $data = [
-            'id' => $eventDisciplineList->id->toString(),
-            'eventDisciplineDistanceId' => $eventDisciplineList->eventDisciplineDistance->id->toString(),
-            'feedId' => $eventDisciplineList->feed->id->toString(),
-            'userId' => $eventDisciplineList->user->id->toString(),
+            'id' => $eventDisciplineList->id,
+            'eventDisciplineDistanceId' => $eventDisciplineList->eventDisciplineDistance->id,
+            'feedId' => $eventDisciplineList->feed->id,
+            'userId' => $eventDisciplineList->user->id,
             'createdAt' => $eventDisciplineList->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $eventDisciplineList->updatedAt->format('Y-m-d\TH:i:s'),
             'status' => $eventDisciplineList->status->value,

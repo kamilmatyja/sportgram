@@ -6,6 +6,7 @@ use App\Entity\{User, UserSign};
 use App\Enum\{CountryEnum, GenderEnum, UserStatusEnum};
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -56,7 +57,7 @@ class UserFilterDto
     #[Assert\Choice(callback: [UserStatusEnum::class, 'values'])]
     public ?int $status = null;
 
-    /** @var string[] */
+    /** @var Uuid[] */
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),
@@ -71,5 +72,5 @@ class UserFilterDto
 
     #[Assert\Uuid]
     #[EntityExistsField(entity: UserSign::class)]
-    public ?string $signId = null;
+    public ?Uuid $signId = null;
 }

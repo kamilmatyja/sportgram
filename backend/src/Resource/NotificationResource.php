@@ -40,8 +40,8 @@ class NotificationResource
     public static function fromEntity(Notification $notification): array
     {
         return [
-            'id' => $notification->id->toString(),
-            'userId' => $notification->user->id->toString(),
+            'id' => $notification->id,
+            'userId' => $notification->user->id,
             'createdAt' => $notification->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $notification->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $notification->text,

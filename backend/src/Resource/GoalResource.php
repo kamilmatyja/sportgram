@@ -62,9 +62,9 @@ class GoalResource
     public static function fromEntity(Goal $goal, ?GoalDetailsQueryDto $dto = null): array
     {
         $data = [
-            'id' => $goal->id->toString(),
-            'userId' => $goal->user->id->toString(),
-            'feedId' => $goal->feed->id->toString(),
+            'id' => $goal->id,
+            'userId' => $goal->user->id,
+            'feedId' => $goal->feed->id,
             'createdAt' => $goal->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $goal->updatedAt->format('Y-m-d\TH:i:s'),
             'startedAt' => $goal->startedAt?->format('Y-m-d\TH:i:s'),
