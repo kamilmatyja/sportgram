@@ -49,7 +49,7 @@ class FriendResource
             'receiverUserId' => $friend->receiverUser->id,
             'createdAt' => $friend->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $friend->updatedAt->format('Y-m-d\TH:i:s'),
-            'status' => $friend->status->value,
+            'status' => $friend->status,
         ];
     }
 

@@ -52,7 +52,7 @@ class ConversationResource
             'createdAt' => $conversation->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $conversation->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $conversation->text,
-            'status' => $conversation->status->value,
+            'status' => $conversation->status,
         ];
     }
 

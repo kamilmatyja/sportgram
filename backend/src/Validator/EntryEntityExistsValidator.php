@@ -2,6 +2,7 @@
 
 namespace App\Validator;
 
+use App\Dto\EntryDto;
 use App\Enum\EntryTypeEnum;
 use App\Repository\{ConversationRepository,
     EventRepository,
@@ -36,14 +37,14 @@ class EntryEntityExistsValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, EntryEntityExists::class);
         }
 
-        if (! is_array($value) || ! isset($value['entityId'], $value['type'])) {
-            throw new UnexpectedValueException($value, 'array with entityId and type');
+        if ($value instanceof EntryDto) {
+            throw new UnexpectedValueException($value, 'unexpected type');
         }
 
         /** @var Uuid $entityId */
-        $entityId = $value['entityId'];
+        $entityId = $value->entityId;
         /** @var EntryTypeEnum $type */
-        $type = $value['type'];
+        $type = $value->type;
 
         try {
             match ($type) {
@@ -59,7 +60,7 @@ class EntryEntityExistsValidator extends ConstraintValidator
         } catch (EntityNotFoundException) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ entityId }}', $entityId)
-                ->setParameter('{{ type }}', $type->name)
+                ->setParameter('{{ type }}', $type->value)
                 ->addViolation();
         }
     }

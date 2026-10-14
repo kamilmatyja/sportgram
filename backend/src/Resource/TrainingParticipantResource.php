@@ -49,7 +49,7 @@ class TrainingParticipantResource
             'userId' => $trainingParticipant->user->id,
             'createdAt' => $trainingParticipant->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $trainingParticipant->updatedAt->format('Y-m-d\TH:i:s'),
-            'status' => $trainingParticipant->status->value,
+            'status' => $trainingParticipant->status,
         ];
     }
 }

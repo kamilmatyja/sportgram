@@ -48,7 +48,7 @@ class EventDisciplineResource
             'eventId' => $eventDiscipline->event->id,
             'createdAt' => $eventDiscipline->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $eventDiscipline->updatedAt->format('Y-m-d\TH:i:s'),
-            'discipline' => $eventDiscipline->discipline->value,
+            'discipline' => $eventDiscipline->discipline,
         ];
 
         if ($dto && in_array($dto::EVENT_DISCIPLINE_DISTANCES, $dto->include)) {

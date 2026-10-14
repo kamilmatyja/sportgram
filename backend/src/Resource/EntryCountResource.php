@@ -29,7 +29,7 @@ class EntryCountResource
     {
         return [
             'entityId' => $entry->entityId,
-            'type' => $entry->type->value,
+            'type' => $entry->type,
             'count' => $entry->count,
         ];
     }

@@ -41,7 +41,7 @@ class UserRoleResource
             'userId' => $role->user->id,
             'createdAt' => $role->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $role->updatedAt->format('Y-m-d\TH:i:s'),
-            'role' => $role->role->value,
+            'role' => $role->role,
         ];
     }
 }

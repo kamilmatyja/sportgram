@@ -41,7 +41,7 @@ class UserDisciplineResource
             'userId' => $discipline->user->id,
             'createdAt' => $discipline->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $discipline->updatedAt->format('Y-m-d\TH:i:s'),
-            'discipline' => $discipline->discipline->value,
+            'discipline' => $discipline->discipline,
         ];
     }
 }

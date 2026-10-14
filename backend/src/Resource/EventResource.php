@@ -72,7 +72,7 @@ class EventResource
             'rules' => $event->rules,
             'photo' => base64_encode($event->photo),
             'location' => $event->location,
-            'status' => $event->status->value,
+            'status' => $event->status,
         ];
 
         if ($dto && in_array($dto::EVENT_DISCIPLINES, $dto->include)) {

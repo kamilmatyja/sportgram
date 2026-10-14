@@ -51,8 +51,8 @@ class FeedReactionResource
             'userId' => $feedReaction->user->id,
             'createdAt' => $feedReaction->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $feedReaction->updatedAt->format('Y-m-d\TH:i:s'),
-            'reaction' => $feedReaction->reaction->value,
-            'status' => $feedReaction->status->value,
+            'reaction' => $feedReaction->reaction,
+            'status' => $feedReaction->status,
         ];
     }
 }

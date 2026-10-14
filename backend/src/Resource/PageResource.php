@@ -70,8 +70,8 @@ class PageResource
             'link' => $page->link,
             'profilePhoto' => base64_encode($page->profilePhoto),
             'backgroundPhoto' => base64_encode($page->backgroundPhoto),
-            'color' => $page->color->value,
-            'status' => $page->status->value,
+            'color' => $page->color,
+            'status' => $page->status,
         ];
 
         if ($dto && in_array($dto::PAGE_FOLLOWS, $dto->include)) {

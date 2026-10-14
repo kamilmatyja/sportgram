@@ -52,7 +52,7 @@ class PushSubscriptionResource
             'p256dh' => $pushSubscription->p256dh,
             'auth' => $pushSubscription->auth,
             'userAgent' => $pushSubscription->userAgent,
-            'status' => $pushSubscription->status->value,
+            'status' => $pushSubscription->status,
         ];
     }
 

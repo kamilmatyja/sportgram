@@ -52,7 +52,7 @@ class FeedCommentResource
             'createdAt' => $feedComment->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $feedComment->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $feedComment->text,
-            'status' => $feedComment->status->value,
+            'status' => $feedComment->status,
         ];
     }
 }

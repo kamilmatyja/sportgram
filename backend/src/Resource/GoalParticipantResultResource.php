@@ -55,7 +55,7 @@ class GoalParticipantResultResource
             'updatedAt' => $goalParticipantResult->updatedAt->format('Y-m-d\TH:i:s'),
             'distance' => $goalParticipantResult->distance,
             'time' => $goalParticipantResult->time,
-            'status' => $goalParticipantResult->status->value,
+            'status' => $goalParticipantResult->status,
         ];
     }
 }

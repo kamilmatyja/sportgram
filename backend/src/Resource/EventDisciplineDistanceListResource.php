@@ -66,7 +66,7 @@ class EventDisciplineDistanceListResource
             'userId' => $eventDisciplineList->user->id,
             'createdAt' => $eventDisciplineList->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $eventDisciplineList->updatedAt->format('Y-m-d\TH:i:s'),
-            'status' => $eventDisciplineList->status->value,
+            'status' => $eventDisciplineList->status,
         ];
 
         if ($dto && in_array($dto::EVENT_LIST_RESULTS, $dto->include)) {

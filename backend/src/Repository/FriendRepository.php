@@ -88,7 +88,7 @@ class FriendRepository extends BaseRepository
             ->andWhere('f.status = :status')
             ->setParameter('userId1', $userId1)
             ->setParameter('userId2', $userId2)
-            ->setParameter('status', FriendStatusEnum::Accepted->value);
+            ->setParameter('status', FriendStatusEnum::Accepted);
 
         $count = $qb->getQuery()->getSingleScalarResult();
 

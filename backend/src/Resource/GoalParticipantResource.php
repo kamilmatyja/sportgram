@@ -56,7 +56,7 @@ class GoalParticipantResource
             'userId' => $goalParticipant->user->id,
             'createdAt' => $goalParticipant->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $goalParticipant->updatedAt->format('Y-m-d\TH:i:s'),
-            'status' => $goalParticipant->status->value,
+            'status' => $goalParticipant->status,
         ];
 
         if ($dto && in_array($dto::GOAL_PARTICIPANT_RESULTS, $dto->include)) {

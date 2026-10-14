@@ -71,10 +71,10 @@ class GoalResource
             'endedAt' => $goal->endedAt?->format('Y-m-d\TH:i:s'),
             'text' => $goal->text,
             'link' => $goal->link,
-            'discipline' => $goal->discipline->value,
+            'discipline' => $goal->discipline,
             'distance' => $goal->distance,
             'time' => $goal->time,
-            'status' => $goal->status->value,
+            'status' => $goal->status,
         ];
 
         if ($dto && in_array($dto::GOAL_PARTICIPANTS, $dto->include)) {

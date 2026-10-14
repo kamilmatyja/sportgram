@@ -47,7 +47,7 @@ class TrainingDisciplineResource
             'trainingId' => $discipline->training->id,
             'createdAt' => $discipline->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $discipline->updatedAt->format('Y-m-d\TH:i:s'),
-            'discipline' => $discipline->discipline->value,
+            'discipline' => $discipline->discipline,
         ];
 
         if (in_array($dto::TRAINING_DISCIPLINE_DISTANCES, $dto->include)) {

@@ -82,7 +82,7 @@ class FeedResource
             'updatedAt' => $feed->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $feed->text,
             'photo' => $feed->photo ? base64_encode($feed->photo) : null,
-            'status' => $feed->status->value,
+            'status' => $feed->status,
         ];
 
         if ($dto && in_array($dto::FEED_COMMENTS, $dto->include)) {

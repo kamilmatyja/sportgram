@@ -32,11 +32,8 @@ class EntryDto
     public ?EntryTypeEnum $type = null;
 
     #[EntryEntityExists]
-    final protected function getEntityValidationData(): array
+    final protected function getEntityValidationData(): EntryDto
     {
-        return [
-            'entityId' => $this->entityId,
-            'type' => $this->type,
-        ];
+        return $this;
     }
 }

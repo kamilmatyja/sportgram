@@ -49,7 +49,7 @@ class EntryResource
             'entityId' => $entry->entityId,
             'createdAt' => $entry->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $entry->updatedAt->format('Y-m-d\TH:i:s'),
-            'type' => $entry->type->value,
+            'type' => $entry->type,
         ];
     }
 

@@ -49,7 +49,7 @@ class PageFollowResource
             'userId' => $pageFollow->user->id,
             'createdAt' => $pageFollow->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $pageFollow->updatedAt->format('Y-m-d\TH:i:s'),
-            'status' => $pageFollow->status->value,
+            'status' => $pageFollow->status,
         ];
     }
 

@@ -54,7 +54,7 @@ class StoryRepository extends BaseRepository
             );
             $qb->andWhere('(s.user = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')
                 ->setParameter('userId', $userId)
-                ->setParameter('acceptedStatus', FriendStatusEnum::Accepted->value);
+                ->setParameter('acceptedStatus', FriendStatusEnum::Accepted);
         }
 
         if ($dto->filter->text) {

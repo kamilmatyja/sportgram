@@ -49,7 +49,7 @@ class PageParticipantResource
             'userId' => $pageParticipant->user->id,
             'createdAt' => $pageParticipant->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $pageParticipant->updatedAt->format('Y-m-d\TH:i:s'),
-            'status' => $pageParticipant->status->value,
+            'status' => $pageParticipant->status,
         ];
     }
 }

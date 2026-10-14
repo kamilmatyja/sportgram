@@ -79,7 +79,7 @@ class TrainingResource
             'description' => $training->description,
             'link' => $training->link,
             'location' => $training->location,
-            'status' => $training->status->value,
+            'status' => $training->status,
         ];
 
         if ($dto && in_array($dto::TRAINING_DISCIPLINES, $dto->include)) {
