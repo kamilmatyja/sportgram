@@ -83,11 +83,11 @@ class FriendController extends AbstractController
         FriendIndexDto $dto,
         FriendService $service,
     ): JsonResponse {
-        $friends = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = FriendResource::fromEntityCollection($friends);
+        $data = FriendResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/friends/{id}', name: 'friend_details', methods: ['GET'])]

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Dto\StoryIndexDto;
 use App\Entity\Story;
 use App\Enum\FriendStatusEnum;
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -37,8 +38,7 @@ class StoryRepository extends BaseRepository
         return $story;
     }
 
-    /** @return Story[] */
-    final public function findStories(Uuid $userId, StoryIndexDto $dto): array
+    final public function findStories(Uuid $userId, StoryIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('s');
 
@@ -70,9 +70,6 @@ class StoryRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('s.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
-
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
 }

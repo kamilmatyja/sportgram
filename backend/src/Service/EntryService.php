@@ -2,10 +2,11 @@
 
 namespace App\Service;
 
-use App\Dto\{EntryCountDto, EntryCountIndexDto, EntryDto, EntryIndexDto};
+use App\Dto\{EntryCountIndexDto, EntryDto, EntryIndexDto};
 use App\Entity\{Entry, User};
 use App\Enum\EntryTypeEnum;
 use App\Repository\EntryRepository;
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
 
@@ -29,8 +30,7 @@ readonly class EntryService
         return $entry->id;
     }
 
-    /** @return Entry[] */
-    final public function index(EntryIndexDto $dto): array
+    final public function index(EntryIndexDto $dto): WindowPage
     {
         return $this->entryRepository->findEntries($dto);
     }
@@ -40,8 +40,7 @@ readonly class EntryService
         return $this->entryRepository->findById($entryId);
     }
 
-    /** @return EntryCountDto[] */
-    final public function indexCount(EntryCountIndexDto $dto): array
+    final public function indexCount(EntryCountIndexDto $dto): WindowPage
     {
         return $this->entryRepository->findCountEntries($dto);
     }

@@ -7,6 +7,7 @@ use App\Entity\{Friend, User};
 use App\Enum\{FriendStatusEnum, NotificationTypeEnum};
 use App\Event\NotificationEvent;
 use App\Repository\{FriendRepository, UserRepository};
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
@@ -92,8 +93,7 @@ readonly class FriendService
         return $friendId;
     }
 
-    /** @return Friend[] */
-    final public function index(FriendIndexDto $dto): array
+    final public function index(FriendIndexDto $dto): WindowPage
     {
         return $this->friendRepository->findFriends($dto);
     }

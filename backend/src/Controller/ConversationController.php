@@ -106,11 +106,11 @@ class ConversationController extends AbstractController
         ConversationIndexDto $dto,
         ConversationService $service,
     ): JsonResponse {
-        $conversations = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = ConversationResource::fromEntityCollection($conversations);
+        $data = ConversationResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/conversations/{id}', name: 'conversation_details', methods: ['GET'])]
@@ -159,11 +159,11 @@ class ConversationController extends AbstractController
         ConversationActivityIndexDto $dto,
         ConversationService $service,
     ): JsonResponse {
-        $conversationActivities = $service->indexActivity($dto);
+        $window = $service->indexActivity($dto);
 
-        $data = ConversationActivityResource::fromEntityCollection($conversationActivities);
+        $data = ConversationActivityResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/conversation-activity-users/{id}', name: 'conversation_activity_details', methods: ['GET'])]

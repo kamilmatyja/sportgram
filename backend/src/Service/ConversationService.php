@@ -8,6 +8,7 @@ use App\Enum\{ConversationStatusEnum, NotificationTypeEnum};
 use App\Event\NotificationEvent;
 use App\Repository\{ConversationActivityRepository, ConversationRepository, FriendRepository, UserRepository};
 use DateTimeImmutable;
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
@@ -86,8 +87,7 @@ readonly class ConversationService
         return $conversationId;
     }
 
-    /** @return Conversation[] */
-    final public function index(ConversationIndexDto $dto): array
+    final public function index(ConversationIndexDto $dto): WindowPage
     {
         /** @var User $user */
         $user = $this->security->getUser();
@@ -120,8 +120,7 @@ readonly class ConversationService
         return $conversationActivity->id;
     }
 
-    /** @return ConversationActivity[] */
-    final public function indexActivity(ConversationActivityIndexDto $dto): array
+    final public function indexActivity(ConversationActivityIndexDto $dto): WindowPage
     {
         /** @var User $user */
         $user = $this->security->getUser();

@@ -105,11 +105,11 @@ class TrainingController extends AbstractController
         TrainingDetailsQueryDto $include,
         TrainingService $service,
     ): JsonResponse {
-        $trainings = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = TrainingResource::fromEntityCollection($trainings, $include);
+        $data = TrainingResource::fromEntityCollection($window->getItems(), $include);
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/trainings/{id}', name: 'training_details', methods: ['GET'])]

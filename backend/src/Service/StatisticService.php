@@ -2,10 +2,11 @@
 
 namespace App\Service;
 
-use App\Dto\{StatisticIndexDto, StatisticResultDto};
+use App\Dto\{StatisticIndexDto};
 use App\Repository\StatisticRepository;
 use DateMalformedStringException;
 use Doctrine\DBAL\Exception;
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 
 readonly class StatisticService
 {
@@ -15,21 +16,19 @@ readonly class StatisticService
     }
 
     /**
-     * @return StatisticResultDto[]
      * @throws DateMalformedStringException
      * @throws Exception
      */
-    final public function indexRecords(StatisticIndexDto $dto): array
+    final public function indexRecords(StatisticIndexDto $dto): WindowPage
     {
         return $this->statisticRepository->findRecords($dto);
     }
 
     /**
-     * @return StatisticResultDto[]
      * @throws DateMalformedStringException
      * @throws Exception
      */
-    final public function indexProgress(StatisticIndexDto $dto): array
+    final public function indexProgress(StatisticIndexDto $dto): WindowPage
     {
         return $this->statisticRepository->findProgress($dto);
     }

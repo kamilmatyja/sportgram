@@ -28,11 +28,11 @@ class StatisticController extends AbstractController
         StatisticIndexDto $dto,
         StatisticService $statisticService,
     ): JsonResponse {
-        $statistics = $statisticService->indexRecords($dto);
+        $window = $statisticService->indexRecords($dto);
 
-        $data = StatisticResource::fromEntityCollection($statistics);
+        $data = StatisticResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/statistics/progress', name: 'statistic_progres_index', methods: ['GET'])]
@@ -47,10 +47,10 @@ class StatisticController extends AbstractController
         StatisticIndexDto $dto,
         StatisticService $statisticService,
     ): JsonResponse {
-        $statistics = $statisticService->indexProgress($dto);
+        $window = $statisticService->indexProgress($dto);
 
-        $data = StatisticResource::fromEntityCollection($statistics);
+        $data = StatisticResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 }

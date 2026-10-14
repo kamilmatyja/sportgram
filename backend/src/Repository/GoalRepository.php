@@ -6,6 +6,7 @@ use App\Dto\{GoalIndexDto};
 use App\Entity\Goal;
 use App\Enum\{DisciplineEnum, GoalStatusEnum};
 use DateTimeImmutable;
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -38,12 +39,11 @@ class GoalRepository extends BaseRepository
         return $goal;
     }
 
-    /** @return Goal[] */
     final public function findActiveByDiscipline(
         Uuid $userId,
         DisciplineEnum $discipline,
         DateTimeImmutable $date,
-    ): array {
+    ): WindowPage {
         $qb = $this->createQueryBuilder('g');
         $qb->leftJoin('g.participants', 'p')
             ->andWhere('p.user = :userId')
@@ -57,11 +57,10 @@ class GoalRepository extends BaseRepository
         $qb->andWhere('g.status = :status')
             ->setParameter('status', GoalStatusEnum::Active);
 
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb);
     }
 
-    /** @return Goal[] */
-    final public function findGoals(GoalIndexDto $dto): array
+    final public function findGoals(GoalIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('g');
 
@@ -104,9 +103,6 @@ class GoalRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('g.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
-
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
 }

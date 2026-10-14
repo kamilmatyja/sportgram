@@ -15,8 +15,48 @@ class Collection extends OA\Response
             response: 200,
             description: 'OK',
             content: new OA\JsonContent(
-                type: 'array',
-                items: new OA\Items(ref: new Model(type: $class)),
+                properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            ref: new Model(type: $class),
+                        ),
+                    ),
+                    new OA\Property(
+                        property: 'pagination',
+                        properties: [
+                            new OA\Property(
+                                property: 'total',
+                                type: 'integer',
+                                example: 125,
+                            ),
+                            new OA\Property(
+                                property: 'page',
+                                type: 'integer',
+                                example: 2,
+                            ),
+                            new OA\Property(
+                                property: 'perPage',
+                                type: 'integer',
+                                example: 20,
+                            ),
+                            new OA\Property(
+                                property: 'totalPages',
+                                type: 'integer',
+                                example: 7,
+                            ),
+                            new OA\Property(
+                                property: 'hasNextPage',
+                                type: 'boolean',
+                                example: true,
+                            ),
+                        ],
+                        type: 'object',
+                        nullable: true,
+                    ),
+                ],
+                type: 'object',
             ),
         );
     }

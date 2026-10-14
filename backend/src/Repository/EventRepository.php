@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Dto\EventIndexDto;
 use App\Entity\Event;
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -36,8 +37,7 @@ class EventRepository extends BaseRepository
         return $event;
     }
 
-    /** @return Event[] */
-    final public function findEvents(EventIndexDto $dto): array
+    final public function findEvents(EventIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('e');
 
@@ -71,9 +71,6 @@ class EventRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('e.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
-
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
 }

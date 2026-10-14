@@ -102,11 +102,11 @@ class StoryController extends AbstractController
         StoryIndexDto $dto,
         StoryService $service,
     ): JsonResponse {
-        $stories = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = StoryResource::fromEntityCollection($stories);
+        $data = StoryResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/stories/{id}', name: 'story_details', methods: ['GET'])]

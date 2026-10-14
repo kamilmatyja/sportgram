@@ -15,7 +15,13 @@ class Item extends OA\Response
             response: 200,
             description: 'OK',
             content: new OA\JsonContent(
-                ref: new Model(type: $class),
+                properties: [
+                    new OA\Property(
+                        property: 'data',
+                        ref: new Model(type: $class),
+                    ),
+                ],
+                type: 'object',
             ),
         );
     }

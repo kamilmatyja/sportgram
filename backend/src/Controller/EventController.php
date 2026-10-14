@@ -118,11 +118,11 @@ class EventController extends AbstractController
         EventDetailsQueryDto $include,
         EventService $service,
     ): JsonResponse {
-        $events = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = EventResource::fromEntityCollection($events, $include);
+        $data = EventResource::fromEntityCollection($window->getItems(), $include);
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/events/{id}', name: 'event_details', methods: ['GET'])]
@@ -211,11 +211,11 @@ class EventController extends AbstractController
         EventListDetailsQueryDto $include,
         EventService $service,
     ): JsonResponse {
-        $eventDisciplineDistanceLists = $service->indexList($id, $dto);
+        $window = $service->indexList($id, $dto);
 
-        $data = EventDisciplineDistanceListResource::fromEntityCollection($eventDisciplineDistanceLists, $include);
+        $data = EventDisciplineDistanceListResource::fromEntityCollection($window->getItems(), $include);
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_list_details', methods: ['GET'])]

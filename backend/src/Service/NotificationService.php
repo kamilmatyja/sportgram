@@ -6,6 +6,7 @@ use App\Dto\{NotificationIndexDto, NotificationStatusDto};
 use App\Entity\{Notification, User};
 use App\Enum\NotificationStatusEnum;
 use App\Repository\NotificationRepository;
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
 
@@ -36,8 +37,7 @@ readonly class NotificationService
         return $notificationId;
     }
 
-    /** @return Notification[] */
-    final public function index(NotificationIndexDto $dto): array
+    final public function index(NotificationIndexDto $dto): WindowPage
     {
         /** @var User $user */
         $user = $this->security->getUser();

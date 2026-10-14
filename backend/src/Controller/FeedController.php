@@ -109,11 +109,11 @@ class FeedController extends AbstractController
         FeedDetailsQueryDto $include,
         FeedService $service,
     ): JsonResponse {
-        $feeds = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = FeedResource::fromEntityCollection($feeds, $include);
+        $data = FeedResource::fromEntityCollection($window->getItems(), $include);
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/feeds/{id}', name: 'feed_details', methods: ['GET'])]

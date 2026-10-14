@@ -7,6 +7,7 @@ use App\Entity\{Story, User};
 use App\Enum\{ElementStatusEnum, NotificationTypeEnum};
 use App\Event\NotificationEvent;
 use App\Repository\{StoryRepository};
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
@@ -77,8 +78,7 @@ readonly class StoryService
         return $storyId;
     }
 
-    /** @return Story[] */
-    final public function index(StoryIndexDto $dto): array
+    final public function index(StoryIndexDto $dto): WindowPage
     {
         /** @var User $user */
         $user = $this->security->getUser();

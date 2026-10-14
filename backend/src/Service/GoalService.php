@@ -14,6 +14,7 @@ use App\Repository\{FeedRepository,
     UserRepository};
 use DateMalformedStringException;
 use DateTimeImmutable;
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
@@ -187,8 +188,7 @@ readonly class GoalService
         return $goalId;
     }
 
-    /** @return Goal[] */
-    final public function index(GoalIndexDto $dto): array
+    final public function index(GoalIndexDto $dto): WindowPage
     {
         return $this->goalRepository->findGoals($dto);
     }

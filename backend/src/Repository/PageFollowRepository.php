@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Dto\PageFollowIndexDto;
 use App\Entity\PageFollow;
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -36,8 +37,7 @@ class PageFollowRepository extends BaseRepository
         return $pageFollow;
     }
 
-    /** @return PageFollow[] */
-    final public function findPageFollows(PageFollowIndexDto $dto): array
+    final public function findPageFollows(PageFollowIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('p');
 
@@ -60,10 +60,7 @@ class PageFollowRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('p.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
-
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
 
     final public function hasRow(Uuid $userId, Uuid $pageId): bool

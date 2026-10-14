@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Dto\PushSubscriptionIndexDto;
 use App\Entity\PushSubscription;
 use App\Enum\PushSubscriptionStatusEnum;
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -37,20 +38,18 @@ class PushSubscriptionRepository extends BaseRepository
         return $pushSubscription;
     }
 
-    /** @return PushSubscription[] */
-    final public function findActiveByUserId(Uuid $userId): array
+    final public function findActiveByUserId(Uuid $userId): WindowPage
     {
-        return $this->createQueryBuilder('p')
+        $qb = $this->createQueryBuilder('p')
             ->andWhere('p.user = :userId')
             ->andWhere('p.status = :status')
             ->setParameter('userId', $userId)
-            ->setParameter('status', PushSubscriptionStatusEnum::Active)
-            ->getQuery()
-            ->getResult();
+            ->setParameter('status', PushSubscriptionStatusEnum::Active);
+
+        return new OffsetPaginator()->paginate($qb);
     }
 
-    /** @return PushSubscription[] */
-    final public function findPushSubscriptions(Uuid $userId, PushSubscriptionIndexDto $dto): array
+    final public function findPushSubscriptions(Uuid $userId, PushSubscriptionIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('p')
             ->andWhere('p.user = :userId')
@@ -74,9 +73,6 @@ class PushSubscriptionRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('p.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
-
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
 }

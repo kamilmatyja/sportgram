@@ -26,6 +26,7 @@ use App\Repository\{EventDisciplineDistanceRepository,
     PageRepository};
 use DateMalformedStringException;
 use DateTimeImmutable;
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
@@ -202,8 +203,7 @@ readonly class EventService
         return $eventId;
     }
 
-    /** @return Event[] */
-    final public function index(EventIndexDto $dto): array
+    final public function index(EventIndexDto $dto): WindowPage
     {
         return $this->eventRepository->findEvents($dto);
     }
@@ -284,8 +284,7 @@ readonly class EventService
         return $eventDisciplineListId;
     }
 
-    /** @return EventDisciplineList[] */
-    final public function indexList(Uuid $eventDisciplineDistanceId, EventListIndexDto $dto): array
+    final public function indexList(Uuid $eventDisciplineDistanceId, EventListIndexDto $dto): WindowPage
     {
         return $this->eventDisciplineListRepository->findLists($eventDisciplineDistanceId, $dto);
     }

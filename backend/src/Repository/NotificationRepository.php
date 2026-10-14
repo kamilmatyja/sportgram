@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Dto\NotificationIndexDto;
 use App\Entity\Notification;
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -36,8 +37,7 @@ class NotificationRepository extends BaseRepository
         return $notification;
     }
 
-    /** @return Notification[] */
-    final public function findNotifications(Uuid $userId, NotificationIndexDto $dto): array
+    final public function findNotifications(Uuid $userId, NotificationIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('n')
             ->where('n.user = :userId')
@@ -56,9 +56,6 @@ class NotificationRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('n.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
-
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
 }

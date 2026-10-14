@@ -22,6 +22,7 @@ use App\Repository\{FeedRepository,
     UserRepository};
 use DateMalformedStringException;
 use DateTimeImmutable;
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
@@ -277,8 +278,7 @@ readonly class TrainingService
         return $trainingId;
     }
 
-    /** @return Training[] */
-    final public function index(TrainingIndexDto $dto): array
+    final public function index(TrainingIndexDto $dto): WindowPage
     {
         return $this->trainingRepository->findTrainings($dto);
     }

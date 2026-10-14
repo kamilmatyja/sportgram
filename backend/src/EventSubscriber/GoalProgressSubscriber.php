@@ -2,7 +2,7 @@
 
 namespace App\EventSubscriber;
 
-use App\Entity\{Feed, GoalParticipantResult};
+use App\Entity\{Feed, Goal, GoalParticipantResult};
 use App\Enum\{ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
 use App\Event\{EventProcessedEvent, NotificationEvent, TrainingProcessedEvent};
 use App\Repository\{FeedRepository, GoalParticipantRepository, GoalParticipantResultRepository, GoalRepository};
@@ -38,9 +38,10 @@ readonly class GoalProgressSubscriber implements EventSubscriberInterface
         $distance = $result->distance;
         $time = $result->time;
 
-        $goals = $this->goalRepository->findActiveByDiscipline($userId, $discipline, new DateTimeImmutable());
+        $window = $this->goalRepository->findActiveByDiscipline($userId, $discipline, new DateTimeImmutable());
 
-        foreach ($goals as $goal) {
+        /** @var Goal $goal */
+        foreach ($window->getItems() as $goal) {
             if ($goal->time && $goal->time < $time) {
                 continue;
             }
@@ -79,9 +80,10 @@ readonly class GoalProgressSubscriber implements EventSubscriberInterface
         $distance = $result->eventDisciplineList->eventDisciplineDistance->distance;
         $time = $result->time;
 
-        $goals = $this->goalRepository->findActiveByDiscipline($userId, $discipline, new DateTimeImmutable());
+        $window = $this->goalRepository->findActiveByDiscipline($userId, $discipline, new DateTimeImmutable());
 
-        foreach ($goals as $goal) {
+        /** @var Goal $goal */
+        foreach ($window->getItems() as $goal) {
             if ($goal->time && $goal->time < $time) {
                 continue;
             }

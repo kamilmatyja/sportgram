@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Uid\Uuid;
 
@@ -12,9 +13,25 @@ class ApiResponse extends JsonResponse
         return new self(['token' => $token], self::HTTP_OK);
     }
 
-    public static function elements(array $data): self
+    public static function elements(array $data, ?WindowPage $window = null): self
     {
-        return new self($data, self::HTTP_OK);
+        if ($window) {
+            return new self(
+                [
+                    'data' => $data,
+                    'pagination' => [
+                        'total' => $window->getTotalCount(),
+                        'page' => $window->getPageNumber(),
+                        'perPage' => $window->getPageCount(),
+                        'totalPages' => $window->getTotalCount(),
+                        'hasNextPage' => $window->hasNextPage(),
+                    ],
+                ],
+                self::HTTP_OK,
+            );
+        } else {
+            return new self(['data' => $data], self::HTTP_OK);
+        }
     }
 
     public static function ok(Uuid $id): self

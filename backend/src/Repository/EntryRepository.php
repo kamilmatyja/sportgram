@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Dto\{EntryCountDto, EntryCountIndexDto, EntryIndexDto};
 use App\Entity\Entry;
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -36,8 +37,7 @@ class EntryRepository extends BaseRepository
         return $entry;
     }
 
-    /** @return Entry[] */
-    final public function findEntries(EntryIndexDto $dto): array
+    final public function findEntries(EntryIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('e');
 
@@ -59,14 +59,10 @@ class EntryRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('e.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
-
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
 
-    /** @return EntryCountDto[] */
-    final public function findCountEntries(EntryCountIndexDto $dto): array
+    final public function findCountEntries(EntryCountIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('e')
             ->select('e.type as type, e.entityId, COUNT(e.id) as count');
@@ -87,15 +83,21 @@ class EntryRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy($field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
+        $page = new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
 
-        $rows = $qb->getQuery()->getResult();
+        $items = array_map(
+            fn (array $row) => new EntryCountDto(
+                Uuid::fromString($row['entityId']),
+                $row['type'],
+                $row['count'],
+            ),
+            $page->getItems(),
+        );
 
-        return array_map(fn (array $row) => new EntryCountDto(
-            Uuid::fromString($row['entityId']),
-            $row['type'],
-            $row['count'],
-        ), $rows);
+        return new WindowPage(
+            $items,
+            $page->getTotalCount(),
+            $page->getWindow(),
+        );
     }
 }

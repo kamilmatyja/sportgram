@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Dto\ConversationActivityIndexDto;
 use App\Entity\ConversationActivity;
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -39,8 +40,7 @@ class ConversationActivityRepository extends BaseRepository
         return $conversationActivity;
     }
 
-    /** @return ConversationActivity[] */
-    final public function findActivities(Uuid $userId, ConversationActivityIndexDto $dto): array
+    final public function findActivities(Uuid $userId, ConversationActivityIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('c');
 
@@ -72,9 +72,6 @@ class ConversationActivityRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('c.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
-
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
 }

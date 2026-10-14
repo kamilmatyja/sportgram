@@ -7,6 +7,7 @@ use App\Entity\{Page, PageFollow, PageParticipant, User};
 use App\Enum\{ColorEnum, ElementStatusEnum, NotificationTypeEnum, PageFollowStatusEnum, SaveStatusEnum};
 use App\Event\NotificationEvent;
 use App\Repository\{FriendRepository, PageFollowRepository, PageParticipantRepository, PageRepository, UserRepository};
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Uuid;
@@ -166,8 +167,7 @@ readonly class PageService
         return $pageId;
     }
 
-    /** @return Page[] */
-    final public function index(PageIndexDto $dto): array
+    final public function index(PageIndexDto $dto): WindowPage
     {
         return $this->pageRepository->findPages($dto);
     }
@@ -257,8 +257,7 @@ readonly class PageService
         return $pageFollowId;
     }
 
-    /** @return PageFollow[] */
-    final public function indexFollows(PageFollowIndexDto $dto): array
+    final public function indexFollows(PageFollowIndexDto $dto): WindowPage
     {
         return $this->pageFollowRepository->findPageFollows($dto);
     }

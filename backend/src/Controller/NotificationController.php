@@ -65,11 +65,11 @@ class NotificationController extends AbstractController
         NotificationIndexDto $dto,
         NotificationService $service,
     ): JsonResponse {
-        $notifications = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = NotificationResource::fromEntityCollection($notifications);
+        $data = NotificationResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/notifications/{id}', name: 'notification_details', methods: ['GET'])]

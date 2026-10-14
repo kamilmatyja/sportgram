@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Dto\UserIndexDto;
 use App\Entity\User;
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -44,8 +45,7 @@ class UserRepository extends BaseRepository
         return $user;
     }
 
-    /** @return User[] */
-    final public function findUsers(UserIndexDto $dto): array
+    final public function findUsers(UserIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('u');
 
@@ -98,9 +98,6 @@ class UserRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('u.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
-
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
 }

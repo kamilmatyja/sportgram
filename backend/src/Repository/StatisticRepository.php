@@ -6,6 +6,7 @@ use App\Dto\{StatisticIndexDto, StatisticResultDto};
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Doctrine\DBAL\{ArrayParameterType, Connection, Exception};
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -19,11 +20,10 @@ class StatisticRepository
     }
 
     /**
-     * @return StatisticResultDto[]
      * @throws Exception
      * @throws DateMalformedStringException
      */
-    final public function findRecords(StatisticIndexDto $dto): array
+    final public function findRecords(StatisticIndexDto $dto): WindowPage
     {
         $baseSql = '
         SELECT DISTINCT ON ("userId", discipline, distance)
@@ -33,7 +33,7 @@ class StatisticRepository
             time,
             "createdAt"
         FROM (
-            SELECT 
+            SELECT
                 u.id AS "userId",
                 d.discipline,
                 t.distance,
@@ -46,7 +46,7 @@ class StatisticRepository
 
             UNION ALL
 
-            SELECT 
+            SELECT
                 u.id AS "userId",
                 ed.discipline,
                 edd.distance,
@@ -82,36 +82,41 @@ class StatisticRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('stats."' . $field . '"', $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
+        $page = new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
 
-        $rows = $qb->executeQuery()->fetchAllAssociative();
+        $items = array_map(
+            fn (array $row) => new StatisticResultDto(
+                Uuid::fromString($row['userId']),
+                new DateTimeImmutable($row['createdAt']),
+                $row['discipline'],
+                $row['distance'],
+                $row['time'],
+            ),
+            $page->getItems(),
+        );
 
-        return array_map(fn (array $row) => new StatisticResultDto(
-            Uuid::fromString($row['userId']),
-            new DateTimeImmutable($row['createdAt']),
-            $row['discipline'],
-            $row['distance'],
-            $row['time'],
-        ), $rows);
+        return new WindowPage(
+            $items,
+            $page->getTotalCount(),
+            $page->getWindow(),
+        );
     }
 
     /**
-     * @return StatisticResultDto[]
      * @throws Exception
      * @throws DateMalformedStringException
      */
-    final public function findProgress(StatisticIndexDto $dto): array
+    final public function findProgress(StatisticIndexDto $dto): WindowPage
     {
         $baseSql = '
-        SELECT 
+        SELECT
             "userId",
             discipline,
             distance,
             time,
             "createdAt"
         FROM (
-            SELECT 
+            SELECT
                 u.id AS "userId",
                 d.discipline,
                 t.distance,
@@ -121,10 +126,10 @@ class StatisticRepository
             JOIN training_disciplines d ON t.training_discipline_id = d.id
             JOIN trainings tr ON d.training_id = tr.id
             JOIN users u ON tr.user_id = u.id
-    
+
             UNION ALL
-    
-            SELECT 
+
+            SELECT
                 u.id AS "userId",
                 ed.discipline,
                 edd.distance,
@@ -159,17 +164,23 @@ class StatisticRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('stats."' . $field . '"', $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
+        $page = new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
 
-        $rows = $qb->executeQuery()->fetchAllAssociative();
+        $items = array_map(
+            fn (array $row) => new StatisticResultDto(
+                Uuid::fromString($row['userId']),
+                new DateTimeImmutable($row['createdAt']),
+                $row['discipline'],
+                $row['distance'],
+                $row['time'],
+            ),
+            $page->getItems(),
+        );
 
-        return array_map(fn (array $row) => new StatisticResultDto(
-            Uuid::fromString($row['userId']),
-            new DateTimeImmutable($row['createdAt']),
-            $row['discipline'],
-            $row['distance'],
-            $row['time'],
-        ), $rows);
+        return new WindowPage(
+            $items,
+            $page->getTotalCount(),
+            $page->getWindow(),
+        );
     }
 }

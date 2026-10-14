@@ -2,7 +2,7 @@
 
 namespace App\EventSubscriber;
 
-use App\Entity\Notification;
+use App\Entity\{Notification, PushSubscription};
 use App\Enum\NotificationStatusEnum;
 use App\Event\NotificationEvent;
 use App\Repository\{NotificationRepository, PushSubscriptionRepository};
@@ -52,7 +52,7 @@ readonly class NotificationSubscriber implements EventSubscriberInterface
         );
         $this->notificationRepository->save($notification);
 
-        $pushSubscriptions = $this->pushSubscriptionRepository->findActiveByUserId($event->getUser()->id);
+        $window = $this->pushSubscriptionRepository->findActiveByUserId($event->getUser()->id);
 
         $payload = json_encode([
             'title' => 'Sportgram',
@@ -61,7 +61,8 @@ readonly class NotificationSubscriber implements EventSubscriberInterface
         ]);
 
         try {
-            foreach ($pushSubscriptions as $subscription) {
+            /** @var PushSubscription $subscription */
+            foreach ($window->getItems() as $subscription) {
                 $this->webPushService->sendNotification(
                     $subscription->endpoint,
                     $subscription->p256dh,

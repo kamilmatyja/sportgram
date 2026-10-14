@@ -19,6 +19,7 @@ use App\Repository\{UserDisciplineRepository, UserRegisterRepository, UserReposi
 use App\Security\Voter\UserRoleVoter;
 use DateMalformedStringException;
 use DateTimeImmutable;
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Random\RandomException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -211,8 +212,7 @@ readonly class UserService
         return $userId;
     }
 
-    /** @return User[] */
-    final public function index(UserIndexDto $dto): array
+    final public function index(UserIndexDto $dto): WindowPage
     {
         return $this->userRepository->findUsers($dto);
     }

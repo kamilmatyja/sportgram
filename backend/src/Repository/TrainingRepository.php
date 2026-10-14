@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Dto\TrainingIndexDto;
 use App\Entity\Training;
+use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -36,8 +37,7 @@ class TrainingRepository extends BaseRepository
         return $training;
     }
 
-    /** @return Training[] */
-    final public function findTrainings(TrainingIndexDto $dto): array
+    final public function findTrainings(TrainingIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('t');
 
@@ -65,9 +65,6 @@ class TrainingRepository extends BaseRepository
         [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
         $qb->orderBy('t.' . $field, $direction === 'desc' ? 'DESC' : 'ASC');
 
-        $qb->setFirstResult(($dto->page - 1) * $dto->limit)
-            ->setMaxResults($dto->limit);
-
-        return $qb->getQuery()->getResult();
+        return new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
     }
 }

@@ -47,11 +47,11 @@ class EntryController extends AbstractController
         EntryIndexDto $dto,
         EntryService $service,
     ): JsonResponse {
-        $entries = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = EntryResource::fromEntityCollection($entries);
+        $data = EntryResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/entries/{id}', name: 'entry_details', methods: ['GET'])]
@@ -84,10 +84,10 @@ class EntryController extends AbstractController
         EntryCountIndexDto $dto,
         EntryService $service,
     ): JsonResponse {
-        $entryCounts = $service->indexCount($dto);
+        $window = $service->indexCount($dto);
 
-        $data = EntryCountResource::fromEntityCollection($entryCounts);
+        $data = EntryCountResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 }

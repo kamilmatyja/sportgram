@@ -105,11 +105,11 @@ class GoalController extends AbstractController
         GoalDetailsQueryDto $include,
         GoalService $service,
     ): JsonResponse {
-        $goals = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = GoalResource::fromEntityCollection($goals, $include);
+        $data = GoalResource::fromEntityCollection($window->getItems(), $include);
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/goals/{id}', name: 'goal_details', methods: ['GET'])]

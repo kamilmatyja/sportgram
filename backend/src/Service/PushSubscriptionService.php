@@ -6,6 +6,7 @@ use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto};
 use App\Entity\{PushSubscription, User};
 use App\Enum\PushSubscriptionStatusEnum;
 use App\Repository\PushSubscriptionRepository;
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
 
@@ -58,8 +59,7 @@ readonly class PushSubscriptionService
         return $pushSubscriptionId;
     }
 
-    /** @return PushSubscription[] */
-    final public function index(PushSubscriptionIndexDto $dto): array
+    final public function index(PushSubscriptionIndexDto $dto): WindowPage
     {
         /** @var User $user */
         $user = $this->security->getUser();

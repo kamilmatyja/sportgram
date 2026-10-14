@@ -7,6 +7,7 @@ use App\Entity\{Feed, FeedComment, FeedReaction, User};
 use App\Enum\{ElementStatusEnum, FeedReactionEnum, NotificationTypeEnum};
 use App\Event\NotificationEvent;
 use App\Repository\{FeedCommentRepository, FeedReactionRepository, FeedRepository, FriendRepository};
+use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
@@ -76,8 +77,7 @@ readonly class FeedService
         return $feedId;
     }
 
-    /** @return Feed[] */
-    final public function index(FeedIndexDto $dto): array
+    final public function index(FeedIndexDto $dto): WindowPage
     {
         /** @var User $user */
         $user = $this->security->getUser();

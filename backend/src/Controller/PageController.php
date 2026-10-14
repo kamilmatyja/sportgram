@@ -111,11 +111,11 @@ class PageController extends AbstractController
         PageDetailsQueryDto $include,
         PageService $service,
     ): JsonResponse {
-        $pages = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = PageResource::fromEntityCollection($pages, $include);
+        $data = PageResource::fromEntityCollection($window->getItems(), $include);
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/pages/{id}', name: 'page_details', methods: ['GET'])]
@@ -223,11 +223,11 @@ class PageController extends AbstractController
         PageFollowIndexDto $dto,
         PageService $service,
     ): JsonResponse {
-        $pageFollows = $service->indexFollows($dto);
+        $window = $service->indexFollows($dto);
 
-        $data = PageFollowResource::fromEntityCollection($pageFollows);
+        $data = PageFollowResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/page-follows/{id}', name: 'page_follow_details', methods: ['GET'])]

@@ -123,11 +123,11 @@ class UserController extends AbstractController
         UserDetailsQueryDto $include,
         UserService $service,
     ): JsonResponse {
-        $users = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = UserResource::fromEntityCollection($users, $include);
+        $data = UserResource::fromEntityCollection($window->getItems(), $include);
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/users/{id}', name: 'user_details', methods: ['GET'])]

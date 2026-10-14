@@ -83,11 +83,11 @@ class PushSubscriptionController extends AbstractController
         PushSubscriptionIndexDto $dto,
         PushSubscriptionService $service,
     ): JsonResponse {
-        $pushSubscriptions = $service->index($dto);
+        $window = $service->index($dto);
 
-        $data = PushSubscriptionResource::fromEntityCollection($pushSubscriptions);
+        $data = PushSubscriptionResource::fromEntityCollection($window->getItems());
 
-        return ApiResponse::elements($data);
+        return ApiResponse::elements($data, $window);
     }
 
     #[Route('/api/push-subscriptions/{id}', name: 'push_subscription_details', methods: ['GET'])]
