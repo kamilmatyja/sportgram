@@ -2,12 +2,8 @@
 
 namespace App\Enum;
 
-use App\Trait\EnumValuesTrait;
-
 enum EntryTypeEnum: int
 {
-    use EnumValuesTrait;
-
     case User = 1;
     case Story = 2;
     case Conversation = 3;

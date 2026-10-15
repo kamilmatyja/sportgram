@@ -23,7 +23,6 @@ class ApiResponse extends JsonResponse
                         'total' => $window->getTotalCount(),
                         'page' => $window->getPageNumber(),
                         'perPage' => $window->getPageCount(),
-                        'totalPages' => $window->getTotalCount(),
                         'hasNextPage' => $window->hasNextPage(),
                     ],
                 ],
@@ -50,7 +49,7 @@ class ApiResponse extends JsonResponse
             $status = self::HTTP_INTERNAL_SERVER_ERROR;
         }
 
-        return new self(['errors' => $error], $status);
+        return new self(['error' => $error], $status);
     }
 
     public static function badRequest(array $errors): self

@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { Stack, Table, Image, Badge, Button, Card, Nav } from 'react-bootstrap';
+import { Stack, Table, Button, Card, Nav } from 'react-bootstrap';
 
+import { getFeedTypeLabel } from './FeedCard';
 import { FeedCommentsTable } from './FeedCommentsTable';
 import { FeedReactionsTable } from './FeedReactionsTable';
 import { FeedResponse } from '../../api/responses/FeedResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
+import { type FeedInteractions } from '../../services/Feed/useFeedInteractions';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { formatDate } from '../../utils/dateFormat';
+import { Base64Image } from '../Common/Base64Image';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { EnumBadge } from '../Common/EnumBadge';
+import { FormErrorAlert } from '../Common/FormFields';
+import { IconButton } from '../Common/IconButton';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface UserFeedsTableProps {
     feeds: FeedResponse[];
@@ -19,7 +25,7 @@ interface UserFeedsTableProps {
     isAdmin: boolean;
     actionLoading: string | null;
     onManageClick: (feed: FeedResponse) => void;
-    interactions: any;
+    interactions: FeedInteractions;
 }
 
 export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
@@ -36,17 +42,9 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'comments' | 'reactions'>('comments');
 
-    const getFeedTypeLabel = (feed: FeedResponse) => {
-        if (feed.eventDisciplineList) return t('feedTypes.eventDisciplineList');
-        if (feed.eventDisciplineResult) return t('feedTypes.eventDisciplineResult');
-        if (feed.goal) return t('feedTypes.goal');
-        if (feed.goalParticipantResult) return t('feedTypes.goalParticipantResult');
-        if (feed.training) return t('feedTypes.training');
-        return t('feedTypes.regular');
-    };
-
     return (
         <Stack className="table-responsive-custom">
+            <FormErrorAlert error={interactions.actionError} />
             <Table bordered hover className="align-middle mb-0 shadow-sm">
                 <TableHead className="table-light">
                     <TableRow>
@@ -61,35 +59,27 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                 </TableHead>
                 <TableBody>
                     {feeds.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={7} className="text-center text-muted">
-                                {t('noRecords')}
-                            </TableCell>
-                        </TableRow>
+                        <EmptyTableRow colSpan={7} />
                     ) : (
                         feeds.map((feed) => (
                             <React.Fragment key={feed.id}>
                                 <TableRow>
                                     <TableCell className="text-center feed-photo-cell">
-                                        {feed.photo ? (
-                                            <Image
-                                                src={`data:image/webp;base64,${feed.photo}`}
-                                                rounded
-                                                className="feed-photo shadow-sm"
-                                            />
-                                        ) : (
-                                            <Stack as="span" className="text-muted">
-                                                -
-                                            </Stack>
-                                        )}
+                                        <Base64Image
+                                            data={feed.photo}
+                                            fallback={
+                                                <Stack as="span" className="text-muted">
+                                                    -
+                                                </Stack>
+                                            }
+                                            rounded
+                                            className="feed-photo shadow-sm"
+                                        />
                                     </TableCell>
-                                    <TableCell className="small fw-bold">{getFeedTypeLabel(feed)}</TableCell>
+                                    <TableCell className="small fw-bold">{getFeedTypeLabel(feed, t)}</TableCell>
                                     <TableCell className="small">{feed.text}</TableCell>
                                     <TableCell>
-                                        <Badge bg="light" text="dark" className="border profile-theme-border">
-                                            {ElementStatusEnum.getOptions(t).find((o) => o.value === feed.status)
-                                                ?.label || feed.status}
-                                        </Badge>
+                                        <EnumBadge options={ElementStatusEnum.getOptions(t)} value={feed.status} />
                                     </TableCell>
                                     <TableCell className="small text-muted">{formatDate(feed.createdAt)}</TableCell>
                                     <TableCell>
@@ -107,14 +97,7 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                                     </TableCell>
                                     <TableCell className="text-end">
                                         {(isMyProfile || isAdmin) && (
-                                            <Button
-                                                variant="profile-outline-primary"
-                                                size="sm"
-                                                onClick={() => onManageClick(feed)}
-                                                className="rounded-circle shadow-sm"
-                                            >
-                                                <BootstrapIcon name="gear" />
-                                            </Button>
+                                            <IconButton icon="gear" onClick={() => onManageClick(feed)} />
                                         )}
                                     </TableCell>
                                 </TableRow>
@@ -150,7 +133,7 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                                                             relatedUsers={relatedUsers}
                                                             currentUser={currentUser}
                                                             isAdmin={isAdmin}
-                                                            isFeedLoading={actionLoading === feed.id}
+                                                            isFeedLoading={actionLoading !== null}
                                                             onDeleteComment={interactions.handleDeleteComment}
                                                             onUpdateComment={interactions.handleUpdateTableComment}
                                                             onChangeStatus={interactions.handleCommentStatusSubmit}
@@ -161,7 +144,7 @@ export const UserFeedsTable: React.FC<UserFeedsTableProps> = ({
                                                             relatedUsers={relatedUsers}
                                                             currentUser={currentUser}
                                                             isAdmin={isAdmin}
-                                                            isFeedLoading={actionLoading === feed.id}
+                                                            isFeedLoading={actionLoading !== null}
                                                             onDeleteReaction={interactions.handleDeleteReaction}
                                                             onUpdateReaction={interactions.handleUpdateReaction}
                                                             onChangeStatus={interactions.handleReactionStatusSubmit}

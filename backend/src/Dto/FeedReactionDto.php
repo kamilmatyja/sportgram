@@ -16,6 +16,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 class FeedReactionDto
 {
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [FeedReactionEnum::class, 'values'])]
+    #[Assert\Choice(callback: [FeedReactionEnum::class, 'cases'])]
     public FeedReactionEnum $type;
 }

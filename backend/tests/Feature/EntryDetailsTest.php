@@ -70,7 +70,7 @@ class EntryDetailsTest extends ApiTestCase
 
         $result = $this->get('/api/entries/' . $entry->id->toString(), $user);
         $this->assertEquals(200, $result['status']);
-        $json = $result['json'];
+        $json = $result['json']['data'];
 
         $expectedKeys = [
             'id',

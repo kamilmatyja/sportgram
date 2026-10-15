@@ -35,6 +35,6 @@ class PushSubscriptionDto
     public ?string $userAgent = null;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [PushSubscriptionStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [PushSubscriptionStatusEnum::class, 'cases'])]
     public PushSubscriptionStatusEnum $status;
 }

@@ -1,37 +1,44 @@
 import React from 'react';
-import { Table, Stack, Button, Badge } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Table, Stack } from 'react-bootstrap';
 
 import { PageFollowResponse } from '../../api/responses/PageFollowResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { EnumBadge } from '../Common/EnumBadge';
+import { StatusButtons } from '../Common/StatusButtons';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { UserLink } from '../Common/UserLink';
 
 interface PageFollowsTableProps {
     follows: PageFollowResponse[];
     relatedUsers: Record<string, UserResponse>;
-    currentUser: UserResponse | null;
-    isMyProfile: boolean;
-    isAdmin: boolean;
+    canManage: (follow: PageFollowResponse) => boolean;
     actionLoading: string | null;
     onUpdateStatus: (followId: string, status: number) => void;
+    compact?: boolean;
 }
+
+const canSelectStatus = (status: number): boolean => status !== PageFollowStatusEnum.PENDING;
 
 export const PageFollowsTable: React.FC<PageFollowsTableProps> = ({
     follows,
     relatedUsers,
-    currentUser,
-    isMyProfile,
-    isAdmin,
+    canManage,
     actionLoading,
     onUpdateStatus,
+    compact = false,
 }) => {
     const { t } = useTranslation();
+    const statusOptions = PageFollowStatusEnum.getOptions(t);
 
     return (
         <Stack className="table-responsive-custom">
-            <Table size="sm" borderless hover className="align-middle mb-0">
+            <Table
+                {...(compact ? { size: 'sm', borderless: true } : { bordered: true })}
+                hover
+                className={`align-middle mb-0 ${compact ? '' : 'shadow-sm'}`.trim()}
+            >
                 <TableHead className="table-light">
                     <TableRow>
                         <TableHeaderCell>{t('user')}</TableHeaderCell>
@@ -41,59 +48,29 @@ export const PageFollowsTable: React.FC<PageFollowsTableProps> = ({
                 </TableHead>
                 <TableBody>
                     {follows.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={3} className="text-center text-muted">
-                                {t('noRecords')}
-                            </TableCell>
-                        </TableRow>
+                        <EmptyTableRow colSpan={3} />
                     ) : (
-                        follows.map((f) => {
-                            const u = relatedUsers[f.userId];
-                            const isOwner = currentUser?.id === f.userId;
-                            const canManage = isMyProfile || isAdmin || isOwner;
-
-                            return (
-                                <TableRow key={f.id}>
-                                    <TableCell>
-                                        {u ? (
-                                            <Link to={`/users/${u.link}`} className="text-decoration-none">
-                                                {u.firstName} {u.lastName}
-                                            </Link>
-                                        ) : (
-                                            <Stack as="span" className="text-muted">
-                                                -{f.userId}
-                                            </Stack>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge bg="light" text="dark" className="border profile-theme-border">
-                                            {PageFollowStatusEnum.getOptions(t).find((opt) => opt.value === f.status)
-                                                ?.label || f.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-end">
-                                        {canManage &&
-                                            PageFollowStatusEnum.getOptions(t)
-                                                .filter(
-                                                    (opt) =>
-                                                        opt.value !== f.status &&
-                                                        opt.value !== PageFollowStatusEnum.PENDING,
-                                                )
-                                                .map((opt) => (
-                                                    <Button
-                                                        key={opt.value}
-                                                        variant="profile-outline-primary"
-                                                        className="btn-xs py-0 px-2 ms-1"
-                                                        disabled={actionLoading === f.id}
-                                                        onClick={() => onUpdateStatus(f.id, opt.value)}
-                                                    >
-                                                        {opt.label}
-                                                    </Button>
-                                                ))}
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })
+                        follows.map((follow) => (
+                            <TableRow key={follow.id}>
+                                <TableCell>
+                                    <UserLink user={relatedUsers[follow.userId]} />
+                                </TableCell>
+                                <TableCell>
+                                    <EnumBadge options={statusOptions} value={follow.status} />
+                                </TableCell>
+                                <TableCell className="text-end">
+                                    {canManage(follow) && (
+                                        <StatusButtons
+                                            options={statusOptions}
+                                            current={follow.status}
+                                            canSelect={canSelectStatus}
+                                            onSelect={(status) => onUpdateStatus(follow.id, status)}
+                                            disabled={actionLoading === follow.id}
+                                        />
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))
                     )}
                 </TableBody>
             </Table>

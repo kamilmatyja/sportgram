@@ -1,10 +1,9 @@
 import React from 'react';
-import { Container, Card, Stack, Spinner, Alert } from 'react-bootstrap';
+import { Container, Card, Stack } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { PageDetailsFollowsTable } from './PageDetailsFollowsTable';
-import { PageDetailsParticipantsTable } from './PageDetailsParticipantsTable';
 import { PageEventsTable } from './PageEventsTable';
+import { PageFollowsTable } from './PageFollowsTable';
 import { PageHeader } from './PageHeader';
 import { PageInfo } from './PageInfo';
 import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
@@ -13,9 +12,14 @@ import { PageFollowResponse } from '../../api/responses/PageFollowResponse';
 import { PageResponse } from '../../api/responses/PageResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
+import { type PageInteractions } from '../../services/Page/usePageInteractions';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
 import BootstrapIcon from '../Common/BootstrapIcon';
+import { FormErrorAlert } from '../Common/FormFields';
+import { ParticipantsTable } from '../Common/ParticipantsTable';
+import { canChangeOwnStatus } from '../Common/statusPermissions';
+import { ErrorView, LoadingView } from '../Common/ViewState';
 
 interface PageDetailsViewProps {
     pageObj: PageResponse | null;
@@ -24,17 +28,17 @@ interface PageDetailsViewProps {
     relatedUsers: Record<string, UserResponse>;
     isMyProfile: boolean;
     isAdmin: boolean;
-    isParticipantOfPage: boolean;
     myFollow: PageFollowResponse | null;
     followLoading: boolean;
     handleToggleFollow: () => void;
     loading: boolean;
     error: string | null;
     onManageClick: (page: PageResponse) => void;
-    interactions: any;
+    interactions: PageInteractions;
     events: EventResponse[];
     eventsLoading: boolean;
     eventPage: number;
+    eventHasMore: boolean;
     eventLimit: number;
     eventSort: string;
     eventFilters: EventFilterQuery;
@@ -49,21 +53,12 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = (props) => {
     const { t } = useTranslation();
     const { pageObj, ownerUser, loading, error, onManageClick } = props;
 
-    if (loading)
-        return (
-            <Container className="mt-5 text-center">
-                <Spinner animation="border" variant="primary" />
-            </Container>
-        );
-    if (error || !pageObj || !ownerUser)
-        return (
-            <Container className="mt-5">
-                <Alert variant="danger">{error ? t(error) : t('error')}</Alert>
-            </Container>
-        );
+    if (loading) return <LoadingView />;
+    if (error || !pageObj || !ownerUser) return <ErrorView error={error || 'error'} />;
 
     const themeClass = ColorEnum.getClass(pageObj.color);
-    const canManage = props.isMyProfile || props.isAdmin || props.isParticipantOfPage;
+    const canManage = props.isMyProfile || props.isAdmin;
+    const canChangeStatus = canChangeOwnStatus(props.currentUser);
 
     return (
         <Container className={`mt-4 mb-5 ${themeClass}`}>
@@ -82,15 +77,17 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = (props) => {
 
             <PageInfo pageObj={pageObj} canManage={canManage} onManageClick={onManageClick} />
 
+            <FormErrorAlert error={props.interactions.actionError} />
+
             <Card className="shadow-sm mb-4">
                 <Card.Body>
                     <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">
                         {t('participants')}
                     </Card.Title>
-                    <PageDetailsParticipantsTable
+                    <ParticipantsTable
                         participants={pageObj.participants || []}
                         relatedUsers={props.relatedUsers}
-                        canManage={canManage}
+                        canManage={canChangeStatus}
                         actionLoading={props.interactions.actionLoading}
                         onUpdateStatus={props.interactions.handleParticipantStatusSubmit}
                     />
@@ -102,10 +99,10 @@ export const PageDetailsView: React.FC<PageDetailsViewProps> = (props) => {
                     <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">
                         {t('pageFollows')}
                     </Card.Title>
-                    <PageDetailsFollowsTable
+                    <PageFollowsTable
                         follows={pageObj.follows || []}
                         relatedUsers={props.relatedUsers}
-                        currentUser={props.currentUser}
+                        canManage={canChangeStatus}
                         actionLoading={props.interactions.actionLoading}
                         onUpdateStatus={props.interactions.handleFollowStatusSubmit}
                     />

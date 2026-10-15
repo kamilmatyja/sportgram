@@ -28,7 +28,7 @@ class WebPushService
      * @throws RandomException
      * @throws ErrorException
      */
-    final public function sendNotification(string $endpoint, string $p256dh, string $auth, string $payload): void
+    final public function sendNotification(string $endpoint, string $p256dh, string $auth, string $payload): bool
     {
         $subscription = Subscription::create([
             'endpoint' => $endpoint,
@@ -36,6 +36,13 @@ class WebPushService
             'authToken' => $auth,
         ]);
         $this->webPush->queueNotification($subscription, $payload);
-        $this->webPush->flush();
+
+        $success = true;
+
+        foreach ($this->webPush->flush() as $report) {
+            $success = $success && $report->isSuccess();
+        }
+
+        return $success;
     }
 }

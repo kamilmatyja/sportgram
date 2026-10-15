@@ -1,11 +1,13 @@
 import React from 'react';
-import { Stack, Image, Form, Button } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Stack, Form, Button } from 'react-bootstrap';
 
 import { FeedResponse } from '../../api/responses/FeedResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import BootstrapIcon from '../Common/BootstrapIcon';
+import { InputField } from '../Common/FormFields';
+import { UserAvatar } from '../Common/UserAvatar';
+import { UserLink } from '../Common/UserLink';
 
 interface FeedCommentsProps {
     feed: FeedResponse;
@@ -45,38 +47,29 @@ export const FeedComments: React.FC<FeedCommentsProps> = ({
     return (
         <Stack gap={3} className="mt-3">
             {feed.comments?.map((comment) => {
-                const commentAuthor = comment.user ?? relatedUsers?.[comment.userId];
+                const commentAuthor = relatedUsers?.[comment.userId];
                 const isMyComment = comment.userId === currentUser?.id;
                 const isEditing = editingCommentId === comment.id;
 
                 return (
                     <Stack direction="horizontal" gap={2} key={comment.id} className="align-items-start">
-                        {commentAuthor?.profilePhoto ? (
-                            <Image
-                                src={`data:image/webp;base64,${commentAuthor.profilePhoto}`}
-                                roundedCircle
-                                className="object-fit-cover feed-avatar-32"
-                            />
-                        ) : (
-                            <Stack className="bg-secondary rounded-circle feed-avatar-32" />
-                        )}
+                        <UserAvatar user={commentAuthor} size={32} />
 
                         <Stack className="flex-grow-1">
                             <Stack className="bg-light p-2 rounded-3">
-                                <Link
-                                    to={`/users/${commentAuthor?.link || comment.userId}`}
-                                    className="text-decoration-none text-body small"
-                                >
-                                    {commentAuthor ? `${commentAuthor.firstName} ${commentAuthor.lastName}` : '-'}
-                                </Link>
+                                <UserLink user={commentAuthor} className="text-body small" />
 
                                 {isEditing ? (
                                     <Stack gap={1} className="mt-1">
-                                        <Form.Control
+                                        <InputField
                                             type="text"
                                             size="sm"
+                                            name="text"
+                                            aria-label={t('edit')}
                                             value={editCommentText}
-                                            onChange={(e) => setEditCommentText(e.target.value)}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                                setEditCommentText(e.target.value)
+                                            }
                                         />
                                         <Stack direction="horizontal" gap={1} className="justify-content-end">
                                             <Button
@@ -92,6 +85,7 @@ export const FeedComments: React.FC<FeedCommentsProps> = ({
                                                 size="sm"
                                                 className="py-0 px-2"
                                                 onClick={() => onUpdateComment(feed.id, comment.id)}
+                                                disabled={isFeedLoading}
                                             >
                                                 {t('save')}
                                             </Button>
@@ -130,23 +124,18 @@ export const FeedComments: React.FC<FeedCommentsProps> = ({
             })}
 
             <Form onSubmit={(e) => onAddComment(e, feed.id)}>
-                <Stack direction="horizontal" gap={2}>
-                    {currentUser?.profilePhoto ? (
-                        <Image
-                            src={`data:image/webp;base64,${currentUser.profilePhoto}`}
-                            roundedCircle
-                            className="object-fit-cover feed-avatar-32"
-                        />
-                    ) : (
-                        <Stack className="bg-secondary rounded-circle feed-avatar-32" />
-                    )}
-                    <Form.Control
+                <Stack direction="horizontal" gap={2} className="align-items-start">
+                    <UserAvatar user={currentUser} size={32} />
+                    <InputField
+                        groupClassName="flex-grow-1"
                         type="text"
                         size="sm"
+                        name="text"
                         className="rounded-pill"
                         placeholder={t('writeComment')}
+                        aria-label={t('writeComment')}
                         value={commentInputValue || ''}
-                        onChange={(e) => onCommentInput(feed.id, e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onCommentInput(feed.id, e.target.value)}
                         disabled={isFeedLoading}
                     />
                     <Button
@@ -155,6 +144,7 @@ export const FeedComments: React.FC<FeedCommentsProps> = ({
                         size="sm"
                         className="rounded-circle px-2"
                         disabled={isFeedLoading || !commentInputValue?.trim()}
+                        aria-label={t('send')}
                     >
                         <BootstrapIcon name="send-fill" />
                     </Button>

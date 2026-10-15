@@ -47,8 +47,7 @@ class PageFollowRepository extends BaseRepository
         }
 
         if (! empty($dto->filter->pageIds)) {
-            $qb->leftJoin('e.pages', 'pa')
-                ->andWhere('p.pageId IN (:pageIds)')
+            $qb->andWhere('p.page IN (:pageIds)')
                 ->setParameter('pageIds', $dto->filter->pageIds);
         }
 

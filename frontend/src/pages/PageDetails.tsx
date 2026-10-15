@@ -9,7 +9,7 @@ import { usePageModals } from '../services/Page/usePageModals';
 export default function PageDetails() {
     const { link } = useParams<{ link: string }>();
     const detailsProps = usePageDetails(link);
-    const modalsService = usePageModals(detailsProps.refreshPage);
+    const modalsService = usePageModals(detailsProps.refreshPage, detailsProps.currentUser);
     const interactions = usePageInteractions(detailsProps.refreshPage);
 
     return (
@@ -21,7 +21,6 @@ export default function PageDetails() {
                 relatedUsers={detailsProps.relatedUsers}
                 isMyProfile={detailsProps.isMyProfile}
                 isAdmin={detailsProps.isAdmin}
-                isParticipantOfPage={detailsProps.isParticipantOfPage}
                 myFollow={detailsProps.myFollow}
                 followLoading={detailsProps.followLoading}
                 handleToggleFollow={detailsProps.handleToggleFollow}
@@ -32,6 +31,7 @@ export default function PageDetails() {
                 events={detailsProps.events}
                 eventsLoading={detailsProps.eventsLoading}
                 eventPage={detailsProps.eventPage}
+                eventHasMore={detailsProps.eventHasMore}
                 eventLimit={detailsProps.eventLimit}
                 eventSort={detailsProps.eventSort}
                 eventFilters={detailsProps.eventFilters}

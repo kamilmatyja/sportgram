@@ -7,12 +7,14 @@ import { SignBody } from '../../api/body/SignBody';
 import { RegisterProvider } from '../../api/providers/RegisterProvider';
 import { SignProvider } from '../../api/providers/SignProvider';
 import { useAuth } from '../../context/AuthContext';
-import { createFormHandler } from '../../utils/formHandler';
+import { getErrorMessage } from '../../utils/api';
+import { registerSession, signSession, UNCONFIRMED_ACCOUNT_ERROR } from '../../utils/authSession';
+import { createFormHandler, createSubmitHandler } from '../../utils/formHandler';
 import { useFormState } from '../../utils/hooks/useFormState';
 
 export function useSign() {
-    const step = Number(localStorage.getItem('sign_step')) || 1;
-    const signId = localStorage.getItem('sign_id') || null;
+    const [step, setStep] = useState(signSession.step);
+    const signId = signSession.id();
     const [signFormData, setSignFormData] = useState(new SignBody('', '', false));
     const [codeFormData, setCodeFormData] = useState(new CodeBody(''));
 
@@ -25,47 +27,36 @@ export function useSign() {
     const signProvider = new SignProvider();
     const registerProvider = new RegisterProvider();
 
-    const handleSignSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleSignSubmit = createSubmitHandler(async () => {
         try {
             await wrap(async () => {
                 const res = await signProvider.sign(signFormData);
-
-                localStorage.setItem('sign_step', '2');
-                localStorage.setItem('sign_id', res.id);
+                signSession.start(res.id, { rememberMe: signFormData.rememberMe ? '1' : '' });
+                setStep(2);
             });
-        } catch (err: any) {
-            if (err.error === 'User account is not confirmed.') {
-                try {
-                    const dto = new EmailBody(signFormData.email);
-                    const res = await registerProvider.register(dto);
-
-                    localStorage.setItem('register_step', '2');
-                    localStorage.setItem('register_id', res.id);
-                    localStorage.setItem('register_email', signFormData.email);
-                    localStorage.setItem('register_password', signFormData.password);
-                    localStorage.removeItem('sign_step');
-                    localStorage.removeItem('sign_id');
-                    navigate('/register');
-                } catch (registerErr: any) {
-                    setGlobalError(registerErr.error);
-                }
+        } catch (err) {
+            if (getErrorMessage(err) !== UNCONFIRMED_ACCOUNT_ERROR) return;
+            try {
+                const res = await registerProvider.register(new EmailBody(signFormData.email));
+                registerSession.start(res.id, { email: signFormData.email, password: signFormData.password });
+                signSession.clear();
+                navigate('/register');
+            } catch (registerErr) {
+                setGlobalError(getErrorMessage(registerErr));
             }
         }
-    };
+    });
 
-    const handleCodeSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleCodeSubmit = createSubmitHandler(async () => {
         if (!signId) return;
         await wrap(async () => {
             const res = await signProvider.confirm(signId, codeFormData);
-
-            localStorage.removeItem('sign_step');
-            localStorage.removeItem('sign_id');
-            login(res.token, signId, signFormData.rememberMe);
+            const rememberMe = signSession.get('rememberMe') === '1';
+            signSession.clear();
+            login(res.token, signId, rememberMe);
             navigate('/');
         }).catch(() => {});
-    };
+    });
 
     const handleResend = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -77,9 +68,8 @@ export function useSign() {
     };
 
     const clearSessionDataAndGoToStep1 = () => {
-        localStorage.removeItem('sign_step');
-        localStorage.removeItem('sign_id');
-        navigate('/sign');
+        signSession.clear();
+        setStep(1);
     };
 
     const handleSignChange = createFormHandler(setSignFormData);

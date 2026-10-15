@@ -22,6 +22,7 @@ export default function UserStories() {
                 loading={storiesService.loading}
                 error={storiesService.error}
                 page={storiesService.page}
+                hasMore={storiesService.hasMore}
                 limit={storiesService.limit}
                 sort={storiesService.sort}
                 filters={storiesService.filters}

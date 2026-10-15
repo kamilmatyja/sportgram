@@ -1,12 +1,15 @@
 import React from 'react';
-import { Table, Stack, Button, Badge } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Table, Stack } from 'react-bootstrap';
 
 import { GoalParticipantResponse } from '../../api/responses/GoalParticipantResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { EnumBadge } from '../Common/EnumBadge';
+import { canChangeOwnStatus } from '../Common/statusPermissions';
+import { StatusButtons } from '../Common/StatusButtons';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { UserLink } from '../Common/UserLink';
 
 interface GoalDetailsResultsTableProps {
     participants: GoalParticipantResponse[];
@@ -24,12 +27,14 @@ export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = (
     onUpdateStatus,
 }) => {
     const { t } = useTranslation();
+    const statusOptions = SaveStatusEnum.getOptions(t);
+    const canManage = canChangeOwnStatus(currentUser);
 
     const allResults = participants.flatMap((p) => (p.results ?? []).map((r) => ({ ...r, userId: p.userId })));
 
     return (
         <Stack className="table-responsive-custom">
-            <Table bordered hover className="align-middle mb-0">
+            <Table bordered hover className="align-middle mb-0 shadow-sm">
                 <TableHead className="table-light">
                     <TableRow>
                         <TableHeaderCell>{t('user')}</TableHeaderCell>
@@ -41,62 +46,31 @@ export const GoalDetailsResultsTable: React.FC<GoalDetailsResultsTableProps> = (
                 </TableHead>
                 <TableBody>
                     {allResults.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted">
-                                {t('noRecords')}
-                            </TableCell>
-                        </TableRow>
+                        <EmptyTableRow colSpan={5} />
                     ) : (
-                        allResults.map((r) => {
-                            const u = relatedUsers[r.userId];
-                            const isOwner = currentUser?.id === r.userId;
-
-                            return (
-                                <TableRow key={r.id}>
-                                    <TableCell>
-                                        {u ? (
-                                            <Link to={`/users/${u.link}`} className="text-decoration-none">
-                                                {u.firstName} {u.lastName}
-                                            </Link>
-                                        ) : (
-                                            <Stack as="small" className="text-muted">
-                                                -
-                                            </Stack>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>{r.distance}</TableCell>
-                                    <TableCell>{r.time}</TableCell>
-                                    <TableCell>
-                                        <Badge bg="light" text="dark" className="border profile-theme-border">
-                                            {SaveStatusEnum.getOptions(t).find((opt) => opt.value === r.status)
-                                                ?.label || r.status}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-end">
-                                        <Stack direction="horizontal" gap={1} className="justify-content-end">
-                                            {isOwner &&
-                                                SaveStatusEnum.getOptions(t)
-                                                    .filter(
-                                                        (opt) =>
-                                                            opt.value !== r.status &&
-                                                            opt.value !== SaveStatusEnum.PENDING,
-                                                    )
-                                                    .map((opt) => (
-                                                        <Button
-                                                            key={opt.value}
-                                                            variant="profile-outline-primary"
-                                                            className="btn-xs py-0 px-2"
-                                                            disabled={actionLoading === r.id}
-                                                            onClick={() => onUpdateStatus(r.id, opt.value)}
-                                                        >
-                                                            {opt.label}
-                                                        </Button>
-                                                    ))}
-                                        </Stack>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })
+                        allResults.map((r) => (
+                            <TableRow key={r.id}>
+                                <TableCell>
+                                    <UserLink user={relatedUsers[r.userId]} />
+                                </TableCell>
+                                <TableCell>{r.distance}</TableCell>
+                                <TableCell>{r.time}</TableCell>
+                                <TableCell>
+                                    <EnumBadge options={statusOptions} value={r.status} />
+                                </TableCell>
+                                <TableCell className="text-end">
+                                    {canManage(r) && (
+                                        <StatusButtons
+                                            options={statusOptions}
+                                            current={r.status}
+                                            canSelect={(status) => status !== SaveStatusEnum.PENDING}
+                                            onSelect={(status) => onUpdateStatus(r.id, status)}
+                                            disabled={actionLoading === r.id}
+                                        />
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))
                     )}
                 </TableBody>
             </Table>

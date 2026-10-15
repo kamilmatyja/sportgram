@@ -10,7 +10,7 @@ export default function UserFriends() {
     const { link } = useParams<{ link: string }>();
 
     const friendsService = useUserFriends(link);
-    const modalsService = useFriendModals(friendsService.refreshFriends);
+    const modalsService = useFriendModals(friendsService.refreshFriends, friendsService.currentUser);
 
     return (
         <>
@@ -22,6 +22,7 @@ export default function UserFriends() {
                 loading={friendsService.loading}
                 error={friendsService.error}
                 page={friendsService.page}
+                hasMore={friendsService.hasMore}
                 limit={friendsService.limit}
                 sort={friendsService.sort}
                 filters={friendsService.filters}

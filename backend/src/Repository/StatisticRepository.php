@@ -7,7 +7,7 @@ use App\Entity\TrainingDisciplineDistance;
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Doctrine\DBAL\{ArrayParameterType, Exception};
-use Doctrine\ORM\Tools\Pagination\{OffsetPaginator, Window, WindowPage};
+use Doctrine\ORM\Tools\Pagination\{Window, WindowPage};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -108,7 +108,7 @@ class StatisticRepository extends BaseRepository
 
         if ($dto->filter->discipline) {
             $qb->andWhere('stats.discipline = :discipline')
-                ->setParameter('discipline', $dto->filter->discipline);
+                ->setParameter('discipline', $dto->filter->discipline->value);
         }
 
         if ($dto->filter->distance) {
@@ -116,15 +116,29 @@ class StatisticRepository extends BaseRepository
                 ->setParameter('distance', $dto->filter->distance);
         }
 
-        $this->order($dto->sort, $qb, 'stats');
+        $sql = $qb->getSQL();
+        $params = $qb->getParameters();
+        $types = $qb->getParameterTypes();
 
-        $page = new OffsetPaginator()->paginate(
-            $qb,
-            Window::fromPageNumberAndSize(
-                $dto->page,
-                $dto->limit,
-            ),
-        );
+        $totalCount = (int) $conn->createQueryBuilder()
+            ->select('COUNT(*)')
+            ->from("({$sql})", 'results')
+            ->setParameters($params, $types)
+            ->executeQuery()
+            ->fetchOne();
+
+        [$field, $direction] = array_pad(explode(':', $dto->sort), 2, 'asc');
+        $window = Window::fromPageNumberAndSize($dto->page, $dto->limit);
+
+        $rows = $conn->createQueryBuilder()
+            ->select('*')
+            ->from("({$sql})", 'results')
+            ->orderBy('results.' . $conn->quoteSingleIdentifier($field), $direction === 'desc' ? 'DESC' : 'ASC')
+            ->setFirstResult($window->getFirstResult())
+            ->setMaxResults($window->getMaxResults())
+            ->setParameters($params, $types)
+            ->executeQuery()
+            ->fetchAllAssociative();
 
         $items = array_map(
             static fn (array $row): StatisticResultDto => new StatisticResultDto(
@@ -134,13 +148,9 @@ class StatisticRepository extends BaseRepository
                 $row['distance'],
                 $row['time'],
             ),
-            $page->getItems(),
+            $rows,
         );
 
-        return new WindowPage(
-            $items,
-            $page->getTotalCount(),
-            $page->getWindow(),
-        );
+        return new WindowPage($items, $totalCount, $window);
     }
 }

@@ -14,12 +14,17 @@ class EntityExistsField extends Constraint
         public string $entity,
         ?string $message = null,
         ?array $groups = null,
-        $payload = null,
+        mixed $payload = null,
     ) {
         parent::__construct([], $groups, $payload);
 
         if ($message) {
             $this->message = $message;
         }
+    }
+
+    final public function validatedBy(): string
+    {
+        return EntityExistsFieldValidator::class;
     }
 }

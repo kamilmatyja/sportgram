@@ -7,12 +7,14 @@ import { SignBody } from '../../api/body/SignBody';
 import { PasswordResetProvider } from '../../api/providers/PasswordResetProvider';
 import { RegisterProvider } from '../../api/providers/RegisterProvider';
 import { SignProvider } from '../../api/providers/SignProvider';
-import { createFormHandler } from '../../utils/formHandler';
+import { getErrorMessage } from '../../utils/api';
+import { passwordResetSession, registerSession, signSession, UNCONFIRMED_ACCOUNT_ERROR } from '../../utils/authSession';
+import { createFormHandler, createSubmitHandler } from '../../utils/formHandler';
 import { useFormState } from '../../utils/hooks/useFormState';
 
 export function usePasswordReset() {
-    const step = Number(localStorage.getItem('password_reset_step')) || 1;
-    const passwordResetId = localStorage.getItem('password_reset_id') || null;
+    const [step, setStep] = useState(passwordResetSession.step);
+    const passwordResetId = passwordResetSession.id();
     const [passwordResetFormData, setPasswordResetFormData] = useState(new EmailBody(''));
     const [codeFormData, setCodeFormData] = useState(new PasswordResetBody('', ''));
 
@@ -24,52 +26,39 @@ export function usePasswordReset() {
     const signProvider = new SignProvider();
     const registerProvider = new RegisterProvider();
 
-    const handlePasswordResetSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handlePasswordResetSubmit = createSubmitHandler(async () => {
         try {
             await wrap(async () => {
                 const res = await passwordResetProvider.passwordReset(passwordResetFormData);
-
-                localStorage.setItem('password_reset_step', '2');
-                localStorage.setItem('password_reset_id', res.id);
-                localStorage.setItem('password_reset_email', passwordResetFormData.email);
+                passwordResetSession.start(res.id, { email: passwordResetFormData.email });
+                setStep(2);
             });
-        } catch (err: any) {
-            if (err.error === 'User account is not confirmed.') {
-                try {
-                    const res = await registerProvider.register(passwordResetFormData);
-
-                    localStorage.setItem('register_step', '2');
-                    localStorage.setItem('register_id', res.id);
-                    localStorage.setItem('register_email', passwordResetFormData.email);
-                    localStorage.removeItem('password_reset_step');
-                    localStorage.removeItem('password_reset_id');
-                    localStorage.removeItem('password_reset_email');
-                    navigate('/register');
-                } catch (registerErr: any) {
-                    setGlobalError(registerErr.error);
-                }
+        } catch (err) {
+            if (getErrorMessage(err) !== UNCONFIRMED_ACCOUNT_ERROR) return;
+            try {
+                const res = await registerProvider.register(passwordResetFormData);
+                registerSession.start(res.id, { email: passwordResetFormData.email });
+                passwordResetSession.clear();
+                navigate('/register');
+            } catch (registerErr) {
+                setGlobalError(getErrorMessage(registerErr));
             }
         }
-    };
+    });
 
-    const handleCodeSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleCodeSubmit = createSubmitHandler(async () => {
         if (!passwordResetId) return;
         await wrap(async () => {
             await passwordResetProvider.confirm(passwordResetId, codeFormData);
 
-            const email = localStorage.getItem('password_reset_email') || '';
+            const email = passwordResetSession.get('email');
             const res = await signProvider.sign(new SignBody(email, codeFormData.password, false));
 
-            localStorage.setItem('sign_step', '2');
-            localStorage.setItem('sign_id', res.id);
-            localStorage.removeItem('password_reset_step');
-            localStorage.removeItem('password_reset_id');
-            localStorage.removeItem('password_reset_email');
+            signSession.start(res.id);
+            passwordResetSession.clear();
             navigate('/sign');
         }).catch(() => {});
-    };
+    });
 
     const handleResend = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -81,10 +70,8 @@ export function usePasswordReset() {
     };
 
     const clearSessionDataAndGoToStep1 = () => {
-        localStorage.removeItem('password_reset_step');
-        localStorage.removeItem('password_reset_id');
-        localStorage.removeItem('password_reset_email');
-        navigate('/password-reset');
+        passwordResetSession.clear();
+        setStep(1);
     };
 
     const handlePasswordResetChange = createFormHandler(setPasswordResetFormData);

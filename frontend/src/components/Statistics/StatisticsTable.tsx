@@ -1,13 +1,14 @@
 import React from 'react';
 import { Table, Stack } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 
 import { StatisticResponse } from '../../api/responses/StatisticResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { formatDate } from '../../utils/dateFormat';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { getOptionLabel } from '../../utils/options';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { UserLink } from '../Common/UserLink';
 
 interface StatisticsTableProps {
     data: StatisticResponse[];
@@ -33,35 +34,23 @@ export const StatisticsTable: React.FC<StatisticsTableProps> = ({ data, availabl
                 </TableHead>
                 <TableBody>
                     {data.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted">
-                                {t('noRecords')}
-                            </TableCell>
-                        </TableRow>
+                        <EmptyTableRow colSpan={5} />
                     ) : (
-                        data.map((stat, idx) => {
-                            const u = getUser(stat.userId);
-                            return (
-                                <TableRow key={idx}>
-                                    <TableCell>
-                                        {u ? (
-                                            <Link to={`/users/${u.link}`} className="text-decoration-none">
-                                                {u.firstName} {u.lastName}
-                                            </Link>
-                                        ) : (
-                                            stat.userId
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="small">
-                                        {DisciplineEnum.getOptions(t).find((opt) => opt.value === stat.discipline)
-                                            ?.label || stat.discipline}
-                                    </TableCell>
-                                    <TableCell>{stat.distance}</TableCell>
-                                    <TableCell>{stat.time}</TableCell>
-                                    <TableCell className="small text-muted">{formatDate(stat.createdAt)}</TableCell>
-                                </TableRow>
-                            );
-                        })
+                        data.map((stat) => (
+                            <TableRow
+                                key={`${stat.userId}-${stat.discipline}-${stat.distance}-${stat.createdAt}-${stat.time}`}
+                            >
+                                <TableCell>
+                                    <UserLink user={getUser(stat.userId)} />
+                                </TableCell>
+                                <TableCell className="small">
+                                    {getOptionLabel(DisciplineEnum.getOptions(t), stat.discipline)}
+                                </TableCell>
+                                <TableCell>{stat.distance}</TableCell>
+                                <TableCell>{stat.time}</TableCell>
+                                <TableCell className="small text-muted">{formatDate(stat.createdAt)}</TableCell>
+                            </TableRow>
+                        ))
                     )}
                 </TableBody>
             </Table>

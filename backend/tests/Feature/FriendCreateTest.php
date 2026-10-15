@@ -23,7 +23,7 @@ class FriendCreateTest extends ApiTestCase
     final public function testUnauthorized(): void
     {
         $payload = [
-            'receiverUserId' => Uuid::v4()->toString(),
+            'userId' => Uuid::v4()->toString(),
         ];
 
         $result = $this->post('/api/friends', $payload);
@@ -37,7 +37,7 @@ class FriendCreateTest extends ApiTestCase
 
         $result = $this->post('/api/friends', [], $user);
         $this->assertEquals(400, $result['status']);
-        $this->assertArrayHasKey('receiverUserId', $result['json']['errors']);
+        $this->assertArrayHasKey('userId', $result['json']['errors']);
     }
 
     final public function testInvalidUserId(): void
@@ -45,12 +45,12 @@ class FriendCreateTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
 
         $payload = [
-            'receiverUserId' => 'not-a-uuid',
+            'userId' => 'not-a-uuid',
         ];
 
         $result = $this->post('/api/friends', $payload, $user);
         $this->assertEquals(400, $result['status']);
-        $this->assertArrayHasKey('receiverUserId', $result['json']['errors']);
+        $this->assertArrayHasKey('userId', $result['json']['errors']);
     }
 
     final public function testUserNotFound(): void
@@ -58,13 +58,15 @@ class FriendCreateTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
 
         $payload = [
-            'receiverUserId' => Uuid::v4()->toString(),
+            'userId' => Uuid::v4()->toString(),
         ];
 
         $result = $this->post('/api/friends', $payload, $user);
-        $this->assertEquals(404, $result['status']);
-        $this->assertArrayHasKey('error', $result['json']);
-        $this->assertEquals('Element not found.', $result['json']['error']);
+        $this->assertEquals(400, $result['status']);
+        $this->assertArrayHasKey('userId', $result['json']['errors']);
+        $this->assertCount(1, $result['json']['errors']['userId']);
+        $this->assertStringEndsWith('not found.', $result['json']['errors']['userId'][0]);
+        $this->assertStringNotContainsString('{{ entity }}', $result['json']['errors']['userId'][0]);
     }
 
     final public function testAlreadyFriends(): void
@@ -79,7 +81,7 @@ class FriendCreateTest extends ApiTestCase
         ], $this->em);
 
         $payload = [
-            'receiverUserId' => $receiver->id->toString(),
+            'userId' => $receiver->id->toString(),
         ];
 
         $result = $this->post('/api/friends', $payload, $sender);
@@ -93,7 +95,7 @@ class FriendCreateTest extends ApiTestCase
         $receiver = UserFactory::make(em: $this->em);
 
         $payload = [
-            'receiverUserId' => $receiver->id->toString(),
+            'userId' => $receiver->id->toString(),
         ];
 
         $result = $this->post('/api/friends', $payload, $sender);

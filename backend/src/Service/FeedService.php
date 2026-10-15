@@ -30,7 +30,7 @@ readonly class FeedService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $feed = new Feed($user, $dto->text, base64_decode($dto->photo, true), ElementStatusEnum::Active);
+        $feed = new Feed($user, $dto->text, $dto->photo, ElementStatusEnum::Active);
 
         $this->feedRepository->save($feed);
 
@@ -42,7 +42,7 @@ readonly class FeedService
         $feed = $this->feedRepository->findById($feedId);
 
         $feed->text = $dto->text;
-        $feed->photo = base64_decode($dto->photo, true);
+        $feed->photo = $dto->photo;
 
         $this->feedRepository->save($feed);
 
@@ -167,7 +167,7 @@ readonly class FeedService
             throw new ValidatorException('User is not friend.');
         }
 
-        if (! $feed->reactions->filter(fn (FeedReaction $reaction) => $reaction->user->id === $user->id)->isEmpty()) {
+        if (! $feed->reactions->filter(fn (FeedReaction $reaction) => $reaction->user->id->equals($user->id))->isEmpty()) {
             throw new ValidatorException('User already reacted to this feed.');
         }
 

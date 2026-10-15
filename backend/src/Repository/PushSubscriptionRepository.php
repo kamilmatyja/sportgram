@@ -46,7 +46,7 @@ class PushSubscriptionRepository extends BaseRepository
             ->setParameter('userId', $userId)
             ->setParameter('status', PushSubscriptionStatusEnum::Active);
 
-        return new OffsetPaginator()->paginate($qb);
+        return new OffsetPaginator()->paginate($qb, new Window(0, PHP_INT_MAX));
     }
 
     final public function findPushSubscriptions(Uuid $userId, PushSubscriptionIndexDto $dto): WindowPage

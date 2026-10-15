@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{UserCodeDto, UserSignDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Conflict, Created, Ok, Token};
+use App\OpenApi\{BadRequest, Body, Conflict, Created, NotFound, Ok, Token};
 use App\Service\SignService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,7 +40,7 @@ class SignController extends AbstractController
         summary: 'Confirm sign user',
         requestBody: new Body(UserCodeDto::class),
         tags: ['signs'],
-        responses: [new Token(), new BadRequest(), new Conflict()],
+        responses: [new Token(), new BadRequest(), new Conflict(), new NotFound()],
     )]
     final public function confirm(
         Uuid $id,
@@ -58,7 +58,7 @@ class SignController extends AbstractController
     #[OA\Post(
         summary: 'Resend sign user',
         tags: ['signs'],
-        responses: [new Ok(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound()],
     )]
     final public function resend(
         Uuid $id,
@@ -70,10 +70,11 @@ class SignController extends AbstractController
     }
 
     #[Route('/api/signs/{id}/refresh', name: 'user_sign_refresh', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
         summary: 'Refresh sign user',
         tags: ['signs'],
-        responses: [new Token(), new Conflict()],
+        responses: [new Token(), new BadRequest(), new Conflict(), new NotFound()],
     )]
     final public function refresh(
         Uuid $id,

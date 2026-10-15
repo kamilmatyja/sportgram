@@ -65,7 +65,8 @@ class UserDetailsTest extends ApiTestCase
 
         $result = $this->get('/api/users/' . $user->id->toString(), $user);
         $this->assertEquals(200, $result['status']);
-        $json = $result['json'];
+        $this->assertArrayHasKey('data', $result['json']);
+        $json = $result['json']['data'];
 
         $expectedKeys = [
             'id',
@@ -102,7 +103,8 @@ class UserDetailsTest extends ApiTestCase
             $user,
         );
         $this->assertEquals(200, $result['status']);
-        $json = $result['json'];
+        $this->assertArrayHasKey('data', $result['json']);
+        $json = $result['json']['data'];
 
         $expectedKeys = [
             'id',

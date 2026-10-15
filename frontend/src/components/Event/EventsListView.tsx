@@ -1,12 +1,12 @@
 import React from 'react';
-import { Container, Stack, Button, Spinner, Alert } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 import { EventsFilterBar } from './EventsFilterBar';
 import { EventsTable } from './EventsTable';
 import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
 import { EventResponse } from '../../api/responses/EventResponse';
 import { useTranslation } from '../../context/TranslationContext';
-import { Pagination } from '../Common/Pagination';
+import { ListPageLayout } from '../Common/ListPageLayout';
 
 interface EventsListViewProps {
     events: EventResponse[];
@@ -14,6 +14,7 @@ interface EventsListViewProps {
     loading: boolean;
     error: string | null;
     page: number;
+    hasMore: boolean;
     limit: number;
     sort: string;
     filters: EventFilterQuery;
@@ -31,6 +32,7 @@ export const EventsListView: React.FC<EventsListViewProps> = ({
     loading,
     error,
     page,
+    hasMore,
     limit,
     sort,
     filters,
@@ -44,44 +46,33 @@ export const EventsListView: React.FC<EventsListViewProps> = ({
     const { t } = useTranslation();
 
     return (
-        <Container className="py-5">
-            <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
-                <Stack as="h2" className="mb-0 fw-bold text-primary">
-                    {t('events')}
-                </Stack>
-                {isOrganizer && (
+        <ListPageLayout
+            title={t('events')}
+            actions={
+                isOrganizer && (
                     <Button variant="primary" onClick={onAddClick}>
                         {t('addEvent')}
                     </Button>
-                )}
-            </Stack>
-
-            <EventsFilterBar
-                filters={filters}
-                sort={sort}
-                limit={limit}
-                onFilterChange={onFilterChange}
-                onSortChange={onSortChange}
-                onLimitChange={onLimitChange}
-            />
-
-            {loading && events.length === 0 ? (
-                <Stack className="text-center p-5">
-                    <Spinner animation="border" variant="primary" />
-                </Stack>
-            ) : error ? (
-                <Alert variant="danger">{t(error)}</Alert>
-            ) : (
-                <Stack gap={4}>
-                    <EventsTable events={events} />
-                    <Pagination
-                        page={page}
-                        hasMore={events.length >= limit}
-                        onPrevPage={onPrevPage}
-                        onNextPage={onNextPage}
-                    />
-                </Stack>
-            )}
-        </Container>
+                )
+            }
+            filters={
+                <EventsFilterBar
+                    filters={filters}
+                    sort={sort}
+                    limit={limit}
+                    onFilterChange={onFilterChange}
+                    onSortChange={onSortChange}
+                    onLimitChange={onLimitChange}
+                />
+            }
+            loading={loading && events.length === 0}
+            error={error}
+            page={page}
+            hasMore={hasMore}
+            onPrevPage={onPrevPage}
+            onNextPage={onNextPage}
+        >
+            <EventsTable events={events} />
+        </ListPageLayout>
     );
 };

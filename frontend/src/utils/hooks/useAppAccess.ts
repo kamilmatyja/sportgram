@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 
 import { FriendProvider } from '../../api/providers/FriendProvider';
 import { UserProvider } from '../../api/providers/UserProvider';
@@ -11,6 +11,7 @@ import { UserResponse } from '../../api/responses/UserResponse';
 import { useAuth } from '../../context/AuthContext';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
+import { getErrorMessage } from '../api';
 
 interface AppAccessOptions {
     targetLink?: string;
@@ -19,6 +20,17 @@ interface AppAccessOptions {
     requireOwner?: boolean;
 }
 
+export const isAccessReady = (access: { authLoading: boolean; authError: string | null }) =>
+    !access.authLoading && !access.authError;
+
+const emptyRoles = {
+    isAdmin: false,
+    isOrganizer: false,
+    isParticipant: false,
+    isMyProfile: false,
+    isFriend: false,
+};
+
 export function useAppAccess({ targetLink, targetId, requireFriendship, requireOwner }: AppAccessOptions = {}) {
     const { signId } = useAuth();
 
@@ -26,20 +38,21 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
     const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
     const [friendship, setFriendship] = useState<FriendResponse | null>(null);
 
-    const [roles, setRoles] = useState({
-        isAdmin: false,
-        isOrganizer: false,
-        isParticipant: false,
-        isMyProfile: false,
-        isFriend: false,
-    });
+    const [roles, setRoles] = useState(emptyRoles);
 
     const [authLoading, setAuthLoading] = useState<boolean>(true);
     const [authError, setAuthError] = useState<string | null>(null);
+    const requestIdRef = useRef<number>(0);
 
     const refreshAccess = useCallback(async () => {
+        const requestId = ++requestIdRef.current;
+        const isLatest = () => requestId === requestIdRef.current;
+
         setAuthLoading(true);
         setAuthError(null);
+        setTargetUser(null);
+        setFriendship(null);
+        setRoles(emptyRoles);
         try {
             if (!signId) throw { error: 'unauthorizedEdit' };
 
@@ -53,17 +66,18 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
             uIndex.filter = uFilter;
             uIndex.include = ['userRoles', 'userDisciplines'];
 
-            const currentUserArr = await userProvider.index(uIndex);
+            const currentUserArr = (await userProvider.index(uIndex)).data;
             if (currentUserArr.length === 0) throw { error: 'unauthorizedEdit' };
 
             const currentUsr = currentUserArr[0];
-            setCurrentUser(currentUsr);
 
             const isAdmin = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
             const isOrganizer = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ORGANIZER) ?? false;
             const isParticipant = currentUsr.roles?.some((r: any) => r.role === RoleEnum.PARTICIPANT) ?? false;
 
             if (!targetLink && !targetId) {
+                if (!isLatest()) return;
+                setCurrentUser(currentUsr);
                 setRoles({ isAdmin, isOrganizer, isParticipant, isMyProfile: false, isFriend: false });
                 return;
             }
@@ -75,26 +89,23 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
                 const tIndex = new UserIndexQuery();
                 tIndex.filter = tFilter;
                 tIndex.include = ['userRoles', 'userDisciplines'];
-                const targetUsers = await userProvider.index(tIndex);
+                const targetUsers = (await userProvider.index(tIndex)).data;
                 if (targetUsers.length === 0) throw { error: 'userNotFound' };
                 tUser = targetUsers[0];
-            } else if (targetId) {
-                tUser = await userProvider.details(targetId, ['userRoles', 'userDisciplines']);
             } else {
-                throw { error: 'userNotFound' };
+                tUser = await userProvider.details(targetId!, ['userRoles', 'userDisciplines']);
             }
-            setTargetUser(tUser);
 
             const isMyProfile = currentUsr.id === tUser.id;
             let isFriend = false;
-            let foundFriendship = null;
+            let foundFriendship: FriendResponse | null = null;
 
             if (!isMyProfile) {
                 const fFilter = new FriendFilterQuery();
                 fFilter.userIds = [tUser.id, currentUsr.id];
                 const fIndex = new FriendIndexQuery();
                 fIndex.filter = fFilter;
-                const friends = await friendProvider.index(fIndex);
+                const friends = (await friendProvider.index(fIndex)).data;
 
                 foundFriendship =
                     friends.find(
@@ -104,7 +115,6 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
                     ) || null;
 
                 isFriend = foundFriendship?.status === FriendStatusEnum.ACCEPTED;
-                setFriendship(foundFriendship);
             }
 
             if (requireOwner && !isMyProfile && !isAdmin) {
@@ -115,11 +125,16 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
                 throw { error: 'accessDenied' };
             }
 
+            if (!isLatest()) return;
+            setCurrentUser(currentUsr);
+            setTargetUser(tUser);
+            setFriendship(foundFriendship);
             setRoles({ isAdmin, isOrganizer, isParticipant, isMyProfile, isFriend });
-        } catch (err: any) {
-            setAuthError(err.error);
+        } catch (err: unknown) {
+            if (!isLatest()) return;
+            setAuthError(getErrorMessage(err));
         } finally {
-            setAuthLoading(false);
+            if (isLatest()) setAuthLoading(false);
         }
     }, [targetLink, targetId, requireFriendship, requireOwner, signId]);
 

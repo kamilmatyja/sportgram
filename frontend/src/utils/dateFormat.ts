@@ -2,9 +2,13 @@ export function getAgeFromDate(dateStr?: string | null): number | undefined {
     if (!dateStr) return undefined;
     const dob = new Date(dateStr);
     if (isNaN(dob.getTime())) return undefined;
-    const ageDifMs = Date.now() - dob.getTime();
-    const ageDate = new Date(ageDifMs);
-    return Math.abs(ageDate.getUTCFullYear() - 1970);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+    }
+    return Math.max(age, 0);
 }
 
 export function formatDate(dateStr?: string | null): string {

@@ -45,7 +45,7 @@ class ConversationIndexTest extends ApiTestCase
 
         $result = $this->get('/api/conversations?filter[userId]=' . $receiver->id->toString(), $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(3, $result['json']);
+        $this->assertCount(3, $result['json']['data']);
     }
 
     final public function testPagination(): void
@@ -64,30 +64,33 @@ class ConversationIndexTest extends ApiTestCase
 
         $result = $this->get('/api/conversations?page=2&limit=5&filter[userId]=' . $receiver->id->toString(), $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
+        $this->assertEquals(15, $result['json']['pagination']['total']);
+        $this->assertEquals(2, $result['json']['pagination']['page']);
+        $this->assertTrue($result['json']['pagination']['hasNextPage']);
     }
 
     final public function testSortByStatus(): void
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $receiver1 = UserFactory::make(em: $this->em);
-        $receiver2 = UserFactory::make(em: $this->em);
+        $receiver = UserFactory::make(em: $this->em);
 
         ConversationFactory::make([
             'senderUser' => $user,
-            'receiverUser' => $receiver1,
+            'receiverUser' => $receiver,
             'status' => ConversationStatusEnum::Sent,
         ], $this->em);
         ConversationFactory::make([
-            'senderUser' => $user,
-            'receiverUser' => $receiver2,
+            'senderUser' => $receiver,
+            'receiverUser' => $user,
             'status' => ConversationStatusEnum::Read,
         ], $this->em);
 
-        $result = $this->get('/api/conversations?sort=status:desc&filter[userId]=' . $user->id->toString(), $user);
+        $result = $this->get('/api/conversations?sort=status:desc&filter[userId]=' . $receiver->id->toString(), $user);
         $this->assertEquals(200, $result['status']);
-        $statuses = array_column($result['json'], 'status');
+        $statuses = array_column($result['json']['data'], 'status');
+        $this->assertCount(2, $statuses);
         $this->assertTrue($statuses[0] >= $statuses[1]);
     }
 
@@ -114,7 +117,7 @@ class ConversationIndexTest extends ApiTestCase
             $user,
         );
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(1, $result['json']);
+        $this->assertCount(1, $result['json']['data']);
     }
 
     final public function testFilterUserId(): void
@@ -139,7 +142,7 @@ class ConversationIndexTest extends ApiTestCase
 
         $result = $this->get('/api/conversations?filter[userId]=' . $receiver2->id->toString(), $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(2, $result['json']);
+        $this->assertCount(2, $result['json']['data']);
     }
 
     final public function testInvalidParams(): void

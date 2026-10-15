@@ -15,7 +15,7 @@ class UniqueField extends Constraint
         public string $field,
         ?string $message = null,
         ?array $groups = null,
-        $payload = null,
+        mixed $payload = null,
     ) {
         parent::__construct([], $groups, $payload);
 
@@ -24,9 +24,8 @@ class UniqueField extends Constraint
         }
     }
 
-    /** @return string[] */
-    final public function getRequiredOptions(): array
+    final public function validatedBy(): string
     {
-        return ['entity', 'field'];
+        return UniqueFieldValidator::class;
     }
 }

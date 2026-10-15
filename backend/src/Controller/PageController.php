@@ -11,7 +11,7 @@ use App\Dto\{ElementStatusDto,
     SaveStatusDto};
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\{PageFollowResource, PageResource};
 use App\Security\Voter\{PageCreatorVoter, PageFollowVoter, PageParticipantVoter, PageVoter};
 use App\Service\PageService;
@@ -31,7 +31,7 @@ class PageController extends AbstractController
         summary: 'Create page',
         requestBody: new Body(PageDto::class),
         tags: ['pages'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
         #[MapRequestPayload]
@@ -49,7 +49,7 @@ class PageController extends AbstractController
         summary: 'Update page',
         requestBody: new Body(PageDto::class),
         tags: ['pages'],
-        responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         Uuid $id,
@@ -68,7 +68,7 @@ class PageController extends AbstractController
         summary: 'Update page status',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['pages'],
-        responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function patchStatus(
         Uuid $id,
@@ -86,7 +86,7 @@ class PageController extends AbstractController
     #[OA\Delete(
         summary: 'Delete page',
         tags: ['pages'],
-        responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -123,7 +123,7 @@ class PageController extends AbstractController
     #[OA\Get(
         summary: 'Details of page',
         tags: ['pages'],
-        responses: [new Item(PageResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(PageResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -144,7 +144,7 @@ class PageController extends AbstractController
         summary: 'Update page participant status',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['pages'],
-        responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function patchParticipantStatus(
         Uuid $id,
@@ -163,7 +163,7 @@ class PageController extends AbstractController
         summary: 'Create page follow',
         requestBody: new Body(PageFollowStatusDto::class),
         tags: ['pages'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function createFollow(
         Uuid $id,
@@ -182,7 +182,7 @@ class PageController extends AbstractController
         summary: 'Update page follow status',
         requestBody: new Body(PageFollowStatusDto::class),
         tags: ['pages'],
-        responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function patchFollowStatus(
         Uuid $id,
@@ -200,7 +200,7 @@ class PageController extends AbstractController
     #[OA\Delete(
         summary: 'Delete page follow',
         tags: ['pages'],
-        responses: [new Ok(), new BadRequest(), new Unauthorized(), new Forbidden(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function deleteFollow(
         Uuid $id,
@@ -235,7 +235,7 @@ class PageController extends AbstractController
     #[OA\Get(
         summary: 'Details of page follow',
         tags: ['pages'],
-        responses: [new Item(PageResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(PageResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function detailsFollow(
         Uuid $id,

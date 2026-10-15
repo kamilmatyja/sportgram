@@ -44,17 +44,17 @@ class UserFilterDto
     #[Assert\Length(min: 1, max: 64)]
     public ?string $lastName = null;
 
-    #[Assert\Choice(callback: [GenderEnum::class, 'values'])]
+    #[Assert\Choice(callback: [GenderEnum::class, 'cases'])]
     public ?GenderEnum $gender = null;
 
     #[Assert\Email]
     #[Assert\Length(min: 5, max: 64)]
     public ?string $email = null;
 
-    #[Assert\Choice(callback: [CountryEnum::class, 'values'])]
+    #[Assert\Choice(callback: [CountryEnum::class, 'cases'])]
     public ?CountryEnum $country = null;
 
-    #[Assert\Choice(callback: [UserStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [UserStatusEnum::class, 'cases'])]
     public ?UserStatusEnum $status = null;
 
     /** @var Uuid[] */
@@ -73,4 +73,9 @@ class UserFilterDto
     #[Assert\Uuid]
     #[EntityExistsField(entity: UserSign::class)]
     public ?Uuid $signId = null;
+
+    final public function addUserId(Uuid $userId): void
+    {
+        $this->userIds[] = $userId;
+    }
 }

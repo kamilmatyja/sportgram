@@ -46,13 +46,24 @@ class PushSubscriptionUpdateTest extends ApiTestCase
             'endpoint' => '',
             'p256dh' => 'UPDATED_KEY...',
             'auth' => 'UPDATED_AUTH',
-            'status' => 999,
+            'status' => PushSubscriptionStatusEnum::Active->value,
         ];
 
         $result = $this->put("/api/push-subscriptions/{$subscription->id->toString()}", $payload, $user);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('endpoint', $result['json']['errors']);
+
+        $payload = [
+            'endpoint' => 'https://fcm.googleapis.com/fcm/send/UPDATED',
+            'p256dh' => 'UPDATED_KEY...',
+            'auth' => 'UPDATED_AUTH',
+            'status' => 999,
+        ];
+
+        $result = $this->put("/api/push-subscriptions/{$subscription->id->toString()}", $payload, $user);
+        $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('status', $result['json']['errors']);
+        $this->assertEquals(['This value was of an unexpected type.'], $result['json']['errors']['status']);
     }
 
     final public function testSuccess(): void

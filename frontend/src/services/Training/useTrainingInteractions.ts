@@ -1,20 +1,22 @@
 import { StatusBody } from '../../api/body/StatusBody';
 import { TrainingProvider } from '../../api/providers/TrainingProvider';
-import { useActionState } from '../../utils/hooks/useActionState';
+import { useSafeAction } from '../Common/useSafeAction';
+
+export type TrainingInteractions = ReturnType<typeof useTrainingInteractions>;
 
 export function useTrainingInteractions(refreshTrainings: () => void) {
-    const { actionLoading, runAction } = useActionState();
+    const { actionLoading, actionError, runSafeAction } = useSafeAction();
     const trainingProvider = new TrainingProvider();
 
-    const handleParticipantStatusSubmit = (participantId: string, newStatus: number) => {
-        runAction(participantId, async () => {
+    const handleParticipantStatusSubmit = (participantId: string, newStatus: number) =>
+        runSafeAction(participantId, async () => {
             await trainingProvider.updateParticipantStatus(participantId, new StatusBody(newStatus));
             refreshTrainings();
-        }).catch(() => {});
-    };
+        });
 
     return {
         actionLoading,
+        actionError,
         handleParticipantStatusSubmit,
     };
 }

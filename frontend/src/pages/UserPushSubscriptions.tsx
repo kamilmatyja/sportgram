@@ -22,10 +22,9 @@ export default function UserPushSubscriptions() {
                 loading={pushService.loading}
                 error={pushService.error}
                 page={pushService.page}
+                hasMore={pushService.hasMore}
                 limit={pushService.limit}
                 sort={pushService.sort}
-                filters={pushService.filters}
-                onFilterChange={pushService.handleFilterChange}
                 onSortChange={pushService.handleSortChange}
                 onLimitChange={pushService.handleLimitChange}
                 onPrevPage={pushService.handlePrevPage}

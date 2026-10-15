@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Spinner, Alert } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 
 import { EventBasicInfo } from './EventBasicInfo';
 import { EventDisciplinesTable } from './EventDisciplinesTable';
@@ -7,8 +7,8 @@ import { EventPageHeader } from './EventPageHeader';
 import { EventResponse } from '../../api/responses/EventResponse';
 import { PageResponse } from '../../api/responses/PageResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
-import { useTranslation } from '../../context/TranslationContext';
 import { ColorEnum } from '../../enums/ColorEnum';
+import { ErrorView, LoadingView } from '../Common/ViewState';
 
 interface EventDetailsViewProps {
     eventObj: EventResponse | null;
@@ -33,21 +33,9 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({
     onManageClick,
     openListsModal,
 }) => {
-    const { t } = useTranslation();
+    if (loading) return <LoadingView />;
 
-    if (loading)
-        return (
-            <Container className="mt-5 text-center">
-                <Spinner animation="border" className="text-profile-primary" />
-            </Container>
-        );
-
-    if (error || !eventObj || !ownerPage || !currentUser)
-        return (
-            <Container className="mt-5">
-                <Alert variant="danger">{error ? t(error) : t('error')}</Alert>
-            </Container>
-        );
+    if (error || !eventObj || !ownerPage || !currentUser) return <ErrorView error={error || 'error'} />;
 
     const themeClass = ColorEnum.getClass(ownerPage.color);
     const canManage = isMyProfile || isAdmin;

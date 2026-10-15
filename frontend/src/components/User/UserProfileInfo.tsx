@@ -11,7 +11,10 @@ import { GenderEnum } from '../../enums/GenderEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
 import { getAgeFromDate } from '../../utils/dateFormat';
+import { getOptionLabel } from '../../utils/options';
 import BootstrapIcon from '../Common/BootstrapIcon';
+import { EnumBadge } from '../Common/EnumBadge';
+import { SectionHeader } from '../Common/SectionHeader';
 
 interface UserProfileInfoProps {
     user: UserResponse;
@@ -26,18 +29,22 @@ export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ user, isMyProf
     return (
         <Card className="shadow-sm mb-4">
             <Card.Body>
-                <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
-                    <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">
-                        <BootstrapIcon name="info-circle" className="me-2" />
-                        {t('basicInformation')}
-                    </Card.Title>
-                    {(isMyProfile || isAdmin) && (
-                        <Button variant="profile-primary" onClick={() => onManageClick(user)}>
-                            <BootstrapIcon name="gear" className="me-1" />
-                            {t('manage')}
-                        </Button>
-                    )}
-                </Stack>
+                <SectionHeader
+                    title={
+                        <>
+                            <BootstrapIcon name="info-circle" className="me-2" />
+                            {t('basicInformation')}
+                        </>
+                    }
+                    actions={
+                        (isMyProfile || isAdmin) && (
+                            <Button variant="profile-primary" onClick={() => onManageClick(user)}>
+                                <BootstrapIcon name="gear" className="me-1" />
+                                {t('manage')}
+                            </Button>
+                        )
+                    }
+                />
 
                 <Card.Text className="mb-4 text-break fs-5">{user.bio || '-'}</Card.Text>
 
@@ -56,23 +63,16 @@ export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ user, isMyProf
                     </Col>
                     <Col sm={6} md={4}>
                         <Stack className="text-muted small mb-1">{t('country')}</Stack>
-                        <Stack className="fw-medium">
-                            {CountryEnum.getOptions(t).find((o) => o.value === user.country)?.label || user.country}
-                        </Stack>
+                        <Stack className="fw-medium">{getOptionLabel(CountryEnum.getOptions(t), user.country)}</Stack>
                     </Col>
                     <Col sm={6} md={4}>
                         <Stack className="text-muted small mb-1">{t('gender')}</Stack>
-                        <Stack className="fw-medium">
-                            {GenderEnum.getOptions(t).find((o) => o.value === user.gender)?.label || user.gender}
-                        </Stack>
+                        <Stack className="fw-medium">{getOptionLabel(GenderEnum.getOptions(t), user.gender)}</Stack>
                     </Col>
                     <Col sm={6} md={4}>
                         <Stack className="text-muted small mb-1">{t('status')}</Stack>
                         <Stack>
-                            <Badge bg="light" text="dark" className="border profile-theme-border">
-                                {UserStatusEnum.getOptions(t).find((o) => o.value === user.status)?.label ||
-                                    user.status}
-                            </Badge>
+                            <EnumBadge options={UserStatusEnum.getOptions(t)} value={user.status} />
                         </Stack>
                     </Col>
                 </Row>
@@ -83,7 +83,7 @@ export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ user, isMyProf
                         <Stack direction="horizontal" gap={2} className="flex-wrap">
                             {user.roles?.map((r: UserRoleResponse) => (
                                 <Badge key={r.id} className="profile-theme-bg">
-                                    {RoleEnum.getOptions(t).find((o) => o.value === r.role)?.label || r.role}
+                                    {getOptionLabel(RoleEnum.getOptions(t), r.role)}
                                 </Badge>
                             ))}
                         </Stack>
@@ -92,10 +92,7 @@ export const UserProfileInfo: React.FC<UserProfileInfoProps> = ({ user, isMyProf
                         <Stack className="text-muted small mb-2">{t('discipline')}</Stack>
                         <Stack direction="horizontal" gap={2} className="flex-wrap">
                             {user.disciplines?.map((d: UserDisciplineResponse) => (
-                                <Badge key={d.id} bg="light" text="dark" className="border profile-theme-border">
-                                    {DisciplineEnum.getOptions(t).find((o) => o.value === d.discipline)?.label ||
-                                        d.discipline}
-                                </Badge>
+                                <EnumBadge key={d.id} options={DisciplineEnum.getOptions(t)} value={d.discipline} />
                             ))}
                         </Stack>
                     </Stack>

@@ -1,82 +1,44 @@
-import { useEffect, useState } from 'react';
-
 import { FeedProvider } from '../../api/providers/FeedProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
 import { FeedFilterQuery } from '../../api/queries/FeedFilterQuery';
 import { FeedIndexQuery } from '../../api/queries/FeedIndexQuery';
-import { FeedResponse } from '../../api/responses/FeedResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
-import { useDataFetch } from '../../utils/hooks/useDataFetch';
-import { useListFilters } from '../../utils/hooks/useListFilters';
+import { FEED_INCLUDES } from '../../api/queries/includes';
+import { collectFeedUserIds } from '../../utils/feed';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
+import { usePaginatedList } from '../../utils/hooks/usePaginatedList';
+import { useRelatedUsers } from '../../utils/hooks/useRelatedUsers';
+import { toOptionalNumber } from '../../utils/query';
 
 export function useUserFeeds(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
-    const list = useListFilters(new FeedFilterQuery());
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-
-    const { data: feeds, loading, error, executeFetch } = useDataFetch<FeedResponse[]>();
-
-    const userProvider = new UserProvider();
+    const { relatedUsers, loadRelatedUsers } = useRelatedUsers();
     const feedProvider = new FeedProvider();
 
-    const extractUserIds = (feedData: FeedResponse[]): string[] => {
-        return feedData.flatMap((feed) => [
-            feed.userId,
-            ...(feed.comments?.map((c) => c.userId) || []),
-            ...(feed.reactions?.map((r) => r.userId) || []),
-        ]);
-    };
-
-    const fetchFeeds = (userId: string) => {
-        executeFetch(async () => {
+    const { list, items, loading, error, refresh } = usePaginatedList({
+        initialFilter: new FeedFilterQuery(),
+        scope: isAccessReady(access) ? access.targetUser : null,
+        fetchPage: async (list, targetUser) => {
             const filterDto = new FeedFilterQuery();
-            filterDto.userId = userId;
+            filterDto.userId = targetUser.id;
             filterDto.text = list.filters.text;
-            filterDto.status = list.filters.status ? Number(list.filters.status) : undefined;
+            filterDto.status = toOptionalNumber(list.filters.status);
 
-            const indexDto = new FeedIndexQuery();
-            indexDto.page = list.page;
-            indexDto.limit = list.limit;
-            indexDto.sort = list.sort;
-            indexDto.filter = filterDto;
-            indexDto.include = [
-                'feedComments',
-                'feedReactions',
-                'eventDisciplineList',
-                'eventDisciplineResult',
-                'goal',
-                'goalParticipantResult',
-                'training',
-            ];
+            const indexDto = list.buildIndexQuery(new FeedIndexQuery(), filterDto);
+            indexDto.include = FEED_INCLUDES;
 
-            const data = await feedProvider.index(indexDto);
-
-            const updatedUsers = await fetchRelatedUsers(extractUserIds(data), relatedUsers, userProvider);
-            setRelatedUsers(updatedUsers);
+            const data = list.applyPagination(await feedProvider.index(indexDto));
+            await loadRelatedUsers(collectFeedUserIds(data));
 
             return data;
-        }, []);
-    };
-
-    useEffect(() => {
-        if (!access.authLoading && !access.authError && access.targetUser) {
-            fetchFeeds(access.targetUser.id);
-        }
-    }, [access.authLoading, access.authError, access.targetUser, list.page, list.limit, list.sort, list.filters]);
-
-    const refreshFeeds = () => {
-        if (access.targetUser) fetchFeeds(access.targetUser.id);
-    };
+        },
+    });
 
     return {
         ...access,
         ...list,
-        feeds: feeds || [],
+        feeds: items,
         relatedUsers,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshFeeds,
+        refreshFeeds: refresh,
     };
 }

@@ -36,7 +36,7 @@ class NotificationIndexTest extends ApiTestCase
         $result = $this->get('/api/notifications', $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(2, $result['json']);
+        $this->assertCount(2, $result['json']['data']);
     }
 
     final public function testFiltersAndSorting(): void
@@ -58,12 +58,12 @@ class NotificationIndexTest extends ApiTestCase
 
         $result = $this->get('/api/notifications?filter[text]=essa&filter[status]=2', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(2, $result['json']);
+        $this->assertCount(2, $result['json']['data']);
 
         $resultSort = $this->get('/api/notifications?filter[status]=2&sort=text:desc', $user);
         $this->assertEquals(200, $resultSort['status']);
-        $this->assertEquals('New message', $resultSort['json'][0]['text']);
-        $this->assertEquals('Message about event', $resultSort['json'][1]['text']);
+        $this->assertEquals('New message', $resultSort['json']['data'][0]['text']);
+        $this->assertEquals('Message about event', $resultSort['json']['data'][1]['text']);
     }
 
     final public function testPagination(): void
@@ -76,6 +76,9 @@ class NotificationIndexTest extends ApiTestCase
 
         $result = $this->get('/api/notifications?page=2&limit=5', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
+        $this->assertEquals(15, $result['json']['pagination']['total']);
+        $this->assertEquals(2, $result['json']['pagination']['page']);
+        $this->assertTrue($result['json']['pagination']['hasNextPage']);
     }
 }

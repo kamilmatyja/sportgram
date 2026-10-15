@@ -1,18 +1,19 @@
 import React from 'react';
-import { Row, Col, Form, Stack } from 'react-bootstrap';
+import { Row, Col, Form } from 'react-bootstrap';
 
 import { StatisticFilterQuery } from '../../api/queries/StatisticFilterQuery';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { PaginationEnum } from '../../enums/PaginationEnum';
+import { buildSortOptions } from '../../utils/options';
+import { formatUserName } from '../../utils/user';
+import { FilterBar, FilterInput, FilterSelect, SortLimitSelect } from '../Common/FilterBar';
 import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
 
 interface StatisticsFilterBarProps {
     filters: StatisticFilterQuery;
     sort: string;
     limit: number;
-    activeTab: 'records' | 'progress';
     availableUsers: UserResponse[];
     currentUser: UserResponse | null;
     onFilterChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
@@ -25,7 +26,6 @@ export const StatisticsFilterBar: React.FC<StatisticsFilterBarProps> = ({
     filters,
     sort,
     limit,
-    activeTab,
     availableUsers,
     currentUser,
     onFilterChange,
@@ -37,24 +37,18 @@ export const StatisticsFilterBar: React.FC<StatisticsFilterBarProps> = ({
 
     const userOptions: SelectOption[] = availableUsers.map((u) => ({
         value: u.id,
-        label: `${u.firstName} ${u.lastName} ${currentUser && u.id === currentUser.id ? `(${t('profile')})` : ''}`,
+        label: `${formatUserName(u)} ${currentUser && u.id === currentUser.id ? `(${t('profile')})` : ''}`,
     }));
 
-    const disciplineOptions = DisciplineEnum.getOptions(t) as SelectOption[];
-    const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
-    const sortOptions: SelectOption[] = [
-        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
-        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
-        { value: 'discipline:desc', label: `${t('discipline')} Z-A` },
-        { value: 'discipline:asc', label: `${t('discipline')} A-Z` },
-        { value: 'distance:desc', label: `${t('distance')} 9-0` },
-        { value: 'distance:asc', label: `${t('distance')} 0-9` },
-        { value: 'time:desc', label: `${t('timeSeconds')} 9-0` },
-        { value: 'time:asc', label: `${t('timeSeconds')} 0-9` },
-    ];
+    const sortOptions = buildSortOptions(t, [
+        'createdAt',
+        'discipline',
+        { field: 'distance', numeric: true },
+        { field: 'time', label: 'timeSeconds', numeric: true },
+    ]);
 
     return (
-        <Row className="mb-4 g-3">
+        <Row className="g-3 mb-3">
             <Col xs={12} lg={3}>
                 <Form.Group>
                     <Form.Label className="fw-bold small">{t('selectFriends')}</Form.Label>
@@ -65,39 +59,29 @@ export const StatisticsFilterBar: React.FC<StatisticsFilterBarProps> = ({
             </Col>
 
             <Col xs={12} lg={9}>
-                <Stack direction="horizontal" gap={2} className="flex-wrap align-items-end h-100">
-                    <Form.Group className="w-auto">
-                        <Form.Label className="small text-muted mb-1">{t('discipline')}</Form.Label>
-                        <Form.Select name="discipline" value={filters.discipline || ''} onChange={onFilterChange}>
-                            <SelectOptions options={disciplineOptions} placeholder={t('selectOption')} />
-                        </Form.Select>
-                    </Form.Group>
-
-                    <Form.Group className="w-auto">
-                        <Form.Label className="small text-muted mb-1">{t('distance')}</Form.Label>
-                        <Form.Control
-                            type="number"
-                            name="distance"
-                            placeholder={t('distanceMeters')}
-                            value={filters.distance || ''}
-                            onChange={onFilterChange}
-                        />
-                    </Form.Group>
-
-                    <Form.Group className="w-auto ms-lg-auto">
-                        <Form.Label className="small text-muted mb-1">{t('status')}</Form.Label>
-                        <Form.Select value={sort} onChange={onSortChange}>
-                            <SelectOptions options={sortOptions} />
-                        </Form.Select>
-                    </Form.Group>
-
-                    <Form.Group className="w-auto">
-                        <Form.Label className="small text-muted mb-1">{t('page')}</Form.Label>
-                        <Form.Select value={limit} onChange={onLimitChange}>
-                            <SelectOptions options={limitOptions} />
-                        </Form.Select>
-                    </Form.Group>
-                </Stack>
+                <FilterBar>
+                    <FilterSelect
+                        name="discipline"
+                        value={filters.discipline || ''}
+                        onChange={onFilterChange}
+                        options={DisciplineEnum.getOptions(t)}
+                        placeholder={t('discipline')}
+                    />
+                    <FilterInput
+                        type="number"
+                        name="distance"
+                        placeholder={t('distanceMeters')}
+                        value={filters.distance || ''}
+                        onChange={onFilterChange}
+                    />
+                    <SortLimitSelect
+                        sortOptions={sortOptions}
+                        sort={sort}
+                        limit={limit}
+                        onSortChange={onSortChange}
+                        onLimitChange={onLimitChange}
+                    />
+                </FilterBar>
             </Col>
         </Row>
     );

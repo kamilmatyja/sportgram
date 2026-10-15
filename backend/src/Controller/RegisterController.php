@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{UserCodeDto, UserEmailDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Conflict, Created, Ok};
+use App\OpenApi\{BadRequest, Body, Conflict, Created, NotFound, Ok};
 use App\Service\RegisterService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,7 +40,7 @@ class RegisterController extends AbstractController
         summary: 'Confirm register user',
         requestBody: new Body(UserCodeDto::class),
         tags: ['registers'],
-        responses: [new Ok(), new BadRequest(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound()],
     )]
     final public function confirm(
         Uuid $id,
@@ -58,7 +58,7 @@ class RegisterController extends AbstractController
     #[OA\Post(
         summary: 'Resend register user',
         tags: ['registers'],
-        responses: [new Ok(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound()],
     )]
     final public function resend(
         Uuid $id,

@@ -10,7 +10,7 @@ use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    required: ['receiverUserId'],
+    required: ['userIds'],
     properties: [
         new OA\Property(
             property: 'userIds',
@@ -35,6 +35,11 @@ class FriendFilterDto
     #[Assert\Unique]
     public array $userIds = [];
 
-    #[Assert\Choice(callback: [FriendStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [FriendStatusEnum::class, 'cases'])]
     public ?FriendStatusEnum $status = null;
+
+    final public function addUserId(Uuid $userId): void
+    {
+        $this->userIds[] = $userId;
+    }
 }

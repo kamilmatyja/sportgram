@@ -1,10 +1,12 @@
 import React from 'react';
-import { Card, Stack, Badge, Button, Row, Col } from 'react-bootstrap';
+import { Card, Stack, Button, Row, Col } from 'react-bootstrap';
 
 import { PageResponse } from '../../api/responses/PageResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import BootstrapIcon from '../Common/BootstrapIcon';
+import { EnumBadge } from '../Common/EnumBadge';
+import { SectionHeader } from '../Common/SectionHeader';
 
 interface PageInfoProps {
     pageObj: PageResponse;
@@ -18,17 +20,21 @@ export const PageInfo: React.FC<PageInfoProps> = ({ pageObj, canManage, onManage
     return (
         <Card className="shadow-sm mb-4">
             <Card.Body>
-                <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
-                    <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">
-                        <BootstrapIcon name="info-circle" className="me-2" />
-                        {t('basicInformation')}
-                    </Card.Title>
-                    {canManage && (
-                        <Button variant="profile-primary" onClick={() => onManageClick(pageObj)}>
-                            <BootstrapIcon name="gear" className="me-1" /> {t('manage')}
-                        </Button>
-                    )}
-                </Stack>
+                <SectionHeader
+                    title={
+                        <>
+                            <BootstrapIcon name="info-circle" className="me-2" />
+                            {t('basicInformation')}
+                        </>
+                    }
+                    actions={
+                        canManage && (
+                            <Button variant="profile-primary" onClick={() => onManageClick(pageObj)}>
+                                <BootstrapIcon name="gear" className="me-1" /> {t('manage')}
+                            </Button>
+                        )
+                    }
+                />
 
                 <Card.Title as="h4" className="mb-2 fw-bold">
                     {pageObj.title}
@@ -41,10 +47,7 @@ export const PageInfo: React.FC<PageInfoProps> = ({ pageObj, canManage, onManage
                             <Stack as="strong" className="small mb-1">
                                 {t('status')}:
                             </Stack>
-                            <Badge bg="light" text="dark" className="border profile-theme-border">
-                                {ElementStatusEnum.getOptions(t).find((opt) => opt.value === pageObj.status)?.label ||
-                                    pageObj.status}
-                            </Badge>
+                            <EnumBadge options={ElementStatusEnum.getOptions(t)} value={pageObj.status} />
                         </Stack>
                     </Col>
                     <Col md={8} />

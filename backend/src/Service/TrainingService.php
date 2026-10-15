@@ -104,11 +104,11 @@ readonly class TrainingService
             }
         }
 
-        if (! in_array($user->id, $dto->participants)) {
-            $dto->participants[] = $user->id;
+        if (! in_array($user->id, $dto->userIds)) {
+            $dto->userIds[] = $user->id;
         }
 
-        foreach ($dto->participants as $userId) {
+        foreach ($dto->userIds as $userId) {
             $participantUser = $this->userRepository->findById($userId);
 
             if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
@@ -198,8 +198,8 @@ readonly class TrainingService
             }
         }
 
-        if (! in_array($training->user->id, $dto->participants)) {
-            $dto->participants[] = $training->user->id;
+        if (! in_array($training->user->id, $dto->userIds)) {
+            $dto->userIds[] = $training->user->id;
         }
 
         $currentIds = array_map(
@@ -207,8 +207,8 @@ readonly class TrainingService
             $training->participants->toArray(),
         );
 
-        $toAdd = array_diff($dto->participants, $currentIds);
-        $toRemove = array_diff($currentIds, $dto->participants);
+        $toAdd = array_diff($dto->userIds, $currentIds);
+        $toRemove = array_diff($currentIds, $dto->userIds);
 
         foreach ($training->participants as $participant) {
             if (in_array($participant->user->id, $toRemove)) {
@@ -230,6 +230,15 @@ readonly class TrainingService
 
             $this->trainingParticipantRepository->save(
                 new TrainingParticipant($training, $participantUser, SaveStatusEnum::Pending),
+            );
+
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent(
+                    $participantUser,
+                    NotificationTypeEnum::TrainingParticipant,
+                    $training->title,
+                    '/trainings/' . $training->link,
+                ),
             );
         }
 

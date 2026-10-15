@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new OA\Property(property: 'backgroundPhoto', type: 'string', example: 'base64string'),
         new OA\Property(property: 'color', type: 'integer', example: 1),
         new OA\Property(
-            property: 'participants',
+            property: 'userIds',
             type: 'array',
             items: new OA\Items(type: 'string', format: 'uuid'),
             example: ['b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'],
@@ -53,7 +53,7 @@ class PageDto
     public string $backgroundPhoto;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [ColorEnum::class, 'values'])]
+    #[Assert\Choice(callback: [ColorEnum::class, 'cases'])]
     public ColorEnum $color;
 
     /** @var Uuid[] */
@@ -64,5 +64,10 @@ class PageDto
     ])]
     #[Assert\Count(min: 0)]
     #[Assert\Unique]
-    public array $participants = [];
+    public array $userIds = [];
+
+    final public function addUserId(Uuid $userId): void
+    {
+        $this->userIds[] = $userId;
+    }
 }

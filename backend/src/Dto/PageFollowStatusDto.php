@@ -16,6 +16,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 class PageFollowStatusDto
 {
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [PageFollowStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [PageFollowStatusEnum::class, 'cases'])]
     public PageFollowStatusEnum $status;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { EventBody } from '../../api/body/EventBody';
 import { EventDiscipline } from '../../api/body/EventDiscipline';
@@ -6,64 +6,63 @@ import { EventDistance } from '../../api/body/EventDistance';
 import { EventSubDistance } from '../../api/body/EventSubDistance';
 import { StatusBody } from '../../api/body/StatusBody';
 import { EventProvider } from '../../api/providers/EventProvider';
-import { PageProvider } from '../../api/providers/PageProvider';
-import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
-import { PageIndexQuery } from '../../api/queries/PageIndexQuery';
 import { EventResponse } from '../../api/responses/EventResponse';
 import { PageResponse } from '../../api/responses/PageResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
-import { createFormHandler } from '../../utils/formHandler';
-import { useFormState } from '../../utils/hooks/useFormState';
-import { useModal } from '../../utils/hooks/useModal';
+import { getErrorMessage } from '../../utils/api';
+import { createDisciplinesEditor } from '../../utils/disciplinesEditor';
+import { fetchUserPages } from '../../utils/fetchUserPages';
+import { createFormHandler, createSubmitHandler } from '../../utils/formHandler';
+import { useCrudModals } from '../../utils/hooks/useCrudModals';
+
+const emptyEventBody = () => new EventBody('', '', '', '', '', '', '', '', []);
 
 export function useEventModals(onSuccess: () => void, currentUser: UserResponse | null) {
-    const addModal = useModal();
-    const manageModal = useModal<EventResponse>();
-    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
+    const {
+        addModal,
+        manageModal,
+        loading,
+        globalError,
+        fieldErrors,
+        resetErrors,
+        setGlobalError,
+        submitAdd,
+        submitManage,
+    } = useCrudModals<EventResponse>(onSuccess);
 
     const [myPages, setMyPages] = useState<PageResponse[]>([]);
     const [selectedPageId, setSelectedPageId] = useState<string>('');
-    const [formData, setFormData] = useState<EventBody>(new EventBody('', '', '', '', '', '', '', '', []));
+    const [formData, setFormData] = useState<EventBody>(emptyEventBody);
 
     const eventProvider = new EventProvider();
-    const pageProvider = new PageProvider();
 
-    const fetchMyPages = async () => {
-        if (!currentUser) return;
-        try {
-            const filter = new PageFilterQuery();
-            filter.userId = currentUser.id;
-            const indexDto = new PageIndexQuery();
-            indexDto.filter = filter;
-            indexDto.limit = 100;
-            const pages = await pageProvider.index(indexDto);
-            setMyPages(pages);
-        } catch (e) {
-            console.error(e);
-        }
-    };
+    const disciplinesEditor = createDisciplinesEditor<EventBody, EventDistance, EventSubDistance>(
+        setFormData,
+        () => ({ distance: 0, subDistances: [] }),
+        () => ({ subDistance: 0 }),
+    );
 
     const openAddModal = async () => {
-        setFormData(new EventBody('', '', '', '', '', '', '', '', []));
+        setFormData(emptyEventBody());
         setSelectedPageId('');
         resetErrors();
-        await fetchMyPages();
+        if (currentUser) {
+            try {
+                setMyPages(await fetchUserPages(currentUser.id));
+            } catch (err) {
+                setMyPages([]);
+                setGlobalError(getErrorMessage(err));
+            }
+        }
         addModal.open();
     };
 
-    const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!selectedPageId) {
-            return;
-        }
-        wrap(async () => {
-            await eventProvider.create(selectedPageId, formData);
-            addModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleAddSubmit = createSubmitHandler(() => {
+        if (!selectedPageId) return;
+        return submitAdd(() => eventProvider.create(selectedPageId, formData));
+    });
 
-    const openManageModal = async (ev: EventResponse) => {
+    const openManageModal = (ev: EventResponse) => {
         manageModal.open(ev);
         const disciplinesMapped: EventDiscipline[] = ev.disciplines.map((d) => ({
             discipline: d.discipline,
@@ -91,97 +90,14 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
         resetErrors();
     };
 
-    const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!manageModal.data) return;
-        wrap(async () => {
-            formData.photo = formData.photo ? formData.photo : manageModal.data!.photo;
-            await eventProvider.update(manageModal.data!.id, formData);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleEditSubmit = createSubmitHandler(() =>
+        submitManage((ev) => eventProvider.update(ev.id, { ...formData, photo: formData.photo || ev.photo })),
+    );
 
-    const handleStatusSubmit = async (newStatus: number) => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await eventProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleStatusSubmit = (newStatus: number) =>
+        submitManage((ev) => eventProvider.updateStatus(ev.id, new StatusBody(newStatus)));
 
-    const handleDelete = async () => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await eventProvider.delete(manageModal.data!.id);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
-
-    const addDiscipline = () => {
-        const newDisc = new EventDiscipline();
-        newDisc.discipline = 1;
-        newDisc.distances = [];
-        setFormData((prev) => ({ ...prev, disciplines: [...(prev.disciplines || []), newDisc] }));
-    };
-
-    const updateDisciplineType = (index: number, type: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[index].discipline = type;
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const removeDiscipline = (index: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs.splice(index, 1);
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const addDistance = (discIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        const newDist = new EventDistance();
-        newDist.distance = 0;
-        newDist.subDistances = [];
-        discs[discIndex].distances = [...(discs[discIndex].distances || []), newDist];
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const updateDistanceValue = (discIndex: number, distIndex: number, val: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[discIndex].distances![distIndex].distance = val;
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const removeDistance = (discIndex: number, distIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[discIndex].distances!.splice(distIndex, 1);
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const addSubDistance = (discIndex: number, distIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        const newSub = new EventSubDistance();
-        newSub.subDistance = 0;
-        discs[discIndex].distances![distIndex].subDistances = [
-            ...(discs[discIndex].distances![distIndex].subDistances || []),
-            newSub,
-        ];
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const updateSubDistanceValue = (discIndex: number, distIndex: number, subIndex: number, val: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[discIndex].distances![distIndex].subDistances![subIndex].subDistance = val;
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const removeSubDistance = (discIndex: number, distIndex: number, subIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[discIndex].distances![distIndex].subDistances!.splice(subIndex, 1);
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
+    const handleDelete = () => submitManage((ev) => eventProvider.delete(ev.id));
 
     const handleChange = createFormHandler(setFormData);
 
@@ -205,14 +121,16 @@ export function useEventModals(onSuccess: () => void, currentUser: UserResponse 
         loading,
         globalError,
         fieldErrors,
-        addDiscipline,
-        updateDisciplineType,
-        removeDiscipline,
-        addDistance,
-        updateDistanceValue,
-        removeDistance,
-        addSubDistance,
-        updateSubDistanceValue,
-        removeSubDistance,
+        addDiscipline: disciplinesEditor.addDiscipline,
+        updateDisciplineType: disciplinesEditor.updateDisciplineType,
+        removeDiscipline: disciplinesEditor.removeDiscipline,
+        addDistance: disciplinesEditor.addDistance,
+        updateDistanceValue: (discIndex: number, distIndex: number, distance: number) =>
+            disciplinesEditor.updateDistance(discIndex, distIndex, { distance }),
+        removeDistance: disciplinesEditor.removeDistance,
+        addSubDistance: disciplinesEditor.addSubDistance,
+        updateSubDistanceValue: (discIndex: number, distIndex: number, subIndex: number, subDistance: number) =>
+            disciplinesEditor.updateSubDistance(discIndex, distIndex, subIndex, { subDistance }),
+        removeSubDistance: disciplinesEditor.removeSubDistance,
     };
 }

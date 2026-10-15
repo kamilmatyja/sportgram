@@ -2,12 +2,8 @@
 
 namespace App\Enum;
 
-use App\Trait\EnumValuesTrait;
-
 enum CountryEnum: int
 {
-    use EnumValuesTrait;
-
     case Albania = 1;
     case Andorra = 2;
     case Austria = 3;

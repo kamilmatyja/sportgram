@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import { Container, Card, Stack, Image } from 'react-bootstrap';
+import { Button, Container, Card, Stack } from 'react-bootstrap';
 
 import { StoryViewerModal } from './StoryViewerModal';
 import { StoryResponse } from '../../api/responses/StoryResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { useFeedStories } from '../../services/Story/useFeedStories';
+import { formatUserName } from '../../utils/user';
+import { Base64Image } from '../Common/Base64Image';
 import BootstrapIcon from '../Common/BootstrapIcon';
 
 export type FlatStory = StoryResponse & { user: UserResponse };
 
 export const StoriesCarousel: React.FC<{ targetUserId?: string }> = ({ targetUserId }) => {
+    const { t } = useTranslation();
     const { stories, relatedUsers, loading, error } = useFeedStories(targetUserId);
     const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null);
 
@@ -49,34 +53,39 @@ export const StoriesCarousel: React.FC<{ targetUserId?: string }> = ({ targetUse
                     {carouselItems.map((item) => {
                         const themeClass = ColorEnum.getClass(item.user.color);
                         return (
-                            <Stack
+                            <Button
                                 key={item.user.id}
-                                className="story-item"
+                                variant="link"
+                                className="story-item p-0 border-0 text-body text-decoration-none"
+                                aria-label={`${t('entryTypes.story')}: ${formatUserName(item.user)}`}
                                 onClick={() => setActiveStoryIndex(item.firstStoryIndex)}
                             >
-                                <Stack className={`story-avatar-container profile-theme-bg ${themeClass}`}>
-                                    {item.user.profilePhoto ? (
-                                        <Image
-                                            src={`data:image/webp;base64,${item.user.profilePhoto}`}
-                                            className="story-avatar"
-                                            alt="avatar"
-                                        />
-                                    ) : (
-                                        <Stack className="story-avatar bg-secondary align-items-center justify-content-center text-white">
-                                            <BootstrapIcon name="person" />
-                                        </Stack>
-                                    )}
+                                <Stack as="span" className={`story-avatar-container profile-theme-bg ${themeClass}`}>
+                                    <Base64Image
+                                        data={item.user.profilePhoto}
+                                        className="story-avatar"
+                                        alt=""
+                                        fallback={
+                                            <Stack
+                                                as="span"
+                                                className="story-avatar bg-secondary align-items-center justify-content-center text-white"
+                                            >
+                                                <BootstrapIcon name="person" />
+                                            </Stack>
+                                        }
+                                    />
                                 </Stack>
                                 <Stack as="small" className="text-truncate w-100 text-center">
                                     {item.user.firstName}
                                 </Stack>
-                            </Stack>
+                            </Button>
                         );
                     })}
                 </Card.Body>
             </Card>
 
             <StoryViewerModal
+                key={activeStoryIndex ?? -1}
                 show={activeStoryIndex !== null}
                 stories={flatStories}
                 initialIndex={activeStoryIndex ?? 0}

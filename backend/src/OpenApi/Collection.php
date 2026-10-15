@@ -42,11 +42,6 @@ class Collection extends OA\Response
                                 example: 20,
                             ),
                             new OA\Property(
-                                property: 'totalPages',
-                                type: 'integer',
-                                example: 7,
-                            ),
-                            new OA\Property(
                                 property: 'hasNextPage',
                                 type: 'boolean',
                                 example: true,

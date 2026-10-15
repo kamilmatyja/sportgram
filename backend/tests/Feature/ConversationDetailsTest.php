@@ -91,7 +91,7 @@ class ConversationDetailsTest extends ApiTestCase
 
         $result = $this->get('/api/conversations/' . $conversation->id->toString(), $user1);
         $this->assertEquals(200, $result['status']);
-        $json = $result['json'];
+        $json = $result['json']['data'];
 
         $expectedKeys = [
             'id',

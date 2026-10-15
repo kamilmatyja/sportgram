@@ -29,6 +29,6 @@ class ConversationFilterDto
     #[EntityExistsField(entity: User::class)]
     public Uuid $userId;
 
-    #[Assert\Choice(callback: [ConversationStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [ConversationStatusEnum::class, 'cases'])]
     public ?ConversationStatusEnum $status = null;
 }

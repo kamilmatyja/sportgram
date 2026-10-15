@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\Entity;
+
+use App\Entity\{Notification, User};
+use App\Enum\NotificationStatusEnum;
+use PHPUnit\Framework\TestCase;
+
+class NotificationTest extends TestCase
+{
+    final public function testEntityCanBeCreatedAndGettersWork(): void
+    {
+        $user = $this->createStub(User::class);
+        $text = 'Notification message';
+        $link = 'link';
+        $status = NotificationStatusEnum::Read;
+        $entity = new Notification($user, $text, $link, $status);
+        $this->assertInstanceOf(Notification::class, $entity);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($text, $entity->text);
+        $this->assertSame($link, $entity->link);
+        $this->assertSame($status, $entity->status);
+    }
+}

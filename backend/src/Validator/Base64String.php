@@ -9,4 +9,9 @@ use Symfony\Component\Validator\Constraint;
 class Base64String extends Constraint
 {
     public string $message = 'This value should be a valid base64 string.';
+
+    final public function validatedBy(): string
+    {
+        return Base64StringValidator::class;
+    }
 }

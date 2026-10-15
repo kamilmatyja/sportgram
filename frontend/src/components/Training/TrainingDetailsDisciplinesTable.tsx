@@ -4,8 +4,9 @@ import { Table, Stack } from 'react-bootstrap';
 import { TrainingDisciplineResponse } from '../../api/responses/TrainingDisciplineResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { getOptionLabel } from '../../utils/options';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface TrainingDetailsDisciplinesTableProps {
     disciplines: TrainingDisciplineResponse[];
@@ -16,7 +17,7 @@ export const TrainingDetailsDisciplinesTable: React.FC<TrainingDetailsDiscipline
 
     return (
         <Stack className="table-responsive-custom">
-            <Table bordered hover className="align-middle mb-0">
+            <Table bordered hover className="align-middle mb-0 shadow-sm">
                 <TableHead className="table-light">
                     <TableRow>
                         <TableHeaderCell>{t('discipline')}</TableHeaderCell>
@@ -26,19 +27,14 @@ export const TrainingDetailsDisciplinesTable: React.FC<TrainingDetailsDiscipline
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {disciplines.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={4} className="text-center text-muted">
-                                {t('noRecords')}
-                            </TableCell>
-                        </TableRow>
+                    {disciplines.every((disc) => disc.distances.length === 0) ? (
+                        <EmptyTableRow colSpan={4} />
                     ) : (
                         disciplines.flatMap((disc) =>
                             disc.distances.map((dist) => (
                                 <TableRow key={dist.id}>
                                     <TableCell>
-                                        {DisciplineEnum.getOptions(t).find((opt) => opt.value === disc.discipline)
-                                            ?.label || disc.discipline}
+                                        {getOptionLabel(DisciplineEnum.getOptions(t), disc.discipline)}
                                     </TableCell>
                                     <TableCell>{dist.distance}</TableCell>
                                     <TableCell>{dist.time}</TableCell>

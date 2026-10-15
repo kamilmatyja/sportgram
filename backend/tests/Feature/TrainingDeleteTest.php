@@ -30,12 +30,14 @@ class TrainingDeleteTest extends ApiTestCase
         $this->assertEquals(403, $result['status']);
     }
 
-    final public function testCannotDeleteTrainingWithParticipants(): void
+    final public function testCannotDeleteTrainingWithOtherParticipants(): void
     {
         $user = self::createUser(RoleEnum::Participant);
+        $otherUser = self::createUser(RoleEnum::Participant);
         $training = TrainingFactory::make(['user' => $user], $this->em);
 
         TrainingParticipantFactory::make(['training' => $training, 'user' => $user], $this->em);
+        TrainingParticipantFactory::make(['training' => $training, 'user' => $otherUser], $this->em);
 
         $result = $this->delete("/api/trainings/{$training->id->toString()}", $user);
 
@@ -48,7 +50,10 @@ class TrainingDeleteTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
         $training = TrainingFactory::make(['user' => $user], $this->em);
 
+        TrainingParticipantFactory::make(['training' => $training, 'user' => $user], $this->em);
+
         $result = $this->delete("/api/trainings/{$training->id->toString()}", $user);
         $this->assertEquals(200, $result['status']);
+        $this->assertEquals($training->id->toString(), $result['json']['id']);
     }
 }

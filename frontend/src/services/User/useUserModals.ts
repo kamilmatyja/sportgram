@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { StatusBody } from '../../api/body/StatusBody';
@@ -6,43 +6,32 @@ import { UserCreateBody } from '../../api/body/UserCreateBody';
 import { UserUpdateBody } from '../../api/body/UserUpdateBody';
 import { UserProvider } from '../../api/providers/UserProvider';
 import { UserResponse } from '../../api/responses/UserResponse';
-import { createFormHandler } from '../../utils/formHandler';
-import { useFormState } from '../../utils/hooks/useFormState';
-import { useModal } from '../../utils/hooks/useModal';
+import { createFormHandler, createSubmitHandler } from '../../utils/formHandler';
+import { useCrudModals } from '../../utils/hooks/useCrudModals';
+
+const emptyUserCreateBody = () => new UserCreateBody('', '', '', 0, 0, '', '', '', 0, 0, 0, 0, '', '', '', [], []);
+const emptyUserUpdateBody = () => new UserUpdateBody('', '', '', 0, 0, '', '', 0, 0, 0, 0, '', '', '', [], null, []);
 
 export function useUserModals(onSuccess: () => void) {
     const navigate = useNavigate();
+    const { addModal, manageModal, loading, globalError, fieldErrors, resetErrors, submitAdd, submitManage } =
+        useCrudModals<UserResponse>(onSuccess);
 
-    const addModal = useModal();
-    const manageModal = useModal<UserResponse>();
-    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
-
-    const [addFormData, setAddFormData] = useState(
-        new UserCreateBody('', '', '', 0, 0, '', '', '', 0, 0, 0, 0, '', '', '', [], []),
-    );
-    const [updateFormData, setUpdateFormData] = useState(
-        new UserUpdateBody('', '', '', 0, 0, '', '', 0, 0, 0, 0, '', '', '', [], null, []),
-    );
+    const [addFormData, setAddFormData] = useState(emptyUserCreateBody);
+    const [updateFormData, setUpdateFormData] = useState(emptyUserUpdateBody);
 
     const userProvider = new UserProvider();
 
     const openAddModal = () => {
-        setAddFormData(new UserCreateBody('', '', '', 0, 0, '', '', '', 0, 0, 0, 0, '', '', '', [], []));
+        setAddFormData(emptyUserCreateBody());
         resetErrors();
         addModal.open();
     };
 
-    const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!addFormData.profilePhoto || !addFormData.backgroundPhoto) {
-            return;
-        }
-        wrap(async () => {
-            await userProvider.create(addFormData);
-            addModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleAddSubmit = createSubmitHandler(() => {
+        if (!addFormData.profilePhoto || !addFormData.backgroundPhoto) return;
+        return submitAdd(() => userProvider.create(addFormData));
+    });
 
     const openManageModal = (user: UserResponse) => {
         resetErrors();
@@ -63,46 +52,31 @@ export function useUserModals(onSuccess: () => void) {
                 '',
                 '',
                 user.bio,
-                user.roles?.map((r: any) => r.role) || [],
+                user.roles?.map((r) => r.role) || [],
                 null,
-                user.disciplines?.map((d: any) => d.discipline) || [],
+                user.disciplines?.map((d) => d.discipline) || [],
             ),
         );
     };
 
-    const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!manageModal.data) return;
-        wrap(async () => {
-            updateFormData.profilePhoto = updateFormData.profilePhoto
-                ? updateFormData.profilePhoto
-                : manageModal.data!.profilePhoto;
-            updateFormData.backgroundPhoto = updateFormData.backgroundPhoto
-                ? updateFormData.backgroundPhoto
-                : manageModal.data!.backgroundPhoto;
-            await userProvider.update(manageModal.data!.id, updateFormData);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleEditSubmit = createSubmitHandler(() =>
+        submitManage((user) =>
+            userProvider.update(user.id, {
+                ...updateFormData,
+                profilePhoto: updateFormData.profilePhoto || user.profilePhoto,
+                backgroundPhoto: updateFormData.backgroundPhoto || user.backgroundPhoto,
+            }),
+        ),
+    );
 
-    const handleStatusSubmit = async (newStatus: number) => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await userProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleStatusSubmit = (newStatus: number) =>
+        submitManage((user) => userProvider.updateStatus(user.id, new StatusBody(newStatus)));
 
-    const handleDelete = async () => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await userProvider.delete(manageModal.data!.id);
-            manageModal.close();
-            navigate('/users');
-        }).catch(() => {});
-    };
+    const handleDelete = () =>
+        submitManage(
+            (user) => userProvider.delete(user.id),
+            () => navigate('/users'),
+        );
 
     const handleAddChange = createFormHandler(setAddFormData);
     const handleUpdateChange = createFormHandler(setUpdateFormData);

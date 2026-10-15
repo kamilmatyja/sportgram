@@ -1,73 +1,43 @@
-import { useEffect, useState } from 'react';
-
 import { TrainingProvider } from '../../api/providers/TrainingProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
+import { TRAINING_INCLUDES } from '../../api/queries/includes';
 import { TrainingFilterQuery } from '../../api/queries/TrainingFilterQuery';
 import { TrainingIndexQuery } from '../../api/queries/TrainingIndexQuery';
-import { TrainingResponse } from '../../api/responses/TrainingResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
-import { useDataFetch } from '../../utils/hooks/useDataFetch';
-import { useListFilters } from '../../utils/hooks/useListFilters';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
+import { usePaginatedList } from '../../utils/hooks/usePaginatedList';
+import { useRelatedUsers } from '../../utils/hooks/useRelatedUsers';
+import { toOptionalNumber } from '../../utils/query';
 
 export function useUserTrainings(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
-    const list = useListFilters(new TrainingFilterQuery());
-
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-    const { data: trainings, loading, error, executeFetch } = useDataFetch<TrainingResponse[]>();
-
-    const userProvider = new UserProvider();
+    const { relatedUsers, loadRelatedUsers } = useRelatedUsers();
     const trainingProvider = new TrainingProvider();
 
-    const fetchTrainings = (userId: string) => {
-        executeFetch(async () => {
+    const { list, items, loading, error, refresh } = usePaginatedList({
+        initialFilter: new TrainingFilterQuery(),
+        scope: isAccessReady(access) ? access.targetUser : null,
+        fetchPage: async (list, targetUser) => {
             const filterDto = new TrainingFilterQuery();
-            filterDto.userId = userId;
+            filterDto.userId = targetUser.id;
             filterDto.title = list.filters.title;
-            filterDto.link = list.filters.link;
-            filterDto.status = list.filters.status ? Number(list.filters.status) : undefined;
+            filterDto.status = toOptionalNumber(list.filters.status);
 
-            const indexDto = new TrainingIndexQuery();
-            indexDto.page = list.page;
-            indexDto.limit = list.limit;
-            indexDto.sort = list.sort;
-            indexDto.filter = filterDto;
-            indexDto.include = [
-                'trainingDisciplines',
-                'trainingDisciplineDistances',
-                'trainingDisciplineSubDistances',
-                'trainingParticipants',
-            ];
+            const indexDto = list.buildIndexQuery(new TrainingIndexQuery(), filterDto);
+            indexDto.include = TRAINING_INCLUDES;
 
-            const data = await trainingProvider.index(indexDto);
-
-            const userIds = data.flatMap((t) => t.participants.map((p) => p.userId));
-            const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
-            setRelatedUsers(updatedUsers);
+            const data = list.applyPagination(await trainingProvider.index(indexDto));
+            await loadRelatedUsers(data.flatMap((t) => t.participants.map((p) => p.userId)));
 
             return data;
-        }, []);
-    };
-
-    useEffect(() => {
-        if (!access.authLoading && !access.authError && access.targetUser) {
-            fetchTrainings(access.targetUser.id);
-        }
-    }, [access.authLoading, access.authError, access.targetUser, list.page, list.limit, list.sort, list.filters]);
-
-    const refreshTrainings = () => {
-        if (access.targetUser) fetchTrainings(access.targetUser.id);
-    };
+        },
+    });
 
     return {
         ...access,
         ...list,
-        trainings: trainings || [],
+        trainings: items,
         relatedUsers,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshTrainings,
+        refreshTrainings: refresh,
     };
 }

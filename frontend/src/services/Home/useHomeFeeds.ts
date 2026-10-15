@@ -1,23 +1,21 @@
 import { useEffect, useState } from 'react';
 
 import { FeedProvider } from '../../api/providers/FeedProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
 import { FeedFilterQuery } from '../../api/queries/FeedFilterQuery';
 import { FeedIndexQuery } from '../../api/queries/FeedIndexQuery';
+import { FEED_INCLUDES } from '../../api/queries/includes';
 import { FeedResponse } from '../../api/responses/FeedResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { collectFeedUserIds } from '../../utils/feed';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
 import { useDataFetch } from '../../utils/hooks/useDataFetch';
 import { useListFilters } from '../../utils/hooks/useListFilters';
+import { useRelatedUsers } from '../../utils/hooks/useRelatedUsers';
 import { useFeedInteractions } from '../Feed/useFeedInteractions';
 
 export function useHomeFeeds(targetUserId?: string) {
-    const accessOptions = targetUserId ? { targetId: targetUserId, requireFriendship: true } : {};
-    const access = useAppAccess(accessOptions);
-
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
+    const access = useAppAccess(targetUserId ? { targetId: targetUserId, requireFriendship: true } : {});
+    const { relatedUsers, loadRelatedUsers } = useRelatedUsers();
     const list = useListFilters(new FeedFilterQuery(), 'createdAt:desc', 20);
 
     const { data: feeds, setData: setFeeds, loading, error, executeFetch } = useDataFetch<FeedResponse[]>();
@@ -25,87 +23,52 @@ export function useHomeFeeds(targetUserId?: string) {
     const [loadingMore, setLoadingMore] = useState<boolean>(false);
 
     const feedProvider = new FeedProvider();
-    const userProvider = new UserProvider();
-
-    const extractUserIds = (feedData: FeedResponse[]): string[] => {
-        return feedData.flatMap((feed) => [
-            feed.userId,
-            ...(feed.comments?.map((c) => c.userId) || []),
-            ...(feed.reactions?.map((r) => r.userId) || []),
-        ]);
-    };
 
     const fetchFeeds = (pageNumber: number, append: boolean = false) => {
         if (append) setLoadingMore(true);
 
-        executeFetch(async () => {
-            const indexDto = new FeedIndexQuery();
-            indexDto.page = pageNumber;
-            indexDto.limit = list.limit;
-            indexDto.sort = list.sort;
-
+        return executeFetch(async (isLatest) => {
             const filter = new FeedFilterQuery();
             filter.status = ElementStatusEnum.ACTIVE;
+            filter.userId = targetUserId;
 
-            if (targetUserId) {
-                filter.userId = targetUserId;
-            }
+            const indexDto = list.buildIndexQuery(new FeedIndexQuery(), filter);
+            indexDto.page = pageNumber;
+            indexDto.include = FEED_INCLUDES;
 
-            indexDto.filter = filter;
-            indexDto.include = [
-                'feedComments',
-                'feedReactions',
-                'eventDisciplineList',
-                'eventDisciplineResult',
-                'goal',
-                'goalParticipantResult',
-                'training',
-            ];
+            const response = await feedProvider.index(indexDto);
+            const data = response.data;
+            if (isLatest()) setHasMore(response.pagination.hasNextPage);
+            await loadRelatedUsers(collectFeedUserIds(data));
 
-            const data = await feedProvider.index(indexDto);
-
-            setHasMore(data.length === list.limit);
-
-            const updatedUsers = await fetchRelatedUsers(extractUserIds(data), relatedUsers, userProvider);
-            setRelatedUsers(updatedUsers);
-
-            if (append) {
-                const current = feeds || [];
-                return [...current, ...data.filter((df) => !current.some((pf) => pf.id === df.id))];
-            }
-            return data;
+            if (!append) return data;
+            const current = feeds || [];
+            return [...current, ...data.filter((df) => !current.some((pf) => pf.id === df.id))];
         }, feeds || []).finally(() => {
             if (append) setLoadingMore(false);
         });
     };
 
     useEffect(() => {
-        if (!access.authLoading && !access.authError && access.currentUser) {
+        const targetReady = !targetUserId || access.targetUser?.id === targetUserId;
+        if (isAccessReady(access) && access.currentUser && targetReady) {
             list.setPage(1);
             fetchFeeds(1, false);
         }
-    }, [access.authLoading, access.authError, targetUserId]);
+    }, [access.authLoading, access.authError, access.currentUser, access.targetUser, targetUserId]);
 
     const handleLoadMore = () => {
         const nextPage = list.page + 1;
-        list.setPage(nextPage);
-        fetchFeeds(nextPage, true);
+        fetchFeeds(nextPage, true).then((result) => {
+            if (result) list.setPage(nextPage);
+        });
     };
 
     const refreshSingleFeed = async (feedId: string) => {
         try {
-            const updatedFeed = await feedProvider.details(feedId, [
-                'feedComments',
-                'feedReactions',
-                'eventDisciplineList',
-                'eventDisciplineResult',
-                'goal',
-                'goalParticipantResult',
-                'training',
-            ]);
+            const updatedFeed = await feedProvider.details(feedId, FEED_INCLUDES);
             setFeeds((prev) => (prev || []).map((f) => (f.id === feedId ? updatedFeed : f)));
-            const updatedUsers = await fetchRelatedUsers(extractUserIds([updatedFeed]), relatedUsers, userProvider);
-            setRelatedUsers(updatedUsers);
+            await loadRelatedUsers(collectFeedUserIds([updatedFeed]));
         } catch (e) {
             console.error(e);
         }

@@ -3,8 +3,7 @@ import { PushSubscriptionProvider } from '../../api/providers/PushSubscriptionPr
 import { PushSubscriptionResponse } from '../../api/responses/PushSubscriptionResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
-import { useFormState } from '../../utils/hooks/useFormState';
-import { useModal } from '../../utils/hooks/useModal';
+import { useCrudModals } from '../../utils/hooks/useCrudModals';
 
 const urlB64ToUint8Array = (base64String: string) => {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -19,9 +18,8 @@ const urlB64ToUint8Array = (base64String: string) => {
 
 export function usePushSubscriptionModals(onSuccess: () => void) {
     const { t } = useTranslation();
-    const addModal = useModal();
-    const manageModal = useModal<PushSubscriptionResponse>();
-    const { loading, globalError, wrap, resetErrors, setGlobalError } = useFormState();
+    const { addModal, manageModal, loading, globalError, resetErrors, submitAdd, submitManage } =
+        useCrudModals<PushSubscriptionResponse>(onSuccess);
 
     const pushSubscriptionProvider = new PushSubscriptionProvider();
 
@@ -30,8 +28,8 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
         addModal.open();
     };
 
-    const handleSubscribeDevice = async () => {
-        wrap(async () => {
+    const handleSubscribeDevice = () =>
+        submitAdd(async () => {
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
                 throw new Error(t('pushNotSupported'));
             }
@@ -41,67 +39,49 @@ export function usePushSubscriptionModals(onSuccess: () => void) {
                 throw new Error(t('pushPermissionDenied'));
             }
 
-            const registration = await navigator.serviceWorker.ready;
             const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-
             if (!vapidKey) {
                 throw new Error('VITE_VAPID_PUBLIC_KEY is missing in env config.');
             }
 
+            const registration = await navigator.serviceWorker.ready;
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlB64ToUint8Array(vapidKey),
             });
+            const keys = subscription.toJSON().keys ?? {};
 
-            const subData = JSON.parse(JSON.stringify(subscription));
-            const endpoint = subData.endpoint;
-            const p256dh = subData.keys.p256dh;
-            const auth = subData.keys.auth;
-            const userAgent = navigator.userAgent;
-
-            const pushDto = new PushSubscriptionBody(
-                endpoint,
-                p256dh,
-                auth,
-                userAgent,
-                PushSubscriptionStatusEnum.ACTIVE,
+            await pushSubscriptionProvider.create(
+                new PushSubscriptionBody(
+                    subscription.endpoint,
+                    keys.p256dh,
+                    keys.auth,
+                    navigator.userAgent,
+                    PushSubscriptionStatusEnum.ACTIVE,
+                ),
             );
-
-            await pushSubscriptionProvider.create(pushDto);
-            addModal.close();
-            onSuccess();
-        }).catch((e: any) => setGlobalError(e.message || e.error));
-    };
+        });
 
     const openManageModal = (subscription: PushSubscriptionResponse) => {
         resetErrors();
         manageModal.open(subscription);
     };
 
-    const handleStatusSubmit = async (newStatus: number) => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            const updatedDto = new PushSubscriptionBody(
-                manageModal.data!.endpoint,
-                manageModal.data!.p256dh,
-                manageModal.data!.auth,
-                manageModal.data!.userAgent,
-                newStatus,
-            );
-            await pushSubscriptionProvider.update(manageModal.data!.id, updatedDto);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleStatusSubmit = (newStatus: number) =>
+        submitManage((subscription) =>
+            pushSubscriptionProvider.update(
+                subscription.id,
+                new PushSubscriptionBody(
+                    subscription.endpoint,
+                    subscription.p256dh,
+                    subscription.auth,
+                    subscription.userAgent,
+                    newStatus,
+                ),
+            ),
+        );
 
-    const handleDelete = async () => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await pushSubscriptionProvider.delete(manageModal.data!.id);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleDelete = () => submitManage((subscription) => pushSubscriptionProvider.delete(subscription.id));
 
     return {
         showAdd: addModal.isOpen,

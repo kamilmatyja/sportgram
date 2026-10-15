@@ -44,10 +44,10 @@ class GoalDetailsTest extends ApiTestCase
         $result = $this->get($url, $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
-        $this->assertArrayHasKey('participants', $result['json']);
-        $this->assertCount(1, $result['json']['participants']);
-        $this->assertArrayHasKey('results', $result['json']['participants'][0]);
-        $this->assertCount(1, $result['json']['participants'][0]['results']);
+        $this->assertArrayHasKey('id', $result['json']['data']);
+        $this->assertArrayHasKey('participants', $result['json']['data']);
+        $this->assertCount(1, $result['json']['data']['participants']);
+        $this->assertArrayHasKey('results', $result['json']['data']['participants'][0]);
+        $this->assertCount(1, $result['json']['data']['participants'][0]['results']);
     }
 }

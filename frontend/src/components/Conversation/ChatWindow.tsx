@@ -1,11 +1,14 @@
 import React from 'react';
-import { Card, Stack, Form, Button, Image, Spinner } from 'react-bootstrap';
+import { Card, Stack, Form, Button, Spinner } from 'react-bootstrap';
 
 import { ConversationResponse } from '../../api/responses/ConversationResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { formatDate } from '../../utils/dateFormat';
+import { formatUserName } from '../../utils/user';
 import BootstrapIcon from '../Common/BootstrapIcon';
+import { type FieldErrors, InputField } from '../Common/FormFields';
+import { UserAvatar } from '../Common/UserAvatar';
 
 interface ChatWindowProps {
     targetUser: UserResponse;
@@ -18,8 +21,9 @@ interface ChatWindowProps {
     loadingEarlier: boolean;
     canSendMessages: boolean;
     chatEndRef: React.RefObject<HTMLDivElement | null>;
+    fieldErrors?: FieldErrors;
     handleTyping: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleSendMessage: (e: React.ChangeEvent<HTMLFormElement>) => void;
+    handleSendMessage: (e: React.SyntheticEvent<HTMLFormElement>) => void;
     loadEarlierMessages: () => void;
 }
 
@@ -34,6 +38,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     loadingEarlier,
     canSendMessages,
     chatEndRef,
+    fieldErrors = {},
     handleTyping,
     handleSendMessage,
     loadEarlierMessages,
@@ -43,18 +48,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     return (
         <Card className="shadow-sm chat-card-container">
             <Card.Header className="bg-white d-flex align-items-center gap-3 py-3 border-bottom">
-                {targetUser.profilePhoto ? (
-                    <Image
-                        src={`data:image/webp;base64,${targetUser.profilePhoto}`}
-                        roundedCircle
-                        className="feed-avatar-48 object-fit-cover border profile-theme-border"
-                    />
-                ) : (
-                    <Stack className="bg-secondary rounded-circle feed-avatar-48" />
-                )}
+                <UserAvatar user={targetUser} size={48} className="border profile-theme-border" />
                 <Stack>
                     <Card.Title as="h6" className="mb-0 fw-bold">
-                        {targetUser.firstName} {targetUser.lastName}
+                        {formatUserName(targetUser)}
                     </Card.Title>
                     {isTyping && (
                         <Stack as="small" className="text-primary fst-italic">
@@ -91,10 +88,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
             <Card.Footer className="bg-white p-3 border-top">
                 <Form onSubmit={handleSendMessage}>
-                    <Stack direction="horizontal" gap={2}>
-                        <Form.Control
+                    <Stack direction="horizontal" gap={2} className="align-items-start">
+                        <InputField
+                            groupClassName="flex-grow-1"
                             className="rounded-pill"
+                            name="text"
+                            error={fieldErrors.text}
                             placeholder={canSendMessages ? t('typeMessage') : t('mustBeFriendsToChat')}
+                            aria-label={t('typeMessage')}
                             value={messageInput}
                             onChange={handleTyping as any}
                             disabled={isSending || !canSendMessages}
@@ -104,6 +105,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                             variant="primary"
                             className="rounded-circle px-2"
                             disabled={!messageInput.trim() || isSending || !canSendMessages}
+                            aria-label={t('send')}
                         >
                             {isSending ? <Spinner animation="border" size="sm" /> : <BootstrapIcon name="send-fill" />}
                         </Button>

@@ -2,22 +2,21 @@ import { useEffect, useState } from 'react';
 
 import { TrainingProvider } from '../../api/providers/TrainingProvider';
 import { UserProvider } from '../../api/providers/UserProvider';
+import { TRAINING_INCLUDES } from '../../api/queries/includes';
 import { TrainingFilterQuery } from '../../api/queries/TrainingFilterQuery';
 import { TrainingIndexQuery } from '../../api/queries/TrainingIndexQuery';
 import { TrainingResponse } from '../../api/responses/TrainingResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
 import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useRelatedUsers } from '../../utils/hooks/useRelatedUsers';
+import { firstOrNotFound } from '../../utils/query';
 
 export function useTrainingDetails(link?: string) {
     const access = useAppAccess();
-
+    const { relatedUsers, loadRelatedUsers } = useRelatedUsers();
     const { data: training, loading, error, executeFetch } = useDataFetch<TrainingResponse>();
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-    const [isParticipantOfTraining, setIsParticipantOfTraining] = useState<boolean>(false);
     const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
-    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
 
     const trainingProvider = new TrainingProvider();
     const userProvider = new UserProvider();
@@ -25,61 +24,38 @@ export function useTrainingDetails(link?: string) {
     const fetchTrainingData = () => {
         if (!link || !access.currentUser) return;
 
-        executeFetch(
-            async () => {
-                const filterDto = new TrainingFilterQuery();
-                filterDto.link = link;
-                const indexDto = new TrainingIndexQuery();
-                indexDto.filter = filterDto;
-                indexDto.include = [
-                    'trainingDisciplines',
-                    'trainingDisciplineDistances',
-                    'trainingDisciplineSubDistances',
-                    'trainingParticipants',
-                ];
+        executeFetch(async () => {
+            const filterDto = new TrainingFilterQuery();
+            filterDto.link = link;
+            const indexDto = new TrainingIndexQuery();
+            indexDto.filter = filterDto;
+            indexDto.include = TRAINING_INCLUDES;
 
-                const trainings = await trainingProvider.index(indexDto);
-                if (trainings.length === 0) {
-                    throw { error: 'noRecords' };
-                }
+            const targetTraining = firstOrNotFound(await trainingProvider.index(indexDto));
 
-                const targetTraining = trainings[0];
+            setOwnerUser(await userProvider.details(targetTraining.userId));
+            await loadRelatedUsers(targetTraining.participants?.map((p) => p.userId) || []);
 
-                const owner = await userProvider.details(targetTraining.userId);
-                setOwnerUser(owner);
-                setIsMyProfile(access.currentUser!.id === owner.id);
-
-                const participantCheck =
-                    targetTraining.participants?.some((p) => p.userId === access.currentUser!.id) ?? false;
-                setIsParticipantOfTraining(participantCheck);
-
-                const userIds = targetTraining.participants?.map((p) => p.userId) || [];
-                const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
-                setRelatedUsers(updatedUsers);
-
-                return targetTraining;
-            },
-            null as unknown as TrainingResponse,
-        );
+            return targetTraining;
+        });
     };
 
     useEffect(() => {
-        if (!access.authLoading && !access.authError && access.currentUser) {
+        if (isAccessReady(access)) {
             fetchTrainingData();
         }
     }, [link, access.authLoading, access.authError, access.currentUser]);
 
-    const refreshTraining = () => fetchTrainingData();
+    const currentUserId = access.currentUser?.id;
 
     return {
         ...access,
         ownerUser,
         training,
         relatedUsers,
-        isParticipantOfTraining,
-        isMyProfile,
+        isMyProfile: !!training && training.userId === currentUserId,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshTraining,
+        refreshTraining: fetchTrainingData,
     };
 }

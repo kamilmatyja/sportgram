@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\RoleEnum;
-use Tests\Factory\{GoalFactory, GoalParticipantFactory};
+use Tests\Factory\{GoalFactory, GoalParticipantFactory, GoalParticipantResultFactory};
 
 class GoalDeleteTest extends ApiTestCase
 {
@@ -32,17 +32,18 @@ class GoalDeleteTest extends ApiTestCase
         $this->assertEquals(403, $result['status']);
     }
 
-    final public function testCannotDeleteGoalWithParticipants(): void
+    final public function testCannotDeleteGoalWithParticipantResults(): void
     {
         $user = self::createUser(RoleEnum::Participant);
         $goal = GoalFactory::make(['user' => $user], $this->em);
 
-        GoalParticipantFactory::make(['goal' => $goal, 'user' => $user], $this->em);
+        $participant = GoalParticipantFactory::make(['goal' => $goal, 'user' => $user], $this->em);
+        GoalParticipantResultFactory::make(['goalParticipant' => $participant], $this->em);
 
         $result = $this->delete("/api/goals/{$goal->id->toString()}", $user);
 
         $this->assertEquals(409, $result['status']);
-        $this->assertEquals('Cannot delete goal with participants.', $result['json']['error']);
+        $this->assertEquals('Cannot delete goal with participant results.', $result['json']['error']);
     }
 
     final public function testSuccess(): void
@@ -52,5 +53,6 @@ class GoalDeleteTest extends ApiTestCase
 
         $result = $this->delete("/api/goals/{$goal->id->toString()}", $user);
         $this->assertEquals(200, $result['status']);
+        $this->assertEquals($goal->id->toString(), $result['json']['id']);
     }
 }

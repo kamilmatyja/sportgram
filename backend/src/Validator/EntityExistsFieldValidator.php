@@ -31,6 +31,7 @@ class EntityExistsFieldValidator extends ConstraintValidator
         if (! $found) {
             $this->context
                 ->buildViolation($constraint->message)
+                ->setParameter('{{ entity }}', $constraint->entity)
                 ->addViolation();
         }
     }

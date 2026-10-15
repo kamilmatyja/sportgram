@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
-import { Table, Stack, Image, Badge, Button, Card, Nav } from 'react-bootstrap';
+import { Table, Stack, Button, Card, Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { PageFollowsTable } from './PageFollowsTable';
-import { PageParticipantsTable } from './PageParticipantsTable';
 import { PageResponse } from '../../api/responses/PageResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
+import { type PageInteractions } from '../../services/Page/usePageInteractions';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { formatDate } from '../../utils/dateFormat';
+import { Base64Image } from '../Common/Base64Image';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { EnumBadge } from '../Common/EnumBadge';
+import { FormErrorAlert } from '../Common/FormFields';
+import { IconButton } from '../Common/IconButton';
+import { ParticipantsTable } from '../Common/ParticipantsTable';
+import { canChangeOwnStatus } from '../Common/statusPermissions';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface UserPagesTableProps {
     pages: PageResponse[];
@@ -20,7 +26,7 @@ interface UserPagesTableProps {
     isAdmin: boolean;
     actionLoading: string | null;
     onManageClick: (pageObj: PageResponse) => void;
-    interactions: any;
+    interactions: PageInteractions;
 }
 
 export const UserPagesTable: React.FC<UserPagesTableProps> = ({
@@ -36,9 +42,11 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
     const { t } = useTranslation();
     const [expandedRow, setExpandedRow] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'participants' | 'follows'>('participants');
+    const canManageUser = canChangeOwnStatus(currentUser);
 
     return (
         <Stack className="table-responsive-custom">
+            <FormErrorAlert error={interactions.actionError} />
             <Table bordered hover className="align-middle mb-0 shadow-sm">
                 <TableHead className="table-light">
                     <TableRow>
@@ -53,28 +61,23 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
                 </TableHead>
                 <TableBody>
                     {pages.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={7} className="text-center text-muted">
-                                {t('noRecords')}
-                            </TableCell>
-                        </TableRow>
+                        <EmptyTableRow colSpan={7} />
                     ) : (
                         pages.map((pageObj) => (
                             <React.Fragment key={pageObj.id}>
                                 <TableRow>
                                     <TableCell className="text-center feed-photo-cell">
-                                        {pageObj.profilePhoto ? (
-                                            <Image
-                                                src={`data:image/webp;base64,${pageObj.profilePhoto}`}
-                                                roundedCircle
-                                                fluid
-                                                className="feed-photo shadow-sm"
-                                            />
-                                        ) : (
-                                            <Stack as="span" className="text-muted">
-                                                -
-                                            </Stack>
-                                        )}
+                                        <Base64Image
+                                            data={pageObj.profilePhoto}
+                                            fallback={
+                                                <Stack as="span" className="text-muted">
+                                                    -
+                                                </Stack>
+                                            }
+                                            roundedCircle
+                                            fluid
+                                            className="feed-photo shadow-sm"
+                                        />
                                     </TableCell>
                                     <TableCell>
                                         <Link to={`/pages/${pageObj.link}`} className="text-decoration-none">
@@ -83,10 +86,7 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
                                     </TableCell>
                                     <TableCell className="small">@{pageObj.link}</TableCell>
                                     <TableCell>
-                                        <Badge bg="light" text="dark" className="border profile-theme-border">
-                                            {ElementStatusEnum.getOptions(t).find((opt) => opt.value === pageObj.status)
-                                                ?.label || pageObj.status}
-                                        </Badge>
+                                        <EnumBadge options={ElementStatusEnum.getOptions(t)} value={pageObj.status} />
                                     </TableCell>
                                     <TableCell className="small text-muted">{formatDate(pageObj.createdAt)}</TableCell>
                                     <TableCell>
@@ -106,14 +106,7 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
                                     </TableCell>
                                     <TableCell className="text-end">
                                         {(isMyProfile || isAdmin) && (
-                                            <Button
-                                                variant="profile-outline-primary"
-                                                size="sm"
-                                                onClick={() => onManageClick(pageObj)}
-                                                className="rounded-circle shadow-sm"
-                                            >
-                                                <BootstrapIcon name="gear" />
-                                            </Button>
+                                            <IconButton icon="gear" onClick={() => onManageClick(pageObj)} />
                                         )}
                                     </TableCell>
                                 </TableRow>
@@ -143,24 +136,22 @@ export const UserPagesTable: React.FC<UserPagesTableProps> = ({
                                                 </Nav>
                                                 <Card.Body className="bg-white">
                                                     {activeTab === 'participants' ? (
-                                                        <PageParticipantsTable
+                                                        <ParticipantsTable
                                                             participants={pageObj.participants || []}
                                                             relatedUsers={relatedUsers}
-                                                            currentUser={currentUser}
-                                                            isMyProfile={isMyProfile}
-                                                            isAdmin={isAdmin}
+                                                            canManage={canManageUser}
                                                             actionLoading={actionLoading}
                                                             onUpdateStatus={interactions.handleParticipantStatusSubmit}
+                                                            compact
                                                         />
                                                     ) : (
                                                         <PageFollowsTable
                                                             follows={pageObj.follows || []}
                                                             relatedUsers={relatedUsers}
-                                                            currentUser={currentUser}
-                                                            isMyProfile={isMyProfile}
-                                                            isAdmin={isAdmin}
+                                                            canManage={canManageUser}
                                                             actionLoading={actionLoading}
                                                             onUpdateStatus={interactions.handleFollowStatusSubmit}
+                                                            compact
                                                         />
                                                     )}
                                                 </Card.Body>

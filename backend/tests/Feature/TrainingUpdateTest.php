@@ -32,8 +32,8 @@ class TrainingUpdateTest extends ApiTestCase
         $training = TrainingFactory::make(['user' => $owner], $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'title' => 'Updated Training',
             'description' => 'Desc',
             'link' => 'updated-training',
@@ -50,8 +50,8 @@ class TrainingUpdateTest extends ApiTestCase
         $training = TrainingFactory::make(['user' => $user], $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'title' => 'Updated Training',
             'description' => 'Desc',
             'link' => 'updated-training',
@@ -67,7 +67,7 @@ class TrainingUpdateTest extends ApiTestCase
                     ],
                 ],
             ],
-            'participants' => [$user->id->toString()],
+            'userIds' => [$user->id->toString()],
         ];
 
         $result = $this->put("/api/trainings/{$training->id->toString()}", $payload, $user);

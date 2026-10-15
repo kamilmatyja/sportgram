@@ -8,6 +8,7 @@ use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
 use App\Event\UserSignEmailEvent;
 use App\Exception\SaveValidationException;
 use App\Repository\{UserRegisterRepository, UserRepository, UserSignRepository};
+use DateInterval;
 use DateTimeImmutable;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Random\RandomException;
@@ -18,6 +19,8 @@ use Symfony\Component\Validator\Exception\ValidatorException;
 
 readonly class SignService
 {
+    private const string SIGN_LIFETIME = 'P30D';
+
     public function __construct(
         private UserRepository $userRepository,
         private UserRegisterRepository $userRegisterRepository,
@@ -131,6 +134,10 @@ readonly class SignService
 
         if ($userSign->status !== UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Sign not confirmed.');
+        }
+
+        if ($userSign->updatedAt->add(new DateInterval(self::SIGN_LIFETIME)) < new DateTimeImmutable()) {
+            throw new ValidatorException('Sign expired.');
         }
 
         $user = $userSign->user;

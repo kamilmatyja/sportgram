@@ -39,7 +39,7 @@ class EventIndexTest extends ApiTestCase
 
         $result = $this->get('/api/events', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(3, $result['json']);
+        $this->assertCount(3, $result['json']['data']);
     }
 
     final public function testFilterByStatusAndTitle(): void
@@ -54,8 +54,8 @@ class EventIndexTest extends ApiTestCase
         $result = $this->get('/api/events?filter[title]=Marathon&filter[status]=1', $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(1, $result['json']);
-        $this->assertEquals('Marathon Krakow', $result['json'][0]['title']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals('Marathon Krakow', $result['json']['data'][0]['title']);
     }
 
     final public function testSortByTitleDesc(): void
@@ -71,7 +71,7 @@ class EventIndexTest extends ApiTestCase
         $result = $this->get('/api/events?sort=title:desc', $user);
 
         $this->assertEquals(200, $result['status']);
-        $titles = array_column($result['json'], 'title');
+        $titles = array_column($result['json']['data'], 'title');
         $this->assertEquals(['Z', 'M', 'A'], $titles);
     }
 }

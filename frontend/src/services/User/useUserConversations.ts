@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { ConversationBody } from '../../api/body/ConversationBody';
 import { ConversationProvider } from '../../api/providers/ConversationProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
 import { ConversationActivityFilterQuery } from '../../api/queries/ConversationActivityFilterQuery';
 import { ConversationActivityIndexQuery } from '../../api/queries/ConversationActivityIndexQuery';
 import { ConversationFilterQuery } from '../../api/queries/ConversationFilterQuery';
@@ -10,17 +9,46 @@ import { ConversationIndexQuery } from '../../api/queries/ConversationIndexQuery
 import { ConversationActivityResponse } from '../../api/responses/ConversationActivityResponse';
 import { ConversationResponse } from '../../api/responses/ConversationResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import { createSubmitHandler } from '../../utils/formHandler';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
 import { useDataFetch } from '../../utils/hooks/useDataFetch';
 import { useFormState } from '../../utils/hooks/useFormState';
 import { useListFilters } from '../../utils/hooks/useListFilters';
+import { useRelatedUsers } from '../../utils/hooks/useRelatedUsers';
+import { fetchAllPages } from '../../utils/query';
+
+const MESSAGES_PER_PAGE = 20;
+const POLL_INTERVAL_MS = 3000;
+const TYPING_THROTTLE_MS = 3000;
+
+type ActivityWithUser = ConversationActivityResponse & { otherUser: UserResponse };
+
+const otherUserId = (act: ConversationActivityResponse, currentUserId: string) =>
+    act.senderUserId === currentUserId ? act.receiverUserId : act.senderUserId;
+
+const mergeMessages = (current: ConversationResponse[], incoming: ConversationResponse[], prepend: boolean) => {
+    const knownIds = new Set(current.map((msg) => msg.id));
+    const newMessages = incoming.filter((msg) => !knownIds.has(msg.id));
+    if (newMessages.length === 0) return current;
+    return prepend ? [...newMessages, ...current] : [...current, ...newMessages];
+};
+
+const buildMessagesQuery = (tUser: UserResponse, page: number) => {
+    const filter = new ConversationFilterQuery();
+    filter.userId = tUser.id;
+    const indexDto = new ConversationIndexQuery();
+    indexDto.filter = filter;
+    indexDto.page = page;
+    indexDto.limit = MESSAGES_PER_PAGE;
+    return indexDto;
+};
 
 export function useUserConversations(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
 
     const [canSendMessages, setCanSendMessages] = useState<boolean>(false);
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
+    const { relatedUsers, loadRelatedUsers } = useRelatedUsers();
 
     const {
         data: rawActivities,
@@ -35,7 +63,7 @@ export function useUserConversations(link?: string) {
         error: msgError,
         executeFetch: fetchMsgs,
     } = useDataFetch<ConversationResponse[]>();
-    const { wrap } = useFormState();
+    const { fieldErrors, wrap } = useFormState();
 
     const activityList = useListFilters({ search: '' }, 'updatedAt:desc');
 
@@ -48,8 +76,9 @@ export function useUserConversations(link?: string) {
 
     const chatEndRef = useRef<HTMLDivElement>(null);
     const lastTypingPatch = useRef<number>(0);
+    const targetUserRef = useRef<UserResponse | null>(null);
+    targetUserRef.current = access.targetUser;
 
-    const userProvider = new UserProvider();
     const conversationProvider = new ConversationProvider();
 
     const scrollToBottom = () => {
@@ -58,36 +87,25 @@ export function useUserConversations(link?: string) {
 
     const fetchActivities = (currentUsr: UserResponse) => {
         fetchActs(async () => {
-            const indexDto = new ConversationActivityIndexQuery();
-            indexDto.limit = 100;
-            const data = await conversationProvider.indexActivity(indexDto);
-
-            const otherUserIds = data.map((act) =>
-                act.senderUserId === currentUsr.id ? act.receiverUserId : act.senderUserId,
+            const data = await fetchAllPages(new ConversationActivityIndexQuery(), (query) =>
+                conversationProvider.indexActivity(query),
             );
-            const usersMap = await fetchRelatedUsers(otherUserIds, relatedUsers, userProvider);
-            setRelatedUsers(usersMap);
+
+            await loadRelatedUsers(data.map((act) => otherUserId(act, currentUsr.id)));
 
             return data;
         }, []);
     };
 
-    const processActivities = (): {
-        paginated: (ConversationActivityResponse & { otherUser: UserResponse })[];
-        total: number;
-    } => {
-        if (!access.currentUser || !rawActivities) return { paginated: [], total: 0 };
+    const processActivities = (): { paginated: ActivityWithUser[]; total: number } => {
+        const currentUser = access.currentUser;
+        if (!currentUser || !rawActivities) return { paginated: [], total: 0 };
 
         const mapped = rawActivities
-            .map((act) => {
-                const otherId = act.senderUserId === access.currentUser!.id ? act.receiverUserId : act.senderUserId;
-                return { ...act, otherUser: relatedUsers[otherId] };
-            })
-            .filter((act) => act.otherUser !== undefined) as (ConversationActivityResponse & {
-            otherUser: UserResponse;
-        })[];
+            .map((act) => ({ ...act, otherUser: relatedUsers[otherUserId(act, currentUser.id)] }))
+            .filter((act): act is ActivityWithUser => act.otherUser !== undefined);
 
-        const uniqueMap = new Map<string, ConversationActivityResponse & { otherUser: UserResponse }>();
+        const uniqueMap = new Map<string, ActivityWithUser>();
         for (const act of mapped) {
             if (!uniqueMap.has(act.otherUser.id)) {
                 uniqueMap.set(act.otherUser.id, act);
@@ -126,109 +144,98 @@ export function useUserConversations(link?: string) {
         return { paginated, total };
     };
 
-    const fetchMessagesData = (tUser: UserResponse, pageToFetch: number = 1, append: boolean = false) => {
-        if (append) setLoadingEarlier(true);
-        fetchMsgs(async () => {
-            const filter = new ConversationFilterQuery();
-            filter.userId = tUser.id;
-            const indexDto = new ConversationIndexQuery();
-            indexDto.filter = filter;
-            indexDto.page = pageToFetch;
-            indexDto.limit = 20;
-
-            const data = await conversationProvider.index(indexDto);
-            setHasMoreMessages(data.length === 20);
-
-            if (append) {
-                const current = messages || [];
-                return [...current, ...data];
-            } else {
+    const fetchMessagesData = (tUser: UserResponse) =>
+        fetchMsgs(async (isLatest) => {
+            const response = await conversationProvider.index(buildMessagesQuery(tUser, 1));
+            if (isLatest()) {
+                setHasMoreMessages(response.pagination.hasNextPage);
+                setChatPage(1);
                 setTimeout(scrollToBottom, 100);
-                return data;
             }
-        }, messages || []).finally(() => {
-            if (append) setLoadingEarlier(false);
-        });
-    };
+            return response.data;
+        }, messages || []);
 
     const pollUpdates = async (tUser: UserResponse) => {
         try {
-            const filter = new ConversationFilterQuery();
-            filter.userId = tUser.id;
-            const indexDto = new ConversationIndexQuery();
-            indexDto.filter = filter;
-            indexDto.limit = 20;
-            const data = await conversationProvider.index(indexDto);
+            const data = (await conversationProvider.index(buildMessagesQuery(tUser, 1))).data;
+            if (tUser.id !== targetUserRef.current?.id) return;
 
             setMessages((prev) => {
                 const current = prev || [];
-                const newMessages = data.filter((newMsg) => !current.some((oldMsg) => oldMsg.id === newMsg.id));
-                if (newMessages.length > 0) {
-                    setTimeout(scrollToBottom, 100);
-                    return [...newMessages, ...current];
-                }
-                return current;
+                const merged = mergeMessages(current, data, true);
+                if (merged !== current) setTimeout(scrollToBottom, 100);
+                return merged;
             });
 
             const actFilter = new ConversationActivityFilterQuery();
             actFilter.userId = tUser.id;
             const actIndexDto = new ConversationActivityIndexQuery();
             actIndexDto.filter = actFilter;
-            const acts = await conversationProvider.indexActivity(actIndexDto);
+            const acts = (await conversationProvider.indexActivity(actIndexDto)).data;
 
-            const targetActivity = acts.find((a) => a.senderUserId === tUser.id);
-            if (targetActivity) {
-                setIsTyping(targetActivity.isWriting);
-            } else {
-                setIsTyping(false);
-            }
-        } catch (e) {}
+            setIsTyping(acts.find((a) => a.senderUserId === tUser.id)?.isWriting ?? false);
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     useEffect(() => {
-        if (!access.authLoading && !access.authError && access.currentUser && access.targetUser) {
-            setCanSendMessages(!!access.friendship);
+        if (isAccessReady(access) && access.currentUser && access.targetUser) {
+            setCanSendMessages(access.friendship?.status === FriendStatusEnum.ACCEPTED);
             if (access.isMyProfile) {
                 fetchActivities(access.currentUser);
             } else {
-                fetchMessagesData(access.targetUser, 1, false);
+                fetchMessagesData(access.targetUser);
             }
         }
     }, [access.authLoading, access.authError, access.targetUser]);
 
     useEffect(() => {
-        if (access.isMyProfile || !access.targetUser || !access.currentUser) return;
-        const intervalId = setInterval(() => pollUpdates(access.targetUser!), 3000);
+        const targetUser = access.targetUser;
+        if (!isAccessReady(access) || access.isMyProfile || !targetUser || !access.currentUser) return;
+        const intervalId = setInterval(() => pollUpdates(targetUser), POLL_INTERVAL_MS);
         return () => clearInterval(intervalId);
-    }, [access.isMyProfile, access.targetUser, access.currentUser]);
+    }, [access.authLoading, access.authError, access.isMyProfile, access.targetUser, access.currentUser]);
 
-    const loadEarlierMessages = () => {
-        if (!access.targetUser) return;
+    const loadEarlierMessages = async () => {
+        const targetUser = access.targetUser;
+        if (!targetUser || loadingEarlier) return;
         const nextPage = chatPage + 1;
-        setChatPage(nextPage);
-        fetchMessagesData(access.targetUser, nextPage, true);
+        setLoadingEarlier(true);
+        try {
+            const response = await conversationProvider.index(buildMessagesQuery(targetUser, nextPage));
+            if (targetUser.id !== targetUserRef.current?.id) return;
+            setMessages((prev) => mergeMessages(prev || [], response.data, false));
+            setHasMoreMessages(response.pagination.hasNextPage);
+            setChatPage(nextPage);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoadingEarlier(false);
+        }
     };
 
-    const handleSendMessage = async (e: React.ChangeEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!messageInput.trim() || !access.targetUser || !canSendMessages) return;
+    const handleSendMessage = createSubmitHandler(async () => {
+        const targetUser = access.targetUser;
+        if (!messageInput.trim() || !targetUser || !canSendMessages) return;
 
         setIsSending(true);
-        wrap(async () => {
-            await conversationProvider.create(access.targetUser!.id, new ConversationBody(messageInput));
+        await wrap(async () => {
+            await conversationProvider.create(targetUser.id, new ConversationBody(messageInput));
             setMessageInput('');
             setIsTyping(false);
-            await fetchMessagesData(access.targetUser!, 1, false);
-            setTimeout(scrollToBottom, 100);
-        }).finally(() => setIsSending(false));
-    };
+            await fetchMessagesData(targetUser);
+        })
+            .catch(() => {})
+            .finally(() => setIsSending(false));
+    });
 
     const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
         setMessageInput(e.target.value);
         if (!access.targetUser || !canSendMessages) return;
 
         const now = Date.now();
-        if (now - lastTypingPatch.current > 3000) {
+        if (now - lastTypingPatch.current > TYPING_THROTTLE_MS) {
             conversationProvider.updateActivityUpdatedAt(access.targetUser.id).catch(() => {});
             lastTypingPatch.current = now;
         }
@@ -261,6 +268,7 @@ export function useUserConversations(link?: string) {
         hasMoreMessages,
         loadingEarlier,
         chatEndRef,
+        fieldErrors,
         handleTyping,
         handleSendMessage,
         loadEarlierMessages,

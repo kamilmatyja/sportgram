@@ -29,6 +29,8 @@ export const FeedReactions: React.FC<FeedReactionsProps> = ({ feed, myReactionTy
                         size="sm"
                         className={`flex-grow-1 border-0 ${isActive ? 'fw-bold profile-theme-text' : 'text-muted'}`}
                         disabled={isFeedLoading}
+                        aria-label={opt.label}
+                        aria-pressed={isActive}
                         onClick={() => onReact(feed.id, opt.value)}
                     >
                         <BootstrapIcon name={icon.name} className={`${icon.className} me-1`} />

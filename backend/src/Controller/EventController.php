@@ -12,7 +12,7 @@ use App\Dto\{ElementStatusDto,
     SaveStatusDto};
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\{EventDisciplineDistanceListResource, EventResource};
 use App\Security\Voter\{EventCreatorVoter,
     EventListCreatorVoter,
@@ -37,7 +37,7 @@ class EventController extends AbstractController
         summary: 'Create event',
         requestBody: new Body(EventDto::class),
         tags: ['events'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
         Uuid $id,
@@ -56,7 +56,7 @@ class EventController extends AbstractController
         summary: 'Update event',
         requestBody: new Body(EventDto::class),
         tags: ['events'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         Uuid $id,
@@ -75,7 +75,7 @@ class EventController extends AbstractController
         summary: 'Update event status',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['events'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
         Uuid $id,
@@ -93,7 +93,7 @@ class EventController extends AbstractController
     #[OA\Delete(
         summary: 'Delete event',
         tags: ['events'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -130,7 +130,7 @@ class EventController extends AbstractController
     #[OA\Get(
         summary: 'Details of event',
         tags: ['events'],
-        responses: [new Item(EventResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(EventResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -150,7 +150,7 @@ class EventController extends AbstractController
     #[OA\Post(
         summary: 'Create event discipline distance list',
         tags: ['events'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function createList(
         Uuid $id,
@@ -167,7 +167,7 @@ class EventController extends AbstractController
         summary: 'Update event discipline distance list status',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['events'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateListStatus(
         Uuid $id,
@@ -185,7 +185,7 @@ class EventController extends AbstractController
     #[OA\Delete(
         summary: 'Delete event discipline distance list',
         tags: ['events'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function deleteList(
         Uuid $id,
@@ -201,7 +201,7 @@ class EventController extends AbstractController
     #[OA\Get(
         summary: 'Index of event discipline distance lists',
         tags: ['events'],
-        responses: [new Collection(EventDisciplineDistanceListResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(EventDisciplineDistanceListResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function indexList(
         Uuid $id,
@@ -223,7 +223,7 @@ class EventController extends AbstractController
     #[OA\Get(
         summary: 'Details of event discipline distance list',
         tags: ['events'],
-        responses: [new Item(EventDisciplineDistanceListResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(EventDisciplineDistanceListResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function detailsList(
         Uuid $id,
@@ -244,7 +244,7 @@ class EventController extends AbstractController
         summary: 'Create event discipline distance result',
         requestBody: new Body(EventResultDto::class),
         tags: ['events'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function createResult(
         Uuid $id,
@@ -263,7 +263,7 @@ class EventController extends AbstractController
         summary: 'Update event discipline distance result',
         requestBody: new Body(EventResultDto::class),
         tags: ['events'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateResult(
         Uuid $id,
@@ -281,7 +281,7 @@ class EventController extends AbstractController
     #[OA\Delete(
         summary: 'Delete event discipline distance result',
         tags: ['events'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function deleteResult(
         Uuid $id,

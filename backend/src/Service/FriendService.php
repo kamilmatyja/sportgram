@@ -28,9 +28,9 @@ readonly class FriendService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        $receiver = $this->userRepository->findById($dto->receiverUserId);
+        $receiver = $this->userRepository->findById($dto->userId);
 
-        if ($this->friendRepository->hasRow($user->id, $dto->receiverUserId)) {
+        if ($this->friendRepository->hasRow($user->id, $dto->userId)) {
             throw new ValidatorException('User already has friend relationship with this user.');
         }
 

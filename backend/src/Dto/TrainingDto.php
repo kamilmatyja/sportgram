@@ -7,6 +7,8 @@ use App\Validator\{EntityExistsField, UniqueField};
 use DateTimeImmutable;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -26,7 +28,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             nullable: true,
         ),
         new OA\Property(
-            property: 'participants',
+            property: 'userIds',
             type: 'array',
             items: new OA\Items(
                 type: 'string',
@@ -41,11 +43,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class TrainingDto
 {
     #[Assert\NotBlank]
-    #[Assert\DateTime(format: 'Y-m-d\TH:i')]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\TH:i'])]
     public DateTimeImmutable $startedAt;
 
     #[Assert\NotBlank]
-    #[Assert\DateTime(format: 'Y-m-d\TH:i')]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\TH:i'])]
     public DateTimeImmutable $endedAt;
 
     #[Assert\NotBlank]
@@ -79,10 +81,15 @@ class TrainingDto
     ])]
     #[Assert\Count(min: 0)]
     #[Assert\Unique]
-    public array $participants = [];
+    public array $userIds = [];
 
     final public function addDiscipline(TrainingDisciplineDto $discipline): void
     {
         $this->disciplines[] = $discipline;
+    }
+
+    final public function addUserId(Uuid $userId): void
+    {
+        $this->userIds[] = $userId;
     }
 }

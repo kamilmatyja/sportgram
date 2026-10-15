@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{NotificationIndexDto, NotificationStatusDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\NotificationResource;
 use App\Security\Voter\NotificationVoter;
 use App\Service\NotificationService;
@@ -24,7 +24,7 @@ class NotificationController extends AbstractController
         summary: 'Update notification status',
         requestBody: new Body(NotificationStatusDto::class),
         tags: ['notifications'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
         Uuid $id,
@@ -42,7 +42,7 @@ class NotificationController extends AbstractController
     #[OA\Delete(
         summary: 'Delete notification',
         tags: ['notifications'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -77,7 +77,7 @@ class NotificationController extends AbstractController
     #[OA\Get(
         summary: 'Details of notification',
         tags: ['notifications'],
-        responses: [new Item(NotificationResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(NotificationResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

@@ -6,120 +6,87 @@ import { PageProvider } from '../../api/providers/PageProvider';
 import { UserProvider } from '../../api/providers/UserProvider';
 import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
 import { EventIndexQuery } from '../../api/queries/EventIndexQuery';
+import { PAGE_INCLUDES } from '../../api/queries/includes';
 import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
 import { PageIndexQuery } from '../../api/queries/PageIndexQuery';
-import { EventResponse } from '../../api/responses/EventResponse';
-import { PageFollowResponse } from '../../api/responses/PageFollowResponse';
 import { PageResponse } from '../../api/responses/PageResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
+import { useTranslation } from '../../context/TranslationContext';
 import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { getErrorMessage } from '../../utils/api';
+import { useActionState } from '../../utils/hooks/useActionState';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
 import { useDataFetch } from '../../utils/hooks/useDataFetch';
-import { useListFilters } from '../../utils/hooks/useListFilters';
+import { usePaginatedList } from '../../utils/hooks/usePaginatedList';
+import { useRelatedUsers } from '../../utils/hooks/useRelatedUsers';
+import { firstOrNotFound, toOptionalNumber } from '../../utils/query';
 
 export function usePageDetails(link?: string) {
+    const { t } = useTranslation();
     const access = useAppAccess();
-    const eventsList = useListFilters(new EventFilterQuery());
+    const { relatedUsers, loadRelatedUsers } = useRelatedUsers();
+    const { actionLoading, runAction } = useActionState();
 
-    const {
-        data: pageObj,
-        loading: pageLoading,
-        error: pageError,
-        executeFetch: fetchPage,
-    } = useDataFetch<PageResponse>();
-    const { data: events, loading: eventsLoading, executeFetch: executeEventsFetch } = useDataFetch<EventResponse[]>();
-
+    const { data: pageObj, loading: pageLoading, error: pageError, executeFetch } = useDataFetch<PageResponse>();
     const [ownerUser, setOwnerUser] = useState<UserResponse | null>(null);
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-    const [isMyProfile, setIsMyProfile] = useState<boolean>(false);
-    const [isParticipantOfPage, setIsParticipantOfPage] = useState<boolean>(false);
-    const [myFollow, setMyFollow] = useState<PageFollowResponse | null>(null);
-    const [followLoading, setFollowLoading] = useState<boolean>(false);
 
     const pageProvider = new PageProvider();
     const userProvider = new UserProvider();
     const eventProvider = new EventProvider();
 
-    const fetchEventsData = (targetPageId: string) => {
-        executeEventsFetch(async () => {
+    const {
+        list: eventsList,
+        items: events,
+        loading: eventsLoading,
+    } = usePaginatedList({
+        initialFilter: new EventFilterQuery(),
+        scope: pageObj,
+        fetchPage: async (list, page) => {
             const filterDto = new EventFilterQuery();
-            filterDto.pageId = targetPageId;
-            filterDto.title = eventsList.filters.title;
-            filterDto.link = eventsList.filters.link;
-            filterDto.status = eventsList.filters.status ? Number(eventsList.filters.status) : undefined;
+            filterDto.pageId = page.id;
+            filterDto.title = list.filters.title;
+            filterDto.status = toOptionalNumber(list.filters.status);
 
-            const indexDto = new EventIndexQuery();
-            indexDto.page = eventsList.page;
-            indexDto.limit = eventsList.limit;
-            indexDto.sort = eventsList.sort;
-            indexDto.filter = filterDto;
-
-            return await eventProvider.index(indexDto);
-        }, []);
-    };
+            return list.applyPagination(
+                await eventProvider.index(list.buildIndexQuery(new EventIndexQuery(), filterDto)),
+            );
+        },
+    });
 
     const fetchPageData = () => {
         if (!link || !access.currentUser) return;
 
-        fetchPage(
-            async () => {
-                const filterDto = new PageFilterQuery();
-                filterDto.link = link;
-                const indexDto = new PageIndexQuery();
-                indexDto.filter = filterDto;
-                indexDto.include = ['pageParticipants', 'pageFollows'];
+        executeFetch(async () => {
+            const filterDto = new PageFilterQuery();
+            filterDto.link = link;
+            const indexDto = new PageIndexQuery();
+            indexDto.filter = filterDto;
+            indexDto.include = PAGE_INCLUDES;
 
-                const pagesData = await pageProvider.index(indexDto);
-                if (pagesData.length === 0) {
-                    throw { error: 'noRecords' };
-                }
+            const targetPage = firstOrNotFound(await pageProvider.index(indexDto));
 
-                const targetPage = pagesData[0];
+            setOwnerUser(await userProvider.details(targetPage.userId));
+            await loadRelatedUsers([
+                ...targetPage.participants.map((p) => p.userId),
+                ...(targetPage.follows?.map((f) => f.userId) || []),
+            ]);
 
-                const owner = await userProvider.details(targetPage.userId);
-                setOwnerUser(owner);
-                setIsMyProfile(access.currentUser!.id === owner.id);
-
-                const participantCheck =
-                    targetPage.participants?.some((p) => p.userId === access.currentUser!.id) ?? false;
-                setIsParticipantOfPage(participantCheck);
-
-                const existingFollow = targetPage.follows?.find((f) => f.userId === access.currentUser!.id) || null;
-                setMyFollow(existingFollow);
-
-                const userIds = [
-                    ...targetPage.participants.map((p) => p.userId),
-                    ...(targetPage.follows?.map((f) => f.userId) || []),
-                ];
-
-                const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
-                setRelatedUsers(updatedUsers);
-
-                fetchEventsData(targetPage.id);
-
-                return targetPage;
-            },
-            null as unknown as PageResponse,
-        );
+            return targetPage;
+        });
     };
 
     useEffect(() => {
-        if (!access.authLoading && !access.authError) {
+        if (isAccessReady(access)) {
             fetchPageData();
         }
     }, [link, access.authLoading, access.authError]);
 
-    useEffect(() => {
-        if (pageObj) {
-            fetchEventsData(pageObj.id);
-        }
-    }, [eventsList.page, eventsList.limit, eventsList.sort, eventsList.filters]);
+    const currentUserId = access.currentUser?.id;
+    const myFollow = pageObj?.follows?.find((f) => f.userId === currentUserId) || null;
 
-    const handleToggleFollow = async () => {
+    const handleToggleFollow = () => {
         if (!pageObj || !access.currentUser) return;
-        setFollowLoading(true);
-        try {
+        runAction('follow', async () => {
             if (!myFollow) {
                 await pageProvider.createFollow(pageObj.id, new StatusBody(PageFollowStatusEnum.ACCEPTED));
             } else {
@@ -130,31 +97,25 @@ export function usePageDetails(link?: string) {
                 await pageProvider.updateFollowStatus(myFollow.id, new StatusBody(newStatus));
             }
             fetchPageData();
-        } catch (err: any) {
-            alert(err.error);
-        } finally {
-            setFollowLoading(false);
-        }
+        }).catch((err: unknown) => alert(t(getErrorMessage(err))));
     };
-
-    const refreshPage = () => fetchPageData();
 
     return {
         ...access,
         pageObj,
         ownerUser,
         relatedUsers,
-        isMyProfile,
-        isParticipantOfPage,
+        isMyProfile: !!pageObj && pageObj.userId === currentUserId,
         myFollow,
-        followLoading,
+        followLoading: actionLoading !== null,
         handleToggleFollow,
         loading: access.authLoading || pageLoading,
         error: access.authError || pageError,
-        events: events || [],
+        events,
         eventsLoading,
         eventPage: eventsList.page,
         eventLimit: eventsList.limit,
+        eventHasMore: eventsList.hasMore,
         eventSort: eventsList.sort,
         eventFilters: eventsList.filters,
         handleEventFilterChange: eventsList.handleFilterChange,
@@ -162,6 +123,6 @@ export function usePageDetails(link?: string) {
         handleEventLimitChange: eventsList.handleLimitChange,
         handleEventPrevPage: eventsList.handlePrevPage,
         handleEventNextPage: eventsList.handleNextPage,
-        refreshPage,
+        refreshPage: fetchPageData,
     };
 }

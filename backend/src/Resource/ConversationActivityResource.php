@@ -3,7 +3,7 @@
 namespace App\Resource;
 
 use App\Entity\ConversationActivity;
-use DateTime;
+use DateTimeImmutable;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -44,7 +44,7 @@ class ConversationActivityResource
 {
     public static function fromEntity(ConversationActivity $activity): array
     {
-        $isWriting = $activity->updatedAt >= new DateTime('-5 seconds');
+        $isWriting = $activity->updatedAt >= new DateTimeImmutable('-5 seconds');
 
         return [
             'id' => $activity->id,

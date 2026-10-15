@@ -82,8 +82,8 @@ class EventCreateTest extends ApiTestCase
         ], $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'title' => 'My event',
             'description' => 'Desc',
             'link' => 'duplicate-link',
@@ -107,8 +107,8 @@ class EventCreateTest extends ApiTestCase
         PageParticipantFactory::make(['page' => $page, 'user' => $user], $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'title' => 'My event',
             'description' => 'Desc',
             'link' => 'my-unique-link',

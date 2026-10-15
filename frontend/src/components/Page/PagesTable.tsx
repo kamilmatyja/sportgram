@@ -1,13 +1,15 @@
 import React from 'react';
-import { Table, Stack, Image, Badge } from 'react-bootstrap';
+import { Table, Stack } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { PageResponse } from '../../api/responses/PageResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { formatDate } from '../../utils/dateFormat';
-import BootstrapIcon from '../Common/BootstrapIcon';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { Base64Image } from '../Common/Base64Image';
+import { EnumBadge } from '../Common/EnumBadge';
+import { IconButton } from '../Common/IconButton';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface PagesTableProps {
     pages: PageResponse[];
@@ -31,27 +33,22 @@ export const PagesTable: React.FC<PagesTableProps> = ({ pages }) => {
                 </TableHead>
                 <TableBody>
                     {pages.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={6} className="text-center text-muted">
-                                {t('noRecords')}
-                            </TableCell>
-                        </TableRow>
+                        <EmptyTableRow colSpan={6} />
                     ) : (
                         pages.map((pageObj) => (
                             <TableRow key={pageObj.id}>
                                 <TableCell className="text-center feed-photo-cell">
-                                    {pageObj.profilePhoto ? (
-                                        <Image
-                                            src={`data:image/webp;base64,${pageObj.profilePhoto}`}
-                                            roundedCircle
-                                            fluid
-                                            className="feed-photo shadow-sm"
-                                        />
-                                    ) : (
-                                        <Stack as="span" className="text-muted">
-                                            -
-                                        </Stack>
-                                    )}
+                                    <Base64Image
+                                        data={pageObj.profilePhoto}
+                                        fallback={
+                                            <Stack as="span" className="text-muted">
+                                                -
+                                            </Stack>
+                                        }
+                                        roundedCircle
+                                        fluid
+                                        className="feed-photo shadow-sm"
+                                    />
                                 </TableCell>
                                 <TableCell>
                                     <Link to={`/pages/${pageObj.link}`} className="text-decoration-none">
@@ -60,19 +57,15 @@ export const PagesTable: React.FC<PagesTableProps> = ({ pages }) => {
                                 </TableCell>
                                 <TableCell className="small">@{pageObj.link}</TableCell>
                                 <TableCell>
-                                    <Badge bg="light" text="dark" className="border profile-theme-border">
-                                        {ElementStatusEnum.getOptions(t).find((opt) => opt.value === pageObj.status)
-                                            ?.label || pageObj.status}
-                                    </Badge>
+                                    <EnumBadge options={ElementStatusEnum.getOptions(t)} value={pageObj.status} />
                                 </TableCell>
                                 <TableCell className="small text-muted">{formatDate(pageObj.createdAt)}</TableCell>
                                 <TableCell className="text-end">
-                                    <Link
+                                    <IconButton
+                                        icon="box-arrow-in-right"
                                         to={`/pages/${pageObj.link}`}
-                                        className="btn btn-sm btn-outline-primary rounded-circle shadow-sm"
-                                    >
-                                        <BootstrapIcon name="box-arrow-in-right" />
-                                    </Link>
+                                        variant="outline-primary"
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))

@@ -46,8 +46,9 @@ class PageFollowIndexTest extends ApiTestCase
         );
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(1, $result['json']);
-        $this->assertEquals(PageFollowStatusEnum::Accepted->value, $result['json'][0]['status']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals(1, $result['json']['pagination']['total']);
+        $this->assertEquals(PageFollowStatusEnum::Accepted->value, $result['json']['data'][0]['status']);
     }
 
     final public function testPagination(): void
@@ -63,6 +64,9 @@ class PageFollowIndexTest extends ApiTestCase
         $result = $this->get("/api/page-follows?filter[userId]={$user->id->toString()}&page=2&limit=5", $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
+        $this->assertEquals(15, $result['json']['pagination']['total']);
+        $this->assertEquals(2, $result['json']['pagination']['page']);
+        $this->assertTrue($result['json']['pagination']['hasNextPage']);
     }
 }

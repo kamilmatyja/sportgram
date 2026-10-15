@@ -1,59 +1,50 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { StoryProvider } from '../../api/providers/StoryProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
 import { StoryFilterQuery } from '../../api/queries/StoryFilterQuery';
 import { StoryIndexQuery } from '../../api/queries/StoryIndexQuery';
 import { StoryResponse } from '../../api/responses/StoryResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { PaginationEnum } from '../../enums/PaginationEnum';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
 import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { useRelatedUsers } from '../../utils/hooks/useRelatedUsers';
 
 export function useFeedStories(targetUserId?: string) {
-    const accessOptions = targetUserId ? { targetId: targetUserId, requireFriendship: true } : {};
-    const access = useAppAccess(accessOptions);
-
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
+    const access = useAppAccess(targetUserId ? { targetId: targetUserId, requireFriendship: true } : {});
+    const { relatedUsers, loadRelatedUsers } = useRelatedUsers();
     const { data: stories, loading, error, executeFetch } = useDataFetch<StoryResponse[]>();
 
     const storyProvider = new StoryProvider();
-    const userProvider = new UserProvider();
 
     const fetchStories = () => {
         executeFetch(async () => {
             const filterDto = new StoryFilterQuery();
             filterDto.status = ElementStatusEnum.ACTIVE;
-            if (targetUserId) {
-                filterDto.userId = targetUserId;
-            }
+            filterDto.userId = targetUserId;
 
             const indexDto = new StoryIndexQuery();
-            indexDto.limit = 100;
+            indexDto.limit = PaginationEnum.LG;
             indexDto.filter = filterDto;
 
-            const data = await storyProvider.index(indexDto);
-
-            const userIds = data.map((s) => s.userId);
-            const updatedUsers = await fetchRelatedUsers(userIds, relatedUsers, userProvider);
-            setRelatedUsers(updatedUsers);
+            const data = (await storyProvider.index(indexDto)).data;
+            await loadRelatedUsers(data.map((s) => s.userId));
 
             return data;
         }, []);
     };
 
     useEffect(() => {
-        if (!access.authLoading && !access.authError) {
+        const targetReady = !targetUserId || access.targetUser?.id === targetUserId;
+        if (isAccessReady(access) && targetReady) {
             fetchStories();
         }
-    }, [access.authLoading, access.authError, targetUserId]);
+    }, [access.authLoading, access.authError, access.targetUser, targetUserId]);
 
     return {
         stories: stories || [],
         relatedUsers,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        currentUser: access.currentUser,
     };
 }

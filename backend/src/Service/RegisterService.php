@@ -37,12 +37,15 @@ readonly class RegisterService
 
         $userRegister = $this->userRegisterRepository->findLastByUserId($user->id);
 
+        if (! $userRegister) {
+            throw new ValidatorException('User register not found.');
+        }
+
         if ($userRegister->status === UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Code already used.');
         }
 
-        if ($userRegister
-            && $userRegister->attempt >= 3
+        if ($userRegister->attempt >= 3
             && $userRegister->status === UnauthorizedStatusEnum::Incorrect) {
             throw new ValidatorException('Too many attempts.');
         }

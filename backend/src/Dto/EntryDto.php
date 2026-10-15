@@ -28,7 +28,7 @@ class EntryDto
     public ?Uuid $entityId = null;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [EntryTypeEnum::class, 'values'])]
+    #[Assert\Choice(callback: [EntryTypeEnum::class, 'cases'])]
     public ?EntryTypeEnum $type = null;
 
     #[EntryEntityExists]

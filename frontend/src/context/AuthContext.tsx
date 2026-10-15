@@ -1,12 +1,15 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { SignProvider } from '../api/providers/SignProvider';
+import { isApiError } from '../utils/api';
+import { authStorage } from '../utils/authSession';
+
+const REFRESH_INTERVAL_MS = 4 * 60 * 1000;
 
 interface AuthContextType {
-    token: string | null;
     signId: string | null;
-    login: (newToken: string, newSignId: string, rememberMe?: boolean) => void;
+    login: (newToken: string, newSignId: string, rememberMe: boolean) => void;
     logout: () => void;
     isAuthLoading: boolean;
     isAuthenticated: boolean;
@@ -18,102 +21,77 @@ interface AuthProviderProps {
     children: ReactNode;
 }
 
+function isSessionRejected(err: unknown): boolean {
+    return isApiError(err) && err.status >= 400 && err.status < 500;
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
     const navigate = useNavigate();
 
-    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-    const [signId, setSignId] = useState<string | null>(localStorage.getItem('success_sign_id'));
-    const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+    const [token, setToken] = useState<string | null>(authStorage.getToken());
+    const [signId, setSignId] = useState<string | null>(authStorage.getSignId());
+    const [isAuthLoading, setIsAuthLoading] = useState<boolean>(!!signId);
 
-    const signProvider = new SignProvider();
+    const signProvider = useRef(new SignProvider()).current;
+    const skipNextRefresh = useRef(false);
 
-    useEffect(() => {
-        if (signId) {
-            refreshAuthToken(signId);
-        } else {
-            setIsAuthLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (!signId) return;
-
-        const interval = setInterval(
-            () => {
-                refreshAuthToken(signId);
-            },
-            4 * 60 * 1000,
-        );
-
-        return () => clearInterval(interval);
-    }, [signId]);
-
-    const refreshAuthToken = async (currentSignId: string) => {
-        try {
-            const res = await signProvider.refresh(currentSignId);
-
-            localStorage.setItem('token', res.token);
-
-            if (getCookie('remember_me') === '1') {
-                setCookie('token', res.token);
-            }
-
-            setToken(res.token);
-        } catch (err) {
-            logout();
-        } finally {
-            setIsAuthLoading(false);
-        }
-    };
-
-    const login = (newToken: string, newSignId: string, rememberMe?: boolean) => {
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('success_sign_id', newSignId);
-
-        if (rememberMe) {
-            setCookie('remember_me', rememberMe ? '1' : '0');
-            setCookie('success_sign_id', newSignId);
-        }
-
-        setToken(newToken);
-        setSignId(newSignId);
-    };
-
-    const logout = () => {
-        localStorage.clear();
-        deleteCookie('remember_me');
-        deleteCookie('success_sign_id');
+    const logout = useCallback(() => {
+        authStorage.clear();
 
         setToken(null);
         setSignId(null);
 
         navigate('/sign', { replace: true });
-    };
+    }, [navigate]);
 
-    const getCookie = (name: string): string | null => {
-        const match = document.cookie.match(new RegExp('(^|;\\s*)' + encodeURIComponent(name) + '=([^;]*)'));
-        return match ? decodeURIComponent(match[2]) : null;
-    }
+    const login = useCallback((newToken: string, newSignId: string, rememberMe: boolean) => {
+        authStorage.save(newToken, newSignId, rememberMe);
+        skipNextRefresh.current = true;
 
-    const setCookie = (name: string, value: string, days: number = 30): void => {
-        let expires = '';
-        if (days > 0) {
-            const date = new Date();
-            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-            expires = `; expires=${date.toUTCString()}`;
+        setToken(newToken);
+        setSignId(newSignId);
+    }, []);
+
+    const logoutRef = useRef(logout);
+    logoutRef.current = logout;
+
+    useEffect(() => {
+        if (!signId) return;
+
+        let cancelled = false;
+
+        const refreshAuthToken = async () => {
+            try {
+                const res = await signProvider.refresh(signId);
+                if (cancelled) return;
+                authStorage.setToken(res.token);
+                setToken(res.token);
+            } catch (err) {
+                if (!cancelled && isSessionRejected(err)) logoutRef.current();
+            } finally {
+                if (!cancelled) setIsAuthLoading(false);
+            }
+        };
+
+        if (skipNextRefresh.current) {
+            skipNextRefresh.current = false;
+        } else {
+            refreshAuthToken();
         }
-        document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value) || ''}${expires}; path=/; SameSite=Lax`;
-    }
+        const interval = setInterval(refreshAuthToken, REFRESH_INTERVAL_MS);
 
-    const deleteCookie = (name: string): void => {
-        document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
-    }
+        return () => {
+            cancelled = true;
+            clearInterval(interval);
+        };
+    }, [signId, signProvider]);
 
-    return (
-        <AuthContext.Provider value={{ token, signId, login, logout, isAuthLoading, isAuthenticated: !!token }}>
-            {children}
-        </AuthContext.Provider>
+    const value = useMemo(
+        () => ({ signId, login, logout, isAuthLoading, isAuthenticated: !!token }),
+        [token, signId, login, logout, isAuthLoading],
     );
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = (): AuthContextType => {

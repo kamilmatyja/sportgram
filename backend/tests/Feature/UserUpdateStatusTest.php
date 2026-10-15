@@ -41,7 +41,7 @@ class UserUpdateStatusTest extends ApiTestCase
         $this->assertArrayHasKey('errors', $result['json']);
         $this->assertArrayHasKey('status', $result['json']['errors']);
         $this->assertEquals([
-            'This value should be of type int.',
+            'This value should be of type int|string.',
         ], $result['json']['errors']['status']);
     }
 
@@ -69,7 +69,7 @@ class UserUpdateStatusTest extends ApiTestCase
         $this->assertArrayHasKey('errors', $result['json']);
         $this->assertArrayHasKey('status', $result['json']['errors']);
         $this->assertEquals([
-            'The value you selected is not a valid choice.',
+            'This value was of an unexpected type.',
         ], $result['json']['errors']['status']);
     }
 

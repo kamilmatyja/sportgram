@@ -9,6 +9,6 @@ export class TrainingBody {
         public link: string,
         public location: string,
         public disciplines: TrainingDiscipline[] = [],
-        public participants: string[] = [],
+        public userIds: string[] = [],
     ) {}
 }

@@ -2,6 +2,14 @@ import React, { ChangeEvent } from 'react';
 
 import { FileUtil } from './FileUtil';
 
+const NUMERIC_INPUT_TYPES = ['number', 'range', 'select-one'];
+
+function parseValue(type: string, value: string): string | number | null {
+    if (value === '') return null;
+    if (!NUMERIC_INPUT_TYPES.includes(type)) return value;
+    return /^-?\d+(\.\d+)?$/.test(value) ? Number(value) : value;
+}
+
 export function createFormHandler<T>(setter: React.Dispatch<React.SetStateAction<T>>) {
     return async (e: ChangeEvent<any>) => {
         const target = e.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -20,17 +28,17 @@ export function createFormHandler<T>(setter: React.Dispatch<React.SetStateAction
         } else if (multiple) {
             newValue = Array.from(options)
                 .filter((o: any) => o.selected)
-                .map((o: any) => o.value);
-            newValue = newValue.map((v: string) => Number(v));
+                .map((o: any) => parseValue('select-one', o.value));
         } else {
-            if (typeof value === 'string' && value === '') {
-                newValue = null;
-            } else if (typeof value === 'string' && /^\d+$/.test(value)) {
-                newValue = Number(value);
-            } else {
-                newValue = value;
-            }
+            newValue = parseValue(type, value);
         }
         setter((prev: any) => ({ ...prev, [name]: newValue }));
+    };
+}
+
+export function createSubmitHandler(handler: () => Promise<unknown> | void) {
+    return async (e: React.SyntheticEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        await handler();
     };
 }

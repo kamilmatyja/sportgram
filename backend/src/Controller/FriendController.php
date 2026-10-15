@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{FriendDto, FriendIndexDto, FriendStatusDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\FriendResource;
 use App\Security\Voter\{FriendSenderVoter, FriendVoter};
 use App\Service\FriendService;
@@ -24,7 +24,7 @@ class FriendController extends AbstractController
         summary: 'Create friend',
         requestBody: new Body(FriendDto::class),
         tags: ['friends'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
         #[MapRequestPayload]
@@ -42,7 +42,7 @@ class FriendController extends AbstractController
         summary: 'Update friend status',
         requestBody: new Body(FriendStatusDto::class),
         tags: ['friends'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
         Uuid $id,
@@ -60,7 +60,7 @@ class FriendController extends AbstractController
     #[OA\Delete(
         summary: 'Delete friend',
         tags: ['friends'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -95,7 +95,7 @@ class FriendController extends AbstractController
     #[OA\Get(
         summary: 'Details of friend',
         tags: ['friends'],
-        responses: [new Item(FriendResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(FriendResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

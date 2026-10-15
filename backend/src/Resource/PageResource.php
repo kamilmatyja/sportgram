@@ -68,8 +68,8 @@ class PageResource
             'title' => $page->title,
             'description' => $page->description,
             'link' => $page->link,
-            'profilePhoto' => base64_encode($page->profilePhoto),
-            'backgroundPhoto' => base64_encode($page->backgroundPhoto),
+            'profilePhoto' => $page->profilePhoto,
+            'backgroundPhoto' => $page->backgroundPhoto,
             'color' => $page->color,
             'status' => $page->status,
         ];

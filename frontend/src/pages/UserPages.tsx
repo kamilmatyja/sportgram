@@ -11,7 +11,7 @@ export default function UserPages() {
     const { link } = useParams<{ link: string }>();
 
     const pagesService = useUserPages(link);
-    const modalsService = usePageModals(pagesService.refreshPages);
+    const modalsService = usePageModals(pagesService.refreshPages, pagesService.currentUser);
     const interactions = usePageInteractions(pagesService.refreshPages);
 
     return (
@@ -20,16 +20,17 @@ export default function UserPages() {
                 user={pagesService.targetUser}
                 pages={pagesService.pages}
                 relatedUsers={pagesService.relatedUsers}
+                currentUser={pagesService.currentUser}
                 isMyProfile={pagesService.isMyProfile}
                 isAdmin={pagesService.isAdmin}
                 isOrganizer={pagesService.isOrganizer}
                 loading={pagesService.loading}
                 error={pagesService.error}
                 page={pagesService.page}
+                hasMore={pagesService.hasMore}
                 limit={pagesService.limit}
                 sort={pagesService.sort}
                 filters={pagesService.filters}
-                actionLoading={interactions.actionLoading}
                 onFilterChange={pagesService.handleFilterChange}
                 onSortChange={pagesService.handleSortChange}
                 onLimitChange={pagesService.handleLimitChange}

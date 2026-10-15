@@ -45,9 +45,11 @@ class UserCreateTest extends ApiTestCase
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
-            $this->assertEquals([
-                'This value should not be blank.',
-            ], $result['json']['errors'][$field]);
+            $messages = ['This value should not be blank.'];
+            if ($field === 'roles') {
+                $messages[] = 'This collection should contain 1 element or more.';
+            }
+            $this->assertEquals($messages, $result['json']['errors'][$field]);
         }
     }
 
@@ -100,19 +102,19 @@ class UserCreateTest extends ApiTestCase
             'birthAt' => 'This value should be of type string.',
             'firstName' => 'This value should be of type string.',
             'lastName' => 'This value should be of type string.',
-            'gender' => 'This value should be of type int.',
+            'gender' => 'This value should be of type int|string.',
             'phone' => 'This value should be of type int.',
             'email' => 'This value should be of type string.',
             'password' => 'This value should be of type string.',
             'link' => 'This value should be of type string.',
-            'language' => 'This value should be of type int.',
-            'country' => 'This value should be of type int.',
-            'theme' => 'This value should be of type int.',
-            'color' => 'This value should be of type int.',
+            'language' => 'This value should be of type int|string.',
+            'country' => 'This value should be of type int|string.',
+            'theme' => 'This value should be of type int|string.',
+            'color' => 'This value should be of type int|string.',
             'profilePhoto' => 'This value should be of type string.',
             'backgroundPhoto' => 'This value should be of type string.',
             'bio' => 'This value should be of type string.',
-            'roles' => 'This value should be of type array.',
+            'roles' => 'This value should be of type App\\Enum\\RoleEnum[].',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
@@ -359,7 +361,7 @@ class UserCreateTest extends ApiTestCase
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
             $this->assertEquals([
-                'The value you selected is not a valid choice.',
+                'This value was of an unexpected type.',
             ], $result['json']['errors'][$field]);
         }
     }

@@ -37,7 +37,9 @@ class UserIndexTest extends ApiTestCase
 
         $result = $this->get('/api/users', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertGreaterThanOrEqual(1, count($result['json']));
+        $this->assertArrayHasKey('data', $result['json']);
+        $this->assertArrayHasKey('pagination', $result['json']);
+        $this->assertGreaterThanOrEqual(1, count($result['json']['data']));
     }
 
     final public function testPagination(): void
@@ -50,7 +52,11 @@ class UserIndexTest extends ApiTestCase
 
         $result = $this->get('/api/users?page=2&limit=5', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
+        $this->assertArrayHasKey('pagination', $result['json']);
+        $this->assertEquals(16, $result['json']['pagination']['total']);
+        $this->assertEquals(2, $result['json']['pagination']['page']);
+        $this->assertTrue($result['json']['pagination']['hasNextPage']);
     }
 
     final public function testSortFirstName(): void
@@ -62,7 +68,7 @@ class UserIndexTest extends ApiTestCase
 
         $result = $this->get('/api/users?sort=firstName:asc', $user);
         $this->assertEquals(200, $result['status']);
-        $names = array_column($result['json'], 'firstName');
+        $names = array_column($result['json']['data'], 'firstName');
         $this->assertEquals(['Adam', 'Janusz', 'Kamil'], array_slice($names, 0, 3));
     }
 
@@ -75,7 +81,7 @@ class UserIndexTest extends ApiTestCase
 
         $result = $this->get('/api/users?sort=lastName:asc', $user);
         $this->assertEquals(200, $result['status']);
-        $names = array_column($result['json'], 'lastName');
+        $names = array_column($result['json']['data'], 'lastName');
         $this->assertEquals(['Adamczyk', 'Baran', 'Kowalski'], array_slice($names, 0, 3));
     }
 
@@ -88,7 +94,7 @@ class UserIndexTest extends ApiTestCase
 
         $result = $this->get('/api/users?sort=gender:asc', $user);
         $this->assertEquals(200, $result['status']);
-        $genders = array_column($result['json'], 'gender');
+        $genders = array_column($result['json']['data'], 'gender');
         $this->assertEquals([1, 1, 2], array_slice($genders, 0, 3));
     }
 
@@ -101,7 +107,7 @@ class UserIndexTest extends ApiTestCase
 
         $result = $this->get('/api/users?sort=country:asc', $user);
         $this->assertEquals(200, $result['status']);
-        $countries = array_column($result['json'], 'country');
+        $countries = array_column($result['json']['data'], 'country');
         $this->assertEquals([1, 2, 3], array_slice($countries, 0, 3));
     }
 
@@ -114,7 +120,7 @@ class UserIndexTest extends ApiTestCase
 
         $result = $this->get('/api/users?sort=birthAt:asc', $user);
         $this->assertEquals(200, $result['status']);
-        $births = array_column($result['json'], 'birthAt');
+        $births = array_column($result['json']['data'], 'birthAt');
         array_slice($births, 0, 3)
             |> (fn ($x) => array_map(fn ($d) => substr($d, 0, 10), $x))
             |> (fn ($x) => $this->assertEquals(['1990-01-01', '2000-01-01', '2010-01-01'], $x));
@@ -129,7 +135,7 @@ class UserIndexTest extends ApiTestCase
 
         $result = $this->get('/api/users?sort=status:asc', $user);
         $this->assertEquals(200, $result['status']);
-        $statuses = array_column($result['json'], 'status');
+        $statuses = array_column($result['json']['data'], 'status');
         $this->assertEquals([1, 2, 3], array_slice($statuses, 0, 3));
     }
 
@@ -142,7 +148,7 @@ class UserIndexTest extends ApiTestCase
 
         $result = $this->get('/api/users?filter[firstName]=Adam', $user);
         $this->assertEquals(200, $result['status']);
-        $names = array_column($result['json'], 'firstName');
+        $names = array_column($result['json']['data'], 'firstName');
         $this->assertContains('Adam', $names);
         $this->assertNotContains('Bartek', $names);
     }
@@ -154,7 +160,7 @@ class UserIndexTest extends ApiTestCase
         UserFactory::make(['lastName' => 'Kowalski'], $this->em);
         $result = $this->get('/api/users?filter[lastName]=Nowak', $user);
         $this->assertEquals(200, $result['status']);
-        $names = array_column($result['json'], 'lastName');
+        $names = array_column($result['json']['data'], 'lastName');
         $this->assertContains('Nowak', $names);
         $this->assertNotContains('Kowalski', $names);
     }
@@ -166,7 +172,7 @@ class UserIndexTest extends ApiTestCase
         UserFactory::make(['gender' => GenderEnum::Female], $this->em);
         $result = $this->get('/api/users?filter[gender]=1', $user);
         $this->assertEquals(200, $result['status']);
-        $genders = array_column($result['json'], 'gender');
+        $genders = array_column($result['json']['data'], 'gender');
         $this->assertContains(1, $genders);
         $this->assertNotContains(2, $genders);
     }
@@ -178,7 +184,7 @@ class UserIndexTest extends ApiTestCase
         UserFactory::make(['country' => CountryEnum::Albania], $this->em);
         $result = $this->get('/api/users?filter[country]=1', $user);
         $this->assertEquals(200, $result['status']);
-        $countries = array_column($result['json'], 'country');
+        $countries = array_column($result['json']['data'], 'country');
         $this->assertContains(1, $countries);
         $this->assertNotContains(2, $countries);
     }
@@ -190,7 +196,7 @@ class UserIndexTest extends ApiTestCase
         UserFactory::make(['status' => UserStatusEnum::Accepted], $this->em);
         $result = $this->get('/api/users?filter[status]=1', $user);
         $this->assertEquals(200, $result['status']);
-        $statuses = array_column($result['json'], 'status');
+        $statuses = array_column($result['json']['data'], 'status');
         $this->assertContains(1, $statuses);
         $this->assertNotContains(2, $statuses);
     }
@@ -207,7 +213,7 @@ class UserIndexTest extends ApiTestCase
             $user,
         );
         $this->assertEquals(200, $result['status']);
-        $resultIds = array_column($result['json'], 'id');
+        $resultIds = array_column($result['json']['data'], 'id');
         $this->assertContains($u1->id->toString(), $resultIds);
         $this->assertContains($u2->id->toString(), $resultIds);
     }
@@ -219,7 +225,7 @@ class UserIndexTest extends ApiTestCase
         UserFactory::make(['link' => 'test-link-2'], $this->em);
         $result = $this->get('/api/users?filter[link]=test-link-1', $user);
         $this->assertEquals(200, $result['status']);
-        $links = array_column($result['json'], 'link');
+        $links = array_column($result['json']['data'], 'link');
         $this->assertContains('test-link-1', $links);
         $this->assertNotContains('test-link-2', $links);
     }

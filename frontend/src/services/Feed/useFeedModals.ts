@@ -1,72 +1,49 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { FeedBody } from '../../api/body/FeedBody';
 import { StatusBody } from '../../api/body/StatusBody';
 import { FeedProvider } from '../../api/providers/FeedProvider';
 import { FeedResponse } from '../../api/responses/FeedResponse';
-import { createFormHandler } from '../../utils/formHandler';
-import { useFormState } from '../../utils/hooks/useFormState';
-import { useModal } from '../../utils/hooks/useModal';
+import { createFormHandler, createSubmitHandler } from '../../utils/formHandler';
+import { useCrudModals } from '../../utils/hooks/useCrudModals';
+
+const emptyFeedBody = () => new FeedBody('', '');
 
 export function useFeedModals(onSuccess: () => void) {
-    const addModal = useModal();
-    const manageModal = useModal<FeedResponse>();
-    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
+    const { addModal, manageModal, loading, globalError, fieldErrors, wrap, resetErrors, submitAdd, submitManage } =
+        useCrudModals<FeedResponse>(onSuccess);
 
-    const [formData, setFormData] = useState(new FeedBody('', ''));
+    const [formData, setFormData] = useState(emptyFeedBody);
     const feedProvider = new FeedProvider();
 
     const openAddModal = () => {
-        setFormData(new FeedBody('', ''));
+        setFormData(emptyFeedBody());
         resetErrors();
         addModal.open();
     };
 
-    const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        wrap(async () => {
-            await feedProvider.create(formData);
-            addModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleAddSubmit = createSubmitHandler(() => submitAdd(() => feedProvider.create(formData)));
 
     const openManageModal = async (feed: FeedResponse) => {
         resetErrors();
+        setFormData(new FeedBody(feed.text, ''));
         manageModal.open(feed);
-        const currentFeedObj = await feedProvider.details(feed.id, []);
-        manageModal.setData(currentFeedObj);
-        setFormData(new FeedBody(currentFeedObj.text, ''));
+
+        await wrap(async () => {
+            const currentFeedObj = await feedProvider.details(feed.id, []);
+            manageModal.setData(currentFeedObj);
+            setFormData(new FeedBody(currentFeedObj.text, ''));
+        }).catch(() => manageModal.close());
     };
 
-    const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!manageModal.data) return;
-        wrap(async () => {
-            formData.photo = formData.photo ? formData.photo : manageModal.data!.photo;
-            await feedProvider.update(manageModal.data!.id, formData);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleEditSubmit = createSubmitHandler(() =>
+        submitManage((feed) => feedProvider.update(feed.id, { ...formData, photo: formData.photo || feed.photo })),
+    );
 
-    const handleStatusSubmit = async (newStatus: number) => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await feedProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleStatusSubmit = (newStatus: number) =>
+        submitManage((feed) => feedProvider.updateStatus(feed.id, new StatusBody(newStatus)));
 
-    const handleDelete = async () => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await feedProvider.delete(manageModal.data!.id);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleDelete = () => submitManage((feed) => feedProvider.delete(feed.id));
 
     const handleChange = createFormHandler(setFormData);
 

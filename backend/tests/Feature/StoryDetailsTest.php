@@ -43,7 +43,7 @@ class StoryDetailsTest extends ApiTestCase
         $result = $this->get("/api/stories/{$story->id->toString()}", $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
-        $this->assertEquals($user->id->toString(), $result['json']['userId']);
+        $this->assertArrayHasKey('id', $result['json']['data']);
+        $this->assertEquals($user->id->toString(), $result['json']['data']['userId']);
     }
 }

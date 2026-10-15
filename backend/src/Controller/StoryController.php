@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{ElementStatusDto, StoryDto, StoryIndexDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\StoryResource;
 use App\Security\Voter\{StoryCreatorVoter, StoryVoter};
 use App\Service\StoryService;
@@ -42,7 +42,7 @@ class StoryController extends AbstractController
         summary: 'Update story',
         requestBody: new Body(StoryDto::class),
         tags: ['stories'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         Uuid $id,
@@ -61,7 +61,7 @@ class StoryController extends AbstractController
         summary: 'Update story status',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['stories'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
         Uuid $id,
@@ -79,7 +79,7 @@ class StoryController extends AbstractController
     #[OA\Delete(
         summary: 'Delete story',
         tags: ['stories'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -114,7 +114,7 @@ class StoryController extends AbstractController
     #[OA\Get(
         summary: 'Details of story',
         tags: ['stories'],
-        responses: [new Item(StoryResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(StoryResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

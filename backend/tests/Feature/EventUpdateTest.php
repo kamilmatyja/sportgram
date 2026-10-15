@@ -58,8 +58,8 @@ class EventUpdateTest extends ApiTestCase
         EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $user], $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'title' => 'Updated title',
             'description' => 'Desc',
             'link' => 'new-link',
@@ -84,8 +84,8 @@ class EventUpdateTest extends ApiTestCase
         $event = EventFactory::make(['pageParticipant' => $participant], $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'title' => 'Updated title',
             'description' => 'Desc',
             'link' => 'updated-link',

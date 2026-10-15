@@ -42,7 +42,7 @@ class EntryIndexTest extends ApiTestCase
 
         $result = $this->get('/api/entries', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(3, $result['json']);
+        $this->assertCount(3, $result['json']['data']);
     }
 
     final public function testPagination(): void
@@ -59,7 +59,10 @@ class EntryIndexTest extends ApiTestCase
 
         $result = $this->get('/api/entries?page=2&limit=5', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
+        $this->assertEquals(15, $result['json']['pagination']['total']);
+        $this->assertEquals(2, $result['json']['pagination']['page']);
+        $this->assertTrue($result['json']['pagination']['hasNextPage']);
     }
 
     final public function testSortByType(): void
@@ -79,7 +82,7 @@ class EntryIndexTest extends ApiTestCase
 
         $result = $this->get('/api/entries?sort=type:desc', $user);
         $this->assertEquals(200, $result['status']);
-        $types = array_column($result['json'], 'type');
+        $types = array_column($result['json']['data'], 'type');
         $this->assertEquals([EntryTypeEnum::Feed->value, EntryTypeEnum::User->value], array_slice($types, 0, 2));
     }
 
@@ -101,8 +104,8 @@ class EntryIndexTest extends ApiTestCase
 
         $result = $this->get('/api/entries?filter[userId]=' . $user2->id->toString(), $user1);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(1, $result['json']);
-        $this->assertEquals($user2->id->toString(), $result['json'][0]['userId']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals($user2->id->toString(), $result['json']['data'][0]['userId']);
     }
 
     final public function testFilterEntityIds(): void
@@ -124,8 +127,8 @@ class EntryIndexTest extends ApiTestCase
 
         $result = $this->get('/api/entries?filter[entityIds][]=' . $entityId2->toString(), $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(1, $result['json']);
-        $this->assertEquals($entityId2->toString(), $result['json'][0]['entityId']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals($entityId2->toString(), $result['json']['data'][0]['entityId']);
     }
 
     final public function testFilterType(): void
@@ -145,8 +148,8 @@ class EntryIndexTest extends ApiTestCase
 
         $result = $this->get('/api/entries?filter[type]=' . EntryTypeEnum::Feed->value, $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(1, $result['json']);
-        $this->assertEquals(EntryTypeEnum::Feed->value, $result['json'][0]['type']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals(EntryTypeEnum::Feed->value, $result['json']['data'][0]['type']);
     }
 
     final public function testInvalidParams(): void

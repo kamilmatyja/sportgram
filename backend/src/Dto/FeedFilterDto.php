@@ -3,7 +3,7 @@
 namespace App\Dto;
 
 use App\Entity\User;
-use App\Enum\FriendStatusEnum;
+use App\Enum\{ElementStatusEnum};
 use App\Validator\EntityExistsField;
 use OpenApi\Attributes as OA;
 use Symfony\Component\Uid\Uuid;
@@ -33,6 +33,6 @@ class FeedFilterDto
     #[Assert\Length(min: 1, max: 2048)]
     public ?string $text = null;
 
-    #[Assert\Choice(callback: [FriendStatusEnum::class, 'values'])]
-    public ?FriendStatusEnum $status = null;
+    #[Assert\Choice(callback: [ElementStatusEnum::class, 'cases'])]
+    public ?ElementStatusEnum $status = null;
 }

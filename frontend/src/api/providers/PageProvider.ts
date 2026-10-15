@@ -4,7 +4,9 @@ import { PageBody } from '../body/PageBody';
 import { StatusBody } from '../body/StatusBody';
 import { PageFollowIndexQuery } from '../queries/PageFollowIndexQuery';
 import { PageIndexQuery } from '../queries/PageIndexQuery';
+import { CollectionResponse } from '../responses/CollectionResponse';
 import { IdResponse } from '../responses/IdResponse';
+import { ItemResponse } from '../responses/ItemResponse';
 import { PageFollowResponse } from '../responses/PageFollowResponse';
 import { PageResponse } from '../responses/PageResponse';
 
@@ -25,14 +27,14 @@ export class PageProvider {
         return await apiFetch(`/api/pages/${id}`, { method: 'DELETE' });
     }
 
-    async index(dto: PageIndexQuery): Promise<PageResponse[]> {
+    async index(dto: PageIndexQuery): Promise<CollectionResponse<PageResponse>> {
         const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/pages?${params.toString()}`, { method: 'GET' });
     }
 
     async details(id: string, include: string[] = []): Promise<PageResponse> {
         const query = buildQueryString(include);
-        return await apiFetch(`/api/pages/${id}${query}`, { method: 'GET' });
+        return (await apiFetch<ItemResponse<PageResponse>>(`/api/pages/${id}${query}`, { method: 'GET' })).data;
     }
 
     async updateParticipantStatus(participantId: string, dto: StatusBody): Promise<IdResponse> {
@@ -54,12 +56,13 @@ export class PageProvider {
         return await apiFetch(`/api/page-follows/${followId}`, { method: 'DELETE' });
     }
 
-    async indexFollows(dto: PageFollowIndexQuery): Promise<PageFollowResponse[]> {
+    async indexFollows(dto: PageFollowIndexQuery): Promise<CollectionResponse<PageFollowResponse>> {
         const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/page-follows?${params.toString()}`, { method: 'GET' });
     }
 
     async detailsFollow(followId: string): Promise<PageFollowResponse> {
-        return await apiFetch(`/api/page-follows/${followId}`, { method: 'GET' });
+        return (await apiFetch<ItemResponse<PageFollowResponse>>(`/api/page-follows/${followId}`, { method: 'GET' }))
+            .data;
     }
 }

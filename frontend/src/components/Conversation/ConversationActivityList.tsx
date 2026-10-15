@@ -1,16 +1,18 @@
 import React from 'react';
-import { Card, Stack, Form, Image, Spinner, Table } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Card, Stack, Spinner, Table } from 'react-bootstrap';
 
 import { ConversationActivityResponse } from '../../api/responses/ConversationActivityResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
-import { PaginationEnum } from '../../enums/PaginationEnum';
 import { formatDate } from '../../utils/dateFormat';
-import BootstrapIcon from '../Common/BootstrapIcon';
+import { buildSortOptions } from '../../utils/options';
+import { FilterBar, FilterInput, SortLimitSelect } from '../Common/FilterBar';
+import { IconButton } from '../Common/IconButton';
 import { Pagination } from '../Common/Pagination';
-import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { SectionHeader } from '../Common/SectionHeader';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { UserAvatar } from '../Common/UserAvatar';
+import { UserLink } from '../Common/UserLink';
 
 interface ConversationActivityListProps {
     activities: (ConversationActivityResponse & { otherUser: UserResponse })[];
@@ -42,52 +44,36 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
     paginationVariant,
 }) => {
     const { t } = useTranslation();
-
-    const sortOptions: SelectOption[] = [
-        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
-        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
-        { value: 'updatedAt:desc', label: `${t('updatedAt')} Z-A` },
-        { value: 'updatedAt:asc', label: `${t('updatedAt')} A-Z` },
-    ];
+    const sortOptions = buildSortOptions(t, ['createdAt', 'updatedAt']);
 
     return (
         <Card className="shadow-sm border-0">
             <Card.Body>
-                <Card.Title as="h4" className="mb-4 text-profile-primary fw-bold">
-                    {t('conversations')}
-                </Card.Title>
+                <SectionHeader title={t('conversations')} />
 
-                <Stack direction="horizontal" gap={2} className="mb-4 flex-wrap">
-                    <Form.Control
+                <FilterBar>
+                    <FilterInput
                         placeholder={t('search')}
                         value={activitySearch}
-                        onChange={(e) => {
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             setActivitySearch(e.target.value);
                             setActivityPage(1);
                         }}
-                        className="w-auto"
                     />
-                    <Form.Select
-                        value={activitySort}
-                        onChange={(e) => {
+                    <SortLimitSelect
+                        sortOptions={sortOptions}
+                        sort={activitySort}
+                        limit={activityLimit}
+                        onSortChange={(e) => {
                             setActivitySort(e.target.value);
                             setActivityPage(1);
                         }}
-                        className="w-auto ms-auto"
-                    >
-                        <SelectOptions options={sortOptions} />
-                    </Form.Select>
-                    <Form.Select
-                        value={activityLimit}
-                        onChange={(e) => {
+                        onLimitChange={(e) => {
                             setActivityLimit(Number(e.target.value));
                             setActivityPage(1);
                         }}
-                        className="w-auto"
-                    >
-                        <SelectOptions options={PaginationEnum.getOptions(t) as any} />
-                    </Form.Select>
-                </Stack>
+                    />
+                </FilterBar>
 
                 {loading ? (
                     <Stack className="align-items-center py-5">
@@ -106,11 +92,7 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                 </TableHead>
                                 <TableBody>
                                     {activities.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={3} className="text-center text-muted">
-                                                {t('noRecords')}
-                                            </TableCell>
-                                        </TableRow>
+                                        <EmptyTableRow colSpan={3} />
                                     ) : (
                                         activities.map((act) => (
                                             <TableRow key={act.otherUser.id}>
@@ -120,21 +102,8 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                                         gap={3}
                                                         className="align-items-center"
                                                     >
-                                                        {act.otherUser.profilePhoto ? (
-                                                            <Image
-                                                                src={`data:image/webp;base64,${act.otherUser.profilePhoto}`}
-                                                                roundedCircle
-                                                                className="feed-avatar-32 object-fit-cover"
-                                                            />
-                                                        ) : (
-                                                            <Stack className="bg-secondary rounded-circle feed-avatar-32" />
-                                                        )}
-                                                        <Link
-                                                            to={`/users/${act.otherUser.link}`}
-                                                            className="text-decoration-none"
-                                                        >
-                                                            {act.otherUser.firstName} {act.otherUser.lastName}
-                                                        </Link>
+                                                        <UserAvatar user={act.otherUser} size={32} />
+                                                        <UserLink user={act.otherUser} />
                                                     </Stack>
                                                 </TableCell>
                                                 <TableCell>
@@ -143,12 +112,10 @@ export const ConversationActivityList: React.FC<ConversationActivityListProps> =
                                                     </Stack>
                                                 </TableCell>
                                                 <TableCell className="text-end">
-                                                    <Link
+                                                    <IconButton
+                                                        icon="chat-dots"
                                                         to={`/users/${act.otherUser.link}/conversations`}
-                                                        className="btn btn-profile-outline-primary btn-sm rounded-circle shadow-sm"
-                                                    >
-                                                        <BootstrapIcon name="chat-dots" />
-                                                    </Link>
+                                                    />
                                                 </TableCell>
                                             </TableRow>
                                         ))

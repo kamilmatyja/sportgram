@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{EntryCountIndexDto, EntryDto, EntryIndexDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Created, Forbidden, Item, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Unauthorized};
 use App\Resource\{EntryCountResource, EntryResource};
 use App\Service\EntryService;
 use OpenApi\Attributes as OA;
@@ -23,7 +23,7 @@ class EntryController extends AbstractController
         summary: 'Create entry',
         requestBody: new Body(EntryDto::class),
         tags: ['entries'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
         #[MapRequestPayload]
@@ -59,7 +59,7 @@ class EntryController extends AbstractController
     #[OA\Get(
         summary: 'Details of entry',
         tags: ['entries'],
-        responses: [new Item(EntryResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(EntryResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

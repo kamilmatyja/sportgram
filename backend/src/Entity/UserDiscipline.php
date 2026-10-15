@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Enum\DisciplineEnum;
+use App\Repository\UserDisciplineRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
-#[ORM\Entity(repositoryClass: UserDiscipline::class)]
+#[ORM\Entity(repositoryClass: UserDisciplineRepository::class)]
 #[ORM\Table(name: 'user_disciplines')]
 #[ORM\HasLifecycleCallbacks]
 class UserDiscipline

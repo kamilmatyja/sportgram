@@ -1,14 +1,14 @@
 import React from 'react';
-import { Container, Spinner, Alert } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 
 import { UserProfileHeader } from './UserProfileHeader';
 import { UserProfileInfo } from './UserProfileInfo';
 import { UserProfileNav } from './UserProfileNav';
 import { FriendResponse } from '../../api/responses/FriendResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
-import { useTranslation } from '../../context/TranslationContext';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import { ErrorView, LoadingView } from '../Common/ViewState';
 
 interface UserProfileViewProps {
     user: UserResponse | null;
@@ -24,21 +24,10 @@ interface UserProfileViewProps {
 }
 
 export const UserProfileView: React.FC<UserProfileViewProps> = (props) => {
-    const { t } = useTranslation();
     const { user, loading, error, isMyProfile, isAdmin, friendship } = props;
 
-    if (loading)
-        return (
-            <Container className="mt-5 text-center">
-                <Spinner animation="border" variant="primary" />
-            </Container>
-        );
-    if (error || !user)
-        return (
-            <Container className="mt-5">
-                <Alert variant="danger">{error ? t(error) : t('userNotFound')}</Alert>
-            </Container>
-        );
+    if (loading) return <LoadingView />;
+    if (error || !user) return <ErrorView error={error || 'userNotFound'} />;
 
     const themeClass = ColorEnum.getClass(user.color);
     const canViewDetails = isMyProfile || isAdmin || friendship?.status === FriendStatusEnum.ACCEPTED;

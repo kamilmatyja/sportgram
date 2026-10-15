@@ -81,7 +81,7 @@ class FeedResource
             'createdAt' => $feed->createdAt->format('Y-m-d\TH:i:s'),
             'updatedAt' => $feed->updatedAt->format('Y-m-d\TH:i:s'),
             'text' => $feed->text,
-            'photo' => $feed->photo ? base64_encode($feed->photo) : null,
+            'photo' => $feed->photo,
             'status' => $feed->status,
         ];
 

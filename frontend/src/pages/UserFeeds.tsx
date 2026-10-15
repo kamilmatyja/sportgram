@@ -13,29 +13,12 @@ export default function UserFeeds() {
     const feedsService = useUserFeeds(link);
     const modalsService = useFeedModals(feedsService.refreshFeeds);
 
-    const baseInteractions = useFeedInteractions(feedsService.feeds, feedsService.currentUser, () => {
-        feedsService.refreshFeeds();
-    });
-
-    const interactions = {
-        ...baseInteractions,
-        handleCommentStatusSubmit: async (commentId: string, newStatus: number) => {
-            await baseInteractions.handleCommentStatusSubmit(commentId, newStatus);
-            feedsService.refreshFeeds();
-        },
-        handleReactionStatusSubmit: async (reactionId: string, newStatus: number) => {
-            await baseInteractions.handleReactionStatusSubmit(reactionId, newStatus);
-            feedsService.refreshFeeds();
-        },
-        handleUpdateReaction: async (reactionId: string, type: number) => {
-            await baseInteractions.handleUpdateReaction(reactionId, type);
-            feedsService.refreshFeeds();
-        },
-        handleDeleteReaction: async (reactionId: string) => {
-            await baseInteractions.handleDeleteReaction(reactionId);
-            feedsService.refreshFeeds();
-        },
-    };
+    const interactions = useFeedInteractions(
+        feedsService.feeds,
+        feedsService.currentUser,
+        () => feedsService.refreshFeeds(),
+        () => feedsService.refreshFeeds(),
+    );
 
     return (
         <>
@@ -49,10 +32,10 @@ export default function UserFeeds() {
                 loading={feedsService.loading}
                 error={feedsService.error}
                 page={feedsService.page}
+                hasMore={feedsService.hasMore}
                 limit={feedsService.limit}
                 sort={feedsService.sort}
                 filters={feedsService.filters}
-                actionLoading={interactions.actionLoading}
                 onFilterChange={feedsService.handleFilterChange}
                 onSortChange={feedsService.handleSortChange}
                 onLimitChange={feedsService.handleLimitChange}

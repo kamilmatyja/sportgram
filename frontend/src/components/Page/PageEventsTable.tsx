@@ -1,21 +1,24 @@
 import React from 'react';
-import { Card, Stack, Form, Table, Image, Badge, Spinner } from 'react-bootstrap';
+import { Card, Stack, Table, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
 import { EventResponse } from '../../api/responses/EventResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { PaginationEnum } from '../../enums/PaginationEnum';
 import { formatDate } from '../../utils/dateFormat';
+import { buildSortOptions } from '../../utils/options';
+import { Base64Image } from '../Common/Base64Image';
+import { EnumBadge } from '../Common/EnumBadge';
+import { FilterBar, FilterInput, FilterSelect, SortLimitSelect } from '../Common/FilterBar';
 import { Pagination } from '../Common/Pagination';
-import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface PageEventsTableProps {
     events: EventResponse[];
     eventsLoading: boolean;
     eventPage: number;
+    eventHasMore: boolean;
     eventLimit: number;
     eventSort: string;
     eventFilters: EventFilterQuery;
@@ -31,6 +34,7 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
     events,
     eventsLoading,
     eventPage,
+    eventHasMore,
     eventLimit,
     eventSort,
     eventFilters,
@@ -42,53 +46,38 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
     paginationVariant,
 }) => {
     const { t } = useTranslation();
-    const statusOptions = ElementStatusEnum.getOptions(t) as SelectOption[];
-    const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
-    const sortOptions: SelectOption[] = [
-        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
-        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
-        { value: 'startedAt:desc', label: `${t('startedAt')} Z-A` },
-        { value: 'startedAt:asc', label: `${t('startedAt')} A-Z` },
-        { value: 'endedAt:desc', label: `${t('endedAt')} Z-A` },
-        { value: 'endedAt:asc', label: `${t('endedAt')} A-Z` },
-        { value: 'title:desc', label: `${t('title')} Z-A` },
-        { value: 'title:asc', label: `${t('title')} A-Z` },
-        { value: 'location:desc', label: `${t('location')} Z-A` },
-        { value: 'location:asc', label: `${t('location')} A-Z` },
-        { value: 'status:desc', label: `${t('status')} Z-A` },
-        { value: 'status:asc', label: `${t('status')} A-Z` },
-    ];
+    const statusOptions = ElementStatusEnum.getOptions(t);
+    const sortOptions = buildSortOptions(t, ['createdAt', 'startedAt', 'endedAt', 'title', 'location', 'status']);
 
     return (
         <Card className="shadow-sm">
             <Card.Body>
-                <Card.Title as="h5" className="mb-4 text-profile-primary fw-bold">
+                <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">
                     {t('events')}
                 </Card.Title>
 
-                <Stack direction="horizontal" gap={2} className="mb-3 flex-wrap align-items-center">
-                    <Form.Control
+                <FilterBar>
+                    <FilterInput
                         name="title"
                         placeholder={t('title')}
                         value={eventFilters.title || ''}
                         onChange={handleEventFilterChange}
-                        className="w-auto"
                     />
-                    <Form.Select
+                    <FilterSelect
                         name="status"
                         value={eventFilters.status || ''}
                         onChange={handleEventFilterChange}
-                        className="w-auto"
-                    >
-                        <SelectOptions options={statusOptions} placeholder={t('status')} />
-                    </Form.Select>
-                    <Form.Select value={eventSort} onChange={handleEventSortChange} className="w-auto ms-auto">
-                        <SelectOptions options={sortOptions} />
-                    </Form.Select>
-                    <Form.Select value={eventLimit} onChange={handleEventLimitChange} className="w-auto">
-                        <SelectOptions options={limitOptions} />
-                    </Form.Select>
-                </Stack>
+                        options={statusOptions}
+                        placeholder={t('status')}
+                    />
+                    <SortLimitSelect
+                        sortOptions={sortOptions}
+                        sort={eventSort}
+                        limit={eventLimit}
+                        onSortChange={handleEventSortChange}
+                        onLimitChange={handleEventLimitChange}
+                    />
+                </FilterBar>
 
                 {eventsLoading ? (
                     <Stack className="text-center p-4">
@@ -97,7 +86,7 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                 ) : (
                     <>
                         <Stack className="table-responsive-custom">
-                            <Table bordered hover className="align-middle mb-0">
+                            <Table bordered hover className="align-middle mb-0 shadow-sm">
                                 <TableHead className="table-light">
                                     <TableRow>
                                         <TableHeaderCell>{t('photo')}</TableHeaderCell>
@@ -109,27 +98,22 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                                 </TableHead>
                                 <TableBody>
                                     {events.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={5} className="text-center text-muted">
-                                                {t('noRecords')}
-                                            </TableCell>
-                                        </TableRow>
+                                        <EmptyTableRow colSpan={5} />
                                     ) : (
                                         events.map((ev) => (
                                             <TableRow key={ev.id}>
                                                 <TableCell className="feed-photo-cell">
-                                                    {ev.photo ? (
-                                                        <Image
-                                                            src={`data:image/webp;base64,${ev.photo}`}
-                                                            fluid
-                                                            rounded
-                                                            className="feed-photo shadow-sm"
-                                                        />
-                                                    ) : (
-                                                        <Stack as="span" className="text-muted">
-                                                            -
-                                                        </Stack>
-                                                    )}
+                                                    <Base64Image
+                                                        data={ev.photo}
+                                                        fallback={
+                                                            <Stack as="span" className="text-muted">
+                                                                -
+                                                            </Stack>
+                                                        }
+                                                        fluid
+                                                        rounded
+                                                        className="feed-photo shadow-sm"
+                                                    />
                                                 </TableCell>
                                                 <TableCell>
                                                     <Link to={`/events/${ev.link}`} className="text-decoration-none">
@@ -141,15 +125,7 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                                                     {formatDate(ev.startedAt)}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge
-                                                        bg="light"
-                                                        text="dark"
-                                                        className="border profile-theme-border"
-                                                    >
-                                                        {ElementStatusEnum.getOptions(t).find(
-                                                            (o) => o.value === ev.status,
-                                                        )?.label || ev.status}
-                                                    </Badge>
+                                                    <EnumBadge options={statusOptions} value={ev.status} />
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -160,7 +136,7 @@ export const PageEventsTable: React.FC<PageEventsTableProps> = ({
                         <Stack className="mt-3">
                             <Pagination
                                 page={eventPage}
-                                hasMore={events.length >= eventLimit}
+                                hasMore={eventHasMore}
                                 onPrevPage={handleEventPrevPage}
                                 onNextPage={handleEventNextPage}
                                 variant={paginationVariant}

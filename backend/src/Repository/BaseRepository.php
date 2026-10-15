@@ -23,6 +23,8 @@ abstract class BaseRepository extends ServiceEntityRepository
     final protected function order(string $sort, QueryBuilder $qb, string $alias): void
     {
         [$field, $direction] = array_pad(explode(':', $sort), 2, 'asc');
-        $qb->orderBy($alias . '."' . $field . '"', $direction === 'desc' ? 'DESC' : 'ASC');
+        $metadata = $this->getClassMetadata();
+        $isEntityField = $metadata->hasField($field) || $metadata->hasAssociation($field);
+        $qb->orderBy($isEntityField ? $alias . '.' . $field : $field, $direction === 'desc' ? 'DESC' : 'ASC');
     }
 }

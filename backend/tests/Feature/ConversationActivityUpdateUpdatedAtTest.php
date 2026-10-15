@@ -32,7 +32,7 @@ class ConversationActivityUpdateUpdatedAtTest extends ApiTestCase
             'receiverUser' => $user2,
         ], $this->em);
 
-        $result = $this->patch('/api/conversation-activitiy-users/' . $user1->id->toString() . '/updated-at', []);
+        $result = $this->patch('/api/conversation-activity-users/' . $user1->id->toString() . '/updated-at', []);
         $this->assertEquals(401, $result['status']);
         $this->assertArrayHasKey('error', $result['json']);
         $this->assertEquals('Authentication required.', $result['json']['error']);
@@ -40,19 +40,12 @@ class ConversationActivityUpdateUpdatedAtTest extends ApiTestCase
 
     final public function testForbidden(): void
     {
-        $user1 = self::createUser(RoleEnum::Participant);
-        $user2 = self::createUser(RoleEnum::Participant);
-        $user3 = self::createUser(RoleEnum::Participant);
-
-        ConversationActivityFactory::make([
-            'senderUser' => $user1,
-            'receiverUser' => $user2,
-        ], $this->em);
+        $user = self::createUser(RoleEnum::Participant);
 
         $result = $this->patch(
-            '/api/conversation-activitiy-users/' . $user1->id->toString() . '/updated-at',
+            '/api/conversation-activity-users/' . $user->id->toString() . '/updated-at',
             [],
-            $user3,
+            $user,
         );
         $this->assertEquals(403, $result['status']);
         $this->assertArrayHasKey('error', $result['json']);
@@ -65,17 +58,17 @@ class ConversationActivityUpdateUpdatedAtTest extends ApiTestCase
 
         $userId = Uuid::v4()->toString();
 
-        $result = $this->patch('/api/conversation-activitiy-users/' . $userId . '/updated-at', [], $user);
-        $this->assertEquals(403, $result['status']);
+        $result = $this->patch('/api/conversation-activity-users/' . $userId . '/updated-at', [], $user);
+        $this->assertEquals(404, $result['status']);
         $this->assertArrayHasKey('error', $result['json']);
-        $this->assertEquals('Access Denied.', $result['json']['error']);
+        $this->assertEquals('Element not found.', $result['json']['error']);
     }
 
     final public function testInvalidIdType(): void
     {
         $user = self::createUser(RoleEnum::Participant);
 
-        $result = $this->patch('/api/conversation-activitiy-users/2137/updated-at', [], $user);
+        $result = $this->patch('/api/conversation-activity-users/2137/updated-at', [], $user);
         $this->assertEquals(404, $result['status']);
         $this->assertArrayHasKey('error', $result['json']);
         $this->assertEquals('The uid for the "id" parameter is invalid.', $result['json']['error']);
@@ -86,18 +79,19 @@ class ConversationActivityUpdateUpdatedAtTest extends ApiTestCase
         $user1 = self::createUser(RoleEnum::Participant);
         $user2 = self::createUser(RoleEnum::Participant);
 
-        ConversationActivityFactory::make([
+        $activity = ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
         ], $this->em);
 
         $result = $this->patch(
-            '/api/conversation-activitiy-users/' . $user1->id->toString() . '/updated-at',
+            '/api/conversation-activity-users/' . $user2->id->toString() . '/updated-at',
             [],
             $user1,
         );
         $this->assertEquals(200, $result['status']);
         $this->assertArrayHasKey('id', $result['json']);
+        $this->assertEquals($activity->id->toString(), $result['json']['id']);
     }
 
     final public function testSuccessReceiver(): void
@@ -105,17 +99,18 @@ class ConversationActivityUpdateUpdatedAtTest extends ApiTestCase
         $user1 = self::createUser(RoleEnum::Participant);
         $user2 = self::createUser(RoleEnum::Participant);
 
-        ConversationActivityFactory::make([
+        $activity = ConversationActivityFactory::make([
             'senderUser' => $user1,
             'receiverUser' => $user2,
         ], $this->em);
 
         $result = $this->patch(
-            '/api/conversation-activitiy-users/' . $user2->id->toString() . '/updated-at',
+            '/api/conversation-activity-users/' . $user1->id->toString() . '/updated-at',
             [],
             $user2,
         );
         $this->assertEquals(200, $result['status']);
         $this->assertArrayHasKey('id', $result['json']);
+        $this->assertNotEquals($activity->id->toString(), $result['json']['id']);
     }
 }

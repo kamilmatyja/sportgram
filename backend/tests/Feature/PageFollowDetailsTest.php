@@ -40,7 +40,7 @@ class PageFollowDetailsTest extends ApiTestCase
         $result = $this->get("/api/page-follows/{$follow->id->toString()}", $followerUser);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
-        $this->assertEquals($followerUser->id->toString(), $result['json']['userId']);
+        $this->assertArrayHasKey('id', $result['json']['data']);
+        $this->assertEquals($followerUser->id->toString(), $result['json']['data']['userId']);
     }
 }

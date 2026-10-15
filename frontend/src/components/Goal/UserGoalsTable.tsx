@@ -1,30 +1,37 @@
 import React, { useState } from 'react';
-import { Table, Stack, Button, Badge, Card } from 'react-bootstrap';
+import { Table, Stack, Button, Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { GoalParticipantsTable } from './GoalParticipantsTable';
 import { GoalResponse } from '../../api/responses/GoalResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
+import { type GoalInteractions } from '../../services/Goal/useGoalInteractions';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
 import { formatDate } from '../../utils/dateFormat';
+import { getOptionLabel } from '../../utils/options';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { EnumBadge } from '../Common/EnumBadge';
+import { FormErrorAlert } from '../Common/FormFields';
+import { IconButton } from '../Common/IconButton';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface UserGoalsTableProps {
     goals: GoalResponse[];
     relatedUsers: Record<string, UserResponse>;
+    currentUser: UserResponse | null;
     isMyProfile: boolean;
     isAdmin: boolean;
     actionLoading: string | null;
     onManageClick: (goal: GoalResponse) => void;
-    interactions: any;
+    interactions: GoalInteractions;
 }
 
 export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
     goals,
     relatedUsers,
+    currentUser,
     isMyProfile,
     isAdmin,
     actionLoading,
@@ -36,6 +43,7 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
 
     return (
         <Stack className="table-responsive-custom">
+            <FormErrorAlert error={interactions.actionError} />
             <Table bordered hover className="align-middle mb-0 shadow-sm">
                 <TableHead className="table-light">
                     <TableRow>
@@ -52,11 +60,7 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
                 </TableHead>
                 <TableBody>
                     {goals.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={9} className="text-center text-muted">
-                                {t('noRecords')}
-                            </TableCell>
-                        </TableRow>
+                        <EmptyTableRow colSpan={9} />
                     ) : (
                         goals.map((goal) => (
                             <React.Fragment key={goal.id}>
@@ -67,16 +71,12 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
                                         </Link>
                                     </TableCell>
                                     <TableCell className="small">
-                                        {DisciplineEnum.getOptions(t).find((opt) => opt.value === goal.discipline)
-                                            ?.label || goal.discipline}
+                                        {getOptionLabel(DisciplineEnum.getOptions(t), goal.discipline)}
                                     </TableCell>
                                     <TableCell>{goal.distance}</TableCell>
                                     <TableCell>{goal.time || '-'}</TableCell>
                                     <TableCell>
-                                        <Badge bg="light" text="dark" className="border profile-theme-border">
-                                            {GoalStatusEnum.getOptions(t).find((opt) => opt.value === goal.status)
-                                                ?.label || goal.status}
-                                        </Badge>
+                                        <EnumBadge options={GoalStatusEnum.getOptions(t)} value={goal.status} />
                                     </TableCell>
                                     <TableCell className="small text-muted">{formatDate(goal.startedAt)}</TableCell>
                                     <TableCell className="small text-muted">{formatDate(goal.endedAt)}</TableCell>
@@ -95,14 +95,7 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
                                     </TableCell>
                                     <TableCell className="text-end">
                                         {(isMyProfile || isAdmin) && (
-                                            <Button
-                                                variant="profile-outline-primary"
-                                                size="sm"
-                                                onClick={() => onManageClick(goal)}
-                                                className="rounded-circle shadow-sm"
-                                            >
-                                                <BootstrapIcon name="gear" />
-                                            </Button>
+                                            <IconButton icon="gear" onClick={() => onManageClick(goal)} />
                                         )}
                                     </TableCell>
                                 </TableRow>
@@ -117,7 +110,7 @@ export const UserGoalsTable: React.FC<UserGoalsTableProps> = ({
                                                     <GoalParticipantsTable
                                                         participants={goal.participants || []}
                                                         relatedUsers={relatedUsers}
-                                                        canManage={isMyProfile || isAdmin}
+                                                        currentUser={currentUser}
                                                         actionLoading={actionLoading}
                                                         onUpdateParticipantStatus={
                                                             interactions.handleParticipantStatusSubmit

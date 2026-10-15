@@ -36,9 +36,14 @@ class StatisticFilterDto
     #[Assert\Unique]
     public array $userIds = [];
 
-    #[Assert\Choice(callback: [DisciplineEnum::class, 'values'])]
+    #[Assert\Choice(callback: [DisciplineEnum::class, 'cases'])]
     public ?DisciplineEnum $discipline = null;
 
     #[Assert\Positive]
     public ?int $distance = null;
+
+    final public function addUserId(Uuid $userId): void
+    {
+        $this->userIds[] = $userId;
+    }
 }

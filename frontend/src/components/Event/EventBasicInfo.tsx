@@ -1,11 +1,14 @@
 import React from 'react';
-import { Card, Stack, Button, Image, Row, Col, Badge } from 'react-bootstrap';
+import { Card, Stack, Button, Row, Col } from 'react-bootstrap';
 
 import { EventResponse } from '../../api/responses/EventResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { formatDate } from '../../utils/dateFormat';
+import { Base64Image } from '../Common/Base64Image';
 import BootstrapIcon from '../Common/BootstrapIcon';
+import { EnumBadge } from '../Common/EnumBadge';
+import { SectionHeader } from '../Common/SectionHeader';
 
 interface EventBasicInfoProps {
     eventObj: EventResponse;
@@ -19,17 +22,21 @@ export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({ eventObj, canMan
     return (
         <Card className="shadow-sm mb-4">
             <Card.Body>
-                <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
-                    <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">
-                        <BootstrapIcon name="info-circle" className="me-2" />
-                        {t('basicInformation')}
-                    </Card.Title>
-                    {canManage && (
-                        <Button variant="profile-primary" onClick={() => onManageClick(eventObj)}>
-                            <BootstrapIcon name="gear" className="me-1" /> {t('manage')}
-                        </Button>
-                    )}
-                </Stack>
+                <SectionHeader
+                    title={
+                        <>
+                            <BootstrapIcon name="info-circle" className="me-2" />
+                            {t('basicInformation')}
+                        </>
+                    }
+                    actions={
+                        canManage && (
+                            <Button variant="profile-primary" onClick={() => onManageClick(eventObj)}>
+                                <BootstrapIcon name="gear" className="me-1" /> {t('manage')}
+                            </Button>
+                        )
+                    }
+                />
 
                 <Card.Title as="h3" className="mb-3 fw-bold">
                     {eventObj.title}
@@ -37,15 +44,13 @@ export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({ eventObj, canMan
                 <Card.Text className="mb-4 text-break fs-5">{eventObj.description}</Card.Text>
 
                 <Stack className="text-center mb-4">
-                    {eventObj.photo && (
-                        <Image
-                            src={`data:image/webp;base64,${eventObj.photo}`}
-                            alt={t('photo')}
-                            fluid
-                            rounded
-                            className="event-details-photo shadow-sm"
-                        />
-                    )}
+                    <Base64Image
+                        data={eventObj.photo}
+                        alt={t('photo')}
+                        fluid
+                        rounded
+                        className="event-details-photo shadow-sm"
+                    />
                 </Stack>
 
                 <Row className="g-3 mb-4 border-bottom pb-4">
@@ -58,11 +63,7 @@ export const EventBasicInfo: React.FC<EventBasicInfoProps> = ({ eventObj, canMan
                     <Col md={6}>
                         <Stack className="text-muted small mb-1">{t('status')}</Stack>
                         <Stack>
-                            <Badge bg="light" text="dark" className="border profile-theme-border">
-                                {ElementStatusEnum.getOptions(t).find(
-                                    (opt) => String(opt.value) === String(eventObj.status),
-                                )?.label || eventObj.status}
-                            </Badge>
+                            <EnumBadge options={ElementStatusEnum.getOptions(t)} value={eventObj.status} />
                         </Stack>
                     </Col>
                     <Col md={6}>

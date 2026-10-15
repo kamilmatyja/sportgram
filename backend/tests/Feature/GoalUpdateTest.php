@@ -30,8 +30,8 @@ class GoalUpdateTest extends ApiTestCase
         $goal = GoalFactory::make(['user' => $goalOwner], $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'text' => 'Updated Goal',
             'link' => 'updated-goal',
             'discipline' => 1,
@@ -53,13 +53,13 @@ class GoalUpdateTest extends ApiTestCase
         GoalParticipantResultFactory::make(['goalParticipant' => $participant2], $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'text' => 'Updated Goal',
             'link' => 'updated-goal',
             'discipline' => 1,
             'distance' => 1000,
-            'participants' => [],
+            'userIds' => [],
         ];
 
         $result = $this->put("/api/goals/{$goal->id->toString()}", $payload, $user);
@@ -74,14 +74,14 @@ class GoalUpdateTest extends ApiTestCase
         $goal = GoalFactory::make(['user' => $user], $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'text' => 'Updated Goal',
             'link' => 'updated-goal',
             'discipline' => 2,
             'distance' => 2000,
             'time' => 7200,
-            'participants' => [$user->id->toString()],
+            'userIds' => [$user->id->toString()],
         ];
 
         $result = $this->put("/api/goals/{$goal->id->toString()}", $payload, $user);

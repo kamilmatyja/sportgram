@@ -49,15 +49,15 @@ class FriendIndexTest extends ApiTestCase
 
         $resultAll = $this->get("/api/friends?filter[userIds][]={$targetUser->id->toString()}", $user);
         $this->assertEquals(200, $resultAll['status']);
-        $this->assertCount(2, $resultAll['json']);
+        $this->assertCount(2, $resultAll['json']['data']);
 
         $resultStatus = $this->get(
             "/api/friends?filter[userIds][]={$targetUser->id->toString()}&filter[status]=" . FriendStatusEnum::Accepted->value,
             $user,
         );
         $this->assertEquals(200, $resultStatus['status']);
-        $this->assertCount(1, $resultStatus['json']);
-        $this->assertEquals(FriendStatusEnum::Accepted->value, $resultStatus['json'][0]['status']);
+        $this->assertCount(1, $resultStatus['json']['data']);
+        $this->assertEquals(FriendStatusEnum::Accepted->value, $resultStatus['json']['data'][0]['status']);
     }
 
     final public function testPagination(): void
@@ -74,6 +74,6 @@ class FriendIndexTest extends ApiTestCase
 
         $result = $this->get("/api/friends?filter[userIds][]={$targetUser->id->toString()}&page=2&limit=5", $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
     }
 }

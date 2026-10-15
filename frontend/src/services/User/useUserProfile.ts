@@ -2,6 +2,7 @@ import { FriendBody } from '../../api/body/FriendBody';
 import { StatusBody } from '../../api/body/StatusBody';
 import { FriendProvider } from '../../api/providers/FriendProvider';
 import { useTranslation } from '../../context/TranslationContext';
+import { getErrorMessage } from '../../utils/api';
 import { useActionState } from '../../utils/hooks/useActionState';
 import { useAppAccess } from '../../utils/hooks/useAppAccess';
 
@@ -12,28 +13,24 @@ export function useUserProfile(link?: string) {
 
     const friendProvider = new FriendProvider();
 
+    const runFriendAction = (id: string, action: () => Promise<unknown>) =>
+        runAction(id, async () => {
+            await action();
+            await access.refreshAccess();
+        }).catch((err: unknown) => alert(t(getErrorMessage(err))));
+
     const handleAddFriend = () => {
         if (!access.targetUser || !access.currentUser) return;
-        runAction('add-friend', async () => {
-            await friendProvider.create(new FriendBody(access.targetUser!.id));
-            await access.refreshAccess();
-        }).catch((e: any) => {
-            if (e.error) alert(t(e.error) !== e.error ? t(e.error) : e.error);
-        });
+        const targetUserId = access.targetUser.id;
+        return runFriendAction('add-friend', () => friendProvider.create(new FriendBody(targetUserId)));
     };
 
     const handleUpdateFriendStatus = (newStatus: number) => {
         if (!access.friendship || !access.targetUser) return;
-        runAction('update-friend', async () => {
-            await friendProvider.updateStatus(access.friendship!.id, new StatusBody(newStatus));
-            await access.refreshAccess();
-        }).catch((e: any) => {
-            if (e.error) alert(t(e.error) !== e.error ? t(e.error) : e.error);
-        });
-    };
-
-    const refreshProfile = async () => {
-        await access.refreshAccess();
+        const friendshipId = access.friendship.id;
+        return runFriendAction('update-friend', () =>
+            friendProvider.updateStatus(friendshipId, new StatusBody(newStatus)),
+        );
     };
 
     return {
@@ -44,6 +41,6 @@ export function useUserProfile(link?: string) {
         actionLoading: actionLoading !== null,
         handleAddFriend,
         handleUpdateFriendStatus,
-        refreshProfile,
+        refreshProfile: access.refreshAccess,
     };
 }

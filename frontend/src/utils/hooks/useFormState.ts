@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { getErrorMessage } from '../api';
+
 export function useFormState() {
     const [loading, setLoading] = useState(false);
     const [globalError, setGlobalError] = useState('');
@@ -13,7 +15,7 @@ export function useFormState() {
             return await apiCall();
         } catch (err: any) {
             if (err.errors) setFieldErrors(err.errors);
-            else setGlobalError(err.error || err.message);
+            else setGlobalError(getErrorMessage(err));
             throw err;
         } finally {
             setLoading(false);

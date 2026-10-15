@@ -2,12 +2,8 @@
 
 namespace App\Enum;
 
-use App\Trait\EnumValuesTrait;
-
 enum NotificationTypeEnum: int
 {
-    use EnumValuesTrait;
-
     case Conversation = 1;
     case Event = 2;
     case EventStatus = 3;

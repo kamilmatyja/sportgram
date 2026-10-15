@@ -43,7 +43,6 @@ class EntryCreateTest extends ApiTestCase
         $this->assertArrayHasKey('errors', $result['json']);
         $this->assertArrayHasKey('entityId', $result['json']['errors']);
         $this->assertArrayHasKey('type', $result['json']['errors']);
-        $this->assertArrayHasKey('entityValidationData', $result['json']['errors']);
     }
 
     final public function testNullRequiredFields(): void

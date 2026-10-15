@@ -37,6 +37,6 @@ class PageFilterDto
     #[Assert\Length(min: 1, max: 2048)]
     public ?string $title = null;
 
-    #[Assert\Choice(callback: [ElementStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [ElementStatusEnum::class, 'cases'])]
     public ?ElementStatusEnum $status = null;
 }

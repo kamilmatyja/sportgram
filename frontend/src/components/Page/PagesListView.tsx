@@ -1,12 +1,12 @@
 import React from 'react';
-import { Container, Stack, Button, Spinner, Alert } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 import { PagesFilterBar } from './PagesFilterBar';
 import { PagesTable } from './PagesTable';
 import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
 import { PageResponse } from '../../api/responses/PageResponse';
 import { useTranslation } from '../../context/TranslationContext';
-import { Pagination } from '../Common/Pagination';
+import { ListPageLayout } from '../Common/ListPageLayout';
 
 interface PagesListViewProps {
     pages: PageResponse[];
@@ -14,6 +14,7 @@ interface PagesListViewProps {
     loading: boolean;
     error: string | null;
     page: number;
+    hasMore: boolean;
     limit: number;
     sort: string;
     filters: PageFilterQuery;
@@ -31,6 +32,7 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
     loading,
     error,
     page,
+    hasMore,
     limit,
     sort,
     filters,
@@ -44,44 +46,33 @@ export const PagesListView: React.FC<PagesListViewProps> = ({
     const { t } = useTranslation();
 
     return (
-        <Container className="py-5">
-            <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
-                <Stack as="h2" className="mb-0 fw-bold text-primary">
-                    {t('pages')}
-                </Stack>
-                {isOrganizer && (
+        <ListPageLayout
+            title={t('pages')}
+            actions={
+                isOrganizer && (
                     <Button variant="primary" onClick={onAddClick}>
                         {t('addPage')}
                     </Button>
-                )}
-            </Stack>
-
-            <PagesFilterBar
-                filters={filters}
-                sort={sort}
-                limit={limit}
-                onFilterChange={onFilterChange}
-                onSortChange={onSortChange}
-                onLimitChange={onLimitChange}
-            />
-
-            {loading && pages.length === 0 ? (
-                <Stack className="text-center p-5">
-                    <Spinner animation="border" variant="primary" />
-                </Stack>
-            ) : error ? (
-                <Alert variant="danger">{t(error)}</Alert>
-            ) : (
-                <Stack gap={4}>
-                    <PagesTable pages={pages} />
-                    <Pagination
-                        page={page}
-                        hasMore={pages.length >= limit}
-                        onPrevPage={onPrevPage}
-                        onNextPage={onNextPage}
-                    />
-                </Stack>
-            )}
-        </Container>
+                )
+            }
+            filters={
+                <PagesFilterBar
+                    filters={filters}
+                    sort={sort}
+                    limit={limit}
+                    onFilterChange={onFilterChange}
+                    onSortChange={onSortChange}
+                    onLimitChange={onLimitChange}
+                />
+            }
+            loading={loading && pages.length === 0}
+            error={error}
+            page={page}
+            hasMore={hasMore}
+            onPrevPage={onPrevPage}
+            onNextPage={onNextPage}
+        >
+            <PagesTable pages={pages} />
+        </ListPageLayout>
     );
 };

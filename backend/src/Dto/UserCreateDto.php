@@ -7,6 +7,8 @@ use App\Enum\{ColorEnum, CountryEnum, DisciplineEnum, GenderEnum, LanguageEnum, 
 use App\Validator\{Base64String, UniqueField};
 use DateTimeImmutable;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -58,7 +60,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class UserCreateDto
 {
     #[Assert\NotBlank]
-    #[Assert\DateTime(format: 'Y-m-d')]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => '!Y-m-d'])]
     public DateTimeImmutable $birthAt;
 
     #[Assert\NotBlank]
@@ -70,7 +72,7 @@ class UserCreateDto
     public string $lastName;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [GenderEnum::class, 'values'])]
+    #[Assert\Choice(callback: [GenderEnum::class, 'cases'])]
     public GenderEnum $gender;
 
     #[Assert\NotBlank]
@@ -95,19 +97,19 @@ class UserCreateDto
     public string $link;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [LanguageEnum::class, 'values'])]
+    #[Assert\Choice(callback: [LanguageEnum::class, 'cases'])]
     public LanguageEnum $language;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [CountryEnum::class, 'values'])]
+    #[Assert\Choice(callback: [CountryEnum::class, 'cases'])]
     public CountryEnum $country;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [ThemeEnum::class, 'values'])]
+    #[Assert\Choice(callback: [ThemeEnum::class, 'cases'])]
     public ThemeEnum $theme;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [ColorEnum::class, 'values'])]
+    #[Assert\Choice(callback: [ColorEnum::class, 'cases'])]
     public ColorEnum $color;
 
     #[Assert\NotBlank]
@@ -126,7 +128,7 @@ class UserCreateDto
     #[Assert\NotBlank]
     #[Assert\All([
         new Assert\NotBlank(),
-        new Assert\Choice(callback: [RoleEnum::class, 'values']),
+        new Assert\Choice(callback: [RoleEnum::class, 'cases']),
     ])]
     #[Assert\Count(min: 1)]
     #[Assert\Unique]
@@ -135,9 +137,19 @@ class UserCreateDto
     /** @var DisciplineEnum[] */
     #[Assert\All([
         new Assert\NotBlank(),
-        new Assert\Choice(callback: [DisciplineEnum::class, 'values']),
+        new Assert\Choice(callback: [DisciplineEnum::class, 'cases']),
     ])]
     #[Assert\Count(min: 0)]
     #[Assert\Unique]
     public array $disciplines = [];
+
+    final public function addRole(RoleEnum $role): void
+    {
+        $this->roles[] = $role;
+    }
+
+    final public function addDiscipline(DisciplineEnum $discipline): void
+    {
+        $this->disciplines[] = $discipline;
+    }
 }

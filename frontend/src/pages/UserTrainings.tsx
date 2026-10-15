@@ -11,7 +11,7 @@ export default function UserTrainings() {
     const { link } = useParams<{ link: string }>();
 
     const trainingsService = useUserTrainings(link);
-    const modalsService = useTrainingModals(trainingsService.refreshTrainings);
+    const modalsService = useTrainingModals(trainingsService.refreshTrainings, trainingsService.currentUser);
     const interactions = useTrainingInteractions(trainingsService.refreshTrainings);
 
     return (
@@ -20,12 +20,14 @@ export default function UserTrainings() {
                 user={trainingsService.targetUser}
                 trainings={trainingsService.trainings}
                 relatedUsers={trainingsService.relatedUsers}
+                currentUser={trainingsService.currentUser}
                 isMyProfile={trainingsService.isMyProfile}
                 isAdmin={trainingsService.isAdmin}
                 isParticipant={trainingsService.isParticipant}
                 loading={trainingsService.loading}
                 error={trainingsService.error}
                 page={trainingsService.page}
+                hasMore={trainingsService.hasMore}
                 limit={trainingsService.limit}
                 sort={trainingsService.sort}
                 filters={trainingsService.filters}

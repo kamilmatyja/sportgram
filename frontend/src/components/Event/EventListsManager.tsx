@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { Stack, Form, Spinner, Table, Button, Badge, Card } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Stack, Spinner, Table, Button, Card } from 'react-bootstrap';
 
-import { EventResultBody } from '../../api/body/EventResultBody';
-import { EventSubResult } from '../../api/body/EventSubResult';
+import { hasListResult, ListInfoCells, ListInfoHeaderCells, ListResultDetailsRow } from './EventListRows';
+import { type EventInteractions } from '../../services/Event/useEventInteractions';
+import { useListResults } from '../../services/Event/useListResults';
 import { EventDisciplineDistanceListResponse } from '../../api/responses/EventDisciplineDistanceListResponse';
 import { EventResponse } from '../../api/responses/EventResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
-import BootstrapIcon from '../Common/BootstrapIcon';
-import SelectOptions from '../Common/SelectOptions';
+import { getOptionLabel } from '../../utils/options';
+import { FormErrorAlert, SelectField } from '../Common/FormFields';
+import { StatusButtons } from '../Common/StatusButtons';
 import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface EventListsManagerProps {
     eventObj: EventResponse;
     isMyProfile: boolean;
     isAdmin: boolean;
-    interactions: any;
+    interactions: EventInteractions;
 }
 
 export const EventListsManager: React.FC<EventListsManagerProps> = ({
@@ -33,88 +33,50 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
     const [lists, setLists] = useState<EventDisciplineDistanceListResponse[]>([]);
     const [listUsers, setListUsers] = useState<Record<string, UserResponse>>({});
     const [loadingLists, setLoadingLists] = useState(false);
-    const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
-    const [activeResultListId, setActiveResultListId] = useState<string | null>(null);
-    const [resultFormData, setResultFormData] = useState<EventResultBody>(new EventResultBody(0, []));
-    const [activeResultId, setActiveResultId] = useState<string | null>(null);
+    const loadRequestId = useRef(0);
+
+    const distanceObj = eventObj.disciplines.flatMap((d) => d.distances).find((d) => d.id === selectedDistanceId);
+    const subDistances = distanceObj?.subDistances || [];
+    const canManage = isMyProfile || isAdmin;
+    const results = useListResults(subDistances, interactions, () => loadLists(selectedDistanceId));
 
     const loadLists = async (distId: string) => {
+        const requestId = ++loadRequestId.current;
+        const isLatest = () => requestId === loadRequestId.current;
         if (!distId) {
             setLists([]);
+            setLoadingLists(false);
             return;
         }
         setLoadingLists(true);
-        setActiveResultListId(null);
+        results.resetActiveList();
         try {
             const res = await interactions.fetchDistanceLists(distId);
+            if (!isLatest()) return;
 
             setLists(res.lists);
             setListUsers(res.users);
         } catch (e) {
             console.error(e);
         } finally {
-            setLoadingLists(false);
+            if (isLatest()) setLoadingLists(false);
         }
     };
 
     useEffect(() => {
-        if (selectedDistanceId) loadLists(selectedDistanceId);
+        loadLists(selectedDistanceId);
     }, [selectedDistanceId]);
 
-    const distanceObj = eventObj.disciplines.flatMap((d) => d.distances).find((d) => d.id === selectedDistanceId);
-
-    const toggleRow = (listId: string) => {
-        if (activeResultListId === listId) setActiveResultListId(null);
-        setExpandedRows((prev) => ({ ...prev, [listId]: !prev[listId] }));
-    };
-
     const handleStatusUpdate = async (listId: string, status: number) => {
-        await interactions.handleListStatusSubmit(listId, status);
-        loadLists(selectedDistanceId);
-    };
-
-    const openAddResultForm = (list: EventDisciplineDistanceListResponse) => {
-        const subRes: EventSubResult[] =
-            distanceObj?.subDistances.map((sd) => ({
-                eventDisciplineSubDistanceId: sd.id,
-                time: 0,
-            })) || [];
-        setResultFormData(new EventResultBody(0, subRes));
-        setActiveResultId(null);
-        setActiveResultListId(list.id);
-        setExpandedRows((prev) => ({ ...prev, [list.id]: true }));
-    };
-
-    const openEditResultForm = (list: EventDisciplineDistanceListResponse, resultId: string) => {
-        const resultObj = list.results?.find((r) => r.id === resultId);
-        if (!resultObj) return;
-        const subRes: EventSubResult[] =
-            resultObj.subResults?.map((sr) => ({
-                eventDisciplineSubDistanceId: sr.eventDisciplineSubDistanceId,
-                time: sr.time,
-            })) || [];
-        setResultFormData(new EventResultBody(resultObj.time, subRes));
-        setActiveResultId(resultId);
-        setActiveResultListId(list.id);
-        setExpandedRows((prev) => ({ ...prev, [list.id]: true }));
-    };
-
-    const saveResult = async () => {
-        if (!activeResultListId) return;
-        await interactions.handleSaveResult(activeResultListId, activeResultId, resultFormData);
-        setActiveResultListId(null);
-        loadLists(selectedDistanceId);
-    };
-
-    const deleteResult = async (resultId: string) => {
-        await interactions.handleDeleteResult(resultId);
-        loadLists(selectedDistanceId);
+        if (await interactions.handleListStatusSubmit(listId, status)) {
+            loadLists(selectedDistanceId);
+        }
     };
 
     const distanceOptions = eventObj.disciplines.flatMap((d) =>
         d.distances.map((dist) => ({
             value: dist.id,
-            label: `${DisciplineEnum.getOptions(t).find((o) => o.value === d.discipline)?.label} - ${dist.distance}m`,
+            label: `${getOptionLabel(DisciplineEnum.getOptions(t), d.discipline)} - ${dist.distance}m`,
         })),
     );
 
@@ -123,12 +85,14 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
             <Card.Title as="h6" className="text-profile-primary">
                 {t('manage')}
             </Card.Title>
-            <Form.Group>
-                <Form.Label className="fw-bold">{t('selectDistanceSavedChanges')}</Form.Label>
-                <Form.Select value={selectedDistanceId} onChange={(e) => setSelectedDistanceId(e.target.value)}>
-                    <SelectOptions options={distanceOptions} placeholder={t('selectDistance')} />
-                </Form.Select>
-            </Form.Group>
+            <FormErrorAlert error={interactions.actionError} className="mb-0" />
+            <SelectField
+                label={t('selectDistanceSavedChanges')}
+                value={selectedDistanceId}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedDistanceId(e.target.value)}
+                options={distanceOptions}
+                placeholder={t('selectDistance')}
+            />
 
             {loadingLists ? (
                 <Stack className="text-center">
@@ -138,271 +102,55 @@ export const EventListsManager: React.FC<EventListsManagerProps> = ({
                 <Table responsive borderless size="sm" className="align-middle border mb-0">
                     <TableHead className="table-light">
                         <TableRow>
-                            <TableHeaderCell>{t('user')}</TableHeaderCell>
-                            <TableHeaderCell>{t('status')}</TableHeaderCell>
-                            <TableHeaderCell>{t('createdAt')}</TableHeaderCell>
-                            <TableHeaderCell>{t('eventTypes.eventDisciplineResult')}</TableHeaderCell>
+                            <ListInfoHeaderCells />
                             <TableHeaderCell className="text-end">{t('manage')}</TableHeaderCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {lists.map((list) => {
-                            const u = listUsers[list.userId];
-                            const hasResult = list.results && list.results.length > 0;
-                            const result = hasResult ? list.results[0] : null;
-                            const isFormOpen = activeResultListId === list.id;
-                            const isExpanded = expandedRows[list.id] || isFormOpen;
+                        {lists.map((list) => (
+                            <React.Fragment key={list.id}>
+                                <TableRow className="border-bottom">
+                                    <ListInfoCells list={list} user={listUsers[list.userId]} results={results} />
+                                    <TableCell className="text-end">
+                                        {canManage && (
+                                            <StatusButtons
+                                                options={SaveStatusEnum.getOptions(t)}
+                                                current={list.status}
+                                                canSelect={(status) => status !== SaveStatusEnum.PENDING}
+                                                onSelect={(status) => handleStatusUpdate(list.id, status)}
+                                                disabled={interactions.actionLoading === list.id}
+                                            />
+                                        )}
+                                    </TableCell>
+                                </TableRow>
 
-                            return (
-                                <React.Fragment key={list.id}>
-                                    <TableRow className="border-bottom">
-                                        <TableCell>
-                                            {u ? (
-                                                <Link to={`/users/${u.link}`} className="text-decoration-none">
-                                                    {u.firstName} {u.lastName}
-                                                </Link>
-                                            ) : (
-                                                list.userId
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge bg="light" text="dark" className="border profile-theme-border">
-                                                {SaveStatusEnum.getOptions(t).find(
-                                                    (opt) => String(opt.value) === String(list.status),
-                                                )?.label || list.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>{formatDate(list.createdAt)}</TableCell>
-                                        <TableCell>
-                                            {hasResult || isFormOpen ? (
+                                <ListResultDetailsRow
+                                    list={list}
+                                    results={results}
+                                    interactions={interactions}
+                                    subDistances={subDistances}
+                                    canManage={canManage}
+                                    colSpan={5}
+                                />
+
+                                {list.status === SaveStatusEnum.ACCEPTED &&
+                                    !hasListResult(list) &&
+                                    !results.isFormOpen(list.id) &&
+                                    canManage && (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-end p-2">
                                                 <Button
-                                                    variant="outline-secondary"
+                                                    variant="profile-outline-primary"
                                                     size="sm"
-                                                    onClick={() => toggleRow(list.id)}
+                                                    onClick={() => results.openAddForm(list)}
                                                 >
-                                                    <BootstrapIcon name={isExpanded ? 'chevron-up' : 'chevron-down'} />
-                                                    {hasResult
-                                                        ? ` ${t('time')}: ${result?.time} [s]`
-                                                        : ` ${t('resultFormTitle')}`}
+                                                    {t('add')}
                                                 </Button>
-                                            ) : (
-                                                <Stack as="span" className="text-muted small">
-                                                    -
-                                                </Stack>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="text-end">
-                                            <Stack direction="horizontal" gap={1} className="justify-content-end">
-                                                {(isMyProfile || isAdmin) &&
-                                                    SaveStatusEnum.getOptions(t)
-                                                        .filter(
-                                                            (opt) =>
-                                                                opt.value !== list.status &&
-                                                                opt.value !== SaveStatusEnum.PENDING,
-                                                        )
-                                                        .map((opt) => (
-                                                            <Button
-                                                                key={opt.value}
-                                                                variant="profile-outline-primary"
-                                                                className="btn-xs py-0 px-2"
-                                                                disabled={interactions.actionLoading === list.id}
-                                                                onClick={() => handleStatusUpdate(list.id, opt.value)}
-                                                            >
-                                                                {opt.label}
-                                                            </Button>
-                                                        ))}
-                                            </Stack>
-                                        </TableCell>
-                                    </TableRow>
-
-                                    {isExpanded && (hasResult || isFormOpen) && (
-                                        <TableRow className="bg-light">
-                                            <TableCell colSpan={5} className="p-3">
-                                                {isFormOpen ? (
-                                                    <Card className="border-profile-primary">
-                                                        <Card.Body>
-                                                            <Card.Title as="h6" className="text-profile-primary mb-3">
-                                                                {t('resultFormTitle')}
-                                                            </Card.Title>
-                                                            <Form.Group className="mb-3">
-                                                                <Form.Label className="small">
-                                                                    {t('finalTimeSeconds')}
-                                                                </Form.Label>
-                                                                <Form.Control
-                                                                    type="number"
-                                                                    size="sm"
-                                                                    value={resultFormData.time}
-                                                                    onChange={(e) =>
-                                                                        setResultFormData((prev) => ({
-                                                                            ...prev,
-                                                                            time: parseInt(e.target.value) || 0,
-                                                                        }))
-                                                                    }
-                                                                />
-                                                            </Form.Group>
-                                                            <Stack gap={2}>
-                                                                <Stack as="strong" className="small">
-                                                                    {t('subDistances')}:
-                                                                </Stack>
-                                                                {resultFormData.subResults.map((sr, idx) => {
-                                                                    const sdMeta = distanceObj?.subDistances.find(
-                                                                        (sd) =>
-                                                                            sd.id === sr.eventDisciplineSubDistanceId,
-                                                                    );
-                                                                    return (
-                                                                        <Stack
-                                                                            key={idx}
-                                                                            direction="horizontal"
-                                                                            gap={2}
-                                                                            className="align-items-center"
-                                                                        >
-                                                                            <Stack
-                                                                                as="span"
-                                                                                className="small text-muted w-50"
-                                                                            >
-                                                                                {t('forDistance')}{' '}
-                                                                                {sdMeta?.subDistance || '?'} [m]:
-                                                                            </Stack>
-                                                                            <Form.Control
-                                                                                type="number"
-                                                                                size="sm"
-                                                                                className="w-50"
-                                                                                value={sr.time}
-                                                                                onChange={(e) => {
-                                                                                    const newSubs = [
-                                                                                        ...resultFormData.subResults,
-                                                                                    ];
-                                                                                    newSubs[idx].time =
-                                                                                        parseInt(e.target.value) || 0;
-                                                                                    setResultFormData((prev) => ({
-                                                                                        ...prev,
-                                                                                        subResults: newSubs,
-                                                                                    }));
-                                                                                }}
-                                                                            />
-                                                                        </Stack>
-                                                                    );
-                                                                })}
-                                                            </Stack>
-                                                            <Stack
-                                                                direction="horizontal"
-                                                                gap={2}
-                                                                className="mt-3 justify-content-end"
-                                                            >
-                                                                <Button
-                                                                    variant="secondary"
-                                                                    size="sm"
-                                                                    onClick={() => setActiveResultListId(null)}
-                                                                >
-                                                                    {t('cancel')}
-                                                                </Button>
-                                                                <Button
-                                                                    variant="profile-primary"
-                                                                    size="sm"
-                                                                    onClick={saveResult}
-                                                                    disabled={interactions.actionLoading !== null}
-                                                                >
-                                                                    {t('save')}
-                                                                </Button>
-                                                            </Stack>
-                                                        </Card.Body>
-                                                    </Card>
-                                                ) : (
-                                                    result && (
-                                                        <Card className="border-profile-primary">
-                                                            <Card.Body>
-                                                                <Stack
-                                                                    direction="horizontal"
-                                                                    className="justify-content-between align-items-center mb-2"
-                                                                >
-                                                                    <Stack
-                                                                        as="strong"
-                                                                        className="text-profile-primary small"
-                                                                    >
-                                                                        {t('eventTypes.eventDisciplineResult')}
-                                                                    </Stack>
-                                                                    {(isMyProfile || isAdmin) && (
-                                                                        <Stack direction="horizontal" gap={1}>
-                                                                            <Button
-                                                                                variant="outline-secondary"
-                                                                                size="sm"
-                                                                                className="py-0 px-2"
-                                                                                onClick={() =>
-                                                                                    openEditResultForm(list, result.id)
-                                                                                }
-                                                                            >
-                                                                                <BootstrapIcon name="pencil" />
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="outline-danger"
-                                                                                size="sm"
-                                                                                className="py-0 px-2"
-                                                                                onClick={() => deleteResult(result.id)}
-                                                                            >
-                                                                                <BootstrapIcon name="trash" />
-                                                                            </Button>
-                                                                        </Stack>
-                                                                    )}
-                                                                </Stack>
-                                                                <Stack direction="horizontal" gap={2} className="small">
-                                                                    <Stack as="span" className="fw-bold">
-                                                                        {t('finalTimeSeconds')}:
-                                                                    </Stack>
-                                                                    <Stack as="span">{result.time} [s]</Stack>
-                                                                </Stack>
-                                                                {result.subResults?.length > 0 && (
-                                                                    <Stack className="mt-2" gap={1}>
-                                                                        <Stack as="strong" className="small text-muted">
-                                                                            {t('subDistances')}:
-                                                                        </Stack>
-                                                                        {result.subResults.map((sr) => {
-                                                                            const sdMeta =
-                                                                                distanceObj?.subDistances.find(
-                                                                                    (sd) =>
-                                                                                        sd.id ===
-                                                                                        sr.eventDisciplineSubDistanceId,
-                                                                                );
-                                                                            return (
-                                                                                <Stack
-                                                                                    key={sr.id}
-                                                                                    as="small"
-                                                                                    className="text-muted ms-2"
-                                                                                >
-                                                                                    • {t('forDistance')}{' '}
-                                                                                    {sdMeta?.subDistance || '?'} [m] -{' '}
-                                                                                    {sr.time} [s]
-                                                                                </Stack>
-                                                                            );
-                                                                        })}
-                                                                    </Stack>
-                                                                )}
-                                                            </Card.Body>
-                                                        </Card>
-                                                    )
-                                                )}
                                             </TableCell>
                                         </TableRow>
                                     )}
-
-                                    {list.status === SaveStatusEnum.ACCEPTED &&
-                                        !hasResult &&
-                                        !isFormOpen &&
-                                        (isMyProfile || isAdmin) && (
-                                            <TableRow>
-                                                <TableCell colSpan={5} className="text-end p-2">
-                                                    <Button
-                                                        variant="profile-outline-primary"
-                                                        size="sm"
-                                                        onClick={() => openAddResultForm(list)}
-                                                    >
-                                                        {t('add')}
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                </React.Fragment>
-                            );
-                        })}
+                            </React.Fragment>
+                        ))}
                     </TableBody>
                 </Table>
             ) : (

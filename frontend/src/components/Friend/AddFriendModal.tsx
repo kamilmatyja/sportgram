@@ -1,22 +1,17 @@
 import React from 'react';
-import { Modal, Form, Button, Alert } from 'react-bootstrap';
+import { Form, Row, Col } from 'react-bootstrap';
 
 import { FriendBody } from '../../api/body/FriendBody';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { ColorEnum } from '../../enums/ColorEnum';
-import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
+import { toUserOptions } from '../../utils/user';
+import { type FormModalStateProps, SelectField } from '../Common/FormFields';
+import { FormModal } from '../Common/FormModal';
 
-interface AddFriendModalProps {
+interface AddFriendModalProps extends FormModalStateProps<FriendBody> {
     user: UserResponse | null;
-    show: boolean;
     availableUsers: UserResponse[];
-    closeModal: () => void;
-    loading: boolean;
-    globalError: string;
-    fieldErrors: Record<string, string | string[]>;
-    formData: FriendBody;
-    handleChange: (e: React.ChangeEvent<any>) => void;
     handleSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => void;
 }
 
@@ -35,49 +30,34 @@ export const AddFriendModal: React.FC<AddFriendModalProps> = ({
     const { t } = useTranslation();
     if (!show || !user) return null;
 
-    const themeClass = ColorEnum.getClass(user.color);
-    const userOptions: SelectOption[] = availableUsers.map((u) => ({
-        value: u.id,
-        label: `${u.firstName} ${u.lastName} (${u.link})`,
-    }));
-
     return (
-        <Modal show={show} onHide={closeModal} size="lg" className={themeClass} backdrop="static">
-            <Modal.Header closeButton>
-                <Modal.Title>{t('addFriend')}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <Form id="add-friend-form" onSubmit={handleSubmit}>
-                    {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
-
-                    <Form.Group className="mb-3">
-                        <Form.Label>{t('user')}</Form.Label>
-                        <Form.Select
-                            name="receiverUserId"
-                            value={formData.receiverUserId}
+        <FormModal
+            show={show}
+            title={t('addFriend')}
+            themeClass={ColorEnum.getClass(user.color)}
+            closeModal={closeModal}
+            loading={loading}
+            globalError={globalError}
+            formId="add-friend-form"
+            submitLabel={t('addFriend')}
+            submitDisabled={availableUsers.length === 0}
+        >
+            <Form id="add-friend-form" onSubmit={handleSubmit}>
+                <Row className="g-3">
+                    <Col xs={12}>
+                        <SelectField
+                            label={t('user')}
+                            name="userId"
+                            value={formData.userId}
                             onChange={handleChange}
-                            isInvalid={!!fieldErrors.receiverUserId}
+                            error={fieldErrors.userId}
+                            options={toUserOptions(availableUsers)}
+                            placeholder={t('selectUser')}
                             required
-                        >
-                            <SelectOptions options={userOptions} placeholder={t('selectUser')} />
-                        </Form.Select>
-                        <Form.Control.Feedback type="invalid">{fieldErrors.receiverUserId}</Form.Control.Feedback>
-                    </Form.Group>
-                </Form>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={closeModal} disabled={loading}>
-                    {t('cancel')}
-                </Button>
-                <Button
-                    variant="profile-primary"
-                    type="submit"
-                    form="add-friend-form"
-                    disabled={loading || availableUsers.length === 0}
-                >
-                    {loading ? t('sending') : t('addFriend')}
-                </Button>
-            </Modal.Footer>
-        </Modal>
+                        />
+                    </Col>
+                </Row>
+            </Form>
+        </FormModal>
     );
 };

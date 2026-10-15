@@ -20,6 +20,7 @@ export default function UserNotifications() {
                 loading={notificationsService.loading}
                 error={notificationsService.error}
                 page={notificationsService.page}
+                hasMore={notificationsService.hasMore}
                 limit={notificationsService.limit}
                 sort={notificationsService.sort}
                 filters={notificationsService.filters}

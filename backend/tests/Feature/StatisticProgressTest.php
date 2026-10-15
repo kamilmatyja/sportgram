@@ -69,10 +69,10 @@ class StatisticProgressTest extends ApiTestCase
 
         $this->assertEquals(200, $result['status']);
 
-        $this->assertCount(2, $result['json']);
+        $this->assertCount(2, $result['json']['data']);
 
-        $this->assertEquals(200, $result['json'][0]['time']);
-        $this->assertEquals(180, $result['json'][1]['time']);
+        $this->assertEquals(200, $result['json']['data'][0]['time']);
+        $this->assertEquals(180, $result['json']['data'][1]['time']);
     }
 
     final public function testPagination(): void
@@ -99,6 +99,6 @@ class StatisticProgressTest extends ApiTestCase
         );
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
     }
 }

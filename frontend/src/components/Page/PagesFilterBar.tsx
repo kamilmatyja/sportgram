@@ -1,11 +1,10 @@
 import React from 'react';
-import { Stack, Form } from 'react-bootstrap';
 
 import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
 import { useTranslation } from '../../context/TranslationContext';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { PaginationEnum } from '../../enums/PaginationEnum';
-import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
+import { buildSortOptions } from '../../utils/options';
+import { FilterBar, FilterInput, FilterSelect, SortLimitSelect } from '../Common/FilterBar';
 
 interface PagesFilterBarProps {
     filters: PageFilterQuery;
@@ -25,42 +24,27 @@ export const PagesFilterBar: React.FC<PagesFilterBarProps> = ({
     onLimitChange,
 }) => {
     const { t } = useTranslation();
-    const statusOptions = ElementStatusEnum.getOptions(t) as SelectOption[];
-    const limitOptions = PaginationEnum.getOptions(t) as SelectOption[];
-    const sortOptions: SelectOption[] = [
-        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
-        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
-        { value: 'title:desc', label: `${t('title')} Z-A` },
-        { value: 'title:asc', label: `${t('title')} A-Z` },
-        { value: 'status:desc', label: `${t('status')} Z-A` },
-        { value: 'status:asc', label: `${t('status')} A-Z` },
-    ];
+    const statusOptions = ElementStatusEnum.getOptions(t);
+    const sortOptions = buildSortOptions(t, ['createdAt', 'title', 'status']);
 
     return (
-        <Stack direction="horizontal" gap={2} className="mb-4 flex-wrap align-items-center">
-            <Form.Control
-                name="title"
-                placeholder={t('title')}
-                value={filters.title || ''}
+        <FilterBar>
+            <FilterInput name="title" placeholder={t('title')} value={filters.title || ''} onChange={onFilterChange} />
+            <FilterInput name="link" placeholder={t('link')} value={filters.link || ''} onChange={onFilterChange} />
+            <FilterSelect
+                name="status"
+                value={filters.status || ''}
                 onChange={onFilterChange}
-                className="w-auto"
+                options={statusOptions}
+                placeholder={t('status')}
             />
-            <Form.Control
-                name="link"
-                placeholder={t('link')}
-                value={filters.link || ''}
-                onChange={onFilterChange}
-                className="w-auto"
+            <SortLimitSelect
+                sortOptions={sortOptions}
+                sort={sort}
+                limit={limit}
+                onSortChange={onSortChange}
+                onLimitChange={onLimitChange}
             />
-            <Form.Select name="status" value={filters.status || ''} onChange={onFilterChange} className="w-auto">
-                <SelectOptions options={statusOptions} placeholder={t('status')} />
-            </Form.Select>
-            <Form.Select value={sort} onChange={onSortChange} className="w-auto ms-auto">
-                <SelectOptions options={sortOptions} />
-            </Form.Select>
-            <Form.Select value={limit} onChange={onLimitChange} className="w-auto">
-                <SelectOptions options={limitOptions} />
-            </Form.Select>
-        </Stack>
+        </FilterBar>
     );
 };

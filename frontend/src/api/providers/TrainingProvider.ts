@@ -3,7 +3,9 @@ import { buildIndexParams, buildQueryString } from '../../utils/buildQueryString
 import { StatusBody } from '../body/StatusBody';
 import { TrainingBody } from '../body/TrainingBody';
 import { TrainingIndexQuery } from '../queries/TrainingIndexQuery';
+import { CollectionResponse } from '../responses/CollectionResponse';
 import { IdResponse } from '../responses/IdResponse';
+import { ItemResponse } from '../responses/ItemResponse';
 import { TrainingResponse } from '../responses/TrainingResponse';
 
 export class TrainingProvider {
@@ -23,14 +25,14 @@ export class TrainingProvider {
         return await apiFetch(`/api/trainings/${id}`, { method: 'DELETE' });
     }
 
-    async index(dto: TrainingIndexQuery): Promise<TrainingResponse[]> {
+    async index(dto: TrainingIndexQuery): Promise<CollectionResponse<TrainingResponse>> {
         const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/trainings?${params.toString()}`, { method: 'GET' });
     }
 
     async details(id: string, include: string[] = []): Promise<TrainingResponse> {
         const query = buildQueryString(include);
-        return await apiFetch(`/api/trainings/${id}${query}`, { method: 'GET' });
+        return (await apiFetch<ItemResponse<TrainingResponse>>(`/api/trainings/${id}${query}`, { method: 'GET' })).data;
     }
 
     async updateParticipantStatus(participantId: string, dto: StatusBody): Promise<IdResponse> {

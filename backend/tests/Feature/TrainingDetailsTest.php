@@ -52,18 +52,18 @@ class TrainingDetailsTest extends ApiTestCase
         $result = $this->get($url, $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
+        $this->assertArrayHasKey('id', $result['json']['data']);
 
-        $this->assertArrayHasKey('participants', $result['json']);
-        $this->assertCount(1, $result['json']['participants']);
+        $this->assertArrayHasKey('participants', $result['json']['data']);
+        $this->assertCount(1, $result['json']['data']['participants']);
 
-        $this->assertArrayHasKey('disciplines', $result['json']);
-        $this->assertCount(1, $result['json']['disciplines']);
+        $this->assertArrayHasKey('disciplines', $result['json']['data']);
+        $this->assertCount(1, $result['json']['data']['disciplines']);
 
-        $this->assertArrayHasKey('distances', $result['json']['disciplines'][0]);
-        $this->assertCount(1, $result['json']['disciplines'][0]['distances']);
+        $this->assertArrayHasKey('distances', $result['json']['data']['disciplines'][0]);
+        $this->assertCount(1, $result['json']['data']['disciplines'][0]['distances']);
 
-        $this->assertArrayHasKey('subDistances', $result['json']['disciplines'][0]['distances'][0]);
-        $this->assertCount(1, $result['json']['disciplines'][0]['distances'][0]['subDistances']);
+        $this->assertArrayHasKey('subDistances', $result['json']['data']['disciplines'][0]['distances'][0]);
+        $this->assertCount(1, $result['json']['data']['disciplines'][0]['distances'][0]['subDistances']);
     }
 }

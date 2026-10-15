@@ -1,3 +1,3 @@
 export class FriendBody {
-    constructor(public receiverUserId: string) {}
+    constructor(public userId: string) {}
 }

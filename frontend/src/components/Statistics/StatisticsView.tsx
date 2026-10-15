@@ -7,15 +7,19 @@ import { StatisticFilterQuery } from '../../api/queries/StatisticFilterQuery';
 import { StatisticResponse } from '../../api/responses/StatisticResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
+import { FormErrorAlert } from '../Common/FormFields';
 import { Pagination } from '../Common/Pagination';
+import { ErrorView, LoadingView } from '../Common/ViewState';
 
 interface StatisticsViewProps {
     currentUser: UserResponse | null;
     availableUsers: UserResponse[];
+    usersError: string | null;
     activeTab: 'records' | 'progress';
     setActiveTab: (tab: 'records' | 'progress') => void;
     data: StatisticResponse[];
     page: number;
+    hasMore: boolean;
     limit: number;
     sort: string;
     filters: StatisticFilterQuery;
@@ -32,10 +36,12 @@ interface StatisticsViewProps {
 export const StatisticsView: React.FC<StatisticsViewProps> = ({
     currentUser,
     availableUsers,
+    usersError,
     activeTab,
     setActiveTab,
     data,
     page,
+    hasMore,
     limit,
     sort,
     filters,
@@ -50,16 +56,11 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
 }) => {
     const { t } = useTranslation();
 
-    if (!currentUser)
-        return (
-            <Container className="mt-5 text-center">
-                <Spinner animation="border" variant="primary" />
-            </Container>
-        );
+    if (!currentUser) return error && !loading ? <ErrorView error={error} /> : <LoadingView />;
 
     return (
         <Container className="py-5">
-            <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
+            <Stack direction="horizontal" gap={2} className="justify-content-between align-items-center flex-wrap mb-4">
                 <Stack as="h2" className="mb-0 fw-bold text-primary">
                     {t('statistics')}
                 </Stack>
@@ -95,11 +96,11 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
                     </Nav>
                 </Card.Header>
                 <Card.Body className="bg-white rounded-bottom">
+                    <FormErrorAlert error={usersError} />
                     <StatisticsFilterBar
                         filters={filters}
                         sort={sort}
                         limit={limit}
-                        activeTab={activeTab}
                         availableUsers={availableUsers}
                         currentUser={currentUser}
                         onFilterChange={handleFilterChange}
@@ -110,20 +111,23 @@ export const StatisticsView: React.FC<StatisticsViewProps> = ({
 
                     {loading && data.length === 0 ? (
                         <Stack className="text-center p-5">
-                            <Spinner animation="border" variant="primary" />
+                            <Spinner animation="border" variant="primary" role="status" />
                         </Stack>
                     ) : error ? (
                         <Alert variant="danger">{t(error)}</Alert>
                     ) : (
-                        <Stack gap={3}>
+                        <>
                             <StatisticsTable data={data} availableUsers={availableUsers} />
-                            <Pagination
-                                page={page}
-                                hasMore={data.length >= limit}
-                                onPrevPage={handlePrevPage}
-                                onNextPage={handleNextPage}
-                            />
-                        </Stack>
+                            <Stack className="mt-3">
+                                <Pagination
+                                    page={page}
+                                    hasMore={hasMore}
+                                    onPrevPage={handlePrevPage}
+                                    onNextPage={handleNextPage}
+                                    variant="profile-outline-primary"
+                                />
+                            </Stack>
+                        </>
                     )}
                 </Card.Body>
             </Card>

@@ -76,12 +76,22 @@ class EntryRepository extends BaseRepository
                 ->setParameter('type', $dto->filter->type);
         }
 
+        $totalCount = (int) (clone $qb)
+            ->select("COUNT(DISTINCT CONCAT(e.type, ':', e.entityId))")
+            ->getQuery()
+            ->getSingleScalarResult();
+
         $qb->groupBy('e.type')
             ->addGroupBy('e.entityId');
 
         $this->order($dto->sort, $qb, 'e');
 
-        $page = new OffsetPaginator()->paginate($qb, Window::fromPageNumberAndSize($dto->page, $dto->limit));
+        $window = Window::fromPageNumberAndSize($dto->page, $dto->limit);
+
+        $rows = $qb->setFirstResult($window->getFirstResult())
+            ->setMaxResults($window->getMaxResults())
+            ->getQuery()
+            ->getArrayResult();
 
         $items = array_map(
             fn (array $row) => new EntryCountDto(
@@ -89,13 +99,9 @@ class EntryRepository extends BaseRepository
                 $row['type'],
                 $row['count'],
             ),
-            $page->getItems(),
+            $rows,
         );
 
-        return new WindowPage(
-            $items,
-            $page->getTotalCount(),
-            $page->getWindow(),
-        );
+        return new WindowPage($items, $totalCount, $window);
     }
 }

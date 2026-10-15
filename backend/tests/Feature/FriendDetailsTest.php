@@ -54,8 +54,8 @@ class FriendDetailsTest extends ApiTestCase
 
         $result = $this->get("/api/friends/{$friend->id->toString()}", $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
-        $this->assertEquals($user->id->toString(), $result['json']['senderUserId']);
+        $this->assertArrayHasKey('id', $result['json']['data']);
+        $this->assertEquals($user->id->toString(), $result['json']['data']['senderUserId']);
     }
 
     final public function testSuccessForReceiver(): void
@@ -65,7 +65,7 @@ class FriendDetailsTest extends ApiTestCase
 
         $result = $this->get("/api/friends/{$friend->id->toString()}", $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
-        $this->assertEquals($user->id->toString(), $result['json']['receiverUserId']);
+        $this->assertArrayHasKey('id', $result['json']['data']);
+        $this->assertEquals($user->id->toString(), $result['json']['data']['receiverUserId']);
     }
 }

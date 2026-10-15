@@ -57,7 +57,7 @@ class GoalRepository extends BaseRepository
         $qb->andWhere('g.status = :status')
             ->setParameter('status', GoalStatusEnum::Active);
 
-        return new OffsetPaginator()->paginate($qb);
+        return new OffsetPaginator()->paginate($qb, new Window(0, PHP_INT_MAX));
     }
 
     final public function findGoals(GoalIndexDto $dto): WindowPage

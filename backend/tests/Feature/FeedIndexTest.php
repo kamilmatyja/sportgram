@@ -39,7 +39,7 @@ class FeedIndexTest extends ApiTestCase
         $result = $this->get('/api/feeds', $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(2, $result['json']);
+        $this->assertCount(2, $result['json']['data']);
     }
 
     final public function testFiltersAndSorting(): void
@@ -52,13 +52,13 @@ class FeedIndexTest extends ApiTestCase
 
         $result = $this->get('/api/feeds?filter[text]=World&filter[status]=2', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(1, $result['json']);
-        $this->assertEquals('Hello World', $result['json'][0]['text']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals('Hello World', $result['json']['data'][0]['text']);
 
         $resultSort = $this->get('/api/feeds?filter[status]=2&sort=text:asc', $user);
         $this->assertEquals(200, $resultSort['status']);
-        $this->assertEquals('Goodbye', $resultSort['json'][0]['text']);
-        $this->assertEquals('Hello World', $resultSort['json'][1]['text']);
+        $this->assertEquals('Goodbye', $resultSort['json']['data'][0]['text']);
+        $this->assertEquals('Hello World', $resultSort['json']['data'][1]['text']);
     }
 
     final public function testPagination(): void
@@ -71,6 +71,9 @@ class FeedIndexTest extends ApiTestCase
 
         $result = $this->get('/api/feeds?page=2&limit=5', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
+        $this->assertEquals(15, $result['json']['pagination']['total']);
+        $this->assertEquals(2, $result['json']['pagination']['page']);
+        $this->assertTrue($result['json']['pagination']['hasNextPage']);
     }
 }

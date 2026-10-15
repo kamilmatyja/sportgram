@@ -5,7 +5,9 @@ import { StatusBody } from '../body/StatusBody';
 import { UserCreateBody } from '../body/UserCreateBody';
 import { UserUpdateBody } from '../body/UserUpdateBody';
 import { UserIndexQuery } from '../queries/UserIndexQuery';
+import { CollectionResponse } from '../responses/CollectionResponse';
 import { IdResponse } from '../responses/IdResponse';
+import { ItemResponse } from '../responses/ItemResponse';
 import { UserResponse } from '../responses/UserResponse';
 
 export class UserProvider {
@@ -29,13 +31,13 @@ export class UserProvider {
         return await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
     }
 
-    async index(dto: UserIndexQuery): Promise<UserResponse[]> {
+    async index(dto: UserIndexQuery): Promise<CollectionResponse<UserResponse>> {
         const queryString = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/users?${queryString}`, { method: 'GET' });
     }
 
     async details(id: string, include: string[] = []): Promise<UserResponse> {
         const queryString = buildQueryString(include);
-        return await apiFetch(`/api/users/${id}${queryString}`, { method: 'GET' });
+        return (await apiFetch<ItemResponse<UserResponse>>(`/api/users/${id}${queryString}`, { method: 'GET' })).data;
     }
 }

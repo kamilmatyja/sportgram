@@ -19,6 +19,6 @@ class NotificationFilterDto
     #[Assert\Length(min: 1, max: 2048)]
     public ?string $text = null;
 
-    #[Assert\Choice(callback: [NotificationStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [NotificationStatusEnum::class, 'cases'])]
     public ?NotificationStatusEnum $status = null;
 }

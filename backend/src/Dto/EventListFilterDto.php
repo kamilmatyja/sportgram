@@ -29,6 +29,6 @@ class EventListFilterDto
     #[EntityExistsField(entity: User::class)]
     public ?Uuid $userId = null;
 
-    #[Assert\Choice(callback: [SaveStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [SaveStatusEnum::class, 'cases'])]
     public ?SaveStatusEnum $status = null;
 }

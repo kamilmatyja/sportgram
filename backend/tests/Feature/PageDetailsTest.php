@@ -44,10 +44,10 @@ class PageDetailsTest extends ApiTestCase
         $result = $this->get($url, $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
-        $this->assertArrayHasKey('participants', $result['json']);
-        $this->assertCount(1, $result['json']['participants']);
-        $this->assertArrayHasKey('follows', $result['json']);
-        $this->assertCount(1, $result['json']['follows']);
+        $this->assertArrayHasKey('id', $result['json']['data']);
+        $this->assertArrayHasKey('participants', $result['json']['data']);
+        $this->assertCount(1, $result['json']['data']['participants']);
+        $this->assertArrayHasKey('follows', $result['json']['data']);
+        $this->assertCount(1, $result['json']['data']['follows']);
     }
 }

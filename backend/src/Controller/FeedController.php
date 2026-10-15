@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{ElementStatusDto, FeedCommentDto, FeedDetailsQueryDto, FeedDto, FeedIndexDto, FeedReactionDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\FeedResource;
 use App\Security\Voter\{FeedCommentCreatorVoter,
     FeedCommentVoter,
@@ -29,7 +29,7 @@ class FeedController extends AbstractController
         summary: 'Create feed',
         requestBody: new Body(FeedDto::class),
         tags: ['feeds'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
         #[MapRequestPayload]
@@ -47,7 +47,7 @@ class FeedController extends AbstractController
         summary: 'Update feed',
         requestBody: new Body(FeedDto::class),
         tags: ['feeds'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         Uuid $id,
@@ -66,7 +66,7 @@ class FeedController extends AbstractController
         summary: 'Update feed status',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['feeds'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
         Uuid $id,
@@ -84,7 +84,7 @@ class FeedController extends AbstractController
     #[OA\Delete(
         summary: 'Delete feed',
         tags: ['feeds'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -121,7 +121,7 @@ class FeedController extends AbstractController
     #[OA\Get(
         summary: 'Details of feed',
         tags: ['feeds'],
-        responses: [new Item(FeedResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(FeedResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -142,7 +142,7 @@ class FeedController extends AbstractController
         summary: 'Create feed comment',
         requestBody: new Body(FeedCommentDto::class),
         tags: ['feeds'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function createComment(
         Uuid $id,
@@ -161,7 +161,7 @@ class FeedController extends AbstractController
         summary: 'Update feed comment',
         requestBody: new Body(FeedCommentDto::class),
         tags: ['feeds'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateComment(
         Uuid $id,
@@ -180,7 +180,7 @@ class FeedController extends AbstractController
         summary: 'Update feed comment status',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['feeds'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateCommentStatus(
         Uuid $id,
@@ -198,7 +198,7 @@ class FeedController extends AbstractController
     #[OA\Delete(
         summary: 'Delete feed comment',
         tags: ['feeds'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function deleteComment(
         Uuid $id,
@@ -215,7 +215,7 @@ class FeedController extends AbstractController
         summary: 'Create feed reaction',
         requestBody: new Body(FeedReactionDto::class),
         tags: ['feeds'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function createReaction(
         Uuid $id,
@@ -234,7 +234,7 @@ class FeedController extends AbstractController
         summary: 'Update feed reaction',
         requestBody: new Body(FeedReactionDto::class),
         tags: ['feeds'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateReaction(
         Uuid $id,
@@ -253,7 +253,7 @@ class FeedController extends AbstractController
         summary: 'Update feed reaction status',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['feeds'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateReactionStatus(
         Uuid $id,
@@ -271,7 +271,7 @@ class FeedController extends AbstractController
     #[OA\Delete(
         summary: 'Delete feed reaction',
         tags: ['feeds'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function deleteReaction(
         Uuid $id,

@@ -5,8 +5,10 @@ import { FeedCommentBody } from '../body/FeedCommentBody';
 import { FeedReactionBody } from '../body/FeedReactionBody';
 import { StatusBody } from '../body/StatusBody';
 import { FeedIndexQuery } from '../queries/FeedIndexQuery';
+import { CollectionResponse } from '../responses/CollectionResponse';
 import { FeedResponse } from '../responses/FeedResponse';
 import { IdResponse } from '../responses/IdResponse';
+import { ItemResponse } from '../responses/ItemResponse';
 
 export class FeedProvider {
     async create(dto: FeedBody): Promise<IdResponse> {
@@ -25,14 +27,14 @@ export class FeedProvider {
         return await apiFetch(`/api/feeds/${id}`, { method: 'DELETE' });
     }
 
-    async index(dto: FeedIndexQuery): Promise<FeedResponse[]> {
+    async index(dto: FeedIndexQuery): Promise<CollectionResponse<FeedResponse>> {
         const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/feeds?${params.toString()}`, { method: 'GET' });
     }
 
     async details(id: string, include: string[] = []): Promise<FeedResponse> {
         const query = buildQueryString(include);
-        return await apiFetch(`/api/feeds/${id}${query}`, { method: 'GET' });
+        return (await apiFetch<ItemResponse<FeedResponse>>(`/api/feeds/${id}${query}`, { method: 'GET' })).data;
     }
 
     async createComment(feedId: string, dto: FeedCommentBody): Promise<IdResponse> {

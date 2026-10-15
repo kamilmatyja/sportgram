@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Dto\{GoalDetailsQueryDto, GoalDto, GoalIndexDto, GoalStatusDto, SaveStatusDto};
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\GoalResource;
 use App\Security\Voter\{GoalCreatorVoter, GoalParticipantResultVoter, GoalParticipantVoter, GoalVoter};
 use App\Service\GoalService;
@@ -25,7 +25,7 @@ class GoalController extends AbstractController
         summary: 'Create goal',
         requestBody: new Body(GoalDto::class),
         tags: ['goals'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
         #[MapRequestPayload]
@@ -43,7 +43,7 @@ class GoalController extends AbstractController
         summary: 'Update goal',
         requestBody: new Body(GoalDto::class),
         tags: ['goals'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         Uuid $id,
@@ -62,7 +62,7 @@ class GoalController extends AbstractController
         summary: 'Update goal status',
         requestBody: new Body(GoalStatusDto::class),
         tags: ['goals'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
         Uuid $id,
@@ -80,7 +80,7 @@ class GoalController extends AbstractController
     #[OA\Delete(
         summary: 'Delete goal',
         tags: ['goals'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -117,7 +117,7 @@ class GoalController extends AbstractController
     #[OA\Get(
         summary: 'Details of goal',
         tags: ['goals'],
-        responses: [new Item(GoalResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(GoalResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -138,7 +138,7 @@ class GoalController extends AbstractController
         summary: 'Update goal participant status',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['goals'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function participantUpdateStatus(
         Uuid $id,
@@ -157,7 +157,7 @@ class GoalController extends AbstractController
         summary: 'Update goal participant result status',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['goals'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function participantResultUpdateStatus(
         Uuid $id,

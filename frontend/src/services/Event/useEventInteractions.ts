@@ -1,63 +1,46 @@
 import { EventResultBody } from '../../api/body/EventResultBody';
 import { StatusBody } from '../../api/body/StatusBody';
 import { EventProvider } from '../../api/providers/EventProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
-import { EventListIndexQuery } from '../../api/queries/EventListIndexQuery';
-import { EventDisciplineDistanceListResponse } from '../../api/responses/EventDisciplineDistanceListResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { useActionState } from '../../utils/hooks/useActionState';
+import { fetchDistanceLists } from '../../utils/fetchDistanceLists';
+import { useFormState } from '../../utils/hooks/useFormState';
+import { useSafeAction } from '../Common/useSafeAction';
+
+export type EventInteractions = ReturnType<typeof useEventInteractions>;
 
 export function useEventInteractions(refreshEvents: () => void) {
-    const { actionLoading, runAction } = useActionState();
+    const { actionLoading, actionError, runAction, runSafeAction } = useSafeAction();
+    const resultForm = useFormState();
     const eventProvider = new EventProvider();
-    const userProvider = new UserProvider();
 
-    const fetchDistanceLists = async (
-        distId: string,
-    ): Promise<{
-        lists: EventDisciplineDistanceListResponse[];
-        users: Record<string, UserResponse>;
-    }> => {
-        const indexQuery = new EventListIndexQuery();
-        indexQuery.limit = 100;
-        indexQuery.include = ['eventListResults', 'eventListSubResults'];
-        const lists = await eventProvider.indexList(distId, indexQuery);
-
-        const userIds = lists.map((l) => l.userId);
-        const usersMap = await fetchRelatedUsers(userIds, {}, userProvider);
-
-        return { lists: lists, users: usersMap };
-    };
-
-    const handleListStatusSubmit = (listId: string, status: number) => {
-        runAction(listId, async () => {
+    const handleListStatusSubmit = (listId: string, status: number) =>
+        runSafeAction(listId, async () => {
             await eventProvider.updateListStatus(listId, new StatusBody(status));
             refreshEvents();
-        }).catch(() => {});
-    };
+        });
 
-    const handleSaveResult = (listId: string, resultId: string | null, formData: EventResultBody) => {
-        runAction(listId, async () => {
-            if (resultId) {
-                await eventProvider.updateResult(resultId, formData);
-            } else {
-                await eventProvider.createResult(listId, formData);
-            }
-        }).catch(() => {});
-    };
+    const handleSaveResult = (listId: string, resultId: string | null, formData: EventResultBody) =>
+        runAction(listId, () =>
+            resultForm.wrap(() =>
+                resultId
+                    ? eventProvider.updateResult(resultId, formData)
+                    : eventProvider.createResult(listId, formData),
+            ),
+        )
+            .then(() => true)
+            .catch(() => false);
 
-    const handleDeleteResult = (resultId: string) => {
-        runAction('delete_result', async () => {
-            await eventProvider.deleteResult(resultId);
-        }).catch(() => {});
-    };
+    const handleDeleteResult = (resultId: string) =>
+        runSafeAction('delete_result', () => eventProvider.deleteResult(resultId));
 
     return {
         actionLoading,
-        fetchDistanceLists,
+        actionError,
+        fetchDistanceLists: (distanceId: string) => fetchDistanceLists(distanceId),
         handleListStatusSubmit,
         handleSaveResult,
         handleDeleteResult,
+        resultFieldErrors: resultForm.fieldErrors,
+        resultGlobalError: resultForm.globalError,
+        resetResultErrors: resultForm.resetErrors,
     };
 }

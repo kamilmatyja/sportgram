@@ -56,7 +56,10 @@ class Feed
     #[ORM\Column(name: 'photo', type: 'binary', nullable: true)]
     public ?string $photo = null {
         get {
-            return $this->photo;
+            return $this->photo ? base64_encode($this->photo) : null;
+        }
+        set {
+            $this->photo = $value ? base64_decode($value, true) : null;
         }
     }
 

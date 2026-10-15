@@ -9,10 +9,10 @@ use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    required: ['receiverUserId'],
+    required: ['userId'],
     properties: [
         new OA\Property(
-            property: 'receiverUserId',
+            property: 'userId',
             type: 'string',
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
@@ -25,5 +25,5 @@ class FriendDto
     #[Assert\NotBlank]
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    public Uuid $receiverUserId;
+    public Uuid $userId;
 }

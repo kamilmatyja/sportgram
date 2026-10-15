@@ -37,8 +37,12 @@ class EntryEntityExistsValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, EntryEntityExists::class);
         }
 
-        if ($value instanceof EntryDto) {
-            throw new UnexpectedValueException($value, 'unexpected type');
+        if (! $value instanceof EntryDto) {
+            throw new UnexpectedValueException($value, EntryDto::class);
+        }
+
+        if (! $value->entityId instanceof Uuid || ! $value->type instanceof EntryTypeEnum) {
+            return;
         }
 
         /** @var Uuid $entityId */

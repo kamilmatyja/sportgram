@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\PushSubscriptionResource;
 use App\Security\Voter\PushSubscriptionVoter;
 use App\Service\PushSubscriptionService;
@@ -24,7 +24,7 @@ class PushSubscriptionController extends AbstractController
         summary: 'Create push subscription',
         requestBody: new Body(PushSubscriptionDto::class),
         tags: ['push subscriptions'],
-        responses: [new Created(), new BadRequest(), new Unauthorized()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized()],
     )]
     final public function create(
         #[MapRequestPayload]
@@ -42,7 +42,7 @@ class PushSubscriptionController extends AbstractController
         summary: 'Update push subscription',
         requestBody: new Body(PushSubscriptionDto::class),
         tags: ['push subscriptions'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         Uuid $id,
@@ -60,7 +60,7 @@ class PushSubscriptionController extends AbstractController
     #[OA\Delete(
         summary: 'Delete push subscription',
         tags: ['push subscriptions'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -95,7 +95,7 @@ class PushSubscriptionController extends AbstractController
     #[OA\Get(
         summary: 'Details of push subscription',
         tags: ['push subscriptions'],
-        responses: [new Item(PushSubscriptionResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(PushSubscriptionResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

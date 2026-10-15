@@ -16,6 +16,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 class NotificationStatusDto
 {
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [NotificationStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [NotificationStatusEnum::class, 'cases'])]
     public NotificationStatusEnum $status;
 }

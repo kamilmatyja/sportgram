@@ -40,7 +40,7 @@ class GoalFilterDto
     #[Assert\Length(min: 1, max: 2048)]
     public ?string $text = null;
 
-    #[Assert\Choice(callback: [DisciplineEnum::class, 'values'])]
+    #[Assert\Choice(callback: [DisciplineEnum::class, 'cases'])]
     public ?DisciplineEnum $discipline = null;
 
     #[Assert\Type('integer')]
@@ -49,6 +49,6 @@ class GoalFilterDto
     #[Assert\Type('integer')]
     public ?int $time = null;
 
-    #[Assert\Choice(callback: [GoalStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [GoalStatusEnum::class, 'cases'])]
     public ?GoalStatusEnum $status = null;
 }

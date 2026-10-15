@@ -7,6 +7,8 @@ use App\Enum\DisciplineEnum;
 use App\Validator\{EntityExistsField, UniqueField};
 use DateTimeImmutable;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -21,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new OA\Property(property: 'distance', type: 'integer', example: 100),
         new OA\Property(property: 'time', type: 'integer', example: 60, nullable: true),
         new OA\Property(
-            property: 'participants',
+            property: 'userIds',
             type: 'array',
             items: new OA\Items(type: 'string', format: 'uuid'),
             example: ['b1a7c8e2-1d2f-4e3a-9b2c-123456789abc'],
@@ -32,10 +34,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class GoalDto
 {
-    #[Assert\DateTime(format: 'Y-m-d\TH:i')]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\TH:i'])]
     public ?DateTimeImmutable $startedAt = null;
 
-    #[Assert\DateTime(format: 'Y-m-d\TH:i')]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\TH:i'])]
     public ?DateTimeImmutable $endedAt = null;
 
     #[Assert\NotBlank]
@@ -49,7 +51,7 @@ class GoalDto
     public string $link;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [DisciplineEnum::class, 'values'])]
+    #[Assert\Choice(callback: [DisciplineEnum::class, 'cases'])]
     public DisciplineEnum $discipline;
 
     #[Assert\NotBlank]
@@ -67,5 +69,10 @@ class GoalDto
     ])]
     #[Assert\Count(min: 0)]
     #[Assert\Unique]
-    public array $participants = [];
+    public array $userIds = [];
+
+    final public function addUserId(Uuid $userId): void
+    {
+        $this->userIds[] = $userId;
+    }
 }

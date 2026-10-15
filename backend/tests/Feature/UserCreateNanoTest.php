@@ -35,9 +35,11 @@ class UserCreateNanoTest extends ApiTestCase
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
-            $this->assertEquals([
-                'This value should not be blank.',
-            ], $result['json']['errors'][$field]);
+            $messages = ['This value should not be blank.'];
+            if ($field === 'roles') {
+                $messages[] = 'This collection should contain 1 element or more.';
+            }
+            $this->assertEquals($messages, $result['json']['errors'][$field]);
         }
     }
 
@@ -72,12 +74,12 @@ class UserCreateNanoTest extends ApiTestCase
             'birthAt' => 'This value should be of type string.',
             'firstName' => 'This value should be of type string.',
             'lastName' => 'This value should be of type string.',
-            'gender' => 'This value should be of type int.',
+            'gender' => 'This value should be of type int|string.',
             'phone' => 'This value should be of type int.',
             'email' => 'This value should be of type string.',
             'password' => 'This value should be of type string.',
-            'country' => 'This value should be of type int.',
-            'roles' => 'This value should be of type array.',
+            'country' => 'This value should be of type int|string.',
+            'roles' => 'This value should be of type App\\Enum\\RoleEnum[].',
         ];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
@@ -223,7 +225,7 @@ class UserCreateNanoTest extends ApiTestCase
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
             $this->assertEquals([
-                'The value you selected is not a valid choice.',
+                'This value was of an unexpected type.',
             ], $result['json']['errors'][$field]);
         }
     }

@@ -80,7 +80,7 @@ class PageCreateTest extends ApiTestCase
             'profilePhoto' => base64_encode('photo'),
             'backgroundPhoto' => base64_encode('bg'),
             'color' => 1,
-            'participants' => [$stranger->id->toString()],
+            'userIds' => [$stranger->id->toString()],
         ];
 
         $result = $this->post('/api/pages', $payload, $user);

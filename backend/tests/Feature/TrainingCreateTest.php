@@ -28,8 +28,8 @@ class TrainingCreateTest extends ApiTestCase
     final public function testUnauthorized(): void
     {
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'title' => 'My Training',
             'description' => 'Desc',
             'link' => 'training-link',
@@ -63,8 +63,8 @@ class TrainingCreateTest extends ApiTestCase
         TrainingFactory::make(['user' => $user, 'link' => 'duplicate-link'], $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'title' => 'My Training',
             'description' => 'Desc',
             'link' => 'duplicate-link',
@@ -84,13 +84,13 @@ class TrainingCreateTest extends ApiTestCase
         $stranger = UserFactory::make(em: $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'title' => 'My Training',
             'description' => 'Desc',
             'link' => 'unique-link-1',
             'location' => 'Warsaw',
-            'participants' => [$stranger->id->toString()],
+            'userIds' => [$stranger->id->toString()],
         ];
 
         $result = $this->post('/api/trainings', $payload, $user);
@@ -103,8 +103,8 @@ class TrainingCreateTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'title' => 'My Training',
             'description' => 'Desc',
             'link' => 'unique-link-2',
@@ -130,7 +130,7 @@ class TrainingCreateTest extends ApiTestCase
                     ],
                 ],
             ],
-            'participants' => [],
+            'userIds' => [],
         ];
 
         $result = $this->post('/api/trainings', $payload, $user);

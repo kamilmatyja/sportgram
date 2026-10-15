@@ -1,12 +1,11 @@
 import { StatusBody } from '../../api/body/StatusBody';
 import { NotificationProvider } from '../../api/providers/NotificationProvider';
 import { NotificationResponse } from '../../api/responses/NotificationResponse';
-import { useFormState } from '../../utils/hooks/useFormState';
-import { useModal } from '../../utils/hooks/useModal';
+import { useCrudModals } from '../../utils/hooks/useCrudModals';
 
 export function useNotificationModals(onSuccess: () => void) {
-    const manageModal = useModal<NotificationResponse>();
-    const { loading, globalError, wrap, resetErrors } = useFormState();
+    const { manageModal, loading, globalError, resetErrors, submitManage } =
+        useCrudModals<NotificationResponse>(onSuccess);
 
     const notificationProvider = new NotificationProvider();
 
@@ -15,23 +14,10 @@ export function useNotificationModals(onSuccess: () => void) {
         manageModal.open(notification);
     };
 
-    const handleStatusSubmit = async (newStatus: number) => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await notificationProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleStatusSubmit = (newStatus: number) =>
+        submitManage((notification) => notificationProvider.updateStatus(notification.id, new StatusBody(newStatus)));
 
-    const handleDelete = async () => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await notificationProvider.delete(manageModal.data!.id);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleDelete = () => submitManage((notification) => notificationProvider.delete(notification.id));
 
     return {
         showManage: manageModal.isOpen,

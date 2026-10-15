@@ -49,8 +49,9 @@ class PageIndexTest extends ApiTestCase
         );
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(1, $result['json']);
-        $this->assertEquals('Page A', $result['json'][0]['title']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals(1, $result['json']['pagination']['total']);
+        $this->assertEquals('Page A', $result['json']['data'][0]['title']);
     }
 
     final public function testPagination(): void
@@ -65,6 +66,9 @@ class PageIndexTest extends ApiTestCase
         $result = $this->get("/api/pages?filter[userId]={$user->id->toString()}&page=2&limit=5", $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
+        $this->assertEquals(15, $result['json']['pagination']['total']);
+        $this->assertEquals(2, $result['json']['pagination']['page']);
+        $this->assertTrue($result['json']['pagination']['hasNextPage']);
     }
 }

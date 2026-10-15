@@ -53,8 +53,8 @@ class NotificationDetailsTest extends ApiTestCase
 
         $result = $this->get("/api/notifications/{$notification->id->toString()}", $owner);
         $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
-        $this->assertArrayHasKey('text', $result['json']);
-        $this->assertEquals($owner->id->toString(), $result['json']['userId']);
+        $this->assertArrayHasKey('id', $result['json']['data']);
+        $this->assertArrayHasKey('text', $result['json']['data']);
+        $this->assertEquals($owner->id->toString(), $result['json']['data']['userId']);
     }
 }

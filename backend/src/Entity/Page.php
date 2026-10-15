@@ -70,14 +70,20 @@ class Page
     #[ORM\Column(name: 'profile_photo', type: 'binary')]
     public string $profilePhoto {
         get {
-            return $this->profilePhoto;
+            return base64_encode($this->profilePhoto);
+        }
+        set {
+            $this->profilePhoto = base64_decode($value, true);
         }
     }
 
     #[ORM\Column(name: 'background_photo', type: 'binary')]
     public string $backgroundPhoto {
         get {
-            return $this->backgroundPhoto;
+            return base64_encode($this->backgroundPhoto);
+        }
+        set {
+            $this->backgroundPhoto = base64_decode($value, true);
         }
     }
 

@@ -45,6 +45,11 @@ class EntryFilterDto
     #[Assert\Unique]
     public array $entityIds = [];
 
-    #[Assert\Choice(callback: [EntryTypeEnum::class, 'values'])]
+    #[Assert\Choice(callback: [EntryTypeEnum::class, 'cases'])]
     public ?EntryTypeEnum $type = null;
+
+    final public function addEntityId(Uuid $entityId): void
+    {
+        $this->entityIds[] = $entityId;
+    }
 }

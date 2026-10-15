@@ -1,36 +1,28 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { StatusBody } from '../../api/body/StatusBody';
 import { StoryBody } from '../../api/body/StoryBody';
 import { StoryProvider } from '../../api/providers/StoryProvider';
 import { StoryResponse } from '../../api/responses/StoryResponse';
-import { createFormHandler } from '../../utils/formHandler';
-import { useFormState } from '../../utils/hooks/useFormState';
-import { useModal } from '../../utils/hooks/useModal';
+import { createFormHandler, createSubmitHandler } from '../../utils/formHandler';
+import { useCrudModals } from '../../utils/hooks/useCrudModals';
+
+const emptyStoryBody = () => new StoryBody('', '');
 
 export function useStoryModals(onSuccess: () => void) {
-    const addModal = useModal();
-    const manageModal = useModal<StoryResponse>();
-    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
+    const { addModal, manageModal, loading, globalError, fieldErrors, resetErrors, submitAdd, submitManage } =
+        useCrudModals<StoryResponse>(onSuccess);
 
-    const [formData, setFormData] = useState(new StoryBody('', ''));
-
+    const [formData, setFormData] = useState(emptyStoryBody);
     const storyProvider = new StoryProvider();
 
     const openAddModal = () => {
-        setFormData(new StoryBody('', ''));
+        setFormData(emptyStoryBody());
         resetErrors();
         addModal.open();
     };
 
-    const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        wrap(async () => {
-            await storyProvider.create(formData);
-            addModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleAddSubmit = createSubmitHandler(() => submitAdd(() => storyProvider.create(formData)));
 
     const openManageModal = (story: StoryResponse) => {
         resetErrors();
@@ -38,34 +30,14 @@ export function useStoryModals(onSuccess: () => void) {
         setFormData(new StoryBody(story.text, ''));
     };
 
-    const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!manageModal.data) return;
-        wrap(async () => {
-            formData.photo = formData.photo ? formData.photo : manageModal.data!.photo;
-            await storyProvider.update(manageModal.data!.id, formData);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleEditSubmit = createSubmitHandler(() =>
+        submitManage((story) => storyProvider.update(story.id, { ...formData, photo: formData.photo || story.photo })),
+    );
 
-    const handleStatusSubmit = async (newStatus: number) => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await storyProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleStatusSubmit = (newStatus: number) =>
+        submitManage((story) => storyProvider.updateStatus(story.id, new StatusBody(newStatus)));
 
-    const handleDelete = async () => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await storyProvider.delete(manageModal.data!.id);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleDelete = () => submitManage((story) => storyProvider.delete(story.id));
 
     const handleChange = createFormHandler(setFormData);
 

@@ -46,6 +46,11 @@ class PageFollowFilterDto
     #[Assert\Unique]
     public array $pageIds = [];
 
-    #[Assert\Choice(callback: [PageFollowStatusEnum::class, 'values'])]
+    #[Assert\Choice(callback: [PageFollowStatusEnum::class, 'cases'])]
     public ?PageFollowStatusEnum $status = null;
+
+    final public function addPageId(Uuid $pageId): void
+    {
+        $this->pageIds[] = $pageId;
+    }
 }

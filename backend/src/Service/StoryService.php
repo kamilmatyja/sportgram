@@ -29,7 +29,7 @@ readonly class StoryService
         $story = new Story(
             $user,
             $dto->text,
-            base64_decode($dto->photo, true),
+            $dto->photo,
             ElementStatusEnum::Active,
         );
 
@@ -43,7 +43,7 @@ readonly class StoryService
         $story = $this->storyRepository->findById($storyId);
 
         $story->text = $dto->text;
-        $story->photo = base64_decode($dto->photo, true);
+        $story->photo = $dto->photo;
 
         $this->storyRepository->save($story);
 

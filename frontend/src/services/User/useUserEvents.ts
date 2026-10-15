@@ -1,55 +1,37 @@
-import { useEffect } from 'react';
-
 import { EventProvider } from '../../api/providers/EventProvider';
 import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
 import { EventIndexQuery } from '../../api/queries/EventIndexQuery';
-import { EventResponse } from '../../api/responses/EventResponse';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
-import { useDataFetch } from '../../utils/hooks/useDataFetch';
-import { useListFilters } from '../../utils/hooks/useListFilters';
+import { EVENT_INCLUDES } from '../../api/queries/includes';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
+import { usePaginatedList } from '../../utils/hooks/usePaginatedList';
+import { toOptionalNumber } from '../../utils/query';
 
 export function useUserEvents(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
-    const list = useListFilters(new EventFilterQuery());
     const eventProvider = new EventProvider();
 
-    const { data: events, loading, error, executeFetch } = useDataFetch<EventResponse[]>();
-
-    const fetchEvents = (userId: string) => {
-        executeFetch(async () => {
+    const { list, items, loading, error, refresh } = usePaginatedList({
+        initialFilter: new EventFilterQuery(),
+        scope: isAccessReady(access) ? access.targetUser : null,
+        fetchPage: async (list, targetUser) => {
             const filterDto = new EventFilterQuery();
-            filterDto.userId = userId;
+            filterDto.userId = targetUser.id;
             filterDto.title = list.filters.title;
-            filterDto.link = list.filters.link;
-            filterDto.status = list.filters.status ? Number(list.filters.status) : undefined;
+            filterDto.status = toOptionalNumber(list.filters.status);
 
-            const indexDto = new EventIndexQuery();
-            indexDto.page = list.page;
-            indexDto.limit = list.limit;
-            indexDto.sort = list.sort;
-            indexDto.filter = filterDto;
-            indexDto.include = ['eventDisciplines', 'eventDisciplineDistances', 'eventDisciplineSubDistances'];
+            const indexDto = list.buildIndexQuery(new EventIndexQuery(), filterDto);
+            indexDto.include = EVENT_INCLUDES;
 
-            return await eventProvider.index(indexDto);
-        }, []);
-    };
-
-    useEffect(() => {
-        if (!access.authLoading && !access.authError && access.targetUser) {
-            fetchEvents(access.targetUser.id);
-        }
-    }, [access.authLoading, access.authError, access.targetUser, list.page, list.limit, list.sort, list.filters]);
-
-    const refreshEvents = () => {
-        if (access.targetUser) fetchEvents(access.targetUser.id);
-    };
+            return list.applyPagination(await eventProvider.index(indexDto));
+        },
+    });
 
     return {
         ...access,
         ...list,
-        events: events || [],
+        events: items,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshEvents,
+        refreshEvents: refresh,
     };
 }

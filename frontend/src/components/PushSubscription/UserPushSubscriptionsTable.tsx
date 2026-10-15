@@ -1,12 +1,13 @@
 import React from 'react';
-import { Stack, Table, Badge, Button } from 'react-bootstrap';
+import { Stack, Table } from 'react-bootstrap';
 
 import { PushSubscriptionResponse } from '../../api/responses/PushSubscriptionResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 import { formatDate } from '../../utils/dateFormat';
-import BootstrapIcon from '../Common/BootstrapIcon';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { EnumBadge } from '../Common/EnumBadge';
+import { IconButton } from '../Common/IconButton';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface UserPushSubscriptionsTableProps {
     subscriptions: PushSubscriptionResponse[];
@@ -37,34 +38,19 @@ export const UserPushSubscriptionsTable: React.FC<UserPushSubscriptionsTableProp
                 </TableHead>
                 <TableBody>
                     {subscriptions.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted">
-                                {t('noRecords')}
-                            </TableCell>
-                        </TableRow>
+                        <EmptyTableRow colSpan={5} />
                     ) : (
                         subscriptions.map((sub) => (
                             <TableRow key={sub.id}>
                                 <TableCell className="small">{sub.userAgent || '-'}</TableCell>
                                 <TableCell className="text-truncate">{sub.endpoint}</TableCell>
                                 <TableCell>
-                                    <Badge bg="light" text="dark" className="border profile-theme-border">
-                                        {PushSubscriptionStatusEnum.getOptions(t).find(
-                                            (opt) => String(opt.value) === String(sub.status),
-                                        )?.label || sub.status}
-                                    </Badge>
+                                    <EnumBadge options={PushSubscriptionStatusEnum.getOptions(t)} value={sub.status} />
                                 </TableCell>
                                 <TableCell className="small text-muted">{formatDate(sub.createdAt)}</TableCell>
                                 <TableCell className="text-end">
                                     {(isMyProfile || isAdmin) && (
-                                        <Button
-                                            variant="profile-outline-primary"
-                                            size="sm"
-                                            className="rounded-circle shadow-sm"
-                                            onClick={() => onManageClick(sub)}
-                                        >
-                                            <BootstrapIcon name="gear" />
-                                        </Button>
+                                        <IconButton icon="gear" onClick={() => onManageClick(sub)} />
                                     )}
                                 </TableCell>
                             </TableRow>

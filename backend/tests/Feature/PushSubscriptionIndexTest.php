@@ -36,7 +36,7 @@ class PushSubscriptionIndexTest extends ApiTestCase
         $result = $this->get('/api/push-subscriptions', $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(2, $result['json']);
+        $this->assertCount(2, $result['json']['data']);
     }
 
     final public function testFiltersAndSorting(): void
@@ -49,14 +49,14 @@ class PushSubscriptionIndexTest extends ApiTestCase
 
         $result = $this->get('/api/push-subscriptions?filter[endpoint]=endpoint-b', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(1, $result['json']);
-        $this->assertEquals('endpoint-b', $result['json'][0]['endpoint']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals('endpoint-b', $result['json']['data'][0]['endpoint']);
 
         $resultSort = $this->get('/api/push-subscriptions?sort=endpoint:desc', $user);
         $this->assertEquals(200, $resultSort['status']);
-        $this->assertEquals('endpoint-b', $resultSort['json'][0]['endpoint']);
-        $this->assertEquals('endpoint-a', $resultSort['json'][1]['endpoint']);
-        $this->assertEquals('different', $resultSort['json'][2]['endpoint']);
+        $this->assertEquals('endpoint-b', $resultSort['json']['data'][0]['endpoint']);
+        $this->assertEquals('endpoint-a', $resultSort['json']['data'][1]['endpoint']);
+        $this->assertEquals('different', $resultSort['json']['data'][2]['endpoint']);
     }
 
     final public function testPagination(): void
@@ -69,6 +69,9 @@ class PushSubscriptionIndexTest extends ApiTestCase
 
         $result = $this->get('/api/push-subscriptions?page=2&limit=5', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
+        $this->assertEquals(15, $result['json']['pagination']['total']);
+        $this->assertEquals(2, $result['json']['pagination']['page']);
+        $this->assertTrue($result['json']['pagination']['hasNextPage']);
     }
 }

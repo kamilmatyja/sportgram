@@ -60,11 +60,11 @@ readonly class GoalService
 
         $this->goalRepository->save($goal);
 
-        if (! in_array($user->id, $dto->participants)) {
-            $dto->participants[] = $user->id;
+        if (! in_array($user->id, $dto->userIds)) {
+            $dto->userIds[] = $user->id;
         }
 
-        foreach ($dto->participants as $userId) {
+        foreach ($dto->userIds as $userId) {
             $participantUser = $this->userRepository->findById($userId);
 
             if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
@@ -110,8 +110,8 @@ readonly class GoalService
         /** @var User $user */
         $user = $this->security->getUser();
 
-        if (! in_array($user->id, $dto->participants)) {
-            $dto->participants[] = $user->id;
+        if (! in_array($user->id, $dto->userIds)) {
+            $dto->userIds[] = $user->id;
         }
 
         $currentIds = array_map(
@@ -119,8 +119,8 @@ readonly class GoalService
             $goal->participants->toArray(),
         );
 
-        $toAdd = array_diff($dto->participants, $currentIds);
-        $toRemove = array_diff($currentIds, $dto->participants);
+        $toAdd = array_diff($dto->userIds, $currentIds);
+        $toRemove = array_diff($currentIds, $dto->userIds);
 
         foreach ($goal->participants as $participant) {
             if (in_array($participant->user->id, $toRemove)) {
@@ -143,6 +143,15 @@ readonly class GoalService
 
             $this->goalParticipantRepository->save(
                 new GoalParticipant($goal, $participantUser, SaveStatusEnum::Pending),
+            );
+
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent(
+                    $participantUser,
+                    NotificationTypeEnum::GoalParticipant,
+                    $goal->text,
+                    '/goals/' . $goal->link,
+                ),
             );
         }
 

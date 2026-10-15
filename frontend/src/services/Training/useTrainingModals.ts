@@ -5,92 +5,58 @@ import { TrainingBody } from '../../api/body/TrainingBody';
 import { TrainingDiscipline } from '../../api/body/TrainingDiscipline';
 import { TrainingDistance } from '../../api/body/TrainingDistance';
 import { TrainingSubDistance } from '../../api/body/TrainingSubDistance';
-import { FriendProvider } from '../../api/providers/FriendProvider';
 import { TrainingProvider } from '../../api/providers/TrainingProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
-import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
-import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
+import { TRAINING_INCLUDES } from '../../api/queries/includes';
 import { TrainingResponse } from '../../api/responses/TrainingResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { createFormHandler } from '../../utils/formHandler';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
-import { useFormState } from '../../utils/hooks/useFormState';
-import { useModal } from '../../utils/hooks/useModal';
+import { createDisciplinesEditor } from '../../utils/disciplinesEditor';
+import { getErrorMessage } from '../../utils/api';
+import { createFormHandler, createSubmitHandler } from '../../utils/formHandler';
+import { useAvailableFriends } from '../../utils/hooks/useAvailableFriends';
+import { useCrudModals } from '../../utils/hooks/useCrudModals';
 
-export function useTrainingModals(onSuccess: () => void) {
-    const { currentUser } = useAppAccess();
-    const addModal = useModal();
-    const manageModal = useModal<TrainingResponse>();
-    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
+const emptyTrainingBody = () => new TrainingBody('', '', '', '', '', '', [], []);
 
-    const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
-    const [formData, setFormData] = useState<TrainingBody>(new TrainingBody('', '', '', '', '', '', [], []));
+export function useTrainingModals(onSuccess: () => void, currentUser: UserResponse | null) {
+    const {
+        addModal,
+        manageModal,
+        loading,
+        globalError,
+        fieldErrors,
+        wrap,
+        resetErrors,
+        setGlobalError,
+        submitAdd,
+        submitManage,
+    } = useCrudModals<TrainingResponse>(onSuccess);
+    const { availableUsers, loadAvailableFriends } = useAvailableFriends();
 
+    const [formData, setFormData] = useState<TrainingBody>(emptyTrainingBody);
     const trainingProvider = new TrainingProvider();
-    const userProvider = new UserProvider();
-    const friendProvider = new FriendProvider();
 
-    const loadAvailableFriends = async (currentUsr: UserResponse, trainingObj?: TrainingResponse | null) => {
-        const fFilter = new FriendFilterQuery();
-        fFilter.userIds = [currentUsr.id];
-        fFilter.status = FriendStatusEnum.ACCEPTED;
-        const fIndexDto = new FriendIndexQuery();
-        fIndexDto.filter = fFilter;
-
-        const myFriends = await friendProvider.index(fIndexDto);
-        const userIdsToFetch = new Set<string>();
-        myFriends.forEach((f) => {
-            if (f.senderUserId !== currentUsr.id) userIdsToFetch.add(f.senderUserId);
-            if (f.receiverUserId !== currentUsr.id) userIdsToFetch.add(f.receiverUserId);
-        });
-
-        if (trainingObj && trainingObj.participants) {
-            trainingObj.participants.forEach((p) => userIdsToFetch.add(p.userId));
-        }
-
-        const idsArray = Array.from(userIdsToFetch);
-        if (idsArray.length > 0) {
-            const usersMap = await fetchRelatedUsers(idsArray, {}, userProvider);
-            setAvailableUsers(Object.values(usersMap));
-        } else {
-            setAvailableUsers([]);
-        }
-    };
+    const disciplinesEditor = createDisciplinesEditor<TrainingBody, TrainingDistance, TrainingSubDistance>(
+        setFormData,
+        () => ({ distance: 0, time: 0, subDistances: [] }),
+        () => ({ subDistance: 0, time: 0 }),
+    );
 
     const openAddModal = async () => {
-        setFormData(new TrainingBody('', '', '', '', '', '', [], []));
+        setFormData(emptyTrainingBody());
         resetErrors();
-        await wrap(async () => {
-            if (currentUser) {
-                await loadAvailableFriends(currentUser);
-            }
-        }).catch(() => {});
+        await wrap(() => loadAvailableFriends(currentUser)).catch((err) => setGlobalError(getErrorMessage(err)));
         addModal.open();
     };
 
-    const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        wrap(async () => {
-            await trainingProvider.create(formData);
-            addModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleAddSubmit = createSubmitHandler(() => submitAdd(() => trainingProvider.create(formData)));
 
     const openManageModal = async (tr: TrainingResponse) => {
         resetErrors();
         manageModal.open(tr);
 
         await wrap(async () => {
-            const fullTraining = await trainingProvider.details(tr.id, [
-                'trainingDisciplines',
-                'trainingDisciplineDistances',
-                'trainingDisciplineSubDistances',
-                'trainingParticipants',
-            ]);
-
+            const fullTraining = await trainingProvider.details(tr.id, TRAINING_INCLUDES);
+            const participantIds = fullTraining.participants?.map((p) => p.userId) || [];
             manageModal.setData(fullTraining);
 
             const disciplinesMapped: TrainingDiscipline[] = (fullTraining.disciplines || []).map((d) => ({
@@ -118,122 +84,28 @@ export function useTrainingModals(onSuccess: () => void) {
                     fullTraining.link,
                     fullTraining.location,
                     disciplinesMapped,
-                    fullTraining.participants ? fullTraining.participants.map((p) => p.userId) : [],
+                    participantIds,
                 ),
             );
 
-            if (currentUser) {
-                await loadAvailableFriends(currentUser, fullTraining);
-            }
-        }).catch(() => {
-            manageModal.close();
-        });
+            await loadAvailableFriends(currentUser, participantIds);
+        }).catch(() => manageModal.close());
     };
 
-    const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await trainingProvider.update(manageModal.data!.id, formData);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleEditSubmit = createSubmitHandler(() =>
+        submitManage((training) => trainingProvider.update(training.id, formData)),
+    );
 
-    const handleStatusSubmit = async (newStatus: number) => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await trainingProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleStatusSubmit = (newStatus: number) =>
+        submitManage((training) => trainingProvider.updateStatus(training.id, new StatusBody(newStatus)));
 
-    const handleDelete = async () => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await trainingProvider.delete(manageModal.data!.id);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
-
-    const addDiscipline = () => {
-        const newDisc = new TrainingDiscipline();
-        newDisc.discipline = 1;
-        newDisc.distances = [];
-        setFormData((prev) => ({ ...prev, disciplines: [...(prev.disciplines || []), newDisc] }));
-    };
-
-    const updateDisciplineType = (index: number, type: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[index].discipline = type;
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const removeDiscipline = (index: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs.splice(index, 1);
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const addDistance = (discIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        const newDist = new TrainingDistance();
-        newDist.distance = 0;
-        newDist.time = 0;
-        newDist.subDistances = [];
-        discs[discIndex].distances = [...(discs[discIndex].distances || []), newDist];
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const updateDistanceValue = (discIndex: number, distIndex: number, field: keyof TrainingDistance, val: number) => {
-        const discs = [...(formData.disciplines || [])];
-        (discs[discIndex].distances![distIndex] as any)[field] = val;
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const removeDistance = (discIndex: number, distIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[discIndex].distances!.splice(distIndex, 1);
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const addSubDistance = (discIndex: number, distIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        const newSub = new TrainingSubDistance();
-        newSub.subDistance = 0;
-        newSub.time = 0;
-        discs[discIndex].distances![distIndex].subDistances = [
-            ...(discs[discIndex].distances![distIndex].subDistances || []),
-            newSub,
-        ];
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const updateSubDistanceValue = (
-        discIndex: number,
-        distIndex: number,
-        subIndex: number,
-        field: keyof TrainingSubDistance,
-        val: number,
-    ) => {
-        const discs = [...(formData.disciplines || [])];
-        (discs[discIndex].distances![distIndex].subDistances![subIndex] as any)[field] = val;
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
-
-    const removeSubDistance = (discIndex: number, distIndex: number, subIndex: number) => {
-        const discs = [...(formData.disciplines || [])];
-        discs[discIndex].distances![distIndex].subDistances!.splice(subIndex, 1);
-        setFormData((prev) => ({ ...prev, disciplines: discs }));
-    };
+    const handleDelete = () => submitManage((training) => trainingProvider.delete(training.id));
 
     const handleChange = createFormHandler(setFormData);
 
     const handleParticipantsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
-        setFormData((prev) => ({ ...prev, participants: selected }));
+        const userIds = Array.from(e.target.selectedOptions).map((o) => o.value);
+        setFormData((prev) => ({ ...prev, userIds }));
     };
 
     return {
@@ -255,14 +127,21 @@ export function useTrainingModals(onSuccess: () => void) {
         loading,
         globalError,
         fieldErrors,
-        addDiscipline,
-        updateDisciplineType,
-        removeDiscipline,
-        addDistance,
-        updateDistanceValue,
-        removeDistance,
-        addSubDistance,
-        updateSubDistanceValue,
-        removeSubDistance,
+        addDiscipline: disciplinesEditor.addDiscipline,
+        updateDisciplineType: disciplinesEditor.updateDisciplineType,
+        removeDiscipline: disciplinesEditor.removeDiscipline,
+        addDistance: disciplinesEditor.addDistance,
+        updateDistanceValue: (discIndex: number, distIndex: number, field: 'distance' | 'time', val: number) =>
+            disciplinesEditor.updateDistance(discIndex, distIndex, { [field]: val }),
+        removeDistance: disciplinesEditor.removeDistance,
+        addSubDistance: disciplinesEditor.addSubDistance,
+        updateSubDistanceValue: (
+            discIndex: number,
+            distIndex: number,
+            subIndex: number,
+            field: 'subDistance' | 'time',
+            val: number,
+        ) => disciplinesEditor.updateSubDistance(discIndex, distIndex, subIndex, { [field]: val }),
+        removeSubDistance: disciplinesEditor.removeSubDistance,
     };
 }

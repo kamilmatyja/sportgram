@@ -33,11 +33,11 @@ class FeedDetailsTest extends ApiTestCase
         $result = $this->get($url, $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertArrayHasKey('id', $result['json']);
-        $this->assertArrayHasKey('comments', $result['json']);
-        $this->assertCount(1, $result['json']['comments']);
-        $this->assertArrayHasKey('reactions', $result['json']);
-        $this->assertCount(1, $result['json']['reactions']);
+        $this->assertArrayHasKey('id', $result['json']['data']);
+        $this->assertArrayHasKey('comments', $result['json']['data']);
+        $this->assertCount(1, $result['json']['data']['comments']);
+        $this->assertArrayHasKey('reactions', $result['json']['data']);
+        $this->assertCount(1, $result['json']['data']['reactions']);
     }
 
     final public function testNotFound(): void

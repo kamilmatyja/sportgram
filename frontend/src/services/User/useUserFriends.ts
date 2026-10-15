@@ -1,65 +1,40 @@
-import { useEffect, useState } from 'react';
-
 import { FriendProvider } from '../../api/providers/FriendProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
 import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
 import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
-import { FriendResponse } from '../../api/responses/FriendResponse';
-import { UserResponse } from '../../api/responses/UserResponse';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
-import { useDataFetch } from '../../utils/hooks/useDataFetch';
-import { useListFilters } from '../../utils/hooks/useListFilters';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
+import { usePaginatedList } from '../../utils/hooks/usePaginatedList';
+import { useRelatedUsers } from '../../utils/hooks/useRelatedUsers';
+import { toOptionalNumber } from '../../utils/query';
 
 export function useUserFriends(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
-    const list = useListFilters(new FriendFilterQuery());
-
-    const [relatedUsers, setRelatedUsers] = useState<Record<string, UserResponse>>({});
-    const { data: friends, loading, error, executeFetch } = useDataFetch<FriendResponse[]>();
-
-    const userProvider = new UserProvider();
+    const { relatedUsers, loadRelatedUsers } = useRelatedUsers();
     const friendProvider = new FriendProvider();
 
-    const fetchFriends = (userId: string) => {
-        executeFetch(async () => {
+    const { list, items, loading, error, refresh } = usePaginatedList({
+        initialFilter: new FriendFilterQuery(),
+        scope: isAccessReady(access) ? access.targetUser : null,
+        fetchPage: async (list, targetUser) => {
             const filterDto = new FriendFilterQuery();
-            filterDto.userIds = [userId];
-            filterDto.status = list.filters.status ? Number(list.filters.status) : undefined;
+            filterDto.userIds = [targetUser.id];
+            filterDto.status = toOptionalNumber(list.filters.status);
 
-            const indexDto = new FriendIndexQuery();
-            indexDto.page = list.page;
-            indexDto.limit = list.limit;
-            indexDto.sort = list.sort;
-            indexDto.filter = filterDto;
-
-            const data = await friendProvider.index(indexDto);
-
-            const userIdsToFetch = data.flatMap((f) => [f.senderUserId, f.receiverUserId]);
-            const updatedUsers = await fetchRelatedUsers(userIdsToFetch, relatedUsers, userProvider);
-            setRelatedUsers(updatedUsers);
+            const data = list.applyPagination(
+                await friendProvider.index(list.buildIndexQuery(new FriendIndexQuery(), filterDto)),
+            );
+            await loadRelatedUsers(data.flatMap((f) => [f.senderUserId, f.receiverUserId]));
 
             return data;
-        }, []);
-    };
-
-    useEffect(() => {
-        if (!access.authLoading && !access.authError && access.targetUser) {
-            fetchFriends(access.targetUser.id);
-        }
-    }, [access.authLoading, access.authError, access.targetUser, list.page, list.limit, list.sort, list.filters]);
-
-    const refreshFriends = () => {
-        if (access.targetUser) fetchFriends(access.targetUser.id);
-    };
+        },
+    });
 
     return {
         ...access,
         ...list,
-        friends: friends || [],
+        friends: items,
         relatedUsers,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshFriends,
+        refreshFriends: refresh,
     };
 }

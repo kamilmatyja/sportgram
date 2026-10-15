@@ -1,22 +1,21 @@
 import React, { useState } from 'react';
-import { Stack, Table, Image, Badge, Button, Card } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Stack, Table, Button, Card } from 'react-bootstrap';
 
 import { EventListsManager } from './EventListsManager';
+import { EventHeaderCells, EventRowCells } from './EventRowCells';
 import { EventResponse } from '../../api/responses/EventResponse';
 import { useTranslation } from '../../context/TranslationContext';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { formatDate } from '../../utils/dateFormat';
+import { type EventInteractions } from '../../services/Event/useEventInteractions';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { IconButton } from '../Common/IconButton';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface UserEventsTableProps {
     events: EventResponse[];
     isMyProfile: boolean;
     isAdmin: boolean;
-    actionLoading: string | null;
     onManageClick: (eventObj: EventResponse) => void;
-    interactions: any;
+    interactions: EventInteractions;
 }
 
 export const UserEventsTable: React.FC<UserEventsTableProps> = ({
@@ -31,59 +30,22 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
 
     return (
         <Stack className="table-responsive-custom">
-            <Table bordered hover className="align-middle mb-0">
+            <Table bordered hover className="align-middle mb-0 shadow-sm">
                 <TableHead className="table-light">
                     <TableRow>
-                        <TableHeaderCell>{t('photo')}</TableHeaderCell>
-                        <TableHeaderCell>{t('title')}</TableHeaderCell>
-                        <TableHeaderCell>{t('location')}</TableHeaderCell>
-                        <TableHeaderCell>{t('startedAt')}</TableHeaderCell>
-                        <TableHeaderCell>{t('endedAt')}</TableHeaderCell>
-                        <TableHeaderCell>{t('status')}</TableHeaderCell>
+                        <EventHeaderCells />
                         <TableHeaderCell>{t('details')}</TableHeaderCell>
                         <TableHeaderCell className="text-end">{t('manage')}</TableHeaderCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     {events.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={8} className="text-center text-muted">
-                                {t('noRecords')}
-                            </TableCell>
-                        </TableRow>
+                        <EmptyTableRow colSpan={8} />
                     ) : (
                         events.map((ev) => (
                             <React.Fragment key={ev.id}>
                                 <TableRow>
-                                    <TableCell className="feed-photo-cell text-center">
-                                        {ev.photo ? (
-                                            <Image
-                                                src={`data:image/webp;base64,${ev.photo}`}
-                                                rounded
-                                                fluid
-                                                className="feed-photo shadow-sm"
-                                            />
-                                        ) : (
-                                            <Stack as="span" className="text-muted">
-                                                -
-                                            </Stack>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Link to={`/events/${ev.link}`} className="text-decoration-none">
-                                            {ev.title}
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell className="small">{ev.location}</TableCell>
-                                    <TableCell className="small">{formatDate(ev.startedAt)}</TableCell>
-                                    <TableCell className="small">{formatDate(ev.endedAt)}</TableCell>
-                                    <TableCell>
-                                        <Badge bg="light" text="dark" className="border profile-theme-border">
-                                            {ElementStatusEnum.getOptions(t).find(
-                                                (opt) => String(opt.value) === String(ev.status),
-                                            )?.label || ev.status}
-                                        </Badge>
-                                    </TableCell>
+                                    <EventRowCells eventObj={ev} />
                                     <TableCell>
                                         <Button
                                             variant="outline-secondary"
@@ -99,14 +61,7 @@ export const UserEventsTable: React.FC<UserEventsTableProps> = ({
                                     </TableCell>
                                     <TableCell className="text-end">
                                         {(isMyProfile || isAdmin) && (
-                                            <Button
-                                                variant="profile-outline-primary"
-                                                size="sm"
-                                                onClick={() => onManageClick(ev)}
-                                                className="rounded-circle shadow-sm"
-                                            >
-                                                <BootstrapIcon name="gear" />
-                                            </Button>
+                                            <IconButton icon="gear" onClick={() => onManageClick(ev)} />
                                         )}
                                     </TableCell>
                                 </TableRow>

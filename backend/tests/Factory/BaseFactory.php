@@ -11,9 +11,7 @@ use UnitEnum;
 
 abstract class BaseFactory
 {
-    /**
-     * @var FakerGenerator|null
-     */
+    /** @var FakerGenerator|null */
     protected static ?FakerGenerator $faker = null;
 
     protected static function faker(): FakerGenerator

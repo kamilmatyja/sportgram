@@ -1,52 +1,34 @@
-import { useEffect } from 'react';
-
 import { NotificationProvider } from '../../api/providers/NotificationProvider';
 import { NotificationFilterQuery } from '../../api/queries/NotificationFilterQuery';
 import { NotificationIndexQuery } from '../../api/queries/NotificationIndexQuery';
-import { NotificationResponse } from '../../api/responses/NotificationResponse';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
-import { useDataFetch } from '../../utils/hooks/useDataFetch';
-import { useListFilters } from '../../utils/hooks/useListFilters';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
+import { usePaginatedList } from '../../utils/hooks/usePaginatedList';
+import { toOptionalNumber } from '../../utils/query';
 
 export function useUserNotifications(link?: string) {
     const access = useAppAccess({ targetLink: link, requireOwner: true });
-    const list = useListFilters(new NotificationFilterQuery());
     const notificationProvider = new NotificationProvider();
 
-    const { data: notifications, loading, error, executeFetch } = useDataFetch<NotificationResponse[]>();
-
-    const fetchNotifications = () => {
-        executeFetch(async () => {
+    const { list, items, loading, error, refresh } = usePaginatedList({
+        initialFilter: new NotificationFilterQuery(),
+        scope: isAccessReady(access) ? access.targetUser : null,
+        fetchPage: async (list) => {
             const filterDto = new NotificationFilterQuery();
             filterDto.text = list.filters.text;
-            filterDto.status = list.filters.status ? Number(list.filters.status) : undefined;
+            filterDto.status = toOptionalNumber(list.filters.status);
 
-            const indexDto = new NotificationIndexQuery();
-            indexDto.page = list.page;
-            indexDto.limit = list.limit;
-            indexDto.sort = list.sort;
-            indexDto.filter = filterDto;
-
-            return await notificationProvider.index(indexDto);
-        }, []);
-    };
-
-    useEffect(() => {
-        if (!access.authLoading && !access.authError && access.targetUser) {
-            fetchNotifications();
-        }
-    }, [access.authLoading, access.authError, access.targetUser, list.page, list.limit, list.sort, list.filters]);
-
-    const refreshNotifications = () => {
-        if (access.targetUser) fetchNotifications();
-    };
+            return list.applyPagination(
+                await notificationProvider.index(list.buildIndexQuery(new NotificationIndexQuery(), filterDto)),
+            );
+        },
+    });
 
     return {
         ...access,
         ...list,
-        notifications: notifications || [],
+        notifications: items,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshNotifications,
+        refreshNotifications: refresh,
     };
 }

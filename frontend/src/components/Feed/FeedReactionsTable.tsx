@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Stack, Button, Form, Badge } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Table, Stack, Button } from 'react-bootstrap';
 
 import { FeedReactionResponse } from '../../api/responses/FeedReactionResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
@@ -8,9 +7,13 @@ import { useTranslation } from '../../context/TranslationContext';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
 import { formatDate } from '../../utils/dateFormat';
+import { getOptionLabel } from '../../utils/options';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import SelectOptions from '../Common/SelectOptions';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { EnumBadge } from '../Common/EnumBadge';
+import { SelectField } from '../Common/FormFields';
+import { StatusButtons } from '../Common/StatusButtons';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { UserLink } from '../Common/UserLink';
 
 interface FeedReactionsTableProps {
     reactions: FeedReactionResponse[];
@@ -19,7 +22,7 @@ interface FeedReactionsTableProps {
     isAdmin: boolean;
     isFeedLoading: boolean;
     onDeleteReaction: (reactionId: string) => void;
-    onUpdateReaction: (reactionId: string, type: number) => void;
+    onUpdateReaction: (reactionId: string, type: number) => Promise<boolean>;
     onChangeStatus: (reactionId: string, status: number) => void;
 }
 
@@ -28,12 +31,16 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
     relatedUsers,
     currentUser,
     isAdmin,
+    isFeedLoading,
     onDeleteReaction,
     onUpdateReaction,
     onChangeStatus,
 }) => {
     const { t } = useTranslation();
     const [editingId, setEditingId] = useState<string | null>(null);
+    const statusOptions = ElementStatusEnum.getOptions(t);
+    const reactionOptions = FeedReactionEnum.getOptions(t);
+    const canSelectStatus = (status: number) => isAdmin || status !== ElementStatusEnum.REJECTED;
 
     return (
         <Table responsive size="sm" borderless hover className="align-middle mb-0">
@@ -48,51 +55,37 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
             </TableHead>
             <TableBody>
                 {reactions.length === 0 ? (
-                    <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted">
-                            {t('noRecords')}
-                        </TableCell>
-                    </TableRow>
+                    <EmptyTableRow colSpan={5} />
                 ) : (
                     reactions.map((r) => {
-                        const u = relatedUsers[r.userId];
                         const isOwner = currentUser?.id === r.userId;
 
                         return (
                             <TableRow key={r.id}>
                                 <TableCell>
-                                    {u ? (
-                                        <Link to={`/users/${u.link}`} className="text-decoration-none">
-                                            {u.firstName} {u.lastName}
-                                        </Link>
-                                    ) : (
-                                        <Stack as="span" className="text-muted">
-                                            -{r.userId}
-                                        </Stack>
-                                    )}
+                                    <UserLink user={relatedUsers[r.userId]} />
                                 </TableCell>
                                 <TableCell>
                                     {editingId === r.id ? (
-                                        <Form.Select
+                                        <SelectField
                                             size="sm"
+                                            name="type"
+                                            aria-label={t('reaction')}
                                             defaultValue={r.reaction}
-                                            onChange={(e) => {
-                                                onUpdateReaction(r.id, parseInt(e.target.value));
-                                                setEditingId(null);
+                                            disabled={isFeedLoading}
+                                            onChange={async (e: React.ChangeEvent<HTMLSelectElement>) => {
+                                                if (await onUpdateReaction(r.id, parseInt(e.target.value))) {
+                                                    setEditingId(null);
+                                                }
                                             }}
-                                        >
-                                            <SelectOptions options={FeedReactionEnum.getOptions(t)} />
-                                        </Form.Select>
+                                            options={reactionOptions}
+                                        />
                                     ) : (
-                                        FeedReactionEnum.getOptions(t).find((o) => o.value === r.reaction)?.label ||
-                                        r.reaction
+                                        getOptionLabel(reactionOptions, r.reaction)
                                     )}
                                 </TableCell>
                                 <TableCell>
-                                    <Badge bg="light" text="dark" className="border profile-theme-border">
-                                        {ElementStatusEnum.getOptions(t).find((o) => o.value === r.status)?.label ||
-                                            r.status}
-                                    </Badge>
+                                    <EnumBadge options={statusOptions} value={r.status} />
                                 </TableCell>
                                 <TableCell className="small text-muted">{formatDate(r.createdAt)}</TableCell>
                                 <TableCell className="text-end">
@@ -104,6 +97,7 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
                                                     size="sm"
                                                     className="py-0 px-2"
                                                     onClick={() => setEditingId(null)}
+                                                    aria-label={t('cancel')}
                                                 >
                                                     <BootstrapIcon name="x" />
                                                 </Button>
@@ -113,6 +107,8 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
                                                     size="sm"
                                                     className="py-0 px-2"
                                                     onClick={() => setEditingId(r.id)}
+                                                    disabled={isFeedLoading}
+                                                    aria-label={t('edit')}
                                                 >
                                                     <BootstrapIcon name="pencil" />
                                                 </Button>
@@ -123,28 +119,21 @@ export const FeedReactionsTable: React.FC<FeedReactionsTableProps> = ({
                                                 size="sm"
                                                 className="py-0 px-2"
                                                 onClick={() => onDeleteReaction(r.id)}
+                                                disabled={isFeedLoading}
+                                                aria-label={t('delete')}
                                             >
                                                 <BootstrapIcon name="trash" />
                                             </Button>
                                         )}
-                                        {(isOwner || isAdmin) &&
-                                            ElementStatusEnum.getOptions(t)
-                                                .filter(
-                                                    (opt) =>
-                                                        opt.value !== r.status &&
-                                                        (isAdmin || opt.value !== ElementStatusEnum.REJECTED),
-                                                )
-                                                .map((opt) => (
-                                                    <Button
-                                                        key={opt.value}
-                                                        variant="profile-outline-primary"
-                                                        size="sm"
-                                                        className="py-0 px-2 btn-xs"
-                                                        onClick={() => onChangeStatus(r.id, opt.value)}
-                                                    >
-                                                        {opt.label}
-                                                    </Button>
-                                                ))}
+                                        {(isOwner || isAdmin) && (
+                                            <StatusButtons
+                                                options={statusOptions}
+                                                current={r.status}
+                                                canSelect={canSelectStatus}
+                                                onSelect={(status) => onChangeStatus(r.id, status)}
+                                                disabled={isFeedLoading}
+                                            />
+                                        )}
                                     </Stack>
                                 </TableCell>
                             </TableRow>

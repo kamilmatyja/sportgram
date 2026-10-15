@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class EventDisciplineDto
 {
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [DisciplineEnum::class, 'values'])]
+    #[Assert\Choice(callback: [DisciplineEnum::class, 'cases'])]
     public DisciplineEnum $discipline;
 
     /** @var EventDisciplineDistanceDto[] */

@@ -7,6 +7,8 @@ use App\Validator\UniqueField;
 use DateTimeImmutable;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -32,11 +34,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class EventDto
 {
     #[Assert\NotBlank]
-    #[Assert\DateTime(format: 'Y-m-d\TH:i')]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\TH:i'])]
     public DateTimeImmutable $startedAt;
 
     #[Assert\NotBlank]
-    #[Assert\DateTime(format: 'Y-m-d\TH:i')]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\TH:i'])]
     public DateTimeImmutable $endedAt;
 
     #[Assert\NotBlank]

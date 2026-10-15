@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 
 import { en } from '../locales/en';
 import { pl } from '../locales/pl';
@@ -11,6 +11,16 @@ interface TranslationContextType {
     setLanguage: (newLang: string) => void;
 }
 
+const DEFAULT_LANG = 'pl';
+
+const isSupportedLang = (lang: string | null): lang is string =>
+    lang !== null && Object.prototype.hasOwnProperty.call(translations, lang);
+
+const getInitialLang = (): string => {
+    const stored = localStorage.getItem('lang');
+    return isSupportedLang(stored) ? stored : DEFAULT_LANG;
+};
+
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
 interface TranslationProviderProps {
@@ -18,19 +28,25 @@ interface TranslationProviderProps {
 }
 
 export const TranslationProvider = ({ children }: TranslationProviderProps) => {
-    const [lang, setLang] = useState<string>(localStorage.getItem('lang') || 'pl');
+    const [lang, setLang] = useState<string>(getInitialLang);
 
-    const t = (path: string): string => {
-        const result = path.split('.').reduce((obj: any, key: string) => obj?.[key], translations[lang]);
-        return typeof result === 'string' ? result : path;
-    };
+    const t = useCallback(
+        (path: string): string => {
+            const result = path.split('.').reduce((obj: any, key: string) => obj?.[key], translations[lang]);
+            return typeof result === 'string' ? result : path;
+        },
+        [lang],
+    );
 
-    const setLanguage = (newLang: string) => {
-        setLang(newLang);
-        localStorage.setItem('lang', newLang);
-    };
+    const setLanguage = useCallback((newLang: string) => {
+        const validLang = isSupportedLang(newLang) ? newLang : DEFAULT_LANG;
+        setLang(validLang);
+        localStorage.setItem('lang', validLang);
+    }, []);
 
-    return <TranslationContext.Provider value={{ t, lang, setLanguage }}>{children}</TranslationContext.Provider>;
+    const value = useMemo(() => ({ t, lang, setLanguage }), [t, lang, setLanguage]);
+
+    return <TranslationContext.Provider value={value}>{children}</TranslationContext.Provider>;
 };
 
 export const useTranslation = (): TranslationContextType => {

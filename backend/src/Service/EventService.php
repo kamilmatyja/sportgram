@@ -61,7 +61,11 @@ readonly class EventService
         $feed = new Feed($user, null, null, ElementStatusEnum::Draft);
         $this->feedRepository->save($feed);
 
-        $pageParticipant = $page->participants->filter(fn (PageParticipant $participant) => $participant->user->id === $user->id)->first();
+        $pageParticipant = $page->participants->filter(fn (PageParticipant $participant) => $participant->user->id->equals($user->id))->first();
+
+        if (! $pageParticipant) {
+            throw new ValidatorException('User is not page participant.');
+        }
 
         $event = new Event(
             $pageParticipant,
@@ -71,7 +75,7 @@ readonly class EventService
             $dto->description,
             $dto->link,
             $dto->rules,
-            base64_decode($dto->photo),
+            $dto->photo,
             $dto->location,
             ElementStatusEnum::Active,
         );
@@ -121,7 +125,7 @@ readonly class EventService
         $event->description = $dto->description;
         $event->link = $dto->link;
         $event->rules = $dto->rules;
-        $event->photo = base64_decode($dto->photo);
+        $event->photo = $dto->photo;
         $event->location = $dto->location;
 
         foreach ($event->disciplines as $discipline) {

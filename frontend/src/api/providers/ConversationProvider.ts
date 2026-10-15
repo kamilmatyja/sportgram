@@ -4,9 +4,11 @@ import { ConversationBody } from '../body/ConversationBody';
 import { StatusBody } from '../body/StatusBody';
 import { ConversationActivityIndexQuery } from '../queries/ConversationActivityIndexQuery';
 import { ConversationIndexQuery } from '../queries/ConversationIndexQuery';
+import { CollectionResponse } from '../responses/CollectionResponse';
 import { ConversationActivityResponse } from '../responses/ConversationActivityResponse';
 import { ConversationResponse } from '../responses/ConversationResponse';
 import { IdResponse } from '../responses/IdResponse';
+import { ItemResponse } from '../responses/ItemResponse';
 
 export class ConversationProvider {
     async create(userId: string, dto: ConversationBody): Promise<IdResponse> {
@@ -25,25 +27,31 @@ export class ConversationProvider {
         return await apiFetch(`/api/conversations/${id}`, { method: 'DELETE' });
     }
 
-    async index(dto: ConversationIndexQuery): Promise<ConversationResponse[]> {
+    async index(dto: ConversationIndexQuery): Promise<CollectionResponse<ConversationResponse>> {
         const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/conversations?${params.toString()}`, { method: 'GET' });
     }
 
     async details(id: string): Promise<ConversationResponse> {
-        return await apiFetch(`/api/conversations/${id}`, { method: 'GET' });
+        return (await apiFetch<ItemResponse<ConversationResponse>>(`/api/conversations/${id}`, { method: 'GET' })).data;
     }
 
     async updateActivityUpdatedAt(userId: string): Promise<IdResponse> {
-        return await apiFetch(`/api/conversation-activitiy-users/${userId}/updated-at`, { method: 'PATCH' });
+        return await apiFetch(`/api/conversation-activity-users/${userId}/updated-at`, { method: 'PATCH' });
     }
 
-    async indexActivity(dto: ConversationActivityIndexQuery): Promise<ConversationActivityResponse[]> {
+    async indexActivity(
+        dto: ConversationActivityIndexQuery,
+    ): Promise<CollectionResponse<ConversationActivityResponse>> {
         const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/conversation-activities?${params.toString()}`, { method: 'GET' });
     }
 
     async detailsActivity(id: string): Promise<ConversationActivityResponse> {
-        return await apiFetch(`/api/conversation-activity-users/${id}`, { method: 'GET' });
+        return (
+            await apiFetch<ItemResponse<ConversationActivityResponse>>(`/api/conversation-activity-users/${id}`, {
+                method: 'GET',
+            })
+        ).data;
     }
 }

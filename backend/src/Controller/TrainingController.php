@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Dto\{ElementStatusDto, SaveStatusDto, TrainingDetailsQueryDto, TrainingDto, TrainingIndexDto};
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\TrainingResource;
 use App\Security\Voter\{TrainingCreatorVoter, TrainingParticipantVoter, TrainingVoter};
 use App\Service\TrainingService;
@@ -25,7 +25,7 @@ class TrainingController extends AbstractController
         summary: 'Create training',
         requestBody: new Body(TrainingDto::class),
         tags: ['trainings'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
         #[MapRequestPayload]
@@ -43,7 +43,7 @@ class TrainingController extends AbstractController
         summary: 'Update training',
         requestBody: new Body(TrainingDto::class),
         tags: ['trainings'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         Uuid $id,
@@ -62,7 +62,7 @@ class TrainingController extends AbstractController
         summary: 'Update training status',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['trainings'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
         Uuid $id,
@@ -80,7 +80,7 @@ class TrainingController extends AbstractController
     #[OA\Delete(
         summary: 'Delete training',
         tags: ['trainings'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -117,7 +117,7 @@ class TrainingController extends AbstractController
     #[OA\Get(
         summary: 'Details of training',
         tags: ['trainings'],
-        responses: [new Item(TrainingResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(TrainingResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -138,7 +138,7 @@ class TrainingController extends AbstractController
         summary: 'Update training participant status',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['trainings'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function participantUpdateStatus(
         Uuid $id,

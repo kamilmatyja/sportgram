@@ -25,6 +25,7 @@ export default function UserEvents() {
                 loading={eventsService.loading}
                 error={eventsService.error}
                 page={eventsService.page}
+                hasMore={eventsService.hasMore}
                 limit={eventsService.limit}
                 sort={eventsService.sort}
                 filters={eventsService.filters}

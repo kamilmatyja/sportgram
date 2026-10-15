@@ -61,7 +61,7 @@ class EventListDetailsTest extends ApiTestCase
         $result = $this->get($url, $user);
 
         $this->assertEquals(200, $result['status']);
-        $json = $result['json'];
+        $json = $result['json']['data'];
 
         $this->assertArrayHasKey('id', $json);
         $this->assertArrayHasKey('results', $json);

@@ -5,7 +5,7 @@ import { usePages } from '../services/Page/usePages';
 
 export default function PagesList() {
     const pagesService = usePages();
-    const modalsService = usePageModals(pagesService.fetchPages);
+    const modalsService = usePageModals(pagesService.fetchPages, pagesService.currentUser);
 
     return (
         <>
@@ -15,6 +15,7 @@ export default function PagesList() {
                 loading={pagesService.loading}
                 error={pagesService.error}
                 page={pagesService.page}
+                hasMore={pagesService.hasMore}
                 limit={pagesService.limit}
                 sort={pagesService.sort}
                 filters={pagesService.filters}

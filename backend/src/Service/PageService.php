@@ -36,19 +36,19 @@ readonly class PageService
             $dto->title,
             $dto->description,
             $dto->link,
-            base64_decode($dto->profilePhoto, true),
-            base64_decode($dto->backgroundPhoto, true),
+            $dto->profilePhoto,
+            $dto->backgroundPhoto,
             $dto->color,
             ElementStatusEnum::Active,
         );
 
         $this->pageRepository->save($page);
 
-        if (! in_array($user->id, $dto->participants)) {
-            $dto->participants[] = $user->id;
+        if (! in_array($user->id, $dto->userIds)) {
+            $dto->userIds[] = $user->id;
         }
 
-        foreach ($dto->participants as $userId) {
+        foreach ($dto->userIds as $userId) {
             $participantUser = $this->userRepository->findById($userId);
 
             if (! $this->friendRepository->isFriend($user->id, $participantUser->id) && ! $user->id->equals(
@@ -83,15 +83,15 @@ readonly class PageService
         $page->title = $dto->title;
         $page->description = $dto->description;
         $page->link = $dto->link;
-        $page->profilePhoto = base64_decode($dto->profilePhoto, true);
-        $page->backgroundPhoto = base64_decode($dto->backgroundPhoto, true);
+        $page->profilePhoto = $dto->profilePhoto;
+        $page->backgroundPhoto = $dto->backgroundPhoto;
         $page->color = $dto->color;
 
         /** @var User $user */
         $user = $this->security->getUser();
 
-        if (! in_array($user->id, $dto->participants)) {
-            $dto->participants[] = $user->id;
+        if (! in_array($user->id, $dto->userIds)) {
+            $dto->userIds[] = $user->id;
         }
 
         $currentIds = array_map(
@@ -99,8 +99,8 @@ readonly class PageService
             $page->participants->toArray(),
         );
 
-        $toAdd = array_diff($dto->participants, $currentIds);
-        $toRemove = array_diff($currentIds, $dto->participants);
+        $toAdd = array_diff($dto->userIds, $currentIds);
+        $toRemove = array_diff($currentIds, $dto->userIds);
 
         foreach ($page->participants as $participant) {
             if (in_array($participant->user->id, $toRemove)) {
@@ -123,6 +123,15 @@ readonly class PageService
 
             $this->pageParticipantRepository->save(
                 new PageParticipant($page, $participantUser, SaveStatusEnum::Pending),
+            );
+
+            $this->eventDispatcher->dispatch(
+                new NotificationEvent(
+                    $participantUser,
+                    NotificationTypeEnum::PageParticipant,
+                    $page->title,
+                    '/pages/' . $page->link,
+                ),
             );
         }
 

@@ -130,6 +130,7 @@ npm run fix
 - kamera na froncie
 - gps na froncie przy dodawaniu treningu
 - działająca zmiana języka / motywu
+- zapisywanie sesji przy logowaniu
 - zapisywanie wyświetleń encji po wejściu na jakiś profil
 - informacje o typie feeda do wyświetlenia
 - informacje o wyświetleniach przy encjach

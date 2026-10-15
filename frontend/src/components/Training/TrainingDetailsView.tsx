@@ -1,15 +1,21 @@
 import React from 'react';
-import { Container, Card, Stack, Row, Col, Badge, Button, Spinner, Alert } from 'react-bootstrap';
+import { Container, Card, Stack, Row, Col, Button } from 'react-bootstrap';
 
 import { TrainingDetailsDisciplinesTable } from './TrainingDetailsDisciplinesTable';
-import { TrainingDetailsParticipantsTable } from './TrainingDetailsParticipantsTable';
 import { TrainingResponse } from '../../api/responses/TrainingResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
+import { type TrainingInteractions } from '../../services/Training/useTrainingInteractions';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { formatDate } from '../../utils/dateFormat';
 import BootstrapIcon from '../Common/BootstrapIcon';
+import { EnumBadge } from '../Common/EnumBadge';
+import { FormErrorAlert } from '../Common/FormFields';
+import { ParticipantsTable } from '../Common/ParticipantsTable';
+import { SectionHeader } from '../Common/SectionHeader';
+import { canChangeOwnStatus } from '../Common/statusPermissions';
+import { ErrorView, LoadingView } from '../Common/ViewState';
 import { UserSubpageHeader } from '../User/UserSubpageHeader';
 
 interface TrainingDetailsViewProps {
@@ -22,7 +28,7 @@ interface TrainingDetailsViewProps {
     loading: boolean;
     error: string | null;
     onManageClick: (training: TrainingResponse) => void;
-    interactions: any;
+    interactions: TrainingInteractions;
 }
 
 export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
@@ -39,18 +45,8 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
 }) => {
     const { t } = useTranslation();
 
-    if (loading)
-        return (
-            <Container className="mt-5 text-center">
-                <Spinner animation="border" variant="primary" />
-            </Container>
-        );
-    if (error || !training || !ownerUser)
-        return (
-            <Container className="mt-5">
-                <Alert variant="danger">{error ? t(error) : t('error')}</Alert>
-            </Container>
-        );
+    if (loading) return <LoadingView />;
+    if (error || !training || !ownerUser) return <ErrorView error={error || 'error'} />;
 
     const themeClass = ColorEnum.getClass(ownerUser.color);
     const canManage = isMyProfile || isAdmin;
@@ -58,20 +54,25 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
     return (
         <Container className={`mt-4 mb-5 ${themeClass}`}>
             <UserSubpageHeader user={ownerUser} />
+            <FormErrorAlert error={interactions.actionError} />
 
             <Card className="shadow-sm mb-4">
                 <Card.Body>
-                    <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
-                        <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">
-                            <BootstrapIcon name="info-circle" className="me-2" />
-                            {t('basicInformation')}
-                        </Card.Title>
-                        {canManage && (
-                            <Button variant="profile-primary" onClick={() => onManageClick(training)}>
-                                <BootstrapIcon name="gear" className="me-1" /> {t('manage')}
-                            </Button>
-                        )}
-                    </Stack>
+                    <SectionHeader
+                        title={
+                            <>
+                                <BootstrapIcon name="info-circle" className="me-2" />
+                                {t('basicInformation')}
+                            </>
+                        }
+                        actions={
+                            canManage && (
+                                <Button variant="profile-primary" onClick={() => onManageClick(training)}>
+                                    <BootstrapIcon name="gear" className="me-1" /> {t('manage')}
+                                </Button>
+                            )
+                        }
+                    />
 
                     <Card.Title as="h4" className="mb-3 fw-bold">
                         {training.title}
@@ -97,10 +98,7 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
                         <Col sm={6} md={4}>
                             <Stack className="text-muted small mb-1">{t('status')}</Stack>
                             <Stack>
-                                <Badge bg="light" text="dark" className="border profile-theme-border">
-                                    {ElementStatusEnum.getOptions(t).find((opt) => opt.value === training.status)
-                                        ?.label || training.status}
-                                </Badge>
+                                <EnumBadge options={ElementStatusEnum.getOptions(t)} value={training.status} />
                             </Stack>
                         </Col>
                     </Row>
@@ -112,10 +110,10 @@ export const TrainingDetailsView: React.FC<TrainingDetailsViewProps> = ({
                     <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">
                         {t('participants')}
                     </Card.Title>
-                    <TrainingDetailsParticipantsTable
+                    <ParticipantsTable
                         participants={training.participants || []}
                         relatedUsers={relatedUsers}
-                        currentUser={currentUser}
+                        canManage={canChangeOwnStatus(currentUser)}
                         actionLoading={interactions.actionLoading}
                         onUpdateStatus={interactions.handleParticipantStatusSubmit}
                     />

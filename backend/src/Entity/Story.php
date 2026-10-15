@@ -55,7 +55,10 @@ class Story
     #[ORM\Column(name: 'photo', type: 'binary')]
     public string $photo {
         get {
-            return $this->photo;
+            return base64_encode($this->photo);
+        }
+        set {
+            $this->photo = base64_decode($value, true);
         }
     }
 

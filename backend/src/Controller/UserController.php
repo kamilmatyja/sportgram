@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Dto\{UserCreateDto, UserCreateNanoDto, UserDetailsQueryDto, UserIndexDto, UserStatusDto, UserUpdateDto};
 use App\Enum\RoleEnum;
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\UserResource;
 use App\Security\Voter\UserVoter;
 use App\Service\UserService;
@@ -25,7 +25,7 @@ class UserController extends AbstractController
         summary: 'Create user',
         requestBody: new Body(UserCreateDto::class),
         tags: ['users'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
         #[MapRequestPayload]
@@ -43,7 +43,7 @@ class UserController extends AbstractController
         summary: 'Create user nano',
         requestBody: new Body(UserCreateNanoDto::class),
         tags: ['users'],
-        responses: [new Created(), new BadRequest()],
+        responses: [new Created(), new BadRequest(), new Conflict()],
     )]
     final public function createNano(
         #[MapRequestPayload]
@@ -61,7 +61,7 @@ class UserController extends AbstractController
         summary: 'Update user',
         requestBody: new Body(UserUpdateDto::class),
         tags: ['users'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         Uuid $id,
@@ -80,7 +80,7 @@ class UserController extends AbstractController
         summary: 'Update user status',
         requestBody: new Body(UserStatusDto::class),
         tags: ['users'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
         Uuid $id,
@@ -98,7 +98,7 @@ class UserController extends AbstractController
     #[OA\Delete(
         summary: 'Delete user',
         tags: ['users'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -135,7 +135,7 @@ class UserController extends AbstractController
     #[OA\Get(
         summary: 'Details of user',
         tags: ['users'],
-        responses: [new Item(UserResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(UserResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,

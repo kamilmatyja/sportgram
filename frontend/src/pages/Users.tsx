@@ -20,6 +20,7 @@ export default function Users() {
                 loading={usersService.loading}
                 error={usersService.error}
                 page={usersService.page}
+                hasMore={usersService.hasMore}
                 onPrevPage={usersService.handlePrevPage}
                 onNextPage={usersService.handleNextPage}
                 isAdmin={usersService.isAdmin}

@@ -25,8 +25,8 @@ class GoalCreateTest extends ApiTestCase
     final public function testUnauthorized(): void
     {
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'text' => 'New Goal',
             'link' => 'new-goal',
             'discipline' => 1,
@@ -45,7 +45,7 @@ class GoalCreateTest extends ApiTestCase
         $result = $this->post('/api/goals', [], $user);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
-        $expected = ['startedAt', 'endedAt', 'text', 'link', 'discipline', 'distance'];
+        $expected = ['text', 'link', 'discipline', 'distance'];
 
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
@@ -59,13 +59,13 @@ class GoalCreateTest extends ApiTestCase
         $stranger = UserFactory::make(em: $this->em);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'text' => 'New Goal',
             'link' => 'new-goal-1',
             'discipline' => 1,
             'distance' => 1000,
-            'participants' => [$stranger->id->toString()],
+            'userIds' => [$stranger->id->toString()],
         ];
 
         $result = $this->post('/api/goals', $payload, $user);
@@ -78,8 +78,8 @@ class GoalCreateTest extends ApiTestCase
         $user = self::createUser(RoleEnum::Participant);
 
         $payload = [
-            'startedAt' => '2025-01-01T10:00:00',
-            'endedAt' => '2025-01-01T12:00:00',
+            'startedAt' => '2025-01-01T10:00',
+            'endedAt' => '2025-01-01T12:00',
             'text' => 'New Goal',
             'link' => 'my-new-goal',
             'discipline' => 1,

@@ -4,8 +4,10 @@ import { Card, Table, Button, Stack } from 'react-bootstrap';
 import { EventResponse } from '../../api/responses/EventResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { getOptionLabel } from '../../utils/options';
 import BootstrapIcon from '../Common/BootstrapIcon';
-import { TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
+import { SectionHeader } from '../Common/SectionHeader';
+import { EmptyTableRow, TableHead, TableBody, TableRow, TableHeaderCell, TableCell } from '../Common/Table';
 
 interface EventDisciplinesTableProps {
     eventObj: EventResponse;
@@ -18,12 +20,10 @@ export const EventDisciplinesTable: React.FC<EventDisciplinesTableProps> = ({ ev
     return (
         <Card className="shadow-sm mb-4">
             <Card.Body>
-                <Card.Title as="h5" className="mb-3 text-profile-primary fw-bold">
-                    {t('disciplinesAndDistances')}
-                </Card.Title>
+                <SectionHeader title={t('disciplinesAndDistances')} />
 
                 <Stack className="table-responsive-custom">
-                    <Table bordered hover className="align-middle mb-0">
+                    <Table bordered hover className="align-middle mb-0 shadow-sm">
                         <TableHead className="table-light">
                             <TableRow>
                                 <TableHeaderCell>{t('discipline')}</TableHeaderCell>
@@ -33,20 +33,14 @@ export const EventDisciplinesTable: React.FC<EventDisciplinesTableProps> = ({ ev
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {eventObj.disciplines.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center text-muted">
-                                        {t('noRecords')}
-                                    </TableCell>
-                                </TableRow>
+                            {eventObj.disciplines.every((disc) => disc.distances.length === 0) ? (
+                                <EmptyTableRow colSpan={4} />
                             ) : (
                                 eventObj.disciplines.flatMap((disc) =>
                                     disc.distances.map((dist) => (
                                         <TableRow key={dist.id}>
                                             <TableCell>
-                                                {DisciplineEnum.getOptions(t).find(
-                                                    (opt) => String(opt.value) === String(disc.discipline),
-                                                )?.label || disc.discipline}
+                                                {getOptionLabel(DisciplineEnum.getOptions(t), disc.discipline)}
                                             </TableCell>
                                             <TableCell>{dist.distance}</TableCell>
                                             <TableCell>

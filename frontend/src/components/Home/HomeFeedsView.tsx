@@ -4,6 +4,7 @@ import { Container, Stack, Spinner, Button } from 'react-bootstrap';
 import { FeedResponse } from '../../api/responses/FeedResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
+import { LoadingView } from '../Common/ViewState';
 import { FeedCard } from '../Feed/FeedCard';
 
 interface HomeFeedsViewProps {
@@ -15,6 +16,8 @@ interface HomeFeedsViewProps {
     hasMore: boolean;
     handleLoadMore: () => void;
     actionLoading: string | null;
+    actionError?: string | null;
+    actionErrorId?: string | null;
     commentInputs: Record<string, string>;
     editingCommentId: string | null;
     editCommentText: string;
@@ -33,11 +36,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = (props) => {
     const { feeds, relatedUsers, currentUser, loading, loadingMore, hasMore, handleLoadMore } = props;
 
     if (loading && feeds.length === 0) {
-        return (
-            <Container className="mt-5 text-center">
-                <Spinner animation="border" variant="primary" role="status" />
-            </Container>
-        );
+        return <LoadingView />;
     }
 
     return (
@@ -53,6 +52,7 @@ export const HomeFeedsView: React.FC<HomeFeedsViewProps> = (props) => {
                             currentUser={currentUser}
                             relatedUsers={relatedUsers}
                             isFeedLoading={props.actionLoading === feed.id}
+                            actionError={props.actionErrorId === feed.id ? props.actionError : null}
                             commentInputValue={props.commentInputs[feed.id] || ''}
                             editingCommentId={props.editingCommentId}
                             editCommentText={props.editCommentText}

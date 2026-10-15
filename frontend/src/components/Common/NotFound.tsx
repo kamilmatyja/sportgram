@@ -12,7 +12,7 @@ const NotFound: React.FC = () => {
                     {t('notFound.title')}
                 </Stack>
                 <Stack as="p" className="fs-4">
-                    {t('notFound')}
+                    {t('notFound.message')}
                 </Stack>
             </Stack>
         </Container>

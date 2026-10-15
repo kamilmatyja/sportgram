@@ -1,16 +1,14 @@
 import React from 'react';
-import { Container, Card, Stack, Button, Form, Spinner, Alert } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
-import { UserSubpageHeader } from './UserSubpageHeader';
+import { UserSubpageLayout } from './UserSubpageLayout';
 import { StoryFilterQuery } from '../../api/queries/StoryFilterQuery';
 import { StoryResponse } from '../../api/responses/StoryResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
-import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { PaginationEnum } from '../../enums/PaginationEnum';
-import { Pagination } from '../Common/Pagination';
-import SelectOptions, { type SelectOption } from '../Common/SelectOptions';
+import { buildSortOptions } from '../../utils/options';
+import { FilterInput, FilterSelect, SortLimitSelect } from '../Common/FilterBar';
 import { UserStoriesTable } from '../Story/UserStoriesTable';
 
 interface UserStoriesViewProps {
@@ -21,6 +19,7 @@ interface UserStoriesViewProps {
     loading: boolean;
     error: string | null;
     page: number;
+    hasMore: boolean;
     limit: number;
     sort: string;
     filters: StoryFilterQuery;
@@ -41,6 +40,7 @@ export const UserStoriesView: React.FC<UserStoriesViewProps> = ({
     loading,
     error,
     page,
+    hasMore,
     limit,
     sort,
     filters,
@@ -53,83 +53,56 @@ export const UserStoriesView: React.FC<UserStoriesViewProps> = ({
     onManageClick,
 }) => {
     const { t } = useTranslation();
-    const sortOptions: SelectOption[] = [
-        { value: 'createdAt:desc', label: `${t('createdAt')} Z-A` },
-        { value: 'createdAt:asc', label: `${t('createdAt')} A-Z` },
-        { value: 'text:desc', label: `${t('text')} Z-A` },
-        { value: 'text:asc', label: `${t('text')} A-Z` },
-        { value: 'status:desc', label: `${t('status')} Z-A` },
-        { value: 'status:asc', label: `${t('status')} A-Z` },
-    ];
-    if (loading && stories.length === 0)
-        return (
-            <Container className="mt-5 text-center">
-                <Spinner animation="border" variant="primary" />
-            </Container>
-        );
-    if (error || !user)
-        return (
-            <Container className="mt-5">
-                <Alert variant="danger">{error ? t(error) : t('userNotFound')}</Alert>
-            </Container>
-        );
+    const sortOptions = buildSortOptions(t, ['createdAt', 'text', 'status']);
 
-    const themeClass = ColorEnum.getClass(user.color);
     return (
-        <Container className={`mt-4 mb-5 ${themeClass}`}>
-            <UserSubpageHeader user={user} />
-            <Card className="shadow-sm">
-                <Card.Body>
-                    <Stack direction="horizontal" className="justify-content-between align-items-center mb-4">
-                        <Card.Title as="h4" className="mb-0 text-profile-primary fw-bold">
-                            {t('stories')}
-                        </Card.Title>
-                        {isMyProfile && (
-                            <Button variant="profile-primary" onClick={onAddClick}>
-                                {t('addStory')}
-                            </Button>
-                        )}
-                    </Stack>
-                    <Stack direction="horizontal" gap={2} className="mb-3 flex-wrap align-items-center">
-                        <Form.Control
-                            name="text"
-                            placeholder={t('text')}
-                            value={filters.text || ''}
-                            onChange={onFilterChange}
-                            className="w-auto"
-                        />
-                        <Form.Select
-                            name="status"
-                            value={filters.status || ''}
-                            onChange={onFilterChange}
-                            className="w-auto"
-                        >
-                            <SelectOptions options={ElementStatusEnum.getOptions(t) as any} placeholder={t('status')} />
-                        </Form.Select>
-                        <Form.Select value={sort} onChange={onSortChange} className="ms-auto w-auto">
-                            <SelectOptions options={sortOptions} />
-                        </Form.Select>
-                        <Form.Select value={limit} onChange={onLimitChange} className="w-auto">
-                            <SelectOptions options={PaginationEnum.getOptions(t) as any} />
-                        </Form.Select>
-                    </Stack>
-                    <UserStoriesTable
-                        stories={stories}
-                        isMyProfile={isMyProfile}
-                        isAdmin={isAdmin}
-                        onManageClick={onManageClick}
+        <UserSubpageLayout
+            user={user}
+            title={t('stories')}
+            actions={
+                isMyProfile && (
+                    <Button variant="profile-primary" onClick={onAddClick}>
+                        {t('addStory')}
+                    </Button>
+                )
+            }
+            filters={
+                <>
+                    <FilterInput
+                        name="text"
+                        placeholder={t('text')}
+                        value={filters.text || ''}
+                        onChange={onFilterChange}
                     />
-                    <Stack className="mt-3">
-                        <Pagination
-                            page={page}
-                            hasMore={stories.length >= limit}
-                            onPrevPage={onPrevPage}
-                            onNextPage={onNextPage}
-                            variant="profile-outline-primary"
-                        />
-                    </Stack>
-                </Card.Body>
-            </Card>
-        </Container>
+                    <FilterSelect
+                        name="status"
+                        value={filters.status || ''}
+                        onChange={onFilterChange}
+                        options={ElementStatusEnum.getOptions(t)}
+                        placeholder={t('status')}
+                    />
+                    <SortLimitSelect
+                        sortOptions={sortOptions}
+                        sort={sort}
+                        limit={limit}
+                        onSortChange={onSortChange}
+                        onLimitChange={onLimitChange}
+                    />
+                </>
+            }
+            loading={loading && stories.length === 0}
+            error={error}
+            page={page}
+            hasMore={hasMore}
+            onPrevPage={onPrevPage}
+            onNextPage={onNextPage}
+        >
+            <UserStoriesTable
+                stories={stories}
+                isMyProfile={isMyProfile}
+                isAdmin={isAdmin}
+                onManageClick={onManageClick}
+            />
+        </UserSubpageLayout>
     );
 };

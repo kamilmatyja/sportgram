@@ -2,12 +2,8 @@
 
 namespace App\Enum;
 
-use App\Trait\EnumValuesTrait;
-
 enum FriendStatusEnum: int
 {
-    use EnumValuesTrait;
-
     case Pending = 1;
     case Accepted = 2;
     case Rejected = 3;
@@ -16,6 +12,6 @@ enum FriendStatusEnum: int
     /** @return int[] */
     public static function allowed(): array
     {
-        return [self::Accepted->value, self::Rejected->value, self::Blocked->value];
+        return [self::Accepted, self::Rejected, self::Blocked];
     }
 }

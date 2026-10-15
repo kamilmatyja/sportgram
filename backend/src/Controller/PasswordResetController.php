@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{UserEmailDto, UserPasswordDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Conflict, Created, Ok};
+use App\OpenApi\{BadRequest, Body, Conflict, Created, NotFound, Ok};
 use App\Service\PasswordResetService;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,7 +40,7 @@ class PasswordResetController extends AbstractController
         summary: 'Confirm reset user password',
         requestBody: new Body(UserPasswordDto::class),
         tags: ['password resets'],
-        responses: [new Ok(), new BadRequest(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound()],
     )]
     final public function confirm(
         Uuid $id,
@@ -58,7 +58,7 @@ class PasswordResetController extends AbstractController
     #[OA\Post(
         summary: 'Resend reset user password',
         tags: ['password resets'],
-        responses: [new Ok(), new Conflict()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound()],
     )]
     final public function resend(
         Uuid $id,

@@ -11,7 +11,7 @@ export default function UserGoals() {
     const { link } = useParams<{ link: string }>();
 
     const goalsService = useUserGoals(link);
-    const modalsService = useGoalModals(goalsService.refreshGoals);
+    const modalsService = useGoalModals(goalsService.refreshGoals, goalsService.currentUser);
     const interactions = useGoalInteractions(goalsService.refreshGoals);
 
     return (
@@ -20,12 +20,14 @@ export default function UserGoals() {
                 user={goalsService.targetUser}
                 goals={goalsService.goals}
                 relatedUsers={goalsService.relatedUsers}
+                currentUser={goalsService.currentUser}
                 isMyProfile={goalsService.isMyProfile}
                 isAdmin={goalsService.isAdmin}
                 isParticipant={goalsService.isParticipant}
                 loading={goalsService.loading}
                 error={goalsService.error}
                 page={goalsService.page}
+                hasMore={goalsService.hasMore}
                 limit={goalsService.limit}
                 sort={goalsService.sort}
                 filters={goalsService.filters}

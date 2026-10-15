@@ -1,53 +1,35 @@
-import { useEffect } from 'react';
-
 import { StoryProvider } from '../../api/providers/StoryProvider';
 import { StoryFilterQuery } from '../../api/queries/StoryFilterQuery';
 import { StoryIndexQuery } from '../../api/queries/StoryIndexQuery';
-import { StoryResponse } from '../../api/responses/StoryResponse';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
-import { useDataFetch } from '../../utils/hooks/useDataFetch';
-import { useListFilters } from '../../utils/hooks/useListFilters';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
+import { usePaginatedList } from '../../utils/hooks/usePaginatedList';
+import { toOptionalNumber } from '../../utils/query';
 
 export function useUserStories(link?: string) {
     const access = useAppAccess({ targetLink: link, requireFriendship: true });
-    const list = useListFilters(new StoryFilterQuery());
     const storyProvider = new StoryProvider();
 
-    const { data: stories, loading, error, executeFetch } = useDataFetch<StoryResponse[]>();
-
-    const fetchStories = (userId: string) => {
-        executeFetch(async () => {
+    const { list, items, loading, error, refresh } = usePaginatedList({
+        initialFilter: new StoryFilterQuery(),
+        scope: isAccessReady(access) ? access.targetUser : null,
+        fetchPage: async (list, targetUser) => {
             const filterDto = new StoryFilterQuery();
-            filterDto.userId = userId;
+            filterDto.userId = targetUser.id;
             filterDto.text = list.filters.text;
-            filterDto.status = list.filters.status ? Number(list.filters.status) : undefined;
+            filterDto.status = toOptionalNumber(list.filters.status);
 
-            const indexDto = new StoryIndexQuery();
-            indexDto.page = list.page;
-            indexDto.limit = list.limit;
-            indexDto.sort = list.sort;
-            indexDto.filter = filterDto;
-
-            return await storyProvider.index(indexDto);
-        }, []);
-    };
-
-    useEffect(() => {
-        if (!access.authLoading && !access.authError && access.targetUser) {
-            fetchStories(access.targetUser.id);
-        }
-    }, [access.authLoading, access.authError, access.targetUser, list.page, list.limit, list.sort, list.filters]);
-
-    const refreshStories = () => {
-        if (access.targetUser) fetchStories(access.targetUser.id);
-    };
+            return list.applyPagination(
+                await storyProvider.index(list.buildIndexQuery(new StoryIndexQuery(), filterDto)),
+            );
+        },
+    });
 
     return {
         ...access,
         ...list,
-        stories: stories || [],
+        stories: items,
         loading: access.authLoading || loading,
         error: access.authError || error,
-        refreshStories,
+        refreshStories: refresh,
     };
 }

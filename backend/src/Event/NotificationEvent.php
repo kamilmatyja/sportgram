@@ -27,7 +27,7 @@ readonly class NotificationEvent
 
     final public function getText(): string
     {
-        return $this->text || '-';
+        return $this->text ?? '-';
     }
 
     final public function getLink(): ?string

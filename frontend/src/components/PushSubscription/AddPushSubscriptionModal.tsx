@@ -1,9 +1,10 @@
 import React from 'react';
-import { Modal, Button, Stack, Alert } from 'react-bootstrap';
+import { Button, Stack } from 'react-bootstrap';
 
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useTranslation } from '../../context/TranslationContext';
 import { ColorEnum } from '../../enums/ColorEnum';
+import { FormModal } from '../Common/FormModal';
 
 interface AddPushSubscriptionModalProps {
     user: UserResponse | null;
@@ -25,32 +26,28 @@ export const AddPushSubscriptionModal: React.FC<AddPushSubscriptionModalProps> =
     const { t } = useTranslation();
     if (!show || !user) return null;
 
-    const themeClass = ColorEnum.getClass(user.color);
-
     return (
-        <Modal show={show} onHide={closeModal} size="lg" className={themeClass} backdrop="static">
-            <Modal.Header closeButton>
-                <Modal.Title>{t('addSubscription')}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                {globalError && <Alert variant="danger">{t(globalError)}</Alert>}
-                <Stack gap={3}>
-                    <Stack as="p" className="mb-0">
-                        {t('pushSubscriptionInfo')}
-                    </Stack>
-                    <Stack as="p" className="text-muted small mb-0">
-                        {t('pushPermissionWillBeAsked')}
-                    </Stack>
-                </Stack>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={closeModal}>
-                    {t('cancel')}
-                </Button>
+        <FormModal
+            show={show}
+            title={t('addSubscription')}
+            themeClass={ColorEnum.getClass(user.color)}
+            closeModal={closeModal}
+            loading={loading}
+            globalError={globalError}
+            footerActions={
                 <Button variant="profile-primary" onClick={handleSubscribeDevice} disabled={loading}>
                     {loading ? t('sending') : t('subscribeThisDevice')}
                 </Button>
-            </Modal.Footer>
-        </Modal>
+            }
+        >
+            <Stack gap={3}>
+                <Stack as="p" className="mb-0">
+                    {t('pushSubscriptionInfo')}
+                </Stack>
+                <Stack as="p" className="text-muted small mb-0">
+                    {t('pushPermissionWillBeAsked')}
+                </Stack>
+            </Stack>
+        </FormModal>
     );
 };

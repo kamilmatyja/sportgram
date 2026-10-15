@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\{ElementStatusEnum, RoleEnum};
+use Symfony\Component\Uid\Uuid;
 use Tests\Factory\{TrainingFactory, TrainingParticipantFactory};
 
 class TrainingIndexTest extends ApiTestCase
@@ -25,11 +26,12 @@ class TrainingIndexTest extends ApiTestCase
         $this->assertEquals(401, $result['status']);
     }
 
-    final public function testValidationFailedMissingUserId(): void
+    final public function testValidationFailedInvalidUserId(): void
     {
         $user = self::createUser(RoleEnum::Participant);
+        $userId = Uuid::v4()->toString();
 
-        $result = $this->get('/api/trainings', $user);
+        $result = $this->get("/api/trainings?filter[userId]={$userId}", $user);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('filter.userId', $result['json']['errors']);
     }
@@ -56,8 +58,9 @@ class TrainingIndexTest extends ApiTestCase
         );
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(1, $result['json']);
-        $this->assertEquals('Morning Run', $result['json'][0]['title']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals(1, $result['json']['pagination']['total']);
+        $this->assertEquals('Morning Run', $result['json']['data'][0]['title']);
     }
 
     final public function testPagination(): void
@@ -72,6 +75,9 @@ class TrainingIndexTest extends ApiTestCase
         $result = $this->get("/api/trainings?filter[userId]={$user->id->toString()}&page=2&limit=5", $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
+        $this->assertEquals(15, $result['json']['pagination']['total']);
+        $this->assertEquals(2, $result['json']['pagination']['page']);
+        $this->assertTrue($result['json']['pagination']['hasNextPage']);
     }
 }

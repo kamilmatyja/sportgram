@@ -90,12 +90,12 @@ class StatisticRecordsTest extends ApiTestCase
 
         $this->assertEquals(200, $result['status']);
 
-        $this->assertIsArray($result['json']);
-        $this->assertGreaterThanOrEqual(1, count($result['json']));
+        $this->assertIsArray($result['json']['data']);
+        $this->assertGreaterThanOrEqual(1, count($result['json']['data']));
 
-        $this->assertEquals(40, $result['json'][0]['time']);
-        $this->assertEquals(100, $result['json'][0]['distance']);
-        $this->assertEquals(DisciplineEnum::Running->value, $result['json'][0]['discipline']);
+        $this->assertEquals(40, $result['json']['data'][0]['time']);
+        $this->assertEquals(100, $result['json']['data'][0]['distance']);
+        $this->assertEquals(DisciplineEnum::Running->value, $result['json']['data'][0]['discipline']);
     }
 
     final public function testPagination(): void
@@ -121,6 +121,6 @@ class StatisticRecordsTest extends ApiTestCase
         );
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(5, $result['json']);
+        $this->assertCount(5, $result['json']['data']);
     }
 }

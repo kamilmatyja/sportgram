@@ -2,7 +2,9 @@ import { apiFetch } from '../../utils/api';
 import { buildIndexParams } from '../../utils/buildQueryString';
 import { StatusBody } from '../body/StatusBody';
 import { NotificationIndexQuery } from '../queries/NotificationIndexQuery';
+import { CollectionResponse } from '../responses/CollectionResponse';
 import { IdResponse } from '../responses/IdResponse';
+import { ItemResponse } from '../responses/ItemResponse';
 import { NotificationResponse } from '../responses/NotificationResponse';
 
 export class NotificationProvider {
@@ -14,12 +16,12 @@ export class NotificationProvider {
         return await apiFetch(`/api/notifications/${id}`, { method: 'DELETE' });
     }
 
-    async index(dto: NotificationIndexQuery): Promise<NotificationResponse[]> {
+    async index(dto: NotificationIndexQuery): Promise<CollectionResponse<NotificationResponse>> {
         const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? []);
         return await apiFetch(`/api/notifications?${params.toString()}`, { method: 'GET' });
     }
 
     async details(id: string): Promise<NotificationResponse> {
-        return await apiFetch(`/api/notifications/${id}`, { method: 'GET' });
+        return (await apiFetch<ItemResponse<NotificationResponse>>(`/api/notifications/${id}`, { method: 'GET' })).data;
     }
 }

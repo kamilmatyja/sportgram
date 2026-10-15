@@ -7,6 +7,8 @@ use App\Enum\{CountryEnum, GenderEnum, RoleEnum};
 use App\Validator\{UniqueField};
 use DateTimeImmutable;
 use OpenApi\Attributes as OA;
+use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
@@ -37,7 +39,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class UserCreateNanoDto
 {
     #[Assert\NotBlank]
-    #[Assert\DateTime(format: 'Y-m-d')]
+    #[Context([DateTimeNormalizer::FORMAT_KEY => '!Y-m-d'])]
     public DateTimeImmutable $birthAt;
 
     #[Assert\NotBlank]
@@ -49,7 +51,7 @@ class UserCreateNanoDto
     public string $lastName;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [GenderEnum::class, 'values'])]
+    #[Assert\Choice(callback: [GenderEnum::class, 'cases'])]
     public GenderEnum $gender;
 
     #[Assert\NotBlank]
@@ -68,7 +70,7 @@ class UserCreateNanoDto
     public string $password;
 
     #[Assert\NotBlank]
-    #[Assert\Choice(callback: [CountryEnum::class, 'values'])]
+    #[Assert\Choice(callback: [CountryEnum::class, 'cases'])]
     public CountryEnum $country;
 
     /** @var RoleEnum[] */
@@ -80,4 +82,9 @@ class UserCreateNanoDto
     #[Assert\Count(min: 1)]
     #[Assert\Unique]
     public array $roles = [];
+
+    final public function addRole(RoleEnum $role): void
+    {
+        $this->roles[] = $role;
+    }
 }

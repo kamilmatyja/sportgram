@@ -9,7 +9,7 @@ import { useTrainingModals } from '../services/Training/useTrainingModals';
 export default function TrainingDetails() {
     const { link } = useParams<{ link: string }>();
     const detailsProps = useTrainingDetails(link);
-    const modalsService = useTrainingModals(detailsProps.refreshTraining);
+    const modalsService = useTrainingModals(detailsProps.refreshTraining, detailsProps.currentUser);
     const interactions = useTrainingInteractions(detailsProps.refreshTraining);
 
     return (

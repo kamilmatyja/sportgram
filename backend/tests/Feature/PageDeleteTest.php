@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enum\RoleEnum;
-use Tests\Factory\{PageFactory, PageParticipantFactory};
+use Tests\Factory\{EventFactory, PageFactory, PageParticipantFactory};
 
 class PageDeleteTest extends ApiTestCase
 {
@@ -32,17 +32,18 @@ class PageDeleteTest extends ApiTestCase
         $this->assertEquals(403, $result['status']);
     }
 
-    final public function testCannotDeletePageWithParticipants(): void
+    final public function testCannotDeletePageWithParticipantEvents(): void
     {
         $user = self::createUser(RoleEnum::Organizer);
         $page = PageFactory::make(['user' => $user], $this->em);
 
-        PageParticipantFactory::make(['page' => $page, 'user' => $user], $this->em);
+        $participant = PageParticipantFactory::make(['page' => $page, 'user' => $user], $this->em);
+        EventFactory::make(['pageParticipant' => $participant], $this->em);
 
         $result = $this->delete("/api/pages/{$page->id->toString()}", $user);
 
         $this->assertEquals(409, $result['status']);
-        $this->assertEquals('Cannot delete page with participants.', $result['json']['error']);
+        $this->assertEquals('Cannot delete page with participant events.', $result['json']['error']);
     }
 
     final public function testSuccess(): void
@@ -52,5 +53,6 @@ class PageDeleteTest extends ApiTestCase
 
         $result = $this->delete("/api/pages/{$page->id->toString()}", $user);
         $this->assertEquals(200, $result['status']);
+        $this->assertEquals($page->id->toString(), $result['json']['id']);
     }
 }

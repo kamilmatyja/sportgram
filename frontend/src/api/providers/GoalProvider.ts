@@ -3,8 +3,10 @@ import { buildIndexParams, buildQueryString } from '../../utils/buildQueryString
 import { GoalBody } from '../body/GoalBody';
 import { StatusBody } from '../body/StatusBody';
 import { GoalIndexQuery } from '../queries/GoalIndexQuery';
+import { CollectionResponse } from '../responses/CollectionResponse';
 import { GoalResponse } from '../responses/GoalResponse';
 import { IdResponse } from '../responses/IdResponse';
+import { ItemResponse } from '../responses/ItemResponse';
 
 export class GoalProvider {
     async create(dto: GoalBody): Promise<IdResponse> {
@@ -23,14 +25,14 @@ export class GoalProvider {
         return await apiFetch(`/api/goals/${id}`, { method: 'DELETE' });
     }
 
-    async index(dto: GoalIndexQuery): Promise<GoalResponse[]> {
+    async index(dto: GoalIndexQuery): Promise<CollectionResponse<GoalResponse>> {
         const params = buildIndexParams(dto.page, dto.limit, dto.sort, dto.filter ?? [], dto.include);
         return await apiFetch(`/api/goals?${params.toString()}`, { method: 'GET' });
     }
 
     async details(id: string, include: string[] = []): Promise<GoalResponse> {
         const query = buildQueryString(include);
-        return await apiFetch(`/api/goals/${id}${query}`, { method: 'GET' });
+        return (await apiFetch<ItemResponse<GoalResponse>>(`/api/goals/${id}${query}`, { method: 'GET' })).data;
     }
 
     async updateParticipantStatus(participantId: string, dto: StatusBody): Promise<IdResponse> {

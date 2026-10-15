@@ -23,7 +23,7 @@ class PageFollow
         }
     }
 
-    #[ORM\ManyToOne(targetEntity: Page::class, cascade: ['persist'], inversedBy: 'followers')]
+    #[ORM\ManyToOne(targetEntity: Page::class, cascade: ['persist'], inversedBy: 'follows')]
     #[ORM\JoinColumn(name: 'page_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     public Page $page {
         get {

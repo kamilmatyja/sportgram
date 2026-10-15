@@ -89,7 +89,7 @@ class ConversationActivityDetailsTest extends ApiTestCase
 
         $result = $this->get('/api/conversation-activity-users/' . $user1->id->toString(), $user2);
         $this->assertEquals(200, $result['status']);
-        $json = $result['json'];
+        $json = $result['json']['data'];
 
         $expectedKeys = [
             'id',
@@ -97,6 +97,7 @@ class ConversationActivityDetailsTest extends ApiTestCase
             'updatedAt',
             'senderUserId',
             'receiverUserId',
+            'isWriting',
         ];
 
         foreach ($expectedKeys as $key) {

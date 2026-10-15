@@ -2,139 +2,73 @@ import React, { useState } from 'react';
 
 import { PageBody } from '../../api/body/PageBody';
 import { StatusBody } from '../../api/body/StatusBody';
-import { FriendProvider } from '../../api/providers/FriendProvider';
 import { PageProvider } from '../../api/providers/PageProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
-import { FriendFilterQuery } from '../../api/queries/FriendFilterQuery';
-import { FriendIndexQuery } from '../../api/queries/FriendIndexQuery';
 import { PageResponse } from '../../api/responses/PageResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { createFormHandler } from '../../utils/formHandler';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
-import { useFormState } from '../../utils/hooks/useFormState';
-import { useModal } from '../../utils/hooks/useModal';
+import { getErrorMessage } from '../../utils/api';
+import { createFormHandler, createSubmitHandler } from '../../utils/formHandler';
+import { useAvailableFriends } from '../../utils/hooks/useAvailableFriends';
+import { useCrudModals } from '../../utils/hooks/useCrudModals';
 
-export function usePageModals(onSuccess: () => void) {
-    const { currentUser } = useAppAccess();
-    const addModal = useModal();
-    const manageModal = useModal<PageResponse>();
-    const { loading, globalError, fieldErrors, wrap, resetErrors } = useFormState();
+const emptyPageBody = () => new PageBody('', '', '', '', '', 0, []);
 
-    const [availableUsers, setAvailableUsers] = useState<UserResponse[]>([]);
-    const [formData, setFormData] = useState(new PageBody('', '', '', '', '', 0, []));
+export function usePageModals(onSuccess: () => void, currentUser: UserResponse | null) {
+    const {
+        addModal,
+        manageModal,
+        loading,
+        globalError,
+        fieldErrors,
+        wrap,
+        resetErrors,
+        setGlobalError,
+        submitAdd,
+        submitManage,
+    } = useCrudModals<PageResponse>(onSuccess);
+    const { availableUsers, loadAvailableFriends } = useAvailableFriends();
 
+    const [formData, setFormData] = useState(emptyPageBody);
     const pageProvider = new PageProvider();
-    const userProvider = new UserProvider();
-    const friendProvider = new FriendProvider();
-
-    const loadAvailableFriends = async (currentUsr: UserResponse, pageObj?: PageResponse | null) => {
-        const fFilter = new FriendFilterQuery();
-        fFilter.userIds = [currentUsr.id];
-        fFilter.status = FriendStatusEnum.ACCEPTED;
-        const fIndexDto = new FriendIndexQuery();
-        fIndexDto.filter = fFilter;
-
-        const myFriends = await friendProvider.index(fIndexDto);
-
-        const userIdsToFetch = new Set<string>();
-        myFriends.forEach((f) => {
-            if (f.senderUserId !== currentUsr.id) userIdsToFetch.add(f.senderUserId);
-            if (f.receiverUserId !== currentUsr.id) userIdsToFetch.add(f.receiverUserId);
-        });
-
-        if (pageObj) {
-            pageObj.participants.forEach((p) => userIdsToFetch.add(p.userId));
-        }
-
-        const idsArray = Array.from(userIdsToFetch);
-        if (idsArray.length > 0) {
-            const usersMap = await fetchRelatedUsers(idsArray, {}, userProvider);
-            setAvailableUsers(Object.values(usersMap));
-        } else {
-            setAvailableUsers([]);
-        }
-    };
 
     const openAddModal = async () => {
-        setFormData(new PageBody('', '', '', '', '', 0, []));
+        setFormData(emptyPageBody());
         resetErrors();
-        await wrap(async () => {
-            if (currentUser) {
-                await loadAvailableFriends(currentUser);
-            }
-        }).catch(() => {});
+        await wrap(() => loadAvailableFriends(currentUser)).catch((err) => setGlobalError(getErrorMessage(err)));
         addModal.open();
     };
 
-    const handleAddSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        wrap(async () => {
-            await pageProvider.create(formData);
-            addModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleAddSubmit = createSubmitHandler(() => submitAdd(() => pageProvider.create(formData)));
 
     const openManageModal = async (page: PageResponse) => {
+        const participantIds = page.participants.map((p) => p.userId);
         manageModal.open(page);
-        setFormData(
-            new PageBody(
-                page.title,
-                page.description,
-                page.link,
-                '',
-                '',
-                page.color,
-                page.participants.map((p) => p.userId),
-            ),
-        );
+        setFormData(new PageBody(page.title, page.description, page.link, '', '', page.color, participantIds));
         resetErrors();
-        await wrap(async () => {
-            if (currentUser) {
-                await loadAvailableFriends(currentUser, page);
-            }
-        }).catch(() => {});
+        await wrap(() => loadAvailableFriends(currentUser, participantIds)).catch((err) =>
+            setGlobalError(getErrorMessage(err)),
+        );
     };
 
-    const handleEditSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!manageModal.data) return;
-        wrap(async () => {
-            formData.profilePhoto = formData.profilePhoto ? formData.profilePhoto : manageModal.data!.profilePhoto;
-            formData.backgroundPhoto = formData.backgroundPhoto
-                ? formData.backgroundPhoto
-                : manageModal.data!.backgroundPhoto;
-            await pageProvider.update(manageModal.data!.id, formData);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleEditSubmit = createSubmitHandler(() =>
+        submitManage((page) =>
+            pageProvider.update(page.id, {
+                ...formData,
+                profilePhoto: formData.profilePhoto || page.profilePhoto,
+                backgroundPhoto: formData.backgroundPhoto || page.backgroundPhoto,
+            }),
+        ),
+    );
 
-    const handleStatusSubmit = async (newStatus: number) => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await pageProvider.updateStatus(manageModal.data!.id, new StatusBody(newStatus));
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleStatusSubmit = (newStatus: number) =>
+        submitManage((page) => pageProvider.updateStatus(page.id, new StatusBody(newStatus)));
 
-    const handleDelete = async () => {
-        if (!manageModal.data) return;
-        wrap(async () => {
-            await pageProvider.delete(manageModal.data!.id);
-            manageModal.close();
-            onSuccess();
-        }).catch(() => {});
-    };
+    const handleDelete = () => submitManage((page) => pageProvider.delete(page.id));
 
     const handleChange = createFormHandler(setFormData);
 
     const handleParticipantsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
-        setFormData((prev) => ({ ...prev, participants: selected }));
+        const userIds = Array.from(e.target.selectedOptions).map((o) => o.value);
+        setFormData((prev) => ({ ...prev, userIds }));
     };
 
     return {

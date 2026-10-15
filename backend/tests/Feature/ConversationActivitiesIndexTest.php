@@ -44,8 +44,8 @@ class ConversationActivitiesIndexTest extends ApiTestCase
 
         $result = $this->get('/api/conversation-activities', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertIsArray($result['json']);
-        $this->assertCount(3, $result['json']);
+        $this->assertIsArray($result['json']['data']);
+        $this->assertCount(3, $result['json']['data']);
     }
 
     final public function testPagination(): void
@@ -63,8 +63,11 @@ class ConversationActivitiesIndexTest extends ApiTestCase
 
         $result = $this->get('/api/conversation-activities?page=2&limit=5', $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertIsArray($result['json']);
-        $this->assertCount(5, $result['json']);
+        $this->assertIsArray($result['json']['data']);
+        $this->assertCount(5, $result['json']['data']);
+        $this->assertEquals(15, $result['json']['pagination']['total']);
+        $this->assertEquals(2, $result['json']['pagination']['page']);
+        $this->assertTrue($result['json']['pagination']['hasNextPage']);
     }
 
     final public function testFilterUserId(): void
@@ -89,8 +92,8 @@ class ConversationActivitiesIndexTest extends ApiTestCase
 
         $result = $this->get('/api/conversation-activities?filter[userId]=' . $receiver2->id->toString(), $user);
         $this->assertEquals(200, $result['status']);
-        $this->assertIsArray($result['json']);
-        $this->assertCount(2, $result['json']);
+        $this->assertIsArray($result['json']['data']);
+        $this->assertCount(2, $result['json']['data']);
     }
 
     final public function testInvalidParams(): void

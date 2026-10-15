@@ -67,7 +67,7 @@ class NotificationUpdateStatusTest extends ApiTestCase
         $result = $this->patch("/api/notifications/{$notification->id->toString()}/status", ['status' => 999], $owner);
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('status', $result['json']['errors']);
-        $this->assertEquals(['The value you selected is not a valid choice.'], $result['json']['errors']['status']);
+        $this->assertEquals(['This value was of an unexpected type.'], $result['json']['errors']['status']);
     }
 
     final public function testSuccess(): void

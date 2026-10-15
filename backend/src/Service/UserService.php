@@ -12,7 +12,7 @@ use App\Enum\{ColorEnum,
     UserStatusEnum};
 use App\Event\{NotificationEvent, UserRegisterEmailEvent};
 use App\Repository\{UserDisciplineRepository, UserRegisterRepository, UserRepository, UserRoleRepository};
-use App\Security\Voter\UserRoleVoter;
+use App\Security\Voter\AssignAdminRoleVoter;
 use DateMalformedStringException;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Random\RandomException;
@@ -53,8 +53,8 @@ readonly class UserService
             $dto->country,
             $dto->theme,
             $dto->color,
-            base64_decode($dto->profilePhoto, true),
-            base64_decode($dto->backgroundPhoto, true),
+            $dto->profilePhoto,
+            $dto->backgroundPhoto,
             $dto->bio,
             UserStatusEnum::Pending,
         );
@@ -101,8 +101,8 @@ readonly class UserService
             $dto->country,
             ThemeEnum::Light,
             ColorEnum::Blue,
-            file_get_contents(__DIR__ . '/../../public/profile.webp'),
-            file_get_contents(__DIR__ . '/../../public/background.webp'),
+            base64_encode(file_get_contents(__DIR__ . '/../../public/profile.webp')),
+            base64_encode(file_get_contents(__DIR__ . '/../../public/background.webp')),
             sprintf('%s %s bio', $dto->firstName, $dto->lastName),
             UserStatusEnum::Pending,
         );
@@ -130,7 +130,7 @@ readonly class UserService
      */
     final public function update(Uuid $userId, UserUpdateDto $dto): Uuid
     {
-        if (! $this->authorizationChecker->isGranted(UserRoleVoter::ASSIGN_ADMIN_ROLE, $dto)) {
+        if (! $this->authorizationChecker->isGranted(AssignAdminRoleVoter::ASSIGN_ADMIN_ROLE, $dto)) {
             throw new ValidatorException('Role not allowed for this user.');
         }
 
@@ -147,8 +147,8 @@ readonly class UserService
         $user->country = $dto->country;
         $user->theme = $dto->theme;
         $user->color = $dto->color;
-        $user->profilePhoto = base64_decode($dto->profilePhoto, true);
-        $user->backgroundPhoto = base64_decode($dto->backgroundPhoto, true);
+        $user->profilePhoto = $dto->profilePhoto;
+        $user->backgroundPhoto = $dto->backgroundPhoto;
         $user->bio = $dto->bio;
 
         if (! empty($dto->password)) {

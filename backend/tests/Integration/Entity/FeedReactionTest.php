@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Integration\Entity;
+
+use App\Entity\{Feed, FeedReaction, User};
+use App\Enum\{ElementStatusEnum, FeedReactionEnum};
+use PHPUnit\Framework\TestCase;
+
+class FeedReactionTest extends TestCase
+{
+    final public function testEntityCanBeCreatedAndGettersWork(): void
+    {
+        $feed = $this->createStub(Feed::class);
+        $user = $this->createStub(User::class);
+        $reaction = FeedReactionEnum::Love;
+        $status = ElementStatusEnum::Active;
+        $entity = new FeedReaction($feed, $user, $reaction, $status);
+        $this->assertInstanceOf(FeedReaction::class, $entity);
+        $this->assertSame($feed, $entity->feed);
+        $this->assertSame($user, $entity->user);
+        $this->assertSame($reaction, $entity->reaction);
+        $this->assertSame($status, $entity->status);
+    }
+}

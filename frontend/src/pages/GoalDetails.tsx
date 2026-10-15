@@ -9,7 +9,7 @@ import { useGoalModals } from '../services/Goal/useGoalModals';
 export default function GoalDetails() {
     const { link } = useParams<{ link: string }>();
     const detailsProps = useGoalDetails(link);
-    const modalsService = useGoalModals(detailsProps.refreshGoal);
+    const modalsService = useGoalModals(detailsProps.refreshGoal, detailsProps.currentUser);
     const interactions = useGoalInteractions(detailsProps.refreshGoal);
 
     return (

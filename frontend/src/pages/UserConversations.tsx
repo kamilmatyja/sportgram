@@ -37,6 +37,7 @@ export default function UserConversations() {
             handleTyping={conversationsService.handleTyping}
             handleSendMessage={conversationsService.handleSendMessage}
             loadEarlierMessages={conversationsService.loadEarlierMessages}
+            fieldErrors={conversationsService.fieldErrors}
         />
     );
 }

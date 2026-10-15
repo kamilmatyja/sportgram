@@ -2,12 +2,8 @@
 
 namespace App\Enum;
 
-use App\Trait\EnumValuesTrait;
-
 enum RoleEnum: int
 {
-    use EnumValuesTrait;
-
     public const string ROLE_PARTICIPANT = 'ROLE_PARTICIPANT';
 
     public const string ROLE_ORGANIZER = 'ROLE_ORGANIZER';
@@ -27,9 +23,9 @@ enum RoleEnum: int
         };
     }
 
-    /** @return int[] */
+    /** @return self[] */
     public static function nano(): array
     {
-        return [self::Participant->value, self::Organizer->value];
+        return [self::Participant, self::Organizer];
     }
 }

@@ -3,131 +3,95 @@ import { useEffect, useState } from 'react';
 import { StatusBody } from '../../api/body/StatusBody';
 import { EventProvider } from '../../api/providers/EventProvider';
 import { PageProvider } from '../../api/providers/PageProvider';
-import { UserProvider } from '../../api/providers/UserProvider';
 import { EventFilterQuery } from '../../api/queries/EventFilterQuery';
 import { EventIndexQuery } from '../../api/queries/EventIndexQuery';
-import { EventListFilterQuery } from '../../api/queries/EventListFilterQuery';
-import { EventListIndexQuery } from '../../api/queries/EventListIndexQuery';
-import { PageFilterQuery } from '../../api/queries/PageFilterQuery';
+import { EVENT_INCLUDES } from '../../api/queries/includes';
 import { PageIndexQuery } from '../../api/queries/PageIndexQuery';
 import { EventDisciplineDistanceListResponse } from '../../api/responses/EventDisciplineDistanceListResponse';
 import { EventResponse } from '../../api/responses/EventResponse';
 import { PageResponse } from '../../api/responses/PageResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
-import { fetchRelatedUsers } from '../../utils/fetchRelatedUsers';
-import { useAppAccess } from '../../utils/hooks/useAppAccess';
+import { useTranslation } from '../../context/TranslationContext';
+import { PaginationEnum } from '../../enums/PaginationEnum';
+import { getErrorMessage } from '../../utils/api';
+import { fetchDistanceLists } from '../../utils/fetchDistanceLists';
+import { useActionState } from '../../utils/hooks/useActionState';
+import { isAccessReady, useAppAccess } from '../../utils/hooks/useAppAccess';
 import { useDataFetch } from '../../utils/hooks/useDataFetch';
+import { firstOrNotFound } from '../../utils/query';
+
+async function findPageByParticipantId(pageParticipantId: string): Promise<PageResponse | null> {
+    const pageProvider = new PageProvider();
+    const indexDto = new PageIndexQuery();
+    indexDto.limit = PaginationEnum.LG;
+    indexDto.include = ['pageParticipants'];
+
+    for (let page = 1; ; page++) {
+        indexDto.page = page;
+        const response = await pageProvider.index(indexDto);
+        const found = response.data.find((p) => p.participants?.some((part) => part.id === pageParticipantId));
+        if (found) return found;
+        if (!response.pagination.hasNextPage || response.data.length === 0) return null;
+    }
+}
 
 export function useEventDetails(link?: string) {
+    const { t } = useTranslation();
     const access = useAppAccess();
+    const { actionLoading, runAction } = useActionState();
 
-    const {
-        data: eventObj,
-        loading: eventLoading,
-        error: eventError,
-        executeFetch: fetchEvent,
-    } = useDataFetch<EventResponse>();
+    const { data: eventObj, loading: eventLoading, error: eventError, executeFetch } = useDataFetch<EventResponse>();
     const {
         data: distanceLists,
         loading: listsLoading,
-        executeFetch: fetchLists,
+        executeFetch: executeListsFetch,
     } = useDataFetch<EventDisciplineDistanceListResponse[]>();
 
     const [ownerPage, setOwnerPage] = useState<PageResponse | null>(null);
-    const [userEnrollments, setUserEnrollments] = useState<string[]>([]);
     const [showListsModal, setShowListsModal] = useState(false);
     const [selectedDistanceId, setSelectedDistanceId] = useState<string>('');
     const [listUsers, setListUsers] = useState<Record<string, UserResponse>>({});
-    const [actionLoading, setActionLoading] = useState(false);
 
     const eventProvider = new EventProvider();
-    const pageProvider = new PageProvider();
-    const userProvider = new UserProvider();
 
     const fetchEventData = () => {
-        if (!link || !access.currentUser) return;
+        const currentUser = access.currentUser;
+        if (!link || !currentUser) return;
 
-        fetchEvent(
-            async () => {
-                const filterDto = new EventFilterQuery();
-                filterDto.link = link;
-                const indexDto = new EventIndexQuery();
-                indexDto.filter = filterDto;
-                indexDto.include = ['eventDisciplines', 'eventDisciplineDistances', 'eventDisciplineSubDistances'];
+        executeFetch(async () => {
+            const filterDto = new EventFilterQuery();
+            filterDto.link = link;
+            const indexDto = new EventIndexQuery();
+            indexDto.filter = filterDto;
+            indexDto.include = EVENT_INCLUDES;
 
-                const events = await eventProvider.index(indexDto);
-                if (events.length === 0) {
-                    throw { error: 'noRecords' };
-                }
+            const targetEvent = firstOrNotFound(await eventProvider.index(indexDto));
 
-                const targetEvent = events[0];
+            const page = await findPageByParticipantId(targetEvent.pageParticipantId);
+            if (!page) throw { error: 'notFound.message' };
+            setOwnerPage(page);
 
-                let targetPage = null;
-                const pageFilterDto = new PageFilterQuery();
-                pageFilterDto.userId = access.currentUser!.id;
-                const pageIndexDto = new PageIndexQuery();
-                pageIndexDto.filter = pageFilterDto;
-                pageIndexDto.limit = 100;
-                pageIndexDto.include = ['pageParticipants'];
-
-                const myPages = await pageProvider.index(pageIndexDto);
-
-                for (const p of myPages) {
-                    if (p.participants?.some((part) => part.id === targetEvent.pageParticipantId)) {
-                        targetPage = p;
-                        break;
-                    }
-                }
-
-                setOwnerPage(targetPage);
-
-                if (access.isParticipant) {
-                    const enrollments: string[] = [];
-                    const distIds = targetEvent.disciplines.flatMap((d) => d.distances.map((dist) => dist.id));
-                    await Promise.all(
-                        distIds.map(async (distId) => {
-                            const lFilter = new EventListFilterQuery();
-                            lFilter.userId = access.currentUser!.id;
-                            const lIndex = new EventListIndexQuery();
-                            lIndex.filter = lFilter;
-                            const lists = await eventProvider.indexList(distId, lIndex);
-                            if (lists.length > 0) enrollments.push(distId);
-                        }),
-                    );
-                    setUserEnrollments(enrollments);
-                }
-
-                return targetEvent;
-            },
-            null as unknown as EventResponse,
-        );
+            return targetEvent;
+        });
     };
 
     useEffect(() => {
-        if (!access.authLoading && !access.authError) {
+        if (isAccessReady(access)) {
             fetchEventData();
         }
     }, [link, access.authLoading, access.authError]);
 
-    const fetchDistanceLists = (distId: string) => {
-        fetchLists(async () => {
-            const indexQuery = new EventListIndexQuery();
-            indexQuery.limit = 100;
-            indexQuery.include = ['eventListResults', 'eventListSubResults'];
-            const lists = await eventProvider.indexList(distId, indexQuery);
-
-            const userIds = lists.map((l) => l.userId);
-            const updatedUsers = await fetchRelatedUsers(userIds, listUsers, userProvider);
-            setListUsers(updatedUsers);
-
+    const refreshLists = (distanceId: string) =>
+        executeListsFetch(async () => {
+            const { lists, users } = await fetchDistanceLists(distanceId, listUsers);
+            setListUsers(users);
             return lists;
         }, []);
-    };
 
-    const openListsModal = (distId: string) => {
-        setSelectedDistanceId(distId);
+    const openListsModal = (distanceId: string) => {
+        setSelectedDistanceId(distanceId);
         setShowListsModal(true);
-        fetchDistanceLists(distId);
+        refreshLists(distanceId);
     };
 
     const closeListsModal = () => {
@@ -135,53 +99,34 @@ export function useEventDetails(link?: string) {
         setSelectedDistanceId('');
     };
 
-    const handleEnroll = async (distId: string) => {
-        setActionLoading(true);
-        try {
-            await eventProvider.createList(distId);
-            setUserEnrollments((prev) => [...prev, distId]);
-            if (selectedDistanceId === distId) {
-                fetchDistanceLists(distId);
+    const runListAction = (action: () => Promise<unknown>) =>
+        runAction('list', action).catch((err: unknown) => alert(t(getErrorMessage(err))));
+
+    const handleEnroll = (distanceId: string) =>
+        runListAction(async () => {
+            await eventProvider.createList(distanceId);
+            if (selectedDistanceId === distanceId) {
+                await refreshLists(distanceId);
             }
-        } catch (e: any) {
-            alert(e.error);
-        } finally {
-            setActionLoading(false);
-        }
-    };
+        });
 
-    const handleListStatusUpdate = async (listId: string, status: number) => {
-        setActionLoading(true);
-        try {
+    const handleListStatusUpdate = (listId: string, status: number) =>
+        runListAction(async () => {
             await eventProvider.updateListStatus(listId, new StatusBody(status));
-            fetchDistanceLists(selectedDistanceId);
-        } catch (err: any) {
-            alert(err.error);
-        } finally {
-            setActionLoading(false);
-        }
-    };
+            await refreshLists(selectedDistanceId);
+        });
 
-    const handleDeleteList = async (listId: string) => {
-        setActionLoading(true);
-        try {
+    const handleDeleteList = (listId: string) =>
+        runListAction(async () => {
             await eventProvider.deleteList(listId);
-            fetchDistanceLists(selectedDistanceId);
-        } catch (err: any) {
-            alert(err.error);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const refreshEvent = () => fetchEventData();
+            await refreshLists(selectedDistanceId);
+        });
 
     return {
         ...access,
         eventObj,
         ownerPage,
-        userEnrollments,
-        isMyProfile: ownerPage !== null,
+        isMyProfile: !!ownerPage?.participants?.some((part) => part.userId === access.currentUser?.id),
         loading: access.authLoading || eventLoading,
         error: access.authError || eventError,
         showListsModal,
@@ -191,11 +136,11 @@ export function useEventDetails(link?: string) {
         distanceLists: distanceLists || [],
         listUsers,
         listsLoading,
-        actionLoading,
+        actionLoading: actionLoading !== null,
         handleEnroll,
         handleListStatusUpdate,
         handleDeleteList,
-        refreshEvent,
-        refreshLists: fetchDistanceLists,
+        refreshEvent: fetchEventData,
+        refreshLists,
     };
 }

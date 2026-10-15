@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Dto\{ConversationActivityIndexDto, ConversationDto, ConversationIndexDto, ConversationStatusDto};
 use App\Http\ApiResponse;
-use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, Ok, Unauthorized};
+use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\{ConversationActivityResource, ConversationResource};
 use App\Security\Voter\{ConversationActivityCreatorVoter,
     ConversationActivityVoter,
@@ -27,7 +27,7 @@ class ConversationController extends AbstractController
         summary: 'Create conversation',
         requestBody: new Body(ConversationDto::class),
         tags: ['conversations'],
-        responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
+        responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function create(
         Uuid $id,
@@ -46,7 +46,7 @@ class ConversationController extends AbstractController
         summary: 'Update conversation',
         requestBody: new Body(ConversationDto::class),
         tags: ['conversations'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function update(
         Uuid $id,
@@ -65,7 +65,7 @@ class ConversationController extends AbstractController
         summary: 'Update conversation status',
         requestBody: new Body(ConversationStatusDto::class),
         tags: ['conversations'],
-        responses: [new Ok(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateStatus(
         Uuid $id,
@@ -83,7 +83,7 @@ class ConversationController extends AbstractController
     #[OA\Delete(
         summary: 'Delete conversation',
         tags: ['conversations'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function delete(
         Uuid $id,
@@ -118,7 +118,7 @@ class ConversationController extends AbstractController
     #[OA\Get(
         summary: 'Details of conversation',
         tags: ['conversations'],
-        responses: [new Item(ConversationResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(ConversationResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function details(
         Uuid $id,
@@ -131,12 +131,12 @@ class ConversationController extends AbstractController
         return ApiResponse::elements($data);
     }
 
-    #[Route('/api/conversation-activitiy-users/{id}/updated-at', name: 'conversation_activity_update_updated_at', methods: ['PATCH'])]
+    #[Route('/api/conversation-activity-users/{id}/updated-at', name: 'conversation_activity_update_updated_at', methods: ['PATCH'])]
     #[IsGranted(ConversationActivityCreatorVoter::CONVERSATION_ACTIVITY_CREATOR, subject: 'id')]
     #[OA\Patch(
         summary: 'Update conversation activity updated_at',
         tags: ['conversations'],
-        responses: [new Ok(), new Conflict(), new Unauthorized(), new Forbidden()],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
     final public function updateActivityUpdatedAt(
         Uuid $id,
@@ -171,7 +171,7 @@ class ConversationController extends AbstractController
     #[OA\Get(
         summary: 'Details of conversation activity',
         tags: ['conversations'],
-        responses: [new Item(ConversationActivityResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Item(ConversationActivityResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function detailsActivity(
         Uuid $id,
