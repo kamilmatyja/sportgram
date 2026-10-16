@@ -2,7 +2,12 @@
 
 namespace App\Service;
 
-use App\Dto\{ElementStatusDto, EventDto, EventIndexDto, EventListIndexDto, EventResultDto, SaveStatusDto};
+use App\Dto\{ElementStatusDto,
+    EventDto,
+    EventIndexDto,
+    EventListIndexDto,
+    EventResultDto,
+    SaveStatusDto};
 use App\Entity\{Event,
     EventDiscipline,
     EventDisciplineDistance,

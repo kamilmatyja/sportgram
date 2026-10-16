@@ -15,6 +15,7 @@ use DateTimeImmutable;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use PHPUnit\Framework\Attributes\{AllowMockObjectsWithoutExpectations, DataProvider};
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Exception\ValidatorException;
@@ -33,6 +34,8 @@ class SignServiceTest extends ServiceTestCase
 
     private JWTTokenManagerInterface&MockObject $jwtManager;
 
+    private Security&MockObject $security;
+
     private SignService $service;
 
     protected function setUp(): void
@@ -42,6 +45,7 @@ class SignServiceTest extends ServiceTestCase
         $this->userSignRepository = $this->createMock(UserSignRepository::class);
         $this->hasher = $this->createMock(UserPasswordHasherInterface::class);
         $this->jwtManager = $this->createMock(JWTTokenManagerInterface::class);
+        $this->security = $this->createMock(Security::class);
 
         $this->service = new SignService(
             $this->userRepository,
@@ -50,6 +54,7 @@ class SignServiceTest extends ServiceTestCase
             $this->hasher,
             $this->jwtManager,
             $this->dispatcher(),
+            $this->security,
         );
     }
 
@@ -311,6 +316,7 @@ class SignServiceTest extends ServiceTestCase
     final public function testRefreshReturnsNewJwt(string $updatedAt): void
     {
         $user = $this->activeUser();
+        $this->security->method('getUser')->willReturn($user);
         $userSign = self::entity(UserSignFactory::make(['user' => $user, 'status' => UnauthorizedStatusEnum::Correct]));
         $userSign->updatedAt = new DateTimeImmutable($updatedAt);
         $this->userSignRepository->expects($this->once())->method('findById')->with($userSign->id)->willReturn($userSign);
@@ -339,6 +345,7 @@ class SignServiceTest extends ServiceTestCase
         string $message,
     ): void {
         $user = self::entity(UserFactory::make(['status' => $userStatus]));
+        $this->security->method('getUser')->willReturn($user);
         $userSign = self::entity(UserSignFactory::make(['user' => $user, 'status' => $status]));
         $userSign->updatedAt = new DateTimeImmutable($updatedAt);
         $this->userSignRepository->method('findById')->willReturn($userSign);
@@ -352,12 +359,14 @@ class SignServiceTest extends ServiceTestCase
 
     final public function testRefreshPropagatesNotFound(): void
     {
+        $user = self::user();
+        $this->security->method('getUser')->willReturn($user);
         $this->userSignRepository->method('findById')->willThrowException(new NotFoundHttpException());
         $this->jwtManager->expects($this->never())->method('create');
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->refresh(self::user()->id);
+        $this->service->refresh($user->id);
     }
 
     private function activeUser(): User

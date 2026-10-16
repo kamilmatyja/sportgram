@@ -129,7 +129,6 @@ class PageServiceTest extends ServiceTestCase
         $this->assertNotifications([
             [$anna, NotificationTypeEnum::PageParticipant, 'Runners', '/pages/runners'],
             [$piotr, NotificationTypeEnum::PageParticipant, 'Runners', '/pages/runners'],
-            [$this->currentUser, NotificationTypeEnum::PageParticipant, 'Runners', '/pages/runners'],
         ]);
     }
 
@@ -153,7 +152,7 @@ class PageServiceTest extends ServiceTestCase
             [[$this->currentUser, SaveStatusEnum::Accepted], [$anna, SaveStatusEnum::Pending]],
             array_map(static fn (PageParticipant $p): array => [$p->user, $p->status], $savedParticipants),
         );
-        $this->assertCount(2, $this->dispatched);
+        $this->assertCount(1, $this->dispatched);
     }
 
     final public function testCreateWithoutParticipantsAddsOnlyCurrentUser(): void
@@ -173,7 +172,7 @@ class PageServiceTest extends ServiceTestCase
 
         $this->assertSame($this->currentUser, $savedParticipants[0]->user);
         $this->assertSame(SaveStatusEnum::Accepted, $savedParticipants[0]->status);
-        $this->assertNotifications([[$this->currentUser, NotificationTypeEnum::PageParticipant, 'Runners', '/pages/runners']]);
+        $this->assertNotifications([]);
     }
 
     final public function testCreateRejectsNonFriendParticipant(): void

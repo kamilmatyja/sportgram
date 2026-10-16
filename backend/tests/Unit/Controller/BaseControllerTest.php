@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\{Request, RequestStack, Response};
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\Uid\Uuid;
 
 class BaseControllerTest extends ControllerTestCase
 {
@@ -20,16 +21,17 @@ class BaseControllerTest extends ControllerTestCase
     }
 
     #[DataProvider('routeProvider')]
-    final public function testRouting(string $action, string $path, string $method, string $name, string $forwardedController): void
+    final public function testRouting(string $action, string $path, string $method, string $name, string $attribute, ?string $subject): void
     {
         $this->assertRoute([BaseController::class, $action], $path, [$method], $name);
-        $this->assertNotGranted([BaseController::class, $action]);
+        $this->assertGrantedBy([BaseController::class, $action], $attribute, $subject);
     }
 
     public static function routeProvider(): iterable
     {
-        yield 'swagger' => ['swagger', '/api/doc', 'GET', 'swagger_ui', 'nelmio_api_doc.controller.swagger_ui'];
-        yield 'swaggerJson' => ['swaggerJson', '/api/doc.json', 'GET', 'swagger_json', 'nelmio_api_doc.controller.swagger_json'];
+        yield 'swagger' => ['swagger', '/api/doc', 'GET', 'swagger_ui', 'PUBLIC_ACCESS', null];
+        yield 'swaggerJson' => ['swaggerJson', '/api/doc.json', 'GET', 'swagger_json', 'PUBLIC_ACCESS', null];
+        yield 'health' => ['health', '/api/health', 'GET', 'health', 'PUBLIC_ACCESS', null];
     }
 
     final public function testRoutesAreAllCovered(): void
@@ -37,7 +39,7 @@ class BaseControllerTest extends ControllerTestCase
         $this->assertCoversAllRoutes(BaseController::class, array_keys(iterator_to_array(self::routeProvider())));
     }
 
-    #[DataProvider('routeProvider')]
+    #[DataProvider('forwardProvider')]
     final public function testForwardsToNelmioController(string $action, string $path, string $method, string $name, string $forwardedController): void
     {
         $request = Request::create($path, $method);
@@ -59,6 +61,22 @@ class BaseControllerTest extends ControllerTestCase
         $this->controller->setContainer($this->container($kernel, $request));
 
         $this->assertSame($expected, $this->controller->{$action}());
+    }
+
+    public static function forwardProvider(): iterable
+    {
+        yield 'swagger' => ['swagger', '/api/doc', 'GET', 'swagger_ui', 'nelmio_api_doc.controller.swagger_ui'];
+        yield 'swaggerJson' => ['swaggerJson', '/api/doc.json', 'GET', 'swagger_json', 'nelmio_api_doc.controller.swagger_json'];
+    }
+
+    final public function testHealth(): void
+    {
+        $response = $this->controller->health();
+
+        $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $content = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('id', $content);
+        $this->assertTrue(Uuid::isValid($content['id']));
     }
 
     private function container(HttpKernelInterface $kernel, Request $request): Container

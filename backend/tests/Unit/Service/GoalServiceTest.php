@@ -109,7 +109,6 @@ class GoalServiceTest extends ServiceTestCase
         );
         $this->assertNotifications([
             [$friend, NotificationTypeEnum::GoalParticipant, 'Run 100 km', '/goals/run-100'],
-            [$this->currentUser, NotificationTypeEnum::GoalParticipant, 'Run 100 km', '/goals/run-100'],
         ]);
     }
 
@@ -127,9 +126,7 @@ class GoalServiceTest extends ServiceTestCase
 
         $this->assertSame([$this->currentUser->id], $dto->userIds);
         $this->assertSame(SaveStatusEnum::Accepted, $participants[0]->status);
-        $this->assertNotifications([
-            [$this->currentUser, NotificationTypeEnum::GoalParticipant, 'Run 100 km', '/goals/run-100'],
-        ]);
+        $this->assertNotifications([]);
     }
 
     final public function testCreateWithoutTimesAndTime(): void

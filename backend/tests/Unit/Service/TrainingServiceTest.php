@@ -11,7 +11,12 @@ use App\Dto\{ElementStatusDto,
     TrainingDisciplineSubDistanceDto,
     TrainingDto,
     TrainingIndexDto};
-use App\Entity\{Training, TrainingDiscipline, TrainingDisciplineDistance, TrainingParticipant, User};
+use App\Entity\{
+    Training,
+    TrainingDiscipline,
+    TrainingDisciplineDistance,
+    TrainingParticipant,
+    User};
 use App\Enum\{DisciplineEnum, ElementStatusEnum, NotificationTypeEnum, SaveStatusEnum};
 use App\Event\{NotificationEvent, TrainingProcessedEvent};
 use App\Repository\{FeedRepository,
@@ -164,7 +169,6 @@ class TrainingServiceTest extends ServiceTestCase
             ['notification', $friend, NotificationTypeEnum::TrainingParticipant, 'Morning run', '/trainings/morning-run'],
             ['processed', $this->currentUser, $distances[0]],
             ['processed', $this->currentUser, $distances[1]],
-            ['notification', $this->currentUser, NotificationTypeEnum::TrainingParticipant, 'Morning run', '/trainings/morning-run'],
         ]);
     }
 
@@ -185,9 +189,7 @@ class TrainingServiceTest extends ServiceTestCase
 
         $this->assertSame([$this->currentUser->id], $dto->userIds);
         $this->assertSame(SaveStatusEnum::Accepted, $participants[0]->status);
-        $this->assertEvents([
-            ['notification', $this->currentUser, NotificationTypeEnum::TrainingParticipant, 'Morning run', '/trainings/morning-run'],
-        ]);
+        $this->assertEvents([]);
     }
 
     final public function testCreateWithDisciplineWithoutDistancesDispatchesNoProcessedEvents(): void
@@ -200,9 +202,7 @@ class TrainingServiceTest extends ServiceTestCase
 
         $this->service->create($dto);
 
-        $this->assertEvents([
-            ['notification', $this->currentUser, NotificationTypeEnum::TrainingParticipant, 'Morning run', '/trainings/morning-run'],
-        ]);
+        $this->assertEvents([]);
     }
 
     final public function testCreateRejectsNonFriendParticipant(): void

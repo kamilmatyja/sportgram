@@ -498,7 +498,6 @@ class EventServiceTest extends ServiceTestCase
 
         $this->assertSame($list->id, $this->service->updateListStatus($list->id, $dto));
         $this->assertNotifications([
-            [$event->pageParticipant->user, NotificationTypeEnum::EventListStatus, 'City Run', '/events/city-run'],
             [$participant, NotificationTypeEnum::EventListStatus, 'City Run', '/events/city-run'],
         ]);
     }
