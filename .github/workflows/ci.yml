@@ -1,0 +1,46 @@
+name: CI / CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 🏗️ Run 'make build'
+        run: make build &
+
+      - name: ⏳ Wait for services and check URLs
+        run: |
+          echo "Oczekiwanie na uruchomienie usług..."
+          npx wait-on -t 120000 \
+            http-get://localhost:8080/api/health \
+            http-get://localhost:8080/api/doc.json \
+            http-get://localhost:8080/api/doc \
+            http-get://localhost:5173 \
+            http-get://localhost:8025
+          echo "Wszystkie zadeklarowane usługi działają poprawnie!"
+
+      - name: 🧪 Run PHPUnit
+        run: docker compose exec -T php vendor/bin/phpunit
+
+      - name: 🧹 Run PHP CS Fixer
+        run: docker compose exec -T php vendor/bin/php-cs-fixer fix --dry-run --diff
+
+      - name: 💅 Check frontend code formatting (ESLint & Prettier)
+        run: |
+          cd frontend
+          npx eslint .
+          npx prettier --check .
