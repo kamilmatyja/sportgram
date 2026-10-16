@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { en } from '../locales/en';
 import { pl } from '../locales/pl';
@@ -17,7 +17,7 @@ const isSupportedLang = (lang: string | null): lang is string =>
     lang !== null && Object.prototype.hasOwnProperty.call(translations, lang);
 
 const getInitialLang = (): string => {
-    const stored = localStorage.getItem('lang');
+    const stored = localStorage.getItem('language');
     return isSupportedLang(stored) ? stored : DEFAULT_LANG;
 };
 
@@ -30,6 +30,11 @@ interface TranslationProviderProps {
 export const TranslationProvider = ({ children }: TranslationProviderProps) => {
     const [lang, setLang] = useState<string>(getInitialLang);
 
+    useEffect(() => {
+        document.documentElement.setAttribute('lang', lang);
+        localStorage.setItem('language', lang);
+    }, [lang]);
+
     const t = useCallback(
         (path: string): string => {
             const result = path.split('.').reduce((obj: any, key: string) => obj?.[key], translations[lang]);
@@ -41,7 +46,6 @@ export const TranslationProvider = ({ children }: TranslationProviderProps) => {
     const setLanguage = useCallback((newLang: string) => {
         const validLang = isSupportedLang(newLang) ? newLang : DEFAULT_LANG;
         setLang(validLang);
-        localStorage.setItem('lang', validLang);
     }, []);
 
     const value = useMemo(() => ({ t, lang, setLanguage }), [t, lang, setLanguage]);

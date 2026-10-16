@@ -2,6 +2,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 
 interface ThemeContextType {
     theme: string;
+    setTheme: (newTheme: string) => void;
     toggleTheme: () => void;
 }
 
@@ -19,16 +20,22 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-    const [theme, setTheme] = useState<string>(getInitialTheme);
+    const [theme, setThemeState] = useState<string>(getInitialTheme);
 
     useEffect(() => {
         document.documentElement.setAttribute('data-bs-theme', theme);
         localStorage.setItem('theme', theme);
     }, [theme]);
 
-    const toggleTheme = useCallback(() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light')), []);
+    const setTheme = useCallback((newTheme: string) => {
+        if (THEMES.includes(newTheme)) {
+            setThemeState(newTheme);
+        }
+    }, []);
 
-    const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
+    const toggleTheme = useCallback(() => setThemeState((prev) => (prev === 'light' ? 'dark' : 'light')), []);
+
+    const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, setTheme, toggleTheme]);
 
     return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };

@@ -19,13 +19,25 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 🏗️ Run 'make build'
-        run: make build &
+      - name: 🏗️ Build and run services
+        run: |
+          cp backend/.env.example backend/.env
+          cp frontend/.env.example frontend/.env
+          docker compose up -d --build
+          docker compose exec php composer install
+          docker compose exec php php bin/console app:generate-app-secret
+          docker compose exec php php bin/console doctrine:migrations:migrate -n
+          docker compose exec  php php bin/console lexik:jwt:generate-keypair --skip-if-exists
+          docker compose exec php php bin/console app:generate-vapid-keys
+          cd frontend
+          npm install --force
+          npm run build
+          npm run dev &
 
       - name: ⏳ Wait for services and check URLs
         run: |
           echo "Oczekiwanie na uruchomienie usług..."
-          npx wait-on -t 300000 \
+          npx wait-on -t 100000 \
             http-get://localhost:8080/api/health \
             http-get://localhost:8080/api/doc.json \
             http-get://localhost:8080/api/doc \

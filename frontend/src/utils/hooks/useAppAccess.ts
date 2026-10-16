@@ -9,8 +9,12 @@ import { UserIndexQuery } from '../../api/queries/UserIndexQuery';
 import { FriendResponse } from '../../api/responses/FriendResponse';
 import { UserResponse } from '../../api/responses/UserResponse';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from '../../context/TranslationContext';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import { LanguageEnum } from '../../enums/LanguageEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
+import { ThemeEnum } from '../../enums/ThemeEnum';
 import { getErrorMessage } from '../api';
 
 interface AppAccessOptions {
@@ -33,6 +37,8 @@ const emptyRoles = {
 
 export function useAppAccess({ targetLink, targetId, requireFriendship, requireOwner }: AppAccessOptions = {}) {
     const { signId } = useAuth();
+    const { setTheme } = useTheme();
+    const { setLanguage } = useTranslation();
 
     const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
     const [targetUser, setTargetUser] = useState<UserResponse | null>(null);
@@ -70,6 +76,14 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
             if (currentUserArr.length === 0) throw { error: 'unauthorizedEdit' };
 
             const currentUsr = currentUserArr[0];
+
+            if (isLatest()) {
+                if (currentUsr.theme === ThemeEnum.DARK) setTheme('dark');
+                else if (currentUsr.theme === ThemeEnum.LIGHT) setTheme('light');
+
+                if (currentUsr.language === LanguageEnum.ENGLISH) setLanguage('en');
+                else if (currentUsr.language === LanguageEnum.POLISH) setLanguage('pl');
+            }
 
             const isAdmin = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ADMINISTRATOR) ?? false;
             const isOrganizer = currentUsr.roles?.some((r: any) => r.role === RoleEnum.ORGANIZER) ?? false;
@@ -136,7 +150,7 @@ export function useAppAccess({ targetLink, targetId, requireFriendship, requireO
         } finally {
             if (isLatest()) setAuthLoading(false);
         }
-    }, [targetLink, targetId, requireFriendship, requireOwner, signId]);
+    }, [targetLink, targetId, requireFriendship, requireOwner, signId, setTheme, setLanguage]);
 
     useEffect(() => {
         refreshAccess();
