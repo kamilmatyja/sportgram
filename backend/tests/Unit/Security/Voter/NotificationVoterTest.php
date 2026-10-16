@@ -76,13 +76,13 @@ class NotificationVoterTest extends VoterTestCase
     {
         $this->notificationRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), NotificationVoter::NOTIFICATION);
+        $this->assertDenied($this->voter, null, Uuid::v4(), NotificationVoter::NOTIFICATION);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, NotificationVoter::NOTIFICATION);
     }
 
@@ -94,13 +94,13 @@ class NotificationVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [NotificationVoter::NOTIFICATION]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [NotificationVoter::NOTIFICATION]);
     }
 
     private function notificationOwnedBy(User $owner): Notification
     {
         $notification = NotificationFactory::make(['user' => $owner]);
-        $notification->id = Uuid::v7();
+        $notification->id = Uuid::v4();
 
         return $notification;
     }

@@ -89,7 +89,7 @@ class TrainingDisciplineRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->trainingDisciplineRepository->findOrFail(Uuid::v7());
+        $this->trainingDisciplineRepository->findOrFail(Uuid::v4());
     }
 
     private function discipline(?DisciplineEnum $discipline = null): TrainingDiscipline

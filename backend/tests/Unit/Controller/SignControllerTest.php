@@ -55,7 +55,7 @@ class SignControllerTest extends ControllerTestCase
     {
         $dto = new UserSignDto();
         $dto->password = 'Secret-password-1';
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('sign')->with($dto)->willReturn($id);
 
         $response = $this->controller->sign($dto, $this->service());
@@ -66,7 +66,7 @@ class SignControllerTest extends ControllerTestCase
 
     final public function testConfirm(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new UserCodeDto();
         $this->service()->expects($this->once())->method('confirm')->with($id, $dto)->willReturn(self::TOKEN);
 
@@ -77,7 +77,7 @@ class SignControllerTest extends ControllerTestCase
 
     final public function testResend(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('resend')->with($id)->willReturn($id);
 
         $response = $this->controller->resend($id, $this->service());
@@ -87,7 +87,7 @@ class SignControllerTest extends ControllerTestCase
 
     final public function testRefresh(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('refresh')->with($id)->willReturn(self::TOKEN);
 
         $response = $this->controller->refresh($id, $this->service());

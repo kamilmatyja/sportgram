@@ -59,7 +59,7 @@ class FriendControllerTest extends ControllerTestCase
     final public function testCreate(): void
     {
         $dto = new FriendDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($dto)->willReturn($id);
 
         $response = $this->controller->create($dto, $this->service());
@@ -69,7 +69,7 @@ class FriendControllerTest extends ControllerTestCase
 
     final public function testUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new FriendStatusDto();
         $dto->status = FriendStatusEnum::Accepted;
         $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
@@ -81,7 +81,7 @@ class FriendControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -133,7 +133,7 @@ class FriendControllerTest extends ControllerTestCase
     private function friend(): Friend
     {
         $friend = FriendFactory::make();
-        $friend->id = Uuid::v7();
+        $friend->id = Uuid::v4();
         $friend->onPrePersist();
 
         return $friend;

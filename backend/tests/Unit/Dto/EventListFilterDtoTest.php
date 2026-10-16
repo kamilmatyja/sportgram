@@ -24,7 +24,7 @@ class EventListFilterDtoTest extends DtoTestCase
     final public function testAcceptsFilledFilter(SaveStatusEnum $status): void
     {
         $dto = new EventListFilterDto();
-        $dto->userId = Uuid::v7();
+        $dto->userId = Uuid::v4();
         $dto->status = $status;
 
         $this->assertValid($dto);

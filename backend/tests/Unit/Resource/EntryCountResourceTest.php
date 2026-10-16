@@ -15,7 +15,7 @@ class EntryCountResourceTest extends ResourceTestCase
     #[DataProvider('typeProvider')]
     final public function testMapsAllFields(EntryTypeEnum $type, int $count): void
     {
-        $entry = new EntryCountDto(Uuid::v7(), $type, $count);
+        $entry = new EntryCountDto(Uuid::v4(), $type, $count);
 
         $data = EntryCountResource::fromEntity($entry);
 
@@ -37,8 +37,8 @@ class EntryCountResourceTest extends ResourceTestCase
     final public function testMapsCollectionInOrder(): void
     {
         $entries = [
-            new EntryCountDto(Uuid::v7(), EntryTypeEnum::Story, 1),
-            new EntryCountDto(Uuid::v7(), EntryTypeEnum::Goal, 2),
+            new EntryCountDto(Uuid::v4(), EntryTypeEnum::Story, 1),
+            new EntryCountDto(Uuid::v4(), EntryTypeEnum::Goal, 2),
         ];
 
         $data = EntryCountResource::fromEntityCollection($entries);

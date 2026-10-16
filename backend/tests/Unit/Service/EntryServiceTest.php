@@ -43,7 +43,7 @@ class EntryServiceTest extends ServiceTestCase
     final public function testCreateSavesEntryForCurrentUser(EntryTypeEnum $type): void
     {
         $dto = new EntryDto();
-        $dto->entityId = Uuid::v7();
+        $dto->entityId = Uuid::v4();
         $dto->type = $type;
         $saved = null;
         $this->entryRepository->expects($this->once())
@@ -74,7 +74,7 @@ class EntryServiceTest extends ServiceTestCase
     final public function testIndexCountDelegatesToRepository(): void
     {
         $dto = new EntryCountIndexDto();
-        $window = self::window([['entityId' => Uuid::v7(), 'count' => 3]]);
+        $window = self::window([['entityId' => Uuid::v4(), 'count' => 3]]);
         $this->entryRepository->expects($this->once())->method('findCountEntries')->with($dto)->willReturn($window);
 
         $this->assertSame($window, $this->service->indexCount($dto));
@@ -94,6 +94,6 @@ class EntryServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->details(Uuid::v7());
+        $this->service->details(Uuid::v4());
     }
 }

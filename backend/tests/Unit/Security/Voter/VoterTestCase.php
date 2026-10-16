@@ -17,7 +17,7 @@ abstract class VoterTestCase extends TestCase
     final protected static function user(RoleEnum ...$roles): User
     {
         $user = UserFactory::make();
-        $user->id = Uuid::v7();
+        $user->id = Uuid::v4();
 
         foreach ($roles as $role) {
             $user->roles->add(UserRoleFactory::make(['user' => $user, 'role' => $role]));

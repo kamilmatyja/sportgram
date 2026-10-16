@@ -110,6 +110,6 @@ class StatisticControllerTest extends ControllerTestCase
 
     private static function statisticResult(): StatisticResultDto
     {
-        return new StatisticResultDto(Uuid::v7(), new DateTimeImmutable('2025-06-01 10:00:00'), 1, 5000, 1800);
+        return new StatisticResultDto(Uuid::v4(), new DateTimeImmutable('2025-06-01 10:00:00'), 1, 5000, 1800);
     }
 }

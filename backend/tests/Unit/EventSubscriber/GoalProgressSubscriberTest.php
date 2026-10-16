@@ -72,7 +72,7 @@ class GoalProgressSubscriberTest extends TestCase
         );
 
         $this->user = UserFactory::make();
-        $this->user->id = Uuid::v7();
+        $this->user->id = Uuid::v4();
 
         $this->goalParticipantRepository->method('findByUserId')
             ->willReturnCallback(function (Uuid $goalId, Uuid $userId): ?GoalParticipant {
@@ -248,7 +248,7 @@ class GoalProgressSubscriberTest extends TestCase
     private function goal(string $text, string $link, ?int $time): Goal
     {
         $goal = GoalFactory::make(['text' => $text, 'link' => $link, 'time' => $time, 'discipline' => self::DISCIPLINE]);
-        $goal->id = Uuid::v7();
+        $goal->id = Uuid::v4();
 
         return $goal;
     }

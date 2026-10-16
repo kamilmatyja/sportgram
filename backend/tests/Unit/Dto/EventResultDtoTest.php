@@ -57,7 +57,7 @@ class EventResultDtoTest extends DtoTestCase
     private function subResult(int $time): EventSubResultDto
     {
         $subResult = new EventSubResultDto();
-        $subResult->eventDisciplineSubDistanceId = Uuid::v7();
+        $subResult->eventDisciplineSubDistanceId = Uuid::v4();
         $subResult->time = $time;
 
         return $subResult;

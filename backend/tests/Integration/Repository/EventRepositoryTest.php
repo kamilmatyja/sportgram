@@ -78,7 +78,7 @@ class EventRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->eventRepository->findById(Uuid::v7());
+        $this->eventRepository->findById(Uuid::v4());
     }
 
     final public function testFindEventsWithoutFiltersReturnsAll(): void

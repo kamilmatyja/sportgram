@@ -47,7 +47,7 @@ class StoryVoterTest extends VoterTestCase
     {
         $this->storyRepository->expects($this->never())->method('findById');
 
-        $this->assertGranted($this->voter, self::admin(), Uuid::v7(), StoryVoter::STORY);
+        $this->assertGranted($this->voter, self::admin(), Uuid::v4(), StoryVoter::STORY);
     }
 
     final public function testAdministratorIsGrantedEvenForInvalidSubject(): void
@@ -75,13 +75,13 @@ class StoryVoterTest extends VoterTestCase
     {
         $this->storyRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), StoryVoter::STORY);
+        $this->assertDenied($this->voter, null, Uuid::v4(), StoryVoter::STORY);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, StoryVoter::STORY);
     }
 
@@ -93,13 +93,13 @@ class StoryVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [StoryVoter::STORY]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [StoryVoter::STORY]);
     }
 
     private function storyOwnedBy(User $owner): Story
     {
         $story = StoryFactory::make(['user' => $owner]);
-        $story->id = Uuid::v7();
+        $story->id = Uuid::v4();
 
         return $story;
     }

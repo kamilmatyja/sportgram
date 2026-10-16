@@ -58,7 +58,7 @@ class PushSubscriptionControllerTest extends ControllerTestCase
     final public function testCreate(): void
     {
         $dto = new PushSubscriptionDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($dto)->willReturn($id);
 
         $response = $this->controller->create($dto, $this->service());
@@ -68,7 +68,7 @@ class PushSubscriptionControllerTest extends ControllerTestCase
 
     final public function testUpdate(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new PushSubscriptionDto();
         $this->service()->expects($this->once())->method('update')->with($id, $dto)->willReturn($id);
 
@@ -79,7 +79,7 @@ class PushSubscriptionControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -132,9 +132,9 @@ class PushSubscriptionControllerTest extends ControllerTestCase
     private function pushSubscription(): PushSubscription
     {
         $subscription = PushSubscriptionFactory::make();
-        $subscription->id = Uuid::v7();
+        $subscription->id = Uuid::v4();
         $subscription->onPrePersist();
-        $subscription->user->id = Uuid::v7();
+        $subscription->user->id = Uuid::v4();
         $subscription->user->onPrePersist();
 
         return $subscription;

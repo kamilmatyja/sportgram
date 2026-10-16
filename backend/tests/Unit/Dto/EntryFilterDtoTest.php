@@ -24,9 +24,9 @@ class EntryFilterDtoTest extends DtoTestCase
     final public function testFullyFilledIsValid(): void
     {
         $dto = new EntryFilterDto();
-        $dto->userId = Uuid::v7();
-        $dto->addEntityId(Uuid::v7());
-        $dto->addEntityId(Uuid::v7());
+        $dto->userId = Uuid::v4();
+        $dto->addEntityId(Uuid::v4());
+        $dto->addEntityId(Uuid::v4());
         $dto->type = EntryTypeEnum::Goal;
 
         $this->assertValid($dto);
@@ -34,8 +34,8 @@ class EntryFilterDtoTest extends DtoTestCase
 
     final public function testAddEntityIdAppends(): void
     {
-        $first = Uuid::v7();
-        $second = Uuid::v7();
+        $first = Uuid::v4();
+        $second = Uuid::v4();
         $dto = new EntryFilterDto();
         $dto->addEntityId($first);
         $dto->addEntityId($second);
@@ -63,7 +63,7 @@ class EntryFilterDtoTest extends DtoTestCase
     final public function testRejectsInvalidEntityId(mixed $entityId): void
     {
         $dto = new EntryFilterDto();
-        $dto->entityIds = [Uuid::v7(), $entityId];
+        $dto->entityIds = [Uuid::v4(), $entityId];
 
         $this->assertOnlyViolation($dto, 'entityIds[1]');
     }
@@ -77,7 +77,7 @@ class EntryFilterDtoTest extends DtoTestCase
 
     final public function testRejectsDuplicatedEntityIds(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new EntryFilterDto();
         $dto->entityIds = [$id, $id];
 

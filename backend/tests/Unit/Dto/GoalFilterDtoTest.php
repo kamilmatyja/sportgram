@@ -28,7 +28,7 @@ class GoalFilterDtoTest extends DtoTestCase
     final public function testFilledFilterIsValid(): void
     {
         $dto = new GoalFilterDto();
-        $dto->userId = Uuid::v7();
+        $dto->userId = Uuid::v4();
         $dto->link = str_repeat('a', 64);
         $dto->text = str_repeat('a', 2048);
         $dto->discipline = DisciplineEnum::Running;

@@ -86,13 +86,13 @@ class ConversationActivityVoterTest extends VoterTestCase
     {
         $this->conversationActivityRepository->expects($this->never())->method('findByUserIds');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), ConversationActivityVoter::CONVERSATION_ACTIVITY);
+        $this->assertDenied($this->voter, null, Uuid::v4(), ConversationActivityVoter::CONVERSATION_ACTIVITY);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, ConversationActivityVoter::CONVERSATION_ACTIVITY);
     }
 

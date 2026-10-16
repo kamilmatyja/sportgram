@@ -101,7 +101,7 @@ class FeedReactionRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->feedReactionRepository->findById(Uuid::v7());
+        $this->feedReactionRepository->findById(Uuid::v4());
     }
 
     private function reaction(?FeedReactionEnum $reaction = null, ?ElementStatusEnum $status = null): FeedReaction

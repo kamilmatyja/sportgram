@@ -82,7 +82,7 @@ class FeedControllerTest extends ControllerTestCase
     final public function testCreate(): void
     {
         $dto = new FeedDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($dto)->willReturn($id);
 
         $response = $this->controller->create($dto, $this->service());
@@ -92,7 +92,7 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testUpdate(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new FeedDto();
         $this->service()->expects($this->once())->method('update')->with($id, $dto)->willReturn($id);
 
@@ -103,7 +103,7 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = self::elementStatus();
         $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
 
@@ -114,7 +114,7 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -180,8 +180,8 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testCreateComment(): void
     {
-        $feedId = Uuid::v7();
-        $commentId = Uuid::v7();
+        $feedId = Uuid::v4();
+        $commentId = Uuid::v4();
         $dto = new FeedCommentDto();
         $this->service()->expects($this->once())->method('createComment')->with($feedId, $dto)->willReturn($commentId);
 
@@ -192,7 +192,7 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testUpdateComment(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new FeedCommentDto();
         $this->service()->expects($this->once())->method('updateComment')->with($id, $dto)->willReturn($id);
 
@@ -203,7 +203,7 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testUpdateCommentStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = self::elementStatus();
         $this->service()->expects($this->once())->method('updateCommentStatus')->with($id, $dto)->willReturn($id);
 
@@ -214,7 +214,7 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testDeleteComment(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('deleteComment')->with($id)->willReturn($id);
 
         $response = $this->controller->deleteComment($id, $this->service());
@@ -224,8 +224,8 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testCreateReaction(): void
     {
-        $feedId = Uuid::v7();
-        $reactionId = Uuid::v7();
+        $feedId = Uuid::v4();
+        $reactionId = Uuid::v4();
         $dto = new FeedReactionDto();
         $this->service()->expects($this->once())->method('createReaction')->with($feedId, $dto)->willReturn($reactionId);
 
@@ -236,7 +236,7 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testUpdateReaction(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new FeedReactionDto();
         $this->service()->expects($this->once())->method('updateReaction')->with($id, $dto)->willReturn($id);
 
@@ -247,7 +247,7 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testUpdateReactionStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = self::elementStatus();
         $this->service()->expects($this->once())->method('updateReactionStatus')->with($id, $dto)->willReturn($id);
 
@@ -258,7 +258,7 @@ class FeedControllerTest extends ControllerTestCase
 
     final public function testDeleteReaction(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('deleteReaction')->with($id)->willReturn($id);
 
         $response = $this->controller->deleteReaction($id, $this->service());
@@ -282,7 +282,7 @@ class FeedControllerTest extends ControllerTestCase
     private function feed(): Feed
     {
         $feed = FeedFactory::make();
-        $feed->id = Uuid::v7();
+        $feed->id = Uuid::v4();
         $feed->onPrePersist();
 
         return $feed;
@@ -293,12 +293,12 @@ class FeedControllerTest extends ControllerTestCase
         $feed = $this->feed();
 
         $comment = FeedCommentFactory::make(['feed' => $feed]);
-        $comment->id = Uuid::v7();
+        $comment->id = Uuid::v4();
         $comment->onPrePersist();
         $feed->comments->add($comment);
 
         $reaction = FeedReactionFactory::make(['feed' => $feed]);
-        $reaction->id = Uuid::v7();
+        $reaction->id = Uuid::v4();
         $reaction->onPrePersist();
         $feed->reactions->add($reaction);
 

@@ -99,13 +99,13 @@ class GoalCreatorVoterTest extends VoterTestCase
     {
         $this->goalRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), GoalCreatorVoter::GOAL_CREATOR);
+        $this->assertDenied($this->voter, null, Uuid::v4(), GoalCreatorVoter::GOAL_CREATOR);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, GoalCreatorVoter::GOAL_CREATOR);
     }
 
@@ -117,13 +117,13 @@ class GoalCreatorVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [GoalCreatorVoter::GOAL_CREATOR]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [GoalCreatorVoter::GOAL_CREATOR]);
     }
 
     private function goalOwnedBy(User $owner): Goal
     {
         $goal = GoalFactory::make(['user' => $owner]);
-        $goal->id = Uuid::v7();
+        $goal->id = Uuid::v4();
 
         return $goal;
     }

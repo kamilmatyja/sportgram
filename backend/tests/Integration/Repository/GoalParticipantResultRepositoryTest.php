@@ -92,7 +92,7 @@ class GoalParticipantResultRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->goalParticipantResultRepository->findById(Uuid::v7());
+        $this->goalParticipantResultRepository->findById(Uuid::v4());
     }
 
     private function goalParticipantResult(): GoalParticipantResult

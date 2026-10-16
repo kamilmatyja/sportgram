@@ -6,7 +6,6 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    required: [],
     properties: [
         new OA\Property(property: 'endpoint', type: 'string', example: 'endpoint-url', nullable: true),
         new OA\Property(property: 'p256dh', type: 'string', example: 'p256dh-key', nullable: true),

@@ -51,7 +51,7 @@ class NotificationSubscriberTest extends TestCase
         );
 
         $this->user = UserFactory::make(['language' => LanguageEnum::English]);
-        $this->user->id = Uuid::v7();
+        $this->user->id = Uuid::v4();
     }
 
     #[AllowMockObjectsWithoutExpectations]
@@ -135,7 +135,7 @@ class NotificationSubscriberTest extends TestCase
     final public function testUsesUserLocale(): void
     {
         $user = UserFactory::make(['language' => LanguageEnum::Polish]);
-        $user->id = Uuid::v7();
+        $user->id = Uuid::v4();
         $this->givenSubscriptions([], $user);
         $this->webPushService->expects($this->never())->method('sendNotification');
         $this->translator->expects($this->once())

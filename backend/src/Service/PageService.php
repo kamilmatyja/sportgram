@@ -63,14 +63,16 @@ readonly class PageService
 
             $this->pageParticipantRepository->save($pageParticipant);
 
-            $this->eventDispatcher->dispatch(
-                new NotificationEvent(
-                    $participantUser,
-                    NotificationTypeEnum::PageParticipant,
-                    $page->title,
-                    '/pages/' . $page->link,
-                ),
-            );
+            if (! $participantUser->id->equals($user->id)) {
+                $this->eventDispatcher->dispatch(
+                    new NotificationEvent(
+                        $participantUser,
+                        NotificationTypeEnum::PageParticipant,
+                        $page->title,
+                        '/pages/' . $page->link,
+                    ),
+                );
+            }
         }
 
         return $page->id;
@@ -125,14 +127,16 @@ readonly class PageService
                 new PageParticipant($page, $participantUser, SaveStatusEnum::Pending),
             );
 
-            $this->eventDispatcher->dispatch(
-                new NotificationEvent(
-                    $participantUser,
-                    NotificationTypeEnum::PageParticipant,
-                    $page->title,
-                    '/pages/' . $page->link,
-                ),
-            );
+            if (! $participantUser->id->equals($user->id)) {
+                $this->eventDispatcher->dispatch(
+                    new NotificationEvent(
+                        $participantUser,
+                        NotificationTypeEnum::PageParticipant,
+                        $page->title,
+                        '/pages/' . $page->link,
+                    ),
+                );
+            }
         }
 
         $this->pageRepository->save($page);
@@ -223,14 +227,16 @@ readonly class PageService
         $this->pageFollowRepository->save($pageFollow);
 
         foreach ($page->participants as $participant) {
-            $this->eventDispatcher->dispatch(
-                new NotificationEvent(
-                    $participant->user,
-                    NotificationTypeEnum::PageFollow,
-                    $page->title,
-                    '/pages/' . $page->link,
-                ),
-            );
+            if (! $participant->user->id->equals($user->id)) {
+                $this->eventDispatcher->dispatch(
+                    new NotificationEvent(
+                        $participant->user,
+                        NotificationTypeEnum::PageFollow,
+                        $page->title,
+                        '/pages/' . $page->link,
+                    ),
+                );
+            }
         }
 
         return $pageFollow->id;

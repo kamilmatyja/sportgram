@@ -76,13 +76,13 @@ class FeedCommentCreatorVoterTest extends VoterTestCase
     {
         $this->feedCommentRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), FeedCommentCreatorVoter::FEED_COMMENT_CREATOR);
+        $this->assertDenied($this->voter, null, Uuid::v4(), FeedCommentCreatorVoter::FEED_COMMENT_CREATOR);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, FeedCommentCreatorVoter::FEED_COMMENT_CREATOR);
     }
 
@@ -94,13 +94,13 @@ class FeedCommentCreatorVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [FeedCommentCreatorVoter::FEED_COMMENT_CREATOR]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [FeedCommentCreatorVoter::FEED_COMMENT_CREATOR]);
     }
 
     private function feedCommentOwnedBy(User $owner): FeedComment
     {
         $feedComment = FeedCommentFactory::make(['user' => $owner]);
-        $feedComment->id = Uuid::v7();
+        $feedComment->id = Uuid::v4();
 
         return $feedComment;
     }

@@ -22,8 +22,8 @@ class EntryCountFilterDtoTest extends DtoTestCase
 
     final public function testAddEntityIdAppendsItems(): void
     {
-        $first = Uuid::v7();
-        $second = Uuid::v7();
+        $first = Uuid::v4();
+        $second = Uuid::v4();
         $dto = new EntryCountFilterDto();
         $dto->addEntityId($first);
         $dto->addEntityId($second);
@@ -51,7 +51,7 @@ class EntryCountFilterDtoTest extends DtoTestCase
     final public function testAcceptsUuidStrings(): void
     {
         $dto = new EntryCountFilterDto();
-        $dto->entityIds = [Uuid::v7()->toRfc4122()];
+        $dto->entityIds = [Uuid::v4()->toRfc4122()];
 
         $this->assertValid($dto);
     }
@@ -68,13 +68,13 @@ class EntryCountFilterDtoTest extends DtoTestCase
     public static function invalidEntityIdsProvider(): iterable
     {
         yield 'invalid uuid' => [['not-a-uuid'], 'entityIds[0]'];
-        yield 'blank item' => [[Uuid::v7(), ''], 'entityIds[1]'];
+        yield 'blank item' => [[Uuid::v4(), ''], 'entityIds[1]'];
         yield 'null item' => [[null], 'entityIds[0]'];
     }
 
     final public function testRejectsDuplicatedEntityIds(): void
     {
-        $entityId = Uuid::v7();
+        $entityId = Uuid::v4();
         $dto = new EntryCountFilterDto();
         $dto->addEntityId($entityId);
         $dto->addEntityId($entityId);

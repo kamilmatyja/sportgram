@@ -47,7 +47,7 @@ class TrainingVoterTest extends VoterTestCase
     {
         $this->trainingRepository->expects($this->never())->method('findById');
 
-        $this->assertGranted($this->voter, self::admin(), Uuid::v7(), TrainingVoter::TRAINING);
+        $this->assertGranted($this->voter, self::admin(), Uuid::v4(), TrainingVoter::TRAINING);
     }
 
     final public function testAdministratorIsGrantedEvenForInvalidSubject(): void
@@ -75,13 +75,13 @@ class TrainingVoterTest extends VoterTestCase
     {
         $this->trainingRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), TrainingVoter::TRAINING);
+        $this->assertDenied($this->voter, null, Uuid::v4(), TrainingVoter::TRAINING);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, TrainingVoter::TRAINING);
     }
 
@@ -93,13 +93,13 @@ class TrainingVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [TrainingVoter::TRAINING]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [TrainingVoter::TRAINING]);
     }
 
     private function trainingOwnedBy(User $owner): Training
     {
         $training = TrainingFactory::make(['user' => $owner]);
-        $training->id = Uuid::v7();
+        $training->id = Uuid::v4();
 
         return $training;
     }

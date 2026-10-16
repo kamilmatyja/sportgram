@@ -99,13 +99,13 @@ class PushSubscriptionVoterTest extends VoterTestCase
     {
         $this->pushSubscriptionRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), PushSubscriptionVoter::PUSH_SUBSCRIPTION);
+        $this->assertDenied($this->voter, null, Uuid::v4(), PushSubscriptionVoter::PUSH_SUBSCRIPTION);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, PushSubscriptionVoter::PUSH_SUBSCRIPTION);
     }
 
@@ -117,13 +117,13 @@ class PushSubscriptionVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [PushSubscriptionVoter::PUSH_SUBSCRIPTION]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [PushSubscriptionVoter::PUSH_SUBSCRIPTION]);
     }
 
     private function pushSubscriptionOwnedBy(User $owner): PushSubscription
     {
         $pushSubscription = PushSubscriptionFactory::make(['user' => $owner]);
-        $pushSubscription->id = Uuid::v7();
+        $pushSubscription->id = Uuid::v4();
 
         return $pushSubscription;
     }

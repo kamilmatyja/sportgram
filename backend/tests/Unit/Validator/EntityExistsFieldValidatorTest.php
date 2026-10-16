@@ -34,7 +34,7 @@ class EntityExistsFieldValidatorTest extends ConstraintValidatorTestCase
 
     final public function testAcceptsExistingEntity(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->givenRepository(User::class, $id, new stdClass());
 
         $this->validator->validate($id, new EntityExistsField(User::class));
@@ -44,7 +44,7 @@ class EntityExistsFieldValidatorTest extends ConstraintValidatorTestCase
 
     final public function testRejectsMissingEntity(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->givenRepository(Page::class, $id, null);
 
         $this->validator->validate($id, new EntityExistsField(Page::class));
@@ -56,7 +56,7 @@ class EntityExistsFieldValidatorTest extends ConstraintValidatorTestCase
 
     final public function testUsesCustomMessage(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->givenRepository(User::class, $id, null);
 
         $this->validator->validate($id, new EntityExistsField(User::class, 'Missing {{ entity }}.'));
@@ -88,7 +88,7 @@ class EntityExistsFieldValidatorTest extends ConstraintValidatorTestCase
         $this->em->expects($this->never())->method('getRepository');
         $this->expectException(UnexpectedTypeException::class);
 
-        $this->validator->validate(Uuid::v7(), new NotBlank());
+        $this->validator->validate(Uuid::v4(), new NotBlank());
     }
 
     private function givenRepository(string $entity, Uuid $id, ?object $found): void

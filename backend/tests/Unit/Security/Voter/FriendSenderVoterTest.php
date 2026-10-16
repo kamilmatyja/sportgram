@@ -47,7 +47,7 @@ class FriendSenderVoterTest extends VoterTestCase
     {
         $receiver = self::user(RoleEnum::Participant);
         $friend = FriendFactory::make(['senderUser' => self::user(RoleEnum::Participant), 'receiverUser' => $receiver]);
-        $friend->id = Uuid::v7();
+        $friend->id = Uuid::v4();
         $this->givenFriend($friend);
 
         $this->assertDenied($this->voter, $receiver, self::idOf($friend), FriendSenderVoter::FRIEND_SENDER);
@@ -86,13 +86,13 @@ class FriendSenderVoterTest extends VoterTestCase
     {
         $this->friendRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), FriendSenderVoter::FRIEND_SENDER);
+        $this->assertDenied($this->voter, null, Uuid::v4(), FriendSenderVoter::FRIEND_SENDER);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, FriendSenderVoter::FRIEND_SENDER);
     }
 
@@ -104,13 +104,13 @@ class FriendSenderVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [FriendSenderVoter::FRIEND_SENDER]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [FriendSenderVoter::FRIEND_SENDER]);
     }
 
     private function friendOwnedBy(User $owner): Friend
     {
         $friend = FriendFactory::make(['senderUser' => $owner, 'receiverUser' => self::user(RoleEnum::Participant)]);
-        $friend->id = Uuid::v7();
+        $friend->id = Uuid::v4();
 
         return $friend;
     }

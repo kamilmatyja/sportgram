@@ -85,7 +85,7 @@ class FeedCommentRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->feedCommentRepository->findById(Uuid::v7());
+        $this->feedCommentRepository->findById(Uuid::v4());
     }
 
     private function comment(?ElementStatusEnum $status = null): FeedComment

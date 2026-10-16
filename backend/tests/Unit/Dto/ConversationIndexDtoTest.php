@@ -81,7 +81,7 @@ class ConversationIndexDtoTest extends DtoTestCase
     final public function testAcceptsCustomFilter(): void
     {
         $filter = new ConversationFilterDto();
-        $filter->userId = Uuid::v7();
+        $filter->userId = Uuid::v4();
         $dto = new ConversationIndexDto();
         $dto->filter = $filter;
 
@@ -92,7 +92,7 @@ class ConversationIndexDtoTest extends DtoTestCase
     private static function validDto(): ConversationIndexDto
     {
         $dto = new ConversationIndexDto();
-        $dto->filter->userId = Uuid::v7();
+        $dto->filter->userId = Uuid::v4();
 
         return $dto;
     }

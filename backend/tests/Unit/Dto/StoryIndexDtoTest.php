@@ -76,7 +76,7 @@ class StoryIndexDtoTest extends DtoTestCase
     final public function testValidFilterWithAllFields(): void
     {
         $dto = new StoryIndexDto();
-        $dto->filter->userId = Uuid::v7();
+        $dto->filter->userId = Uuid::v4();
         $dto->filter->text = str_repeat('a', 2048);
         $dto->filter->status = ElementStatusEnum::Rejected;
 

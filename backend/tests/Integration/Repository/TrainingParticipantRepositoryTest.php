@@ -80,7 +80,7 @@ class TrainingParticipantRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->trainingParticipantRepository->findById(Uuid::v7());
+        $this->trainingParticipantRepository->findById(Uuid::v4());
     }
 
     private function participant(?SaveStatusEnum $status = null): TrainingParticipant

@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Dto\{UserCodeDto, UserSignDto};
-use App\Entity\{UserSign};
+use App\Entity\{User, UserSign};
 use App\Enum\{UnauthorizedStatusEnum, UserStatusEnum};
 use App\Event\UserSignEmailEvent;
 use App\Exception\SaveValidationException;
@@ -12,6 +12,7 @@ use DateInterval;
 use DateTimeImmutable;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Random\RandomException;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Uid\Uuid;
@@ -28,6 +29,7 @@ readonly class SignService
         private UserPasswordHasherInterface $hasher,
         private JWTTokenManagerInterface $jwtManager,
         private EventDispatcherInterface $eventDispatcher,
+        private Security $security,
     ) {
     }
 
@@ -130,7 +132,18 @@ readonly class SignService
      */
     final public function refresh(Uuid $userSignId): string
     {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
         $userSign = $this->userSignRepository->findById($userSignId);
+
+        if (! $userSign->user->id->equals($user->id)) {
+            throw new ValidatorException('User not equal to sign.');
+        }
+
+        if ($user->status === UserStatusEnum::Banned) {
+            throw new ValidatorException('User is banned.');
+        }
 
         if ($userSign->status !== UnauthorizedStatusEnum::Correct) {
             throw new ValidatorException('Sign not confirmed.');
@@ -138,12 +151,6 @@ readonly class SignService
 
         if ($userSign->updatedAt->add(new DateInterval(self::SIGN_LIFETIME)) < new DateTimeImmutable()) {
             throw new ValidatorException('Sign expired.');
-        }
-
-        $user = $userSign->user;
-
-        if ($user->status === UserStatusEnum::Banned) {
-            throw new ValidatorException('User is banned.');
         }
 
         return $this->jwtManager->create($user);

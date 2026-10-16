@@ -26,8 +26,8 @@ class EventFilterDtoTest extends DtoTestCase
     final public function testFullyPopulatedDtoIsValid(): void
     {
         $dto = new EventFilterDto();
-        $dto->userId = Uuid::v7();
-        $dto->pageId = Uuid::v7();
+        $dto->userId = Uuid::v4();
+        $dto->pageId = Uuid::v4();
         $dto->link = 'my-link';
         $dto->title = 'Event title';
         $dto->status = ElementStatusEnum::Active;

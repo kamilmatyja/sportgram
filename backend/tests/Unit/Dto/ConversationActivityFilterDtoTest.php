@@ -19,7 +19,7 @@ class ConversationActivityFilterDtoTest extends DtoTestCase
 
     final public function testAcceptsUserId(): void
     {
-        $userId = Uuid::v7();
+        $userId = Uuid::v4();
         $dto = new ConversationActivityFilterDto();
         $dto->userId = $userId;
 

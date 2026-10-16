@@ -36,16 +36,16 @@ class PageDtoTest extends DtoTestCase
     final public function testValidWithUserIds(): void
     {
         $dto = $this->validDto();
-        $dto->addUserId(Uuid::v7());
-        $dto->addUserId(Uuid::v7());
+        $dto->addUserId(Uuid::v4());
+        $dto->addUserId(Uuid::v4());
 
         $this->assertValid($dto);
     }
 
     final public function testAddUserIdAppends(): void
     {
-        $first = Uuid::v7();
-        $second = Uuid::v7();
+        $first = Uuid::v4();
+        $second = Uuid::v4();
         $dto = new PageDto();
         $dto->addUserId($first);
         $dto->addUserId($second);
@@ -117,7 +117,7 @@ class PageDtoTest extends DtoTestCase
     final public function testRejectsInvalidUserId(mixed $userId): void
     {
         $dto = $this->validDto();
-        $dto->userIds = [Uuid::v7(), $userId];
+        $dto->userIds = [Uuid::v4(), $userId];
 
         $this->assertOnlyViolation($dto, 'userIds[1]');
     }
@@ -130,7 +130,7 @@ class PageDtoTest extends DtoTestCase
 
     final public function testRejectsDuplicatedUserIds(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = $this->validDto();
         $dto->userIds = [$id, $id];
 

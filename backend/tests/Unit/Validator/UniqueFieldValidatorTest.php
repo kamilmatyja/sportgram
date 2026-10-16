@@ -88,7 +88,7 @@ class UniqueFieldValidatorTest extends ConstraintValidatorTestCase
 
     final public function testRejectsValueOwnedByAnotherEntityDuringUpdate(): void
     {
-        $this->givenRequestId((string) Uuid::v7());
+        $this->givenRequestId((string) Uuid::v4());
         $this->givenFound(User::class, ['email' => 'jan@kowalski.pl'], $this->user());
 
         $this->validator->validate('jan@kowalski.pl', new UniqueField(User::class, 'email'));
@@ -98,7 +98,7 @@ class UniqueFieldValidatorTest extends ConstraintValidatorTestCase
 
     final public function testRejectsWhenFoundObjectHasNoIdProperty(): void
     {
-        $this->givenRequestId((string) Uuid::v7());
+        $this->givenRequestId((string) Uuid::v4());
         $this->givenFound(User::class, ['email' => 'jan@kowalski.pl'], new stdClass());
 
         $this->validator->validate('jan@kowalski.pl', new UniqueField(User::class, 'email'));
@@ -147,7 +147,7 @@ class UniqueFieldValidatorTest extends ConstraintValidatorTestCase
     private function user(): User
     {
         $user = UserFactory::make();
-        $user->id = Uuid::v7();
+        $user->id = Uuid::v4();
 
         return $user;
     }

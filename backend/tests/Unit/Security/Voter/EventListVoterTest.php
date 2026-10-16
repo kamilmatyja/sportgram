@@ -67,7 +67,7 @@ class EventListVoterTest extends VoterTestCase
     {
         $this->eventDisciplineListRepository->expects($this->never())->method('findById');
 
-        $this->assertGranted($this->voter, self::admin(), Uuid::v7(), EventListVoter::EVENT_LIST);
+        $this->assertGranted($this->voter, self::admin(), Uuid::v4(), EventListVoter::EVENT_LIST);
     }
 
     final public function testAdministratorIsGrantedEvenForInvalidSubject(): void
@@ -95,13 +95,13 @@ class EventListVoterTest extends VoterTestCase
     {
         $this->eventDisciplineListRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), EventListVoter::EVENT_LIST);
+        $this->assertDenied($this->voter, null, Uuid::v4(), EventListVoter::EVENT_LIST);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, EventListVoter::EVENT_LIST);
     }
 
@@ -113,7 +113,7 @@ class EventListVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v7(), [EventListVoter::EVENT_LIST]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v4(), [EventListVoter::EVENT_LIST]);
     }
 
     private function eventList(User $organizer, User $listUser): EventDisciplineList
@@ -126,7 +126,7 @@ class EventListVoterTest extends VoterTestCase
         ]);
 
         $list = EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $listUser]);
-        $list->id = Uuid::v7();
+        $list->id = Uuid::v4();
 
         return $list;
     }

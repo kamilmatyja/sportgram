@@ -70,7 +70,7 @@ class UserVoterTest extends VoterTestCase
 
     final public function testDeniesAnonymousUser(): void
     {
-        $this->assertDenied($this->voter, null, Uuid::v7(), UserVoter::USER);
+        $this->assertDenied($this->voter, null, Uuid::v4(), UserVoter::USER);
     }
 
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void

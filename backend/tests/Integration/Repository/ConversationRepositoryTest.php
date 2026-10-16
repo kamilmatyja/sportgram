@@ -88,7 +88,7 @@ class ConversationRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->conversationRepository->findById(Uuid::v7());
+        $this->conversationRepository->findById(Uuid::v4());
     }
 
     final public function testFindConversationsReturnsMessagesInBothDirectionsOnly(): void

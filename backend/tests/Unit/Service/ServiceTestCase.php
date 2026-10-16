@@ -26,7 +26,7 @@ abstract class ServiceTestCase extends TestCase
      */
     final protected static function entity(object $entity): object
     {
-        $entity->id = Uuid::v7();
+        $entity->id = Uuid::v4();
         $entity->onPrePersist();
 
         return $entity;
@@ -41,7 +41,7 @@ abstract class ServiceTestCase extends TestCase
     {
         return static function (object $entity): void {
             if (null === $entity->id) {
-                $entity->id = Uuid::v7();
+                $entity->id = Uuid::v4();
                 $entity->onPrePersist();
             } else {
                 $entity->onPreUpdate();

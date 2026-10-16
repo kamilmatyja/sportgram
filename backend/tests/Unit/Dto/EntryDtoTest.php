@@ -82,7 +82,7 @@ class EntryDtoTest extends DtoTestCase
     private function validDto(): EntryDto
     {
         $dto = new EntryDto();
-        $dto->entityId = Uuid::v7();
+        $dto->entityId = Uuid::v4();
         $dto->type = EntryTypeEnum::Feed;
 
         return $dto;

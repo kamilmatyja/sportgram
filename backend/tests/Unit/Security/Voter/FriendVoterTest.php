@@ -78,13 +78,13 @@ class FriendVoterTest extends VoterTestCase
     {
         $this->friendRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), FriendVoter::FRIEND);
+        $this->assertDenied($this->voter, null, Uuid::v4(), FriendVoter::FRIEND);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, FriendVoter::FRIEND);
     }
 
@@ -96,13 +96,13 @@ class FriendVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [FriendVoter::FRIEND]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [FriendVoter::FRIEND]);
     }
 
     private function friendBetween(User $sender, User $receiver): Friend
     {
         $friend = FriendFactory::make(['senderUser' => $sender, 'receiverUser' => $receiver]);
-        $friend->id = Uuid::v7();
+        $friend->id = Uuid::v4();
 
         return $friend;
     }

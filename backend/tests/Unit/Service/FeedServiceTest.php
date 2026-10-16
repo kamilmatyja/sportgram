@@ -108,7 +108,7 @@ class FeedServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->update(Uuid::v7(), self::feedDto('text', 'photo'));
+        $this->service->update(Uuid::v4(), self::feedDto('text', 'photo'));
     }
 
     #[DataProvider('statusProvider')]
@@ -144,7 +144,7 @@ class FeedServiceTest extends ServiceTestCase
         $this->feedRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->updateStatus(Uuid::v7(), self::statusDto(ElementStatusEnum::Active));
+            $this->service->updateStatus(Uuid::v4(), self::statusDto(ElementStatusEnum::Active));
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }
@@ -168,7 +168,7 @@ class FeedServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->delete(Uuid::v7());
+        $this->service->delete(Uuid::v4());
     }
 
     final public function testIndexDelegatesToRepositoryWithCurrentUser(): void
@@ -197,7 +197,7 @@ class FeedServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->details(Uuid::v7());
+        $this->service->details(Uuid::v4());
     }
 
     final public function testCreateCommentOnFriendsFeedSavesCommentAndNotifiesAuthor(): void
@@ -264,7 +264,7 @@ class FeedServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->createComment(Uuid::v7(), self::commentDto('text'));
+        $this->service->createComment(Uuid::v4(), self::commentDto('text'));
     }
 
     final public function testUpdateCommentSavesText(): void
@@ -288,7 +288,7 @@ class FeedServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->updateComment(Uuid::v7(), self::commentDto('text'));
+        $this->service->updateComment(Uuid::v4(), self::commentDto('text'));
     }
 
     #[DataProvider('statusProvider')]
@@ -315,7 +315,7 @@ class FeedServiceTest extends ServiceTestCase
         $this->feedCommentRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->updateCommentStatus(Uuid::v7(), self::statusDto(ElementStatusEnum::Active));
+            $this->service->updateCommentStatus(Uuid::v4(), self::statusDto(ElementStatusEnum::Active));
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }
@@ -339,7 +339,7 @@ class FeedServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->deleteComment(Uuid::v7());
+        $this->service->deleteComment(Uuid::v4());
     }
 
     #[DataProvider('reactionProvider')]
@@ -428,7 +428,7 @@ class FeedServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->createReaction(Uuid::v7(), self::reactionDto(FeedReactionEnum::Like));
+        $this->service->createReaction(Uuid::v4(), self::reactionDto(FeedReactionEnum::Like));
     }
 
     #[DataProvider('reactionProvider')]
@@ -453,7 +453,7 @@ class FeedServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->updateReaction(Uuid::v7(), self::reactionDto(FeedReactionEnum::Like));
+        $this->service->updateReaction(Uuid::v4(), self::reactionDto(FeedReactionEnum::Like));
     }
 
     #[DataProvider('statusProvider')]
@@ -481,7 +481,7 @@ class FeedServiceTest extends ServiceTestCase
         $this->feedReactionRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->updateReactionStatus(Uuid::v7(), self::statusDto(ElementStatusEnum::Active));
+            $this->service->updateReactionStatus(Uuid::v4(), self::statusDto(ElementStatusEnum::Active));
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }
@@ -505,7 +505,7 @@ class FeedServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->deleteReaction(Uuid::v7());
+        $this->service->deleteReaction(Uuid::v4());
     }
 
     private static function feedDto(string $text, string $rawPhoto): FeedDto

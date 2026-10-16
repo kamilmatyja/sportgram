@@ -56,7 +56,7 @@ class NotificationControllerTest extends ControllerTestCase
 
     final public function testUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new NotificationStatusDto();
         $dto->status = NotificationStatusEnum::Read;
         $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
@@ -68,7 +68,7 @@ class NotificationControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -120,7 +120,7 @@ class NotificationControllerTest extends ControllerTestCase
     private function notification(): Notification
     {
         $notification = NotificationFactory::make();
-        $notification->id = Uuid::v7();
+        $notification->id = Uuid::v4();
         $notification->onPrePersist();
 
         return $notification;

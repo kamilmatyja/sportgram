@@ -97,7 +97,7 @@ class TrainingRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->trainingRepository->findById(Uuid::v7());
+        $this->trainingRepository->findById(Uuid::v4());
     }
 
     final public function testFindTrainingsWithoutFiltersReturnsAll(): void

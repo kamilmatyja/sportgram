@@ -65,7 +65,7 @@ class UserControllerTest extends ControllerTestCase
     final public function testCreate(): void
     {
         $dto = new UserCreateDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($dto)->willReturn($id);
 
         $response = $this->controller->create($dto, $this->service());
@@ -76,7 +76,7 @@ class UserControllerTest extends ControllerTestCase
     final public function testCreateNano(): void
     {
         $dto = new UserCreateNanoDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('createNano')->with($dto)->willReturn($id);
 
         $response = $this->controller->createNano($dto, $this->service());
@@ -86,7 +86,7 @@ class UserControllerTest extends ControllerTestCase
 
     final public function testUpdate(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new UserUpdateDto();
         $this->service()->expects($this->once())->method('update')->with($id, $dto)->willReturn($id);
 
@@ -97,7 +97,7 @@ class UserControllerTest extends ControllerTestCase
 
     final public function testUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new UserStatusDto();
         $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
 
@@ -108,7 +108,7 @@ class UserControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -193,7 +193,7 @@ class UserControllerTest extends ControllerTestCase
     private function user(): User
     {
         $user = UserFactory::make();
-        $user->id = Uuid::v7();
+        $user->id = Uuid::v4();
         $user->onPrePersist();
 
         return $user;
@@ -204,12 +204,12 @@ class UserControllerTest extends ControllerTestCase
         $user = $this->user();
 
         $role = UserRoleFactory::make(['user' => $user]);
-        $role->id = Uuid::v7();
+        $role->id = Uuid::v4();
         $role->onPrePersist();
         $user->roles->add($role);
 
         $discipline = UserDisciplineFactory::make(['user' => $user]);
-        $discipline->id = Uuid::v7();
+        $discipline->id = Uuid::v4();
         $discipline->onPrePersist();
         $user->disciplines->add($discipline);
 

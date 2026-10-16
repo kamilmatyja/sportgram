@@ -73,7 +73,7 @@ class PageControllerTest extends ControllerTestCase
     final public function testCreate(): void
     {
         $dto = new PageDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($dto)->willReturn($id);
 
         $response = $this->controller->create($dto, $this->service());
@@ -83,7 +83,7 @@ class PageControllerTest extends ControllerTestCase
 
     final public function testUpdate(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new PageDto();
         $this->service()->expects($this->once())->method('update')->with($id, $dto)->willReturn($id);
 
@@ -94,7 +94,7 @@ class PageControllerTest extends ControllerTestCase
 
     final public function testPatchStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new ElementStatusDto();
         $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
 
@@ -105,7 +105,7 @@ class PageControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -165,7 +165,7 @@ class PageControllerTest extends ControllerTestCase
 
     final public function testPatchParticipantStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new SaveStatusDto();
         $this->service()->expects($this->once())->method('updateParticipantStatus')->with($id, $dto)->willReturn($id);
 
@@ -176,8 +176,8 @@ class PageControllerTest extends ControllerTestCase
 
     final public function testCreateFollow(): void
     {
-        $pageId = Uuid::v7();
-        $followId = Uuid::v7();
+        $pageId = Uuid::v4();
+        $followId = Uuid::v4();
         $dto = new PageFollowStatusDto();
         $this->service()->expects($this->once())->method('createFollow')->with($pageId, $dto)->willReturn($followId);
 
@@ -188,7 +188,7 @@ class PageControllerTest extends ControllerTestCase
 
     final public function testPatchFollowStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new PageFollowStatusDto();
         $this->service()->expects($this->once())->method('updateFollowStatus')->with($id, $dto)->willReturn($id);
 
@@ -199,7 +199,7 @@ class PageControllerTest extends ControllerTestCase
 
     final public function testDeleteFollow(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('deleteFollow')->with($id)->willReturn($id);
 
         $response = $this->controller->deleteFollow($id, $this->service());
@@ -264,9 +264,9 @@ class PageControllerTest extends ControllerTestCase
     private function page(): Page
     {
         $page = PageFactory::make();
-        $page->id = Uuid::v7();
+        $page->id = Uuid::v4();
         $page->onPrePersist();
-        $page->user->id = Uuid::v7();
+        $page->user->id = Uuid::v4();
         $page->user->onPrePersist();
 
         return $page;
@@ -284,9 +284,9 @@ class PageControllerTest extends ControllerTestCase
     private function follow(?Page $page = null): PageFollow
     {
         $follow = PageFollowFactory::make(['page' => $page ?? $this->page()]);
-        $follow->id = Uuid::v7();
+        $follow->id = Uuid::v4();
         $follow->onPrePersist();
-        $follow->user->id = Uuid::v7();
+        $follow->user->id = Uuid::v4();
         $follow->user->onPrePersist();
 
         return $follow;
@@ -295,9 +295,9 @@ class PageControllerTest extends ControllerTestCase
     private function participant(Page $page): PageParticipant
     {
         $participant = PageParticipantFactory::make(['page' => $page]);
-        $participant->id = Uuid::v7();
+        $participant->id = Uuid::v4();
         $participant->onPrePersist();
-        $participant->user->id = Uuid::v7();
+        $participant->user->id = Uuid::v4();
         $participant->user->onPrePersist();
 
         return $participant;

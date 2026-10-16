@@ -76,13 +76,13 @@ class StoryCreatorVoterTest extends VoterTestCase
     {
         $this->storyRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), StoryCreatorVoter::STORY_CREATOR);
+        $this->assertDenied($this->voter, null, Uuid::v4(), StoryCreatorVoter::STORY_CREATOR);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, StoryCreatorVoter::STORY_CREATOR);
     }
 
@@ -94,13 +94,13 @@ class StoryCreatorVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [StoryCreatorVoter::STORY_CREATOR]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [StoryCreatorVoter::STORY_CREATOR]);
     }
 
     private function storyOwnedBy(User $owner): Story
     {
         $story = StoryFactory::make(['user' => $owner]);
-        $story->id = Uuid::v7();
+        $story->id = Uuid::v4();
 
         return $story;
     }

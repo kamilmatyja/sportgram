@@ -87,8 +87,8 @@ class PageFollowIndexDtoTest extends DtoTestCase
     final public function testValidFilterWithPageIdsAndStatus(): void
     {
         $dto = $this->validDto();
-        $dto->filter->addPageId(Uuid::v7());
-        $dto->filter->addPageId(Uuid::v7());
+        $dto->filter->addPageId(Uuid::v4());
+        $dto->filter->addPageId(Uuid::v4());
         $dto->filter->status = PageFollowStatusEnum::Accepted;
 
         $this->assertCount(2, $dto->filter->pageIds);
@@ -97,7 +97,7 @@ class PageFollowIndexDtoTest extends DtoTestCase
 
     final public function testRejectsDuplicatedPageIdInFilter(): void
     {
-        $pageId = Uuid::v7();
+        $pageId = Uuid::v4();
         $dto = $this->validDto();
         $dto->filter->addPageId($pageId);
         $dto->filter->addPageId($pageId);
@@ -108,7 +108,7 @@ class PageFollowIndexDtoTest extends DtoTestCase
     private function validDto(): PageFollowIndexDto
     {
         $dto = new PageFollowIndexDto();
-        $dto->filter->userId = Uuid::v7();
+        $dto->filter->userId = Uuid::v4();
 
         return $dto;
     }

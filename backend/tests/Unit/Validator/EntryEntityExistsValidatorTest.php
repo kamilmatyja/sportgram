@@ -112,7 +112,7 @@ class EntryEntityExistsValidatorTest extends ConstraintValidatorTestCase
     public static function incompleteDtoProvider(): iterable
     {
         yield 'nothing set' => [null, null];
-        yield 'missing type' => [Uuid::v7(), null];
+        yield 'missing type' => [Uuid::v4(), null];
         yield 'missing entity id' => [null, EntryTypeEnum::Feed];
     }
 
@@ -135,7 +135,7 @@ class EntryEntityExistsValidatorTest extends ConstraintValidatorTestCase
     private function dto(EntryTypeEnum $type): EntryDto
     {
         $dto = new EntryDto();
-        $dto->entityId = Uuid::v7();
+        $dto->entityId = Uuid::v4();
         $dto->type = $type;
 
         return $dto;

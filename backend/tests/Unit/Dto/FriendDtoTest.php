@@ -18,7 +18,7 @@ class FriendDtoTest extends DtoTestCase
 
     final public function testValidDto(): void
     {
-        $uuid = Uuid::v7();
+        $uuid = Uuid::v4();
         $dto = new FriendDto();
         $dto->userId = $uuid;
 
@@ -35,7 +35,7 @@ class FriendDtoTest extends DtoTestCase
             }
         });
         $dto = new FriendDto();
-        $dto->userId = Uuid::v7();
+        $dto->userId = Uuid::v4();
 
         $this->assertOnlyViolation($dto, 'userId');
     }

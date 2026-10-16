@@ -200,7 +200,7 @@ class PageServiceTest extends ServiceTestCase
 
     final public function testCreateFailsForUnknownParticipant(): void
     {
-        $dto = self::pageDto([Uuid::v7()]);
+        $dto = self::pageDto([Uuid::v4()]);
         $this->userRepository->expects($this->once())->method('findById')->willThrowException(new NotFoundHttpException());
         $this->pageParticipantRepository->expects($this->never())->method('save');
 
@@ -314,7 +314,7 @@ class PageServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->update(Uuid::v7(), self::pageDto([]));
+        $this->service->update(Uuid::v4(), self::pageDto([]));
     }
 
     final public function testUpdateFailsForUnknownAddedUser(): void
@@ -327,7 +327,7 @@ class PageServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->update($page->id, self::pageDto([Uuid::v7()]));
+        $this->service->update($page->id, self::pageDto([Uuid::v4()]));
     }
 
     #[DataProvider('elementStatusProvider')]
@@ -366,7 +366,7 @@ class PageServiceTest extends ServiceTestCase
         $this->pageRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->updateStatus(Uuid::v7(), self::elementStatusDto(ElementStatusEnum::Active));
+            $this->service->updateStatus(Uuid::v4(), self::elementStatusDto(ElementStatusEnum::Active));
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }
@@ -408,7 +408,7 @@ class PageServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->delete(Uuid::v7());
+        $this->service->delete(Uuid::v4());
     }
 
     final public function testIndexDelegatesToRepository(): void
@@ -434,7 +434,7 @@ class PageServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->details(Uuid::v7());
+        $this->service->details(Uuid::v4());
     }
 
     #[DataProvider('saveStatusProvider')]
@@ -462,7 +462,7 @@ class PageServiceTest extends ServiceTestCase
         $this->pageParticipantRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->updateParticipantStatus(Uuid::v7(), $dto);
+            $this->service->updateParticipantStatus(Uuid::v4(), $dto);
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }
@@ -510,7 +510,7 @@ class PageServiceTest extends ServiceTestCase
         $this->pageFollowRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->createFollow(Uuid::v7(), self::followStatusDto(PageFollowStatusEnum::Pending));
+            $this->service->createFollow(Uuid::v4(), self::followStatusDto(PageFollowStatusEnum::Pending));
             $this->fail('Expected ValidatorException.');
         } catch (ValidatorException $e) {
             $this->assertSame('User already follows this page.', $e->getMessage());
@@ -526,7 +526,7 @@ class PageServiceTest extends ServiceTestCase
         $this->pageFollowRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->createFollow(Uuid::v7(), self::followStatusDto(PageFollowStatusEnum::Pending));
+            $this->service->createFollow(Uuid::v4(), self::followStatusDto(PageFollowStatusEnum::Pending));
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }
@@ -555,7 +555,7 @@ class PageServiceTest extends ServiceTestCase
         $this->pageFollowRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->updateFollowStatus(Uuid::v7(), self::followStatusDto(PageFollowStatusEnum::Accepted));
+            $this->service->updateFollowStatus(Uuid::v4(), self::followStatusDto(PageFollowStatusEnum::Accepted));
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }
@@ -579,7 +579,7 @@ class PageServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->deleteFollow(Uuid::v7());
+        $this->service->deleteFollow(Uuid::v4());
     }
 
     final public function testIndexFollowsDelegatesToRepository(): void
@@ -605,7 +605,7 @@ class PageServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->detailsFollow(Uuid::v7());
+        $this->service->detailsFollow(Uuid::v4());
     }
 
     /** @param Uuid[] $userIds */

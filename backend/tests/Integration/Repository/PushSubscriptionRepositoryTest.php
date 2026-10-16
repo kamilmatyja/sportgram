@@ -80,7 +80,7 @@ class PushSubscriptionRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->pushSubscriptionRepository->findById(Uuid::v7());
+        $this->pushSubscriptionRepository->findById(Uuid::v4());
     }
 
     final public function testFindActiveByUserIdReturnsOnlyActiveSubscriptionsOfUser(): void

@@ -106,13 +106,13 @@ class EventCreatorVoterTest extends VoterTestCase
     {
         $this->pageRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), EventCreatorVoter::EVENT_CREATOR);
+        $this->assertDenied($this->voter, null, Uuid::v4(), EventCreatorVoter::EVENT_CREATOR);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, EventCreatorVoter::EVENT_CREATOR);
     }
 
@@ -124,13 +124,13 @@ class EventCreatorVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v7(), [EventCreatorVoter::EVENT_CREATOR]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v4(), [EventCreatorVoter::EVENT_CREATOR]);
     }
 
     private function pageWithParticipants(User ...$users): Page
     {
         $page = PageFactory::make();
-        $page->id = Uuid::v7();
+        $page->id = Uuid::v4();
 
         foreach ($users as $user) {
             $page->participants->add(

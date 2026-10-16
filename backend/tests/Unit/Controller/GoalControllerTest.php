@@ -67,7 +67,7 @@ class GoalControllerTest extends ControllerTestCase
     final public function testCreate(): void
     {
         $dto = new GoalDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($dto)->willReturn($id);
 
         $response = $this->controller->create($dto, $this->service());
@@ -77,7 +77,7 @@ class GoalControllerTest extends ControllerTestCase
 
     final public function testUpdate(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new GoalDto();
         $this->service()->expects($this->once())->method('update')->with($id, $dto)->willReturn($id);
 
@@ -88,7 +88,7 @@ class GoalControllerTest extends ControllerTestCase
 
     final public function testUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new GoalStatusDto();
         $dto->status = GoalStatusEnum::Completed;
         $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
@@ -100,7 +100,7 @@ class GoalControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -163,7 +163,7 @@ class GoalControllerTest extends ControllerTestCase
 
     final public function testParticipantUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = self::saveStatus();
         $this->service()->expects($this->once())->method('updateParticipantStatus')->with($id, $dto)->willReturn($id);
 
@@ -174,7 +174,7 @@ class GoalControllerTest extends ControllerTestCase
 
     final public function testParticipantResultUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = self::saveStatus();
         $this->service()->expects($this->once())->method('updateParticipantResultStatus')->with($id, $dto)->willReturn($id);
 
@@ -207,8 +207,8 @@ class GoalControllerTest extends ControllerTestCase
     private function goal(): Goal
     {
         $goal = GoalFactory::make();
-        $goal->id = Uuid::v7();
-        $goal->feed->id = Uuid::v7();
+        $goal->id = Uuid::v4();
+        $goal->feed->id = Uuid::v4();
         $goal->onPrePersist();
 
         return $goal;
@@ -219,12 +219,12 @@ class GoalControllerTest extends ControllerTestCase
         $goal = $this->goal();
 
         $participant = GoalParticipantFactory::make(['goal' => $goal]);
-        $participant->id = Uuid::v7();
+        $participant->id = Uuid::v4();
         $participant->onPrePersist();
         $goal->participants->add($participant);
 
         $result = GoalParticipantResultFactory::make(['goalParticipant' => $participant, 'feed' => $goal->feed]);
-        $result->id = Uuid::v7();
+        $result->id = Uuid::v4();
         $result->onPrePersist();
         $participant->results->add($result);
 

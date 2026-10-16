@@ -90,13 +90,13 @@ class EventResultVoterTest extends VoterTestCase
     {
         $this->eventDisciplineResultRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), EventResultVoter::EVENT_RESULT);
+        $this->assertDenied($this->voter, null, Uuid::v4(), EventResultVoter::EVENT_RESULT);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, EventResultVoter::EVENT_RESULT);
     }
 
@@ -108,7 +108,7 @@ class EventResultVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v7(), [EventResultVoter::EVENT_RESULT]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v4(), [EventResultVoter::EVENT_RESULT]);
     }
 
     private function resultOfEventCreatedBy(User $organizer, ?User $athlete = null): EventDisciplineResult
@@ -126,7 +126,7 @@ class EventResultVoterTest extends VoterTestCase
             'eventDisciplineList' => $list,
             'user' => $athlete ?? self::user(RoleEnum::Participant),
         ]);
-        $result->id = Uuid::v7();
+        $result->id = Uuid::v4();
 
         return $result;
     }

@@ -47,7 +47,7 @@ class FeedCommentVoterTest extends VoterTestCase
     {
         $this->feedCommentRepository->expects($this->never())->method('findById');
 
-        $this->assertGranted($this->voter, self::admin(), Uuid::v7(), FeedCommentVoter::FEED_COMMENT);
+        $this->assertGranted($this->voter, self::admin(), Uuid::v4(), FeedCommentVoter::FEED_COMMENT);
     }
 
     final public function testAdministratorIsGrantedEvenForInvalidSubject(): void
@@ -75,13 +75,13 @@ class FeedCommentVoterTest extends VoterTestCase
     {
         $this->feedCommentRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), FeedCommentVoter::FEED_COMMENT);
+        $this->assertDenied($this->voter, null, Uuid::v4(), FeedCommentVoter::FEED_COMMENT);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, FeedCommentVoter::FEED_COMMENT);
     }
 
@@ -93,13 +93,13 @@ class FeedCommentVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [FeedCommentVoter::FEED_COMMENT]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [FeedCommentVoter::FEED_COMMENT]);
     }
 
     private function feedCommentOwnedBy(User $owner): FeedComment
     {
         $feedComment = FeedCommentFactory::make(['user' => $owner]);
-        $feedComment->id = Uuid::v7();
+        $feedComment->id = Uuid::v4();
 
         return $feedComment;
     }

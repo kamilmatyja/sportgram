@@ -21,7 +21,7 @@ abstract class ResourceTestCase extends TestCase
      */
     final protected static function persisted(object $entity): object
     {
-        $entity->id = Uuid::v7();
+        $entity->id = Uuid::v4();
         $entity->onPrePersist();
 
         return $entity;

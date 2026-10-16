@@ -28,7 +28,7 @@ class EntryRepositoryTest extends RepositoryTestCase
     final public function testSavePersistsEntry(): void
     {
         $user = $this->user();
-        $entityId = Uuid::v7();
+        $entityId = Uuid::v4();
         $entry = EntryFactory::make(['user' => $user, 'entityId' => $entityId, 'type' => EntryTypeEnum::Feed]);
 
         $this->entryRepository->save($entry);
@@ -45,7 +45,7 @@ class EntryRepositoryTest extends RepositoryTestCase
     final public function testSaveUpdatesExistingEntry(): void
     {
         $entry = $this->entry(type: EntryTypeEnum::Feed);
-        $entityId = Uuid::v7();
+        $entityId = Uuid::v4();
 
         $entry->type = EntryTypeEnum::Goal;
         $entry->entityId = $entityId;
@@ -87,7 +87,7 @@ class EntryRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->entryRepository->findById(Uuid::v7());
+        $this->entryRepository->findById(Uuid::v4());
     }
 
     final public function testFindEntriesWithoutFiltersReturnsAll(): void
@@ -117,12 +117,12 @@ class EntryRepositoryTest extends RepositoryTestCase
 
     final public function testFindEntriesFiltersByEntityIds(): void
     {
-        $entityId1 = Uuid::v7();
-        $entityId2 = Uuid::v7();
+        $entityId1 = Uuid::v4();
+        $entityId2 = Uuid::v4();
         $first = $this->entry(entityId: $entityId1, createdAt: '2026-01-01 10:00:00');
         $second = $this->entry(entityId: $entityId2, createdAt: '2026-01-02 10:00:00');
         $third = $this->entry(entityId: $entityId1, createdAt: '2026-01-03 10:00:00');
-        $this->entry(entityId: Uuid::v7());
+        $this->entry(entityId: Uuid::v4());
 
         $page = $this->entryRepository->findEntries($this->indexDto(entityIds: [$entityId1, $entityId2], sort: 'createdAt:asc'));
 
@@ -131,7 +131,7 @@ class EntryRepositoryTest extends RepositoryTestCase
 
     final public function testFindEntriesFiltersBySingleEntityId(): void
     {
-        $entityId = Uuid::v7();
+        $entityId = Uuid::v4();
         $entry = $this->entry(entityId: $entityId);
         $this->entry();
 
@@ -155,10 +155,10 @@ class EntryRepositoryTest extends RepositoryTestCase
     final public function testFindEntriesCombinesAllFilters(): void
     {
         $user = $this->user();
-        $entityId = Uuid::v7();
+        $entityId = Uuid::v4();
         $match = $this->entry($user, $entityId, EntryTypeEnum::Feed);
         $this->entry($user, $entityId, EntryTypeEnum::Goal);
-        $this->entry($user, Uuid::v7(), EntryTypeEnum::Feed);
+        $this->entry($user, Uuid::v4(), EntryTypeEnum::Feed);
         $this->entry($this->user(), $entityId, EntryTypeEnum::Feed);
 
         $page = $this->entryRepository->findEntries(
@@ -173,7 +173,7 @@ class EntryRepositoryTest extends RepositoryTestCase
     {
         $this->entry(type: EntryTypeEnum::Feed);
 
-        $page = $this->entryRepository->findEntries($this->indexDto(userId: Uuid::v7()));
+        $page = $this->entryRepository->findEntries($this->indexDto(userId: Uuid::v4()));
 
         $this->assertSame([], $page->getItems());
         $this->assertSame(0, $page->getTotalCount());
@@ -240,8 +240,8 @@ class EntryRepositoryTest extends RepositoryTestCase
 
     final public function testFindCountEntriesGroupsByTypeAndEntity(): void
     {
-        $entityId1 = Uuid::v7();
-        $entityId2 = Uuid::v7();
+        $entityId1 = Uuid::v4();
+        $entityId2 = Uuid::v4();
         $this->entries(3, $entityId1, EntryTypeEnum::Feed);
         $this->entries(1, $entityId1, EntryTypeEnum::Goal);
         $this->entries(2, $entityId2, EntryTypeEnum::Feed);
@@ -259,7 +259,7 @@ class EntryRepositoryTest extends RepositoryTestCase
 
     final public function testFindCountEntriesCountsEntriesOfAllUsers(): void
     {
-        $entityId = Uuid::v7();
+        $entityId = Uuid::v4();
         $this->entry($this->user(), $entityId, EntryTypeEnum::Page);
         $this->entry($this->user(), $entityId, EntryTypeEnum::Page);
 
@@ -270,11 +270,11 @@ class EntryRepositoryTest extends RepositoryTestCase
 
     final public function testFindCountEntriesFiltersByEntityIds(): void
     {
-        $entityId1 = Uuid::v7();
-        $entityId2 = Uuid::v7();
+        $entityId1 = Uuid::v4();
+        $entityId2 = Uuid::v4();
         $this->entries(2, $entityId1, EntryTypeEnum::Feed);
         $this->entries(1, $entityId2, EntryTypeEnum::Feed);
-        $this->entries(4, Uuid::v7(), EntryTypeEnum::Feed);
+        $this->entries(4, Uuid::v4(), EntryTypeEnum::Feed);
 
         $page = $this->entryRepository->findCountEntries($this->countDto(entityIds: [$entityId1, $entityId2]));
 
@@ -287,7 +287,7 @@ class EntryRepositoryTest extends RepositoryTestCase
 
     final public function testFindCountEntriesFiltersByType(): void
     {
-        $entityId = Uuid::v7();
+        $entityId = Uuid::v4();
         $this->entries(2, $entityId, EntryTypeEnum::Feed);
         $this->entries(3, $entityId, EntryTypeEnum::Goal);
 
@@ -299,10 +299,10 @@ class EntryRepositoryTest extends RepositoryTestCase
 
     final public function testFindCountEntriesCombinesFilters(): void
     {
-        $entityId = Uuid::v7();
+        $entityId = Uuid::v4();
         $this->entries(2, $entityId, EntryTypeEnum::Feed);
         $this->entries(3, $entityId, EntryTypeEnum::Goal);
-        $this->entries(4, Uuid::v7(), EntryTypeEnum::Feed);
+        $this->entries(4, Uuid::v4(), EntryTypeEnum::Feed);
 
         $page = $this->entryRepository->findCountEntries($this->countDto(entityIds: [$entityId], type: EntryTypeEnum::Feed));
 
@@ -312,7 +312,7 @@ class EntryRepositoryTest extends RepositoryTestCase
 
     final public function testFindCountEntriesReturnsEmptyPageWhenNothingMatches(): void
     {
-        $this->entries(2, Uuid::v7(), EntryTypeEnum::Feed);
+        $this->entries(2, Uuid::v4(), EntryTypeEnum::Feed);
 
         $page = $this->entryRepository->findCountEntries($this->countDto(type: EntryTypeEnum::Goal));
 
@@ -325,9 +325,9 @@ class EntryRepositoryTest extends RepositoryTestCase
     final public function testFindCountEntriesSorts(string $sort, array $expectedOrder): void
     {
         $groups = [
-            [EntryTypeEnum::Goal, Uuid::v7(), 1],
-            [EntryTypeEnum::User, Uuid::v7(), 3],
-            [EntryTypeEnum::Training, Uuid::v7(), 2],
+            [EntryTypeEnum::Goal, Uuid::v4(), 1],
+            [EntryTypeEnum::User, Uuid::v4(), 3],
+            [EntryTypeEnum::Training, Uuid::v4(), 2],
         ];
 
         foreach ($groups as [$type, $entityId, $count]) {
@@ -356,7 +356,7 @@ class EntryRepositoryTest extends RepositoryTestCase
         $groups = [];
 
         for ($i = 0; $i < 5; ++$i) {
-            $groups[] = [EntryTypeEnum::Feed, Uuid::v7(), 5 - $i];
+            $groups[] = [EntryTypeEnum::Feed, Uuid::v4(), 5 - $i];
             $this->entries(5 - $i, $groups[$i][1], EntryTypeEnum::Feed);
         }
 

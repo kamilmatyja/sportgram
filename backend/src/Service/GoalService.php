@@ -79,14 +79,16 @@ readonly class GoalService
 
             $this->goalParticipantRepository->save($goalParticipant);
 
-            $this->eventDispatcher->dispatch(
-                new NotificationEvent(
-                    $participantUser,
-                    NotificationTypeEnum::GoalParticipant,
-                    $goal->text,
-                    '/goals/' . $goal->link,
-                ),
-            );
+            if (! $participantUser->id->equals($user->id)) {
+                $this->eventDispatcher->dispatch(
+                    new NotificationEvent(
+                        $participantUser,
+                        NotificationTypeEnum::GoalParticipant,
+                        $goal->text,
+                        '/goals/' . $goal->link,
+                    ),
+                );
+            }
         }
 
         return $goal->id;
@@ -145,14 +147,16 @@ readonly class GoalService
                 new GoalParticipant($goal, $participantUser, SaveStatusEnum::Pending),
             );
 
-            $this->eventDispatcher->dispatch(
-                new NotificationEvent(
-                    $participantUser,
-                    NotificationTypeEnum::GoalParticipant,
-                    $goal->text,
-                    '/goals/' . $goal->link,
-                ),
-            );
+            if (! $participantUser->id->equals($user->id)) {
+                $this->eventDispatcher->dispatch(
+                    new NotificationEvent(
+                        $participantUser,
+                        NotificationTypeEnum::GoalParticipant,
+                        $goal->text,
+                        '/goals/' . $goal->link,
+                    ),
+                );
+            }
         }
 
         $this->goalRepository->save($goal);

@@ -105,7 +105,7 @@ class AssignAdminRoleVoterTest extends VoterTestCase
     public static function unsupportedSubjectProvider(): iterable
     {
         yield 'null' => [null];
-        yield 'uuid' => [Uuid::v7()];
+        yield 'uuid' => [Uuid::v4()];
         yield 'array of roles' => [[RoleEnum::Administrator]];
         yield 'object' => [new stdClass()];
     }

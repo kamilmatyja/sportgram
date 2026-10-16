@@ -99,13 +99,13 @@ class PageFollowVoterTest extends VoterTestCase
     {
         $this->pageFollowRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), PageFollowVoter::PAGE_FOLLOW);
+        $this->assertDenied($this->voter, null, Uuid::v4(), PageFollowVoter::PAGE_FOLLOW);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, PageFollowVoter::PAGE_FOLLOW);
     }
 
@@ -117,13 +117,13 @@ class PageFollowVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [PageFollowVoter::PAGE_FOLLOW]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [PageFollowVoter::PAGE_FOLLOW]);
     }
 
     private function pageFollowOwnedBy(User $owner): PageFollow
     {
         $pageFollow = PageFollowFactory::make(['user' => $owner]);
-        $pageFollow->id = Uuid::v7();
+        $pageFollow->id = Uuid::v4();
 
         return $pageFollow;
     }

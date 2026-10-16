@@ -76,7 +76,7 @@ class EventDisciplineListRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->eventDisciplineListRepository->findById(Uuid::v7());
+        $this->eventDisciplineListRepository->findById(Uuid::v4());
     }
 
     final public function testFindListsReturnsOnlyListsOfDistance(): void

@@ -26,7 +26,7 @@ class ConversationFilterDtoTest extends DtoTestCase
     final public function testValidWithUserIdOnly(): void
     {
         $dto = new ConversationFilterDto();
-        $dto->userId = Uuid::v7();
+        $dto->userId = Uuid::v4();
 
         $this->assertValid($dto);
     }
@@ -35,7 +35,7 @@ class ConversationFilterDtoTest extends DtoTestCase
     final public function testAcceptsStatus(ConversationStatusEnum $status): void
     {
         $dto = new ConversationFilterDto();
-        $dto->userId = Uuid::v7();
+        $dto->userId = Uuid::v4();
         $dto->status = $status;
 
         $this->assertValid($dto);

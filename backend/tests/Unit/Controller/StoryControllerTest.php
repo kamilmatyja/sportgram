@@ -61,7 +61,7 @@ class StoryControllerTest extends ControllerTestCase
     final public function testCreate(): void
     {
         $dto = new StoryDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($dto)->willReturn($id);
 
         $response = $this->controller->create($dto, $this->service());
@@ -71,7 +71,7 @@ class StoryControllerTest extends ControllerTestCase
 
     final public function testUpdate(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new StoryDto();
         $this->service()->expects($this->once())->method('update')->with($id, $dto)->willReturn($id);
 
@@ -82,7 +82,7 @@ class StoryControllerTest extends ControllerTestCase
 
     final public function testUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new ElementStatusDto();
         $dto->status = ElementStatusEnum::Rejected;
         $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
@@ -94,7 +94,7 @@ class StoryControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -146,7 +146,7 @@ class StoryControllerTest extends ControllerTestCase
     private function story(): Story
     {
         $story = StoryFactory::make();
-        $story->id = Uuid::v7();
+        $story->id = Uuid::v4();
         $story->onPrePersist();
 
         return $story;

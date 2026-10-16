@@ -36,18 +36,18 @@ class UserFilterDtoTest extends DtoTestCase
         $dto->email = 'john@example.com';
         $dto->country = CountryEnum::Poland;
         $dto->status = UserStatusEnum::Accepted;
-        $dto->addUserId(Uuid::v7());
-        $dto->addUserId(Uuid::v7());
+        $dto->addUserId(Uuid::v4());
+        $dto->addUserId(Uuid::v4());
         $dto->link = 'john';
-        $dto->signId = Uuid::v7();
+        $dto->signId = Uuid::v4();
 
         $this->assertValid($dto);
     }
 
     final public function testAddUserIdAppends(): void
     {
-        $first = Uuid::v7();
-        $second = Uuid::v7();
+        $first = Uuid::v4();
+        $second = Uuid::v4();
         $dto = new UserFilterDto();
         $dto->addUserId($first);
         $dto->addUserId($second);
@@ -99,7 +99,7 @@ class UserFilterDtoTest extends DtoTestCase
     final public function testRejectsInvalidUserId(mixed $userId): void
     {
         $dto = new UserFilterDto();
-        $dto->userIds = [Uuid::v7(), $userId];
+        $dto->userIds = [Uuid::v4(), $userId];
 
         $this->assertOnlyViolation($dto, 'userIds[1]');
     }
@@ -112,7 +112,7 @@ class UserFilterDtoTest extends DtoTestCase
 
     final public function testRejectsDuplicatedUserIds(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new UserFilterDto();
         $dto->userIds = [$id, $id];
 

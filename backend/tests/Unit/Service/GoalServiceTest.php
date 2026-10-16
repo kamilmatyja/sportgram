@@ -172,7 +172,7 @@ class GoalServiceTest extends ServiceTestCase
 
     final public function testCreatePropagatesNotFoundForUnknownParticipant(): void
     {
-        $dto = self::goalDto([Uuid::v7()]);
+        $dto = self::goalDto([Uuid::v4()]);
         $this->captureSaves($this->goalRepository, 1);
         $this->userRepository->expects($this->once())->method('findById')->willThrowException(new NotFoundHttpException());
         $this->goalParticipantRepository->expects($this->never())->method('save');
@@ -278,7 +278,7 @@ class GoalServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->update(Uuid::v7(), self::goalDto([]));
+        $this->service->update(Uuid::v4(), self::goalDto([]));
     }
 
     public static function participantCounts(): iterable
@@ -319,7 +319,7 @@ class GoalServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->updateStatus(Uuid::v7(), $dto);
+        $this->service->updateStatus(Uuid::v4(), $dto);
     }
 
     #[DataProvider('participantCounts')]
@@ -359,7 +359,7 @@ class GoalServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->delete(Uuid::v7());
+        $this->service->delete(Uuid::v4());
     }
 
     final public function testIndexDelegatesToRepository(): void
@@ -385,7 +385,7 @@ class GoalServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->details(Uuid::v7());
+        $this->service->details(Uuid::v4());
     }
 
     final public function testUpdateParticipantStatusSavesStatusAndNotifiesParticipant(): void
@@ -414,7 +414,7 @@ class GoalServiceTest extends ServiceTestCase
         $this->goalParticipantRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->updateParticipantStatus(Uuid::v7(), $dto);
+            $this->service->updateParticipantStatus(Uuid::v4(), $dto);
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }
@@ -452,7 +452,7 @@ class GoalServiceTest extends ServiceTestCase
         $this->goalParticipantResultRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->updateParticipantResultStatus(Uuid::v7(), $dto);
+            $this->service->updateParticipantResultStatus(Uuid::v4(), $dto);
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }

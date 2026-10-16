@@ -13,7 +13,7 @@ class EntryCountDtoTest extends DtoTestCase
 {
     final public function testStoresValues(): void
     {
-        $entityId = Uuid::v7();
+        $entityId = Uuid::v4();
         $dto = new EntryCountDto($entityId, EntryTypeEnum::Feed, 5);
 
         $this->assertSame($entityId, $dto->entityId);
@@ -23,7 +23,7 @@ class EntryCountDtoTest extends DtoTestCase
 
     final public function testIsReadonly(): void
     {
-        $dto = new EntryCountDto(Uuid::v7(), EntryTypeEnum::Feed, 5);
+        $dto = new EntryCountDto(Uuid::v4(), EntryTypeEnum::Feed, 5);
 
         $this->expectException(Error::class);
 

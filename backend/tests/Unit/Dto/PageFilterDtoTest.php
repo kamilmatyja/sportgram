@@ -26,7 +26,7 @@ class PageFilterDtoTest extends DtoTestCase
     final public function testFilledFilterIsValid(ElementStatusEnum $status): void
     {
         $dto = new PageFilterDto();
-        $dto->userId = Uuid::v7();
+        $dto->userId = Uuid::v4();
         $dto->link = str_repeat('a', 64);
         $dto->title = str_repeat('a', 2048);
         $dto->status = $status;

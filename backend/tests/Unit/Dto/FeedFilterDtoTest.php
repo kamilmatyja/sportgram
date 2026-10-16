@@ -24,7 +24,7 @@ class FeedFilterDtoTest extends DtoTestCase
     final public function testFullyFilledIsValid(): void
     {
         $dto = new FeedFilterDto();
-        $dto->userId = Uuid::v7();
+        $dto->userId = Uuid::v4();
         $dto->text = 'New post';
         $dto->status = ElementStatusEnum::Active;
 

@@ -47,7 +47,7 @@ class PageVoterTest extends VoterTestCase
     {
         $this->pageRepository->expects($this->never())->method('findById');
 
-        $this->assertGranted($this->voter, self::admin(), Uuid::v7(), PageVoter::PAGE);
+        $this->assertGranted($this->voter, self::admin(), Uuid::v4(), PageVoter::PAGE);
     }
 
     final public function testAdministratorIsGrantedEvenForInvalidSubject(): void
@@ -75,13 +75,13 @@ class PageVoterTest extends VoterTestCase
     {
         $this->pageRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), PageVoter::PAGE);
+        $this->assertDenied($this->voter, null, Uuid::v4(), PageVoter::PAGE);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, PageVoter::PAGE);
     }
 
@@ -93,13 +93,13 @@ class PageVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v7(), [PageVoter::PAGE]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v4(), [PageVoter::PAGE]);
     }
 
     private function pageOwnedBy(User $owner): Page
     {
         $page = PageFactory::make(['user' => $owner]);
-        $page->id = Uuid::v7();
+        $page->id = Uuid::v4();
 
         return $page;
     }

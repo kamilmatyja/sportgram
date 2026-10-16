@@ -94,7 +94,7 @@ class NotificationRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->notificationRepository->findById(Uuid::v7());
+        $this->notificationRepository->findById(Uuid::v4());
     }
 
     final public function testFindNotificationsReturnsOnlyUsersNotifications(): void

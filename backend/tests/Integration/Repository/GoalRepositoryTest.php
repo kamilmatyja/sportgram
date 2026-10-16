@@ -92,7 +92,7 @@ class GoalRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->goalRepository->findById(Uuid::v7());
+        $this->goalRepository->findById(Uuid::v4());
     }
 
     #[DataProvider('activeDateProvider')]

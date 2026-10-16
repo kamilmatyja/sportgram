@@ -79,7 +79,7 @@ class UserRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->userRepository->findById(Uuid::v7());
+        $this->userRepository->findById(Uuid::v4());
     }
 
     final public function testFindByIdLoadsRolesForSecurity(): void
@@ -268,7 +268,7 @@ class UserRepositoryTest extends RepositoryTestCase
         $this->user();
 
         $dto = $this->indexDto();
-        $dto->filter->userIds = [Uuid::v7()];
+        $dto->filter->userIds = [Uuid::v4()];
 
         $this->assertSame([], $this->userRepository->findUsers($dto)->getItems());
     }
@@ -309,7 +309,7 @@ class UserRepositoryTest extends RepositoryTestCase
         UserSignFactory::make(['user' => $this->user()], $this->em);
 
         $dto = $this->indexDto();
-        $dto->filter->signId = Uuid::v7();
+        $dto->filter->signId = Uuid::v4();
 
         $this->assertSame([], $this->userRepository->findUsers($dto)->getItems());
     }

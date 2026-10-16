@@ -13,7 +13,7 @@ class StatisticResourceTest extends ResourceTestCase
 {
     final public function testMapsAllFields(): void
     {
-        $result = new StatisticResultDto(Uuid::v7(), new DateTimeImmutable('2026-04-22 10:15:30.123456'), 2, 5000, 1800);
+        $result = new StatisticResultDto(Uuid::v4(), new DateTimeImmutable('2026-04-22 10:15:30.123456'), 2, 5000, 1800);
 
         $data = StatisticResource::fromEntity($result);
 
@@ -30,8 +30,8 @@ class StatisticResourceTest extends ResourceTestCase
     final public function testMapsCollectionInOrder(): void
     {
         $results = [
-            new StatisticResultDto(Uuid::v7(), new DateTimeImmutable('2026-01-01'), 1, 100, 60),
-            new StatisticResultDto(Uuid::v7(), new DateTimeImmutable('2026-01-02'), 3, 0, 0),
+            new StatisticResultDto(Uuid::v4(), new DateTimeImmutable('2026-01-01'), 1, 100, 60),
+            new StatisticResultDto(Uuid::v4(), new DateTimeImmutable('2026-01-02'), 3, 0, 0),
         ];
 
         $data = StatisticResource::fromEntityCollection($results);

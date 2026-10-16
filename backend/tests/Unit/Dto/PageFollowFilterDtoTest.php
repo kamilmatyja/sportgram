@@ -43,8 +43,8 @@ class PageFollowFilterDtoTest extends DtoTestCase
 
     final public function testAddPageIdAppendsItems(): void
     {
-        $first = Uuid::v7();
-        $second = Uuid::v7();
+        $first = Uuid::v4();
+        $second = Uuid::v4();
         $dto = $this->validDto();
 
         $dto->addPageId($first);
@@ -58,7 +58,7 @@ class PageFollowFilterDtoTest extends DtoTestCase
     final public function testRejectsInvalidPageId(mixed $pageId): void
     {
         $dto = $this->validDto();
-        $dto->pageIds = [Uuid::v7(), $pageId];
+        $dto->pageIds = [Uuid::v4(), $pageId];
 
         $this->assertOnlyViolation($dto, 'pageIds[1]');
     }
@@ -72,7 +72,7 @@ class PageFollowFilterDtoTest extends DtoTestCase
 
     final public function testRejectsDuplicatedPageId(): void
     {
-        $pageId = Uuid::v7();
+        $pageId = Uuid::v4();
         $dto = $this->validDto();
         $dto->addPageId($pageId);
         $dto->addPageId($pageId);
@@ -83,7 +83,7 @@ class PageFollowFilterDtoTest extends DtoTestCase
     private function validDto(): PageFollowFilterDto
     {
         $dto = new PageFollowFilterDto();
-        $dto->userId = Uuid::v7();
+        $dto->userId = Uuid::v4();
 
         return $dto;
     }

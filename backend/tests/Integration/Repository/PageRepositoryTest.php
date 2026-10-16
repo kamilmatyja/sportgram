@@ -77,7 +77,7 @@ class PageRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->pageRepository->findById(Uuid::v7());
+        $this->pageRepository->findById(Uuid::v4());
     }
 
     final public function testFindPagesWithoutFiltersReturnsAll(): void

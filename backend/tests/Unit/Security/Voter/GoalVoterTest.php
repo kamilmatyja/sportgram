@@ -67,7 +67,7 @@ class GoalVoterTest extends VoterTestCase
     {
         $this->goalRepository->expects($this->never())->method('findById');
 
-        $this->assertGranted($this->voter, self::admin(), Uuid::v7(), GoalVoter::GOAL);
+        $this->assertGranted($this->voter, self::admin(), Uuid::v4(), GoalVoter::GOAL);
     }
 
     final public function testAdministratorIsGrantedEvenForInvalidSubject(): void
@@ -96,13 +96,13 @@ class GoalVoterTest extends VoterTestCase
     {
         $this->goalRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), GoalVoter::GOAL);
+        $this->assertDenied($this->voter, null, Uuid::v4(), GoalVoter::GOAL);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, GoalVoter::GOAL);
     }
 
@@ -114,13 +114,13 @@ class GoalVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [GoalVoter::GOAL]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [GoalVoter::GOAL]);
     }
 
     private function goalOwnedBy(User $owner): Goal
     {
         $goal = GoalFactory::make(['user' => $owner]);
-        $goal->id = Uuid::v7();
+        $goal->id = Uuid::v4();
 
         return $goal;
     }

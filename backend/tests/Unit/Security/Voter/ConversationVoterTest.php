@@ -89,13 +89,13 @@ class ConversationVoterTest extends VoterTestCase
     {
         $this->conversationRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), ConversationVoter::CONVERSATION);
+        $this->assertDenied($this->voter, null, Uuid::v4(), ConversationVoter::CONVERSATION);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, ConversationVoter::CONVERSATION);
     }
 
@@ -107,13 +107,13 @@ class ConversationVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [ConversationVoter::CONVERSATION]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [ConversationVoter::CONVERSATION]);
     }
 
     private function conversationBetween(User $sender, User $receiver): Conversation
     {
         $conversation = ConversationFactory::make(['senderUser' => $sender, 'receiverUser' => $receiver]);
-        $conversation->id = Uuid::v7();
+        $conversation->id = Uuid::v4();
 
         return $conversation;
     }

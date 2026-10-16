@@ -53,7 +53,7 @@ class TrainingDtoTest extends DtoTestCase
         $discipline->addDistance($distance);
         $dto = $this->validDto();
         $dto->addDiscipline($discipline);
-        $dto->addUserId(Uuid::v7());
+        $dto->addUserId(Uuid::v4());
 
         $this->assertValid($dto);
     }
@@ -62,8 +62,8 @@ class TrainingDtoTest extends DtoTestCase
     {
         $firstDiscipline = new TrainingDisciplineDto();
         $secondDiscipline = new TrainingDisciplineDto();
-        $firstUserId = Uuid::v7();
-        $secondUserId = Uuid::v7();
+        $firstUserId = Uuid::v4();
+        $secondUserId = Uuid::v4();
         $dto = new TrainingDto();
         $dto->addDiscipline($firstDiscipline);
         $dto->addDiscipline($secondDiscipline);
@@ -123,7 +123,7 @@ class TrainingDtoTest extends DtoTestCase
     final public function testRejectsInvalidUserId(mixed $userId): void
     {
         $dto = $this->validDto();
-        $dto->userIds = [Uuid::v7(), $userId];
+        $dto->userIds = [Uuid::v4(), $userId];
 
         $this->assertOnlyViolation($dto, 'userIds[1]');
     }
@@ -136,7 +136,7 @@ class TrainingDtoTest extends DtoTestCase
 
     final public function testRejectsDuplicatedUserIds(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = $this->validDto();
         $dto->userIds = [$id, $id];
 

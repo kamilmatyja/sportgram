@@ -94,7 +94,7 @@ class EventDisciplineResultRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->eventDisciplineResultRepository->findById(Uuid::v7());
+        $this->eventDisciplineResultRepository->findById(Uuid::v4());
     }
 
     private function eventDisciplineResult(int $time = 60): EventDisciplineResult

@@ -32,8 +32,8 @@ class StatisticFilterDtoTest extends DtoTestCase
 
     final public function testAddUserIdAppendsItems(): void
     {
-        $first = Uuid::v7();
-        $second = Uuid::v7();
+        $first = Uuid::v4();
+        $second = Uuid::v4();
         $dto = new StatisticFilterDto();
 
         $dto->addUserId($first);
@@ -61,7 +61,7 @@ class StatisticFilterDtoTest extends DtoTestCase
 
     final public function testRejectsDuplicatedUserId(): void
     {
-        $userId = Uuid::v7();
+        $userId = Uuid::v4();
         $dto = new StatisticFilterDto();
         $dto->addUserId($userId);
         $dto->addUserId($userId);
@@ -87,7 +87,7 @@ class StatisticFilterDtoTest extends DtoTestCase
     private function validDto(): StatisticFilterDto
     {
         $dto = new StatisticFilterDto();
-        $dto->addUserId(Uuid::v7());
+        $dto->addUserId(Uuid::v4());
 
         return $dto;
     }

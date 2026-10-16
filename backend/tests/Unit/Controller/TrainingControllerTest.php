@@ -66,7 +66,7 @@ class TrainingControllerTest extends ControllerTestCase
     final public function testCreate(): void
     {
         $dto = new TrainingDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($dto)->willReturn($id);
 
         $response = $this->controller->create($dto, $this->service());
@@ -76,7 +76,7 @@ class TrainingControllerTest extends ControllerTestCase
 
     final public function testUpdate(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new TrainingDto();
         $this->service()->expects($this->once())->method('update')->with($id, $dto)->willReturn($id);
 
@@ -87,7 +87,7 @@ class TrainingControllerTest extends ControllerTestCase
 
     final public function testUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new ElementStatusDto();
         $dto->status = ElementStatusEnum::Active;
         $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
@@ -99,7 +99,7 @@ class TrainingControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -162,7 +162,7 @@ class TrainingControllerTest extends ControllerTestCase
 
     final public function testParticipantUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new SaveStatusDto();
         $dto->status = SaveStatusEnum::Accepted;
         $this->service()->expects($this->once())->method('updateParticipantStatus')->with($id, $dto)->willReturn($id);
@@ -180,7 +180,7 @@ class TrainingControllerTest extends ControllerTestCase
     private function training(): Training
     {
         $training = TrainingFactory::make();
-        $training->id = Uuid::v7();
+        $training->id = Uuid::v4();
         $training->onPrePersist();
 
         return $training;
@@ -192,12 +192,12 @@ class TrainingControllerTest extends ControllerTestCase
         $training->disciplines = new ArrayCollection();
 
         $discipline = TrainingDisciplineFactory::make(['training' => $training]);
-        $discipline->id = Uuid::v7();
+        $discipline->id = Uuid::v4();
         $discipline->onPrePersist();
         $training->disciplines->add($discipline);
 
         $participant = TrainingParticipantFactory::make(['training' => $training]);
-        $participant->id = Uuid::v7();
+        $participant->id = Uuid::v4();
         $participant->onPrePersist();
         $training->participants->add($participant);
 

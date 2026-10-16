@@ -76,7 +76,7 @@ class UserSignRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->userSignRepository->findById(Uuid::v7());
+        $this->userSignRepository->findById(Uuid::v4());
     }
 
     final public function testFindLastByUserIdReturnsNewestSignOfThatUser(): void
@@ -126,7 +126,7 @@ class UserSignRepositoryTest extends RepositoryTestCase
         $user = $this->user();
 
         $this->assertNull($this->userSignRepository->findLastByUserId(self::id($user)));
-        $this->assertNull($this->userSignRepository->findLastByUserId(Uuid::v7()));
+        $this->assertNull($this->userSignRepository->findLastByUserId(Uuid::v4()));
     }
 
     private function user(): User

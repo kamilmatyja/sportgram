@@ -13,7 +13,7 @@ class StatisticResultDtoTest extends DtoTestCase
 {
     final public function testStoresValues(): void
     {
-        $userId = Uuid::v7();
+        $userId = Uuid::v4();
         $createdAt = new DateTimeImmutable('2000-01-01 10:00');
         $dto = new StatisticResultDto($userId, $createdAt, 1, 5000, 1800);
 
@@ -26,7 +26,7 @@ class StatisticResultDtoTest extends DtoTestCase
 
     final public function testIsReadonly(): void
     {
-        $dto = new StatisticResultDto(Uuid::v7(), new DateTimeImmutable(), 1, 5000, 1800);
+        $dto = new StatisticResultDto(Uuid::v4(), new DateTimeImmutable(), 1, 5000, 1800);
 
         $this->expectException(Error::class);
 

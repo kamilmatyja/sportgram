@@ -231,7 +231,7 @@ class TrainingServiceTest extends ServiceTestCase
 
     final public function testCreatePropagatesNotFoundForUnknownParticipant(): void
     {
-        $dto = self::trainingDto([], [Uuid::v7()]);
+        $dto = self::trainingDto([], [Uuid::v4()]);
         $this->captureSaves($this->trainingRepository, 1);
         $this->userRepository->expects($this->once())->method('findById')->willThrowException(new NotFoundHttpException());
         $this->participantRepository->expects($this->never())->method('save');
@@ -361,7 +361,7 @@ class TrainingServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->update(Uuid::v7(), self::trainingDto([], []));
+        $this->service->update(Uuid::v4(), self::trainingDto([], []));
     }
 
     public static function participantCounts(): iterable
@@ -402,7 +402,7 @@ class TrainingServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->updateStatus(Uuid::v7(), $dto);
+        $this->service->updateStatus(Uuid::v4(), $dto);
     }
 
     public static function deletableParticipants(): iterable
@@ -447,7 +447,7 @@ class TrainingServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->delete(Uuid::v7());
+        $this->service->delete(Uuid::v4());
     }
 
     final public function testIndexDelegatesToRepository(): void
@@ -473,7 +473,7 @@ class TrainingServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->details(Uuid::v7());
+        $this->service->details(Uuid::v4());
     }
 
     final public function testUpdateParticipantStatusSavesStatusAndNotifiesParticipant(): void
@@ -504,7 +504,7 @@ class TrainingServiceTest extends ServiceTestCase
         $this->participantRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->updateParticipantStatus(Uuid::v7(), $dto);
+            $this->service->updateParticipantStatus(Uuid::v4(), $dto);
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }

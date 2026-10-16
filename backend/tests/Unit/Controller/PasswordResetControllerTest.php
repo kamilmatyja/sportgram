@@ -51,7 +51,7 @@ class PasswordResetControllerTest extends ControllerTestCase
     final public function testPasswordReset(): void
     {
         $dto = new UserEmailDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('passwordReset')->with($dto)->willReturn($id);
 
         $response = $this->controller->passwordReset($dto, $this->service());
@@ -61,7 +61,7 @@ class PasswordResetControllerTest extends ControllerTestCase
 
     final public function testConfirm(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new UserPasswordDto();
         $dto->password = 'Secret-password-1';
         $this->service()->expects($this->once())->method('confirm')->with($id, $dto)->willReturn($id);
@@ -74,7 +74,7 @@ class PasswordResetControllerTest extends ControllerTestCase
 
     final public function testResend(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('resend')->with($id)->willReturn($id);
 
         $response = $this->controller->resend($id, $this->service());

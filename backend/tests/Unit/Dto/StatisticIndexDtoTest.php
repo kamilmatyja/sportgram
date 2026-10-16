@@ -86,7 +86,7 @@ class StatisticIndexDtoTest extends DtoTestCase
     final public function testValidFilterWithAllFields(): void
     {
         $dto = $this->validDto();
-        $dto->filter->addUserId(Uuid::v7());
+        $dto->filter->addUserId(Uuid::v4());
         $dto->filter->discipline = DisciplineEnum::Running;
         $dto->filter->distance = 1;
 
@@ -120,7 +120,7 @@ class StatisticIndexDtoTest extends DtoTestCase
     private function validDto(): StatisticIndexDto
     {
         $dto = new StatisticIndexDto();
-        $dto->filter->addUserId(Uuid::v7());
+        $dto->filter->addUserId(Uuid::v4());
 
         return $dto;
     }

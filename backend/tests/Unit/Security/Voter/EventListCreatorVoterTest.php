@@ -99,13 +99,13 @@ class EventListCreatorVoterTest extends VoterTestCase
     {
         $this->eventDisciplineListRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), EventListCreatorVoter::EVENT_LIST_CREATOR);
+        $this->assertDenied($this->voter, null, Uuid::v4(), EventListCreatorVoter::EVENT_LIST_CREATOR);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, EventListCreatorVoter::EVENT_LIST_CREATOR);
     }
 
@@ -117,7 +117,7 @@ class EventListCreatorVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v7(), [EventListCreatorVoter::EVENT_LIST_CREATOR]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v4(), [EventListCreatorVoter::EVENT_LIST_CREATOR]);
     }
 
     private function eventDisciplineListOwnedBy(User $owner): EventDisciplineList
@@ -130,7 +130,7 @@ class EventListCreatorVoterTest extends VoterTestCase
                 'eventDiscipline' => EventDisciplineFactory::make(['event' => $event]),
             ]),
         ]);
-        $eventDisciplineList->id = Uuid::v7();
+        $eventDisciplineList->id = Uuid::v4();
 
         return $eventDisciplineList;
     }

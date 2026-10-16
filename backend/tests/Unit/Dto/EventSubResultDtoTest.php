@@ -17,7 +17,7 @@ class EventSubResultDtoTest extends DtoTestCase
     final public function testValid(): void
     {
         $dto = new EventSubResultDto();
-        $dto->eventDisciplineSubDistanceId = Uuid::v7();
+        $dto->eventDisciplineSubDistanceId = Uuid::v4();
         $dto->time = 60;
 
         $this->assertValid($dto);
@@ -26,7 +26,7 @@ class EventSubResultDtoTest extends DtoTestCase
     final public function testZeroTimeIsNotBlank(): void
     {
         $dto = new EventSubResultDto();
-        $dto->eventDisciplineSubDistanceId = Uuid::v7();
+        $dto->eventDisciplineSubDistanceId = Uuid::v4();
         $dto->time = 0;
 
         $this->assertValid($dto);
@@ -35,7 +35,7 @@ class EventSubResultDtoTest extends DtoTestCase
     final public function testRequiresTime(): void
     {
         $dto = new EventSubResultDto();
-        $dto->eventDisciplineSubDistanceId = Uuid::v7();
+        $dto->eventDisciplineSubDistanceId = Uuid::v4();
 
         $this->assertOnlyViolation($dto, 'time');
     }

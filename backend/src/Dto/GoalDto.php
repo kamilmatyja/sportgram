@@ -15,8 +15,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[OA\Schema(
     required: ['text', 'link', 'discipline', 'distance'],
     properties: [
-        new OA\Property(property: 'startedAt', type: 'date', example: '2000-01-01T21:37', nullable: true),
-        new OA\Property(property: 'endedAt', type: 'date', example: '2000-01-01T21:37', nullable: true),
+        new OA\Property(property: 'startedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37', nullable: true),
+        new OA\Property(property: 'endedAt', type: 'string', format: 'date-time', example: '2000-01-01T21:37', nullable: true),
         new OA\Property(property: 'text', type: 'string', example: 'Running goal'),
         new OA\Property(property: 'link', type: 'string', example: 'my-link'),
         new OA\Property(property: 'discipline', type: 'integer', example: 1),

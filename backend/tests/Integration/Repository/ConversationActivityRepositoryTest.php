@@ -80,7 +80,7 @@ class ConversationActivityRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->conversationActivityRepository->findOrFail(Uuid::v7());
+        $this->conversationActivityRepository->findOrFail(Uuid::v4());
     }
 
     final public function testFindByUserIdsReturnsActivityOfThePair(): void

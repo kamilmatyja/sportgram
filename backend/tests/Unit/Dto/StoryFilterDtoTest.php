@@ -25,7 +25,7 @@ class StoryFilterDtoTest extends DtoTestCase
     final public function testAcceptsFullFilter(ElementStatusEnum $status): void
     {
         $dto = new StoryFilterDto();
-        $dto->userId = Uuid::v7();
+        $dto->userId = Uuid::v4();
         $dto->text = 'story';
         $dto->status = $status;
 

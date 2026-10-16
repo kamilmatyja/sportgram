@@ -76,7 +76,7 @@ class FeedRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->feedRepository->findById(Uuid::v7());
+        $this->feedRepository->findById(Uuid::v4());
     }
 
     final public function testFindFeedsReturnsOwnAndAcceptedFriendsFeedsInBothDirections(): void

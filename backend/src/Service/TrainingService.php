@@ -129,14 +129,16 @@ readonly class TrainingService
                 );
             }
 
-            $this->eventDispatcher->dispatch(
-                new NotificationEvent(
-                    $participantUser,
-                    NotificationTypeEnum::TrainingParticipant,
-                    $training->title,
-                    '/trainings/' . $training->link,
-                ),
-            );
+            if (! $participantUser->id->equals($user->id)) {
+                $this->eventDispatcher->dispatch(
+                    new NotificationEvent(
+                        $participantUser,
+                        NotificationTypeEnum::TrainingParticipant,
+                        $training->title,
+                        '/trainings/' . $training->link,
+                    ),
+                );
+            }
         }
 
         return $training->id;
@@ -232,14 +234,16 @@ readonly class TrainingService
                 new TrainingParticipant($training, $participantUser, SaveStatusEnum::Pending),
             );
 
-            $this->eventDispatcher->dispatch(
-                new NotificationEvent(
-                    $participantUser,
-                    NotificationTypeEnum::TrainingParticipant,
-                    $training->title,
-                    '/trainings/' . $training->link,
-                ),
-            );
+            if (! $participantUser->id->equals($user->id)) {
+                $this->eventDispatcher->dispatch(
+                    new NotificationEvent(
+                        $participantUser,
+                        NotificationTypeEnum::TrainingParticipant,
+                        $training->title,
+                        '/trainings/' . $training->link,
+                    ),
+                );
+            }
         }
 
         $this->trainingRepository->save($training);

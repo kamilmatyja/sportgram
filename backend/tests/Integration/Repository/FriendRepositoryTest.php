@@ -69,7 +69,7 @@ class FriendRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->friendRepository->findById(Uuid::v7());
+        $this->friendRepository->findById(Uuid::v4());
     }
 
     final public function testFindFriendsOfSingleUserMatchesBothDirections(): void

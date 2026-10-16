@@ -74,7 +74,7 @@ class UserPasswordResetRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->userPasswordResetRepository->findById(Uuid::v7());
+        $this->userPasswordResetRepository->findById(Uuid::v4());
     }
 
     final public function testFindLastByUserIdReturnsNewestResetOfUser(): void

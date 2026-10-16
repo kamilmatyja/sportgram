@@ -84,7 +84,7 @@ class PageFollowRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->pageFollowRepository->findById(Uuid::v7());
+        $this->pageFollowRepository->findById(Uuid::v4());
     }
 
     final public function testFindPageFollowsReturnsOnlyFollowsOfUser(): void

@@ -87,7 +87,7 @@ class EventDisciplineSubDistanceRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->eventDisciplineSubDistanceRepository->findById(Uuid::v7());
+        $this->eventDisciplineSubDistanceRepository->findById(Uuid::v4());
     }
 
     private function subDistance(?int $value = null): EventDisciplineSubDistance

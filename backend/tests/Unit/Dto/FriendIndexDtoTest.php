@@ -89,7 +89,7 @@ class FriendIndexDtoTest extends DtoTestCase
     final public function testAcceptsCustomFilter(): void
     {
         $filter = new FriendFilterDto();
-        $filter->addUserId(Uuid::v7());
+        $filter->addUserId(Uuid::v4());
         $dto = new FriendIndexDto();
         $dto->filter = $filter;
 
@@ -100,7 +100,7 @@ class FriendIndexDtoTest extends DtoTestCase
     private static function validDto(): FriendIndexDto
     {
         $dto = new FriendIndexDto();
-        $dto->filter->addUserId(Uuid::v7());
+        $dto->filter->addUserId(Uuid::v4());
 
         return $dto;
     }

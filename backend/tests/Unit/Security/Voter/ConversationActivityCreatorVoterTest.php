@@ -76,14 +76,14 @@ class ConversationActivityCreatorVoterTest extends VoterTestCase
         $this->assertDenied(
             $this->voter,
             null,
-            Uuid::v7(),
+            Uuid::v4(),
             ConversationActivityCreatorVoter::CONVERSATION_ACTIVITY_CREATOR,
         );
     }
 
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains(
             $this->voter,
             self::admin(),

@@ -99,13 +99,13 @@ class ConversationSenderVoterTest extends VoterTestCase
     {
         $this->conversationRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), ConversationSenderVoter::CONVERSATION_SENDER);
+        $this->assertDenied($this->voter, null, Uuid::v4(), ConversationSenderVoter::CONVERSATION_SENDER);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, ConversationSenderVoter::CONVERSATION_SENDER);
     }
 
@@ -117,13 +117,13 @@ class ConversationSenderVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [ConversationSenderVoter::CONVERSATION_SENDER]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [ConversationSenderVoter::CONVERSATION_SENDER]);
     }
 
     private function conversationOwnedBy(User $owner): Conversation
     {
         $conversation = ConversationFactory::make(['senderUser' => $owner, 'receiverUser' => self::user(RoleEnum::Participant)]);
-        $conversation->id = Uuid::v7();
+        $conversation->id = Uuid::v4();
 
         return $conversation;
     }

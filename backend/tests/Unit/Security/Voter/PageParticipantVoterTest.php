@@ -76,13 +76,13 @@ class PageParticipantVoterTest extends VoterTestCase
     {
         $this->pageParticipantRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), PageParticipantVoter::PAGE_PARTICIPANT);
+        $this->assertDenied($this->voter, null, Uuid::v4(), PageParticipantVoter::PAGE_PARTICIPANT);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, PageParticipantVoter::PAGE_PARTICIPANT);
     }
 
@@ -94,13 +94,13 @@ class PageParticipantVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v7(), [PageParticipantVoter::PAGE_PARTICIPANT]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Participant)), Uuid::v4(), [PageParticipantVoter::PAGE_PARTICIPANT]);
     }
 
     private function pageParticipantOwnedBy(User $owner): PageParticipant
     {
         $pageParticipant = PageParticipantFactory::make(['user' => $owner]);
-        $pageParticipant->id = Uuid::v7();
+        $pageParticipant->id = Uuid::v4();
 
         return $pageParticipant;
     }

@@ -88,9 +88,9 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testCreate(): void
     {
-        $pageId = Uuid::v7();
+        $pageId = Uuid::v4();
         $dto = new EventDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($pageId, $dto)->willReturn($id);
 
         $response = $this->controller->create($pageId, $dto, $this->service());
@@ -100,7 +100,7 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testUpdate(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new EventDto();
         $this->service()->expects($this->once())->method('update')->with($id, $dto)->willReturn($id);
 
@@ -111,7 +111,7 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new ElementStatusDto();
         $dto->status = ElementStatusEnum::Active;
         $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
@@ -123,7 +123,7 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -184,8 +184,8 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testCreateList(): void
     {
-        $distanceId = Uuid::v7();
-        $id = Uuid::v7();
+        $distanceId = Uuid::v4();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('createList')->with($distanceId)->willReturn($id);
 
         $response = $this->controller->createList($distanceId, $this->service());
@@ -195,7 +195,7 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testUpdateListStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new SaveStatusDto();
         $dto->status = SaveStatusEnum::Accepted;
         $this->service()->expects($this->once())->method('updateListStatus')->with($id, $dto)->willReturn($id);
@@ -207,7 +207,7 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testDeleteList(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('deleteList')->with($id)->willReturn($id);
 
         $response = $this->controller->deleteList($id, $this->service());
@@ -217,7 +217,7 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testIndexList(): void
     {
-        $distanceId = Uuid::v7();
+        $distanceId = Uuid::v4();
         $dto = new EventListIndexDto();
         $include = new EventListDetailsQueryDto();
         $include->include = [EventListDetailsQueryDto::EVENT_LIST_RESULTS];
@@ -234,7 +234,7 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testIndexListWithoutResults(): void
     {
-        $distanceId = Uuid::v7();
+        $distanceId = Uuid::v4();
         $dto = new EventListIndexDto();
         $window = self::window([]);
         $this->service()->expects($this->once())->method('indexList')->with($distanceId, $dto)->willReturn($window);
@@ -260,9 +260,9 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testCreateResult(): void
     {
-        $listId = Uuid::v7();
+        $listId = Uuid::v4();
         $dto = new EventResultDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('createResult')->with($listId, $dto)->willReturn($id);
 
         $response = $this->controller->createResult($listId, $dto, $this->service());
@@ -272,7 +272,7 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testUpdateResult(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new EventResultDto();
         $this->service()->expects($this->once())->method('updateResult')->with($id, $dto)->willReturn($id);
 
@@ -283,7 +283,7 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testDeleteResult(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('deleteResult')->with($id)->willReturn($id);
 
         $response = $this->controller->deleteResult($id, $this->service());
@@ -299,7 +299,7 @@ class EventControllerTest extends ControllerTestCase
     private function event(): Event
     {
         $event = EventFactory::make();
-        $event->id = Uuid::v7();
+        $event->id = Uuid::v4();
         $event->onPrePersist();
 
         return $event;
@@ -310,7 +310,7 @@ class EventControllerTest extends ControllerTestCase
         $event = $this->event();
 
         $discipline = EventDisciplineFactory::make(['event' => $event]);
-        $discipline->id = Uuid::v7();
+        $discipline->id = Uuid::v4();
         $discipline->onPrePersist();
         $event->disciplines->add($discipline);
 
@@ -320,11 +320,11 @@ class EventControllerTest extends ControllerTestCase
     private function listWithResult(): EventDisciplineList
     {
         $list = EventDisciplineListFactory::make();
-        $list->id = Uuid::v7();
+        $list->id = Uuid::v4();
         $list->onPrePersist();
 
         $result = EventDisciplineResultFactory::make(['eventDisciplineList' => $list]);
-        $result->id = Uuid::v7();
+        $result->id = Uuid::v4();
         $result->onPrePersist();
         $list->results->add($result);
 

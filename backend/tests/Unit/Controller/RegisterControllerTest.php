@@ -52,7 +52,7 @@ class RegisterControllerTest extends ControllerTestCase
     {
         $dto = new UserEmailDto();
         $dto->email = 'jan@kowalski.pl';
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('register')->with($dto)->willReturn($id);
 
         $response = $this->controller->register($dto, $this->service());
@@ -62,7 +62,7 @@ class RegisterControllerTest extends ControllerTestCase
 
     final public function testConfirm(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new UserCodeDto();
         $dto->code = 213700;
         $this->service()->expects($this->once())->method('confirm')->with($id, $dto)->willReturn($id);
@@ -74,7 +74,7 @@ class RegisterControllerTest extends ControllerTestCase
 
     final public function testResend(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('resend')->with($id)->willReturn($id);
 
         $response = $this->controller->resend($id, $this->service());

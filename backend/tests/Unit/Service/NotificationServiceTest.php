@@ -68,7 +68,7 @@ class NotificationServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->updateStatus(Uuid::v7(), $dto);
+        $this->service->updateStatus(Uuid::v4(), $dto);
     }
 
     final public function testDelete(): void
@@ -90,7 +90,7 @@ class NotificationServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->delete(Uuid::v7());
+        $this->service->delete(Uuid::v4());
     }
 
     final public function testIndexDelegatesToRepositoryWithCurrentUser(): void
@@ -122,6 +122,6 @@ class NotificationServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->details(Uuid::v7());
+        $this->service->details(Uuid::v4());
     }
 }

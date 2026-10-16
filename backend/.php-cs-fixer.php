@@ -51,4 +51,3 @@ return $config
         ],
     ])
     ->setFinder($finder);
-

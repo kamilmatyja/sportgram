@@ -87,7 +87,7 @@ class UserRegisterRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->userRegisterRepository->findById(Uuid::v7());
+        $this->userRegisterRepository->findById(Uuid::v4());
     }
 
     final public function testFindLastByUserIdReturnsNewestRegisterOfUser(): void

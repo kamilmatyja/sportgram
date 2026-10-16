@@ -126,7 +126,6 @@ npm run fix
 ## Problemy
 
 - wysyłka email nie działa
-- wysyłka push wiadomości nie działa
 - kamera na froncie
 - gps na froncie przy dodawaniu treningu
 - działająca zmiana języka / motywu

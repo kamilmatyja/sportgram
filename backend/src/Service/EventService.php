@@ -104,9 +104,16 @@ readonly class EventService
         }
 
         foreach ($page->follows as $follow) {
-            $this->eventDispatcher->dispatch(
-                new NotificationEvent($follow->user, NotificationTypeEnum::Event, $event->title, '/events/' . $event->link),
-            );
+            if (! $follow->user->id->equals($user->id)) {
+                $this->eventDispatcher->dispatch(
+                    new NotificationEvent(
+                        $follow->user,
+                        NotificationTypeEnum::Event,
+                        $event->title,
+                        '/events/' . $event->link,
+                    ),
+                );
+            }
         }
 
         return $event->id;
@@ -256,15 +263,6 @@ readonly class EventService
         $eventDisciplineDistance = $eventDisciplineList->eventDisciplineDistance;
         $eventDiscipline = $eventDisciplineDistance->eventDiscipline;
         $event = $eventDiscipline->event;
-
-        $this->eventDispatcher->dispatch(
-            new NotificationEvent(
-                $event->pageParticipant->user,
-                NotificationTypeEnum::EventListStatus,
-                $event->title,
-                '/events/' . $event->link,
-            ),
-        );
 
         $this->eventDispatcher->dispatch(
             new NotificationEvent(

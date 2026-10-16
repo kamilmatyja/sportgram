@@ -47,7 +47,7 @@ class EventVoterTest extends VoterTestCase
     {
         $this->eventRepository->expects($this->never())->method('findById');
 
-        $this->assertGranted($this->voter, self::admin(), Uuid::v7(), EventVoter::EVENT);
+        $this->assertGranted($this->voter, self::admin(), Uuid::v4(), EventVoter::EVENT);
     }
 
     #[DataProvider('invalidSubjectProvider')]
@@ -75,13 +75,13 @@ class EventVoterTest extends VoterTestCase
     {
         $this->eventRepository->expects($this->never())->method('findById');
 
-        $this->assertDenied($this->voter, null, Uuid::v7(), EventVoter::EVENT);
+        $this->assertDenied($this->voter, null, Uuid::v4(), EventVoter::EVENT);
     }
 
     #[AllowMockObjectsWithoutExpectations]
     final public function testAbstainsOnOtherAttributeOrMissingSubject(): void
     {
-        $this->assertAbstains($this->voter, self::admin(), Uuid::v7(), 'OTHER');
+        $this->assertAbstains($this->voter, self::admin(), Uuid::v4(), 'OTHER');
         $this->assertAbstains($this->voter, self::admin(), null, EventVoter::EVENT);
     }
 
@@ -93,7 +93,7 @@ class EventVoterTest extends VoterTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v7(), [EventVoter::EVENT]);
+        $this->voter->vote(self::token(self::user(RoleEnum::Organizer)), Uuid::v4(), [EventVoter::EVENT]);
     }
 
     private function eventOwnedBy(User $owner): Event
@@ -101,7 +101,7 @@ class EventVoterTest extends VoterTestCase
         $event = EventFactory::make([
             'pageParticipant' => PageParticipantFactory::make(['user' => $owner]),
         ]);
-        $event->id = Uuid::v7();
+        $event->id = Uuid::v4();
 
         return $event;
     }

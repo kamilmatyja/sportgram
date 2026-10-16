@@ -81,7 +81,7 @@ class StoryServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->update(Uuid::v7(), self::storyDto('text', 'photo'));
+        $this->service->update(Uuid::v4(), self::storyDto('text', 'photo'));
     }
 
     public static function statusProvider(): iterable
@@ -115,7 +115,7 @@ class StoryServiceTest extends ServiceTestCase
         $this->storyRepository->expects($this->never())->method('save');
 
         try {
-            $this->service->updateStatus(Uuid::v7(), $dto);
+            $this->service->updateStatus(Uuid::v4(), $dto);
             $this->fail('Expected NotFoundHttpException.');
         } catch (NotFoundHttpException) {
         }
@@ -139,7 +139,7 @@ class StoryServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->delete(Uuid::v7());
+        $this->service->delete(Uuid::v4());
     }
 
     final public function testIndexDelegatesToRepositoryWithCurrentUser(): void
@@ -168,7 +168,7 @@ class StoryServiceTest extends ServiceTestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        $this->service->details(Uuid::v7());
+        $this->service->details(Uuid::v4());
     }
 
     private static function storyDto(string $text, string $rawPhoto): StoryDto

@@ -67,9 +67,9 @@ class ConversationControllerTest extends ControllerTestCase
 
     final public function testCreate(): void
     {
-        $userId = Uuid::v7();
+        $userId = Uuid::v4();
         $dto = new ConversationDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($userId, $dto)->willReturn($id);
 
         $response = $this->controller->create($userId, $dto, $this->service());
@@ -79,7 +79,7 @@ class ConversationControllerTest extends ControllerTestCase
 
     final public function testUpdate(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new ConversationDto();
         $this->service()->expects($this->once())->method('update')->with($id, $dto)->willReturn($id);
 
@@ -90,7 +90,7 @@ class ConversationControllerTest extends ControllerTestCase
 
     final public function testUpdateStatus(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $dto = new ConversationStatusDto();
         $dto->status = ConversationStatusEnum::Read;
         $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
@@ -102,7 +102,7 @@ class ConversationControllerTest extends ControllerTestCase
 
     final public function testDelete(): void
     {
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('delete')->with($id)->willReturn($id);
 
         $response = $this->controller->delete($id, $this->service());
@@ -148,8 +148,8 @@ class ConversationControllerTest extends ControllerTestCase
 
     final public function testUpdateActivityUpdatedAt(): void
     {
-        $receiverUserId = Uuid::v7();
-        $id = Uuid::v7();
+        $receiverUserId = Uuid::v4();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('updateActivityUpdatedAt')->with($receiverUserId)->willReturn($id);
 
         $response = $this->controller->updateActivityUpdatedAt($receiverUserId, $this->service());
@@ -185,7 +185,7 @@ class ConversationControllerTest extends ControllerTestCase
 
     final public function testDetailsActivity(): void
     {
-        $senderUserId = Uuid::v7();
+        $senderUserId = Uuid::v4();
         $activity = $this->activity();
         $this->service()->expects($this->once())->method('detailsActivity')->with($senderUserId)->willReturn($activity);
 
@@ -202,7 +202,7 @@ class ConversationControllerTest extends ControllerTestCase
     private function conversation(): Conversation
     {
         $conversation = ConversationFactory::make();
-        $conversation->id = Uuid::v7();
+        $conversation->id = Uuid::v4();
         $conversation->onPrePersist();
 
         return $conversation;
@@ -211,7 +211,7 @@ class ConversationControllerTest extends ControllerTestCase
     private function activity(): ConversationActivity
     {
         $activity = ConversationActivityFactory::make();
-        $activity->id = Uuid::v7();
+        $activity->id = Uuid::v4();
         $activity->onPrePersist();
 
         return $activity;

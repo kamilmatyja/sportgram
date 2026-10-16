@@ -87,7 +87,7 @@ class PageParticipantRepositoryTest extends RepositoryTestCase
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('Element not found.');
 
-        $this->pageParticipantRepository->findById(Uuid::v7());
+        $this->pageParticipantRepository->findById(Uuid::v4());
     }
 
     private function pageParticipant(?SaveStatusEnum $status = null): PageParticipant

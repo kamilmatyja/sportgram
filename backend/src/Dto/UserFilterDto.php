@@ -10,7 +10,6 @@ use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[OA\Schema(
-    required: [],
     properties: [
         new OA\Property(property: 'firstName', type: 'string', example: 'Jan', nullable: true),
         new OA\Property(property: 'lastName', type: 'string', example: 'Kowalski', nullable: true),

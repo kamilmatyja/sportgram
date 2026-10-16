@@ -57,7 +57,7 @@ class EntryControllerTest extends ControllerTestCase
     final public function testCreate(): void
     {
         $dto = new EntryDto();
-        $id = Uuid::v7();
+        $id = Uuid::v4();
         $this->service()->expects($this->once())->method('create')->with($dto)->willReturn($id);
 
         $response = $this->controller->create($dto, $this->service());
@@ -105,8 +105,8 @@ class EntryControllerTest extends ControllerTestCase
     {
         $dto = new EntryCountIndexDto();
         $counts = [
-            new EntryCountDto(Uuid::v7(), EntryTypeEnum::Feed, 3),
-            new EntryCountDto(Uuid::v7(), EntryTypeEnum::Event, 1),
+            new EntryCountDto(Uuid::v4(), EntryTypeEnum::Feed, 3),
+            new EntryCountDto(Uuid::v4(), EntryTypeEnum::Event, 1),
         ];
         $window = self::window($counts, total: 5, page: 2, limit: 2);
         $this->service()->expects($this->once())->method('indexCount')->with($dto)->willReturn($window);
@@ -138,7 +138,7 @@ class EntryControllerTest extends ControllerTestCase
     private function entry(): Entry
     {
         $entry = EntryFactory::make();
-        $entry->id = Uuid::v7();
+        $entry->id = Uuid::v4();
         $entry->onPrePersist();
 
         return $entry;
