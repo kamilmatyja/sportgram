@@ -1,5 +1,3 @@
-export const UNCONFIRMED_ACCOUNT_ERROR = 'User account is not confirmed.';
-
 type AuthFlow = 'sign' | 'register' | 'password_reset';
 type AuthSessionKey = 'email' | 'password' | 'rememberMe';
 
@@ -24,28 +22,4 @@ export function authSession(flow: AuthFlow) {
 export const signSession = authSession('sign');
 export const registerSession = authSession('register');
 export const passwordResetSession = authSession('password_reset');
-
-const TOKEN_KEY = 'token';
-const SIGN_ID_KEY = 'success_sign_id';
-
-function activeStorage(): Storage {
-    return localStorage.getItem(SIGN_ID_KEY) ? localStorage : sessionStorage;
-}
-
-export const authStorage = {
-    getToken: () => activeStorage().getItem(TOKEN_KEY),
-    getSignId: () => activeStorage().getItem(SIGN_ID_KEY),
-    save: (token: string, signId: string, rememberMe: boolean) => {
-        authStorage.clear();
-        const storage = rememberMe ? localStorage : sessionStorage;
-        storage.setItem(TOKEN_KEY, token);
-        storage.setItem(SIGN_ID_KEY, signId);
-    },
-    setToken: (token: string) => activeStorage().setItem(TOKEN_KEY, token),
-    clear: () => {
-        [localStorage, sessionStorage].forEach((storage) => {
-            storage.removeItem(TOKEN_KEY);
-            storage.removeItem(SIGN_ID_KEY);
-        });
-    },
-};
+export const UNCONFIRMED_ACCOUNT_ERROR = 'User account is not confirmed.';

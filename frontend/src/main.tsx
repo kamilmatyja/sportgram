@@ -1,34 +1,42 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { MantineProvider } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
+import { Notifications } from '@mantine/notifications';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import '../public/index.css';
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+import './index.css';
+
+import './i18n';
+import { theme } from './theme';
+import { AuthProvider } from './auth/AuthContext';
 import App from './App';
-import { ThemeProvider } from './context/ThemeContext';
-import { TranslationProvider } from './context/TranslationContext';
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch((error) => {
-            console.error('SW registration failed:', error);
-        });
-    });
-}
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: 1,
+            refetchOnWindowFocus: false,
+        },
+    },
+});
 
-const container = document.getElementById('root');
-
-if (container) {
-    createRoot(container).render(
-        <React.StrictMode>
-            <TranslationProvider>
-                <ThemeProvider>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+        <QueryClientProvider client={queryClient}>
+            <MantineProvider theme={theme} defaultColorScheme="dark">
+                <ModalsProvider>
+                    <Notifications position="top-right" />
                     <BrowserRouter>
-                        <App />
+                        <AuthProvider>
+                            <App />
+                        </AuthProvider>
                     </BrowserRouter>
-                </ThemeProvider>
-            </TranslationProvider>
-        </React.StrictMode>,
-    );
-}
+                </ModalsProvider>
+            </MantineProvider>
+        </QueryClientProvider>
+    </React.StrictMode>,
+);

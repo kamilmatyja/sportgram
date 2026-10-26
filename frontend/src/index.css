@@ -1,0 +1,93 @@
+.pointer {
+    cursor: pointer;
+}
+
+.pre-wrap {
+    white-space: pre-wrap;
+}
+
+.no-decoration {
+    text-decoration: none;
+    color: inherit;
+}
+
+.chat-bubble-mine {
+    background-color: var(--mantine-color-blue-filled);
+    color: var(--mantine-color-white);
+    max-width: 75%;
+}
+
+.chat-bubble-other {
+    max-width: 75%;
+}
+
+.opacity-70 {
+    opacity: 0.7;
+}
+
+.story-avatar-border {
+    border: 2px solid var(--mantine-color-blue-filled);
+}
+
+.profile-avatar-border {
+    border: 3px solid var(--mantine-color-body);
+}
+
+.max-w-680 {
+    max-width: 680px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.max-w-800 {
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.object-cover {
+    object-fit: cover;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.relative {
+    position: relative;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.feed-image-box {
+    max-height: 300px;
+    overflow: hidden;
+    border-radius: var(--mantine-radius-md);
+}
+
+.feed-image {
+    width: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.page-banner {
+    height: 180px;
+    background-size: cover;
+    background-position: center;
+    border-top-left-radius: var(--mantine-radius-md);
+    border-top-right-radius: var(--mantine-radius-md);
+}
+
+.page-avatar-overlap {
+    position: absolute;
+    top: -40px;
+    left: 24px;
+    border: 3px solid var(--mantine-color-body);
+}

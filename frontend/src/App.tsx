@@ -1,299 +1,271 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Center, Loader, Text, Stack } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from './auth/AuthContext';
+import { AppLayout } from './components/AppLayout';
 
-import AuthenticatedLayout from './components/Authentication/AuthenticatedLayout';
-import AuthenticationLoading from './components/Authentication/AuthenticationLoading';
-import GuestHome from './components/Authentication/GuestHome';
-import AppLayout from './components/Common/AppLayout';
-import NotFound from './components/Common/NotFound';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import EventDetails from './pages/EventDetails';
-import EventsList from './pages/EventsList';
-import GoalDetails from './pages/GoalDetails';
+// Pages
 import Home from './pages/Home';
-import PageDetails from './pages/PageDetails';
-import PagesList from './pages/PagesList';
-import PasswordReset from './pages/PasswordReset';
-import Register from './pages/Register';
-import Sign from './pages/Sign';
-import Statistics from './pages/Statistics';
-import TrainingDetails from './pages/TrainingDetails';
-import UserConversations from './pages/UserConversations';
-import UserEvents from './pages/UserEvents';
-import UserFeeds from './pages/UserFeeds';
-import UserFriends from './pages/UserFriends';
-import UserGoals from './pages/UserGoals';
-import UserNotifications from './pages/UserNotifications';
-import UserPages from './pages/UserPages';
-import UserProfile from './pages/UserProfile';
-import UserPushSubscriptions from './pages/UserPushSubscriptions';
-import Users from './pages/Users';
-import UserStories from './pages/UserStories';
-import UserTrainings from './pages/UserTrainings';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import PasswordReset from './pages/auth/PasswordReset';
+import UsersList from './pages/users/UsersList';
+import UserProfile from './pages/users/UserProfile';
+import UserFeeds from './pages/users/UserFeeds';
+import UserStories from './pages/users/UserStories';
+import UserFriends from './pages/users/UserFriends';
+import UserGoals from './pages/goals/UserGoals';
+import GoalDetails from './pages/goals/GoalDetails';
+import UserPages from './pages/pages/UserPages';
+import PageDetails from './pages/pages/PageDetails';
+import PagesList from './pages/pages/PagesList';
+import UserEvents from './pages/events/UserEvents';
+import EventDetails from './pages/events/EventDetails';
+import EventsList from './pages/events/EventsList';
+import UserTrainings from './pages/trainings/UserTrainings';
+import TrainingDetails from './pages/trainings/TrainingDetails';
+import UserNotifications from './pages/users/UserNotifications';
+import UserPushSubscriptions from './pages/users/UserPushSubscriptions';
+import UserConversations from './pages/users/UserConversations';
+import Statistics from './pages/statistics/Statistics';
 
-interface RouteProps {
-    children: React.ReactNode;
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+    const { isAuthenticated, isLoading } = useAuth();
+    if (isLoading) {
+        return (
+            <Center h={300}>
+                <Loader size="md" />
+            </Center>
+        );
+    }
+    if (!isAuthenticated) {
+        return <Navigate to="/sign" replace />;
+    }
+    return <>{children}</>;
 }
 
-const ProtectedRoute: React.FC<RouteProps> = ({ children }) => {
-    const { isAuthenticated } = useAuth();
-    if (!isAuthenticated) return <Navigate to="/sign" replace />;
-    return <>{children}</>;
-};
-
-const GuestRoute: React.FC<RouteProps> = ({ children }) => {
-    const { isAuthenticated } = useAuth();
-    if (isAuthenticated) return <Navigate to="/" replace />;
-    return <>{children}</>;
-};
-
-const AppRoutes: React.FC = () => {
-    const { isAuthLoading, isAuthenticated } = useAuth();
-
-    if (isAuthLoading) {
-        return <AuthenticationLoading />;
+function GuestRoute({ children }: { children: React.ReactNode }) {
+    const { isAuthenticated, isLoading } = useAuth();
+    if (isLoading) {
+        return (
+            <Center h={300}>
+                <Loader size="md" />
+            </Center>
+        );
     }
-
-    return (
-        <Routes>
-            <Route
-                path="/"
-                element={
-                    isAuthenticated ? (
-                        <AuthenticatedLayout>
-                            <Home />
-                        </AuthenticatedLayout>
-                    ) : (
-                        <GuestHome />
-                    )
-                }
-            />
-            <Route
-                path="/register"
-                element={
-                    <GuestRoute>
-                        <Register />
-                    </GuestRoute>
-                }
-            />
-            <Route
-                path="/sign"
-                element={
-                    <GuestRoute>
-                        <Sign />
-                    </GuestRoute>
-                }
-            />
-            <Route
-                path="/password-reset"
-                element={
-                    <GuestRoute>
-                        <PasswordReset />
-                    </GuestRoute>
-                }
-            />
-            <Route
-                path="/users"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <Users />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserProfile />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link/feeds"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserFeeds />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link/stories"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserStories />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link/friends"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserFriends />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link/goals"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserGoals />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link/pages"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserPages />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link/events"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserEvents />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link/trainings"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserTrainings />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link/notifications"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserNotifications />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link/push-subscriptions"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserPushSubscriptions />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/users/:link/conversations"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <UserConversations />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/goals/:link"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <GoalDetails />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/trainings/:link"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <TrainingDetails />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/pages"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <PagesList />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/pages/:link"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <PageDetails />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/events"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <EventsList />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/events/:link"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <EventDetails />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/statistics"
-                element={
-                    <ProtectedRoute>
-                        <AuthenticatedLayout>
-                            <Statistics />
-                        </AuthenticatedLayout>
-                    </ProtectedRoute>
-                }
-            />
-
-            <Route path="*" element={<NotFound />} />
-        </Routes>
-    );
-};
+    if (isAuthenticated) {
+        return <Navigate to="/" replace />;
+    }
+    return <>{children}</>;
+}
 
 export default function App() {
+    const { t } = useTranslation();
     return (
-        <AuthProvider>
-            <AppLayout>
-                <AppRoutes />
-            </AppLayout>
-        </AuthProvider>
+        <AppLayout>
+            <Routes>
+                <Route path="/" element={<Home />} />
+
+                {/* Guest only routes */}
+                <Route
+                    path="/sign"
+                    element={
+                        <GuestRoute>
+                            <Login />
+                        </GuestRoute>
+                    }
+                />
+                <Route
+                    path="/register"
+                    element={
+                        <GuestRoute>
+                            <Register />
+                        </GuestRoute>
+                    }
+                />
+                <Route
+                    path="/password-reset"
+                    element={
+                        <GuestRoute>
+                            <PasswordReset />
+                        </GuestRoute>
+                    }
+                />
+
+                {/* Protected routes */}
+                <Route
+                    path="/users"
+                    element={
+                        <ProtectedRoute>
+                            <UsersList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link"
+                    element={
+                        <ProtectedRoute>
+                            <UserProfile />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link/feeds"
+                    element={
+                        <ProtectedRoute>
+                            <UserFeeds />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link/stories"
+                    element={
+                        <ProtectedRoute>
+                            <UserStories />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link/friends"
+                    element={
+                        <ProtectedRoute>
+                            <UserFriends />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link/goals"
+                    element={
+                        <ProtectedRoute>
+                            <UserGoals />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link/pages"
+                    element={
+                        <ProtectedRoute>
+                            <UserPages />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link/events"
+                    element={
+                        <ProtectedRoute>
+                            <UserEvents />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link/trainings"
+                    element={
+                        <ProtectedRoute>
+                            <UserTrainings />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link/notifications"
+                    element={
+                        <ProtectedRoute>
+                            <UserNotifications />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link/push-subscriptions"
+                    element={
+                        <ProtectedRoute>
+                            <UserPushSubscriptions />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/users/:link/conversations"
+                    element={
+                        <ProtectedRoute>
+                            <UserConversations />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/goals/:link"
+                    element={
+                        <ProtectedRoute>
+                            <GoalDetails />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/trainings/:link"
+                    element={
+                        <ProtectedRoute>
+                            <TrainingDetails />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/pages"
+                    element={
+                        <ProtectedRoute>
+                            <PagesList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/pages/:link"
+                    element={
+                        <ProtectedRoute>
+                            <PageDetails />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/events"
+                    element={
+                        <ProtectedRoute>
+                            <EventsList />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/events/:link"
+                    element={
+                        <ProtectedRoute>
+                            <EventDetails />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/statistics"
+                    element={
+                        <ProtectedRoute>
+                            <Statistics />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* 404 */}
+                <Route
+                    path="*"
+                    element={
+                        <Center py={60}>
+                            <Stack align="center">
+                                <Text size="32px" fw={700}>
+                                    404
+                                </Text>
+                                <Text c="dimmed">{t('notFound.message')}</Text>
+                            </Stack>
+                        </Center>
+                    }
+                />
+            </Routes>
+        </AppLayout>
     );
 }

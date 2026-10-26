@@ -4,11 +4,11 @@ import tseslint from 'typescript-eslint';
 import prettierPlugin from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
 import unusedImports from 'eslint-plugin-unused-imports';
-import importPlugin from 'eslint-plugin-import';
+import importPlugin from 'eslint-plugin-import-x';
 
 export default tseslint.config(
     {
-        ignores: ['dist', 'node_modules', 'vite.config.ts'],
+        ignores: ['dist', 'node_modules', 'public', 'vite.config.ts', 'src/api/schema.d.ts', 'postcss.config.cjs'],
     },
     js.configs.recommended,
     ...tseslint.configs.recommended,
@@ -21,22 +21,16 @@ export default tseslint.config(
             },
         },
         plugins: {
-            'prettier': prettierPlugin,
+            prettier: prettierPlugin,
             'unused-imports': unusedImports,
-            'import': importPlugin,
+            import: importPlugin,
         },
         rules: {
             'prettier/prettier': 'error',
             'unused-imports/no-unused-imports': 'error',
-            'import/order': [
-                'error',
-                {
-                    'groups': ['builtin', 'external', 'internal', ['parent', 'sibling']],
-                    'newlines-between': 'always',
-                    'alphabetize': { 'order': 'asc', 'caseInsensitive': true },
-                },
-            ],
             '@typescript-eslint/no-unused-vars': 'off',
+            '@typescript-eslint/no-explicit-any': 'off',
+            '@typescript-eslint/no-namespace': 'off',
         },
     },
     prettierConfig,
