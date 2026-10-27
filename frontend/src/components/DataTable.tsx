@@ -1,12 +1,31 @@
-import React from 'react';
-import { Table, Pagination, Group, TextInput, Button, Select, Paper, Text, Skeleton, Stack, Flex } from '@mantine/core';
-import { IconSearch, IconPlus } from '@tabler/icons-react';
+import React, { useState } from 'react';
+import {
+    Table,
+    Pagination,
+    Group,
+    TextInput,
+    Button,
+    Select,
+    Paper,
+    Text,
+    Skeleton,
+    Stack,
+    Flex,
+    Collapse,
+    Badge,
+} from '@mantine/core';
+import { IconSearch, IconPlus, IconFilter, IconX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
 export interface Column<T> {
     key: string;
     header: string;
     render?: (item: T) => React.ReactNode;
+}
+
+export interface SortOption {
+    value: string;
+    label: string;
 }
 
 interface DataTableProps<T> {
@@ -22,12 +41,20 @@ interface DataTableProps<T> {
     search?: string;
     onSearchChange?: (val: string) => void;
     searchPlaceholder?: string;
+    sort?: string | null;
+    onSortChange?: (val: string | null) => void;
+    sortOptions?: SortOption[];
+    filtersNode?: React.ReactNode;
+    hasActiveFilters?: boolean;
+    activeFiltersCount?: number;
+    onResetFilters?: () => void;
     onAdd?: () => void;
     addLabel?: string;
     actions?: (item: T) => React.ReactNode;
+    toolbarExtra?: React.ReactNode;
 }
 
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends Record<string, unknown>>({
     columns,
     data,
     isLoading,
@@ -40,32 +67,87 @@ export function DataTable<T extends Record<string, any>>({
     search,
     onSearchChange,
     searchPlaceholder,
+    sort,
+    onSortChange,
+    sortOptions,
+    filtersNode,
+    hasActiveFilters,
+    activeFiltersCount,
+    onResetFilters,
     onAdd,
     addLabel,
     actions,
+    toolbarExtra,
 }: DataTableProps<T>) {
     const { t } = useTranslation();
+    const [filtersOpened, setFiltersOpened] = useState(false);
 
     const computedTotalPages = totalPages ?? (totalItems && limit ? Math.max(1, Math.ceil(totalItems / limit)) : 1);
+
+    const hasToolbar = onSearchChange || sortOptions || filtersNode || onAdd || toolbarExtra;
 
     return (
         <Paper withBorder radius="md" p="md" shadow="xs">
             <Stack gap="md">
                 {/* Header toolbar */}
-                {(onSearchChange || onAdd) && (
+                {hasToolbar && (
                     <Flex justify="space-between" align="center" wrap="wrap" gap="sm">
-                        {onSearchChange ? (
-                            <TextInput
-                                placeholder={searchPlaceholder ?? t('search')}
-                                leftSection={<IconSearch size={16} />}
-                                value={search ?? ''}
-                                onChange={(e) => onSearchChange(e.currentTarget.value)}
-                                flex={1}
-                                maw={350}
-                            />
-                        ) : (
-                            <div />
-                        )}
+                        <Group gap="sm" flex={1} wrap="wrap">
+                            {onSearchChange && (
+                                <TextInput
+                                    placeholder={searchPlaceholder ?? t('search')}
+                                    leftSection={<IconSearch size={16} />}
+                                    value={search ?? ''}
+                                    onChange={(e) => onSearchChange(e.currentTarget.value)}
+                                    flex={1}
+                                    maw={300}
+                                />
+                            )}
+
+                            {sortOptions && onSortChange && (
+                                <Select
+                                    placeholder={t('sortBy')}
+                                    data={sortOptions}
+                                    value={sort ?? null}
+                                    onChange={onSortChange}
+                                    clearable
+                                    searchable
+                                    maw={260}
+                                    flex={1}
+                                />
+                            )}
+
+                            {filtersNode && (
+                                <Group gap="xs">
+                                    <Button
+                                        variant={filtersOpened ? 'filled' : 'light'}
+                                        leftSection={<IconFilter size={16} />}
+                                        onClick={() => setFiltersOpened((prev) => !prev)}
+                                    >
+                                        {t('filters')}
+                                        {activeFiltersCount && activeFiltersCount > 0 ? (
+                                            <Badge size="xs" circle ml={6}>
+                                                {activeFiltersCount}
+                                            </Badge>
+                                        ) : null}
+                                    </Button>
+
+                                    {hasActiveFilters && onResetFilters && (
+                                        <Button
+                                            variant="subtle"
+                                            color="gray"
+                                            size="sm"
+                                            leftSection={<IconX size={14} />}
+                                            onClick={onResetFilters}
+                                        >
+                                            {t('clearFilters')}
+                                        </Button>
+                                    )}
+                                </Group>
+                            )}
+
+                            {toolbarExtra}
+                        </Group>
 
                         {onAdd && (
                             <Button leftSection={<IconPlus size={16} />} onClick={onAdd}>
@@ -73,6 +155,15 @@ export function DataTable<T extends Record<string, any>>({
                             </Button>
                         )}
                     </Flex>
+                )}
+
+                {/* Collapsible Filter Panel */}
+                {filtersNode && (
+                    <Collapse expanded={filtersOpened}>
+                        <Paper withBorder p="md" radius="md">
+                            <Stack gap="sm">{filtersNode}</Stack>
+                        </Paper>
+                    </Collapse>
                 )}
 
                 {/* Table */}
@@ -113,16 +204,21 @@ export function DataTable<T extends Record<string, any>>({
                                     </Table.Td>
                                 </Table.Tr>
                             ) : (
-                                data.map((row, index) => (
-                                    <Table.Tr key={row.id ?? index}>
-                                        {columns.map((col) => (
-                                            <Table.Td key={col.key}>
-                                                {col.render ? col.render(row) : (row[col.key] ?? '-')}
-                                            </Table.Td>
-                                        ))}
-                                        {actions && <Table.Td ta="right">{actions(row)}</Table.Td>}
-                                    </Table.Tr>
-                                ))
+                                data.map((row, index) => {
+                                    const rowRecord = row as Record<string, unknown>;
+                                    return (
+                                        <Table.Tr key={(rowRecord.id as string) ?? index}>
+                                            {columns.map((col) => (
+                                                <Table.Td key={col.key}>
+                                                    {col.render
+                                                        ? col.render(row)
+                                                        : ((rowRecord[col.key] as React.ReactNode) ?? '-')}
+                                                </Table.Td>
+                                            ))}
+                                            {actions && <Table.Td ta="right">{actions(row)}</Table.Td>}
+                                        </Table.Tr>
+                                    );
+                                })
                             )}
                         </Table.Tbody>
                     </Table>

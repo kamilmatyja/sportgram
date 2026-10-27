@@ -75,7 +75,6 @@ export default function PasswordReset() {
                     const signRes = await authService.sign({
                         email: storedEmail,
                         password,
-                        rememberMe: false,
                     });
                     if (signRes?.id) {
                         signSession.start(signRes.id);

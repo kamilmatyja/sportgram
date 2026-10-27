@@ -29,6 +29,7 @@ import { feedService, storyService, userService, type UserResource } from '../ap
 import { useAuth } from '../auth/AuthContext';
 import { FeedReactionEnum } from '../enums/FeedReactionEnum';
 import { RunnerLogo } from '../components/RunnerLogo';
+import { fileToBase64, formatImageSrc } from '../utils/imageUtils';
 
 export default function Home() {
     const { t } = useTranslation();
@@ -96,15 +97,6 @@ export default function Home() {
     });
 
     const usersMap = usersMapData ?? {};
-
-    // Helper to convert File to base64
-    const fileToBase64 = (file: File): Promise<string> =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
 
     // Add feed mutation
     const createFeedMutation = useMutation({
@@ -204,7 +196,7 @@ export default function Home() {
     }
 
     return (
-        <Stack gap="xl" maw={680} mx="auto">
+        <Stack gap="xl">
             {/* Stories horizontal carousel */}
             <Card withBorder radius="md" p="sm" shadow="xs">
                 <ScrollArea type="never">
@@ -222,6 +214,7 @@ export default function Home() {
                         {/* List of active stories */}
                         {storiesData?.map((story) => {
                             const storyAuthor = usersMap[story.userId];
+                            const storyImg = formatImageSrc(story.photo) || formatImageSrc(storyAuthor?.profilePhoto);
                             return (
                                 <Stack
                                     key={story.id}
@@ -237,13 +230,8 @@ export default function Home() {
                                         });
                                     }}
                                 >
-                                    <Avatar
-                                        src={story.photo || storyAuthor?.profilePhoto || undefined}
-                                        radius="xl"
-                                        size="lg"
-                                        className="story-avatar-border"
-                                    >
-                                        {storyAuthor?.firstName?.[0] ?? '?'}
+                                    <Avatar src={storyImg} radius="xl" size="lg" className="story-avatar-border">
+                                        ?
                                     </Avatar>
                                     <Text size="xs" lineClamp={1}>
                                         {storyAuthor?.firstName ?? t('user')}
@@ -316,12 +304,12 @@ export default function Home() {
                                 <Group justify="space-between" mb="xs">
                                     <Group gap="sm">
                                         <Avatar
-                                            src={author?.profilePhoto || undefined}
+                                            src={formatImageSrc(author?.profilePhoto)}
                                             radius="xl"
                                             component={Link}
                                             to={`/users/${author?.link ?? feed.userId}`}
                                         >
-                                            {author?.firstName?.[0] ?? '?'}
+                                            ?
                                         </Avatar>
                                         <Box>
                                             <Text
@@ -358,7 +346,7 @@ export default function Home() {
 
                                 {feed.photo && (
                                     <Image
-                                        src={feed.photo}
+                                        src={formatImageSrc(feed.photo)}
                                         alt={t('photo')}
                                         mah={400}
                                         fit="cover"
@@ -449,7 +437,7 @@ export default function Home() {
             </Stack>
 
             {/* Story Creation Modal */}
-            <Modal opened={storyOpened} onClose={closeStoryModal} title={t('addStory')}>
+            <Modal opened={storyOpened} onClose={closeStoryModal} title={t('addStory')} size="lg">
                 <Stack gap="sm">
                     <Textarea
                         label={t('text')}

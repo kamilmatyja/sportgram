@@ -1,19 +1,57 @@
-import { useState } from 'react';
-import { Group, Text, Button, Avatar, Stack } from '@mantine/core';
-import { IconEye, IconBuildingStore } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useMemo } from 'react';
+import {
+    Group,
+    Text,
+    Button,
+    Avatar,
+    Stack,
+    SimpleGrid,
+    TextInput,
+    Select,
+    ActionIcon,
+    Modal,
+    Textarea,
+    FileInput,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
+import { IconEye, IconTrash } from '@tabler/icons-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { userService, pageService, type PageResource } from '../../api/services';
-import { DataTable, type Column } from '../../components/DataTable';
+import { getErrorMessage } from '../../api/client';
+import { userService, pageService, type PageResource, type GetPagesQuery } from '../../api/services';
+import { useAuth } from '../../auth/AuthContext';
+import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 
 export default function UserPages() {
     const { link } = useParams<{ link: string }>();
     const { t } = useTranslation();
+    const queryClient = useQueryClient();
+    const { currentUser, isOrganizer, isAdmin } = useAuth();
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
+    const [sort, setSort] = useState<string | null>('createdAt:desc');
+
+    // Filters
+    const [title, setTitle] = useState('');
+    const [linkFilter, setLinkFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
+
+    const [opened, { open, close }] = useDisclosure(false);
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        link: '',
+        color: null as string | null,
+    });
+    const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
+    const [bgPhotoFile, setBgPhotoFile] = useState<File | null>(null);
 
     const { data: targetUser } = useQuery({
         queryKey: ['user', link],
@@ -21,15 +59,51 @@ export default function UserPages() {
         enabled: !!link,
     });
 
+    const isOwner = currentUser?.id === targetUser?.id;
+    const canManage = isOwner || isAdmin;
+
+    const sortOptions: SortOption[] = [
+        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
+        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
+        { value: 'title:asc', label: t('sort_title_asc') },
+        { value: 'title:desc', label: t('sort_title_desc') },
+        { value: 'status:asc', label: t('sort_status_asc') },
+        { value: 'status:desc', label: t('sort_status_desc') },
+    ];
+
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (title.trim()) count++;
+        if (linkFilter.trim()) count++;
+        if (statusFilter !== null) count++;
+        return count;
+    }, [title, linkFilter, statusFilter]);
+
+    const handleResetFilters = () => {
+        setTitle('');
+        setLinkFilter('');
+        setStatusFilter(null);
+        setPage(1);
+    };
+
+    const queryFilter = useMemo(() => {
+        return {
+            userId: targetUser?.id ?? null,
+            title: title.trim() || null,
+            link: linkFilter.trim() || null,
+            status: statusFilter ? (Number(statusFilter) as ElementStatusEnum) : null,
+        };
+    }, [targetUser?.id, title, linkFilter, statusFilter]);
+
     const { data, isLoading } = useQuery({
-        queryKey: ['user-pages', targetUser?.id, page, limit],
+        queryKey: ['user-pages', targetUser?.id, page, limit, sort, queryFilter],
         queryFn: () => {
             if (!targetUser?.id) return null;
             return pageService.getPages({
                 page,
                 limit,
-                filter: { userId: targetUser.id },
-                sort: 'createdAt:desc',
+                filter: queryFilter,
+                sort: (sort as NonNullable<GetPagesQuery>['sort']) ?? 'createdAt:desc',
             });
         },
         enabled: !!targetUser?.id,
@@ -38,14 +112,59 @@ export default function UserPages() {
     const pages = data?.data ?? [];
     const pagination = data?.pagination;
 
+    const createMutation = useMutation({
+        mutationFn: async () => {
+            if (!profilePhotoFile || !bgPhotoFile) {
+                throw new Error(t('photo') + ' ' + t('required'));
+            }
+            if (!formData.color) {
+                throw new Error(t('color') + ' ' + t('required'));
+            }
+            const profilePhoto = await fileToBase64(profilePhotoFile);
+            const backgroundPhoto = await fileToBase64(bgPhotoFile);
+
+            await pageService.createPage({
+                title: formData.title,
+                description: formData.description,
+                link: formData.link,
+                profilePhoto,
+                backgroundPhoto,
+                color: Number(formData.color) as ColorEnum,
+                userIds: targetUser?.id ? [targetUser.id] : [],
+            });
+        },
+        onSuccess: () => {
+            close();
+            setFormData({ title: '', description: '', link: '', color: null });
+            setProfilePhotoFile(null);
+            setBgPhotoFile(null);
+            queryClient.invalidateQueries({ queryKey: ['user-pages', targetUser?.id] });
+            notifications.show({ title: t('pages'), message: t('saved'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => pageService.deletePage(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user-pages', targetUser?.id] });
+            notifications.show({ title: t('pages'), message: t('deleted'), color: 'blue' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
     const columns: Column<PageResource>[] = [
         {
-            key: 'title',
+            key: 'page',
             header: t('title'),
             render: (p) => (
                 <Group gap="sm">
-                    <Avatar src={p.profilePhoto || undefined} radius="md" color="blue">
-                        <IconBuildingStore size={20} />
+                    <Avatar src={formatImageSrc(p.profilePhoto)} radius="md">
+                        ?
                     </Avatar>
                     <div>
                         <Text size="sm" fw={600}>
@@ -67,11 +186,62 @@ export default function UserPages() {
                 </Text>
             ),
         },
+        {
+            key: 'createdAt',
+            header: t('createdAt'),
+            render: (p) => (
+                <Text size="xs" c="dimmed">
+                    {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}
+                </Text>
+            ),
+        },
     ];
+
+    const canSubmit =
+        formData.title.trim().length > 0 &&
+        formData.link.trim().length > 0 &&
+        formData.description.trim().length > 0 &&
+        formData.color !== null &&
+        profilePhotoFile !== null &&
+        bgPhotoFile !== null;
+
+    const filtersNode = (
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
+            <TextInput
+                label={t('title')}
+                placeholder={t('title')}
+                value={title}
+                onChange={(e) => {
+                    setTitle(e.currentTarget.value);
+                    setPage(1);
+                }}
+            />
+            <TextInput
+                label={t('link')}
+                placeholder={t('link')}
+                value={linkFilter}
+                onChange={(e) => {
+                    setLinkFilter(e.currentTarget.value);
+                    setPage(1);
+                }}
+            />
+            <Select
+                label={t('status')}
+                placeholder={t('allStatuses')}
+                data={ElementStatusEnum.getOptions(t).map((s) => ({ value: String(s.value), label: s.label }))}
+                value={statusFilter}
+                onChange={(v) => {
+                    setStatusFilter(v);
+                    setPage(1);
+                }}
+                clearable
+            />
+        </SimpleGrid>
+    );
 
     return (
         <Stack gap="md">
-            {targetUser && <UserProfileNav user={targetUser} />}
+            {targetUser && <UserProfileNav user={targetUser} isOwner={isOwner} />}
             <DataTable
                 columns={columns}
                 data={pages}
@@ -84,18 +254,111 @@ export default function UserPages() {
                     setLimit(l);
                     setPage(1);
                 }}
+                sort={sort}
+                onSortChange={(s) => {
+                    setSort(s);
+                    setPage(1);
+                }}
+                sortOptions={sortOptions}
+                filtersNode={filtersNode}
+                hasActiveFilters={activeFiltersCount > 0}
+                activeFiltersCount={activeFiltersCount}
+                onResetFilters={handleResetFilters}
+                onAdd={(isOwner && isOrganizer) || isAdmin ? open : undefined}
+                addLabel={t('addPage')}
                 actions={(p) => (
-                    <Button
-                        component={Link}
-                        to={`/pages/${p.link}`}
-                        variant="light"
-                        size="xs"
-                        leftSection={<IconEye size={14} />}
-                    >
-                        {t('details')}
-                    </Button>
+                    <Group gap="xs" justify="flex-end">
+                        <Button
+                            component={Link}
+                            to={`/pages/${p.link}`}
+                            variant="light"
+                            size="xs"
+                            leftSection={<IconEye size={14} />}
+                        >
+                            {t('details')}
+                        </Button>
+                        {canManage && (
+                            <ActionIcon
+                                variant="subtle"
+                                color="red"
+                                size="sm"
+                                onClick={() => deleteMutation.mutate(p.id)}
+                            >
+                                <IconTrash size={16} />
+                            </ActionIcon>
+                        )}
+                    </Group>
                 )}
             />
+
+            <Modal opened={opened} onClose={close} title={t('addPage')} size="lg">
+                <Stack gap="sm">
+                    <TextInput
+                        label={t('title')}
+                        placeholder={t('title')}
+                        required
+                        value={formData.title}
+                        onChange={(e) => {
+                            const val = e.currentTarget.value;
+                            const generatedLink = val
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, '-')
+                                .replace(/(^-|-$)/g, '');
+                            setFormData({ ...formData, title: val, link: generatedLink });
+                        }}
+                    />
+                    <TextInput
+                        label={t('link')}
+                        placeholder={t('link')}
+                        required
+                        value={formData.link}
+                        onChange={(e) => setFormData({ ...formData, link: e.currentTarget.value })}
+                    />
+                    <Textarea
+                        label={t('description')}
+                        placeholder={t('description')}
+                        required
+                        rows={3}
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.currentTarget.value })}
+                    />
+                    <Select
+                        label={t('color')}
+                        placeholder={t('color')}
+                        required
+                        clearable
+                        data={ColorEnum.getOptions(t).map((c) => ({ value: String(c.value), label: c.label }))}
+                        value={formData.color}
+                        onChange={(val) => setFormData({ ...formData, color: val })}
+                    />
+                    <FileInput
+                        label={t('profilePhoto')}
+                        placeholder={t('selectPhotoPlaceholder')}
+                        required
+                        accept="image/*"
+                        value={profilePhotoFile}
+                        onChange={setProfilePhotoFile}
+                        clearable
+                    />
+                    <FileInput
+                        label={t('backgroundPhoto')}
+                        placeholder={t('selectPhotoPlaceholder')}
+                        required
+                        accept="image/*"
+                        value={bgPhotoFile}
+                        onChange={setBgPhotoFile}
+                        clearable
+                    />
+                    <Button
+                        mt="md"
+                        loading={createMutation.isPending}
+                        disabled={!canSubmit}
+                        onClick={() => createMutation.mutate()}
+                    >
+                        {t('add')}
+                    </Button>
+                </Stack>
+            </Modal>
         </Stack>
     );
 }

@@ -35,11 +35,11 @@ export default function Register() {
         lastName: '',
         email: '',
         password: '',
-        birthAt: '2000-01-01',
-        gender: '1',
+        birthAt: '',
+        gender: null as string | null,
         phone: '',
-        country: '35', // Poland by default
-        roles: ['1'], // Participant
+        country: null as string | null,
+        roles: [] as string[],
     });
 
     const [code, setCode] = useState('');
@@ -63,8 +63,21 @@ export default function Register() {
         label: r.label,
     }));
 
+    const canSubmit =
+        formData.firstName.trim().length > 0 &&
+        formData.lastName.trim().length > 0 &&
+        formData.email.trim().length > 0 &&
+        formData.password.length > 0 &&
+        formData.birthAt.length > 0 &&
+        formData.phone.trim().length > 0 &&
+        formData.gender !== null &&
+        formData.country !== null &&
+        formData.roles.length > 0;
+
     const handleRegisterSubmit = async (e: SyntheticEvent) => {
         e.preventDefault();
+        if (!canSubmit || !formData.gender || !formData.country) return;
+
         setLoading(true);
         setError(null);
 
@@ -75,10 +88,10 @@ export default function Register() {
                 email: formData.email,
                 password: formData.password,
                 birthAt: formData.birthAt,
-                gender: Number(formData.gender) as 1 | 2,
+                gender: Number(formData.gender) as GenderEnum,
                 phone: Number(formData.phone) || 0,
-                country: Number(formData.country) as any,
-                roles: formData.roles.map(Number),
+                country: Number(formData.country) as CountryEnum,
+                roles: formData.roles.map(Number) as RoleEnum[],
             });
 
             const regData = await authService.register(formData.email);
@@ -115,7 +128,7 @@ export default function Register() {
 
             if (email && password) {
                 try {
-                    const signRes = await authService.sign({ email, password, rememberMe: false });
+                    const signRes = await authService.sign({ email, password });
                     if (signRes?.id) {
                         signSession.start(signRes.id);
                     }
@@ -221,30 +234,36 @@ export default function Register() {
                             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                                 <Select
                                     label={t('gender')}
+                                    placeholder={t('gender')}
                                     data={genderOptions}
                                     value={formData.gender}
-                                    onChange={(val) => val && setFormData({ ...formData, gender: val })}
+                                    onChange={(val) => setFormData({ ...formData, gender: val })}
                                     required
+                                    clearable
                                 />
                                 <Select
                                     label={t('country')}
+                                    placeholder={t('country')}
                                     data={countryOptions}
                                     value={formData.country}
-                                    onChange={(val) => val && setFormData({ ...formData, country: val })}
+                                    onChange={(val) => setFormData({ ...formData, country: val })}
                                     searchable
                                     required
+                                    clearable
                                 />
                             </SimpleGrid>
 
                             <MultiSelect
                                 label={t('role')}
+                                placeholder={t('role')}
                                 data={roleOptions}
                                 value={formData.roles}
                                 onChange={(val) => setFormData({ ...formData, roles: val })}
                                 required
+                                clearable
                             />
 
-                            <Button type="submit" fullWidth mt="md" loading={loading}>
+                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={!canSubmit}>
                                 {t('register')}
                             </Button>
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
     Group,
     Text,
@@ -11,27 +11,34 @@ import {
     Select,
     SimpleGrid,
     FileInput,
-    ThemeIcon,
+    Avatar,
+    Paper,
+    ActionIcon,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconEye, IconCalendarEvent } from '@tabler/icons-react';
+import { IconEye, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { eventService, pageService, type EventResource } from '../../api/services';
+import { eventService, pageService, type EventResource, type GetEventsQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
-import { DataTable, type Column } from '../../components/DataTable';
+import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 
-const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
+interface FormEventDistance {
+    id: string;
+    distance: string;
+}
+
+interface FormEventDiscipline {
+    id: string;
+    discipline: string | null;
+    distances: FormEventDistance[];
+}
 
 export default function EventsList() {
     const { t } = useTranslation();
@@ -40,10 +47,15 @@ export default function EventsList() {
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
-    const [search, setSearch] = useState('');
+    const [sort, setSort] = useState<string | null>('startedAt:desc');
+
+    // Filters (no UUID fields in UI)
+    const [titleFilter, setTitleFilter] = useState('');
+    const [linkFilter, setLinkFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
     const [opened, { open, close }] = useDisclosure(false);
-    const [selectedPageId, setSelectedPageId] = useState<string>('');
+    const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
     const [photoFile, setPhotoFile] = useState<File | null>(null);
     const [formData, setFormData] = useState({
         title: '',
@@ -51,11 +63,48 @@ export default function EventsList() {
         link: '',
         location: '',
         rules: '',
-        startedAt: '2026-11-01T10:00',
-        endedAt: '2026-11-01T18:00',
-        discipline: '1',
-        distanceMeters: '5000',
+        startedAt: '',
+        endedAt: '',
     });
+    const [disciplines, setDisciplines] = useState<FormEventDiscipline[]>([]);
+
+    const sortOptions: SortOption[] = [
+        { value: 'startedAt:desc', label: t('sort_startedAt_desc') },
+        { value: 'startedAt:asc', label: t('sort_startedAt_asc') },
+        { value: 'endedAt:desc', label: t('sort_endedAt_desc') },
+        { value: 'endedAt:asc', label: t('sort_endedAt_asc') },
+        { value: 'title:asc', label: t('sort_title_asc') },
+        { value: 'title:desc', label: t('sort_title_desc') },
+        { value: 'location:asc', label: t('sort_location_asc') },
+        { value: 'location:desc', label: t('sort_location_desc') },
+        { value: 'status:asc', label: t('sort_status_asc') },
+        { value: 'status:desc', label: t('sort_status_desc') },
+        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
+        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
+    ];
+
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (titleFilter.trim()) count++;
+        if (linkFilter.trim()) count++;
+        if (statusFilter !== null) count++;
+        return count;
+    }, [titleFilter, linkFilter, statusFilter]);
+
+    const handleResetFilters = () => {
+        setTitleFilter('');
+        setLinkFilter('');
+        setStatusFilter(null);
+        setPage(1);
+    };
+
+    const queryFilter = useMemo(() => {
+        return {
+            title: titleFilter.trim() || null,
+            link: linkFilter.trim() || null,
+            status: statusFilter ? (Number(statusFilter) as ElementStatusEnum) : null,
+        };
+    }, [titleFilter, linkFilter, statusFilter]);
 
     // Fetch organizer pages for creating an event
     const { data: myPages } = useQuery({
@@ -73,23 +122,79 @@ export default function EventsList() {
 
     // Fetch events
     const { data, isLoading } = useQuery({
-        queryKey: ['events', page, limit, search],
+        queryKey: ['events', page, limit, sort, queryFilter],
         queryFn: () =>
             eventService.getEvents({
                 page,
                 limit,
-                filter: { title: search || null },
-                sort: 'startedAt:desc',
+                filter: queryFilter,
+                sort: (sort as NonNullable<GetEventsQuery>['sort']) ?? 'startedAt:desc',
             }),
     });
 
     const events = data?.data ?? [];
     const pagination = data?.pagination;
 
+    const handleAddDiscipline = () => {
+        setDisciplines((prev) => [
+            ...prev,
+            {
+                id: crypto.randomUUID(),
+                discipline: null,
+                distances: [{ id: crypto.randomUUID(), distance: '' }],
+            },
+        ]);
+    };
+
+    const handleRemoveDiscipline = (id: string) => {
+        setDisciplines((prev) => prev.filter((d) => d.id !== id));
+    };
+
+    const handleDisciplineChange = (id: string, value: string | null) => {
+        setDisciplines((prev) => prev.map((d) => (d.id === id ? { ...d, discipline: value } : d)));
+    };
+
+    const handleAddDistance = (discId: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: [...d.distances, { id: crypto.randomUUID(), distance: '' }],
+                };
+            }),
+        );
+    };
+
+    const handleRemoveDistance = (discId: string, distId: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.filter((dist) => dist.id !== distId),
+                };
+            }),
+        );
+    };
+
+    const handleDistanceChange = (discId: string, distId: string, value: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => (dist.id === distId ? { ...dist, distance: value } : dist)),
+                };
+            }),
+        );
+    };
+
     const createMutation = useMutation({
         mutationFn: async () => {
             if (!selectedPageId) throw new Error(t('selectPage'));
             if (!photoFile) throw new Error(t('photo') + ' ' + t('required'));
+            if (disciplines.length === 0) throw new Error(t('discipline') + ' ' + t('required'));
             const photoStr = await fileToBase64(photoFile);
 
             await eventService.createEvent(selectedPageId, {
@@ -97,26 +202,33 @@ export default function EventsList() {
                 description: formData.description,
                 link: formData.link,
                 location: formData.location,
-                rules: formData.rules || formData.description,
+                rules: formData.rules,
                 startedAt: formData.startedAt,
                 endedAt: formData.endedAt,
                 photo: photoStr,
-                disciplines: [
-                    {
-                        discipline: Number(formData.discipline) as any,
-                        distances: [
-                            {
-                                distance: Number(formData.distanceMeters) || 0,
-                                subDistances: [],
-                            },
-                        ],
-                    },
-                ],
+                disciplines: disciplines.map((d) => ({
+                    discipline: Number(d.discipline) as DisciplineEnum,
+                    distances: d.distances.map((dist) => ({
+                        distance: Number(dist.distance) || 0,
+                        subDistances: [],
+                    })),
+                })),
             });
         },
         onSuccess: () => {
             close();
             setPhotoFile(null);
+            setSelectedPageId(null);
+            setFormData({
+                title: '',
+                description: '',
+                link: '',
+                location: '',
+                rules: '',
+                startedAt: '',
+                endedAt: '',
+            });
+            setDisciplines([]);
             queryClient.invalidateQueries({ queryKey: ['events'] });
             notifications.show({ title: t('events'), message: t('saved'), color: 'green' });
         },
@@ -131,9 +243,9 @@ export default function EventsList() {
             header: t('title'),
             render: (ev) => (
                 <Group gap="sm">
-                    <ThemeIcon variant="light" color="blue" size="md">
-                        <IconCalendarEvent size={18} />
-                    </ThemeIcon>
+                    <Avatar src={formatImageSrc(ev.photo)} radius="sm" size="md">
+                        ?
+                    </Avatar>
                     <div>
                         <Text size="sm" fw={600}>
                             {ev.title}
@@ -163,10 +275,15 @@ export default function EventsList() {
             header: t('startedAt'),
             render: (ev) => <Text size="xs">{ev.startedAt ? new Date(ev.startedAt).toLocaleString() : '-'}</Text>,
         },
+        {
+            key: 'endedAt',
+            header: t('endedAt'),
+            render: (ev) => <Text size="xs">{ev.endedAt ? new Date(ev.endedAt).toLocaleString() : '-'}</Text>,
+        },
     ];
 
     const canSubmit =
-        !!selectedPageId &&
+        selectedPageId !== null &&
         formData.title.trim().length > 0 &&
         formData.link.trim().length > 0 &&
         formData.location.trim().length > 0 &&
@@ -174,8 +291,48 @@ export default function EventsList() {
         formData.endedAt.length > 0 &&
         formData.description.trim().length > 0 &&
         formData.rules.trim().length > 0 &&
-        formData.distanceMeters.trim().length > 0 &&
-        photoFile !== null;
+        photoFile !== null &&
+        disciplines.length > 0 &&
+        disciplines.every(
+            (d) =>
+                d.discipline !== null &&
+                d.distances.length > 0 &&
+                d.distances.every((dist) => dist.distance.trim().length > 0),
+        );
+
+    const filtersNode = (
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
+            <TextInput
+                label={t('title')}
+                placeholder={t('title')}
+                value={titleFilter}
+                onChange={(e) => {
+                    setTitleFilter(e.currentTarget.value);
+                    setPage(1);
+                }}
+            />
+            <TextInput
+                label={t('link')}
+                placeholder={t('link')}
+                value={linkFilter}
+                onChange={(e) => {
+                    setLinkFilter(e.currentTarget.value);
+                    setPage(1);
+                }}
+            />
+            <Select
+                label={t('status')}
+                placeholder={t('allStatuses')}
+                data={ElementStatusEnum.getOptions(t).map((s) => ({ value: String(s.value), label: s.label }))}
+                value={statusFilter}
+                onChange={(v) => {
+                    setStatusFilter(v);
+                    setPage(1);
+                }}
+                clearable
+            />
+        </SimpleGrid>
+    );
 
     return (
         <>
@@ -191,12 +348,16 @@ export default function EventsList() {
                     setLimit(l);
                     setPage(1);
                 }}
-                search={search}
-                onSearchChange={(s) => {
-                    setSearch(s);
+                sort={sort}
+                onSortChange={(s) => {
+                    setSort(s);
                     setPage(1);
                 }}
-                searchPlaceholder={t('search')}
+                sortOptions={sortOptions}
+                filtersNode={filtersNode}
+                hasActiveFilters={activeFiltersCount > 0}
+                activeFiltersCount={activeFiltersCount}
+                onResetFilters={handleResetFilters}
                 onAdd={isOrganizer || isAdmin ? open : undefined}
                 addLabel={t('addEvent')}
                 actions={(ev) => (
@@ -219,13 +380,15 @@ export default function EventsList() {
                         label={t('selectPage')}
                         placeholder={t('selectPage')}
                         required
+                        clearable
                         data={myPages?.map((p) => ({ value: p.id, label: p.title })) ?? []}
                         value={selectedPageId}
-                        onChange={(val) => val && setSelectedPageId(val)}
+                        onChange={(val) => setSelectedPageId(val)}
                     />
 
                     <TextInput
                         label={t('title')}
+                        placeholder={t('title')}
                         required
                         value={formData.title}
                         onChange={(e) => {
@@ -240,6 +403,7 @@ export default function EventsList() {
 
                     <TextInput
                         label={t('link')}
+                        placeholder={t('link')}
                         required
                         value={formData.link}
                         onChange={(e) => setFormData({ ...formData, link: e.currentTarget.value })}
@@ -247,6 +411,7 @@ export default function EventsList() {
 
                     <TextInput
                         label={t('location')}
+                        placeholder={t('location')}
                         required
                         value={formData.location}
                         onChange={(e) => setFormData({ ...formData, location: e.currentTarget.value })}
@@ -269,24 +434,9 @@ export default function EventsList() {
                         />
                     </SimpleGrid>
 
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                        <Select
-                            label={t('discipline')}
-                            required
-                            data={DisciplineEnum.getOptions(t).map((d) => ({ value: String(d.value), label: d.label }))}
-                            value={formData.discipline}
-                            onChange={(val) => val && setFormData({ ...formData, discipline: val })}
-                        />
-                        <TextInput
-                            label={t('distanceMeters')}
-                            required
-                            value={formData.distanceMeters}
-                            onChange={(e) => setFormData({ ...formData, distanceMeters: e.currentTarget.value })}
-                        />
-                    </SimpleGrid>
-
                     <FileInput
                         label={t('photo')}
+                        placeholder={t('selectPhotoPlaceholder')}
                         required
                         accept="image/*"
                         value={photoFile}
@@ -294,8 +444,89 @@ export default function EventsList() {
                         clearable
                     />
 
+                    <Group justify="space-between" align="center" mt="xs">
+                        <Text fw={500} size="sm">
+                            {t('disciplinesAndDistances')}
+                        </Text>
+                        <Button
+                            size="xs"
+                            variant="light"
+                            leftSection={<IconPlus size={14} />}
+                            onClick={handleAddDiscipline}
+                        >
+                            {t('addDiscipline')}
+                        </Button>
+                    </Group>
+
+                    <Stack gap="sm">
+                        {disciplines.map((d, dIdx) => (
+                            <Paper key={d.id} withBorder p="sm" radius="md">
+                                <Group justify="space-between" align="flex-end" mb="xs">
+                                    <Select
+                                        label={`${t('discipline')} #${dIdx + 1}`}
+                                        placeholder={t('discipline')}
+                                        required
+                                        clearable
+                                        data={DisciplineEnum.getOptions(t).map((opt) => ({
+                                            value: String(opt.value),
+                                            label: opt.label,
+                                        }))}
+                                        value={d.discipline}
+                                        onChange={(val) => handleDisciplineChange(d.id, val)}
+                                        flex={1}
+                                    />
+                                    <Button
+                                        size="xs"
+                                        color="red"
+                                        variant="subtle"
+                                        leftSection={<IconTrash size={14} />}
+                                        onClick={() => handleRemoveDiscipline(d.id)}
+                                    >
+                                        {t('delete')}
+                                    </Button>
+                                </Group>
+
+                                <Stack gap="xs" mt="xs">
+                                    {d.distances.map((dist) => (
+                                        <Group key={dist.id} gap="xs" align="flex-end">
+                                            <TextInput
+                                                label={t('distanceMeters')}
+                                                placeholder="5000"
+                                                required
+                                                flex={1}
+                                                value={dist.distance}
+                                                onChange={(e) =>
+                                                    handleDistanceChange(d.id, dist.id, e.currentTarget.value)
+                                                }
+                                            />
+                                            <ActionIcon
+                                                color="red"
+                                                variant="subtle"
+                                                size="lg"
+                                                onClick={() => handleRemoveDistance(d.id, dist.id)}
+                                                title={t('delete')}
+                                            >
+                                                <IconTrash size={16} />
+                                            </ActionIcon>
+                                        </Group>
+                                    ))}
+
+                                    <Button
+                                        size="xs"
+                                        variant="subtle"
+                                        leftSection={<IconPlus size={14} />}
+                                        onClick={() => handleAddDistance(d.id)}
+                                    >
+                                        {t('addDistance')}
+                                    </Button>
+                                </Stack>
+                            </Paper>
+                        ))}
+                    </Stack>
+
                     <Textarea
                         label={t('description')}
+                        placeholder={t('description')}
                         required
                         rows={2}
                         value={formData.description}
@@ -304,6 +535,7 @@ export default function EventsList() {
 
                     <Textarea
                         label={t('rules')}
+                        placeholder={t('rules')}
                         required
                         rows={2}
                         value={formData.rules}

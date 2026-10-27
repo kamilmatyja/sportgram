@@ -1,16 +1,23 @@
 import { useState, useMemo } from 'react';
-import { Avatar, Group, Text, Button, Badge, Stack } from '@mantine/core';
+import { Avatar, Group, Text, Button, Badge, Stack, SimpleGrid, Select } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconCheck, IconX, IconTrash, IconMessage } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { userService, friendService, type FriendResource, type UserResource } from '../../api/services';
+import {
+    userService,
+    friendService,
+    type FriendResource,
+    type UserResource,
+    type GetFriendsQuery,
+} from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
-import { DataTable, type Column } from '../../components/DataTable';
+import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import { formatImageSrc } from '../../utils/imageUtils';
 
 export default function UserFriends() {
     const { link } = useParams<{ link: string }>();
@@ -20,6 +27,10 @@ export default function UserFriends() {
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
+    const [sort, setSort] = useState<string | null>('createdAt:desc');
+
+    // Filters
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
     const { data: targetUser } = useQuery({
         queryKey: ['user', link],
@@ -29,15 +40,40 @@ export default function UserFriends() {
 
     const isOwner = currentUser?.id === targetUser?.id;
 
+    const sortOptions: SortOption[] = [
+        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
+        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
+        { value: 'status:asc', label: t('sort_status_asc') },
+        { value: 'status:desc', label: t('sort_status_desc') },
+    ];
+
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (statusFilter !== null) count++;
+        return count;
+    }, [statusFilter]);
+
+    const handleResetFilters = () => {
+        setStatusFilter(null);
+        setPage(1);
+    };
+
+    const queryFilter = useMemo(() => {
+        return {
+            userIds: targetUser?.id ? [targetUser.id] : [],
+            status: statusFilter ? (Number(statusFilter) as FriendStatusEnum) : null,
+        };
+    }, [targetUser?.id, statusFilter]);
+
     const { data, isLoading } = useQuery({
-        queryKey: ['friends', targetUser?.id, page, limit],
+        queryKey: ['friends', targetUser?.id, page, limit, sort, queryFilter],
         queryFn: () => {
             if (!targetUser?.id) return null;
             return friendService.getFriends({
                 page,
                 limit,
-                filter: { userIds: [targetUser.id] },
-                sort: 'createdAt:desc',
+                filter: queryFilter,
+                sort: (sort as NonNullable<GetFriendsQuery>['sort']) ?? 'createdAt:desc',
             });
         },
         enabled: !!targetUser?.id,
@@ -98,8 +134,8 @@ export default function UserFriends() {
                 const otherUser = relatedUsers[otherId];
                 return (
                     <Group gap="sm">
-                        <Avatar src={otherUser?.profilePhoto || undefined} radius="xl">
-                            {otherUser?.firstName?.[0] ?? '?'}
+                        <Avatar src={formatImageSrc(otherUser?.profilePhoto)} radius="xl">
+                            ?
                         </Avatar>
                         <div>
                             <Text
@@ -136,6 +172,9 @@ export default function UserFriends() {
                 } else if (f.status === FriendStatusEnum.REJECTED) {
                     color = 'red';
                     label = t('friends.rejected');
+                } else if (f.status === FriendStatusEnum.BLOCKED) {
+                    color = 'dark';
+                    label = t('friends.blocked');
                 }
                 return (
                     <Badge color={color} size="xs" variant="light">
@@ -144,11 +183,36 @@ export default function UserFriends() {
                 );
             },
         },
+        {
+            key: 'createdAt',
+            header: t('createdAt'),
+            render: (f) => (
+                <Text size="xs" c="dimmed">
+                    {f.createdAt ? new Date(f.createdAt).toLocaleDateString() : '-'}
+                </Text>
+            ),
+        },
     ];
+
+    const filtersNode = (
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+            <Select
+                label={t('status')}
+                placeholder={t('allStatuses')}
+                data={FriendStatusEnum.getOptions(t).map((s) => ({ value: String(s.value), label: s.label }))}
+                value={statusFilter}
+                onChange={(v) => {
+                    setStatusFilter(v);
+                    setPage(1);
+                }}
+                clearable
+            />
+        </SimpleGrid>
+    );
 
     return (
         <Stack gap="md">
-            {targetUser && <UserProfileNav user={targetUser} />}
+            {targetUser && <UserProfileNav user={targetUser} isOwner={isOwner} />}
             <DataTable
                 columns={columns}
                 data={friends}
@@ -161,6 +225,16 @@ export default function UserFriends() {
                     setLimit(l);
                     setPage(1);
                 }}
+                sort={sort}
+                onSortChange={(s) => {
+                    setSort(s);
+                    setPage(1);
+                }}
+                sortOptions={sortOptions}
+                filtersNode={filtersNode}
+                hasActiveFilters={activeFiltersCount > 0}
+                activeFiltersCount={activeFiltersCount}
+                onResetFilters={handleResetFilters}
                 actions={(f) => {
                     const canManage = isOwner || isAdmin;
                     const isReceiver = f.receiverUserId === currentUser?.id;

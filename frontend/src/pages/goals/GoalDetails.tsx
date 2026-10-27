@@ -1,6 +1,6 @@
-import { Card, Title, Text, Group, Button, Stack, Badge, Paper, Table, ThemeIcon } from '@mantine/core';
+import { Card, Title, Text, Group, Button, Stack, Badge, Paper, Table } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconTarget, IconTrash, IconClock } from '@tabler/icons-react';
+import { IconTrash } from '@tabler/icons-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -50,20 +50,15 @@ export default function GoalDetails() {
     }
 
     return (
-        <Stack gap="lg" className="max-w-800">
+        <Stack gap="lg">
             <Card withBorder radius="md" p="lg" shadow="xs">
                 <Group justify="space-between" align="flex-start" mb="md">
-                    <Group gap="sm">
-                        <ThemeIcon variant="light" color="blue" size="xl">
-                            <IconTarget size={28} />
-                        </ThemeIcon>
-                        <div>
-                            <Title order={2}>{goal.text}</Title>
-                            <Text size="sm" c="dimmed">
-                                @{goal.link}
-                            </Text>
-                        </div>
-                    </Group>
+                    <div>
+                        <Title order={2}>{goal.text}</Title>
+                        <Text size="sm" c="dimmed">
+                            @{goal.link}
+                        </Text>
+                    </div>
 
                     {isOwner && (
                         <Button
@@ -95,9 +90,6 @@ export default function GoalDetails() {
                 </Group>
 
                 <Group gap="xs" mb="md">
-                    <ThemeIcon variant="subtle" color="gray" size="sm">
-                        <IconClock size={16} />
-                    </ThemeIcon>
                     <Text size="xs" c="dimmed">
                         {goal.startedAt ? new Date(goal.startedAt).toLocaleString() : ''} -{' '}
                         {goal.endedAt ? new Date(goal.endedAt).toLocaleString() : ''}

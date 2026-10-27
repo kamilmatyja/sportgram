@@ -1,33 +1,45 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
     Stack,
-    Group,
     Text,
     Button,
-    Card,
-    SimpleGrid,
     ActionIcon,
     Modal,
     Textarea,
     FileInput,
-    Image,
+    SimpleGrid,
+    TextInput,
+    Select,
+    Avatar,
+    Badge,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconTrash, IconPhoto } from '@tabler/icons-react';
+import { IconTrash, IconPhoto } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { storyService, userService } from '../../api/services';
+import { storyService, userService, type StoryResource, type GetStoriesQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
+import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { UserProfileNav } from '../../components/UserProfileNav';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 
 export default function UserStories() {
     const { link } = useParams<{ link: string }>();
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser, isAdmin } = useAuth();
+
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [sort, setSort] = useState<string | null>('createdAt:desc');
+
+    // Filters
+    const [textFilter, setTextFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
     const [opened, { open, close }] = useDisclosure(false);
     const [text, setText] = useState('');
@@ -45,27 +57,53 @@ export default function UserStories() {
 
     const isOwner = currentUser?.id === targetUser?.id;
 
+    const sortOptions: SortOption[] = [
+        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
+        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
+        { value: 'text:asc', label: t('sort_text_asc') },
+        { value: 'text:desc', label: t('sort_text_desc') },
+        { value: 'status:asc', label: t('sort_status_asc') },
+        { value: 'status:desc', label: t('sort_status_desc') },
+    ];
+
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (textFilter.trim()) count++;
+        if (statusFilter !== null) count++;
+        return count;
+    }, [textFilter, statusFilter]);
+
+    const handleResetFilters = () => {
+        setTextFilter('');
+        setStatusFilter(null);
+        setPage(1);
+    };
+
+    const queryFilter = useMemo(() => {
+        return {
+            userId: targetUser?.id ?? null,
+            text: textFilter.trim() || null,
+            status: statusFilter ? (Number(statusFilter) as ElementStatusEnum) : null,
+        };
+    }, [targetUser?.id, textFilter, statusFilter]);
+
     // Fetch user stories
-    const { data: stories, isLoading } = useQuery({
-        queryKey: ['user-stories', targetUser?.id],
+    const { data, isLoading } = useQuery({
+        queryKey: ['user-stories', targetUser?.id, page, limit, sort, queryFilter],
         queryFn: async () => {
-            if (!targetUser?.id) return [];
-            const res = await storyService.getStories({
-                filter: { userId: targetUser.id },
-                limit: 50,
+            if (!targetUser?.id) return null;
+            return await storyService.getStories({
+                page,
+                limit,
+                filter: queryFilter,
+                sort: (sort as NonNullable<GetStoriesQuery>['sort']) ?? 'createdAt:desc',
             });
-            return res.data ?? [];
         },
         enabled: !!targetUser?.id,
     });
 
-    const fileToBase64 = (file: File): Promise<string> =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
+    const stories = data?.data ?? [];
+    const pagination = data?.pagination;
 
     const createMutation = useMutation({
         mutationFn: async () => {
@@ -78,6 +116,8 @@ export default function UserStories() {
             setPhoto(null);
             close();
             queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['stories'] });
             notifications.show({ title: t('stories'), message: t('storyAdded'), color: 'green' });
         },
         onError: (err) => {
@@ -91,63 +131,112 @@ export default function UserStories() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['stories'] });
             notifications.show({ title: t('stories'), message: t('storyDeleted'), color: 'blue' });
         },
     });
 
+    const columns: Column<StoryResource>[] = [
+        {
+            key: 'photo',
+            header: t('photo'),
+            render: (s) => (
+                <Avatar src={formatImageSrc(s.photo)} radius="sm" size="md">
+                    ?
+                </Avatar>
+            ),
+        },
+        {
+            key: 'text',
+            header: t('text'),
+            render: (s) => (
+                <div>
+                    <Text size="sm" lineClamp={2} fw={500}>
+                        {s.text}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                        {s.createdAt ? new Date(s.createdAt).toLocaleString() : ''}
+                    </Text>
+                </div>
+            ),
+        },
+        {
+            key: 'status',
+            header: t('status'),
+            render: (s) => {
+                const opt = ElementStatusEnum.getOptions(t).find((o) => o.value === s.status);
+                return (
+                    <Badge size="xs" variant="light" color={s.status === ElementStatusEnum.ACTIVE ? 'green' : 'blue'}>
+                        {opt?.label ?? s.status}
+                    </Badge>
+                );
+            },
+        },
+    ];
+
+    const filtersNode = (
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+            <TextInput
+                label={t('text')}
+                placeholder={t('text')}
+                value={textFilter}
+                onChange={(e) => {
+                    setTextFilter(e.currentTarget.value);
+                    setPage(1);
+                }}
+            />
+            <Select
+                label={t('status')}
+                placeholder={t('allStatuses')}
+                data={ElementStatusEnum.getOptions(t).map((s) => ({ value: String(s.value), label: s.label }))}
+                value={statusFilter}
+                onChange={(v) => {
+                    setStatusFilter(v);
+                    setPage(1);
+                }}
+                clearable
+            />
+        </SimpleGrid>
+    );
+
     return (
-        <Stack gap="md" maw={680} mx="auto">
-            {targetUser && <UserProfileNav userLink={targetUser.link} isOwner={isOwner} />}
-            <Group justify="space-between">
-                <Text size="lg" fw={600}>
-                    {t('stories')} @{targetUser?.link}
-                </Text>
-                {(isOwner || isAdmin) && (
-                    <Button size="xs" leftSection={<IconPlus size={16} />} onClick={open}>
-                        {t('addStory')}
-                    </Button>
-                )}
-            </Group>
+        <Stack gap="md">
+            {targetUser && <UserProfileNav user={targetUser} isOwner={isOwner} />}
+            <DataTable
+                columns={columns}
+                data={stories}
+                isLoading={isLoading}
+                page={page}
+                totalItems={pagination?.total}
+                onPageChange={setPage}
+                limit={limit}
+                onLimitChange={(l) => {
+                    setLimit(l);
+                    setPage(1);
+                }}
+                sort={sort}
+                onSortChange={(s) => {
+                    setSort(s);
+                    setPage(1);
+                }}
+                sortOptions={sortOptions}
+                filtersNode={filtersNode}
+                hasActiveFilters={activeFiltersCount > 0}
+                activeFiltersCount={activeFiltersCount}
+                onResetFilters={handleResetFilters}
+                onAdd={isOwner || isAdmin ? open : undefined}
+                addLabel={t('addStory')}
+                actions={(s) =>
+                    isOwner || isAdmin ? (
+                        <ActionIcon variant="subtle" color="red" size="sm" onClick={() => deleteMutation.mutate(s.id)}>
+                            <IconTrash size={16} />
+                        </ActionIcon>
+                    ) : null
+                }
+            />
 
-            {isLoading ? (
-                <Text ta="center" c="dimmed">
-                    {t('loadingStories')}
-                </Text>
-            ) : stories?.length === 0 ? (
-                <Card withBorder p="xl" ta="center">
-                    <Text c="dimmed">{t('noRecords')}</Text>
-                </Card>
-            ) : (
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                    {stories?.map((story) => (
-                        <Card key={story.id} withBorder radius="md" p="md">
-                            <Group justify="space-between" mb="xs">
-                                <Text size="xs" c="dimmed">
-                                    {story.createdAt ? new Date(story.createdAt).toLocaleString() : ''}
-                                </Text>
-                                {(isOwner || isAdmin) && (
-                                    <ActionIcon
-                                        variant="subtle"
-                                        color="red"
-                                        size="sm"
-                                        onClick={() => deleteMutation.mutate(story.id)}
-                                    >
-                                        <IconTrash size={16} />
-                                    </ActionIcon>
-                                )}
-                            </Group>
-
-                            {story.photo && (
-                                <Image src={story.photo} alt={t('photo')} h={180} fit="cover" radius="md" mb="xs" />
-                            )}
-
-                            <Text size="sm">{story.text}</Text>
-                        </Card>
-                    ))}
-                </SimpleGrid>
-            )}
-
-            <Modal opened={opened} onClose={close} title={t('addStory')}>
+            <Modal opened={opened} onClose={close} title={t('addStory')} size="lg">
                 <Stack gap="sm">
                     <Textarea
                         label={t('text')}

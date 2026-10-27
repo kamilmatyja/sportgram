@@ -1,15 +1,24 @@
 import { useState, useEffect, useRef, useMemo, type SyntheticEvent } from 'react';
 import { Card, Title, Text, Group, TextInput, Button, Stack, Avatar, Paper, ScrollArea, Badge } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconSend } from '@tabler/icons-react';
+import { IconSend, IconMessage } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { conversationService, userService, friendService, type UserResource } from '../../api/services';
+import {
+    conversationService,
+    userService,
+    friendService,
+    type UserResource,
+    type ConversationActivityResource,
+    type GetConversationActivitiesQuery,
+} from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
+import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { UserProfileNav } from '../../components/UserProfileNav';
+import { formatImageSrc } from '../../utils/imageUtils';
 
 export default function UserConversations() {
     const { link } = useParams<{ link: string }>();
@@ -19,6 +28,11 @@ export default function UserConversations() {
 
     const [messageInput, setMessageInput] = useState('');
     const chatEndRef = useRef<HTMLDivElement>(null);
+
+    // Pagination & sort for conversations list
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [sort, setSort] = useState<string | null>('updatedAt:desc');
 
     // Target user
     const { data: targetUser } = useQuery({
@@ -38,7 +52,7 @@ export default function UserConversations() {
         queryFn: async () => {
             if (!currentUser || !targetUser || isMyProfile) return null;
             const res = await friendService.getFriends({
-                filter: { userId: targetUser.id },
+                filter: { userIds: [targetUser.id] },
                 limit: 10,
             });
             return (
@@ -54,11 +68,22 @@ export default function UserConversations() {
 
     const canChat = isMyProfile || friendship?.status === FriendStatusEnum.ACCEPTED;
 
-    // Fetch conversations activities (if my profile)
-    const { data: activities } = useQuery({
-        queryKey: ['conversation-activities'],
+    const sortOptions: SortOption[] = [
+        { value: 'updatedAt:desc', label: t('sort_updatedAt_desc') },
+        { value: 'updatedAt:asc', label: t('sort_updatedAt_asc') },
+        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
+        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
+    ];
+
+    // Fetch conversation activities (if my profile)
+    const { data: activities, isLoading: activitiesLoading } = useQuery({
+        queryKey: ['conversation-activities', page, limit, sort],
         queryFn: async () => {
-            return await conversationService.getActivities();
+            return await conversationService.getActivities({
+                page,
+                limit,
+                sort: (sort as NonNullable<GetConversationActivitiesQuery>['sort']) ?? 'updatedAt:desc',
+            });
         },
         enabled: isMyProfile,
     });
@@ -125,70 +150,94 @@ export default function UserConversations() {
         sendMutation.mutate(messageInput.trim());
     };
 
-    // If looking at own profile without target user -> show recent conversations list
+    const activityColumns: Column<ConversationActivityResource>[] = [
+        {
+            key: 'user',
+            header: t('user'),
+            render: (act) => {
+                const otherId = act.senderUserId === currentUser?.id ? act.receiverUserId : act.senderUserId;
+                const other = relatedUsers[otherId];
+                return (
+                    <Group gap="sm">
+                        <Avatar src={formatImageSrc(other?.profilePhoto)} radius="xl">
+                            ?
+                        </Avatar>
+                        <div>
+                            <Text size="sm" fw={600}>
+                                {other ? `${other.firstName} ${other.lastName}` : otherId}
+                            </Text>
+                            {other?.link && (
+                                <Text size="xs" c="dimmed">
+                                    @{other.link}
+                                </Text>
+                            )}
+                        </div>
+                    </Group>
+                );
+            },
+        },
+        {
+            key: 'updatedAt',
+            header: t('createdAt'),
+            render: (act) => (
+                <Text size="xs" c="dimmed">
+                    {act.updatedAt ? new Date(act.updatedAt).toLocaleString() : '-'}
+                </Text>
+            ),
+        },
+    ];
+
+    // If looking at own profile without target user -> show recent conversations list with full DataTable
     if (isMyProfile) {
         return (
-            <Stack gap="md" maw={650} mx="auto">
-                <UserProfileNav userLink={currentUser?.link ?? ''} isOwner={true} />
+            <Stack gap="md">
+                <UserProfileNav user={currentUser} isOwner={true} />
                 <Title order={3}>{t('conversations')}</Title>
-                <Paper withBorder p="md" radius="md">
-                    {activities?.length === 0 ? (
-                        <Text c="dimmed" ta="center">
-                            {t('noRecords')}
-                        </Text>
-                    ) : (
-                        <Stack gap="xs">
-                            {activities?.map((act) => {
-                                const otherId =
-                                    act.senderUserId === currentUser?.id ? act.receiverUserId : act.senderUserId;
-                                const other = relatedUsers[otherId];
-                                return (
-                                    <Paper
-                                        key={act.id}
-                                        withBorder
-                                        p="sm"
-                                        radius="sm"
-                                        component={Link}
-                                        to={`/users/${other?.link ?? otherId}/conversations`}
-                                        className="no-decoration"
-                                    >
-                                        <Group justify="space-between">
-                                            <Group gap="sm">
-                                                <Avatar src={other?.profilePhoto || undefined} radius="xl">
-                                                    {other?.firstName?.[0] ?? '?'}
-                                                </Avatar>
-                                                <div>
-                                                    <Text size="sm" fw={600}>
-                                                        {other ? `${other.firstName} ${other.lastName}` : otherId}
-                                                    </Text>
-                                                    {other?.link && (
-                                                        <Text size="xs" c="dimmed">
-                                                            @{other.link}
-                                                        </Text>
-                                                    )}
-                                                </div>
-                                            </Group>
-                                            <Text size="xs" c="dimmed">
-                                                {act.updatedAt ? new Date(act.updatedAt).toLocaleTimeString() : ''}
-                                            </Text>
-                                        </Group>
-                                    </Paper>
-                                );
-                            })}
-                        </Stack>
-                    )}
-                </Paper>
+                <DataTable
+                    columns={activityColumns}
+                    data={activities ?? []}
+                    isLoading={activitiesLoading}
+                    page={page}
+                    totalItems={activities?.length}
+                    onPageChange={setPage}
+                    limit={limit}
+                    onLimitChange={(l) => {
+                        setLimit(l);
+                        setPage(1);
+                    }}
+                    sort={sort}
+                    onSortChange={(s) => {
+                        setSort(s);
+                        setPage(1);
+                    }}
+                    sortOptions={sortOptions}
+                    actions={(act) => {
+                        const otherId = act.senderUserId === currentUser?.id ? act.receiverUserId : act.senderUserId;
+                        const other = relatedUsers[otherId];
+                        return (
+                            <Button
+                                component={Link}
+                                to={`/users/${other?.link ?? otherId}/conversations`}
+                                variant="light"
+                                size="xs"
+                                leftSection={<IconMessage size={14} />}
+                            >
+                                {t('chat')}
+                            </Button>
+                        );
+                    }}
+                />
             </Stack>
         );
     }
 
     return (
-        <Stack gap="md" maw={650} mx="auto">
-            {targetUser && <UserProfileNav userLink={targetUser.link} isOwner={isMyProfile} />}
+        <Stack gap="md">
+            {targetUser && <UserProfileNav user={targetUser} isOwner={isMyProfile} />}
             <Group justify="space-between" align="center">
                 <Group gap="sm">
-                    <Avatar src={targetUser?.profilePhoto || undefined} radius="xl">
-                        {targetUser?.firstName?.[0]}
+                    <Avatar src={formatImageSrc(targetUser?.profilePhoto)} radius="xl">
+                        ?
                     </Avatar>
                     <div>
                         <Text size="md" fw={600}>
@@ -230,7 +279,13 @@ export default function UserConversations() {
                                         gap="xs"
                                     >
                                         {!isMine && (
-                                            <Avatar src={targetUser?.profilePhoto || undefined} radius="xl" size="xs" />
+                                            <Avatar
+                                                src={formatImageSrc(targetUser?.profilePhoto)}
+                                                radius="xl"
+                                                size="xs"
+                                            >
+                                                ?
+                                            </Avatar>
                                         )}
                                         <Paper
                                             p="xs"

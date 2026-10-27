@@ -43,7 +43,7 @@ export default function Login() {
         setError(null);
 
         try {
-            const data = await authService.sign({ email, password, rememberMe });
+            const data = await authService.sign({ email, password });
             if (!data?.id) {
                 setError(t('error'));
                 return;
@@ -134,7 +134,7 @@ export default function Login() {
 
                 {error && (
                     <Alert color="red" mb="md" withCloseButton onClose={() => setError(null)}>
-                        {error}
+                        {error}{' '}
                     </Alert>
                 )}
 

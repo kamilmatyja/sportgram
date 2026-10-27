@@ -1,15 +1,20 @@
-import { useState } from 'react';
-import { Group, Text, Button, Badge, Modal, Stack, Alert, ThemeIcon } from '@mantine/core';
+import { useState, useMemo } from 'react';
+import { Text, Button, Badge, Modal, Stack, Alert, SimpleGrid, TextInput } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconDevices, IconTrash, IconPlus } from '@tabler/icons-react';
+import { IconTrash, IconPlus } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
-import { userService, pushSubscriptionService, type PushSubscriptionResource } from '../../api/services';
+import {
+    userService,
+    pushSubscriptionService,
+    type PushSubscriptionResource,
+    type GetPushSubscriptionsQuery,
+} from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
-import { DataTable, type Column } from '../../components/DataTable';
+import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 
@@ -32,6 +37,13 @@ export default function UserPushSubscriptions() {
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
+    const [sort, setSort] = useState<string | null>('createdAt:desc');
+
+    // Filters
+    const [endpointFilter, setEndpointFilter] = useState('');
+    const [p256dhFilter, setP256dhFilter] = useState('');
+    const [authFilter, setAuthFilter] = useState('');
+
     const [opened, { open, close }] = useDisclosure(false);
     const [subscribing, setSubscribing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -42,13 +54,45 @@ export default function UserPushSubscriptions() {
         enabled: !!link,
     });
 
+    const sortOptions: SortOption[] = [
+        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
+        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
+        { value: 'endpoint:asc', label: t('sort_endpoint_asc') },
+        { value: 'endpoint:desc', label: t('sort_endpoint_desc') },
+    ];
+
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (endpointFilter.trim()) count++;
+        if (p256dhFilter.trim()) count++;
+        if (authFilter.trim()) count++;
+        return count;
+    }, [endpointFilter, p256dhFilter, authFilter]);
+
+    const handleResetFilters = () => {
+        setEndpointFilter('');
+        setP256dhFilter('');
+        setAuthFilter('');
+        setPage(1);
+    };
+
+    const queryFilter = useMemo(() => {
+        return {
+            endpoint: endpointFilter.trim() || null,
+            p256dh: p256dhFilter.trim() || null,
+            auth: authFilter.trim() || null,
+        };
+    }, [endpointFilter, p256dhFilter, authFilter]);
+
     const { data, isLoading } = useQuery({
-        queryKey: ['push-subscriptions', currentUser?.id, page, limit],
+        queryKey: ['push-subscriptions', currentUser?.id, page, limit, sort, queryFilter],
         queryFn: () => {
             if (!currentUser?.id) return null;
             return pushSubscriptionService.getSubscriptions({
                 page,
                 limit,
+                filter: queryFilter,
+                sort: (sort as NonNullable<GetPushSubscriptionsQuery>['sort']) ?? 'createdAt:desc',
             });
         },
         enabled: !!currentUser?.id,
@@ -72,7 +116,7 @@ export default function UserPushSubscriptions() {
 
             const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
             if (!vapidKey) {
-                throw new Error(t('vapidMissing') || 'VAPID key missing');
+                throw new Error(t('missingVapidKey'));
             }
 
             const registration = await navigator.serviceWorker.ready;
@@ -88,12 +132,16 @@ export default function UserPushSubscriptions() {
                 p256dh: keys.p256dh || '',
                 auth: keys.auth || '',
                 userAgent: navigator.userAgent,
-                status: PushSubscriptionStatusEnum.ACTIVE as any,
+                status: PushSubscriptionStatusEnum.ACTIVE,
             });
 
             close();
             queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-            notifications.show({ title: t('pushSubscriptions'), message: t('saved'), color: 'green' });
+            notifications.show({
+                title: t('pushSubscriptions'),
+                message: t('browserSubscriptionSaved'),
+                color: 'green',
+            });
         } catch (err) {
             setError(getErrorMessage(err));
         } finally {
@@ -105,7 +153,7 @@ export default function UserPushSubscriptions() {
         mutationFn: (id: string) => pushSubscriptionService.deleteSubscription(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-            notifications.show({ title: t('pushSubscriptions'), message: t('deleted'), color: 'blue' });
+            notifications.show({ title: t('pushSubscriptions'), message: t('pushSubscriptionDeleted'), color: 'blue' });
         },
     });
 
@@ -114,19 +162,14 @@ export default function UserPushSubscriptions() {
             key: 'device',
             header: t('browserDevice'),
             render: (s) => (
-                <Group gap="sm">
-                    <ThemeIcon variant="light" color="blue" size="md">
-                        <IconDevices size={18} />
-                    </ThemeIcon>
-                    <div>
-                        <Text size="xs" lineClamp={1}>
-                            {s.userAgent || t('unknown')}
-                        </Text>
-                        <Text size="xs" c="dimmed" lineClamp={1}>
-                            {s.endpoint}
-                        </Text>
-                    </div>
-                </Group>
+                <div>
+                    <Text size="xs" lineClamp={1}>
+                        {s.userAgent || t('unknownDevice')}
+                    </Text>
+                    <Text size="xs" c="dimmed" lineClamp={1}>
+                        {s.endpoint}
+                    </Text>
+                </div>
             ),
         },
         {
@@ -149,9 +192,41 @@ export default function UserPushSubscriptions() {
         },
     ];
 
+    const filtersNode = (
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
+            <TextInput
+                label={t('endpoint')}
+                placeholder={t('endpoint')}
+                value={endpointFilter}
+                onChange={(e) => {
+                    setEndpointFilter(e.currentTarget.value);
+                    setPage(1);
+                }}
+            />
+            <TextInput
+                label={t('p256dh')}
+                placeholder={t('p256dh')}
+                value={p256dhFilter}
+                onChange={(e) => {
+                    setP256dhFilter(e.currentTarget.value);
+                    setPage(1);
+                }}
+            />
+            <TextInput
+                label={t('authKey')}
+                placeholder={t('authKey')}
+                value={authFilter}
+                onChange={(e) => {
+                    setAuthFilter(e.currentTarget.value);
+                    setPage(1);
+                }}
+            />
+        </SimpleGrid>
+    );
+
     return (
         <Stack gap="md">
-            {targetUser && <UserProfileNav user={targetUser} />}
+            {targetUser && <UserProfileNav user={targetUser} isOwner={currentUser?.id === targetUser.id} />}
             <DataTable
                 columns={columns}
                 data={subs}
@@ -164,6 +239,16 @@ export default function UserPushSubscriptions() {
                     setLimit(l);
                     setPage(1);
                 }}
+                sort={sort}
+                onSortChange={(s) => {
+                    setSort(s);
+                    setPage(1);
+                }}
+                sortOptions={sortOptions}
+                filtersNode={filtersNode}
+                hasActiveFilters={activeFiltersCount > 0}
+                activeFiltersCount={activeFiltersCount}
+                onResetFilters={handleResetFilters}
                 onAdd={open}
                 addLabel={t('addSubscription')}
                 actions={(s) => (
@@ -179,7 +264,7 @@ export default function UserPushSubscriptions() {
                 )}
             />
 
-            <Modal opened={opened} onClose={close} title={t('addSubscription')}>
+            <Modal opened={opened} onClose={close} title={t('addSubscription')} size="lg">
                 <Stack gap="sm">
                     <Text size="sm">{t('pushSubscriptionInfo')}</Text>
                     <Text size="xs" c="dimmed">

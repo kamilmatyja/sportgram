@@ -1,5 +1,7 @@
+export * from './common.types';
 export * from './auth.service';
 export * from './user.service';
+export * from './entry.service';
 export * from './feed.service';
 export * from './story.service';
 export * from './page.service';

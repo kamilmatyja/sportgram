@@ -1,4 +1,4 @@
-import { Group, Button } from '@mantine/core';
+import { Group, Button, Card, Box, Avatar, Text, Title, Image } from '@mantine/core';
 import {
     IconArticle,
     IconPlayerPlay,
@@ -13,15 +13,28 @@ import {
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
+import { type UserResource } from '../api/services';
 import { useAuth } from '../auth/AuthContext';
+import { formatImageSrc } from '../utils/imageUtils';
 
 export interface UserProfileNavProps {
-    user?: { link?: string | null; id?: string | null } | null;
+    user?:
+        | UserResource
+        | {
+              link?: string | null;
+              id?: string | null;
+              firstName?: string | null;
+              lastName?: string | null;
+              profilePhoto?: string | null;
+              backgroundPhoto?: string | null;
+          }
+        | null;
     userLink?: string;
     isOwner?: boolean;
+    simplifiedHeader?: boolean;
 }
 
-export function UserProfileNav({ user, userLink, isOwner }: UserProfileNavProps) {
+export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = true }: UserProfileNavProps) {
     const { t } = useTranslation();
     const location = useLocation();
     const { currentUser } = useAuth();
@@ -53,24 +66,73 @@ export function UserProfileNav({ user, userLink, isOwner }: UserProfileNavProps)
         );
     }
 
+    const bgSrc = formatImageSrc(user?.backgroundPhoto);
+    const profileSrc = formatImageSrc(user?.profilePhoto);
+
     return (
-        <Group gap="xs" wrap="wrap" mb="md">
-            {navItems.map((item) => {
-                const isActive = location.pathname.startsWith(item.to);
-                return (
-                    <Button
-                        key={item.to}
-                        component={Link}
-                        to={item.to}
-                        variant={isActive ? 'filled' : 'light'}
-                        size="xs"
-                        leftSection={item.icon}
-                    >
-                        {item.label}
-                    </Button>
-                );
-            })}
-        </Group>
+        <Box mb="md">
+            {simplifiedHeader && user && (
+                <Card withBorder radius="md" p={0} mb="sm" shadow="xs" className="overflow-hidden">
+                    {bgSrc ? (
+                        <Image src={bgSrc} h={160} fit="cover" alt={user.firstName ?? 'Background'} />
+                    ) : (
+                        <Box h={160} bg="blue.7" />
+                    )}
+
+                    <Box p="md" pos="relative">
+                        <Avatar
+                            src={profileSrc}
+                            size={100}
+                            radius={100}
+                            pos="absolute"
+                            top={-50}
+                            left={24}
+                            className="profile-avatar-border"
+                            color="blue"
+                            component={Link}
+                            to={`/users/${link}`}
+                        >
+                            ?
+                        </Avatar>
+
+                        <Group justify="space-between" align="flex-start" mt={55}>
+                            <div>
+                                <Link to={`/users/${link}`} className="no-decoration">
+                                    <Title order={2}>
+                                        {user.firstName} {user.lastName}
+                                    </Title>
+                                </Link>
+                                <Text size="sm" c="dimmed">
+                                    @{user.link}
+                                </Text>
+                            </div>
+
+                            <Button component={Link} to={`/users/${link}`} variant="light" size="xs">
+                                {t('profile')}
+                            </Button>
+                        </Group>
+                    </Box>
+                </Card>
+            )}
+
+            <Group gap="xs" wrap="wrap">
+                {navItems.map((item) => {
+                    const isActive = location.pathname.startsWith(item.to);
+                    return (
+                        <Button
+                            key={item.to}
+                            component={Link}
+                            to={item.to}
+                            variant={isActive ? 'filled' : 'light'}
+                            size="xs"
+                            leftSection={item.icon}
+                        >
+                            {item.label}
+                        </Button>
+                    );
+                })}
+            </Group>
+        </Box>
     );
 }
 

@@ -8,6 +8,7 @@ import { getErrorMessage } from '../../api/client';
 import { eventService } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { formatImageSrc } from '../../utils/imageUtils';
 
 export default function EventDetails() {
     const { link } = useParams<{ link: string }>();
@@ -63,10 +64,14 @@ export default function EventDetails() {
         );
     }
 
+    const eventPhotoSrc = formatImageSrc(event.photo);
+
     return (
-        <Stack gap="lg" className="max-w-800">
+        <Stack gap="lg">
             <Card withBorder radius="md" p="lg" shadow="xs">
-                {event.photo && <Image src={event.photo} alt={event.title} radius="md" mah={300} fit="cover" mb="md" />}
+                {eventPhotoSrc && (
+                    <Image src={eventPhotoSrc} alt={event.title} radius="md" mah={300} fit="cover" mb="md" />
+                )}
 
                 <Group justify="space-between" align="flex-start" mb="md">
                     <div>

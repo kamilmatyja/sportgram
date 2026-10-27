@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const fetchUser = useCallback(
-        async (currentSignId: string, currentToken: string) => {
+        async (currentSignId: string) => {
             try {
                 const user = await userService.getUserBySignId(currentSignId);
                 if (!user) {
@@ -74,14 +74,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setIsLoading(false);
             return;
         }
-        await fetchUser(signId, token);
+        await fetchUser(signId);
     }, [signId, token, fetchUser]);
 
     // Fetch user on initial load or when signId/token changes (NO infinite loop)
     useEffect(() => {
         if (signId && token) {
             setIsLoading(true);
-            fetchUser(signId, token);
+            fetchUser(signId);
         } else {
             setCurrentUser(null);
             setIsLoading(false);
@@ -104,7 +104,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Periodic token refresh every 4 minutes
     useEffect(() => {
         if (!signId) return;
-
         const interval = setInterval(async () => {
             try {
                 const data = await authService.refreshSign(signId);

@@ -1,12 +1,14 @@
 import { Card, Title, Text, Group, Button, Stack, Avatar, Box, Paper, BackgroundImage } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconBuildingStore, IconBookmark, IconTrash } from '@tabler/icons-react';
+import { IconBookmark, IconTrash } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { pageService } from '../../api/services';
+import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
 import { useAuth } from '../../auth/AuthContext';
+import { formatImageSrc } from '../../utils/imageUtils';
 
 export default function PageDetails() {
     const { link } = useParams<{ link: string }>();
@@ -37,7 +39,7 @@ export default function PageDetails() {
     const followMutation = useMutation({
         mutationFn: async () => {
             if (!page?.id) return;
-            await pageService.followPage(page.id);
+            await pageService.followPage(page.id, PageFollowStatusEnum.ACCEPTED);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['page-follows'] });
@@ -85,24 +87,17 @@ export default function PageDetails() {
         );
     }
 
+    const bgSrc = formatImageSrc(page.backgroundPhoto);
+    const profileSrc = formatImageSrc(page.profilePhoto);
+
     return (
-        <Stack gap="lg" className="max-w-800">
+        <Stack gap="lg">
             <Card withBorder radius="md" p={0} shadow="xs">
-                {page.backgroundPhoto ? (
-                    <BackgroundImage src={page.backgroundPhoto} h={140} />
-                ) : (
-                    <Box h={140} bg="blue.7" />
-                )}
+                {bgSrc ? <BackgroundImage src={bgSrc} h={140} /> : <Box h={140} bg="blue.7" />}
 
                 <Box p="md" className="relative">
-                    <Avatar
-                        src={page.profilePhoto || undefined}
-                        size={80}
-                        radius="md"
-                        color="blue"
-                        className="page-avatar-overlap"
-                    >
-                        <IconBuildingStore size={40} />
+                    <Avatar src={profileSrc} size={80} radius="md" className="page-avatar-overlap">
+                        ?
                     </Avatar>
 
                     <Group justify="space-between" align="flex-start" mt={45}>

@@ -1,43 +1,65 @@
 import { api } from '../client';
-import type { components } from '../schema';
+import type { components, operations } from '../schema';
+import { NotificationStatusEnum } from '../../enums/NotificationStatusEnum';
 
 export type NotificationResource = components['schemas']['NotificationResource'];
+export type NotificationFilterDto = components['schemas']['NotificationFilterDto'];
+export type NotificationStatusDto = components['schemas']['NotificationStatusDto'];
 
-export interface GetNotificationsParams {
-    page?: number;
-    limit?: number;
-    sort?: string;
-}
+export type GetNotificationsQuery = operations['get_notification_index']['parameters']['query'];
+
+export type GetNotificationsResponse =
+    operations['get_notification_index']['responses'][200]['content']['application/json'];
+export type GetNotificationResponse =
+    operations['get_notification_details']['responses'][200]['content']['application/json'];
+export type DeleteNotificationResponse =
+    operations['delete_notification_delete']['responses'][200]['content']['application/json'];
+export type UpdateNotificationStatusResponse =
+    operations['patch_notification_update_status']['responses'][200]['content']['application/json'];
 
 export const notificationService = {
-    async getNotifications(params?: GetNotificationsParams) {
+    async getNotifications(query?: GetNotificationsQuery): Promise<GetNotificationsResponse> {
         const res = await api.GET('/api/notifications', {
-            params: {
-                query: {
-                    page: params?.page ?? 1,
-                    limit: params?.limit ?? 10,
-                    sort: params?.sort ?? 'createdAt:desc',
-                },
-            },
+            params: { query },
         });
         if (res.error) throw res.error;
         return res.data;
     },
 
-    async markAsRead(id: string) {
-        const res = await api.PATCH('/api/notifications/{id}/status', {
+    async getNotification(id: string): Promise<GetNotificationResponse> {
+        const res = await api.GET('/api/notifications/{id}', {
             params: { path: { id } },
-            body: { status: 3 }, // 3 = READ
         });
         if (res.error) throw res.error;
         return res.data;
     },
 
-    async deleteNotification(id: string) {
+    async deleteNotification(id: string): Promise<DeleteNotificationResponse> {
         const res = await api.DELETE('/api/notifications/{id}', {
             params: { path: { id } },
         });
         if (res.error) throw res.error;
         return res.data;
+    },
+
+    async updateNotificationStatus(
+        id: string,
+        bodyOrStatus: NotificationStatusDto | NotificationStatusEnum,
+    ): Promise<UpdateNotificationStatusResponse> {
+        const body: NotificationStatusDto =
+            typeof bodyOrStatus === 'number'
+                ? { status: bodyOrStatus as NotificationStatusDto['status'] }
+                : bodyOrStatus;
+        const res = await api.PATCH('/api/notifications/{id}/status', {
+            params: { path: { id } },
+            body,
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    // Convenience helpers
+    async markAsRead(id: string): Promise<UpdateNotificationStatusResponse> {
+        return await notificationService.updateNotificationStatus(id, NotificationStatusEnum.READ);
     },
 };

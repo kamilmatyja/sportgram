@@ -1,6 +1,6 @@
-import { Card, Title, Text, Group, Button, Stack, Badge, Paper, Table, ThemeIcon } from '@mantine/core';
+import { Card, Title, Text, Group, Button, Stack, Badge, Paper, Table } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconRun, IconTrash, IconMapPin, IconClock } from '@tabler/icons-react';
+import { IconTrash, IconMapPin, IconClock } from '@tabler/icons-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -50,23 +50,18 @@ export default function TrainingDetails() {
     }
 
     return (
-        <Stack gap="lg" className="max-w-800">
+        <Stack gap="lg">
             <Card withBorder radius="md" p="lg" shadow="xs">
                 <Group justify="space-between" align="flex-start" mb="md">
-                    <Group gap="sm">
-                        <ThemeIcon variant="light" color="blue" size="xl">
-                            <IconRun size={28} />
-                        </ThemeIcon>
-                        <div>
-                            <Title order={2}>{training.title}</Title>
-                            <Group gap="xs" mt={4}>
-                                <IconMapPin size={16} />
-                                <Text size="sm" c="dimmed">
-                                    {training.location || '-'}
-                                </Text>
-                            </Group>
-                        </div>
-                    </Group>
+                    <div>
+                        <Title order={2}>{training.title}</Title>
+                        <Group gap="xs" mt={4}>
+                            <IconMapPin size={16} />
+                            <Text size="sm" c="dimmed">
+                                {training.location || '-'}
+                            </Text>
+                        </Group>
+                    </div>
 
                     {isOwner && (
                         <Button

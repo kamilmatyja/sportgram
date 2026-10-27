@@ -1,30 +1,43 @@
 import { api } from '../client';
-import type { components } from '../schema';
+import type { components, operations } from '../schema';
+import type { ElementStatusDto } from './common.types';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
 
 export type PageResource = components['schemas']['PageResource'];
 export type PageDto = components['schemas']['PageDto'];
+export type PageFilterDto = components['schemas']['PageFilterDto'];
 export type PageFollowResource = components['schemas']['PageFollowResource'];
+export type PageFollowFilterDto = components['schemas']['PageFollowFilterDto'];
+export type PageFollowStatusDto = components['schemas']['PageFollowStatusDto'];
+export type PageParticipantResource = components['schemas']['PageParticipantResource'];
 
-export interface GetPagesParams {
-    page?: number;
-    limit?: number;
-    filter?: {
-        userId?: string | null;
-        title?: string | null;
-        link?: string | null;
-    };
-    sort?: string;
-}
+export type GetPagesQuery = operations['get_page_index']['parameters']['query'];
+export type GetPageDetailsQuery = operations['get_page_details']['parameters']['query'];
+export type GetPageFollowsQuery = operations['get_page_follow_index']['parameters']['query'];
+
+export type GetPagesResponse = operations['get_page_index']['responses'][200]['content']['application/json'];
+export type CreatePageResponse = operations['post_page_create']['responses'][201]['content']['application/json'];
+export type GetPageResponse = operations['get_page_details']['responses'][200]['content']['application/json'];
+export type UpdatePageResponse = operations['put_page_update']['responses'][200]['content']['application/json'];
+export type DeletePageResponse = operations['delete_page_delete']['responses'][200]['content']['application/json'];
+export type UpdatePageStatusResponse =
+    operations['patch_page_patch_status']['responses'][200]['content']['application/json'];
+export type UpdatePageParticipantStatusResponse =
+    operations['patch_page_participant_patch_status']['responses'][200]['content']['application/json'];
+export type CreatePageFollowResponse =
+    operations['post_page_follow_create']['responses'][201]['content']['application/json'];
+export type GetPageFollowsResponse =
+    operations['get_page_follow_index']['responses'][200]['content']['application/json'];
+export type GetPageFollowResponse =
+    operations['get_page_follow_details']['responses'][200]['content']['application/json'];
+export type DeletePageFollowResponse =
+    operations['delete_page_follow_delete']['responses'][200]['content']['application/json'];
+export type UpdatePageFollowStatusResponse =
+    operations['patch_page_follow_patch_status']['responses'][200]['content']['application/json'];
 
 export const pageService = {
-    async getPages(params?: GetPagesParams) {
-        const query: Record<string, any> = {
-            page: params?.page ?? 1,
-            limit: params?.limit ?? 10,
-            sort: params?.sort ?? 'createdAt:desc',
-        };
-        if (params?.filter) query.filter = params.filter;
-
+    async getPages(query?: GetPagesQuery): Promise<GetPagesResponse> {
         const res = await api.GET('/api/pages', {
             params: { query },
         });
@@ -32,7 +45,119 @@ export const pageService = {
         return res.data;
     },
 
-    async getPageByLink(link: string) {
+    async createPage(body: PageDto): Promise<CreatePageResponse> {
+        const res = await api.POST('/api/pages', { body });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async getPage(id: string, query?: GetPageDetailsQuery): Promise<GetPageResponse> {
+        const res = await api.GET('/api/pages/{id}', {
+            params: { path: { id }, query },
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async updatePage(id: string, body: PageDto): Promise<UpdatePageResponse> {
+        const res = await api.PUT('/api/pages/{id}', {
+            params: { path: { id } },
+            body,
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async deletePage(id: string): Promise<DeletePageResponse> {
+        const res = await api.DELETE('/api/pages/{id}', {
+            params: { path: { id } },
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async updatePageStatus(
+        id: string,
+        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+    ): Promise<UpdatePageStatusResponse> {
+        const body: ElementStatusDto =
+            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
+        const res = await api.PATCH('/api/pages/{id}/status', {
+            params: { path: { id } },
+            body,
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async updatePageParticipantStatus(
+        id: string,
+        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+    ): Promise<UpdatePageParticipantStatusResponse> {
+        const body: ElementStatusDto =
+            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
+        const res = await api.PATCH('/api/page-participants/{id}/status', {
+            params: { path: { id } },
+            body,
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async createPageFollow(
+        pageId: string,
+        bodyOrStatus: PageFollowStatusDto | PageFollowStatusEnum,
+    ): Promise<CreatePageFollowResponse> {
+        const body: PageFollowStatusDto =
+            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as PageFollowStatusDto['status'] } : bodyOrStatus;
+        const res = await api.POST('/api/pages/{id}/follows', {
+            params: { path: { id: pageId } },
+            body,
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async getPageFollowsList(query?: GetPageFollowsQuery): Promise<GetPageFollowsResponse> {
+        const res = await api.GET('/api/page-follows', {
+            params: { query },
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async getPageFollow(id: string): Promise<GetPageFollowResponse> {
+        const res = await api.GET('/api/page-follows/{id}', {
+            params: { path: { id } },
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async deletePageFollow(id: string): Promise<DeletePageFollowResponse> {
+        const res = await api.DELETE('/api/page-follows/{id}', {
+            params: { path: { id } },
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async updatePageFollowStatus(
+        id: string,
+        bodyOrStatus: PageFollowStatusDto | PageFollowStatusEnum,
+    ): Promise<UpdatePageFollowStatusResponse> {
+        const body: PageFollowStatusDto =
+            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as PageFollowStatusDto['status'] } : bodyOrStatus;
+        const res = await api.PATCH('/api/page-follows/{id}/status', {
+            params: { path: { id } },
+            body,
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    // Convenience helpers
+    async getPageByLink(link: string): Promise<PageResource | null> {
         const res = await api.GET('/api/pages', {
             params: {
                 query: {
@@ -45,51 +170,23 @@ export const pageService = {
         return res.data?.data?.[0] ?? null;
     },
 
-    async createPage(body: PageDto) {
-        const res = await api.POST('/api/pages', { body });
-        if (res.error) throw res.error;
-        return res.data;
+    async followPage(
+        pageId: string,
+        bodyOrStatus: PageFollowStatusDto | PageFollowStatusEnum,
+    ): Promise<CreatePageFollowResponse> {
+        return await pageService.createPageFollow(pageId, bodyOrStatus);
     },
 
-    async updatePage(id: string, body: PageDto) {
-        const res = await api.PUT('/api/pages/{id}', {
-            params: { path: { id } },
-            body,
-        });
-        if (res.error) throw res.error;
-        return res.data;
+    async unfollowPage(followId: string): Promise<DeletePageFollowResponse> {
+        return await pageService.deletePageFollow(followId);
     },
 
-    async deletePage(id: string) {
-        const res = await api.DELETE('/api/pages/{id}', {
-            params: { path: { id } },
-        });
-        if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async followPage(pageId: string) {
-        const res = await api.POST('/api/pages/{id}/follows', {
-            params: { path: { id: pageId } },
-            body: { status: 2 },
-        });
-        if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async unfollowPage(followId: string) {
-        const res = await api.DELETE('/api/page-follows/{id}', {
-            params: { path: { id: followId } },
-        });
-        if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async getPageFollows(pageId: string, userId?: string) {
+    async getPageFollows(pageId: string, userId: string): Promise<GetPageFollowsResponse> {
+        const filter: PageFollowFilterDto = { pageIds: [pageId], userId };
         const res = await api.GET('/api/page-follows', {
             params: {
                 query: {
-                    filter: { pageId, userId: userId || null },
+                    filter,
                     limit: 50,
                 },
             },

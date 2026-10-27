@@ -16,6 +16,7 @@ import { IconSun, IconMoon, IconLogout, IconUser } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { formatImageSrc } from '../utils/imageUtils';
 import { RunnerLogo } from './RunnerLogo';
 
 interface AppLayoutProps {
@@ -36,7 +37,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     const userLink = currentUser?.link ?? '';
 
     const navItems = [
-        { path: '/', label: t('navHome') },
         { path: '/users', label: t('navUsers') },
         { path: '/pages', label: t('navPages') },
         { path: '/events', label: t('navEvents') },
@@ -46,7 +46,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     return (
         <AppShell header={{ height: 60 }} padding="md">
             <AppShell.Header>
-                <Container size="xl" h="100%">
+                <Container size="lg" h="100%">
                     <Group h="100%" justify="space-between" wrap="nowrap">
                         {/* Left: Brand + Navigation links */}
                         <Group gap="lg" wrap="nowrap">
@@ -62,10 +62,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                             {isAuthenticated && (
                                 <Group gap={4} visibleFrom="sm" wrap="nowrap">
                                     {navItems.map((item) => {
-                                        const isActive =
-                                            item.path === '/'
-                                                ? location.pathname === '/'
-                                                : location.pathname.startsWith(item.path);
+                                        const isActive = location.pathname.startsWith(item.path);
                                         return (
                                             <Button
                                                 key={item.path}
@@ -77,15 +74,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                                             </Button>
                                         );
                                     })}
-                                    {userLink && (
-                                        <Button
-                                            variant={location.pathname === `/users/${userLink}` ? 'light' : 'subtle'}
-                                            size="xs"
-                                            onClick={() => handleNav(`/users/${userLink}`)}
-                                        >
-                                            {t('navProfile')}
-                                        </Button>
-                                    )}
                                 </Group>
                             )}
                         </Group>
@@ -128,12 +116,12 @@ export function AppLayout({ children }: AppLayoutProps) {
                                         <Button variant="subtle" size="sm" p={4}>
                                             <Group gap="xs" wrap="nowrap">
                                                 <Avatar
-                                                    src={currentUser.profilePhoto || undefined}
+                                                    src={formatImageSrc(currentUser.profilePhoto)}
                                                     radius="xl"
                                                     size="sm"
                                                     color="blue"
                                                 >
-                                                    {currentUser.firstName?.[0]}
+                                                    ?
                                                 </Avatar>
                                                 <Text size="sm" visibleFrom="xs" fw={500}>
                                                     {currentUser.firstName} {currentUser.lastName}
@@ -162,7 +150,9 @@ export function AppLayout({ children }: AppLayoutProps) {
             </AppShell.Header>
 
             <AppShell.Main>
-                <Container size="xl">{children}</Container>
+                <Container size="lg" w="100%">
+                    {children}
+                </Container>
             </AppShell.Main>
         </AppShell>
     );
