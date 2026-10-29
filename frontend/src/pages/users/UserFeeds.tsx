@@ -1,10 +1,14 @@
 import { useState, useMemo } from 'react';
+import NotFound from '../../components/NotFound';
 import {
     Text,
+    Center,
+    Loader,
     Button,
     Stack,
     Avatar,
     ActionIcon,
+    Tooltip,
     Modal,
     Textarea,
     FileInput,
@@ -19,7 +23,7 @@ import { IconTrash } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { userService, feedService, type FeedResource, type GetFeedsQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
@@ -44,8 +48,9 @@ export default function UserFeeds() {
     const [opened, { open, close }] = useDisclosure(false);
     const [text, setText] = useState('');
     const [photo, setPhoto] = useState<File | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    const { data: targetUser } = useQuery({
+    const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: () => userService.getUserByLink(link || ''),
         enabled: !!link,
@@ -111,13 +116,16 @@ export default function UserFeeds() {
         onSuccess: () => {
             setText('');
             setPhoto(null);
+            setFieldErrors({});
             close();
             queryClient.invalidateQueries({ queryKey: ['user-feeds', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['feeds'] });
-            notifications.show({ title: t('feeds'), message: t('saved'), color: 'green' });
+            notifications.show({ title: t('feeds'), message: t('feedAdded'), color: 'green' });
         },
         onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -128,7 +136,7 @@ export default function UserFeeds() {
             queryClient.invalidateQueries({ queryKey: ['user-feeds', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['feeds'] });
-            notifications.show({ title: t('feeds'), message: t('deleted'), color: 'blue' });
+            notifications.show({ title: t('feeds'), message: t('feedDeleted'), color: 'green' });
         },
     });
 
@@ -195,9 +203,21 @@ export default function UserFeeds() {
         </SimpleGrid>
     );
 
+    if (userLoading) {
+        return (
+            <Center h={200}>
+                <Loader />
+            </Center>
+        );
+    }
+
+    if (!targetUser) {
+        return <NotFound title={t('userNotFound')} />;
+    }
+
     return (
         <Stack gap="md">
-            {targetUser && <UserProfileNav user={targetUser} isOwner={isOwner} />}
+            <UserProfileNav user={targetUser} isOwner={isOwner} />
             <DataTable
                 columns={columns}
                 data={feeds}
@@ -224,9 +244,17 @@ export default function UserFeeds() {
                 addLabel={t('addFeed')}
                 actions={(f) =>
                     isOwner || isAdmin ? (
-                        <ActionIcon variant="subtle" color="red" size="sm" onClick={() => deleteMutation.mutate(f.id)}>
-                            <IconTrash size={16} />
-                        </ActionIcon>
+                        <Tooltip label={t('delete')} withArrow>
+                            <ActionIcon
+                                variant="light"
+                                color="red"
+                                size={30}
+                                onClick={() => deleteMutation.mutate(f.id)}
+                                loading={deleteMutation.isPending}
+                            >
+                                <IconTrash size={16} />
+                            </ActionIcon>
+                        </Tooltip>
                     ) : null
                 }
             />
@@ -239,6 +267,7 @@ export default function UserFeeds() {
                         placeholder={t('feedTextPlaceholder')}
                         rows={3}
                         value={text}
+                        error={fieldErrors.text}
                         onChange={(e) => setText(e.currentTarget.value)}
                     />
                     <FileInput
@@ -247,6 +276,7 @@ export default function UserFeeds() {
                         placeholder={t('selectPhotoPlaceholder')}
                         accept="image/*"
                         value={photo}
+                        error={fieldErrors.photo}
                         onChange={setPhoto}
                         clearable
                     />

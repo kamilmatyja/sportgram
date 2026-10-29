@@ -17,6 +17,34 @@ export namespace FeedReactionEnum {
             }));
     };
 
+    export const getEmoji = (type: number): string => {
+        switch (type) {
+            case FeedReactionEnum.LIKE:
+                return '👍';
+            case FeedReactionEnum.LOVE:
+                return '❤️';
+            case FeedReactionEnum.HAHA:
+                return '😂';
+            case FeedReactionEnum.WOW:
+                return '😮';
+            case FeedReactionEnum.SAD:
+                return '😢';
+            case FeedReactionEnum.ANGRY:
+                return '😡';
+            default:
+                return '👍';
+        }
+    };
+
+    export const ALL_REACTIONS = [
+        { type: FeedReactionEnum.LIKE, emoji: '👍', key: 'like' },
+        { type: FeedReactionEnum.LOVE, emoji: '❤️', key: 'love' },
+        { type: FeedReactionEnum.HAHA, emoji: '😂', key: 'haha' },
+        { type: FeedReactionEnum.WOW, emoji: '😮', key: 'wow' },
+        { type: FeedReactionEnum.SAD, emoji: '😢', key: 'sad' },
+        { type: FeedReactionEnum.ANGRY, emoji: '😡', key: 'angry' },
+    ];
+
     export const getClass = (type: number): { name: string; className: string } => {
         switch (type) {
             case FeedReactionEnum.LIKE:

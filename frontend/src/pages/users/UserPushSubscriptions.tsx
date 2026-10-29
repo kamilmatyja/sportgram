@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Text, Button, Badge, Modal, Stack, Alert, SimpleGrid, TextInput } from '@mantine/core';
+import NotFound from '../../components/NotFound';
+import { Text, Button, Badge, Modal, Stack, Alert, SimpleGrid, TextInput, Center, Loader, ActionIcon, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconTrash, IconPlus } from '@tabler/icons-react';
@@ -48,7 +49,7 @@ export default function UserPushSubscriptions() {
     const [subscribing, setSubscribing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { data: targetUser } = useQuery({
+    const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: () => userService.getUserByLink(link || ''),
         enabled: !!link,
@@ -153,7 +154,7 @@ export default function UserPushSubscriptions() {
         mutationFn: (id: string) => pushSubscriptionService.deleteSubscription(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-            notifications.show({ title: t('pushSubscriptions'), message: t('pushSubscriptionDeleted'), color: 'blue' });
+            notifications.show({ title: t('pushSubscriptions'), message: t('pushSubscriptionDeleted'), color: 'green' });
         },
     });
 
@@ -224,9 +225,21 @@ export default function UserPushSubscriptions() {
         </SimpleGrid>
     );
 
+    if (userLoading) {
+        return (
+            <Center h={200}>
+                <Loader />
+            </Center>
+        );
+    }
+
+    if (!targetUser) {
+        return <NotFound title={t('userNotFound')} />;
+    }
+
     return (
         <Stack gap="md">
-            {targetUser && <UserProfileNav user={targetUser} isOwner={currentUser?.id === targetUser.id} />}
+            <UserProfileNav user={targetUser} isOwner={currentUser?.id === targetUser.id} />
             <DataTable
                 columns={columns}
                 data={subs}
@@ -252,15 +265,17 @@ export default function UserPushSubscriptions() {
                 onAdd={open}
                 addLabel={t('addSubscription')}
                 actions={(s) => (
-                    <Button
-                        size="xs"
-                        color="red"
-                        variant="subtle"
-                        leftSection={<IconTrash size={14} />}
-                        onClick={() => deleteMutation.mutate(s.id)}
-                    >
-                        {t('delete')}
-                    </Button>
+                    <Tooltip label={t('delete')} withArrow>
+                        <ActionIcon
+                            size={30}
+                            color="red"
+                            variant="light"
+                            onClick={() => deleteMutation.mutate(s.id)}
+                            loading={deleteMutation.isPending}
+                        >
+                            <IconTrash size={16} />
+                        </ActionIcon>
+                    </Tooltip>
                 )}
             />
 

@@ -1,9 +1,12 @@
+import NotFound from './components/NotFound';
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { Center, Loader, Text, Stack } from '@mantine/core';
-import { useTranslation } from 'react-i18next';
+import { Routes, Route, Navigate, useParams, Outlet } from 'react-router-dom';
+import { Center, Loader, MantineThemeProvider } from '@mantine/core';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from './auth/AuthContext';
 import { AppLayout } from './components/AppLayout';
+import { userService } from './api/services';
+import { ColorEnum } from './enums/ColorEnum';
 
 // Pages
 import Home from './pages/Home';
@@ -60,8 +63,24 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
+function UserProfileThemeLayout() {
+    const { link } = useParams<{ link: string }>();
+    const { data: user } = useQuery({
+        queryKey: ['user', link],
+        queryFn: () => (link ? userService.getUserByLink(link) : null),
+        enabled: !!link,
+    });
+
+    const primaryColor = ColorEnum.getMantineColor(user?.color);
+
+    return (
+        <MantineThemeProvider theme={{ primaryColor }} inherit>
+            <Outlet />
+        </MantineThemeProvider>
+    );
+}
+
 export default function App() {
-    const { t } = useTranslation();
     return (
         <AppLayout>
             <Routes>
@@ -106,90 +125,22 @@ export default function App() {
                     path="/users/:link"
                     element={
                         <ProtectedRoute>
-                            <UserProfile />
+                            <UserProfileThemeLayout />
                         </ProtectedRoute>
                     }
-                />
-                <Route
-                    path="/users/:link/feeds"
-                    element={
-                        <ProtectedRoute>
-                            <UserFeeds />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/users/:link/stories"
-                    element={
-                        <ProtectedRoute>
-                            <UserStories />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/users/:link/friends"
-                    element={
-                        <ProtectedRoute>
-                            <UserFriends />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/users/:link/goals"
-                    element={
-                        <ProtectedRoute>
-                            <UserGoals />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/users/:link/pages"
-                    element={
-                        <ProtectedRoute>
-                            <UserPages />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/users/:link/events"
-                    element={
-                        <ProtectedRoute>
-                            <UserEvents />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/users/:link/trainings"
-                    element={
-                        <ProtectedRoute>
-                            <UserTrainings />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/users/:link/notifications"
-                    element={
-                        <ProtectedRoute>
-                            <UserNotifications />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/users/:link/push-subscriptions"
-                    element={
-                        <ProtectedRoute>
-                            <UserPushSubscriptions />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/users/:link/conversations"
-                    element={
-                        <ProtectedRoute>
-                            <UserConversations />
-                        </ProtectedRoute>
-                    }
-                />
+                >
+                    <Route index element={<UserProfile />} />
+                    <Route path="feeds" element={<UserFeeds />} />
+                    <Route path="stories" element={<UserStories />} />
+                    <Route path="friends" element={<UserFriends />} />
+                    <Route path="goals" element={<UserGoals />} />
+                    <Route path="pages" element={<UserPages />} />
+                    <Route path="events" element={<UserEvents />} />
+                    <Route path="trainings" element={<UserTrainings />} />
+                    <Route path="notifications" element={<UserNotifications />} />
+                    <Route path="push-subscriptions" element={<UserPushSubscriptions />} />
+                    <Route path="conversations" element={<UserConversations />} />
+                </Route>
 
                 <Route
                     path="/goals/:link"
@@ -252,19 +203,7 @@ export default function App() {
                 />
 
                 {/* 404 */}
-                <Route
-                    path="*"
-                    element={
-                        <Center py={60}>
-                            <Stack align="center">
-                                <Text size="32px" fw={700}>
-                                    404
-                                </Text>
-                                <Text c="dimmed">{t('notFound.message')}</Text>
-                            </Stack>
-                        </Center>
-                    }
-                />
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </AppLayout>
     );

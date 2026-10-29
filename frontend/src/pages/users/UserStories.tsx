@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react';
+import NotFound from '../../components/NotFound';
+import { StoryViewerModal } from '../../components/StoryViewerModal';
 import {
     Stack,
     Text,
     Button,
     ActionIcon,
+    Tooltip,
     Modal,
     Textarea,
     FileInput,
@@ -12,6 +15,8 @@ import {
     Select,
     Avatar,
     Badge,
+    Center,
+    Loader,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -19,7 +24,7 @@ import { IconTrash, IconPhoto } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { storyService, userService, type StoryResource, type GetStoriesQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
@@ -44,9 +49,11 @@ export default function UserStories() {
     const [opened, { open, close }] = useDisclosure(false);
     const [text, setText] = useState('');
     const [photo, setPhoto] = useState<File | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const [viewingStory, setViewingStory] = useState<StoryResource | null>(null);
 
     // Fetch target user
-    const { data: targetUser } = useQuery({
+    const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: async () => {
             if (!link) return null;
@@ -114,6 +121,7 @@ export default function UserStories() {
         onSuccess: () => {
             setText('');
             setPhoto(null);
+            setFieldErrors({});
             close();
             queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
@@ -121,6 +129,8 @@ export default function UserStories() {
             notifications.show({ title: t('stories'), message: t('storyAdded'), color: 'green' });
         },
         onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -133,7 +143,7 @@ export default function UserStories() {
             queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['stories'] });
-            notifications.show({ title: t('stories'), message: t('storyDeleted'), color: 'blue' });
+            notifications.show({ title: t('stories'), message: t('storyDeleted'), color: 'green' });
         },
     });
 
@@ -142,7 +152,13 @@ export default function UserStories() {
             key: 'photo',
             header: t('photo'),
             render: (s) => (
-                <Avatar src={formatImageSrc(s.photo)} radius="sm" size="md">
+                <Avatar
+                    src={formatImageSrc(s.photo)}
+                    radius="sm"
+                    size="md"
+                    className="pointer"
+                    onClick={() => setViewingStory(s)}
+                >
                     ?
                 </Avatar>
             ),
@@ -200,9 +216,21 @@ export default function UserStories() {
         </SimpleGrid>
     );
 
+    if (userLoading) {
+        return (
+            <Center h={200}>
+                <Loader />
+            </Center>
+        );
+    }
+
+    if (!targetUser) {
+        return <NotFound title={t('userNotFound')} />;
+    }
+
     return (
         <Stack gap="md">
-            {targetUser && <UserProfileNav user={targetUser} isOwner={isOwner} />}
+            <UserProfileNav user={targetUser} isOwner={isOwner} />
             <DataTable
                 columns={columns}
                 data={stories}
@@ -229,9 +257,17 @@ export default function UserStories() {
                 addLabel={t('addStory')}
                 actions={(s) =>
                     isOwner || isAdmin ? (
-                        <ActionIcon variant="subtle" color="red" size="sm" onClick={() => deleteMutation.mutate(s.id)}>
-                            <IconTrash size={16} />
-                        </ActionIcon>
+                        <Tooltip label={t('delete')} withArrow>
+                            <ActionIcon
+                                variant="light"
+                                color="red"
+                                size={30}
+                                onClick={() => deleteMutation.mutate(s.id)}
+                                loading={deleteMutation.isPending}
+                            >
+                                <IconTrash size={16} />
+                            </ActionIcon>
+                        </Tooltip>
                     ) : null
                 }
             />
@@ -243,6 +279,7 @@ export default function UserStories() {
                         placeholder={t('storyDescriptionPlaceholder')}
                         rows={3}
                         value={text}
+                        error={fieldErrors.text}
                         onChange={(e) => setText(e.currentTarget.value)}
                         required
                     />
@@ -252,6 +289,7 @@ export default function UserStories() {
                         accept="image/*"
                         leftSection={<IconPhoto size={16} />}
                         value={photo}
+                        error={fieldErrors.photo}
                         onChange={setPhoto}
                         clearable
                         required
@@ -265,6 +303,23 @@ export default function UserStories() {
                     </Button>
                 </Stack>
             </Modal>
+
+            <StoryViewerModal
+                opened={!!viewingStory}
+                onClose={() => setViewingStory(null)}
+                groups={
+                    data?.data && targetUser
+                        ? [{ userId: targetUser.id, author: targetUser, stories: data.data }]
+                        : undefined
+                }
+                initialStoryIndex={
+                    data?.data && viewingStory
+                        ? Math.max(0, data.data.findIndex((s) => s.id === viewingStory.id))
+                        : 0
+                }
+                story={viewingStory}
+                author={targetUser}
+            />
         </Stack>
     );
 }

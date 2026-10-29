@@ -14,6 +14,7 @@ import {
     Avatar,
     Paper,
     ActionIcon,
+    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -21,7 +22,7 @@ import { IconEye, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { eventService, pageService, type EventResource, type GetEventsQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
@@ -29,9 +30,15 @@ import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 
+interface FormEventSubDistance {
+    id: string;
+    subDistance: string;
+}
+
 interface FormEventDistance {
     id: string;
     distance: string;
+    subDistances: FormEventSubDistance[];
 }
 
 interface FormEventDiscipline {
@@ -67,6 +74,7 @@ export default function EventsList() {
         endedAt: '',
     });
     const [disciplines, setDisciplines] = useState<FormEventDiscipline[]>([]);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const sortOptions: SortOption[] = [
         { value: 'startedAt:desc', label: t('sort_startedAt_desc') },
@@ -141,7 +149,7 @@ export default function EventsList() {
             {
                 id: crypto.randomUUID(),
                 discipline: null,
-                distances: [{ id: crypto.randomUUID(), distance: '' }],
+                distances: [{ id: crypto.randomUUID(), distance: '', subDistances: [] }],
             },
         ]);
     };
@@ -160,7 +168,66 @@ export default function EventsList() {
                 if (d.id !== discId) return d;
                 return {
                     ...d,
-                    distances: [...d.distances, { id: crypto.randomUUID(), distance: '' }],
+                    distances: [...d.distances, { id: crypto.randomUUID(), distance: '', subDistances: [] }],
+                };
+            }),
+        );
+    };
+
+    const handleAddSubDistance = (discId: string, distId: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => {
+                        if (dist.id !== distId) return dist;
+                        return {
+                            ...dist,
+                            subDistances: [
+                                ...(dist.subDistances || []),
+                                { id: crypto.randomUUID(), subDistance: '' },
+                            ],
+                        };
+                    }),
+                };
+            }),
+        );
+    };
+
+    const handleRemoveSubDistance = (discId: string, distId: string, subDistId: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => {
+                        if (dist.id !== distId) return dist;
+                        return {
+                            ...dist,
+                            subDistances: (dist.subDistances || []).filter((sd) => sd.id !== subDistId),
+                        };
+                    }),
+                };
+            }),
+        );
+    };
+
+    const handleSubDistanceChange = (discId: string, distId: string, subDistId: string, value: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => {
+                        if (dist.id !== distId) return dist;
+                        return {
+                            ...dist,
+                            subDistances: (dist.subDistances || []).map((sd) =>
+                                sd.id === subDistId ? { ...sd, subDistance: value } : sd,
+                            ),
+                        };
+                    }),
                 };
             }),
         );
@@ -209,8 +276,10 @@ export default function EventsList() {
                 disciplines: disciplines.map((d) => ({
                     discipline: Number(d.discipline) as DisciplineEnum,
                     distances: d.distances.map((dist) => ({
-                        distance: Number(dist.distance) || 0,
-                        subDistances: [],
+                        distance: Math.round(Number(dist.distance)) || 0,
+                        subDistances: (dist.subDistances || []).map((sd) => ({
+                            subDistance: Math.round(Number(sd.subDistance)) || 0,
+                        })),
                     })),
                 })),
             });
@@ -229,10 +298,13 @@ export default function EventsList() {
                 endedAt: '',
             });
             setDisciplines([]);
+            setFieldErrors({});
             queryClient.invalidateQueries({ queryKey: ['events'] });
-            notifications.show({ title: t('events'), message: t('saved'), color: 'green' });
+            notifications.show({ title: t('events'), message: t('eventCreated'), color: 'green' });
         },
         onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -361,15 +433,18 @@ export default function EventsList() {
                 onAdd={isOrganizer || isAdmin ? open : undefined}
                 addLabel={t('addEvent')}
                 actions={(ev) => (
-                    <Button
-                        component={Link}
-                        to={`/events/${ev.link}`}
-                        variant="light"
-                        size="xs"
-                        leftSection={<IconEye size={14} />}
-                    >
-                        {t('details')}
-                    </Button>
+                    <Tooltip label={t('details')} withArrow>
+                        <ActionIcon
+                            component={Link}
+                            to={`/events/${ev.link}`}
+                            variant="light"
+                            color="blue"
+                            size={30}
+                            aria-label={t('details')}
+                        >
+                            <IconEye size={16} />
+                        </ActionIcon>
+                    </Tooltip>
                 )}
             />
 
@@ -391,6 +466,7 @@ export default function EventsList() {
                         placeholder={t('title')}
                         required
                         value={formData.title}
+                        error={fieldErrors.title}
                         onChange={(e) => {
                             const title = e.currentTarget.value;
                             const link = title
@@ -406,6 +482,7 @@ export default function EventsList() {
                         placeholder={t('link')}
                         required
                         value={formData.link}
+                        error={fieldErrors.link}
                         onChange={(e) => setFormData({ ...formData, link: e.currentTarget.value })}
                     />
 
@@ -414,6 +491,7 @@ export default function EventsList() {
                         placeholder={t('location')}
                         required
                         value={formData.location}
+                        error={fieldErrors.location}
                         onChange={(e) => setFormData({ ...formData, location: e.currentTarget.value })}
                     />
 
@@ -423,6 +501,7 @@ export default function EventsList() {
                             type="datetime-local"
                             required
                             value={formData.startedAt}
+                            error={fieldErrors.startedAt}
                             onChange={(e) => setFormData({ ...formData, startedAt: e.currentTarget.value })}
                         />
                         <TextInput
@@ -430,6 +509,7 @@ export default function EventsList() {
                             type="datetime-local"
                             required
                             value={formData.endedAt}
+                            error={fieldErrors.endedAt}
                             onChange={(e) => setFormData({ ...formData, endedAt: e.currentTarget.value })}
                         />
                     </SimpleGrid>
@@ -440,6 +520,7 @@ export default function EventsList() {
                         required
                         accept="image/*"
                         value={photoFile}
+                        error={fieldErrors.photo}
                         onChange={setPhotoFile}
                         clearable
                     />
@@ -451,7 +532,7 @@ export default function EventsList() {
                         <Button
                             size="xs"
                             variant="light"
-                            leftSection={<IconPlus size={14} />}
+                            leftSection={<IconPlus size={16} />}
                             onClick={handleAddDiscipline}
                         >
                             {t('addDiscipline')}
@@ -459,11 +540,11 @@ export default function EventsList() {
                     </Group>
 
                     <Stack gap="sm">
-                        {disciplines.map((d, dIdx) => (
+                        {disciplines.map((d) => (
                             <Paper key={d.id} withBorder p="sm" radius="md">
                                 <Group justify="space-between" align="flex-end" mb="xs">
                                     <Select
-                                        label={`${t('discipline')} #${dIdx + 1}`}
+                                        label={t('discipline')}
                                         placeholder={t('discipline')}
                                         required
                                         clearable
@@ -479,42 +560,86 @@ export default function EventsList() {
                                         size="xs"
                                         color="red"
                                         variant="subtle"
-                                        leftSection={<IconTrash size={14} />}
+                                        leftSection={<IconTrash size={16} />}
                                         onClick={() => handleRemoveDiscipline(d.id)}
                                     >
                                         {t('delete')}
                                     </Button>
                                 </Group>
 
-                                <Stack gap="xs" mt="xs">
+                                <Stack gap="sm" mt="xs">
                                     {d.distances.map((dist) => (
-                                        <Group key={dist.id} gap="xs" align="flex-end">
-                                            <TextInput
-                                                label={t('distanceMeters')}
-                                                placeholder="5000"
-                                                required
-                                                flex={1}
-                                                value={dist.distance}
-                                                onChange={(e) =>
-                                                    handleDistanceChange(d.id, dist.id, e.currentTarget.value)
-                                                }
-                                            />
-                                            <ActionIcon
-                                                color="red"
-                                                variant="subtle"
-                                                size="lg"
-                                                onClick={() => handleRemoveDistance(d.id, dist.id)}
-                                                title={t('delete')}
-                                            >
-                                                <IconTrash size={16} />
-                                            </ActionIcon>
-                                        </Group>
+                                        <Paper key={dist.id} p="xs" radius="sm" withBorder bg="var(--mantine-color-gray-light)">
+                                            <Group gap="xs" align="flex-end">
+                                                <TextInput
+                                                    label={t('distanceMeters')}
+                                                    placeholder="5000"
+                                                    required
+                                                    flex={1}
+                                                    value={dist.distance}
+                                                    onChange={(e) =>
+                                                        handleDistanceChange(d.id, dist.id, e.currentTarget.value)
+                                                    }
+                                                />
+                                                <ActionIcon
+                                                    color="red"
+                                                    variant="light"
+                                                    size={30}
+                                                    onClick={() => handleRemoveDistance(d.id, dist.id)}
+                                                    title={t('delete')}
+                                                >
+                                                    <IconTrash size={16} />
+                                                </ActionIcon>
+                                            </Group>
+
+                                            {/* Sub-distances section */}
+                                            <Stack gap="xs" mt="xs" pl="sm" className="subdistances-container">
+                                                <Group justify="space-between" align="center">
+                                                    <Text size="xs" fw={600} c="dimmed">
+                                                        {t('subDistances')}
+                                                    </Text>
+                                                    <Button
+                                                        size="compact-xs"
+                                                        variant="subtle"
+                                                        leftSection={<IconPlus size={16} />}
+                                                        onClick={() => handleAddSubDistance(d.id, dist.id)}
+                                                    >
+                                                        {t('addSubDistance')}
+                                                    </Button>
+                                                </Group>
+
+                                                {dist.subDistances?.map((sd) => (
+                                                    <Group key={sd.id} gap="xs" align="flex-end">
+                                                        <TextInput
+                                                            size="xs"
+                                                            label={t('subDistanceMeters')}
+                                                            placeholder="1000"
+                                                            required
+                                                            flex={1}
+                                                            value={sd.subDistance}
+                                                            onChange={(e) =>
+                                                                handleSubDistanceChange(d.id, dist.id, sd.id, e.currentTarget.value)
+                                                            }
+                                                        />
+                                                        <ActionIcon
+                                                            color="red"
+                                                            variant="subtle"
+                                                            size={30}
+                                                            onClick={() => handleRemoveSubDistance(d.id, dist.id, sd.id)}
+                                                            title={t('delete')}
+                                                        >
+                                                            <IconTrash size={16} />
+                                                        </ActionIcon>
+                                                    </Group>
+                                                ))}
+                                            </Stack>
+                                        </Paper>
                                     ))}
 
                                     <Button
                                         size="xs"
                                         variant="subtle"
-                                        leftSection={<IconPlus size={14} />}
+                                        leftSection={<IconPlus size={16} />}
                                         onClick={() => handleAddDistance(d.id)}
                                     >
                                         {t('addDistance')}
@@ -530,6 +655,7 @@ export default function EventsList() {
                         required
                         rows={2}
                         value={formData.description}
+                        error={fieldErrors.description}
                         onChange={(e) => setFormData({ ...formData, description: e.currentTarget.value })}
                     />
 
@@ -539,6 +665,7 @@ export default function EventsList() {
                         required
                         rows={2}
                         value={formData.rules}
+                        error={fieldErrors.rules}
                         onChange={(e) => setFormData({ ...formData, rules: e.currentTarget.value })}
                     />
 

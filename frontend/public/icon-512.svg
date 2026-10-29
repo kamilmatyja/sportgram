@@ -1,12 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Sportgram icon">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Sportgram icon">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0ea5e9"/>
+    <linearGradient id="sportgram-runner-g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#0ea5e9"/>
       <stop offset="100%" stop-color="#22d3ee"/>
     </linearGradient>
+    <linearGradient id="sportgram-motion-g" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="sportgram-bg-g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
   </defs>
-  <rect width="512" height="512" rx="112" fill="#0f172a"/>
-  <circle cx="256" cy="256" r="170" fill="none" stroke="url(#g)" stroke-width="38"/>
-  <path d="M150 256h212" stroke="url(#g)" stroke-width="38" stroke-linecap="round"/>
-  <circle cx="256" cy="256" r="26" fill="#22d3ee"/>
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="112" fill="url(#sportgram-bg-g)"/>
+
+  <!-- Motion speed lines -->
+  <path d="M80 195 h 85 M60 256 h 115 M90 317 h 75" stroke="url(#sportgram-motion-g)" stroke-width="16" stroke-linecap="round"/>
+
+  <!-- Runner Figure -->
+  <!-- Head -->
+  <circle cx="330" cy="120" r="34" fill="url(#sportgram-runner-g)"/>
+
+  <!-- Torso -->
+  <path d="M265 245 L310 170" stroke="url(#sportgram-runner-g)" stroke-width="32" stroke-linecap="round"/>
+
+  <!-- Front Leg -->
+  <path d="M265 245 L345 265 L375 365" stroke="url(#sportgram-runner-g)" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Rear Leg -->
+  <path d="M265 245 L205 315 L145 335" stroke="url(#sportgram-runner-g)" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Front Arm -->
+  <path d="M305 175 L365 190 L395 155" stroke="url(#sportgram-runner-g)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Rear Arm -->
+  <path d="M300 180 L240 200 L210 165" stroke="url(#sportgram-runner-g)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>

@@ -44,4 +44,29 @@ export namespace ColorEnum {
                 return 'theme-blue';
         }
     };
+
+    export const getMantineColor = (color?: number | null): string => {
+        switch (color) {
+            case ColorEnum.RED:
+                return 'red';
+            case ColorEnum.GREEN:
+                return 'green';
+            case ColorEnum.BLUE:
+                return 'blue';
+            case ColorEnum.YELLOW:
+                return 'yellow';
+            case ColorEnum.GRAY:
+                return 'gray';
+            case ColorEnum.ORANGE:
+                return 'orange';
+            case ColorEnum.BROWN:
+                return 'brown';
+            case ColorEnum.PURPLE:
+                return 'grape';
+            case ColorEnum.PINK:
+                return 'pink';
+            default:
+                return 'blue';
+        }
+    };
 }

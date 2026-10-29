@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Avatar, Group, Text, Button, Badge, Stack, SimpleGrid, Select } from '@mantine/core';
+import NotFound from '../../components/NotFound';
+import { Avatar, Group, Text, Badge, Stack, SimpleGrid, Select, Center, Loader, ActionIcon, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconCheck, IconX, IconTrash, IconMessage } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -32,7 +33,7 @@ export default function UserFriends() {
     // Filters
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    const { data: targetUser } = useQuery({
+    const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: () => userService.getUserByLink(link || ''),
         enabled: !!link,
@@ -110,7 +111,7 @@ export default function UserFriends() {
         mutationFn: ({ id, status }: { id: string; status: number }) => friendService.updateStatus(id, status),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['friends'] });
-            notifications.show({ title: t('friends'), message: t('saved'), color: 'green' });
+            notifications.show({ title: t('friends'), message: t('friendStatusUpdated'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -121,7 +122,7 @@ export default function UserFriends() {
         mutationFn: (id: string) => friendService.deleteFriend(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['friends'] });
-            notifications.show({ title: t('friends'), message: t('deleted'), color: 'blue' });
+            notifications.show({ title: t('friends'), message: t('friendRemoved'), color: 'green' });
         },
     });
 
@@ -210,9 +211,21 @@ export default function UserFriends() {
         </SimpleGrid>
     );
 
+    if (userLoading) {
+        return (
+            <Center h={200}>
+                <Loader />
+            </Center>
+        );
+    }
+
+    if (!targetUser) {
+        return <NotFound title={t('userNotFound')} />;
+    }
+
     return (
         <Stack gap="md">
-            {targetUser && <UserProfileNav user={targetUser} isOwner={isOwner} />}
+            <UserProfileNav user={targetUser} isOwner={isOwner} />
             <DataTable
                 columns={columns}
                 data={friends}
@@ -245,53 +258,61 @@ export default function UserFriends() {
                         <Group gap="xs" justify="flex-end">
                             {canManage && isReceiver && f.status === FriendStatusEnum.PENDING && (
                                 <>
-                                    <Button
-                                        size="xs"
-                                        color="green"
-                                        variant="light"
-                                        leftSection={<IconCheck size={14} />}
-                                        onClick={() =>
-                                            updateStatusMutation.mutate({ id: f.id, status: FriendStatusEnum.ACCEPTED })
-                                        }
-                                    >
-                                        {t('accept')}
-                                    </Button>
-                                    <Button
-                                        size="xs"
-                                        color="red"
-                                        variant="subtle"
-                                        leftSection={<IconX size={14} />}
-                                        onClick={() =>
-                                            updateStatusMutation.mutate({ id: f.id, status: FriendStatusEnum.REJECTED })
-                                        }
-                                    >
-                                        {t('reject')}
-                                    </Button>
+                                    <Tooltip label={t('accept')} withArrow>
+                                        <ActionIcon
+                                            size={30}
+                                            color="green"
+                                            variant="light"
+                                            onClick={() =>
+                                                updateStatusMutation.mutate({ id: f.id, status: FriendStatusEnum.ACCEPTED })
+                                            }
+                                            loading={updateStatusMutation.isPending}
+                                        >
+                                            <IconCheck size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                    <Tooltip label={t('reject')} withArrow>
+                                        <ActionIcon
+                                            size={30}
+                                            color="red"
+                                            variant="light"
+                                            onClick={() =>
+                                                updateStatusMutation.mutate({ id: f.id, status: FriendStatusEnum.REJECTED })
+                                            }
+                                            loading={updateStatusMutation.isPending}
+                                        >
+                                            <IconX size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
                                 </>
                             )}
 
                             {f.status === FriendStatusEnum.ACCEPTED && otherUser && (
-                                <Button
-                                    component={Link}
-                                    to={`/users/${otherUser.link}/conversations`}
-                                    variant="light"
-                                    size="xs"
-                                    leftSection={<IconMessage size={14} />}
-                                >
-                                    {t('chat')}
-                                </Button>
+                                <Tooltip label={t('chat')} withArrow>
+                                    <ActionIcon
+                                        component={Link}
+                                        to={`/users/${otherUser.link}/conversations`}
+                                        variant="light"
+                                        color="blue"
+                                        size={30}
+                                    >
+                                        <IconMessage size={16} />
+                                    </ActionIcon>
+                                </Tooltip>
                             )}
 
                             {canManage && (
-                                <Button
-                                    size="xs"
-                                    color="red"
-                                    variant="subtle"
-                                    leftSection={<IconTrash size={14} />}
-                                    onClick={() => deleteMutation.mutate(f.id)}
-                                >
-                                    {t('delete')}
-                                </Button>
+                                <Tooltip label={t('delete')} withArrow>
+                                    <ActionIcon
+                                        size={30}
+                                        color="red"
+                                        variant="light"
+                                        onClick={() => deleteMutation.mutate(f.id)}
+                                        loading={deleteMutation.isPending}
+                                    >
+                                        <IconTrash size={16} />
+                                    </ActionIcon>
+                                </Tooltip>
                             )}
                         </Group>
                     );

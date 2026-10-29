@@ -83,3 +83,183 @@
     left: 24px;
     border: 3px solid var(--mantine-color-body);
 }
+
+/* Enforce uniform ActionIcon, CloseButton, and Modal close button sizes */
+.mantine-ActionIcon-root,
+.mantine-CloseButton-root,
+.mantine-Modal-close {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+}
+
+.mantine-ActionIcon-root svg,
+.mantine-CloseButton-root svg,
+.mantine-Modal-close svg {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
+}
+
+/* Reaction dropdown menu styles */
+.reaction-menu-dropdown {
+    width: max-content !important;
+    min-width: 230px !important;
+    max-width: none !important;
+    padding: 4px !important;
+}
+
+.reaction-menu-group {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: max-content !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+.reaction-action-icon {
+    flex-shrink: 0 !important;
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+}
+
+.reaction-target-emoji {
+    font-size: 14px;
+    line-height: 1;
+    display: inline-block;
+}
+
+.reaction-item-emoji {
+    font-size: 16px;
+    line-height: 1;
+    display: inline-block;
+}
+
+/* Sub-distances left border */
+.subdistances-container {
+    border-left: 2px solid var(--mantine-color-blue-filled);
+}
+
+/* Story Viewer Styles */
+.story-header-stack {
+    width: 100%;
+}
+
+.story-progress-bar-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 4px;
+    height: 4px;
+    margin-bottom: 6px;
+}
+
+.story-progress-segment {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    transition: background-color 0.2s ease;
+}
+
+.story-progress-segment-active {
+    background-color: var(--mantine-primary-color-filled);
+}
+
+.story-progress-segment-viewed {
+    background-color: rgba(150, 150, 150, 0.8);
+}
+
+.story-progress-segment-unviewed {
+    background-color: rgba(200, 200, 200, 0.3);
+}
+
+.story-counter-badge {
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.story-viewer-viewport {
+    position: relative;
+    width: 100%;
+    height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--mantine-radius-md);
+    overflow: hidden;
+    background-color: #000;
+}
+
+.story-click-zone-left {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 35%;
+    z-index: 5;
+    cursor: pointer;
+}
+
+.story-click-zone-left.disabled {
+    cursor: default;
+}
+
+.story-click-zone-right {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 65%;
+    z-index: 5;
+    cursor: pointer;
+}
+
+.story-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.65) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.story-nav-btn-prev {
+    left: 12px;
+}
+
+.story-nav-btn-next {
+    right: 12px;
+}
+
+.story-viewer-image {
+    width: 100%;
+    height: 100%;
+    max-height: 480px;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.story-empty-box {
+    width: 100%;
+    height: 100%;
+    background-color: var(--mantine-color-dark-6);
+}
+
+.story-text-caption {
+    width: 100%;
+    min-height: 24px;
+    text-align: center;
+    padding-left: var(--mantine-spacing-xs);
+    padding-right: var(--mantine-spacing-xs);
+}

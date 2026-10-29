@@ -15,7 +15,7 @@ import {
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { authService } from '../../api/services';
 import { passwordResetSession, signSession } from '../../utils/authSession';
 
@@ -30,6 +30,7 @@ export default function PasswordReset() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const resetId = passwordResetSession.id();
 
@@ -37,6 +38,7 @@ export default function PasswordReset() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setFieldErrors({});
 
         try {
             const data = await authService.passwordReset(email);
@@ -48,7 +50,13 @@ export default function PasswordReset() {
             passwordResetSession.start(data.id, { email });
             setStep(2);
         } catch (err) {
-            setError(getErrorMessage(err));
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
+            if (Object.keys(fe).length === 0) {
+                setError(getErrorMessage(err));
+            } else {
+                setError(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -60,6 +68,7 @@ export default function PasswordReset() {
 
         setLoading(true);
         setError(null);
+        setFieldErrors({});
 
         try {
             await authService.confirmPasswordReset(resetId, {
@@ -91,7 +100,13 @@ export default function PasswordReset() {
             });
             navigate('/sign');
         } catch (err) {
-            setError(getErrorMessage(err));
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
+            if (Object.keys(fe).length === 0) {
+                setError(getErrorMessage(err));
+            } else {
+                setError(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -116,9 +131,9 @@ export default function PasswordReset() {
 
     return (
         <Stack align="center" mt="xl">
-            <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={420}>
+            <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={520}>
                 <Title order={2} ta="center" mb="lg">
-                    {step === 1 ? t('passwordReset') : t('verify')}
+                    {step === 1 ? t('passwordReset') : `${t('passwordReset')} – ${t('verify')}`}
                 </Title>
 
                 {error && (
@@ -136,7 +151,11 @@ export default function PasswordReset() {
                                 type="email"
                                 placeholder={t('emailPlaceholder')}
                                 value={email}
-                                onChange={(e) => setEmail(e.currentTarget.value)}
+                                error={fieldErrors.email}
+                                onChange={(e) => {
+                                    setEmail(e.currentTarget.value);
+                                    if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                                }}
                             />
 
                             <Button type="submit" fullWidth mt="md" loading={loading}>
@@ -158,14 +177,40 @@ export default function PasswordReset() {
                                 {t('enterResetCodeAndNewPassword')}
                             </Text>
 
-                            <PinInput length={6} type="number" value={code} onChange={setCode} size="md" autoFocus />
+                            <PinInput
+                                length={6}
+                                type="number"
+                                value={code}
+                                onChange={(val) => {
+                                    setCode(val);
+                                    if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
+                                }}
+                                error={!!fieldErrors.code}
+                                size="md"
+                                autoFocus
+                            />
+
+                            {fieldErrors.code && (
+                                <Text size="xs" c="red" ta="center">
+                                    {fieldErrors.code}
+                                </Text>
+                            )}
 
                             <PasswordInput
                                 label={t('newPassword')}
                                 required
                                 placeholder="••••••••"
                                 value={password}
-                                onChange={(e) => setPassword(e.currentTarget.value)}
+                                error={fieldErrors.password || fieldErrors.newPassword}
+                                onChange={(e) => {
+                                    setPassword(e.currentTarget.value);
+                                    if (fieldErrors.password || fieldErrors.newPassword) {
+                                        const next = { ...fieldErrors };
+                                        delete next.password;
+                                        delete next.newPassword;
+                                        setFieldErrors(next);
+                                    }
+                                }}
                                 w="100%"
                             />
 

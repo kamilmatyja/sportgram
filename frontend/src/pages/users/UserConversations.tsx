@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useMemo, type SyntheticEvent } from 'react';
-import { Card, Title, Text, Group, TextInput, Button, Stack, Avatar, Paper, ScrollArea, Badge } from '@mantine/core';
+import { Card, Title, Text, Group, TextInput, Button, Stack, Avatar, Paper, ScrollArea, Badge, ActionIcon, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconSend, IconMessage } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
+import NotFound from '../../components/NotFound';
+import { Center, Loader } from '@mantine/core';
 import { getErrorMessage } from '../../api/client';
 import {
     conversationService,
@@ -35,7 +37,7 @@ export default function UserConversations() {
     const [sort, setSort] = useState<string | null>('updatedAt:desc');
 
     // Target user
-    const { data: targetUser } = useQuery({
+    const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: async () => {
             if (!link) return null;
@@ -187,6 +189,18 @@ export default function UserConversations() {
         },
     ];
 
+    if (userLoading) {
+        return (
+            <Center h={200}>
+                <Loader />
+            </Center>
+        );
+    }
+
+    if (!targetUser) {
+        return <NotFound title={t('userNotFound')} />;
+    }
+
     // If looking at own profile without target user -> show recent conversations list with full DataTable
     if (isMyProfile) {
         return (
@@ -215,15 +229,17 @@ export default function UserConversations() {
                         const otherId = act.senderUserId === currentUser?.id ? act.receiverUserId : act.senderUserId;
                         const other = relatedUsers[otherId];
                         return (
-                            <Button
-                                component={Link}
-                                to={`/users/${other?.link ?? otherId}/conversations`}
-                                variant="light"
-                                size="xs"
-                                leftSection={<IconMessage size={14} />}
-                            >
-                                {t('chat')}
-                            </Button>
+                            <Tooltip label={t('chat')} withArrow>
+                                <ActionIcon
+                                    component={Link}
+                                    to={`/users/${other?.link ?? otherId}/conversations`}
+                                    variant="light"
+                                    color="blue"
+                                    size={30}
+                                >
+                                    <IconMessage size={16} />
+                                </ActionIcon>
+                            </Tooltip>
                         );
                     }}
                 />

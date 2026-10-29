@@ -137,7 +137,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                             variant="subtle"
                                             color="gray"
                                             size="sm"
-                                            leftSection={<IconX size={14} />}
+                                            leftSection={<IconX size={16} />}
                                             onClick={onResetFilters}
                                         >
                                             {t('clearFilters')}

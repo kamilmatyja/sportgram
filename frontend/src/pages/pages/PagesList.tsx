@@ -11,6 +11,9 @@ import {
     FileInput,
     Select,
     SimpleGrid,
+    MultiSelect,
+    ActionIcon,
+    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -18,8 +21,9 @@ import { IconEye } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
-import { pageService, type PageResource, type GetPagesQuery } from '../../api/services';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
+import { pageService, userService, friendService, type PageResource, type GetPagesQuery } from '../../api/services';
+import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { ColorEnum } from '../../enums/ColorEnum';
@@ -49,6 +53,8 @@ export default function PagesList() {
     });
     const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
     const [bgPhotoFile, setBgPhotoFile] = useState<File | null>(null);
+    const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const sortOptions: SortOption[] = [
         { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
@@ -82,6 +88,24 @@ export default function PagesList() {
         };
     }, [title, linkFilter, statusFilter]);
 
+    const { data: myFriendsData } = useQuery({
+        queryKey: ['my-accepted-friends', currentUser?.id],
+        queryFn: async () => {
+            if (!currentUser?.id) return [];
+            const res = await friendService.getFriends({
+                limit: 100,
+                filter: { userIds: [currentUser.id], status: FriendStatusEnum.ACCEPTED },
+            });
+            const friendsList = res.data ?? [];
+            const otherIds = friendsList.map((f) =>
+                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId
+            );
+            if (otherIds.length === 0) return [];
+            return await userService.getUsersByIds(otherIds);
+        },
+        enabled: !!currentUser?.id,
+    });
+
     const { data, isLoading } = useQuery({
         queryKey: ['pages', page, limit, sort, queryFilter],
         queryFn: () =>
@@ -114,7 +138,7 @@ export default function PagesList() {
                 profilePhoto,
                 backgroundPhoto,
                 color: Number(formData.color) as ColorEnum,
-                userIds: currentUser?.id ? [currentUser.id] : [],
+                userIds: currentUser?.id ? Array.from(new Set([currentUser.id, ...collaboratorIds])) : [],
             });
         },
         onSuccess: () => {
@@ -122,10 +146,14 @@ export default function PagesList() {
             setFormData({ title: '', description: '', link: '', color: null });
             setProfilePhotoFile(null);
             setBgPhotoFile(null);
+            setCollaboratorIds([]);
+            setFieldErrors({});
             queryClient.invalidateQueries({ queryKey: ['pages'] });
-            notifications.show({ title: t('pages'), message: t('saved'), color: 'green' });
+            notifications.show({ title: t('pages'), message: t('pageCreated'), color: 'green' });
         },
         onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -239,15 +267,18 @@ export default function PagesList() {
                 onAdd={isOrganizer || isAdmin ? open : undefined}
                 addLabel={t('addPage')}
                 actions={(p) => (
-                    <Button
-                        component={Link}
-                        to={`/pages/${p.link}`}
-                        variant="light"
-                        size="xs"
-                        leftSection={<IconEye size={14} />}
-                    >
-                        {t('details')}
-                    </Button>
+                    <Tooltip label={t('details')} withArrow>
+                        <ActionIcon
+                            component={Link}
+                            to={`/pages/${p.link}`}
+                            variant="light"
+                            color="blue"
+                            size={30}
+                            aria-label={t('details')}
+                        >
+                            <IconEye size={16} />
+                        </ActionIcon>
+                    </Tooltip>
                 )}
             />
 
@@ -258,6 +289,7 @@ export default function PagesList() {
                         placeholder={t('title')}
                         required
                         value={formData.title}
+                        error={fieldErrors.title}
                         onChange={(e) => {
                             const val = e.currentTarget.value;
                             const generatedLink = val
@@ -272,6 +304,7 @@ export default function PagesList() {
                         placeholder={t('link')}
                         required
                         value={formData.link}
+                        error={fieldErrors.link}
                         onChange={(e) => setFormData({ ...formData, link: e.currentTarget.value })}
                     />
                     <Textarea
@@ -280,6 +313,7 @@ export default function PagesList() {
                         required
                         rows={3}
                         value={formData.description}
+                        error={fieldErrors.description}
                         onChange={(e) => setFormData({ ...formData, description: e.currentTarget.value })}
                     />
                     <Select
@@ -289,7 +323,22 @@ export default function PagesList() {
                         clearable
                         data={ColorEnum.getOptions(t).map((c) => ({ value: String(c.value), label: c.label }))}
                         value={formData.color}
+                        error={fieldErrors.color}
                         onChange={(val) => setFormData({ ...formData, color: val })}
+                    />
+                    <MultiSelect
+                        label={t('collaborators')}
+                        placeholder={t('selectCollaborators')}
+                        data={
+                            myFriendsData?.map((u) => ({
+                                value: u.id,
+                                label: `${u.firstName} ${u.lastName} (@${u.link})`,
+                            })) ?? []
+                        }
+                        value={collaboratorIds}
+                        onChange={setCollaboratorIds}
+                        searchable
+                        clearable
                     />
                     <FileInput
                         label={t('profilePhoto')}
@@ -297,6 +346,7 @@ export default function PagesList() {
                         required
                         accept="image/*"
                         value={profilePhotoFile}
+                        error={fieldErrors.profilePhoto}
                         onChange={setProfilePhotoFile}
                         clearable
                     />
@@ -306,6 +356,7 @@ export default function PagesList() {
                         required
                         accept="image/*"
                         value={bgPhotoFile}
+                        error={fieldErrors.backgroundPhoto}
                         onChange={setBgPhotoFile}
                         clearable
                     />

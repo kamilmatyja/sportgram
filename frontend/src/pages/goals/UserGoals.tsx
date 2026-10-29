@@ -1,13 +1,15 @@
 import { useState, useMemo } from 'react';
-import { Text, Button, Modal, Stack, TextInput, Badge, Select, SimpleGrid } from '@mantine/core';
+import NotFound from '../../components/NotFound';
+import { Text, Button, Modal, Stack, TextInput, Badge, Select, MultiSelect, SimpleGrid, Center, Loader, ActionIcon, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconEye } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
-import { userService, goalService, type GoalResource, type GetGoalsQuery } from '../../api/services';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
+import { userService, goalService, friendService, type GoalResource, type GetGoalsQuery } from '../../api/services';
+import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
@@ -33,6 +35,8 @@ export default function UserGoals() {
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
     const [opened, { open, close }] = useDisclosure(false);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
     const [formData, setFormData] = useState({
         text: '',
         link: '',
@@ -44,10 +48,28 @@ export default function UserGoals() {
     });
 
     // Fetch target user by link
-    const { data: targetUser } = useQuery({
+    const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: () => userService.getUserByLink(link || ''),
         enabled: !!link,
+    });
+
+    const { data: myFriendsData } = useQuery({
+        queryKey: ['my-accepted-friends', currentUser?.id],
+        queryFn: async () => {
+            if (!currentUser?.id) return [];
+            const res = await friendService.getFriends({
+                limit: 100,
+                filter: { userIds: [currentUser.id], status: FriendStatusEnum.ACCEPTED },
+            });
+            const friendsList = res.data ?? [];
+            const otherIds = friendsList.map((f) =>
+                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId
+            );
+            if (otherIds.length === 0) return [];
+            return await userService.getUsersByIds(otherIds);
+        },
+        enabled: !!currentUser?.id,
     });
 
     const isOwner = currentUser?.id === targetUser?.id;
@@ -134,11 +156,12 @@ export default function UserGoals() {
                 time: formData.time ? Number(formData.time) : null,
                 startedAt: formData.startedAt ? formData.startedAt : null,
                 endedAt: formData.endedAt ? formData.endedAt : null,
-                userIds: [currentUser.id],
+                userIds: Array.from(new Set([currentUser.id, ...collaboratorIds])),
             });
         },
         onSuccess: () => {
             close();
+            setCollaboratorIds([]);
             setFormData({
                 text: '',
                 link: '',
@@ -148,10 +171,13 @@ export default function UserGoals() {
                 startedAt: '',
                 endedAt: '',
             });
+            setFieldErrors({});
             queryClient.invalidateQueries({ queryKey: ['goals'] });
-            notifications.show({ title: t('goals'), message: t('saved'), color: 'green' });
+            notifications.show({ title: t('goals'), message: t('goalCreated'), color: 'green' });
         },
         onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -277,9 +303,21 @@ export default function UserGoals() {
         </SimpleGrid>
     );
 
+    if (userLoading) {
+        return (
+            <Center h={200}>
+                <Loader />
+            </Center>
+        );
+    }
+
+    if (!targetUser) {
+        return <NotFound title={t('userNotFound')} />;
+    }
+
     return (
         <Stack gap="md">
-            {targetUser && <UserProfileNav user={targetUser} isOwner={isOwner} />}
+            <UserProfileNav user={targetUser} isOwner={isOwner} />
             <DataTable
                 columns={columns}
                 data={goals}
@@ -305,15 +343,17 @@ export default function UserGoals() {
                 onAdd={(isOwner && isParticipant) || isAdmin ? open : undefined}
                 addLabel={t('addGoal')}
                 actions={(g) => (
-                    <Button
-                        component={Link}
-                        to={`/goals/${g.link}`}
-                        variant="light"
-                        size="xs"
-                        leftSection={<IconEye size={14} />}
-                    >
-                        {t('details')}
-                    </Button>
+                    <Tooltip label={t('details')} withArrow>
+                        <ActionIcon
+                            component={Link}
+                            to={`/goals/${g.link}`}
+                            variant="light"
+                            color="blue"
+                            size={30}
+                        >
+                            <IconEye size={16} />
+                        </ActionIcon>
+                    </Tooltip>
                 )}
             />
 
@@ -324,6 +364,7 @@ export default function UserGoals() {
                         placeholder={t('title')}
                         required
                         value={formData.text}
+                        error={fieldErrors.text}
                         onChange={(e) => {
                             const text = e.currentTarget.value;
                             const link = text
@@ -338,6 +379,7 @@ export default function UserGoals() {
                         placeholder={t('link')}
                         required
                         value={formData.link}
+                        error={fieldErrors.link}
                         onChange={(e) => setFormData({ ...formData, link: e.currentTarget.value })}
                     />
                     <Select
@@ -347,7 +389,22 @@ export default function UserGoals() {
                         clearable
                         data={DisciplineEnum.getOptions(t).map((d) => ({ value: String(d.value), label: d.label }))}
                         value={formData.discipline}
+                        error={fieldErrors.discipline}
                         onChange={(val) => setFormData({ ...formData, discipline: val })}
+                    />
+                    <MultiSelect
+                        label={t('collaborators')}
+                        placeholder={t('selectCollaborators')}
+                        data={
+                            myFriendsData?.map((u) => ({
+                                value: u.id,
+                                label: `${u.firstName} ${u.lastName} (@${u.link})`,
+                            })) ?? []
+                        }
+                        value={collaboratorIds}
+                        onChange={setCollaboratorIds}
+                        searchable
+                        clearable
                     />
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <TextInput
@@ -355,12 +412,14 @@ export default function UserGoals() {
                             placeholder="10000"
                             required
                             value={formData.distance}
+                            error={fieldErrors.distance}
                             onChange={(e) => setFormData({ ...formData, distance: e.currentTarget.value })}
                         />
                         <TextInput
                             label={t('timeSeconds')}
                             placeholder="3600"
                             value={formData.time}
+                            error={fieldErrors.time}
                             onChange={(e) => setFormData({ ...formData, time: e.currentTarget.value })}
                         />
                     </SimpleGrid>
@@ -369,12 +428,14 @@ export default function UserGoals() {
                             label={t('startedAt')}
                             type="datetime-local"
                             value={formData.startedAt}
+                            error={fieldErrors.startedAt}
                             onChange={(e) => setFormData({ ...formData, startedAt: e.currentTarget.value })}
                         />
                         <TextInput
                             label={t('endedAt')}
                             type="datetime-local"
                             value={formData.endedAt}
+                            error={fieldErrors.endedAt}
                             onChange={(e) => setFormData({ ...formData, endedAt: e.currentTarget.value })}
                         />
                     </SimpleGrid>

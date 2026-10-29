@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Group, Text, Button, Badge, Stack, SimpleGrid, TextInput, Select } from '@mantine/core';
+import NotFound from '../../components/NotFound';
+import { Group, Text, Badge, Stack, SimpleGrid, TextInput, Select, Center, Loader, ActionIcon, Tooltip } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconCheck, IconTrash } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -30,7 +31,7 @@ export default function UserNotifications() {
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    const { data: targetUser } = useQuery({
+    const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: () => userService.getUserByLink(link || ''),
         enabled: !!link,
@@ -93,7 +94,7 @@ export default function UserNotifications() {
         mutationFn: (id: string) => notificationService.deleteNotification(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['notifications'] });
-            notifications.show({ title: t('notifications'), message: t('deleted'), color: 'blue' });
+            notifications.show({ title: t('notifications'), message: t('notificationDeleted'), color: 'green' });
         },
     });
 
@@ -151,9 +152,21 @@ export default function UserNotifications() {
         </SimpleGrid>
     );
 
+    if (userLoading) {
+        return (
+            <Center h={200}>
+                <Loader />
+            </Center>
+        );
+    }
+
+    if (!targetUser) {
+        return <NotFound title={t('userNotFound')} />;
+    }
+
     return (
         <Stack gap="md">
-            {targetUser && <UserProfileNav user={targetUser} isOwner={currentUser?.id === targetUser.id} />}
+            <UserProfileNav user={targetUser} isOwner={currentUser?.id === targetUser.id} />
             <DataTable
                 columns={columns}
                 data={notifs}
@@ -179,24 +192,29 @@ export default function UserNotifications() {
                 actions={(n) => (
                     <Group gap="xs" justify="flex-end">
                         {n.status !== NotificationStatusEnum.READ && (
-                            <Button
-                                size="xs"
-                                variant="subtle"
-                                leftSection={<IconCheck size={14} />}
-                                onClick={() => markAsReadMutation.mutate(n.id)}
-                            >
-                                {t('markAsRead')}
-                            </Button>
+                            <Tooltip label={t('markAsRead')} withArrow>
+                                <ActionIcon
+                                    size={30}
+                                    variant="light"
+                                    color="green"
+                                    onClick={() => markAsReadMutation.mutate(n.id)}
+                                    loading={markAsReadMutation.isPending}
+                                >
+                                    <IconCheck size={16} />
+                                </ActionIcon>
+                            </Tooltip>
                         )}
-                        <Button
-                            size="xs"
-                            color="red"
-                            variant="subtle"
-                            leftSection={<IconTrash size={14} />}
-                            onClick={() => deleteMutation.mutate(n.id)}
-                        >
-                            {t('delete')}
-                        </Button>
+                        <Tooltip label={t('delete')} withArrow>
+                            <ActionIcon
+                                size={30}
+                                color="red"
+                                variant="light"
+                                onClick={() => deleteMutation.mutate(n.id)}
+                                loading={deleteMutation.isPending}
+                            >
+                                <IconTrash size={16} />
+                            </ActionIcon>
+                        </Tooltip>
                     </Group>
                 )}
             />

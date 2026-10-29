@@ -16,7 +16,7 @@ import {
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { authService } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { signSession, registerSession, UNCONFIRMED_ACCOUNT_ERROR } from '../../utils/authSession';
@@ -34,6 +34,7 @@ export default function Login() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const signId = signSession.id();
 
@@ -41,6 +42,7 @@ export default function Login() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setFieldErrors({});
 
         try {
             const data = await authService.sign({ email, password });
@@ -52,6 +54,8 @@ export default function Login() {
             signSession.start(data.id, { rememberMe: rememberMe ? '1' : '' });
             setStep(2);
         } catch (apiErr) {
+            const fe = extractFieldErrors(apiErr);
+            setFieldErrors(fe);
             const msg = getErrorMessage(apiErr);
             if (msg === UNCONFIRMED_ACCOUNT_ERROR) {
                 try {
@@ -66,7 +70,11 @@ export default function Login() {
                     // Fallthrough to setError
                 }
             }
-            setError(msg);
+            if (Object.keys(fe).length === 0) {
+                setError(msg);
+            } else {
+                setError(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -78,6 +86,7 @@ export default function Login() {
 
         setLoading(true);
         setError(null);
+        setFieldErrors({});
 
         try {
             const data = await authService.confirmSign(signId, Number(code));
@@ -96,7 +105,13 @@ export default function Login() {
             });
             navigate('/');
         } catch (err) {
-            setError(getErrorMessage(err));
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
+            if (Object.keys(fe).length === 0) {
+                setError(getErrorMessage(err));
+            } else {
+                setError(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -123,18 +138,19 @@ export default function Login() {
         signSession.clear();
         setStep(1);
         setError(null);
+        setFieldErrors({});
     };
 
     return (
         <Stack align="center" mt="xl">
-            <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={420}>
+            <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={520}>
                 <Title order={2} ta="center" mb="lg">
-                    {step === 1 ? t('sign') : t('verify')}
+                    {step === 1 ? t('sign') : `${t('sign')} – ${t('verify')}`}
                 </Title>
 
                 {error && (
                     <Alert color="red" mb="md" withCloseButton onClose={() => setError(null)}>
-                        {error}{' '}
+                        {error}
                     </Alert>
                 )}
 
@@ -147,7 +163,11 @@ export default function Login() {
                                 type="email"
                                 placeholder={t('emailPlaceholder')}
                                 value={email}
-                                onChange={(e) => setEmail(e.currentTarget.value)}
+                                error={fieldErrors.email}
+                                onChange={(e) => {
+                                    setEmail(e.currentTarget.value);
+                                    if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                                }}
                             />
 
                             <PasswordInput
@@ -155,7 +175,11 @@ export default function Login() {
                                 required
                                 placeholder="••••••••"
                                 value={password}
-                                onChange={(e) => setPassword(e.currentTarget.value)}
+                                error={fieldErrors.password}
+                                onChange={(e) => {
+                                    setPassword(e.currentTarget.value);
+                                    if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                                }}
                             />
 
                             <Group justify="space-between" mt="xs">
@@ -188,7 +212,24 @@ export default function Login() {
                                 {t('enterVerificationCodePrompt')}
                             </Text>
 
-                            <PinInput length={6} type="number" value={code} onChange={setCode} size="md" autoFocus />
+                            <PinInput
+                                length={6}
+                                type="number"
+                                value={code}
+                                onChange={(val) => {
+                                    setCode(val);
+                                    if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
+                                }}
+                                error={!!fieldErrors.code}
+                                size="md"
+                                autoFocus
+                            />
+
+                            {fieldErrors.code && (
+                                <Text size="xs" c="red" ta="center">
+                                    {fieldErrors.code}
+                                </Text>
+                            )}
 
                             <Button type="submit" fullWidth mt="md" loading={loading} disabled={code.length < 6}>
                                 {t('verify')}

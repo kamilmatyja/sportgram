@@ -18,7 +18,7 @@ import {
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { authService } from '../../api/services';
 import { CountryEnum } from '../../enums/CountryEnum';
 import { GenderEnum } from '../../enums/GenderEnum';
@@ -45,6 +45,7 @@ export default function Register() {
     const [code, setCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const registerId = registerSession.id();
 
@@ -80,6 +81,7 @@ export default function Register() {
 
         setLoading(true);
         setError(null);
+        setFieldErrors({});
 
         try {
             await authService.registerNano({
@@ -106,7 +108,13 @@ export default function Register() {
             });
             setStep(2);
         } catch (err) {
-            setError(getErrorMessage(err));
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
+            if (Object.keys(fe).length === 0) {
+                setError(getErrorMessage(err));
+            } else {
+                setError(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -118,6 +126,7 @@ export default function Register() {
 
         setLoading(true);
         setError(null);
+        setFieldErrors({});
 
         try {
             await authService.confirmRegister(registerId, Number(code));
@@ -144,7 +153,13 @@ export default function Register() {
             });
             navigate('/sign');
         } catch (err) {
-            setError(getErrorMessage(err));
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
+            if (Object.keys(fe).length === 0) {
+                setError(getErrorMessage(err));
+            } else {
+                setError(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -169,9 +184,9 @@ export default function Register() {
 
     return (
         <Stack align="center" mt="xl">
-            <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={540}>
+            <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={520}>
                 <Title order={2} ta="center" mb="lg">
-                    {step === 1 ? t('register') : t('verify')}
+                    {step === 1 ? t('register') : `${t('register')} – ${t('verify')}`}
                 </Title>
 
                 {error && (
@@ -188,13 +203,21 @@ export default function Register() {
                                     label={t('firstName')}
                                     required
                                     value={formData.firstName}
-                                    onChange={(e) => setFormData({ ...formData, firstName: e.currentTarget.value })}
+                                    error={fieldErrors.firstName}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, firstName: e.currentTarget.value });
+                                        if (fieldErrors.firstName) setFieldErrors({ ...fieldErrors, firstName: '' });
+                                    }}
                                 />
                                 <TextInput
                                     label={t('lastName')}
                                     required
                                     value={formData.lastName}
-                                    onChange={(e) => setFormData({ ...formData, lastName: e.currentTarget.value })}
+                                    error={fieldErrors.lastName}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, lastName: e.currentTarget.value });
+                                        if (fieldErrors.lastName) setFieldErrors({ ...fieldErrors, lastName: '' });
+                                    }}
                                 />
                             </SimpleGrid>
 
@@ -204,14 +227,22 @@ export default function Register() {
                                 type="email"
                                 placeholder={t('emailPlaceholder')}
                                 value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.currentTarget.value })}
+                                error={fieldErrors.email}
+                                onChange={(e) => {
+                                    setFormData({ ...formData, email: e.currentTarget.value });
+                                    if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                                }}
                             />
 
                             <PasswordInput
                                 label={t('password')}
                                 required
                                 value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.currentTarget.value })}
+                                error={fieldErrors.password}
+                                onChange={(e) => {
+                                    setFormData({ ...formData, password: e.currentTarget.value });
+                                    if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                                }}
                             />
 
                             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
@@ -220,14 +251,22 @@ export default function Register() {
                                     type="date"
                                     required
                                     value={formData.birthAt}
-                                    onChange={(e) => setFormData({ ...formData, birthAt: e.currentTarget.value })}
+                                    error={fieldErrors.birthAt}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, birthAt: e.currentTarget.value });
+                                        if (fieldErrors.birthAt) setFieldErrors({ ...fieldErrors, birthAt: '' });
+                                    }}
                                 />
                                 <TextInput
                                     label={t('phone')}
                                     required
                                     placeholder="123456789"
                                     value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.currentTarget.value })}
+                                    error={fieldErrors.phone}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, phone: e.currentTarget.value });
+                                        if (fieldErrors.phone) setFieldErrors({ ...fieldErrors, phone: '' });
+                                    }}
                                 />
                             </SimpleGrid>
 
@@ -237,7 +276,11 @@ export default function Register() {
                                     placeholder={t('gender')}
                                     data={genderOptions}
                                     value={formData.gender}
-                                    onChange={(val) => setFormData({ ...formData, gender: val })}
+                                    error={fieldErrors.gender}
+                                    onChange={(val) => {
+                                        setFormData({ ...formData, gender: val });
+                                        if (fieldErrors.gender) setFieldErrors({ ...fieldErrors, gender: '' });
+                                    }}
                                     required
                                     clearable
                                 />
@@ -246,7 +289,11 @@ export default function Register() {
                                     placeholder={t('country')}
                                     data={countryOptions}
                                     value={formData.country}
-                                    onChange={(val) => setFormData({ ...formData, country: val })}
+                                    error={fieldErrors.country}
+                                    onChange={(val) => {
+                                        setFormData({ ...formData, country: val });
+                                        if (fieldErrors.country) setFieldErrors({ ...fieldErrors, country: '' });
+                                    }}
                                     searchable
                                     required
                                     clearable
@@ -258,7 +305,11 @@ export default function Register() {
                                 placeholder={t('role')}
                                 data={roleOptions}
                                 value={formData.roles}
-                                onChange={(val) => setFormData({ ...formData, roles: val })}
+                                error={fieldErrors.roles}
+                                onChange={(val) => {
+                                    setFormData({ ...formData, roles: val });
+                                    if (fieldErrors.roles) setFieldErrors({ ...fieldErrors, roles: '' });
+                                }}
                                 required
                                 clearable
                             />
@@ -282,7 +333,24 @@ export default function Register() {
                                 {t('enterRegisterCodePrompt')}
                             </Text>
 
-                            <PinInput length={6} type="number" value={code} onChange={setCode} size="md" autoFocus />
+                            <PinInput
+                                length={6}
+                                type="number"
+                                value={code}
+                                onChange={(val) => {
+                                    setCode(val);
+                                    if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
+                                }}
+                                error={!!fieldErrors.code}
+                                size="md"
+                                autoFocus
+                            />
+
+                            {fieldErrors.code && (
+                                <Text size="xs" c="red" ta="center">
+                                    {fieldErrors.code}
+                                </Text>
+                            )}
 
                             <Button type="submit" fullWidth mt="md" loading={loading} disabled={code.length < 6}>
                                 {t('verify')}

@@ -1,4 +1,4 @@
-import { Group, Button, Card, Box, Avatar, Text, Title, Image } from '@mantine/core';
+import { Group, Button, Card, Box, Avatar, Text, Title, Image, ActionIcon, Tooltip } from '@mantine/core';
 import {
     IconArticle,
     IconPlayerPlay,
@@ -10,6 +10,7 @@ import {
     IconMessage,
     IconBell,
     IconDevices,
+    IconUser,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
@@ -76,7 +77,7 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                     {bgSrc ? (
                         <Image src={bgSrc} h={160} fit="cover" alt={user.firstName ?? 'Background'} />
                     ) : (
-                        <Box h={160} bg="blue.7" />
+                        <Box h={160} bg="var(--mantine-primary-color-filled)" />
                     )}
 
                     <Box p="md" pos="relative">
@@ -88,7 +89,6 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                             top={-50}
                             left={24}
                             className="profile-avatar-border"
-                            color="blue"
                             component={Link}
                             to={`/users/${link}`}
                         >
@@ -107,9 +107,17 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                                 </Text>
                             </div>
 
-                            <Button component={Link} to={`/users/${link}`} variant="light" size="xs">
-                                {t('profile')}
-                            </Button>
+                            <Tooltip label={t('profile')} withArrow>
+                                <ActionIcon
+                                    component={Link}
+                                    to={`/users/${link}`}
+                                    variant="light"
+                                    size={30}
+                                    aria-label={t('profile')}
+                                >
+                                    <IconUser size={16} />
+                                </ActionIcon>
+                            </Tooltip>
                         </Group>
                     </Box>
                 </Card>

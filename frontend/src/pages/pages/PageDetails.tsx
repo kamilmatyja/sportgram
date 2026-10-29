@@ -1,4 +1,5 @@
-import { Card, Title, Text, Group, Button, Stack, Avatar, Box, Paper, BackgroundImage } from '@mantine/core';
+import { Card, Text, Button, Stack, ActionIcon, Tooltip, MantineThemeProvider } from '@mantine/core';
+import NotFound from '../../components/NotFound';
 import { notifications } from '@mantine/notifications';
 import { IconBookmark, IconTrash } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -7,8 +8,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { pageService } from '../../api/services';
 import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
+import { ColorEnum } from '../../enums/ColorEnum';
 import { useAuth } from '../../auth/AuthContext';
-import { formatImageSrc } from '../../utils/imageUtils';
+import { PageNav } from '../../components/PageNav';
 
 export default function PageDetails() {
     const { link } = useParams<{ link: string }>();
@@ -43,7 +45,7 @@ export default function PageDetails() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['page-follows'] });
-            notifications.show({ title: t('pageFollows'), message: t('saved'), color: 'green' });
+            notifications.show({ title: t('pageFollows'), message: t('pageFollowed'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -56,7 +58,7 @@ export default function PageDetails() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['page-follows'] });
-            notifications.show({ title: t('pageFollows'), message: t('deleted'), color: 'blue' });
+            notifications.show({ title: t('pageFollows'), message: t('pageUnfollowed'), color: 'green' });
         },
     });
 
@@ -66,7 +68,7 @@ export default function PageDetails() {
             await pageService.deletePage(page.id);
         },
         onSuccess: () => {
-            notifications.show({ title: t('pages'), message: t('deleted'), color: 'blue' });
+            notifications.show({ title: t('pages'), message: t('pageDeleted'), color: 'green' });
             navigate('/pages');
         },
     });
@@ -80,77 +82,63 @@ export default function PageDetails() {
     }
 
     if (!page) {
-        return (
-            <Paper withBorder p="xl" radius="md" ta="center">
-                <Text c="dimmed">{t('noRecords')}</Text>
-            </Paper>
-        );
+        return <NotFound title={t('pageNotFound')} />;
     }
 
-    const bgSrc = formatImageSrc(page.backgroundPhoto);
-    const profileSrc = formatImageSrc(page.profilePhoto);
+    const primaryColor = ColorEnum.getMantineColor(page.color);
+
+    const extraActions = (
+        <>
+            {followData ? (
+                <Button
+                    variant="default"
+                    size="xs"
+                    onClick={() => unfollowMutation.mutate(followData.id)}
+                    loading={unfollowMutation.isPending}
+                >
+                    {t('unfollowPage')}
+                </Button>
+            ) : (
+                <Button
+                    size="xs"
+                    leftSection={<IconBookmark size={16} />}
+                    onClick={() => followMutation.mutate()}
+                    loading={followMutation.isPending}
+                >
+                    {t('followPage')}
+                </Button>
+            )}
+
+            {isOwner && (
+                <Tooltip label={t('delete')} withArrow>
+                    <ActionIcon
+                        variant="light"
+                        color="red"
+                        size={30}
+                        onClick={() => deleteMutation.mutate()}
+                        loading={deleteMutation.isPending}
+                        aria-label={t('delete')}
+                    >
+                        <IconTrash size={16} />
+                    </ActionIcon>
+                </Tooltip>
+            )}
+        </>
+    );
 
     return (
-        <Stack gap="lg">
-            <Card withBorder radius="md" p={0} shadow="xs">
-                {bgSrc ? <BackgroundImage src={bgSrc} h={140} /> : <Box h={140} bg="blue.7" />}
+        <MantineThemeProvider theme={{ primaryColor }} inherit>
+            <Stack gap="lg">
+                <PageNav page={page} extraActions={extraActions} />
 
-                <Box p="md" className="relative">
-                    <Avatar src={profileSrc} size={80} radius="md" className="page-avatar-overlap">
-                        ?
-                    </Avatar>
-
-                    <Group justify="space-between" align="flex-start" mt={45}>
-                        <div>
-                            <Title order={2}>{page.title}</Title>
-                            <Text size="sm" c="dimmed">
-                                @{page.link}
-                            </Text>
-                        </div>
-
-                        <Group gap="xs">
-                            {followData ? (
-                                <Button
-                                    variant="default"
-                                    size="xs"
-                                    onClick={() => unfollowMutation.mutate(followData.id)}
-                                    loading={unfollowMutation.isPending}
-                                >
-                                    {t('unfollowPage')}
-                                </Button>
-                            ) : (
-                                <Button
-                                    size="xs"
-                                    leftSection={<IconBookmark size={16} />}
-                                    onClick={() => followMutation.mutate()}
-                                    loading={followMutation.isPending}
-                                >
-                                    {t('followPage')}
-                                </Button>
-                            )}
-
-                            {isOwner && (
-                                <Button
-                                    variant="subtle"
-                                    color="red"
-                                    size="xs"
-                                    leftSection={<IconTrash size={16} />}
-                                    onClick={() => deleteMutation.mutate()}
-                                    loading={deleteMutation.isPending}
-                                >
-                                    {t('delete')}
-                                </Button>
-                            )}
-                        </Group>
-                    </Group>
-
-                    {page.description && (
-                        <Text size="sm" mt="md" className="pre-wrap">
+                {page.description && (
+                    <Card withBorder radius="md" p="md" shadow="xs">
+                        <Text size="sm" className="pre-wrap">
                             {page.description}
                         </Text>
-                    )}
-                </Box>
-            </Card>
-        </Stack>
+                    </Card>
+                )}
+            </Stack>
+        </MantineThemeProvider>
     );
 }

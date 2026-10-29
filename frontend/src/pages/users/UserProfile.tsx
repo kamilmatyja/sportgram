@@ -21,6 +21,8 @@ import {
     ScrollArea,
     Collapse,
     ActionIcon,
+    Menu,
+    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -30,15 +32,18 @@ import {
     IconMessage,
     IconPhoto,
     IconPlus,
-    IconHeart,
     IconMessageCircle,
     IconTrash,
+    IconCheck,
+    IconX,
 } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
-import { userService, friendService, feedService, storyService, type UserResource } from '../../api/services';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
+import NotFound from '../../components/NotFound';
+import { StoryViewerModal, type UserStoriesGroup } from '../../components/StoryViewerModal';
+import { userService, friendService, feedService, storyService, type UserResource, type FeedReactionResource } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { CountryEnum } from '../../enums/CountryEnum';
@@ -64,6 +69,10 @@ export default function UserProfile() {
     const [storyOpened, { open: openStoryModal, close: closeStoryModal }] = useDisclosure(false);
     const [storyText, setStoryText] = useState('');
     const [storyPhoto, setStoryPhoto] = useState<File | null>(null);
+    const [storyViewerOpened, setStoryViewerOpened] = useState(false);
+    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
+    const [feedFieldErrors, setFeedFieldErrors] = useState<Record<string, string>>({});
+    const [storyFieldErrors, setStoryFieldErrors] = useState<Record<string, string>>({});
 
     // New feed input
     const [feedText, setFeedText] = useState('');
@@ -71,7 +80,9 @@ export default function UserProfile() {
 
     // Active comments collapse for feeds
     const [openCommentsFeedId, setOpenCommentsFeedId] = useState<string | null>(null);
-    const [commentText, setCommentText] = useState('');
+    const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+    const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+    const [editingCommentText, setEditingCommentText] = useState('');
 
     // Fetch user details
     const {
@@ -119,6 +130,7 @@ export default function UserProfile() {
                 page: 1,
                 limit: 30,
                 sort: 'createdAt:desc',
+                'include[]': ['feedComments', 'feedReactions'],
             });
             return res.data ?? [];
         },
@@ -140,6 +152,26 @@ export default function UserProfile() {
         },
         enabled: !!user?.id,
     });
+
+    const userStoryGroups = useMemo<UserStoriesGroup[]>(() => {
+        if (!userStoriesData || userStoriesData.length === 0 || !user) return [];
+        const parseTime = (dateStr?: string) =>
+            dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0;
+        const sortedStories = [...userStoriesData].sort(
+            (a, b) => parseTime(a.createdAt) - parseTime(b.createdAt),
+        );
+        const newestStory = [...userStoriesData].sort(
+            (a, b) => parseTime(b.createdAt) - parseTime(a.createdAt),
+        )[0];
+        return [
+            {
+                userId: user.id,
+                author: user,
+                stories: sortedStories,
+                newestStory,
+            },
+        ];
+    }, [userStoriesData, user]);
 
     // Collect user IDs from feeds comments
     const commentUserIds = useMemo(() => {
@@ -272,9 +304,12 @@ export default function UserProfile() {
             queryClient.invalidateQueries({ queryKey: ['user', link] });
             refetchProfile();
             refetchUser();
+            setEditFieldErrors({});
             notifications.show({ title: t('profile'), message: t('profileUpdated'), color: 'green' });
         },
         onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditFieldErrors(fe);
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -297,7 +332,7 @@ export default function UserProfile() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['friendship'] });
-            notifications.show({ title: t('friend'), message: t('friendRemoved'), color: 'blue' });
+            notifications.show({ title: t('friend'), message: t('friendRemoved'), color: 'green' });
         },
     });
 
@@ -311,11 +346,14 @@ export default function UserProfile() {
         onSuccess: () => {
             setFeedText('');
             setFeedPhoto(null);
-            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', user?.id] });
+            setFeedFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
             queryClient.invalidateQueries({ queryKey: ['feeds'] });
             notifications.show({ title: t('feeds'), message: t('feedAdded'), color: 'green' });
         },
         onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setFeedFieldErrors(fe);
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -330,12 +368,15 @@ export default function UserProfile() {
         onSuccess: () => {
             setStoryText('');
             setStoryPhoto(null);
+            setStoryFieldErrors({});
             closeStoryModal();
             queryClient.invalidateQueries({ queryKey: ['user-profile-stories', user?.id] });
             queryClient.invalidateQueries({ queryKey: ['stories'] });
             notifications.show({ title: t('stories'), message: t('storyAdded'), color: 'green' });
         },
         onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setStoryFieldErrors(fe);
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -346,9 +387,9 @@ export default function UserProfile() {
             await feedService.deleteFeed(id);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
             queryClient.invalidateQueries({ queryKey: ['feeds'] });
-            notifications.show({ title: t('feeds'), message: t('feedDeleted'), color: 'blue' });
+            notifications.show({ title: t('feeds'), message: t('feedDeleted'), color: 'green' });
         },
     });
 
@@ -358,19 +399,100 @@ export default function UserProfile() {
             await feedService.addReaction(feedId, type);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
+            queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifications.show({ title: t('reactions'), message: t('reactionAdded'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
+
+    // Update reaction
+    const updateReactionMutation = useMutation({
+        mutationFn: async ({ reactionId, type }: { reactionId: string; type: number }) => {
+            await feedService.updateReaction(reactionId, type);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
+            queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifications.show({ title: t('reactions'), message: t('reactionUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    // Delete reaction
+    const deleteReactionMutation = useMutation({
+        mutationFn: async (reactionId: string) => {
+            await feedService.deleteReaction(reactionId);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
+            queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifications.show({ title: t('reactions'), message: t('reactionDeleted'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    // Handle reaction click dispatcher
+    const handleReaction = (feedId: string, type: number, myReaction?: FeedReactionResource) => {
+        if (!myReaction) {
+            addReactionMutation.mutate({ feedId, type });
+        } else if (myReaction.reaction === type) {
+            deleteReactionMutation.mutate(myReaction.id);
+        } else {
+            updateReactionMutation.mutate({ reactionId: myReaction.id, type });
+        }
+    };
 
     // Add comment
     const addCommentMutation = useMutation({
         mutationFn: async ({ feedId, text }: { feedId: string; text: string }) => {
             await feedService.addComment(feedId, text);
         },
-        onSuccess: () => {
-            setCommentText('');
-            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', user?.id] });
+        onSuccess: (_data, variables) => {
+            setCommentInputs((prev) => ({ ...prev, [variables.feedId]: '' }));
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
             notifications.show({ title: t('comments'), message: t('commentAdded'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    // Update comment
+    const updateCommentMutation = useMutation({
+        mutationFn: async ({ id, text }: { id: string; text: string }) => {
+            await feedService.updateComment(id, { text });
+        },
+        onSuccess: () => {
+            setEditingCommentId(null);
+            setEditingCommentText('');
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
+            queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifications.show({ title: t('comments'), message: t('commentUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    // Delete comment
+    const deleteCommentMutation = useMutation({
+        mutationFn: async (id: string) => {
+            await feedService.deleteComment(id);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
+            queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifications.show({ title: t('comments'), message: t('commentDeleted'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
 
@@ -383,11 +505,7 @@ export default function UserProfile() {
     }
 
     if (!user) {
-        return (
-            <Paper withBorder p="xl" radius="md" ta="center">
-                <Text c="dimmed">{t('userNotFound')}</Text>
-            </Paper>
-        );
+        return <NotFound title={t('userNotFound')} />;
     }
 
     const isFriendAccepted = friendship?.status === FriendStatusEnum.ACCEPTED;
@@ -406,7 +524,7 @@ export default function UserProfile() {
                 {userBgPhotoSrc ? (
                     <Image src={userBgPhotoSrc} h={160} fit="cover" alt={user.firstName} />
                 ) : (
-                    <Box h={160} bg="blue.7" />
+                    <Box h={160} bg="var(--mantine-primary-color-filled)" />
                 )}
 
                 <Box p="md" pos="relative">
@@ -434,14 +552,16 @@ export default function UserProfile() {
 
                         <Group gap="xs">
                             {canEdit && (
-                                <Button
-                                    leftSection={<IconEdit size={16} />}
-                                    variant="default"
-                                    size="xs"
-                                    onClick={handleOpenEdit}
-                                >
-                                    {t('edit')}
-                                </Button>
+                                <Tooltip label={t('edit')} withArrow>
+                                    <ActionIcon
+                                        variant="light"
+                                        size={30}
+                                        onClick={handleOpenEdit}
+                                        aria-label={t('edit')}
+                                    >
+                                        <IconEdit size={16} />
+                                    </ActionIcon>
+                                </Tooltip>
                             )}
 
                             {!isOwner && currentUser && (
@@ -451,16 +571,19 @@ export default function UserProfile() {
                                             <Badge color="green" variant="light">
                                                 {t('friends.accepted')}
                                             </Badge>
-                                            <Button
-                                                variant="subtle"
-                                                color="red"
-                                                size="xs"
-                                                onClick={() =>
-                                                    friendship?.id && removeFriendMutation.mutate(friendship.id)
-                                                }
-                                            >
-                                                {t('delete')}
-                                            </Button>
+                                            <Tooltip label={t('delete')} withArrow>
+                                                <ActionIcon
+                                                    variant="light"
+                                                    color="red"
+                                                    size={30}
+                                                    onClick={() =>
+                                                        friendship?.id && removeFriendMutation.mutate(friendship.id)
+                                                    }
+                                                    loading={removeFriendMutation.isPending}
+                                                >
+                                                    <IconTrash size={16} />
+                                                </ActionIcon>
+                                            </Tooltip>
                                         </Group>
                                     ) : isFriendPending ? (
                                         <Badge color="yellow" variant="light">
@@ -477,15 +600,16 @@ export default function UserProfile() {
                                         </Button>
                                     )}
 
-                                    <Button
-                                        component={Link}
-                                        to={`/users/${user.link}/conversations`}
-                                        variant="light"
-                                        size="xs"
-                                        leftSection={<IconMessage size={16} />}
-                                    >
-                                        {t('chat')}
-                                    </Button>
+                                    <Tooltip label={t('chat')} withArrow>
+                                        <ActionIcon
+                                            component={Link}
+                                            to={`/users/${user.link}/conversations`}
+                                            variant="light"
+                                            size={30}
+                                        >
+                                            <IconMessage size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
                                 </>
                             )}
                         </Group>
@@ -527,7 +651,7 @@ export default function UserProfile() {
                         {/* Add Story Button (if owner or admin) */}
                         {canEdit && (
                             <Stack align="center" gap={4} className="pointer" onClick={openStoryModal}>
-                                <Avatar radius="xl" size="lg" color="blue">
+                                <Avatar radius="xl" size="lg">
                                     <IconPlus size={24} />
                                 </Avatar>
                                 <Text size="xs" fw={500}>
@@ -536,23 +660,18 @@ export default function UserProfile() {
                             </Stack>
                         )}
 
-                        {/* Stories of this user */}
-                        {userStoriesData?.map((story) => {
-                            const storyImg = formatImageSrc(story.photo) || userProfilePhotoSrc;
+                        {/* Stories of this user grouped */}
+                        {userStoryGroups.map((group) => {
+                            const storyImg =
+                                formatImageSrc(group.newestStory?.photo) || userProfilePhotoSrc;
                             return (
                                 <Stack
-                                    key={story.id}
+                                    key={group.userId}
                                     align="center"
                                     gap={4}
                                     className="pointer"
                                     miw={64}
-                                    onClick={() => {
-                                        notifications.show({
-                                            title: user.firstName ?? t('stories'),
-                                            message: story.text || '',
-                                            color: 'blue',
-                                        });
-                                    }}
+                                    onClick={() => setStoryViewerOpened(true)}
                                 >
                                     <Avatar src={storyImg} radius="xl" size="lg" className="story-avatar-border">
                                         ?
@@ -584,6 +703,7 @@ export default function UserProfile() {
                             autosize
                             minRows={2}
                             value={feedText}
+                            error={feedFieldErrors.text}
                             onChange={(e) => setFeedText(e.currentTarget.value)}
                         />
 
@@ -596,6 +716,7 @@ export default function UserProfile() {
                                 accept="image/*"
                                 size="xs"
                                 value={feedPhoto}
+                                error={feedFieldErrors.photo}
                                 onChange={setFeedPhoto}
                                 clearable
                                 maw={200}
@@ -627,6 +748,11 @@ export default function UserProfile() {
                 ) : (
                     userFeedsData?.map((feed) => {
                         const commentsOpen = openCommentsFeedId === feed.id;
+                        const reactionCounts: Record<number, number> = {};
+                        feed.reactions?.forEach((r) => {
+                            reactionCounts[r.reaction] = (reactionCounts[r.reaction] ?? 0) + 1;
+                        });
+                        const myReaction = feed.reactions?.find((r) => r.userId === currentUser?.id);
 
                         return (
                             <Card key={feed.id} withBorder radius="md" shadow="xs" p="md">
@@ -647,14 +773,17 @@ export default function UserProfile() {
                                     </Group>
 
                                     {canEdit && (
-                                        <ActionIcon
-                                            variant="subtle"
-                                            color="red"
-                                            size="sm"
-                                            onClick={() => deleteFeedMutation.mutate(feed.id)}
-                                        >
-                                            <IconTrash size={16} />
-                                        </ActionIcon>
+                                        <Tooltip label={t('delete')} withArrow>
+                                            <ActionIcon
+                                                variant="light"
+                                                color="red"
+                                                size={30}
+                                                onClick={() => deleteFeedMutation.mutate(feed.id)}
+                                                aria-label={t('delete')}
+                                            >
+                                                <IconTrash size={16} />
+                                            </ActionIcon>
+                                        </Tooltip>
                                     )}
                                 </Group>
 
@@ -677,20 +806,42 @@ export default function UserProfile() {
                                 {/* Actions & stats */}
                                 <Group justify="space-between" mt="xs">
                                     <Group gap="xs">
-                                        <Button
-                                            variant="subtle"
-                                            size="xs"
-                                            color="red"
-                                            leftSection={<IconHeart size={16} />}
-                                            onClick={() =>
-                                                addReactionMutation.mutate({
-                                                    feedId: feed.id,
-                                                    type: FeedReactionEnum.LIKE,
-                                                })
-                                            }
-                                        >
-                                            {feed.reactions?.length ?? 0}
-                                        </Button>
+                                        {/* Reaction Picker Menu */}
+                                        <Menu shadow="md" position="top-start" withArrow width="max-content">
+                                            <Menu.Target>
+                                                <Button
+                                                    variant="subtle"
+                                                    size="xs"
+                                                    color={myReaction ? undefined : 'gray'}
+                                                    leftSection={
+                                                        <span className="reaction-target-emoji">
+                                                            {myReaction
+                                                                ? FeedReactionEnum.getEmoji(myReaction.reaction)
+                                                                : '👍'}
+                                                        </span>
+                                                    }
+                                                >
+                                                    {feed.reactions?.length ?? 0}
+                                                </Button>
+                                            </Menu.Target>
+                                            <Menu.Dropdown className="reaction-menu-dropdown">
+                                                <Group className="reaction-menu-group">
+                                                    {FeedReactionEnum.ALL_REACTIONS.map((r) => (
+                                                        <ActionIcon
+                                                            key={r.type}
+                                                            variant={myReaction?.reaction === r.type ? 'filled' : 'subtle'}
+                                                            color={myReaction?.reaction === r.type ? undefined : 'gray'}
+                                                            size={30}
+                                                            className="reaction-action-icon"
+                                                            onClick={() => handleReaction(feed.id, r.type, myReaction)}
+                                                            title={t(`feedReactions.${r.key}`)}
+                                                        >
+                                                            <span className="reaction-item-emoji">{r.emoji}</span>
+                                                        </ActionIcon>
+                                                    ))}
+                                                </Group>
+                                            </Menu.Dropdown>
+                                        </Menu>
 
                                         <Button
                                             variant="subtle"
@@ -709,21 +860,102 @@ export default function UserProfile() {
                                     <Stack gap="xs" mt="sm">
                                         {feed.comments?.map((c) => {
                                             const cAuthor = commentUsersMap[c.userId];
+                                            const canManageComment = currentUser?.id === c.userId || isAdmin;
+                                            const isEditing = editingCommentId === c.id;
+
                                             return (
                                                 <Paper key={c.id} p="xs" withBorder radius="sm">
                                                     <Group justify="space-between" mb={2}>
                                                         <Text size="xs" fw={600}>
                                                             {cAuthor
-                                                                ? `${cAuthor.firstName} ${cAuthor.lastName}`
+                                                                ? `${cAuthor.firstName ?? ''} ${cAuthor.lastName ?? ''}`.trim() || c.userId
                                                                 : c.userId}
                                                         </Text>
-                                                        <Text size="xs" c="dimmed">
-                                                            {c.createdAt
-                                                                ? new Date(c.createdAt).toLocaleTimeString()
-                                                                : ''}
-                                                        </Text>
+                                                        <Group gap={6}>
+                                                            <Text size="xs" c="dimmed">
+                                                                {c.createdAt
+                                                                    ? new Date(c.createdAt).toLocaleTimeString()
+                                                                    : ''}
+                                                            </Text>
+                                                            {canManageComment && !isEditing && (
+                                                                <Group gap={4}>
+                                                                    <Tooltip label={t('editComment')} withArrow>
+                                                                        <ActionIcon
+                                                                            size={30}
+                                                                            variant="light"
+                                                                            onClick={() => {
+                                                                                setEditingCommentId(c.id);
+                                                                                setEditingCommentText(c.text);
+                                                                            }}
+                                                                        >
+                                                                            <IconEdit size={16} />
+                                                                        </ActionIcon>
+                                                                    </Tooltip>
+                                                                    <Tooltip label={t('deleteComment')} withArrow>
+                                                                        <ActionIcon
+                                                                            size={30}
+                                                                            variant="light"
+                                                                            color="red"
+                                                                            onClick={() => deleteCommentMutation.mutate(c.id)}
+                                                                        >
+                                                                            <IconTrash size={16} />
+                                                                        </ActionIcon>
+                                                                    </Tooltip>
+                                                                </Group>
+                                                            )}
+                                                        </Group>
                                                     </Group>
-                                                    <Text size="xs">{c.text}</Text>
+
+                                                    {isEditing ? (
+                                                        <Group gap="xs" mt={4}>
+                                                            <TextInput
+                                                                size="xs"
+                                                                flex={1}
+                                                                value={editingCommentText}
+                                                                onChange={(e) => setEditingCommentText(e.currentTarget.value)}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter' && editingCommentText.trim()) {
+                                                                        updateCommentMutation.mutate({
+                                                                            id: c.id,
+                                                                            text: editingCommentText.trim(),
+                                                                        });
+                                                                    } else if (e.key === 'Escape') {
+                                                                        setEditingCommentId(null);
+                                                                    }
+                                                                }}
+                                                                autoFocus
+                                                            />
+                                                            <Tooltip label={t('save')} withArrow>
+                                                                <ActionIcon
+                                                                    size={30}
+                                                                    color="green"
+                                                                    variant="light"
+                                                                    onClick={() =>
+                                                                        updateCommentMutation.mutate({
+                                                                            id: c.id,
+                                                                            text: editingCommentText.trim(),
+                                                                        })
+                                                                    }
+                                                                    disabled={!editingCommentText.trim()}
+                                                                    loading={updateCommentMutation.isPending}
+                                                                >
+                                                                    <IconCheck size={16} />
+                                                                </ActionIcon>
+                                                            </Tooltip>
+                                                            <Tooltip label={t('cancel')} withArrow>
+                                                                <ActionIcon
+                                                                    size={30}
+                                                                    color="gray"
+                                                                    variant="subtle"
+                                                                    onClick={() => setEditingCommentId(null)}
+                                                                >
+                                                                    <IconX size={16} />
+                                                                </ActionIcon>
+                                                            </Tooltip>
+                                                        </Group>
+                                                    ) : (
+                                                        <Text size="xs" className="pre-wrap">{c.text}</Text>
+                                                    )}
                                                 </Paper>
                                             );
                                         })}
@@ -733,15 +965,31 @@ export default function UserProfile() {
                                                 placeholder={t('writeComment')}
                                                 size="xs"
                                                 flex={1}
-                                                value={commentText}
-                                                onChange={(e) => setCommentText(e.currentTarget.value)}
+                                                value={commentInputs[feed.id] ?? ''}
+                                                onChange={(e) =>
+                                                    setCommentInputs((prev) => ({
+                                                        ...prev,
+                                                        [feed.id]: e.currentTarget.value,
+                                                    }))
+                                                }
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && (commentInputs[feed.id] ?? '').trim()) {
+                                                        addCommentMutation.mutate({
+                                                            feedId: feed.id,
+                                                            text: (commentInputs[feed.id] ?? '').trim(),
+                                                        });
+                                                    }
+                                                }}
                                             />
                                             <Button
                                                 size="xs"
                                                 loading={addCommentMutation.isPending}
-                                                disabled={!commentText.trim()}
+                                                disabled={!(commentInputs[feed.id] ?? '').trim()}
                                                 onClick={() =>
-                                                    addCommentMutation.mutate({ feedId: feed.id, text: commentText })
+                                                    addCommentMutation.mutate({
+                                                        feedId: feed.id,
+                                                        text: (commentInputs[feed.id] ?? '').trim(),
+                                                    })
                                                 }
                                             >
                                                 {t('send')}
@@ -762,6 +1010,7 @@ export default function UserProfile() {
                         label={t('text')}
                         placeholder={t('storyDescriptionPlaceholder')}
                         value={storyText}
+                        error={storyFieldErrors.text}
                         onChange={(e) => setStoryText(e.currentTarget.value)}
                         required
                     />
@@ -770,6 +1019,7 @@ export default function UserProfile() {
                         placeholder={t('selectPhotoPlaceholder')}
                         accept="image/*"
                         value={storyPhoto}
+                        error={storyFieldErrors.photo}
                         onChange={setStoryPhoto}
                         clearable
                         required
@@ -794,6 +1044,7 @@ export default function UserProfile() {
                             placeholder={t('firstName')}
                             required
                             value={formData.firstName}
+                            error={editFieldErrors.firstName}
                             onChange={(e) => setFormData({ ...formData, firstName: e.currentTarget.value })}
                         />
                         <TextInput
@@ -801,6 +1052,7 @@ export default function UserProfile() {
                             placeholder={t('lastName')}
                             required
                             value={formData.lastName}
+                            error={editFieldErrors.lastName}
                             onChange={(e) => setFormData({ ...formData, lastName: e.currentTarget.value })}
                         />
                     </SimpleGrid>
@@ -811,6 +1063,7 @@ export default function UserProfile() {
                             placeholder={t('link')}
                             required
                             value={formData.link}
+                            error={editFieldErrors.link}
                             onChange={(e) => setFormData({ ...formData, link: e.currentTarget.value })}
                         />
                         <TextInput
@@ -818,6 +1071,7 @@ export default function UserProfile() {
                             placeholder="123456789"
                             required
                             value={formData.phone}
+                            error={editFieldErrors.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.currentTarget.value })}
                         />
                     </SimpleGrid>
@@ -827,6 +1081,7 @@ export default function UserProfile() {
                         type="date"
                         required
                         value={formData.birthAt}
+                        error={editFieldErrors.birthAt}
                         onChange={(e) => setFormData({ ...formData, birthAt: e.currentTarget.value })}
                     />
 
@@ -835,6 +1090,7 @@ export default function UserProfile() {
                         placeholder={t('bio')}
                         required
                         value={formData.bio}
+                        error={editFieldErrors.bio}
                         onChange={(e) => setFormData({ ...formData, bio: e.currentTarget.value })}
                     />
 
@@ -846,6 +1102,7 @@ export default function UserProfile() {
                             leftSection={<IconPhoto size={16} />}
                             value={profilePhotoFile}
                             onChange={setProfilePhotoFile}
+                            error={editFieldErrors.profilePhoto}
                             clearable
                             required
                         />
@@ -856,6 +1113,7 @@ export default function UserProfile() {
                             leftSection={<IconPhoto size={16} />}
                             value={backgroundPhotoFile}
                             onChange={setBackgroundPhotoFile}
+                            error={editFieldErrors.backgroundPhoto}
                             clearable
                             required
                         />
@@ -869,6 +1127,7 @@ export default function UserProfile() {
                             clearable
                             data={CountryEnum.getOptions(t).map((c) => ({ value: String(c.value), label: c.label }))}
                             value={formData.country}
+                            error={editFieldErrors.country}
                             onChange={(val) => setFormData({ ...formData, country: val })}
                             searchable
                         />
@@ -879,6 +1138,7 @@ export default function UserProfile() {
                             clearable
                             data={GenderEnum.getOptions(t).map((g) => ({ value: String(g.value), label: g.label }))}
                             value={formData.gender}
+                            error={editFieldErrors.gender}
                             onChange={(val) => setFormData({ ...formData, gender: val })}
                         />
                     </SimpleGrid>
@@ -891,6 +1151,7 @@ export default function UserProfile() {
                             clearable
                             data={ThemeEnum.getOptions(t).map((th) => ({ value: String(th.value), label: th.label }))}
                             value={formData.theme}
+                            error={editFieldErrors.theme}
                             onChange={(val) => setFormData({ ...formData, theme: val })}
                         />
                         <Select
@@ -900,6 +1161,7 @@ export default function UserProfile() {
                             clearable
                             data={LanguageEnum.getOptions(t).map((l) => ({ value: String(l.value), label: l.label }))}
                             value={formData.language}
+                            error={editFieldErrors.language}
                             onChange={(val) => setFormData({ ...formData, language: val })}
                         />
                         <Select
@@ -909,6 +1171,7 @@ export default function UserProfile() {
                             clearable
                             data={ColorEnum.getOptions(t).map((cl) => ({ value: String(cl.value), label: cl.label }))}
                             value={formData.color}
+                            error={editFieldErrors.color}
                             onChange={(val) => setFormData({ ...formData, color: val })}
                         />
                     </SimpleGrid>
@@ -920,6 +1183,7 @@ export default function UserProfile() {
                         clearable
                         data={RoleEnum.getOptions(t).map((r) => ({ value: String(r.value), label: r.label }))}
                         value={formData.roles}
+                        error={editFieldErrors.roles}
                         onChange={(val) => setFormData({ ...formData, roles: val })}
                     />
 
@@ -929,6 +1193,7 @@ export default function UserProfile() {
                         clearable
                         data={DisciplineEnum.getOptions(t).map((d) => ({ value: String(d.value), label: d.label }))}
                         value={formData.disciplines}
+                        error={editFieldErrors.disciplines}
                         onChange={(val) => setFormData({ ...formData, disciplines: val })}
                     />
 
@@ -937,6 +1202,7 @@ export default function UserProfile() {
                         type="password"
                         placeholder={t('passwordOptional')}
                         value={formData.password}
+                        error={editFieldErrors.password}
                         onChange={(e) => setFormData({ ...formData, password: e.currentTarget.value })}
                     />
 
@@ -965,6 +1231,13 @@ export default function UserProfile() {
                     </Button>
                 </Stack>
             </Modal>
+
+            {/* Story Viewer Modal */}
+            <StoryViewerModal
+                opened={storyViewerOpened}
+                onClose={() => setStoryViewerOpened(false)}
+                groups={userStoryGroups}
+            />
         </Stack>
     );
 }

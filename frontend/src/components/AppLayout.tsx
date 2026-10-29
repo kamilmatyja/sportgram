@@ -12,7 +12,16 @@ import {
     SegmentedControl,
     UnstyledButton,
 } from '@mantine/core';
-import { IconSun, IconMoon, IconLogout, IconUser } from '@tabler/icons-react';
+import {
+    IconSun,
+    IconMoon,
+    IconLogout,
+    IconUser,
+    IconUsers,
+    IconBuildingStore,
+    IconCalendarEvent,
+    IconChartBar,
+} from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
@@ -37,10 +46,10 @@ export function AppLayout({ children }: AppLayoutProps) {
     const userLink = currentUser?.link ?? '';
 
     const navItems = [
-        { path: '/users', label: t('navUsers') },
-        { path: '/pages', label: t('navPages') },
-        { path: '/events', label: t('navEvents') },
-        { path: '/statistics', label: t('navStatistics') },
+        { path: '/users', label: t('navUsers'), icon: <IconUsers size={16} /> },
+        { path: '/pages', label: t('navPages'), icon: <IconBuildingStore size={16} /> },
+        { path: '/events', label: t('navEvents'), icon: <IconCalendarEvent size={16} /> },
+        { path: '/statistics', label: t('navStatistics'), icon: <IconChartBar size={16} /> },
     ];
 
     return (
@@ -62,12 +71,16 @@ export function AppLayout({ children }: AppLayoutProps) {
                             {isAuthenticated && (
                                 <Group gap={4} visibleFrom="sm" wrap="nowrap">
                                     {navItems.map((item) => {
-                                        const isActive = location.pathname.startsWith(item.path);
+                                        const isActive =
+                                            item.path === '/users'
+                                                ? location.pathname === '/users'
+                                                : location.pathname.startsWith(item.path);
                                         return (
                                             <Button
                                                 key={item.path}
                                                 variant={isActive ? 'light' : 'subtle'}
                                                 size="xs"
+                                                leftSection={item.icon}
                                                 onClick={() => handleNav(item.path)}
                                             >
                                                 {item.label}
@@ -96,11 +109,11 @@ export function AppLayout({ children }: AppLayoutProps) {
                                     {/* Dark / Light toggle for guest */}
                                     <ActionIcon
                                         variant="default"
-                                        size="lg"
+                                        size={30}
                                         onClick={() => toggleColorScheme()}
                                         aria-label={t('toggleTheme')}
                                     >
-                                        {colorScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
+                                        {colorScheme === 'dark' ? <IconSun size={16} /> : <IconMoon size={16} />}
                                     </ActionIcon>
 
                                     <Button variant="default" size="xs" onClick={() => handleNav('/sign')}>

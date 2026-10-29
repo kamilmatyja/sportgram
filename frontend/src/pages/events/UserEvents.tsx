@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import NotFound from '../../components/NotFound';
 import {
     Group,
     Text,
@@ -14,6 +15,9 @@ import {
     Textarea,
     Avatar,
     Paper,
+    Center,
+    Loader,
+    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -21,7 +25,7 @@ import { IconEye, IconTrash, IconPlus } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { userService, eventService, pageService, type EventResource, type GetEventsQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
@@ -30,9 +34,15 @@ import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 
+interface FormEventSubDistance {
+    id: string;
+    subDistance: string;
+}
+
 interface FormEventDistance {
     id: string;
     distance: string;
+    subDistances: FormEventSubDistance[];
 }
 
 interface FormEventDiscipline {
@@ -69,8 +79,9 @@ export default function UserEvents() {
         endedAt: '',
     });
     const [disciplines, setDisciplines] = useState<FormEventDiscipline[]>([]);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    const { data: targetUser } = useQuery({
+    const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: () => userService.getUserByLink(link || ''),
         enabled: !!link,
@@ -155,7 +166,7 @@ export default function UserEvents() {
             {
                 id: crypto.randomUUID(),
                 discipline: null,
-                distances: [{ id: crypto.randomUUID(), distance: '' }],
+                distances: [{ id: crypto.randomUUID(), distance: '', subDistances: [] }],
             },
         ]);
     };
@@ -174,7 +185,66 @@ export default function UserEvents() {
                 if (d.id !== discId) return d;
                 return {
                     ...d,
-                    distances: [...d.distances, { id: crypto.randomUUID(), distance: '' }],
+                    distances: [...d.distances, { id: crypto.randomUUID(), distance: '', subDistances: [] }],
+                };
+            }),
+        );
+    };
+
+    const handleAddSubDistance = (discId: string, distId: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => {
+                        if (dist.id !== distId) return dist;
+                        return {
+                            ...dist,
+                            subDistances: [
+                                ...(dist.subDistances || []),
+                                { id: crypto.randomUUID(), subDistance: '' },
+                            ],
+                        };
+                    }),
+                };
+            }),
+        );
+    };
+
+    const handleRemoveSubDistance = (discId: string, distId: string, subDistId: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => {
+                        if (dist.id !== distId) return dist;
+                        return {
+                            ...dist,
+                            subDistances: (dist.subDistances || []).filter((sd) => sd.id !== subDistId),
+                        };
+                    }),
+                };
+            }),
+        );
+    };
+
+    const handleSubDistanceChange = (discId: string, distId: string, subDistId: string, value: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => {
+                        if (dist.id !== distId) return dist;
+                        return {
+                            ...dist,
+                            subDistances: (dist.subDistances || []).map((sd) =>
+                                sd.id === subDistId ? { ...sd, subDistance: value } : sd,
+                            ),
+                        };
+                    }),
                 };
             }),
         );
@@ -223,8 +293,10 @@ export default function UserEvents() {
                 disciplines: disciplines.map((d) => ({
                     discipline: Number(d.discipline) as DisciplineEnum,
                     distances: d.distances.map((dist) => ({
-                        distance: Number(dist.distance) || 0,
-                        subDistances: [],
+                        distance: Math.round(Number(dist.distance)) || 0,
+                        subDistances: (dist.subDistances || []).map((sd) => ({
+                            subDistance: Math.round(Number(sd.subDistance)) || 0,
+                        })),
                     })),
                 })),
             });
@@ -243,10 +315,13 @@ export default function UserEvents() {
                 endedAt: '',
             });
             setDisciplines([]);
+            setFieldErrors({});
             queryClient.invalidateQueries({ queryKey: ['user-events', targetUser?.id] });
-            notifications.show({ title: t('events'), message: t('saved'), color: 'green' });
+            notifications.show({ title: t('events'), message: t('eventCreated'), color: 'green' });
         },
         onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -255,7 +330,7 @@ export default function UserEvents() {
         mutationFn: (id: string) => eventService.deleteEvent(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['user-events', targetUser?.id] });
-            notifications.show({ title: t('events'), message: t('deleted'), color: 'blue' });
+            notifications.show({ title: t('events'), message: t('eventDeleted'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -359,9 +434,21 @@ export default function UserEvents() {
         </SimpleGrid>
     );
 
+    if (userLoading) {
+        return (
+            <Center h={200}>
+                <Loader />
+            </Center>
+        );
+    }
+
+    if (!targetUser) {
+        return <NotFound title={t('userNotFound')} />;
+    }
+
     return (
         <Stack gap="md">
-            {targetUser && <UserProfileNav user={targetUser} isOwner={isOwner} />}
+            <UserProfileNav user={targetUser} isOwner={isOwner} />
             <DataTable
                 columns={columns}
                 data={events}
@@ -387,25 +474,31 @@ export default function UserEvents() {
                 onAdd={(isOwner && isOrganizer) || isAdmin ? open : undefined}
                 addLabel={t('addEvent')}
                 actions={(ev) => (
-                    <Group gap="xs" justify="flex-end">
-                        <Button
-                            component={Link}
-                            to={`/events/${ev.link}`}
-                            variant="light"
-                            size="xs"
-                            leftSection={<IconEye size={14} />}
-                        >
-                            {t('details')}
-                        </Button>
-                        {canManage && (
+                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                        <Tooltip label={t('details')} withArrow>
                             <ActionIcon
-                                variant="subtle"
-                                color="red"
-                                size="sm"
-                                onClick={() => deleteMutation.mutate(ev.id)}
+                                component={Link}
+                                to={`/events/${ev.link}`}
+                                variant="light"
+                                color="blue"
+                                size={30}
+                                aria-label={t('details')}
                             >
-                                <IconTrash size={16} />
+                                <IconEye size={16} />
                             </ActionIcon>
+                        </Tooltip>
+                        {canManage && (
+                            <Tooltip label={t('delete')} withArrow>
+                                <ActionIcon
+                                    variant="light"
+                                    color="red"
+                                    size={30}
+                                    onClick={() => deleteMutation.mutate(ev.id)}
+                                    aria-label={t('delete')}
+                                >
+                                    <IconTrash size={16} />
+                                </ActionIcon>
+                            </Tooltip>
                         )}
                     </Group>
                 )}
@@ -428,6 +521,7 @@ export default function UserEvents() {
                         placeholder={t('title')}
                         required
                         value={formData.title}
+                        error={fieldErrors.title}
                         onChange={(e) => {
                             const title = e.currentTarget.value;
                             const link = title
@@ -443,6 +537,7 @@ export default function UserEvents() {
                         placeholder={t('link')}
                         required
                         value={formData.link}
+                        error={fieldErrors.link}
                         onChange={(e) => setFormData({ ...formData, link: e.currentTarget.value })}
                     />
 
@@ -451,6 +546,7 @@ export default function UserEvents() {
                         placeholder={t('location')}
                         required
                         value={formData.location}
+                        error={fieldErrors.location}
                         onChange={(e) => setFormData({ ...formData, location: e.currentTarget.value })}
                     />
 
@@ -460,6 +556,7 @@ export default function UserEvents() {
                             type="datetime-local"
                             required
                             value={formData.startedAt}
+                            error={fieldErrors.startedAt}
                             onChange={(e) => setFormData({ ...formData, startedAt: e.currentTarget.value })}
                         />
                         <TextInput
@@ -467,6 +564,7 @@ export default function UserEvents() {
                             type="datetime-local"
                             required
                             value={formData.endedAt}
+                            error={fieldErrors.endedAt}
                             onChange={(e) => setFormData({ ...formData, endedAt: e.currentTarget.value })}
                         />
                     </SimpleGrid>
@@ -477,6 +575,7 @@ export default function UserEvents() {
                         required
                         accept="image/*"
                         value={photoFile}
+                        error={fieldErrors.photo}
                         onChange={setPhotoFile}
                         clearable
                     />
@@ -488,7 +587,7 @@ export default function UserEvents() {
                         <Button
                             size="xs"
                             variant="light"
-                            leftSection={<IconPlus size={14} />}
+                            leftSection={<IconPlus size={16} />}
                             onClick={handleAddDiscipline}
                         >
                             {t('addDiscipline')}
@@ -496,11 +595,11 @@ export default function UserEvents() {
                     </Group>
 
                     <Stack gap="sm">
-                        {disciplines.map((d, dIdx) => (
+                        {disciplines.map((d) => (
                             <Paper key={d.id} withBorder p="sm" radius="md">
                                 <Group justify="space-between" align="flex-end" mb="xs">
                                     <Select
-                                        label={`${t('discipline')} #${dIdx + 1}`}
+                                        label={t('discipline')}
                                         placeholder={t('discipline')}
                                         required
                                         clearable
@@ -516,42 +615,86 @@ export default function UserEvents() {
                                         size="xs"
                                         color="red"
                                         variant="subtle"
-                                        leftSection={<IconTrash size={14} />}
+                                        leftSection={<IconTrash size={16} />}
                                         onClick={() => handleRemoveDiscipline(d.id)}
                                     >
                                         {t('delete')}
                                     </Button>
                                 </Group>
 
-                                <Stack gap="xs" mt="xs">
+                                <Stack gap="sm" mt="xs">
                                     {d.distances.map((dist) => (
-                                        <Group key={dist.id} gap="xs" align="flex-end">
-                                            <TextInput
-                                                label={t('distanceMeters')}
-                                                placeholder="5000"
-                                                required
-                                                flex={1}
-                                                value={dist.distance}
-                                                onChange={(e) =>
-                                                    handleDistanceChange(d.id, dist.id, e.currentTarget.value)
-                                                }
-                                            />
-                                            <ActionIcon
-                                                color="red"
-                                                variant="subtle"
-                                                size="lg"
-                                                onClick={() => handleRemoveDistance(d.id, dist.id)}
-                                                title={t('delete')}
-                                            >
-                                                <IconTrash size={16} />
-                                            </ActionIcon>
-                                        </Group>
+                                        <Paper key={dist.id} p="xs" radius="sm" withBorder bg="var(--mantine-color-gray-light)">
+                                            <Group gap="xs" align="flex-end">
+                                                <TextInput
+                                                    label={t('distanceMeters')}
+                                                    placeholder="5000"
+                                                    required
+                                                    flex={1}
+                                                    value={dist.distance}
+                                                    onChange={(e) =>
+                                                        handleDistanceChange(d.id, dist.id, e.currentTarget.value)
+                                                    }
+                                                />
+                                                <ActionIcon
+                                                    color="red"
+                                                    variant="light"
+                                                    size={30}
+                                                    onClick={() => handleRemoveDistance(d.id, dist.id)}
+                                                    title={t('delete')}
+                                                >
+                                                    <IconTrash size={16} />
+                                                </ActionIcon>
+                                            </Group>
+
+                                            {/* Sub-distances section */}
+                                            <Stack gap="xs" mt="xs" pl="sm" className="subdistances-container">
+                                                <Group justify="space-between" align="center">
+                                                    <Text size="xs" fw={600} c="dimmed">
+                                                        {t('subDistances')}
+                                                    </Text>
+                                                    <Button
+                                                        size="compact-xs"
+                                                        variant="subtle"
+                                                        leftSection={<IconPlus size={16} />}
+                                                        onClick={() => handleAddSubDistance(d.id, dist.id)}
+                                                    >
+                                                        {t('addSubDistance')}
+                                                    </Button>
+                                                </Group>
+
+                                                {dist.subDistances?.map((sd) => (
+                                                    <Group key={sd.id} gap="xs" align="flex-end">
+                                                        <TextInput
+                                                            size="xs"
+                                                            label={t('subDistanceMeters')}
+                                                            placeholder="1000"
+                                                            required
+                                                            flex={1}
+                                                            value={sd.subDistance}
+                                                            onChange={(e) =>
+                                                                handleSubDistanceChange(d.id, dist.id, sd.id, e.currentTarget.value)
+                                                            }
+                                                        />
+                                                        <ActionIcon
+                                                            color="red"
+                                                            variant="subtle"
+                                                            size={30}
+                                                            onClick={() => handleRemoveSubDistance(d.id, dist.id, sd.id)}
+                                                            title={t('delete')}
+                                                        >
+                                                            <IconTrash size={16} />
+                                                        </ActionIcon>
+                                                    </Group>
+                                                ))}
+                                            </Stack>
+                                        </Paper>
                                     ))}
 
                                     <Button
                                         size="xs"
                                         variant="subtle"
-                                        leftSection={<IconPlus size={14} />}
+                                        leftSection={<IconPlus size={16} />}
                                         onClick={() => handleAddDistance(d.id)}
                                     >
                                         {t('addDistance')}
@@ -567,6 +710,7 @@ export default function UserEvents() {
                         required
                         rows={2}
                         value={formData.description}
+                        error={fieldErrors.description}
                         onChange={(e) => setFormData({ ...formData, description: e.currentTarget.value })}
                     />
 
@@ -576,6 +720,7 @@ export default function UserEvents() {
                         required
                         rows={2}
                         value={formData.rules}
+                        error={fieldErrors.rules}
                         onChange={(e) => setFormData({ ...formData, rules: e.currentTarget.value })}
                     />
 
