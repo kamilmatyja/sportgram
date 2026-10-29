@@ -43,7 +43,14 @@ import { useParams, Link } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import NotFound from '../../components/NotFound';
 import { StoryViewerModal, type UserStoriesGroup } from '../../components/StoryViewerModal';
-import { userService, friendService, feedService, storyService, type UserResource, type FeedReactionResource } from '../../api/services';
+import {
+    userService,
+    friendService,
+    feedService,
+    storyService,
+    type UserResource,
+    type FeedReactionResource,
+} from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { CountryEnum } from '../../enums/CountryEnum';
@@ -155,14 +162,9 @@ export default function UserProfile() {
 
     const userStoryGroups = useMemo<UserStoriesGroup[]>(() => {
         if (!userStoriesData || userStoriesData.length === 0 || !user) return [];
-        const parseTime = (dateStr?: string) =>
-            dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0;
-        const sortedStories = [...userStoriesData].sort(
-            (a, b) => parseTime(a.createdAt) - parseTime(b.createdAt),
-        );
-        const newestStory = [...userStoriesData].sort(
-            (a, b) => parseTime(b.createdAt) - parseTime(a.createdAt),
-        )[0];
+        const parseTime = (dateStr?: string) => (dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0);
+        const sortedStories = [...userStoriesData].sort((a, b) => parseTime(a.createdAt) - parseTime(b.createdAt));
+        const newestStory = [...userStoriesData].sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt))[0];
         return [
             {
                 userId: user.id,
@@ -662,8 +664,7 @@ export default function UserProfile() {
 
                         {/* Stories of this user grouped */}
                         {userStoryGroups.map((group) => {
-                            const storyImg =
-                                formatImageSrc(group.newestStory?.photo) || userProfilePhotoSrc;
+                            const storyImg = formatImageSrc(group.newestStory?.photo) || userProfilePhotoSrc;
                             return (
                                 <Stack
                                     key={group.userId}
@@ -829,7 +830,9 @@ export default function UserProfile() {
                                                     {FeedReactionEnum.ALL_REACTIONS.map((r) => (
                                                         <ActionIcon
                                                             key={r.type}
-                                                            variant={myReaction?.reaction === r.type ? 'filled' : 'subtle'}
+                                                            variant={
+                                                                myReaction?.reaction === r.type ? 'filled' : 'subtle'
+                                                            }
                                                             color={myReaction?.reaction === r.type ? undefined : 'gray'}
                                                             size={30}
                                                             className="reaction-action-icon"
@@ -868,7 +871,8 @@ export default function UserProfile() {
                                                     <Group justify="space-between" mb={2}>
                                                         <Text size="xs" fw={600}>
                                                             {cAuthor
-                                                                ? `${cAuthor.firstName ?? ''} ${cAuthor.lastName ?? ''}`.trim() || c.userId
+                                                                ? `${cAuthor.firstName ?? ''} ${cAuthor.lastName ?? ''}`.trim() ||
+                                                                  c.userId
                                                                 : c.userId}
                                                         </Text>
                                                         <Group gap={6}>
@@ -896,7 +900,9 @@ export default function UserProfile() {
                                                                             size={30}
                                                                             variant="light"
                                                                             color="red"
-                                                                            onClick={() => deleteCommentMutation.mutate(c.id)}
+                                                                            onClick={() =>
+                                                                                deleteCommentMutation.mutate(c.id)
+                                                                            }
                                                                         >
                                                                             <IconTrash size={16} />
                                                                         </ActionIcon>
@@ -912,9 +918,14 @@ export default function UserProfile() {
                                                                 size="xs"
                                                                 flex={1}
                                                                 value={editingCommentText}
-                                                                onChange={(e) => setEditingCommentText(e.currentTarget.value)}
+                                                                onChange={(e) =>
+                                                                    setEditingCommentText(e.currentTarget.value)
+                                                                }
                                                                 onKeyDown={(e) => {
-                                                                    if (e.key === 'Enter' && editingCommentText.trim()) {
+                                                                    if (
+                                                                        e.key === 'Enter' &&
+                                                                        editingCommentText.trim()
+                                                                    ) {
                                                                         updateCommentMutation.mutate({
                                                                             id: c.id,
                                                                             text: editingCommentText.trim(),
@@ -954,7 +965,9 @@ export default function UserProfile() {
                                                             </Tooltip>
                                                         </Group>
                                                     ) : (
-                                                        <Text size="xs" className="pre-wrap">{c.text}</Text>
+                                                        <Text size="xs" className="pre-wrap">
+                                                            {c.text}
+                                                        </Text>
                                                     )}
                                                 </Paper>
                                             );

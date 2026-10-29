@@ -22,15 +22,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import {
-    IconPlus,
-    IconMessageCircle,
-    IconTrash,
-    IconPhoto,
-    IconEdit,
-    IconCheck,
-    IconX,
-} from '@tabler/icons-react';
+import { IconPlus, IconMessageCircle, IconTrash, IconPhoto, IconEdit, IconCheck, IconX } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
@@ -149,17 +141,12 @@ export default function Home() {
             map.get(story.userId)!.push(story);
         }
 
-        const parseTime = (dateStr?: string) =>
-            dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0;
+        const parseTime = (dateStr?: string) => (dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0);
 
         const groups: UserStoriesGroup[] = [];
         for (const [userId, userStories] of map.entries()) {
-            const sortedStories = [...userStories].sort(
-                (a, b) => parseTime(a.createdAt) - parseTime(b.createdAt),
-            );
-            const newestStory = [...userStories].sort(
-                (a, b) => parseTime(b.createdAt) - parseTime(a.createdAt),
-            )[0];
+            const sortedStories = [...userStories].sort((a, b) => parseTime(a.createdAt) - parseTime(b.createdAt));
+            const newestStory = [...userStories].sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt))[0];
             const author = usersMap[userId] ?? (currentUser?.id === userId ? currentUser : undefined);
             groups.push({
                 userId,
@@ -377,8 +364,7 @@ export default function Home() {
                         {userStoryGroups.map((group, gIdx) => {
                             const storyAuthor = group.author;
                             const storyImg =
-                                formatImageSrc(group.newestStory?.photo) ||
-                                formatImageSrc(storyAuthor?.profilePhoto);
+                                formatImageSrc(group.newestStory?.photo) || formatImageSrc(storyAuthor?.profilePhoto);
                             return (
                                 <Stack
                                     key={group.userId}
@@ -462,7 +448,8 @@ export default function Home() {
                     </Paper>
                 ) : (
                     feedsData?.map((feed) => {
-                        const author = usersMap[feed.userId] ?? (currentUser?.id === feed.userId ? currentUser : undefined);
+                        const author =
+                            usersMap[feed.userId] ?? (currentUser?.id === feed.userId ? currentUser : undefined);
                         const isOwner = currentUser?.id === feed.userId || isAdmin;
                         const commentsOpen = openCommentsFeedId === feed.id;
 
@@ -560,7 +547,9 @@ export default function Home() {
                                                     {FeedReactionEnum.ALL_REACTIONS.map((r) => (
                                                         <ActionIcon
                                                             key={r.type}
-                                                            variant={myReaction?.reaction === r.type ? 'filled' : 'subtle'}
+                                                            variant={
+                                                                myReaction?.reaction === r.type ? 'filled' : 'subtle'
+                                                            }
                                                             color={myReaction?.reaction === r.type ? undefined : 'gray'}
                                                             size={30}
                                                             className="reaction-action-icon"
@@ -590,7 +579,9 @@ export default function Home() {
                                 <Collapse expanded={commentsOpen}>
                                     <Stack gap="xs" mt="sm">
                                         {feed.comments?.map((c) => {
-                                            const cAuthor = usersMap[c.userId] ?? (currentUser?.id === c.userId ? currentUser : undefined);
+                                            const cAuthor =
+                                                usersMap[c.userId] ??
+                                                (currentUser?.id === c.userId ? currentUser : undefined);
                                             const canManageComment = currentUser?.id === c.userId || isAdmin;
                                             const isEditing = editingCommentId === c.id;
 
@@ -599,7 +590,8 @@ export default function Home() {
                                                     <Group justify="space-between" mb={2}>
                                                         <Text size="xs" fw={600}>
                                                             {cAuthor
-                                                                ? `${cAuthor.firstName ?? ''} ${cAuthor.lastName ?? ''}`.trim() || c.userId
+                                                                ? `${cAuthor.firstName ?? ''} ${cAuthor.lastName ?? ''}`.trim() ||
+                                                                  c.userId
                                                                 : c.userId}
                                                         </Text>
                                                         <Group gap={6}>
@@ -628,7 +620,9 @@ export default function Home() {
                                                                             size={30}
                                                                             variant="light"
                                                                             color="red"
-                                                                            onClick={() => deleteCommentMutation.mutate(c.id)}
+                                                                            onClick={() =>
+                                                                                deleteCommentMutation.mutate(c.id)
+                                                                            }
                                                                         >
                                                                             <IconTrash size={16} />
                                                                         </ActionIcon>
@@ -644,9 +638,14 @@ export default function Home() {
                                                                 size="xs"
                                                                 flex={1}
                                                                 value={editingCommentText}
-                                                                onChange={(e) => setEditingCommentText(e.currentTarget.value)}
+                                                                onChange={(e) =>
+                                                                    setEditingCommentText(e.currentTarget.value)
+                                                                }
                                                                 onKeyDown={(e) => {
-                                                                    if (e.key === 'Enter' && editingCommentText.trim()) {
+                                                                    if (
+                                                                        e.key === 'Enter' &&
+                                                                        editingCommentText.trim()
+                                                                    ) {
                                                                         updateCommentMutation.mutate({
                                                                             id: c.id,
                                                                             text: editingCommentText.trim(),
@@ -686,7 +685,9 @@ export default function Home() {
                                                             </Tooltip>
                                                         </Group>
                                                     ) : (
-                                                        <Text size="xs" className="pre-wrap">{c.text}</Text>
+                                                        <Text size="xs" className="pre-wrap">
+                                                            {c.text}
+                                                        </Text>
                                                     )}
                                                 </Paper>
                                             );

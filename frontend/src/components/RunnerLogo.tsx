@@ -43,12 +43,7 @@ export function RunnerLogo({ size = 32 }: RunnerLogoProps) {
             <circle cx="330" cy="120" r="34" fill="url(#sportgram-runner-g)" />
 
             {/* Torso */}
-            <path
-                d="M265 245 L310 170"
-                stroke="url(#sportgram-runner-g)"
-                strokeWidth="32"
-                strokeLinecap="round"
-            />
+            <path d="M265 245 L310 170" stroke="url(#sportgram-runner-g)" strokeWidth="32" strokeLinecap="round" />
 
             {/* Front Leg (knee forward and foot down) */}
             <path

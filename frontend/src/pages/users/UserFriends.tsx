@@ -1,6 +1,18 @@
 import { useState, useMemo } from 'react';
 import NotFound from '../../components/NotFound';
-import { Avatar, Group, Text, Badge, Stack, SimpleGrid, Select, Center, Loader, ActionIcon, Tooltip } from '@mantine/core';
+import {
+    Avatar,
+    Group,
+    Text,
+    Badge,
+    Stack,
+    SimpleGrid,
+    Select,
+    Center,
+    Loader,
+    ActionIcon,
+    Tooltip,
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconCheck, IconX, IconTrash, IconMessage } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -264,7 +276,10 @@ export default function UserFriends() {
                                             color="green"
                                             variant="light"
                                             onClick={() =>
-                                                updateStatusMutation.mutate({ id: f.id, status: FriendStatusEnum.ACCEPTED })
+                                                updateStatusMutation.mutate({
+                                                    id: f.id,
+                                                    status: FriendStatusEnum.ACCEPTED,
+                                                })
                                             }
                                             loading={updateStatusMutation.isPending}
                                         >
@@ -277,7 +292,10 @@ export default function UserFriends() {
                                             color="red"
                                             variant="light"
                                             onClick={() =>
-                                                updateStatusMutation.mutate({ id: f.id, status: FriendStatusEnum.REJECTED })
+                                                updateStatusMutation.mutate({
+                                                    id: f.id,
+                                                    status: FriendStatusEnum.REJECTED,
+                                                })
                                             }
                                             loading={updateStatusMutation.isPending}
                                         >

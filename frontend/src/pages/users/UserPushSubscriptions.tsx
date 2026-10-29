@@ -1,6 +1,19 @@
 import { useState, useMemo } from 'react';
 import NotFound from '../../components/NotFound';
-import { Text, Button, Badge, Modal, Stack, Alert, SimpleGrid, TextInput, Center, Loader, ActionIcon, Tooltip } from '@mantine/core';
+import {
+    Text,
+    Button,
+    Badge,
+    Modal,
+    Stack,
+    Alert,
+    SimpleGrid,
+    TextInput,
+    Center,
+    Loader,
+    ActionIcon,
+    Tooltip,
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconTrash, IconPlus } from '@tabler/icons-react';
@@ -154,7 +167,11 @@ export default function UserPushSubscriptions() {
         mutationFn: (id: string) => pushSubscriptionService.deleteSubscription(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-            notifications.show({ title: t('pushSubscriptions'), message: t('pushSubscriptionDeleted'), color: 'green' });
+            notifications.show({
+                title: t('pushSubscriptions'),
+                message: t('pushSubscriptionDeleted'),
+                color: 'green',
+            });
         },
     });
 

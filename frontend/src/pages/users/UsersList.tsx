@@ -1,5 +1,21 @@
 import { useState, useMemo } from 'react';
-import { Avatar, Group, Text, Badge, Button, SimpleGrid, TextInput, Select, Modal, Stack, MultiSelect, FileInput, Textarea, ActionIcon, Tooltip } from '@mantine/core';
+import {
+    Avatar,
+    Group,
+    Text,
+    Badge,
+    Button,
+    SimpleGrid,
+    TextInput,
+    Select,
+    Modal,
+    Stack,
+    MultiSelect,
+    FileInput,
+    Textarea,
+    ActionIcon,
+    Tooltip,
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPhoto } from '@tabler/icons-react';

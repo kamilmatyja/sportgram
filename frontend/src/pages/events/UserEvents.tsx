@@ -201,10 +201,7 @@ export default function UserEvents() {
                         if (dist.id !== distId) return dist;
                         return {
                             ...dist,
-                            subDistances: [
-                                ...(dist.subDistances || []),
-                                { id: crypto.randomUUID(), subDistance: '' },
-                            ],
+                            subDistances: [...(dist.subDistances || []), { id: crypto.randomUUID(), subDistance: '' }],
                         };
                     }),
                 };
@@ -624,7 +621,13 @@ export default function UserEvents() {
 
                                 <Stack gap="sm" mt="xs">
                                     {d.distances.map((dist) => (
-                                        <Paper key={dist.id} p="xs" radius="sm" withBorder bg="var(--mantine-color-gray-light)">
+                                        <Paper
+                                            key={dist.id}
+                                            p="xs"
+                                            radius="sm"
+                                            withBorder
+                                            bg="var(--mantine-color-gray-light)"
+                                        >
                                             <Group gap="xs" align="flex-end">
                                                 <TextInput
                                                     label={t('distanceMeters')}
@@ -673,14 +676,21 @@ export default function UserEvents() {
                                                             flex={1}
                                                             value={sd.subDistance}
                                                             onChange={(e) =>
-                                                                handleSubDistanceChange(d.id, dist.id, sd.id, e.currentTarget.value)
+                                                                handleSubDistanceChange(
+                                                                    d.id,
+                                                                    dist.id,
+                                                                    sd.id,
+                                                                    e.currentTarget.value,
+                                                                )
                                                             }
                                                         />
                                                         <ActionIcon
                                                             color="red"
                                                             variant="subtle"
                                                             size={30}
-                                                            onClick={() => handleRemoveSubDistance(d.id, dist.id, sd.id)}
+                                                            onClick={() =>
+                                                                handleRemoveSubDistance(d.id, dist.id, sd.id)
+                                                            }
                                                             title={t('delete')}
                                                         >
                                                             <IconTrash size={16} />

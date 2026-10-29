@@ -314,7 +314,10 @@ export default function UserStories() {
                 }
                 initialStoryIndex={
                     data?.data && viewingStory
-                        ? Math.max(0, data.data.findIndex((s) => s.id === viewingStory.id))
+                        ? Math.max(
+                              0,
+                              data.data.findIndex((s) => s.id === viewingStory.id),
+                          )
                         : 0
                 }
                 story={viewingStory}

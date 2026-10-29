@@ -36,11 +36,7 @@ export function StoryViewerModal({
     const { t } = useTranslation();
 
     const effectiveGroups: UserStoriesGroup[] =
-        groups && groups.length > 0
-            ? groups
-            : story
-              ? [{ userId: story.userId, author, stories: [story] }]
-              : [];
+        groups && groups.length > 0 ? groups : story ? [{ userId: story.userId, author, stories: [story] }] : [];
 
     const [currentGroupIdx, setCurrentGroupIdx] = useState(initialGroupIndex);
     const [currentStoryIdx, setCurrentStoryIdx] = useState(initialStoryIndex);

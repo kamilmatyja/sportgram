@@ -25,7 +25,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
-import { userService, trainingService, friendService, type TrainingResource, type GetTrainingsQuery } from '../../api/services';
+import {
+    userService,
+    trainingService,
+    friendService,
+    type TrainingResource,
+    type GetTrainingsQuery,
+} from '../../api/services';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
@@ -100,7 +106,7 @@ export default function UserTrainings() {
             });
             const friendsList = res.data ?? [];
             const otherIds = friendsList.map((f) =>
-                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId
+                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId,
             );
             if (otherIds.length === 0) return [];
             return await userService.getUsersByIds(otherIds);
@@ -316,7 +322,10 @@ export default function UserTrainings() {
                             time: Math.round(Number(sd.time)) || 0,
                             lat: sd.lat !== '' && !isNaN(Number(sd.lat)) ? Math.round(Number(sd.lat)) : null,
                             lng: sd.lng !== '' && !isNaN(Number(sd.lng)) ? Math.round(Number(sd.lng)) : null,
-                            accuracy: sd.accuracy !== '' && !isNaN(Number(sd.accuracy)) ? Math.round(Number(sd.accuracy)) : null,
+                            accuracy:
+                                sd.accuracy !== '' && !isNaN(Number(sd.accuracy))
+                                    ? Math.round(Number(sd.accuracy))
+                                    : null,
                             speed: sd.speed !== '' && !isNaN(Number(sd.speed)) ? Math.round(Number(sd.speed)) : null,
                         })),
                     })),
@@ -629,7 +638,13 @@ export default function UserTrainings() {
 
                                 <Stack gap="sm" mt="xs">
                                     {d.distances.map((dist) => (
-                                        <Paper key={dist.id} p="xs" radius="sm" withBorder bg="var(--mantine-color-gray-light)">
+                                        <Paper
+                                            key={dist.id}
+                                            p="xs"
+                                            radius="sm"
+                                            withBorder
+                                            bg="var(--mantine-color-gray-light)"
+                                        >
                                             <Group gap="xs" align="flex-end">
                                                 <TextInput
                                                     label={t('distanceMeters')}
@@ -653,7 +668,12 @@ export default function UserTrainings() {
                                                     flex={1}
                                                     value={dist.time}
                                                     onChange={(e) =>
-                                                        handleDistanceChange(d.id, dist.id, 'time', e.currentTarget.value)
+                                                        handleDistanceChange(
+                                                            d.id,
+                                                            dist.id,
+                                                            'time',
+                                                            e.currentTarget.value,
+                                                        )
                                                     }
                                                 />
                                                 <ActionIcon
@@ -787,7 +807,9 @@ export default function UserTrainings() {
                                                                     color="red"
                                                                     variant="subtle"
                                                                     size={30}
-                                                                    onClick={() => handleRemoveSubDistance(d.id, dist.id, sd.id)}
+                                                                    onClick={() =>
+                                                                        handleRemoveSubDistance(d.id, dist.id, sd.id)
+                                                                    }
                                                                     title={t('delete')}
                                                                 >
                                                                     <IconTrash size={16} />

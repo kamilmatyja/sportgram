@@ -1,5 +1,19 @@
 import { useMemo } from 'react';
-import { Card, Title, Text, Group, Button, Stack, Badge, Table, Image, Paper, ActionIcon, Tooltip, MantineThemeProvider } from '@mantine/core';
+import {
+    Card,
+    Title,
+    Text,
+    Group,
+    Button,
+    Stack,
+    Badge,
+    Table,
+    Image,
+    Paper,
+    ActionIcon,
+    Tooltip,
+    MantineThemeProvider,
+} from '@mantine/core';
 import NotFound from '../../components/NotFound';
 import { notifications } from '@mantine/notifications';
 import { IconMapPin, IconClock, IconTrash, IconCheck } from '@tabler/icons-react';

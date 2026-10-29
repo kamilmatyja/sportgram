@@ -1,5 +1,19 @@
 import { useState, useEffect, useRef, useMemo, type SyntheticEvent } from 'react';
-import { Card, Title, Text, Group, TextInput, Button, Stack, Avatar, Paper, ScrollArea, Badge, ActionIcon, Tooltip } from '@mantine/core';
+import {
+    Card,
+    Title,
+    Text,
+    Group,
+    TextInput,
+    Button,
+    Stack,
+    Avatar,
+    Paper,
+    ScrollArea,
+    Badge,
+    ActionIcon,
+    Tooltip,
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconSend, IconMessage } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

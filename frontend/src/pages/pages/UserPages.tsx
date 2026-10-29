@@ -77,7 +77,7 @@ export default function UserPages() {
             });
             const friendsList = res.data ?? [];
             const otherIds = friendsList.map((f) =>
-                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId
+                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId,
             );
             if (otherIds.length === 0) return [];
             return await userService.getUsersByIds(otherIds);

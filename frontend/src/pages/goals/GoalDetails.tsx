@@ -1,4 +1,15 @@
-import { Card, Title, Text, Group, Stack, Badge, Table, ActionIcon, Tooltip, MantineThemeProvider } from '@mantine/core';
+import {
+    Card,
+    Title,
+    Text,
+    Group,
+    Stack,
+    Badge,
+    Table,
+    ActionIcon,
+    Tooltip,
+    MantineThemeProvider,
+} from '@mantine/core';
 import NotFound from '../../components/NotFound';
 import { notifications } from '@mantine/notifications';
 import { IconTrash } from '@tabler/icons-react';

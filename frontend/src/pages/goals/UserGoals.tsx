@@ -1,6 +1,20 @@
 import { useState, useMemo } from 'react';
 import NotFound from '../../components/NotFound';
-import { Text, Button, Modal, Stack, TextInput, Badge, Select, MultiSelect, SimpleGrid, Center, Loader, ActionIcon, Tooltip } from '@mantine/core';
+import {
+    Text,
+    Button,
+    Modal,
+    Stack,
+    TextInput,
+    Badge,
+    Select,
+    MultiSelect,
+    SimpleGrid,
+    Center,
+    Loader,
+    ActionIcon,
+    Tooltip,
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconEye } from '@tabler/icons-react';
@@ -64,7 +78,7 @@ export default function UserGoals() {
             });
             const friendsList = res.data ?? [];
             const otherIds = friendsList.map((f) =>
-                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId
+                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId,
             );
             if (otherIds.length === 0) return [];
             return await userService.getUsersByIds(otherIds);
@@ -344,13 +358,7 @@ export default function UserGoals() {
                 addLabel={t('addGoal')}
                 actions={(g) => (
                     <Tooltip label={t('details')} withArrow>
-                        <ActionIcon
-                            component={Link}
-                            to={`/goals/${g.link}`}
-                            variant="light"
-                            color="blue"
-                            size={30}
-                        >
+                        <ActionIcon component={Link} to={`/goals/${g.link}`} variant="light" color="blue" size={30}>
                             <IconEye size={16} />
                         </ActionIcon>
                     </Tooltip>
