@@ -33,6 +33,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
+import {openConfirmActionModal} from "../../utils/confirmModal.tsx";
 
 interface FormEventSubDistance {
     id: string;
@@ -334,6 +335,16 @@ export default function UserEvents() {
         },
     });
 
+    const handleDelete = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(id),
+        });
+    };
+
     const columns: Column<EventResource>[] = [
         {
             key: 'title',
@@ -401,7 +412,6 @@ export default function UserEvents() {
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
             <TextInput
                 label={t('title')}
-                placeholder={t('title')}
                 value={titleFilter}
                 onChange={(e) => {
                     setTitleFilter(e.currentTarget.value);
@@ -410,7 +420,6 @@ export default function UserEvents() {
             />
             <TextInput
                 label={t('link')}
-                placeholder={t('link')}
                 value={linkFilter}
                 onChange={(e) => {
                     setLinkFilter(e.currentTarget.value);
@@ -490,7 +499,9 @@ export default function UserEvents() {
                                     variant="light"
                                     color="red"
                                     size={30}
-                                    onClick={() => deleteMutation.mutate(ev.id)}
+                                    onClick={() => handleDelete(ev.id)}
+                                    loading={deleteMutation.isPending}
+                                    disabled={deleteMutation.isPending}
                                     aria-label={t('delete')}
                                 >
                                     <IconTrash size={16} />
@@ -515,7 +526,6 @@ export default function UserEvents() {
 
                     <TextInput
                         label={t('title')}
-                        placeholder={t('title')}
                         required
                         value={formData.title}
                         error={fieldErrors.title}
@@ -531,7 +541,6 @@ export default function UserEvents() {
 
                     <TextInput
                         label={t('link')}
-                        placeholder={t('link')}
                         required
                         value={formData.link}
                         error={fieldErrors.link}
@@ -540,7 +549,6 @@ export default function UserEvents() {
 
                     <TextInput
                         label={t('location')}
-                        placeholder={t('location')}
                         required
                         value={formData.location}
                         error={fieldErrors.location}
@@ -631,7 +639,6 @@ export default function UserEvents() {
                                             <Group gap="xs" align="flex-end">
                                                 <TextInput
                                                     label={t('distanceMeters')}
-                                                    placeholder="5000"
                                                     required
                                                     flex={1}
                                                     value={dist.distance}
@@ -671,7 +678,6 @@ export default function UserEvents() {
                                                         <TextInput
                                                             size="xs"
                                                             label={t('subDistanceMeters')}
-                                                            placeholder="1000"
                                                             required
                                                             flex={1}
                                                             value={sd.subDistance}
@@ -716,7 +722,6 @@ export default function UserEvents() {
 
                     <Textarea
                         label={t('description')}
-                        placeholder={t('description')}
                         required
                         rows={2}
                         value={formData.description}
@@ -726,7 +731,6 @@ export default function UserEvents() {
 
                     <Textarea
                         label={t('rules')}
-                        placeholder={t('rules')}
                         required
                         rows={2}
                         value={formData.rules}
@@ -737,7 +741,7 @@ export default function UserEvents() {
                     <Button
                         mt="md"
                         loading={createMutation.isPending}
-                        disabled={!canSubmit}
+                        disabled={createMutation.isPending || !canSubmit}
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}

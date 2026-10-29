@@ -314,6 +314,8 @@ export const en = {
     enterRegisterCodePrompt: 'Enter the verification code sent to your email address.',
     enterResetCodeAndNewPassword: 'Enter the verification code and your new password.',
     emailPlaceholder: 'your@email.com',
+    passwordPlaceholder: '••••••••',
+    phonePlaceholder: '123456789',
     newPassword: 'New password',
     newPasswordOptional: 'New password (optional)',
 
@@ -469,4 +471,11 @@ export const en = {
     commentDeleted: 'Comment deleted',
     editComment: 'Edit comment',
     deleteComment: 'Delete comment',
+    confirm: 'Confirm',
+    confirmDeleteTitle: 'Confirm deletion',
+    confirmDeleteMessage: 'Are you sure you want to delete this item? This action cannot be undone.',
+    confirmFriendRemovalTitle: 'Confirm friend removal',
+    confirmFriendRemovalMessage: 'Are you sure you want to remove this friendship?',
+    confirmUserDeleteTitle: 'Confirm user deletion',
+    confirmUserDeleteMessage: 'Are you sure you want to delete this user? All associated data will be lost.',
 };

@@ -53,7 +53,20 @@ export default function TrainingDetails() {
             notifications.show({ title: t('trainings'), message: t('trainingDeleted'), color: 'green' });
             navigate(-1);
         },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
     });
+
+    const handleDelete = () => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(),
+        });
+    };
 
     if (isLoading) {
         return (
@@ -92,8 +105,10 @@ export default function TrainingDetails() {
                                     variant="light"
                                     color="red"
                                     size={30}
-                                    onClick={() => deleteMutation.mutate()}
+                                    onClick={handleDelete}
                                     loading={deleteMutation.isPending}
+                                    disabled={deleteMutation.isPending}
+                                    aria-label={t('delete')}
                                 >
                                     <IconTrash size={16} />
                                 </ActionIcon>

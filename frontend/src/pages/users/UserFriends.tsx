@@ -30,6 +30,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatImageSrc } from '../../utils/imageUtils';
 
 export default function UserFriends() {
@@ -136,7 +137,20 @@ export default function UserFriends() {
             queryClient.invalidateQueries({ queryKey: ['friends'] });
             notifications.show({ title: t('friends'), message: t('friendRemoved'), color: 'green' });
         },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
     });
+
+    const handleDelete = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmFriendRemovalTitle'),
+            message: t('confirmFriendRemovalMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(id),
+        });
+    };
 
     const columns: Column<FriendResource>[] = [
         {
@@ -325,8 +339,10 @@ export default function UserFriends() {
                                         size={30}
                                         color="red"
                                         variant="light"
-                                        onClick={() => deleteMutation.mutate(f.id)}
+                                        onClick={() => handleDelete(f.id)}
                                         loading={deleteMutation.isPending}
+                                        disabled={deleteMutation.isPending}
+                                        aria-label={t('delete')}
                                     >
                                         <IconTrash size={16} />
                                     </ActionIcon>

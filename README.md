@@ -28,31 +28,6 @@
 - `docker-compose.yml` - środowisko lokalne
 - `Makefile` - automatyzacja najczęstszych komend
 
-## Standardy i Wytyczne Rozwoju (Skills)
-
-Szczegółowe reguły architektoniczne i implementacyjne znajdują się w folderze `skills/`:
-- [Standardy kodu frontendu](skills/frontend-standards/SKILL.md) (`skills/frontend-standards/SKILL.md`):
-  - Maksymalna abstrakcja, unikanie duplikacji (DRY) oraz maksymalne wykorzystanie istniejących paczek (`@mantine/core`, `@tanstack/react-query`, itp.).
-  - Pełna spójność implementacyjna i behawioralna podstron.
-  - Wszystkie style w dedykowanych plikach CSS (absolutny zakaz inline styli i atrybutu `style`).
-  - 100% tekstów w `useTranslation()` (zakaz surowych stringów).
-  - Formularze bez wartości domyślnych, bez placeholderów, bez ukrytych pól i z zabezpieczeniem double-submit (`loading`, `disabled`).
-  - Toasty dla każdej akcji API zmieniającej stan (POST, PUT, PATCH, DELETE): osobny toast w prawym górnym rogu z sukcesem/błędem, brak statycznych alertów w formularzach, błędy walidacji przypisywane bezpośrednio pod konkretne pola formularza (i nietrafiające do toasta).
-  - Konwencje nazewnictwa plików, zakaz debugów (`console.log`) oraz Definition of Done (`npm run check` i `npm run build`).
-- [UI Design System i Spójność Wizualna](skills/ui-design-system/SKILL.md) (`skills/ui-design-system/SKILL.md`):
-  - Ujednolicone wymiary, paddingi, marginesy, cienie, typografia, ikony i animacje.
-  - Pełne wsparcie dla motywu jasnego oraz ciemnego (Light / Dark mode).
-  - Stuprocentowa responsywność (Mobile-first, tablety, desktop).
-- [Standardy architektury backendu](skills/backend-standards/SKILL.md) (`skills/backend-standards/SKILL.md`):
-  - Nowoczesny PHP 8.5 (Property Hooks, strict_types=1) i Symfony 8.1.
-  - Brak tablic (`array`) na rzecz DTO, Value Objects i kolekcji.
-  - Silne i ścisłe typowanie wszystkich właściwości, argumentów i wartości zwracanych.
-  - Wszystkie typy i statusy jako enumy liczbowe (`BackedEnum: int`).
-  - Wszystkie ID encji jako UUID.
-  - Podział odpowiedzialności MVC: Kontroler, Validator, Serwis, Repozytorium, Entity, Resource/DTO, Voter, Event/Subscriber.
-  - Standardy REST API i szczegółowa dokumentacja Swagger / OpenAPI (`/api/doc`).
-  - Pełne obtestowanie w PHPUnit oraz Definition of Done (`php-cs-fixer` i `phpunit`).
-
 ## Budowanie
 
 ### Automatycznie

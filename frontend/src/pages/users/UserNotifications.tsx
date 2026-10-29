@@ -28,6 +28,8 @@ import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
 import { NotificationStatusEnum } from '../../enums/NotificationStatusEnum';
+import { openConfirmActionModal } from '../../utils/confirmModal';
+import {getErrorMessage} from "../../api/client.ts";
 
 export default function UserNotifications() {
     const { link } = useParams<{ link: string }>();
@@ -108,7 +110,20 @@ export default function UserNotifications() {
             queryClient.invalidateQueries({ queryKey: ['notifications'] });
             notifications.show({ title: t('notifications'), message: t('notificationDeleted'), color: 'green' });
         },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
     });
+
+    const handleDelete = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(id),
+        });
+    };
 
     const columns: Column<NotificationResource>[] = [
         {
@@ -143,7 +158,6 @@ export default function UserNotifications() {
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
             <TextInput
                 label={t('text')}
-                placeholder={t('text')}
                 value={textFilter}
                 onChange={(e) => {
                     setTextFilter(e.currentTarget.value);
@@ -211,6 +225,8 @@ export default function UserNotifications() {
                                     color="green"
                                     onClick={() => markAsReadMutation.mutate(n.id)}
                                     loading={markAsReadMutation.isPending}
+                                    disabled={markAsReadMutation.isPending}
+                                    aria-label={t('markAsRead')}
                                 >
                                     <IconCheck size={16} />
                                 </ActionIcon>
@@ -221,8 +237,10 @@ export default function UserNotifications() {
                                 size={30}
                                 color="red"
                                 variant="light"
-                                onClick={() => deleteMutation.mutate(n.id)}
+                                onClick={() => handleDelete(n.id)}
                                 loading={deleteMutation.isPending}
+                                disabled={deleteMutation.isPending}
+                                aria-label={t('delete')}
                             >
                                 <IconTrash size={16} />
                             </ActionIcon>

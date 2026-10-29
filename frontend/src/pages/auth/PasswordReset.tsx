@@ -7,10 +7,10 @@ import {
     Button,
     Stack,
     Anchor,
-    Alert,
     Group,
     PinInput,
     Text,
+    Container,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
@@ -29,7 +29,6 @@ export default function PasswordReset() {
     const [code, setCode] = useState('');
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const resetId = passwordResetSession.id();
@@ -37,25 +36,27 @@ export default function PasswordReset() {
     const handleEmailSubmit = async (e: SyntheticEvent) => {
         e.preventDefault();
         setLoading(true);
-        setError(null);
         setFieldErrors({});
 
         try {
             const data = await authService.passwordReset(email);
             if (!data?.id) {
-                setError(t('error'));
+                notifications.show({ title: t('error'), message: t('error'), color: 'red' });
                 return;
             }
 
             passwordResetSession.start(data.id, { email });
+            notifications.show({
+                title: t('passwordReset'),
+                message: t('enterResetCodeAndNewPassword'),
+                color: 'green',
+            });
             setStep(2);
         } catch (err) {
             const fe = extractFieldErrors(err);
             setFieldErrors(fe);
             if (Object.keys(fe).length === 0) {
-                setError(getErrorMessage(err));
-            } else {
-                setError(null);
+                notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
             }
         } finally {
             setLoading(false);
@@ -67,7 +68,6 @@ export default function PasswordReset() {
         if (!resetId) return;
 
         setLoading(true);
-        setError(null);
         setFieldErrors({});
 
         try {
@@ -103,9 +103,7 @@ export default function PasswordReset() {
             const fe = extractFieldErrors(err);
             setFieldErrors(fe);
             if (Object.keys(fe).length === 0) {
-                setError(getErrorMessage(err));
-            } else {
-                setError(null);
+                notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
             }
         } finally {
             setLoading(false);
@@ -120,31 +118,25 @@ export default function PasswordReset() {
             notifications.show({
                 title: t('resend'),
                 message: t('resendSuccess'),
-                color: 'blue',
+                color: 'green',
             });
         } catch (err) {
-            setError(getErrorMessage(err));
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Stack align="center" mt="xl">
-            <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={520}>
+        <Container size="xs" py="xl">
+            <Paper withBorder shadow="sm" p="xl" radius="md">
                 <Title order={2} ta="center" mb="lg">
                     {step === 1 ? t('passwordReset') : `${t('passwordReset')} – ${t('verify')}`}
                 </Title>
 
-                {error && (
-                    <Alert color="red" mb="md" withCloseButton onClose={() => setError(null)}>
-                        {error}
-                    </Alert>
-                )}
-
                 {step === 1 ? (
                     <form onSubmit={handleEmailSubmit}>
-                        <Stack>
+                        <Stack gap="md">
                             <TextInput
                                 label={t('email')}
                                 required
@@ -158,7 +150,7 @@ export default function PasswordReset() {
                                 }}
                             />
 
-                            <Button type="submit" fullWidth mt="md" loading={loading}>
+                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={loading}>
                                 {t('send')}
                             </Button>
 
@@ -172,7 +164,7 @@ export default function PasswordReset() {
                     </form>
                 ) : (
                     <form onSubmit={handleCodeSubmit}>
-                        <Stack align="center">
+                        <Stack align="center" gap="md">
                             <Text size="sm" c="dimmed" ta="center">
                                 {t('enterResetCodeAndNewPassword')}
                             </Text>
@@ -199,7 +191,7 @@ export default function PasswordReset() {
                             <PasswordInput
                                 label={t('newPassword')}
                                 required
-                                placeholder="••••••••"
+                                placeholder={t('passwordPlaceholder')}
                                 value={password}
                                 error={fieldErrors.password || fieldErrors.newPassword}
                                 onChange={(e) => {
@@ -219,7 +211,7 @@ export default function PasswordReset() {
                                 fullWidth
                                 mt="md"
                                 loading={loading}
-                                disabled={code.length < 6 || !password}
+                                disabled={loading || code.length < 6 || !password}
                             >
                                 {t('saveChanges')}
                             </Button>
@@ -228,14 +220,22 @@ export default function PasswordReset() {
                                 <Button
                                     variant="subtle"
                                     size="xs"
+                                    disabled={loading}
                                     onClick={() => {
                                         passwordResetSession.clear();
                                         setStep(1);
+                                        setFieldErrors({});
                                     }}
                                 >
                                     {t('cancel')}
                                 </Button>
-                                <Button variant="subtle" size="xs" onClick={handleResend} loading={loading}>
+                                <Button
+                                    variant="subtle"
+                                    size="xs"
+                                    onClick={handleResend}
+                                    loading={loading}
+                                    disabled={loading}
+                                >
                                     {t('resend')}
                                 </Button>
                             </Group>
@@ -243,6 +243,6 @@ export default function PasswordReset() {
                     </form>
                 )}
             </Paper>
-        </Stack>
+        </Container>
     );
 }

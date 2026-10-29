@@ -16,6 +16,7 @@ import {
 } from '@mantine/core';
 import { IconSearch, IconPlus, IconFilter, IconX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { EmptyState } from './EmptyState';
 
 export interface Column<T> {
     key: string;
@@ -96,6 +97,7 @@ export function DataTable<T extends Record<string, unknown>>({
                             {onSearchChange && (
                                 <TextInput
                                     placeholder={searchPlaceholder ?? t('search')}
+                                    aria-label={searchPlaceholder ?? t('search')}
                                     leftSection={<IconSearch size={16} />}
                                     value={search ?? ''}
                                     onChange={(e) => onSearchChange(e.currentTarget.value)}
@@ -107,6 +109,7 @@ export function DataTable<T extends Record<string, unknown>>({
                             {sortOptions && onSortChange && (
                                 <Select
                                     placeholder={t('sortBy')}
+                                    aria-label={t('sortBy')}
                                     data={sortOptions}
                                     value={sort ?? null}
                                     onChange={onSortChange}
@@ -199,8 +202,8 @@ export function DataTable<T extends Record<string, unknown>>({
                                 ))
                             ) : data.length === 0 ? (
                                 <Table.Tr>
-                                    <Table.Td colSpan={columns.length + (actions ? 1 : 0)} ta="center" p={32}>
-                                        <Text c="dimmed">{t('noRecords')}</Text>
+                                    <Table.Td colSpan={columns.length + (actions ? 1 : 0)} p="md">
+                                        <EmptyState title={t('noRecords')} />
                                     </Table.Td>
                                 </Table.Tr>
                             ) : (
@@ -230,6 +233,7 @@ export function DataTable<T extends Record<string, unknown>>({
                         <Group gap="xs">
                             {onLimitChange && (
                                 <Select
+                                    aria-label={t('perPage')}
                                     value={String(limit)}
                                     onChange={(v) => v && onLimitChange(Number(v))}
                                     data={['5', '10', '20', '50']}

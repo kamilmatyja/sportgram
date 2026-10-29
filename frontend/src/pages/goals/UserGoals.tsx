@@ -258,7 +258,6 @@ export default function UserGoals() {
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
             <TextInput
                 label={t('title')}
-                placeholder={t('title')}
                 value={textFilter}
                 onChange={(e) => {
                     setTextFilter(e.currentTarget.value);
@@ -267,7 +266,6 @@ export default function UserGoals() {
             />
             <TextInput
                 label={t('link')}
-                placeholder={t('link')}
                 value={linkFilter}
                 onChange={(e) => {
                     setLinkFilter(e.currentTarget.value);
@@ -287,7 +285,6 @@ export default function UserGoals() {
             />
             <TextInput
                 label={t('distanceMeters')}
-                placeholder="10000"
                 value={distanceFilter}
                 onChange={(e) => {
                     setDistanceFilter(e.currentTarget.value);
@@ -296,7 +293,6 @@ export default function UserGoals() {
             />
             <TextInput
                 label={t('timeSeconds')}
-                placeholder="3600"
                 value={timeFilter}
                 onChange={(e) => {
                     setTimeFilter(e.currentTarget.value);
@@ -369,7 +365,6 @@ export default function UserGoals() {
                 <Stack gap="sm">
                     <TextInput
                         label={t('title')}
-                        placeholder={t('title')}
                         required
                         value={formData.text}
                         error={fieldErrors.text}
@@ -384,7 +379,6 @@ export default function UserGoals() {
                     />
                     <TextInput
                         label={t('link')}
-                        placeholder={t('link')}
                         required
                         value={formData.link}
                         error={fieldErrors.link}
@@ -417,7 +411,6 @@ export default function UserGoals() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <TextInput
                             label={t('distanceMeters')}
-                            placeholder="10000"
                             required
                             value={formData.distance}
                             error={fieldErrors.distance}
@@ -425,7 +418,6 @@ export default function UserGoals() {
                         />
                         <TextInput
                             label={t('timeSeconds')}
-                            placeholder="3600"
                             value={formData.time}
                             error={fieldErrors.time}
                             onChange={(e) => setFormData({ ...formData, time: e.currentTarget.value })}
@@ -450,7 +442,7 @@ export default function UserGoals() {
                     <Button
                         mt="md"
                         loading={createMutation.isPending}
-                        disabled={!canSubmit}
+                        disabled={createMutation.isPending || !canSubmit}
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}

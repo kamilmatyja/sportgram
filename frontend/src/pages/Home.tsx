@@ -19,6 +19,7 @@ import {
     Image,
     Menu,
     Tooltip,
+    Skeleton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -38,6 +39,8 @@ import {
 import { useAuth } from '../auth/AuthContext';
 import { StoryViewerModal, type UserStoriesGroup } from '../components/StoryViewerModal';
 import { RunnerLogo } from '../components/RunnerLogo';
+import { EmptyState } from '../components/EmptyState';
+import { openConfirmActionModal } from '../utils/confirmModal';
 import { FeedReactionEnum } from '../enums/FeedReactionEnum';
 import { fileToBase64, formatImageSrc } from '../utils/imageUtils';
 
@@ -217,7 +220,30 @@ export default function Home() {
             queryClient.invalidateQueries({ queryKey: ['feeds'] });
             notifications.show({ title: t('feeds'), message: t('feedDeleted'), color: 'green' });
         },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
     });
+
+    const handleDeleteFeed = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteFeedMutation.mutate(id),
+        });
+    };
+
+    const handleDeleteComment = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteCommentMutation.mutate(id),
+        });
+    };
 
     // Add reaction mutation
     const addReactionMutation = useMutation({
@@ -427,7 +453,7 @@ export default function Home() {
                         <Button
                             size="xs"
                             loading={createFeedMutation.isPending}
-                            disabled={!feedText.trim() || !feedPhoto}
+                            disabled={createFeedMutation.isPending || !feedText.trim() || !feedPhoto}
                             onClick={() => createFeedMutation.mutate()}
                         >
                             {t('send')}
@@ -439,13 +465,21 @@ export default function Home() {
             {/* Feeds stream */}
             <Stack gap="md">
                 {feedsLoading ? (
-                    <Text ta="center" c="dimmed">
-                        {t('loadingFeeds')}
-                    </Text>
+                    Array.from({ length: 3 }).map((_, i) => (
+                        <Card key={i} withBorder radius="md" p="md">
+                            <Group gap="sm" mb="sm">
+                                <Skeleton height={40} circle />
+                                <Stack gap={6} flex={1}>
+                                    <Skeleton height={14} width="40%" />
+                                    <Skeleton height={10} width="20%" />
+                                </Stack>
+                            </Group>
+                            <Skeleton height={50} radius="sm" mb="sm" />
+                            <Skeleton height={180} radius="md" />
+                        </Card>
+                    ))
                 ) : feedsData?.length === 0 ? (
-                    <Paper withBorder p="xl" radius="md" ta="center">
-                        <Text c="dimmed">{t('noMoreFeeds')}</Text>
-                    </Paper>
+                    <EmptyState title={t('noMoreFeeds')} />
                 ) : (
                     feedsData?.map((feed) => {
                         const author =
@@ -496,7 +530,9 @@ export default function Home() {
                                                 variant="light"
                                                 color="red"
                                                 size={30}
-                                                onClick={() => deleteFeedMutation.mutate(feed.id)}
+                                                onClick={() => handleDeleteFeed(feed.id)}
+                                                loading={deleteFeedMutation.isPending}
+                                                disabled={deleteFeedMutation.isPending}
                                                 aria-label={t('delete')}
                                             >
                                                 <IconTrash size={16} />
@@ -620,9 +656,10 @@ export default function Home() {
                                                                             size={30}
                                                                             variant="light"
                                                                             color="red"
-                                                                            onClick={() =>
-                                                                                deleteCommentMutation.mutate(c.id)
-                                                                            }
+                                                                            onClick={() => handleDeleteComment(c.id)}
+                                                                            loading={deleteCommentMutation.isPending}
+                                                                            disabled={deleteCommentMutation.isPending}
+                                                                            aria-label={t('deleteComment')}
                                                                         >
                                                                             <IconTrash size={16} />
                                                                         </ActionIcon>
@@ -667,7 +704,10 @@ export default function Home() {
                                                                             text: editingCommentText.trim(),
                                                                         })
                                                                     }
-                                                                    disabled={!editingCommentText.trim()}
+                                                                    disabled={
+                                                                        updateCommentMutation.isPending ||
+                                                                        !editingCommentText.trim()
+                                                                    }
                                                                     loading={updateCommentMutation.isPending}
                                                                 >
                                                                     <IconCheck size={16} />
@@ -695,6 +735,7 @@ export default function Home() {
 
                                         <Group gap="xs" mt="xs">
                                             <TextInput
+                                                aria-label={t('writeComment')}
                                                 placeholder={t('writeComment')}
                                                 size="xs"
                                                 flex={1}
@@ -717,7 +758,10 @@ export default function Home() {
                                             <Button
                                                 size="xs"
                                                 loading={addCommentMutation.isPending}
-                                                disabled={!(commentInputs[feed.id] ?? '').trim()}
+                                                disabled={
+                                                    addCommentMutation.isPending ||
+                                                    !(commentInputs[feed.id] ?? '').trim()
+                                                }
                                                 onClick={() =>
                                                     addCommentMutation.mutate({
                                                         feedId: feed.id,
@@ -768,7 +812,7 @@ export default function Home() {
                     <Button
                         mt="md"
                         loading={createStoryMutation.isPending}
-                        disabled={!storyText.trim() || !storyPhoto}
+                        disabled={createStoryMutation.isPending || !storyText.trim() || !storyPhoto}
                         onClick={() => createStoryMutation.mutate()}
                     >
                         {t('add')}

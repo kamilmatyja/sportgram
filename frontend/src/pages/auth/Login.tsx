@@ -8,10 +8,10 @@ import {
     Button,
     Stack,
     Anchor,
-    Alert,
     Group,
     PinInput,
     Text,
+    Container,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +33,6 @@ export default function Login() {
     const [code, setCode] = useState('');
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const signId = signSession.id();
@@ -41,17 +40,21 @@ export default function Login() {
     const handleSignSubmit = async (e: SyntheticEvent) => {
         e.preventDefault();
         setLoading(true);
-        setError(null);
         setFieldErrors({});
 
         try {
             const data = await authService.sign({ email, password });
             if (!data?.id) {
-                setError(t('error'));
+                notifications.show({ title: t('error'), message: t('error'), color: 'red' });
                 return;
             }
 
             signSession.start(data.id, { rememberMe: rememberMe ? '1' : '' });
+            notifications.show({
+                title: t('sign'),
+                message: t('enterVerificationCodePrompt'),
+                color: 'green',
+            });
             setStep(2);
         } catch (apiErr) {
             const fe = extractFieldErrors(apiErr);
@@ -67,13 +70,11 @@ export default function Login() {
                         return;
                     }
                 } catch {
-                    // Fallthrough to setError
+                    // Fallthrough to notifications
                 }
             }
             if (Object.keys(fe).length === 0) {
-                setError(msg);
-            } else {
-                setError(null);
+                notifications.show({ title: t('error'), message: msg, color: 'red' });
             }
         } finally {
             setLoading(false);
@@ -85,13 +86,12 @@ export default function Login() {
         if (!signId) return;
 
         setLoading(true);
-        setError(null);
         setFieldErrors({});
 
         try {
             const data = await authService.confirmSign(signId, Number(code));
             if (!data?.token) {
-                setError(t('error'));
+                notifications.show({ title: t('error'), message: t('error'), color: 'red' });
                 return;
             }
 
@@ -108,9 +108,7 @@ export default function Login() {
             const fe = extractFieldErrors(err);
             setFieldErrors(fe);
             if (Object.keys(fe).length === 0) {
-                setError(getErrorMessage(err));
-            } else {
-                setError(null);
+                notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
             }
         } finally {
             setLoading(false);
@@ -125,10 +123,10 @@ export default function Login() {
             notifications.show({
                 title: t('resend'),
                 message: t('resendSuccess'),
-                color: 'blue',
+                color: 'green',
             });
         } catch (err) {
-            setError(getErrorMessage(err));
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         } finally {
             setLoading(false);
         }
@@ -137,26 +135,19 @@ export default function Login() {
     const handleBackToStep1 = () => {
         signSession.clear();
         setStep(1);
-        setError(null);
         setFieldErrors({});
     };
 
     return (
-        <Stack align="center" mt="xl">
-            <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={520}>
+        <Container size="xs" py="xl">
+            <Paper withBorder shadow="sm" p="xl" radius="md">
                 <Title order={2} ta="center" mb="lg">
                     {step === 1 ? t('sign') : `${t('sign')} – ${t('verify')}`}
                 </Title>
 
-                {error && (
-                    <Alert color="red" mb="md" withCloseButton onClose={() => setError(null)}>
-                        {error}
-                    </Alert>
-                )}
-
                 {step === 1 ? (
                     <form onSubmit={handleSignSubmit}>
-                        <Stack>
+                        <Stack gap="md">
                             <TextInput
                                 label={t('email')}
                                 required
@@ -173,7 +164,7 @@ export default function Login() {
                             <PasswordInput
                                 label={t('password')}
                                 required
-                                placeholder="••••••••"
+                                placeholder={t('passwordPlaceholder')}
                                 value={password}
                                 error={fieldErrors.password}
                                 onChange={(e) => {
@@ -193,7 +184,7 @@ export default function Login() {
                                 </Anchor>
                             </Group>
 
-                            <Button type="submit" fullWidth mt="md" loading={loading}>
+                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={loading}>
                                 {t('sign')}
                             </Button>
 
@@ -207,7 +198,7 @@ export default function Login() {
                     </form>
                 ) : (
                     <form onSubmit={handleCodeSubmit}>
-                        <Stack align="center">
+                        <Stack align="center" gap="md">
                             <Text size="sm" c="dimmed" ta="center">
                                 {t('enterVerificationCodePrompt')}
                             </Text>
@@ -231,15 +222,27 @@ export default function Login() {
                                 </Text>
                             )}
 
-                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={code.length < 6}>
+                            <Button
+                                type="submit"
+                                fullWidth
+                                mt="md"
+                                loading={loading}
+                                disabled={loading || code.length < 6}
+                            >
                                 {t('verify')}
                             </Button>
 
                             <Group justify="space-between" w="100%" mt="xs">
-                                <Button variant="subtle" size="xs" onClick={handleBackToStep1}>
+                                <Button variant="subtle" size="xs" onClick={handleBackToStep1} disabled={loading}>
                                     {t('cancel')}
                                 </Button>
-                                <Button variant="subtle" size="xs" onClick={handleResend} loading={loading}>
+                                <Button
+                                    variant="subtle"
+                                    size="xs"
+                                    onClick={handleResend}
+                                    loading={loading}
+                                    disabled={loading}
+                                >
                                     {t('resend')}
                                 </Button>
                             </Group>
@@ -247,6 +250,6 @@ export default function Login() {
                     </form>
                 )}
             </Paper>
-        </Stack>
+        </Container>
     );
 }

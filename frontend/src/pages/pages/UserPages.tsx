@@ -33,6 +33,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
+import {openConfirmActionModal} from "../../utils/confirmModal.tsx";
 
 export default function UserPages() {
     const { link } = useParams<{ link: string }>();
@@ -187,6 +188,16 @@ export default function UserPages() {
         },
     });
 
+    const handleDelete = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(id),
+        });
+    };
+
     const columns: Column<PageResource>[] = [
         {
             key: 'page',
@@ -239,7 +250,6 @@ export default function UserPages() {
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
             <TextInput
                 label={t('title')}
-                placeholder={t('title')}
                 value={title}
                 onChange={(e) => {
                     setTitle(e.currentTarget.value);
@@ -248,7 +258,6 @@ export default function UserPages() {
             />
             <TextInput
                 label={t('link')}
-                placeholder={t('link')}
                 value={linkFilter}
                 onChange={(e) => {
                     setLinkFilter(e.currentTarget.value);
@@ -328,7 +337,9 @@ export default function UserPages() {
                                     variant="light"
                                     color="red"
                                     size={30}
-                                    onClick={() => deleteMutation.mutate(p.id)}
+                                    onClick={() => handleDelete(p.id)}
+                                    loading={deleteMutation.isPending}
+                                    disabled={deleteMutation.isPending}
                                     aria-label={t('delete')}
                                 >
                                     <IconTrash size={16} />
@@ -343,7 +354,6 @@ export default function UserPages() {
                 <Stack gap="sm">
                     <TextInput
                         label={t('title')}
-                        placeholder={t('title')}
                         required
                         value={formData.title}
                         error={fieldErrors.title}
@@ -358,7 +368,6 @@ export default function UserPages() {
                     />
                     <TextInput
                         label={t('link')}
-                        placeholder={t('link')}
                         required
                         value={formData.link}
                         error={fieldErrors.link}
@@ -366,7 +375,6 @@ export default function UserPages() {
                     />
                     <Textarea
                         label={t('description')}
-                        placeholder={t('description')}
                         required
                         rows={3}
                         value={formData.description}
@@ -420,7 +428,7 @@ export default function UserPages() {
                     <Button
                         mt="md"
                         loading={createMutation.isPending}
-                        disabled={!canSubmit}
+                        disabled={createMutation.isPending || !canSubmit}
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}

@@ -314,6 +314,8 @@ export const pl = {
     enterRegisterCodePrompt: 'Wpisz kod weryfikacyjny wysłany na Twój adres email.',
     enterResetCodeAndNewPassword: 'Wpisz kod weryfikacyjny oraz nowe hasło.',
     emailPlaceholder: 'twoj@email.pl',
+    passwordPlaceholder: '••••••••',
+    phonePlaceholder: '123456789',
     newPassword: 'Nowe hasło',
     newPasswordOptional: 'Nowe hasło (opcjonalnie)',
 
@@ -469,4 +471,11 @@ export const pl = {
     commentDeleted: 'Komentarz usunięty',
     editComment: 'Edytuj komentarz',
     deleteComment: 'Usuń komentarz',
+    confirm: 'Potwierdź',
+    confirmDeleteTitle: 'Potwierdzenie usunięcia',
+    confirmDeleteMessage: 'Czy na pewno chcesz usunąć ten element? Tej operacji nie można cofnąć.',
+    confirmFriendRemovalTitle: 'Potwierdzenie usunięcia znajomości',
+    confirmFriendRemovalMessage: 'Czy na pewno chcesz usunąć tę znajomość?',
+    confirmUserDeleteTitle: 'Potwierdzenie usunięcia użytkownika',
+    confirmUserDeleteMessage: 'Czy na pewno chcesz usunąć tego użytkownika? Wszystkie powiązane dane zostaną utracone.',
 };

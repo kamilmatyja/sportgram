@@ -30,6 +30,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { UserProfileNav } from '../../components/UserProfileNav';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { openConfirmActionModal } from '../../utils/confirmModal';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 
 export default function UserStories() {
@@ -145,7 +146,20 @@ export default function UserStories() {
             queryClient.invalidateQueries({ queryKey: ['stories'] });
             notifications.show({ title: t('stories'), message: t('storyDeleted'), color: 'green' });
         },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
     });
+
+    const handleDelete = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(id),
+        });
+    };
 
     const columns: Column<StoryResource>[] = [
         {
@@ -195,7 +209,6 @@ export default function UserStories() {
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
             <TextInput
                 label={t('text')}
-                placeholder={t('text')}
                 value={textFilter}
                 onChange={(e) => {
                     setTextFilter(e.currentTarget.value);
@@ -262,8 +275,10 @@ export default function UserStories() {
                                 variant="light"
                                 color="red"
                                 size={30}
-                                onClick={() => deleteMutation.mutate(s.id)}
+                                onClick={() => handleDelete(s.id)}
                                 loading={deleteMutation.isPending}
+                                disabled={deleteMutation.isPending}
+                                aria-label={t('delete')}
                             >
                                 <IconTrash size={16} />
                             </ActionIcon>
@@ -296,7 +311,7 @@ export default function UserStories() {
                     />
                     <Button
                         loading={createMutation.isPending}
-                        disabled={!text.trim() || !photo}
+                        disabled={createMutation.isPending || !text.trim() || !photo}
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}

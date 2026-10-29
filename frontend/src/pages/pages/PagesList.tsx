@@ -210,7 +210,6 @@ export default function PagesList() {
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
             <TextInput
                 label={t('title')}
-                placeholder={t('title')}
                 value={title}
                 onChange={(e) => {
                     setTitle(e.currentTarget.value);
@@ -219,7 +218,6 @@ export default function PagesList() {
             />
             <TextInput
                 label={t('link')}
-                placeholder={t('link')}
                 value={linkFilter}
                 onChange={(e) => {
                     setLinkFilter(e.currentTarget.value);
@@ -286,7 +284,6 @@ export default function PagesList() {
                 <Stack gap="sm">
                     <TextInput
                         label={t('title')}
-                        placeholder={t('title')}
                         required
                         value={formData.title}
                         error={fieldErrors.title}
@@ -301,7 +298,6 @@ export default function PagesList() {
                     />
                     <TextInput
                         label={t('link')}
-                        placeholder={t('link')}
                         required
                         value={formData.link}
                         error={fieldErrors.link}
@@ -309,7 +305,6 @@ export default function PagesList() {
                     />
                     <Textarea
                         label={t('description')}
-                        placeholder={t('description')}
                         required
                         rows={3}
                         value={formData.description}
@@ -363,7 +358,7 @@ export default function PagesList() {
                     <Button
                         mt="md"
                         loading={createMutation.isPending}
-                        disabled={!canSubmit}
+                        disabled={createMutation.isPending || !canSubmit}
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}

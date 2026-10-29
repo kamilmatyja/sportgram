@@ -63,6 +63,7 @@ import { RoleEnum } from '../../enums/RoleEnum';
 import { ThemeEnum } from '../../enums/ThemeEnum';
 import { UserProfileNav } from '../../components/UserProfileNav';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
+import {openConfirmActionModal} from "../../utils/confirmModal.tsx";
 
 export default function UserProfile() {
     const { link } = useParams<{ link: string }>();
@@ -336,7 +337,40 @@ export default function UserProfile() {
             queryClient.invalidateQueries({ queryKey: ['friendship'] });
             notifications.show({ title: t('friend'), message: t('friendRemoved'), color: 'green' });
         },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
     });
+
+    const handleRemoveFriend = (friendId: string) => {
+        openConfirmActionModal({
+            title: t('confirmFriendRemovalTitle'),
+            message: t('confirmFriendRemovalMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => removeFriendMutation.mutate(friendId),
+        });
+    };
+
+    const handleDeleteFeed = (feedId: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteFeedMutation.mutate(feedId),
+        });
+    };
+
+    const handleDeleteComment = (commentId: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteCommentMutation.mutate(commentId),
+        });
+    };
 
     // Add feed mutation
     const createFeedMutation = useMutation({
@@ -392,6 +426,9 @@ export default function UserProfile() {
             queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
             queryClient.invalidateQueries({ queryKey: ['feeds'] });
             notifications.show({ title: t('feeds'), message: t('feedDeleted'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
 
@@ -578,10 +615,10 @@ export default function UserProfile() {
                                                     variant="light"
                                                     color="red"
                                                     size={30}
-                                                    onClick={() =>
-                                                        friendship?.id && removeFriendMutation.mutate(friendship.id)
-                                                    }
+                                                    onClick={() => friendship?.id && handleRemoveFriend(friendship.id)}
                                                     loading={removeFriendMutation.isPending}
+                                                    disabled={removeFriendMutation.isPending}
+                                                    aria-label={t('delete')}
                                                 >
                                                     <IconTrash size={16} />
                                                 </ActionIcon>
@@ -699,8 +736,8 @@ export default function UserProfile() {
                     <Stack gap="sm">
                         <Textarea
                             label={t('feeds')}
-                            required
                             placeholder={t('whatIsOnYourMind')}
+                            required
                             autosize
                             minRows={2}
                             value={feedText}
@@ -711,9 +748,9 @@ export default function UserProfile() {
                         <Group justify="space-between" align="flex-end">
                             <FileInput
                                 label={t('photo')}
+                                placeholder={t('selectPhoto')}
                                 required
                                 leftSection={<IconPhoto size={16} />}
-                                placeholder={t('selectPhoto')}
                                 accept="image/*"
                                 size="xs"
                                 value={feedPhoto}
@@ -726,7 +763,7 @@ export default function UserProfile() {
                             <Button
                                 size="xs"
                                 loading={createFeedMutation.isPending}
-                                disabled={!feedText.trim() || !feedPhoto}
+                                disabled={createFeedMutation.isPending || !feedText.trim() || !feedPhoto}
                                 onClick={() => createFeedMutation.mutate()}
                             >
                                 {t('send')}
@@ -779,7 +816,9 @@ export default function UserProfile() {
                                                 variant="light"
                                                 color="red"
                                                 size={30}
-                                                onClick={() => deleteFeedMutation.mutate(feed.id)}
+                                                onClick={() => handleDeleteFeed(feed.id)}
+                                                loading={deleteFeedMutation.isPending}
+                                                disabled={deleteFeedMutation.isPending}
                                                 aria-label={t('delete')}
                                             >
                                                 <IconTrash size={16} />
@@ -900,9 +939,10 @@ export default function UserProfile() {
                                                                             size={30}
                                                                             variant="light"
                                                                             color="red"
-                                                                            onClick={() =>
-                                                                                deleteCommentMutation.mutate(c.id)
-                                                                            }
+                                                                            onClick={() => handleDeleteComment(c.id)}
+                                                                            loading={deleteCommentMutation.isPending}
+                                                                            disabled={deleteCommentMutation.isPending}
+                                                                            aria-label={t('deleteComment')}
                                                                         >
                                                                             <IconTrash size={16} />
                                                                         </ActionIcon>
@@ -947,7 +987,10 @@ export default function UserProfile() {
                                                                             text: editingCommentText.trim(),
                                                                         })
                                                                     }
-                                                                    disabled={!editingCommentText.trim()}
+                                                                    disabled={
+                                                                        updateCommentMutation.isPending ||
+                                                                        !editingCommentText.trim()
+                                                                    }
                                                                     loading={updateCommentMutation.isPending}
                                                                 >
                                                                     <IconCheck size={16} />
@@ -975,6 +1018,7 @@ export default function UserProfile() {
 
                                         <Group gap="xs" mt="xs">
                                             <TextInput
+                                                aria-label={t('writeComment')}
                                                 placeholder={t('writeComment')}
                                                 size="xs"
                                                 flex={1}
@@ -997,7 +1041,10 @@ export default function UserProfile() {
                                             <Button
                                                 size="xs"
                                                 loading={addCommentMutation.isPending}
-                                                disabled={!(commentInputs[feed.id] ?? '').trim()}
+                                                disabled={
+                                                    addCommentMutation.isPending ||
+                                                    !(commentInputs[feed.id] ?? '').trim()
+                                                }
                                                 onClick={() =>
                                                     addCommentMutation.mutate({
                                                         feedId: feed.id,
@@ -1040,7 +1087,7 @@ export default function UserProfile() {
                     <Button
                         mt="md"
                         loading={createStoryMutation.isPending}
-                        disabled={!storyText.trim() || !storyPhoto}
+                        disabled={createStoryMutation.isPending || !storyText.trim() || !storyPhoto}
                         onClick={() => createStoryMutation.mutate()}
                     >
                         {t('add')}
@@ -1054,7 +1101,6 @@ export default function UserProfile() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <TextInput
                             label={t('firstName')}
-                            placeholder={t('firstName')}
                             required
                             value={formData.firstName}
                             error={editFieldErrors.firstName}
@@ -1062,7 +1108,6 @@ export default function UserProfile() {
                         />
                         <TextInput
                             label={t('lastName')}
-                            placeholder={t('lastName')}
                             required
                             value={formData.lastName}
                             error={editFieldErrors.lastName}
@@ -1073,7 +1118,6 @@ export default function UserProfile() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <TextInput
                             label={t('link')}
-                            placeholder={t('link')}
                             required
                             value={formData.link}
                             error={editFieldErrors.link}
@@ -1081,7 +1125,7 @@ export default function UserProfile() {
                         />
                         <TextInput
                             label={t('phone')}
-                            placeholder="123456789"
+                            placeholder={t('phonePlaceholder')}
                             required
                             value={formData.phone}
                             error={editFieldErrors.phone}
@@ -1100,7 +1144,6 @@ export default function UserProfile() {
 
                     <Textarea
                         label={t('bio')}
-                        placeholder={t('bio')}
                         required
                         value={formData.bio}
                         error={editFieldErrors.bio}
@@ -1213,7 +1256,7 @@ export default function UserProfile() {
                     <TextInput
                         label={t('newPasswordOptional')}
                         type="password"
-                        placeholder={t('passwordOptional')}
+                        placeholder={t('passwordPlaceholder')}
                         value={formData.password}
                         error={editFieldErrors.password}
                         onChange={(e) => setFormData({ ...formData, password: e.currentTarget.value })}
@@ -1223,6 +1266,7 @@ export default function UserProfile() {
                         mt="md"
                         loading={updateMutation.isPending}
                         disabled={
+                            updateMutation.isPending ||
                             !formData.firstName.trim() ||
                             !formData.lastName.trim() ||
                             !formData.link.trim() ||

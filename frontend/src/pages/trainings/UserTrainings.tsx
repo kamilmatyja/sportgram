@@ -434,7 +434,6 @@ export default function UserTrainings() {
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
             <TextInput
                 label={t('title')}
-                placeholder={t('title')}
                 value={titleFilter}
                 onChange={(e) => {
                     setTitleFilter(e.currentTarget.value);
@@ -443,7 +442,6 @@ export default function UserTrainings() {
             />
             <TextInput
                 label={t('link')}
-                placeholder={t('link')}
                 value={linkFilter}
                 onChange={(e) => {
                     setLinkFilter(e.currentTarget.value);
@@ -522,7 +520,6 @@ export default function UserTrainings() {
                 <Stack gap="sm">
                     <TextInput
                         label={t('title')}
-                        placeholder={t('title')}
                         required
                         value={formData.title}
                         error={fieldErrors.title}
@@ -537,7 +534,6 @@ export default function UserTrainings() {
                     />
                     <TextInput
                         label={t('link')}
-                        placeholder={t('link')}
                         required
                         value={formData.link}
                         error={fieldErrors.link}
@@ -545,7 +541,6 @@ export default function UserTrainings() {
                     />
                     <TextInput
                         label={t('location')}
-                        placeholder={t('location')}
                         required
                         value={formData.location}
                         error={fieldErrors.location}
@@ -571,7 +566,6 @@ export default function UserTrainings() {
                     </SimpleGrid>
                     <Textarea
                         label={t('description')}
-                        placeholder={t('description')}
                         required
                         rows={2}
                         value={formData.description}
@@ -648,7 +642,6 @@ export default function UserTrainings() {
                                             <Group gap="xs" align="flex-end">
                                                 <TextInput
                                                     label={t('distanceMeters')}
-                                                    placeholder="5000"
                                                     required
                                                     flex={1}
                                                     value={dist.distance}
@@ -663,7 +656,6 @@ export default function UserTrainings() {
                                                 />
                                                 <TextInput
                                                     label={t('timeSeconds')}
-                                                    placeholder="1800"
                                                     required
                                                     flex={1}
                                                     value={dist.time}
@@ -709,7 +701,6 @@ export default function UserTrainings() {
                                                             <TextInput
                                                                 size="xs"
                                                                 label={t('subDistanceMeters')}
-                                                                placeholder="1000"
                                                                 required
                                                                 value={sd.subDistance}
                                                                 onChange={(e) =>
@@ -725,7 +716,6 @@ export default function UserTrainings() {
                                                             <TextInput
                                                                 size="xs"
                                                                 label={t('timeSeconds')}
-                                                                placeholder="300"
                                                                 required
                                                                 value={sd.time}
                                                                 onChange={(e) =>
@@ -744,7 +734,6 @@ export default function UserTrainings() {
                                                             <TextInput
                                                                 size="xs"
                                                                 label={t('lat')}
-                                                                placeholder="52"
                                                                 value={sd.lat}
                                                                 onChange={(e) =>
                                                                     handleSubDistanceChange(
@@ -759,7 +748,6 @@ export default function UserTrainings() {
                                                             <TextInput
                                                                 size="xs"
                                                                 label={t('lng')}
-                                                                placeholder="21"
                                                                 value={sd.lng}
                                                                 onChange={(e) =>
                                                                     handleSubDistanceChange(
@@ -774,7 +762,6 @@ export default function UserTrainings() {
                                                             <TextInput
                                                                 size="xs"
                                                                 label={t('accuracy')}
-                                                                placeholder="5"
                                                                 value={sd.accuracy}
                                                                 onChange={(e) =>
                                                                     handleSubDistanceChange(
@@ -790,7 +777,6 @@ export default function UserTrainings() {
                                                                 <TextInput
                                                                     size="xs"
                                                                     label={t('speed')}
-                                                                    placeholder="12"
                                                                     flex={1}
                                                                     value={sd.speed}
                                                                     onChange={(e) =>
@@ -838,7 +824,7 @@ export default function UserTrainings() {
                     <Button
                         mt="md"
                         loading={createMutation.isPending}
-                        disabled={!canSubmit}
+                        disabled={createMutation.isPending || !canSubmit}
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}

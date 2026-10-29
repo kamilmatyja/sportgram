@@ -9,11 +9,11 @@ import {
     Button,
     Stack,
     Anchor,
-    Alert,
     Group,
     PinInput,
     Text,
     SimpleGrid,
+    Container,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
@@ -42,9 +42,9 @@ export default function Register() {
         roles: [] as string[],
     });
 
+    const [password, setPassword] = useState('');
     const [code, setCode] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const registerId = registerSession.id();
@@ -80,7 +80,6 @@ export default function Register() {
         if (!canSubmit || !formData.gender || !formData.country) return;
 
         setLoading(true);
-        setError(null);
         setFieldErrors({});
 
         try {
@@ -98,7 +97,7 @@ export default function Register() {
 
             const regData = await authService.register(formData.email);
             if (!regData?.id) {
-                setError(t('error'));
+                notifications.show({ title: t('error'), message: t('error'), color: 'red' });
                 return;
             }
 
@@ -106,14 +105,17 @@ export default function Register() {
                 email: formData.email,
                 password: formData.password,
             });
+            notifications.show({
+                title: t('register'),
+                message: t('enterRegisterCodePrompt'),
+                color: 'green',
+            });
             setStep(2);
         } catch (err) {
             const fe = extractFieldErrors(err);
             setFieldErrors(fe);
             if (Object.keys(fe).length === 0) {
-                setError(getErrorMessage(err));
-            } else {
-                setError(null);
+                notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
             }
         } finally {
             setLoading(false);
@@ -125,7 +127,6 @@ export default function Register() {
         if (!registerId) return;
 
         setLoading(true);
-        setError(null);
         setFieldErrors({});
 
         try {
@@ -156,9 +157,7 @@ export default function Register() {
             const fe = extractFieldErrors(err);
             setFieldErrors(fe);
             if (Object.keys(fe).length === 0) {
-                setError(getErrorMessage(err));
-            } else {
-                setError(null);
+                notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
             }
         } finally {
             setLoading(false);
@@ -173,27 +172,21 @@ export default function Register() {
             notifications.show({
                 title: t('resend'),
                 message: t('resendSuccess'),
-                color: 'blue',
+                color: 'green',
             });
         } catch (err) {
-            setError(getErrorMessage(err));
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Stack align="center" mt="xl">
-            <Paper withBorder shadow="md" p="xl" radius="md" w="100%" maw={520}>
+        <Container size="xs" py="xl">
+            <Paper withBorder shadow="sm" p="xl" radius="md">
                 <Title order={2} ta="center" mb="lg">
                     {step === 1 ? t('register') : `${t('register')} – ${t('verify')}`}
                 </Title>
-
-                {error && (
-                    <Alert color="red" mb="md" withCloseButton onClose={() => setError(null)}>
-                        {error}
-                    </Alert>
-                )}
 
                 {step === 1 ? (
                     <form onSubmit={handleRegisterSubmit}>
@@ -236,10 +229,12 @@ export default function Register() {
 
                             <PasswordInput
                                 label={t('password')}
+                                placeholder={t('passwordPlaceholder')}
                                 required
-                                value={formData.password}
+                                value={password}
                                 error={fieldErrors.password}
                                 onChange={(e) => {
+                                    setPassword(e.currentTarget.value);
                                     setFormData({ ...formData, password: e.currentTarget.value });
                                     if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
                                 }}
@@ -259,8 +254,8 @@ export default function Register() {
                                 />
                                 <TextInput
                                     label={t('phone')}
+                                    placeholder={t('phonePlaceholder')}
                                     required
-                                    placeholder="123456789"
                                     value={formData.phone}
                                     error={fieldErrors.phone}
                                     onChange={(e) => {
@@ -314,7 +309,7 @@ export default function Register() {
                                 clearable
                             />
 
-                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={!canSubmit}>
+                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={loading || !canSubmit}>
                                 {t('register')}
                             </Button>
 
@@ -328,7 +323,7 @@ export default function Register() {
                     </form>
                 ) : (
                     <form onSubmit={handleCodeSubmit}>
-                        <Stack align="center">
+                        <Stack align="center" gap="md">
                             <Text size="sm" c="dimmed" ta="center">
                                 {t('enterRegisterCodePrompt')}
                             </Text>
@@ -352,7 +347,13 @@ export default function Register() {
                                 </Text>
                             )}
 
-                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={code.length < 6}>
+                            <Button
+                                type="submit"
+                                fullWidth
+                                mt="md"
+                                loading={loading}
+                                disabled={loading || code.length < 6}
+                            >
                                 {t('verify')}
                             </Button>
 
@@ -360,14 +361,22 @@ export default function Register() {
                                 <Button
                                     variant="subtle"
                                     size="xs"
+                                    disabled={loading}
                                     onClick={() => {
                                         registerSession.clear();
                                         setStep(1);
+                                        setFieldErrors({});
                                     }}
                                 >
                                     {t('cancel')}
                                 </Button>
-                                <Button variant="subtle" size="xs" onClick={handleResend} loading={loading}>
+                                <Button
+                                    variant="subtle"
+                                    size="xs"
+                                    onClick={handleResend}
+                                    loading={loading}
+                                    disabled={loading}
+                                >
                                     {t('resend')}
                                 </Button>
                             </Group>
@@ -375,6 +384,6 @@ export default function Register() {
                     </form>
                 )}
             </Paper>
-        </Stack>
+        </Container>
     );
 }

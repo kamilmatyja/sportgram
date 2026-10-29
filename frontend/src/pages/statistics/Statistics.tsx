@@ -124,7 +124,6 @@ export default function Statistics() {
             />
             <TextInput
                 label={t('distanceMeters')}
-                placeholder="1000"
                 value={distanceFilter}
                 onChange={(e) => {
                     setDistanceFilter(e.currentTarget.value);

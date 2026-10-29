@@ -11,6 +11,7 @@ import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { useAuth } from '../../auth/AuthContext';
 import { PageNav } from '../../components/PageNav';
+import {openConfirmActionModal} from "../../utils/confirmModal.tsx";
 
 export default function PageDetails() {
     const { link } = useParams<{ link: string }>();
@@ -60,6 +61,9 @@ export default function PageDetails() {
             queryClient.invalidateQueries({ queryKey: ['page-follows'] });
             notifications.show({ title: t('pageFollows'), message: t('pageUnfollowed'), color: 'green' });
         },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
     });
 
     const deleteMutation = useMutation({
@@ -71,7 +75,20 @@ export default function PageDetails() {
             notifications.show({ title: t('pages'), message: t('pageDeleted'), color: 'green' });
             navigate('/pages');
         },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
     });
+
+    const handleDelete = () => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(),
+        });
+    };
 
     if (isLoading) {
         return (
@@ -95,6 +112,7 @@ export default function PageDetails() {
                     size="xs"
                     onClick={() => unfollowMutation.mutate(followData.id)}
                     loading={unfollowMutation.isPending}
+                    disabled={unfollowMutation.isPending}
                 >
                     {t('unfollowPage')}
                 </Button>
@@ -104,6 +122,7 @@ export default function PageDetails() {
                     leftSection={<IconBookmark size={16} />}
                     onClick={() => followMutation.mutate()}
                     loading={followMutation.isPending}
+                    disabled={followMutation.isPending}
                 >
                     {t('followPage')}
                 </Button>
@@ -115,8 +134,9 @@ export default function PageDetails() {
                         variant="light"
                         color="red"
                         size={30}
-                        onClick={() => deleteMutation.mutate()}
+                        onClick={handleDelete}
                         loading={deleteMutation.isPending}
+                        disabled={deleteMutation.isPending}
                         aria-label={t('delete')}
                     >
                         <IconTrash size={16} />

@@ -12,7 +12,7 @@ import {
     ScrollArea,
     Badge,
     ActionIcon,
-    Tooltip,
+    Tooltip, EmptyState,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconSend, IconMessage } from '@tabler/icons-react';
@@ -295,9 +295,7 @@ export default function UserConversations() {
                                 {t('loadingMessages')}
                             </Text>
                         ) : messages?.length === 0 ? (
-                            <Text ta="center" c="dimmed" py="xl">
-                                {t('noMessagesSayHello')}
-                            </Text>
+                            <EmptyState title={t('noMessagesSayHello')} />
                         ) : (
                             messages?.map((m) => {
                                 const isMine = m.senderUserId === currentUser?.id;
@@ -345,6 +343,7 @@ export default function UserConversations() {
                 <form onSubmit={handleSend}>
                     <Group gap="xs" mt="sm">
                         <TextInput
+                            aria-label={canChat ? t('typeMessage') : t('mustBeFriendsToChat')}
                             placeholder={canChat ? t('typeMessage') : t('mustBeFriendsToChat')}
                             disabled={!canChat}
                             value={messageInput}
@@ -353,7 +352,7 @@ export default function UserConversations() {
                         />
                         <Button
                             type="submit"
-                            disabled={!canChat || !messageInput.trim()}
+                            disabled={sendMutation.isPending || !canChat || !messageInput.trim()}
                             loading={sendMutation.isPending}
                             leftSection={<IconSend size={16} />}
                         >

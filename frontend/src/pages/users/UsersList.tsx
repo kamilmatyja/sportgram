@@ -56,11 +56,11 @@ export default function UsersList() {
         birthAt: '',
         gender: null as string | null,
         country: null as string | null,
-        language: '1',
-        theme: '1',
-        color: '1',
+        language: null as string | null,
+        theme: null as string | null,
+        color: null as string | null,
         bio: '',
-        roles: ['2'] as string[],
+        roles: [] as string[],
         disciplines: [] as string[],
     });
     const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
@@ -70,6 +70,9 @@ export default function UsersList() {
         mutationFn: async () => {
             if (!profilePhotoFile || !bgPhotoFile) {
                 throw new Error(t('selectPhotoPlaceholder'));
+            }
+            if (!formData.language || !formData.theme || !formData.color || formData.roles.length === 0) {
+                throw new Error(t('error'));
             }
             const profilePhoto = await fileToBase64(profilePhotoFile);
             const backgroundPhoto = await fileToBase64(bgPhotoFile);
@@ -106,11 +109,11 @@ export default function UsersList() {
                 birthAt: '',
                 gender: null,
                 country: null,
-                language: '1',
-                theme: '1',
-                color: '1',
+                language: null,
+                theme: null,
+                color: null,
                 bio: '',
-                roles: ['2'],
+                roles: [],
                 disciplines: [],
             });
             setProfilePhotoFile(null);
@@ -288,7 +291,6 @@ export default function UsersList() {
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
             <TextInput
                 label={t('firstName')}
-                placeholder={t('firstName')}
                 value={firstName}
                 onChange={(e) => {
                     setFirstName(e.currentTarget.value);
@@ -297,7 +299,6 @@ export default function UsersList() {
             />
             <TextInput
                 label={t('lastName')}
-                placeholder={t('lastName')}
                 value={lastName}
                 onChange={(e) => {
                     setLastName(e.currentTarget.value);
@@ -306,7 +307,7 @@ export default function UsersList() {
             />
             <TextInput
                 label={t('email')}
-                placeholder={t('email')}
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => {
                     setEmail(e.currentTarget.value);
@@ -315,7 +316,6 @@ export default function UsersList() {
             />
             <TextInput
                 label={t('link')}
-                placeholder={t('link')}
                 value={link}
                 onChange={(e) => {
                     setLink(e.currentTarget.value);
@@ -369,6 +369,10 @@ export default function UsersList() {
         formData.birthAt.trim().length > 0 &&
         formData.gender !== null &&
         formData.country !== null &&
+        formData.language !== null &&
+        formData.theme !== null &&
+        formData.color !== null &&
+        formData.roles.length > 0 &&
         profilePhotoFile !== null &&
         bgPhotoFile !== null;
 
@@ -418,7 +422,6 @@ export default function UsersList() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <TextInput
                             label={t('firstName')}
-                            placeholder={t('firstName')}
                             required
                             value={formData.firstName}
                             error={fieldErrors.firstName}
@@ -433,7 +436,6 @@ export default function UsersList() {
                         />
                         <TextInput
                             label={t('lastName')}
-                            placeholder={t('lastName')}
                             required
                             value={formData.lastName}
                             error={fieldErrors.lastName}
@@ -451,7 +453,7 @@ export default function UsersList() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <TextInput
                             label={t('email')}
-                            placeholder="user@example.com"
+                            placeholder={t('emailPlaceholder')}
                             required
                             type="email"
                             value={formData.email}
@@ -460,7 +462,7 @@ export default function UsersList() {
                         />
                         <TextInput
                             label={t('password')}
-                            placeholder={t('password')}
+                            placeholder={t('passwordPlaceholder')}
                             required
                             type="password"
                             value={formData.password}
@@ -472,7 +474,6 @@ export default function UsersList() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <TextInput
                             label={t('link')}
-                            placeholder={t('link')}
                             required
                             value={formData.link}
                             error={fieldErrors.link}
@@ -480,7 +481,7 @@ export default function UsersList() {
                         />
                         <TextInput
                             label={t('phone')}
-                            placeholder="123456789"
+                            placeholder={t('phonePlaceholder')}
                             required
                             value={formData.phone}
                             error={fieldErrors.phone}
@@ -525,28 +526,31 @@ export default function UsersList() {
                             label={t('language')}
                             placeholder={t('language')}
                             required
+                            clearable
                             data={LanguageEnum.getOptions(t).map((l) => ({ value: String(l.value), label: l.label }))}
                             value={formData.language}
                             error={fieldErrors.language}
-                            onChange={(val) => setFormData({ ...formData, language: val || '1' })}
+                            onChange={(val) => setFormData({ ...formData, language: val })}
                         />
                         <Select
                             label={t('theme')}
                             placeholder={t('theme')}
                             required
+                            clearable
                             data={ThemeEnum.getOptions(t).map((th) => ({ value: String(th.value), label: th.label }))}
                             value={formData.theme}
                             error={fieldErrors.theme}
-                            onChange={(val) => setFormData({ ...formData, theme: val || '1' })}
+                            onChange={(val) => setFormData({ ...formData, theme: val })}
                         />
                         <Select
                             label={t('color')}
                             placeholder={t('color')}
                             required
+                            clearable
                             data={ColorEnum.getOptions(t).map((cl) => ({ value: String(cl.value), label: cl.label }))}
                             value={formData.color}
                             error={fieldErrors.color}
-                            onChange={(val) => setFormData({ ...formData, color: val || '1' })}
+                            onChange={(val) => setFormData({ ...formData, color: val })}
                         />
                     </SimpleGrid>
 
@@ -574,7 +578,6 @@ export default function UsersList() {
 
                     <Textarea
                         label={t('bio')}
-                        placeholder={t('bio')}
                         value={formData.bio}
                         error={fieldErrors.bio}
                         onChange={(e) => setFormData({ ...formData, bio: e.currentTarget.value })}
@@ -608,7 +611,7 @@ export default function UsersList() {
                     <Button
                         mt="md"
                         loading={createMutation.isPending}
-                        disabled={!canSubmit}
+                        disabled={createMutation.isPending || !canSubmit}
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}

@@ -1,18 +1,16 @@
 import { useState, useMemo } from 'react';
-import NotFound from '../../components/NotFound';
 import {
-    Text,
-    Button,
     Badge,
-    Modal,
-    Stack,
-    Alert,
+    Button,
     SimpleGrid,
     TextInput,
-    Center,
-    Loader,
+    Modal,
+    Stack,
     ActionIcon,
     Tooltip,
+    Center,
+    Loader,
+    Text,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -22,17 +20,20 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import {
-    userService,
     pushSubscriptionService,
+    userService,
     type PushSubscriptionResource,
     type GetPushSubscriptionsQuery,
 } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
-import UserProfileNav from '../../components/UserProfileNav';
+import { StatusBadge } from '../../components/StatusBadge';
+import { UserProfileNav } from '../../components/UserProfileNav';
+import { NotFound } from '../../components/NotFound';
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
+import { openConfirmActionModal } from '../../utils/confirmModal';
 
-const urlB64ToUint8Array = (base64String: string) => {
+function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
     const rawData = window.atob(base64);
@@ -41,13 +42,16 @@ const urlB64ToUint8Array = (base64String: string) => {
         outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
-};
+}
 
 export default function UserPushSubscriptions() {
-    const { link } = useParams<{ link: string }>();
     const { t } = useTranslation();
-    const queryClient = useQueryClient();
+    const { link } = useParams<{ link: string }>();
     const { currentUser } = useAuth();
+    const queryClient = useQueryClient();
+
+    const [opened, { open, close }] = useDisclosure(false);
+    const [subscribing, setSubscribing] = useState(false);
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
@@ -58,22 +62,11 @@ export default function UserPushSubscriptions() {
     const [p256dhFilter, setP256dhFilter] = useState('');
     const [authFilter, setAuthFilter] = useState('');
 
-    const [opened, { open, close }] = useDisclosure(false);
-    const [subscribing, setSubscribing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
     const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
-        queryFn: () => userService.getUserByLink(link || ''),
+        queryFn: () => (link ? userService.getUserByLink(link) : null),
         enabled: !!link,
     });
-
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'endpoint:asc', label: t('sort_endpoint_asc') },
-        { value: 'endpoint:desc', label: t('sort_endpoint_desc') },
-    ];
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -90,53 +83,66 @@ export default function UserPushSubscriptions() {
         setPage(1);
     };
 
+    const sortOptions: SortOption[] = [
+        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
+        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
+        { value: 'endpoint:asc', label: t('sort_endpoint_asc') },
+        { value: 'endpoint:desc', label: t('sort_endpoint_desc') },
+        { value: 'status:asc', label: t('sort_status_asc') },
+        { value: 'status:desc', label: t('sort_status_desc') },
+    ];
+
     const queryFilter = useMemo(() => {
         return {
+            userId: targetUser?.id ? targetUser.id : null,
             endpoint: endpointFilter.trim() || null,
             p256dh: p256dhFilter.trim() || null,
             auth: authFilter.trim() || null,
         };
-    }, [endpointFilter, p256dhFilter, authFilter]);
+    }, [targetUser?.id, endpointFilter, p256dhFilter, authFilter]);
 
     const { data, isLoading } = useQuery({
-        queryKey: ['push-subscriptions', currentUser?.id, page, limit, sort, queryFilter],
-        queryFn: () => {
-            if (!currentUser?.id) return null;
-            return pushSubscriptionService.getSubscriptions({
+        queryKey: ['push-subscriptions', targetUser?.id, page, limit, sort, queryFilter],
+        queryFn: () =>
+            pushSubscriptionService.getSubscriptions({
                 page,
                 limit,
-                filter: queryFilter,
                 sort: (sort as NonNullable<GetPushSubscriptionsQuery>['sort']) ?? 'createdAt:desc',
-            });
-        },
-        enabled: !!currentUser?.id,
+                filter: queryFilter,
+            }),
+        enabled: !!targetUser?.id,
     });
 
     const subs = data?.data ?? [];
     const pagination = data?.pagination;
 
     const handleSubscribeDevice = async () => {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            notifications.show({
+                title: t('error'),
+                message: t('pushNotificationsNotSupported'),
+                color: 'red',
+            });
+            return;
+        }
+
+        const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+        if (!vapidPublicKey) {
+            notifications.show({
+                title: t('error'),
+                message: t('missingVapidKey'),
+                color: 'red',
+            });
+            return;
+        }
+
         setSubscribing(true);
-        setError(null);
+
         try {
-            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                throw new Error(t('pushNotSupported'));
-            }
-
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                throw new Error(t('pushPermissionDenied'));
-            }
-
-            const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-            if (!vapidKey) {
-                throw new Error(t('missingVapidKey'));
-            }
-
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.subscribe({
+            const reg = await navigator.serviceWorker.ready;
+            const subscription = await reg.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlB64ToUint8Array(vapidKey),
+                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
             });
 
             const keys = subscription.toJSON().keys ?? {};
@@ -157,7 +163,11 @@ export default function UserPushSubscriptions() {
                 color: 'green',
             });
         } catch (err) {
-            setError(getErrorMessage(err));
+            notifications.show({
+                title: t('error'),
+                message: getErrorMessage(err),
+                color: 'red',
+            });
         } finally {
             setSubscribing(false);
         }
@@ -173,30 +183,47 @@ export default function UserPushSubscriptions() {
                 color: 'green',
             });
         },
+        onError: (err) => {
+            notifications.show({
+                title: t('error'),
+                message: getErrorMessage(err),
+                color: 'red',
+            });
+        },
     });
+
+    const handleDelete = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(id),
+        });
+    };
 
     const columns: Column<PushSubscriptionResource>[] = [
         {
             key: 'device',
-            header: t('browserDevice'),
+            header: t('device'),
             render: (s) => (
-                <div>
-                    <Text size="xs" lineClamp={1}>
-                        {s.userAgent || t('unknownDevice')}
-                    </Text>
-                    <Text size="xs" c="dimmed" lineClamp={1}>
-                        {s.endpoint}
-                    </Text>
-                </div>
+                <Text size="sm" lineClamp={2} title={s.userAgent ?? ''}>
+                    {s.userAgent ? s.userAgent.slice(0, 60) + '...' : t('unknownDevice')}
+                </Text>
             ),
         },
         {
             key: 'status',
             header: t('status'),
             render: (s) => (
-                <Badge size="xs" color={s.status === 1 ? 'green' : 'gray'} variant="light">
-                    {s.status === 1 ? t('pushSubscriptionStatuses.active') : t('pushSubscriptionStatuses.inactive')}
-                </Badge>
+                <StatusBadge
+                    status={s.status}
+                    label={
+                        s.status === PushSubscriptionStatusEnum.ACTIVE
+                            ? t('pushSubscriptionStatuses.active')
+                            : t('pushSubscriptionStatuses.inactive')
+                    }
+                />
             ),
         },
         {
@@ -208,13 +235,21 @@ export default function UserPushSubscriptions() {
                 </Text>
             ),
         },
+        {
+            key: 'keys',
+            header: t('keysPresent'),
+            render: (s) => (
+                <Badge size="xs" variant="outline" color={s.p256dh && s.auth ? 'green' : 'gray'}>
+                    {s.p256dh && s.auth ? t('valid') : t('incomplete')}
+                </Badge>
+            ),
+        },
     ];
 
     const filtersNode = (
         <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
             <TextInput
                 label={t('endpoint')}
-                placeholder={t('endpoint')}
                 value={endpointFilter}
                 onChange={(e) => {
                     setEndpointFilter(e.currentTarget.value);
@@ -223,7 +258,6 @@ export default function UserPushSubscriptions() {
             />
             <TextInput
                 label={t('p256dh')}
-                placeholder={t('p256dh')}
                 value={p256dhFilter}
                 onChange={(e) => {
                     setP256dhFilter(e.currentTarget.value);
@@ -232,7 +266,6 @@ export default function UserPushSubscriptions() {
             />
             <TextInput
                 label={t('authKey')}
-                placeholder={t('authKey')}
                 value={authFilter}
                 onChange={(e) => {
                     setAuthFilter(e.currentTarget.value);
@@ -287,8 +320,10 @@ export default function UserPushSubscriptions() {
                             size={30}
                             color="red"
                             variant="light"
-                            onClick={() => deleteMutation.mutate(s.id)}
+                            onClick={() => handleDelete(s.id)}
                             loading={deleteMutation.isPending}
+                            disabled={deleteMutation.isPending}
+                            aria-label={t('delete')}
                         >
                             <IconTrash size={16} />
                         </ActionIcon>
@@ -303,11 +338,10 @@ export default function UserPushSubscriptions() {
                         {t('pushPermissionWillBeAsked')}
                     </Text>
 
-                    {error && <Alert color="red">{error}</Alert>}
-
                     <Button
                         mt="md"
                         loading={subscribing}
+                        disabled={subscribing}
                         leftSection={<IconPlus size={16} />}
                         onClick={handleSubscribeDevice}
                     >

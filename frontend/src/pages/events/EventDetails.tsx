@@ -75,7 +75,20 @@ export default function EventDetails() {
             notifications.show({ title: t('events'), message: t('eventDeleted'), color: 'green' });
             navigate('/events');
         },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
     });
+
+    const handleDelete = () => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(),
+        });
+    };
 
     if (isLoading) {
         return (
@@ -126,8 +139,9 @@ export default function EventDetails() {
                                     variant="light"
                                     color="red"
                                     size={30}
-                                    onClick={() => deleteMutation.mutate()}
+                                    onClick={handleDelete}
                                     loading={deleteMutation.isPending}
+                                    disabled={deleteMutation.isPending}
                                     aria-label={t('delete')}
                                 >
                                     <IconTrash size={16} />
@@ -190,6 +204,7 @@ export default function EventDetails() {
                                                             leftSection={<IconCheck size={16} />}
                                                             onClick={() => signUpMutation.mutate(dist.id)}
                                                             loading={signUpMutation.isPending}
+                                                            disabled={signUpMutation.isPending}
                                                         >
                                                             {t('saveUp')}
                                                         </Button>

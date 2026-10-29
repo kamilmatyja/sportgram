@@ -1,6 +1,6 @@
 ---
 name: frontend-standards
-description: Obowiązkowe standardy architektury i implementacji frontendu w projekcie Sportgram. Obejmuje: odwołanie do README.md, maksymalną abstrakcję i brak duplikacji kodu (DRY), wykorzystanie gotowych paczek, spójność architektoniczną i behawioralną elementów, absolutny zakaz pisania inline styli i używania atrybutu/tagu style (wszystkie style w osobnych plikach CSS), 100% widocznych tekstów jako translacje i18n, ścisłe reguły formularzy (brak wartości domyślnych, brak placeholderów, brak ukrytych pól i wartości przypisywanych w tle, zabezpieczenie double-submit), ujednolicone toasty powiadomień dla każdej akcji mutującej API (POST, PUT, PATCH, DELETE) z błędami pól pod konkretnymi inputami, konwencje nazewnictwa plików, czystość kodu produkcyjnego oraz procedurę Definition of Done (weryfikacja linters & build).
+description: Obowiązkowe standardy architektury i implementacji frontendu w projekcie Sportgram. Obejmuje: odwołanie do README.md, maksymalną abstrakcję i brak duplikacji kodu (DRY), wykorzystanie gotowych paczek, spójność architektoniczną i behawioralną elementów, absolutny zakaz pisania inline styli i używania atrybutu/tagu style (wszystkie style w osobnych plikach CSS), 100% widocznych tekstów jako translacje i18n, ścisłe reguły formularzy (brak wartości domyślnych, zasady stosowania placeholderów (tam gdzie zasadne: inputy zdjęć, selekty, wyszukiwarki), brak ukrytych pól i wartości przypisywanych w tle, zabezpieczenie double-submit), ujednolicone toasty powiadomień dla każdej akcji mutującej API (POST, PUT, PATCH, DELETE) z błędami pól pod konkretnymi inputami, konwencje nazewnictwa plików, czystość kodu produkcyjnego oraz procedurę Definition of Done (weryfikacja linters & build).
 ---
 
 # Standardy Architektury i Kodu Frontendu (Sportgram)
@@ -68,9 +68,14 @@ Wszystkie widoki, elementy i podstrony muszą być spójne:
 
 1. **Brak wartości domyślnych (Default Values):**
    - Zakaz ustawiania sztucznych, domyślnych danych w polach edycji czy tworzenia, które mogłyby zamaskować brak świadomego wyboru użytkownika. Formularze tworzenia startują z pustymi polami (`''`, `null` lub pusta tablica w zależności od typu).
-2. **Brak placeholderów:**
-   - **ZAKAZ** używania atrybutu `placeholder="..."`.
-   - Identyfikacja pola musi odbywać się w 100% poprzez czytelną etykietę (`label`) oraz opcjonalny opis pomocniczy (`description`).
+2. **Zasady stosowania placeholderów:**
+   - Placeholdery powinny pozostać i być stosowane tam, gdzie jest to uzasadnione ergonomią interfejsu (UX), w szczególności:
+     - W polach wyboru plików i zdjęć (`FileInput`), np. `placeholder={t('selectPhotoPlaceholder')}` lub `placeholder={t('selectPhoto')}`.
+     - W listach rozwijanych i selektorach (`Select`, `MultiSelect`), np. informujące o możliwości wyboru lub braku filtra (`placeholder={t('allStatuses')}`, `placeholder={t('gender')}`, `placeholder={t('sortBy')}`).
+     - W polach wyszukiwania (`DataTable` search) oraz polach wprowadzania wiadomości i komentarzy.
+     - We wszystkich polach uwierzytelniania i kontaktu: email, hasło oraz telefon dla zachowania pełnej spójności w całej aplikacji – zawsze przy użyciu dedykowanych kluczy translacji: `placeholder={t('emailPlaceholder')}`, `placeholder={t('passwordPlaceholder')}`, `placeholder={t('phonePlaceholder')}`.
+   - Wszystkie placeholdery muszą być w 100% zlokalizowane za pomocą i18n (`t(...)`), bez hardcodowanych ciągów znaków (z wyjątkiem uniwersalnych masek jak np. `••••••••`).
+   - Placeholder nie zastępuje etykiety (`label`) – standardowe pola formularza nadal muszą posiadać czytelną etykietę (`label`) lub semantyczną etykietę dostępności (`aria-label`).
 3. **Brak ukrytych wartości i ukrytych pól:**
    - Zakaz używania niewidocznych pól formularza (`type="hidden"`).
    - Zakaz przypisywania i modyfikowania wartości w tle „pod spodem” bez wiedzy użytkownika.

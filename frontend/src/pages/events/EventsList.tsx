@@ -373,7 +373,6 @@ export default function EventsList() {
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
             <TextInput
                 label={t('title')}
-                placeholder={t('title')}
                 value={titleFilter}
                 onChange={(e) => {
                     setTitleFilter(e.currentTarget.value);
@@ -382,7 +381,6 @@ export default function EventsList() {
             />
             <TextInput
                 label={t('link')}
-                placeholder={t('link')}
                 value={linkFilter}
                 onChange={(e) => {
                     setLinkFilter(e.currentTarget.value);
@@ -460,7 +458,6 @@ export default function EventsList() {
 
                     <TextInput
                         label={t('title')}
-                        placeholder={t('title')}
                         required
                         value={formData.title}
                         error={fieldErrors.title}
@@ -476,7 +473,6 @@ export default function EventsList() {
 
                     <TextInput
                         label={t('link')}
-                        placeholder={t('link')}
                         required
                         value={formData.link}
                         error={fieldErrors.link}
@@ -485,7 +481,6 @@ export default function EventsList() {
 
                     <TextInput
                         label={t('location')}
-                        placeholder={t('location')}
                         required
                         value={formData.location}
                         error={fieldErrors.location}
@@ -576,7 +571,6 @@ export default function EventsList() {
                                             <Group gap="xs" align="flex-end">
                                                 <TextInput
                                                     label={t('distanceMeters')}
-                                                    placeholder="5000"
                                                     required
                                                     flex={1}
                                                     value={dist.distance}
@@ -616,7 +610,6 @@ export default function EventsList() {
                                                         <TextInput
                                                             size="xs"
                                                             label={t('subDistanceMeters')}
-                                                            placeholder="1000"
                                                             required
                                                             flex={1}
                                                             value={sd.subDistance}
@@ -661,7 +654,6 @@ export default function EventsList() {
 
                     <Textarea
                         label={t('description')}
-                        placeholder={t('description')}
                         required
                         rows={2}
                         value={formData.description}
@@ -671,7 +663,6 @@ export default function EventsList() {
 
                     <Textarea
                         label={t('rules')}
-                        placeholder={t('rules')}
                         required
                         rows={2}
                         value={formData.rules}
@@ -682,7 +673,7 @@ export default function EventsList() {
                     <Button
                         mt="md"
                         loading={createMutation.isPending}
-                        disabled={!canSubmit}
+                        disabled={createMutation.isPending || !canSubmit}
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}
