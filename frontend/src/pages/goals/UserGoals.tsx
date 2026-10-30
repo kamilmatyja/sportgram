@@ -14,10 +14,12 @@ import {
     Loader,
     ActionIcon,
     Tooltip,
+    Group,
+    Menu,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconEye } from '@tabler/icons-react';
+import { IconEye, IconTrash, IconEdit, IconAdjustments } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
@@ -25,16 +27,19 @@ import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { userService, goalService, friendService, type GoalResource, type GetGoalsQuery } from '../../api/services';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { useAuth } from '../../auth/AuthContext';
+import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
+import { RoleEnum } from '../../enums/RoleEnum';
+import { openConfirmActionModal } from '../../utils/confirmModal';
 
 export default function UserGoals() {
     const { link } = useParams<{ link: string }>();
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const { currentUser, isParticipant, isAdmin } = useAuth();
+    const { currentUser } = useAuth();
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
@@ -48,7 +53,8 @@ export default function UserGoals() {
     const [timeFilter, setTimeFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    const [opened, { open, close }] = useDisclosure(false);
+    // Create modal
+    const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
     const [formData, setFormData] = useState({
@@ -61,11 +67,37 @@ export default function UserGoals() {
         endedAt: '',
     });
 
+    // Edit modal
+    const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
+    const [editingGoal, setEditingGoal] = useState<GoalResource | null>(null);
+    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
+    const [editFormData, setEditFormData] = useState({
+        text: '',
+        link: '',
+        discipline: null as string | null,
+        distance: '',
+        time: '',
+        startedAt: '',
+        endedAt: '',
+    });
+    const [editCollaboratorIds, setEditCollaboratorIds] = useState<string[]>([]);
+
     // Fetch target user by link
     const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: () => userService.getUserByLink(link || ''),
         enabled: !!link,
+    });
+
+    const {
+        isOwner,
+        isAdmin,
+        canAccessSubpage,
+        hasRequiredRole,
+        isLoading: accessLoading,
+    } = useUserSubpageAccess({
+        targetUser,
+        requiredRole: RoleEnum.PARTICIPANT,
     });
 
     const { data: myFriendsData } = useQuery({
@@ -86,8 +118,6 @@ export default function UserGoals() {
         enabled: !!currentUser?.id,
     });
 
-    const isOwner = currentUser?.id === targetUser?.id;
-
     const sortOptions: SortOption[] = [
         { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
         { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
@@ -99,12 +129,6 @@ export default function UserGoals() {
         { value: 'distance:desc', label: t('sort_distance_desc') },
         { value: 'time:asc', label: t('sort_time_asc') },
         { value: 'time:desc', label: t('sort_time_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-        { value: 'startedAt:asc', label: t('sort_startedAt_asc') },
-        { value: 'startedAt:desc', label: t('sort_startedAt_desc') },
-        { value: 'endedAt:asc', label: t('sort_endedAt_asc') },
-        { value: 'endedAt:desc', label: t('sort_endedAt_desc') },
     ];
 
     const activeFiltersCount = useMemo(() => {
@@ -152,7 +176,7 @@ export default function UserGoals() {
                 sort: (sort as NonNullable<GetGoalsQuery>['sort']) ?? 'createdAt:desc',
             });
         },
-        enabled: !!targetUser?.id,
+        enabled: !!targetUser?.id && canAccessSubpage && hasRequiredRole,
     });
 
     const goals = data?.data ?? [];
@@ -174,7 +198,7 @@ export default function UserGoals() {
             });
         },
         onSuccess: () => {
-            close();
+            closeCreate();
             setCollaboratorIds([]);
             setFormData({
                 text: '',
@@ -195,6 +219,89 @@ export default function UserGoals() {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
+
+    const updateMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingGoal || !editFormData.discipline) return;
+            await goalService.updateGoal(editingGoal.id, {
+                text: editFormData.text,
+                link: editFormData.link,
+                discipline: Number(editFormData.discipline) as DisciplineEnum,
+                distance: Number(editFormData.distance) || 0,
+                time: editFormData.time ? Number(editFormData.time) : null,
+                startedAt: editFormData.startedAt ? editFormData.startedAt : null,
+                endedAt: editFormData.endedAt ? editFormData.endedAt : null,
+                userIds: currentUser?.id
+                    ? Array.from(new Set([currentUser.id, ...editCollaboratorIds]))
+                    : editCollaboratorIds,
+            });
+        },
+        onSuccess: () => {
+            closeEdit();
+            setEditingGoal(null);
+            setEditCollaboratorIds([]);
+            setEditFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['goals'] });
+            notifications.show({ title: t('goals'), message: t('goalUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const statusMutation = useMutation({
+        mutationFn: ({ id, status }: { id: string; status: GoalStatusEnum }) =>
+            goalService.updateGoalStatus(id, status),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['goals'] });
+            notifications.show({ title: t('goals'), message: t('statusUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => goalService.deleteGoal(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['goals'] });
+            notifications.show({ title: t('goals'), message: t('deleted'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const handleOpenEdit = (goal: GoalResource) => {
+        setEditingGoal(goal);
+        setEditFormData({
+            text: goal.text,
+            link: goal.link,
+            discipline: String(goal.discipline),
+            distance: String(goal.distance),
+            time: goal.time ? String(goal.time) : '',
+            startedAt: goal.startedAt ? goal.startedAt.substring(0, 16) : '',
+            endedAt: goal.endedAt ? goal.endedAt.substring(0, 16) : '',
+        });
+        const otherParticipantIds = (goal.participants ?? [])
+            .map((p) => p.userId)
+            .filter((uid) => uid !== currentUser?.id);
+        setEditCollaboratorIds(otherParticipantIds);
+        setEditFieldErrors({});
+        openEdit();
+    };
+
+    const handleDelete = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(id),
+        });
+    };
 
     const columns: Column<GoalResource>[] = [
         {
@@ -231,7 +338,11 @@ export default function UserGoals() {
             render: (g) => {
                 const opt = GoalStatusEnum.getOptions(t).find((o) => o.value === g.status);
                 return (
-                    <Badge size="xs" variant="light" color={g.status === GoalStatusEnum.COMPLETED ? 'green' : 'blue'}>
+                    <Badge
+                        size="xs"
+                        variant="light"
+                        color={g.status === GoalStatusEnum.COMPLETED ? 'green' : undefined}
+                    >
                         {opt?.label ?? g.status}
                     </Badge>
                 );
@@ -254,6 +365,12 @@ export default function UserGoals() {
         formData.discipline !== null &&
         formData.distance.trim().length > 0;
 
+    const canSubmitEdit =
+        editFormData.text.trim().length > 0 &&
+        editFormData.link.trim().length > 0 &&
+        editFormData.discipline !== null &&
+        editFormData.distance.trim().length > 0;
+
     const filtersNode = (
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
             <TextInput
@@ -274,7 +391,7 @@ export default function UserGoals() {
             />
             <Select
                 label={t('discipline')}
-                placeholder={t('allDisciplines')}
+                placeholder={t('discipline')}
                 data={DisciplineEnum.getOptions(t).map((d) => ({ value: String(d.value), label: d.label }))}
                 value={disciplineFilter}
                 onChange={(v) => {
@@ -313,7 +430,7 @@ export default function UserGoals() {
         </SimpleGrid>
     );
 
-    if (userLoading) {
+    if (userLoading || accessLoading) {
         return (
             <Center h={200}>
                 <Loader />
@@ -323,6 +440,10 @@ export default function UserGoals() {
 
     if (!targetUser) {
         return <NotFound title={t('userNotFound')} />;
+    }
+
+    if (!canAccessSubpage || !hasRequiredRole) {
+        return <NotFound title={t('accessDenied')} />;
     }
 
     return (
@@ -350,18 +471,80 @@ export default function UserGoals() {
                 hasActiveFilters={activeFiltersCount > 0}
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
-                onAdd={(isOwner && isParticipant) || isAdmin ? open : undefined}
+                onAdd={isOwner ? openCreate : undefined}
                 addLabel={t('addGoal')}
                 actions={(g) => (
-                    <Tooltip label={t('details')} withArrow>
-                        <ActionIcon component={Link} to={`/goals/${g.link}`} variant="light" color="blue" size={30}>
-                            <IconEye size={16} />
-                        </ActionIcon>
-                    </Tooltip>
+                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                        <Tooltip label={t('details')} withArrow>
+                            <ActionIcon component={Link} to={`/goals/${g.link}`} variant="light" size={30}>
+                                <IconEye size={16} />
+                            </ActionIcon>
+                        </Tooltip>
+                        {(isOwner || isAdmin) && (
+                            <Menu shadow="md" width={140} position="bottom-end">
+                                <Menu.Target>
+                                    <Tooltip label={t('changeStatus')} withArrow>
+                                        <ActionIcon
+                                            variant="light"
+                                            size={30}
+                                            aria-label={t('changeStatus')}
+                                            loading={statusMutation.isPending}
+                                        >
+                                            <IconAdjustments size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </Menu.Target>
+                                <Menu.Dropdown>
+                                    {GoalStatusEnum.getOptions(t).map((opt) => (
+                                        <Menu.Item
+                                            key={opt.value}
+                                            onClick={() =>
+                                                statusMutation.mutate({
+                                                    id: g.id,
+                                                    status: opt.value as GoalStatusEnum,
+                                                })
+                                            }
+                                            disabled={g.status === opt.value}
+                                        >
+                                            {opt.label}
+                                        </Menu.Item>
+                                    ))}
+                                </Menu.Dropdown>
+                            </Menu>
+                        )}
+                        {isOwner && (
+                            <Tooltip label={t('edit')} withArrow>
+                                <ActionIcon
+                                    variant="light"
+                                    size={30}
+                                    onClick={() => handleOpenEdit(g)}
+                                    aria-label={t('edit')}
+                                >
+                                    <IconEdit size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
+                        {isOwner && (
+                            <Tooltip label={t('delete')} withArrow>
+                                <ActionIcon
+                                    variant="light"
+                                    color="red"
+                                    size={30}
+                                    onClick={() => handleDelete(g.id)}
+                                    loading={deleteMutation.isPending}
+                                    disabled={deleteMutation.isPending}
+                                    aria-label={t('delete')}
+                                >
+                                    <IconTrash size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
+                    </Group>
                 )}
             />
 
-            <Modal opened={opened} onClose={close} title={t('addGoal')} size="lg">
+            {/* Create modal */}
+            <Modal opened={createOpened} onClose={closeCreate} title={t('addGoal')} size="lg">
                 <Stack gap="sm">
                     <TextInput
                         label={t('title')}
@@ -446,6 +629,89 @@ export default function UserGoals() {
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}
+                    </Button>
+                </Stack>
+            </Modal>
+
+            {/* Edit modal */}
+            <Modal opened={editOpened} onClose={closeEdit} title={t('editGoal')} size="lg">
+                <Stack gap="sm">
+                    <TextInput
+                        label={t('title')}
+                        required
+                        value={editFormData.text}
+                        error={editFieldErrors.text}
+                        onChange={(e) => setEditFormData({ ...editFormData, text: e.currentTarget.value })}
+                    />
+                    <TextInput
+                        label={t('link')}
+                        required
+                        value={editFormData.link}
+                        error={editFieldErrors.link}
+                        onChange={(e) => setEditFormData({ ...editFormData, link: e.currentTarget.value })}
+                    />
+                    <Select
+                        label={t('discipline')}
+                        placeholder={t('discipline')}
+                        required
+                        clearable
+                        data={DisciplineEnum.getOptions(t).map((d) => ({ value: String(d.value), label: d.label }))}
+                        value={editFormData.discipline}
+                        error={editFieldErrors.discipline}
+                        onChange={(val) => setEditFormData({ ...editFormData, discipline: val })}
+                    />
+                    <MultiSelect
+                        label={t('collaborators')}
+                        placeholder={t('selectCollaborators')}
+                        data={
+                            myFriendsData?.map((u) => ({
+                                value: u.id,
+                                label: `${u.firstName} ${u.lastName} (@${u.link})`,
+                            })) ?? []
+                        }
+                        value={editCollaboratorIds}
+                        onChange={setEditCollaboratorIds}
+                        searchable
+                        clearable
+                    />
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                        <TextInput
+                            label={t('distanceMeters')}
+                            required
+                            value={editFormData.distance}
+                            error={editFieldErrors.distance}
+                            onChange={(e) => setEditFormData({ ...editFormData, distance: e.currentTarget.value })}
+                        />
+                        <TextInput
+                            label={t('timeSeconds')}
+                            value={editFormData.time}
+                            error={editFieldErrors.time}
+                            onChange={(e) => setEditFormData({ ...editFormData, time: e.currentTarget.value })}
+                        />
+                    </SimpleGrid>
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                        <TextInput
+                            label={t('startedAt')}
+                            type="datetime-local"
+                            value={editFormData.startedAt}
+                            error={editFieldErrors.startedAt}
+                            onChange={(e) => setEditFormData({ ...editFormData, startedAt: e.currentTarget.value })}
+                        />
+                        <TextInput
+                            label={t('endedAt')}
+                            type="datetime-local"
+                            value={editFormData.endedAt}
+                            error={editFieldErrors.endedAt}
+                            onChange={(e) => setEditFormData({ ...editFormData, endedAt: e.currentTarget.value })}
+                        />
+                    </SimpleGrid>
+                    <Button
+                        mt="md"
+                        loading={updateMutation.isPending}
+                        disabled={updateMutation.isPending || !canSubmitEdit}
+                        onClick={() => updateMutation.mutate()}
+                    >
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>

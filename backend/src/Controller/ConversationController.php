@@ -24,7 +24,7 @@ class ConversationController extends AbstractController
     #[Route('/api/conversation-users/{id}', name: 'conversation_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
-        summary: 'Create conversation',
+        summary: 'Create conversation - endpoint for authenticated user',
         requestBody: new Body(ConversationDto::class),
         tags: ['conversations'],
         responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -43,7 +43,7 @@ class ConversationController extends AbstractController
     #[Route('/api/conversations/{id}', name: 'conversation_update', methods: ['PUT'])]
     #[IsGranted(ConversationSenderVoter::CONVERSATION_SENDER, subject: 'id')]
     #[OA\Put(
-        summary: 'Update conversation',
+        summary: 'Update conversation - endpoint for owner',
         requestBody: new Body(ConversationDto::class),
         tags: ['conversations'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -62,7 +62,7 @@ class ConversationController extends AbstractController
     #[Route('/api/conversations/{id}/status', name: 'conversation_update_status', methods: ['PATCH'])]
     #[IsGranted(ConversationVoter::CONVERSATION, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update conversation status',
+        summary: 'Update conversation status - endpoint for owner or conversation participant',
         requestBody: new Body(ConversationStatusDto::class),
         tags: ['conversations'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -81,7 +81,7 @@ class ConversationController extends AbstractController
     #[Route('/api/conversations/{id}', name: 'conversation_delete', methods: ['DELETE'])]
     #[IsGranted(ConversationSenderVoter::CONVERSATION_SENDER, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete conversation',
+        summary: 'Delete conversation - endpoint for owner',
         tags: ['conversations'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -97,7 +97,7 @@ class ConversationController extends AbstractController
     #[Route('/api/conversations', name: 'conversation_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of conversations',
+        summary: 'Index of conversations - endpoint for authenticated user',
         tags: ['conversations'],
         responses: [new Collection(ConversationResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -116,7 +116,7 @@ class ConversationController extends AbstractController
     #[Route('/api/conversations/{id}', name: 'conversation_details', methods: ['GET'])]
     #[IsGranted(ConversationVoter::CONVERSATION, subject: 'id')]
     #[OA\Get(
-        summary: 'Details of conversation',
+        summary: 'Details of conversation - endpoint for owner or conversation participant',
         tags: ['conversations'],
         responses: [new Item(ConversationResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
@@ -134,7 +134,7 @@ class ConversationController extends AbstractController
     #[Route('/api/conversation-activity-users/{id}/updated-at', name: 'conversation_activity_update_updated_at', methods: ['PATCH'])]
     #[IsGranted(ConversationActivityCreatorVoter::CONVERSATION_ACTIVITY_CREATOR, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update conversation activity updated_at',
+        summary: 'Update conversation activity updated_at - endpoint for owner',
         tags: ['conversations'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -150,7 +150,7 @@ class ConversationController extends AbstractController
     #[Route('/api/conversation-activities', name: 'conversation_activity_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of conversation activities',
+        summary: 'Index of conversation activities - endpoint for authenticated user',
         tags: ['conversations'],
         responses: [new Collection(ConversationActivityResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -169,7 +169,7 @@ class ConversationController extends AbstractController
     #[Route('/api/conversation-activity-users/{id}', name: 'conversation_activity_details', methods: ['GET'])]
     #[IsGranted(ConversationActivityVoter::CONVERSATION_ACTIVITY, subject: 'id')]
     #[OA\Get(
-        summary: 'Details of conversation activity',
+        summary: 'Details of conversation activity - endpoint for owner or conversation participant',
         tags: ['conversations'],
         responses: [new Item(ConversationActivityResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]

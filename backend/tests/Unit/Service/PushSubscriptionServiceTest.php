@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Service;
 
-use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto};
+use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto, PushSubscriptionStatusDto};
 use App\Entity\{PushSubscription, User};
 use App\Enum\PushSubscriptionStatusEnum;
 use App\Repository\PushSubscriptionRepository;
 use App\Service\PushSubscriptionService;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\{AllowMockObjectsWithoutExpectations, DataProvider};
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\Factory\PushSubscriptionFactory;
@@ -36,7 +36,7 @@ class PushSubscriptionServiceTest extends ServiceTestCase
 
     final public function testCreateSavesSubscriptionForCurrentUser(): void
     {
-        $dto = self::dto('https://push.example.com/abc', 'p256dh-key', 'auth-key', 'Firefox', PushSubscriptionStatusEnum::Active);
+        $dto = self::dto('https://push.example.com/abc', 'p256dh-key', 'auth-key', 'Firefox');
         $saved = null;
         $this->pushSubscriptionRepository->expects($this->once())
             ->method('save')
@@ -58,16 +58,16 @@ class PushSubscriptionServiceTest extends ServiceTestCase
 
     final public function testCreateAcceptsMissingUserAgent(): void
     {
-        $dto = self::dto('https://push.example.com/abc', 'p256dh-key', 'auth-key', null, PushSubscriptionStatusEnum::Inactive);
+        $dto = self::dto('https://push.example.com/abc', 'p256dh-key', 'auth-key', null);
         $this->pushSubscriptionRepository->expects($this->once())
             ->method('save')
-            ->with($this->callback(static fn (PushSubscription $saved): bool => null === $saved->userAgent))
+            ->with($this->callback(static fn (PushSubscription $saved): bool => null === $saved->userAgent && PushSubscriptionStatusEnum::Active === $saved->status))
             ->willReturnCallback(self::persist());
 
         $this->service->create($dto);
     }
 
-    final public function testUpdateChangesKeysAndStatusButKeepsOwnerAndUserAgent(): void
+    final public function testUpdateChangesKeysAndUserAgentButKeepsOwnerAndStatus(): void
     {
         $owner = self::user();
         $pushSubscription = self::entity(PushSubscriptionFactory::make([
@@ -75,7 +75,7 @@ class PushSubscriptionServiceTest extends ServiceTestCase
             'userAgent' => 'Chrome',
             'status' => PushSubscriptionStatusEnum::Active,
         ]));
-        $dto = self::dto('https://push.example.com/new', 'new-p256dh', 'new-auth', 'Safari', PushSubscriptionStatusEnum::Revoked);
+        $dto = self::dto('https://push.example.com/new', 'new-p256dh', 'new-auth', 'Safari');
         $this->pushSubscriptionRepository->expects($this->once())
             ->method('findById')
             ->with($pushSubscription->id)
@@ -87,8 +87,8 @@ class PushSubscriptionServiceTest extends ServiceTestCase
         $this->assertSame('https://push.example.com/new', $pushSubscription->endpoint);
         $this->assertSame('new-p256dh', $pushSubscription->p256dh);
         $this->assertSame('new-auth', $pushSubscription->auth);
-        $this->assertSame(PushSubscriptionStatusEnum::Revoked, $pushSubscription->status);
-        $this->assertSame('Chrome', $pushSubscription->userAgent);
+        $this->assertSame(PushSubscriptionStatusEnum::Active, $pushSubscription->status);
+        $this->assertSame('Safari', $pushSubscription->userAgent);
     }
 
     final public function testUpdatePropagatesNotFound(): void
@@ -100,8 +100,32 @@ class PushSubscriptionServiceTest extends ServiceTestCase
 
         $this->service->update(
             self::user()->id,
-            self::dto('https://push.example.com/new', 'k', 'a', null, PushSubscriptionStatusEnum::Active),
+            self::dto('https://push.example.com/new', 'k', 'a', null),
         );
+    }
+
+    public static function statusProvider(): iterable
+    {
+        foreach (PushSubscriptionStatusEnum::cases() as $status) {
+            yield $status->name => [$status];
+        }
+    }
+
+    #[DataProvider('statusProvider')]
+    final public function testUpdateStatusSavesStatus(PushSubscriptionStatusEnum $status): void
+    {
+        $pushSubscription = self::entity(PushSubscriptionFactory::make(['status' => PushSubscriptionStatusEnum::Active]));
+        $dto = new PushSubscriptionStatusDto();
+        $dto->status = $status;
+        $this->pushSubscriptionRepository->expects($this->once())
+            ->method('findById')
+            ->with($pushSubscription->id)
+            ->willReturn($pushSubscription);
+        $this->pushSubscriptionRepository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(static fn (PushSubscription $saved): bool => $saved === $pushSubscription && $status === $saved->status));
+
+        $this->assertSame($pushSubscription->id, $this->service->updateStatus($pushSubscription->id, $dto));
     }
 
     final public function testDelete(): void
@@ -163,14 +187,12 @@ class PushSubscriptionServiceTest extends ServiceTestCase
         string $p256dh,
         string $auth,
         ?string $userAgent,
-        PushSubscriptionStatusEnum $status,
     ): PushSubscriptionDto {
         $dto = new PushSubscriptionDto();
         $dto->endpoint = $endpoint;
         $dto->p256dh = $p256dh;
         $dto->auth = $auth;
         $dto->userAgent = $userAgent;
-        $dto->status = $status;
 
         return $dto;
     }

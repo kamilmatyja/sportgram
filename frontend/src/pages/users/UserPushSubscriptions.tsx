@@ -6,30 +6,34 @@ import {
     TextInput,
     Modal,
     Stack,
+    Group,
     ActionIcon,
     Tooltip,
     Center,
     Loader,
     Text,
+    Menu,
+    Divider,
+    Paper,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconTrash, IconPlus } from '@tabler/icons-react';
+import { IconTrash, IconEdit, IconAdjustments, IconDeviceMobile } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import {
     pushSubscriptionService,
     userService,
     type PushSubscriptionResource,
     type GetPushSubscriptionsQuery,
 } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
+import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
-import { UserProfileNav } from '../../components/UserProfileNav';
-import { NotFound } from '../../components/NotFound';
+import UserProfileNav from '../../components/UserProfileNav';
+import NotFound from '../../components/NotFound';
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 
@@ -45,12 +49,10 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 export default function UserPushSubscriptions() {
-    const { t } = useTranslation();
     const { link } = useParams<{ link: string }>();
-    const { currentUser } = useAuth();
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const [opened, { open, close }] = useDisclosure(false);
     const [subscribing, setSubscribing] = useState(false);
 
     const [page, setPage] = useState(1);
@@ -62,11 +64,44 @@ export default function UserPushSubscriptions() {
     const [p256dhFilter, setP256dhFilter] = useState('');
     const [authFilter, setAuthFilter] = useState('');
 
+    // Create modal
+    const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
+    const [createForm, setCreateForm] = useState({
+        endpoint: '',
+        p256dh: '',
+        auth: '',
+        userAgent: navigator.userAgent || '',
+    });
+    const [createFieldErrors, setCreateFieldErrors] = useState<Record<string, string>>({});
+
+    // Edit modal
+    const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
+    const [editingSub, setEditingSub] = useState<PushSubscriptionResource | null>(null);
+    const [editForm, setEditForm] = useState({
+        endpoint: '',
+        p256dh: '',
+        auth: '',
+        userAgent: '',
+    });
+    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
+
     const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
-        queryFn: () => (link ? userService.getUserByLink(link) : null),
+        queryFn: () => userService.getUserByLink(link || ''),
         enabled: !!link,
     });
+
+    const {
+        isOwner,
+        isAdmin,
+        canAccessSubpage,
+        isLoading: accessLoading,
+    } = useUserSubpageAccess({
+        targetUser,
+        ownerOrAdminOnly: true,
+    });
+
+    const canManage = isOwner || isAdmin;
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -110,7 +145,7 @@ export default function UserPushSubscriptions() {
                 sort: (sort as NonNullable<GetPushSubscriptionsQuery>['sort']) ?? 'createdAt:desc',
                 filter: queryFilter,
             }),
-        enabled: !!targetUser?.id,
+        enabled: !!targetUser?.id && canAccessSubpage,
     });
 
     const subs = data?.data ?? [];
@@ -152,10 +187,9 @@ export default function UserPushSubscriptions() {
                 p256dh: keys.p256dh || '',
                 auth: keys.auth || '',
                 userAgent: navigator.userAgent,
-                status: PushSubscriptionStatusEnum.ACTIVE,
             });
 
-            close();
+            closeCreate();
             queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
             notifications.show({
                 title: t('pushSubscriptions'),
@@ -173,13 +207,113 @@ export default function UserPushSubscriptions() {
         }
     };
 
+    const createManualMutation = useMutation({
+        mutationFn: async () => {
+            await pushSubscriptionService.createPushSubscription({
+                endpoint: createForm.endpoint,
+                p256dh: createForm.p256dh,
+                auth: createForm.auth,
+                userAgent: createForm.userAgent,
+            });
+        },
+        onSuccess: () => {
+            closeCreate();
+            setCreateForm({
+                endpoint: '',
+                p256dh: '',
+                auth: '',
+                userAgent: navigator.userAgent || '',
+            });
+            setCreateFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+            notifications.show({
+                title: t('pushSubscriptions'),
+                message: t('browserAdded'),
+                color: 'green',
+            });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setCreateFieldErrors(fe);
+            notifications.show({
+                title: t('error'),
+                message: getErrorMessage(err),
+                color: 'red',
+            });
+        },
+    });
+
+    const handleOpenEdit = (sub: PushSubscriptionResource) => {
+        setEditingSub(sub);
+        setEditForm({
+            endpoint: sub.endpoint || '',
+            p256dh: sub.p256dh || '',
+            auth: sub.auth || '',
+            userAgent: sub.userAgent || '',
+        });
+        setEditFieldErrors({});
+        openEdit();
+    };
+
+    const updateMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingSub) return;
+            await pushSubscriptionService.updatePushSubscription(editingSub.id, {
+                endpoint: editForm.endpoint,
+                p256dh: editForm.p256dh,
+                auth: editForm.auth,
+                userAgent: editForm.userAgent,
+            });
+        },
+        onSuccess: () => {
+            closeEdit();
+            setEditingSub(null);
+            setEditFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+            notifications.show({
+                title: t('pushSubscriptions'),
+                message: t('browserUpdated'),
+                color: 'green',
+            });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditFieldErrors(fe);
+            notifications.show({
+                title: t('error'),
+                message: getErrorMessage(err),
+                color: 'red',
+            });
+        },
+    });
+
+    const updateStatusMutation = useMutation({
+        mutationFn: ({ id, status }: { id: string; status: PushSubscriptionStatusEnum }) =>
+            pushSubscriptionService.updateSubscriptionStatus(id, status),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+            notifications.show({
+                title: t('pushSubscriptions'),
+                message: t('statusUpdated'),
+                color: 'green',
+            });
+        },
+        onError: (err) => {
+            notifications.show({
+                title: t('error'),
+                message: getErrorMessage(err),
+                color: 'red',
+            });
+        },
+    });
+
     const deleteMutation = useMutation({
         mutationFn: (id: string) => pushSubscriptionService.deleteSubscription(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
             notifications.show({
                 title: t('pushSubscriptions'),
-                message: t('pushSubscriptionDeleted'),
+                message: t('browserSubscriptionDeleted'),
                 color: 'green',
             });
         },
@@ -221,7 +355,7 @@ export default function UserPushSubscriptions() {
                     label={
                         s.status === PushSubscriptionStatusEnum.ACTIVE
                             ? t('pushSubscriptionStatuses.active')
-                            : t('pushSubscriptionStatuses.inactive')
+                            : t('pushSubscriptionStatuses.rejected')
                     }
                 />
             ),
@@ -275,7 +409,7 @@ export default function UserPushSubscriptions() {
         </SimpleGrid>
     );
 
-    if (userLoading) {
+    if (userLoading || accessLoading) {
         return (
             <Center h={200}>
                 <Loader />
@@ -287,9 +421,13 @@ export default function UserPushSubscriptions() {
         return <NotFound title={t('userNotFound')} />;
     }
 
+    if (!canAccessSubpage) {
+        return <NotFound title={t('accessDenied')} />;
+    }
+
     return (
         <Stack gap="md">
-            <UserProfileNav user={targetUser} isOwner={currentUser?.id === targetUser.id} />
+            <UserProfileNav user={targetUser} isOwner={isOwner} />
             <DataTable
                 columns={columns}
                 data={subs}
@@ -312,40 +450,186 @@ export default function UserPushSubscriptions() {
                 hasActiveFilters={activeFiltersCount > 0}
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
-                onAdd={open}
-                addLabel={t('addSubscription')}
+                onAdd={isOwner ? openCreate : undefined}
+                addLabel={t('addBrowser')}
                 actions={(s) => (
-                    <Tooltip label={t('delete')} withArrow>
-                        <ActionIcon
-                            size={30}
-                            color="red"
-                            variant="light"
-                            onClick={() => handleDelete(s.id)}
-                            loading={deleteMutation.isPending}
-                            disabled={deleteMutation.isPending}
-                            aria-label={t('delete')}
-                        >
-                            <IconTrash size={16} />
-                        </ActionIcon>
-                    </Tooltip>
+                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                        {canManage && (
+                            <>
+                                <Menu shadow="md" width={160}>
+                                    <Menu.Target>
+                                        <Tooltip label={t('changeStatus')} withArrow>
+                                            <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
+                                                <IconAdjustments size={16} />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    </Menu.Target>
+                                    <Menu.Dropdown>
+                                        {PushSubscriptionStatusEnum.getOptions(t).map((opt) => (
+                                            <Menu.Item
+                                                key={opt.value}
+                                                disabled={s.status === opt.value || updateStatusMutation.isPending}
+                                                onClick={() =>
+                                                    updateStatusMutation.mutate({
+                                                        id: s.id,
+                                                        status: opt.value as PushSubscriptionStatusEnum,
+                                                    })
+                                                }
+                                            >
+                                                {opt.label}
+                                            </Menu.Item>
+                                        ))}
+                                    </Menu.Dropdown>
+                                </Menu>
+
+                                <Tooltip label={t('editBrowser')} withArrow>
+                                    <ActionIcon
+                                        variant="light"
+                                        size={30}
+                                        onClick={() => handleOpenEdit(s)}
+                                        aria-label={t('editBrowser')}
+                                    >
+                                        <IconEdit size={16} />
+                                    </ActionIcon>
+                                </Tooltip>
+
+                                <Tooltip label={t('delete')} withArrow>
+                                    <ActionIcon
+                                        size={30}
+                                        color="red"
+                                        variant="light"
+                                        onClick={() => handleDelete(s.id)}
+                                        loading={deleteMutation.isPending}
+                                        disabled={deleteMutation.isPending}
+                                        aria-label={t('delete')}
+                                    >
+                                        <IconTrash size={16} />
+                                    </ActionIcon>
+                                </Tooltip>
+                            </>
+                        )}
+                    </Group>
                 )}
             />
 
-            <Modal opened={opened} onClose={close} title={t('addSubscription')} size="lg">
-                <Stack gap="sm">
-                    <Text size="sm">{t('pushSubscriptionInfo')}</Text>
-                    <Text size="xs" c="dimmed">
-                        {t('pushPermissionWillBeAsked')}
-                    </Text>
+            {/* Create modal */}
+            <Modal opened={createOpened} onClose={closeCreate} title={t('addBrowser')} size="lg">
+                <Stack gap="md">
+                    <Paper withBorder p="md" radius="md">
+                        <Stack gap="xs">
+                            <Text fw={600} size="sm">
+                                {t('subscribeThisDevice')}
+                            </Text>
+                            <Text size="xs" c="dimmed">
+                                {t('pushPermissionWillBeAsked')}
+                            </Text>
+                            <Button
+                                mt="xs"
+                                loading={subscribing}
+                                disabled={subscribing}
+                                leftSection={<IconDeviceMobile size={16} />}
+                                onClick={handleSubscribeDevice}
+                            >
+                                {t('subscribeThisDevice')}
+                            </Button>
+                        </Stack>
+                    </Paper>
 
+                    <Divider label={t('orManualEntry')} labelPosition="center" />
+
+                    <Stack gap="sm">
+                        <TextInput
+                            label={t('endpoint')}
+                            placeholder="https://..."
+                            required
+                            value={createForm.endpoint}
+                            error={createFieldErrors.endpoint}
+                            onChange={(e) => setCreateForm({ ...createForm, endpoint: e.currentTarget.value })}
+                        />
+                        <TextInput
+                            label={t('p256dh')}
+                            placeholder="p256dh..."
+                            required
+                            value={createForm.p256dh}
+                            error={createFieldErrors.p256dh}
+                            onChange={(e) => setCreateForm({ ...createForm, p256dh: e.currentTarget.value })}
+                        />
+                        <TextInput
+                            label={t('authKey')}
+                            placeholder="auth..."
+                            required
+                            value={createForm.auth}
+                            error={createFieldErrors.auth}
+                            onChange={(e) => setCreateForm({ ...createForm, auth: e.currentTarget.value })}
+                        />
+                        <TextInput
+                            label={t('device')}
+                            placeholder="User-Agent..."
+                            required
+                            value={createForm.userAgent}
+                            error={createFieldErrors.userAgent}
+                            onChange={(e) => setCreateForm({ ...createForm, userAgent: e.currentTarget.value })}
+                        />
+                        <Button
+                            mt="sm"
+                            loading={createManualMutation.isPending}
+                            disabled={
+                                createManualMutation.isPending ||
+                                !createForm.endpoint.trim() ||
+                                !createForm.p256dh.trim() ||
+                                !createForm.auth.trim()
+                            }
+                            onClick={() => createManualMutation.mutate()}
+                        >
+                            {t('add')}
+                        </Button>
+                    </Stack>
+                </Stack>
+            </Modal>
+
+            {/* Edit modal */}
+            <Modal opened={editOpened} onClose={closeEdit} title={t('editBrowser')} size="lg">
+                <Stack gap="sm">
+                    <TextInput
+                        label={t('endpoint')}
+                        required
+                        value={editForm.endpoint}
+                        error={editFieldErrors.endpoint}
+                        onChange={(e) => setEditForm({ ...editForm, endpoint: e.currentTarget.value })}
+                    />
+                    <TextInput
+                        label={t('p256dh')}
+                        required
+                        value={editForm.p256dh}
+                        error={editFieldErrors.p256dh}
+                        onChange={(e) => setEditForm({ ...editForm, p256dh: e.currentTarget.value })}
+                    />
+                    <TextInput
+                        label={t('authKey')}
+                        required
+                        value={editForm.auth}
+                        error={editFieldErrors.auth}
+                        onChange={(e) => setEditForm({ ...editForm, auth: e.currentTarget.value })}
+                    />
+                    <TextInput
+                        label={t('device')}
+                        required
+                        value={editForm.userAgent}
+                        error={editFieldErrors.userAgent}
+                        onChange={(e) => setEditForm({ ...editForm, userAgent: e.currentTarget.value })}
+                    />
                     <Button
                         mt="md"
-                        loading={subscribing}
-                        disabled={subscribing}
-                        leftSection={<IconPlus size={16} />}
-                        onClick={handleSubscribeDevice}
+                        loading={updateMutation.isPending}
+                        disabled={
+                            updateMutation.isPending ||
+                            !editForm.endpoint.trim() ||
+                            !editForm.p256dh.trim() ||
+                            !editForm.auth.trim()
+                        }
+                        onClick={() => updateMutation.mutate()}
                     >
-                        {t('subscribeThisDevice')}
+                        {t('saveChanges')}
                     </Button>
                 </Stack>
             </Modal>

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, Box, Avatar, Text, Title, Image, Group, Tooltip, ActionIcon } from '@mantine/core';
-import { IconBuildingStore } from '@tabler/icons-react';
+import { Card, Box, Avatar, Text, Title, Image, Group, Button, Center } from '@mantine/core';
+import { IconArrowLeft } from '@tabler/icons-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { type PageResource } from '../api/services';
@@ -23,18 +23,40 @@ export function PageNav({ page, extraActions }: PageNavProps) {
 
     return (
         <Box mb="md">
-            <Card withBorder radius="md" p={0} mb="sm" shadow="xs" className="overflow-hidden">
+            <Card withBorder radius={5} p={0} mb="sm" shadow="xs" className="overflow-hidden">
                 {bgSrc ? (
-                    <Image src={bgSrc} h={160} fit="cover" alt={page.title} />
+                    <Box h={160} pos="relative" bg="var(--mantine-primary-color-filled)">
+                        <Center pos="absolute" inset={0} style={{ zIndex: 0 }}>
+                            <Text fz={48} fw={700} c="white" style={{ opacity: 0.8, userSelect: 'none' }}>
+                                ?
+                            </Text>
+                        </Center>
+                        <Image
+                            src={bgSrc}
+                            h={160}
+                            w="100%"
+                            fit="cover"
+                            alt={page.title}
+                            pos="relative"
+                            style={{ zIndex: 1 }}
+                            onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                            }}
+                        />
+                    </Box>
                 ) : (
-                    <Box h={160} bg="var(--mantine-primary-color-filled)" />
+                    <Center h={160} bg="var(--mantine-primary-color-filled)">
+                        <Text fz={48} fw={700} c="white" style={{ opacity: 0.8, userSelect: 'none' }}>
+                            ?
+                        </Text>
+                    </Center>
                 )}
 
                 <Box p="md" pos="relative">
                     <Avatar
                         src={profileSrc}
                         size={100}
-                        radius="md"
+                        radius={5}
                         pos="absolute"
                         top={-50}
                         left={24}
@@ -57,17 +79,15 @@ export function PageNav({ page, extraActions }: PageNavProps) {
 
                         <Group gap="xs">
                             {!isSamePage && (
-                                <Tooltip label={t('details')} withArrow>
-                                    <ActionIcon
-                                        component={Link}
-                                        to={`/pages/${page.link}`}
-                                        variant="light"
-                                        size={30}
-                                        aria-label={t('details')}
-                                    >
-                                        <IconBuildingStore size={16} />
-                                    </ActionIcon>
-                                </Tooltip>
+                                <Button
+                                    component={Link}
+                                    to={`/pages/${page.link}`}
+                                    variant="light"
+                                    size="xs"
+                                    leftSection={<IconArrowLeft size={16} />}
+                                >
+                                    {t('backToPage')}
+                                </Button>
                             )}
                             {extraActions}
                         </Group>

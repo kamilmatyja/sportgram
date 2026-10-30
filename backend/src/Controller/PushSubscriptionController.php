@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto};
+use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto, PushSubscriptionStatusDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
 use App\Resource\PushSubscriptionResource;
@@ -21,7 +21,7 @@ class PushSubscriptionController extends AbstractController
     #[Route('/api/push-subscriptions', name: 'push_subscription_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
-        summary: 'Create push subscription',
+        summary: 'Create push subscription - endpoint for authenticated user',
         requestBody: new Body(PushSubscriptionDto::class),
         tags: ['push subscriptions'],
         responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized()],
@@ -39,7 +39,7 @@ class PushSubscriptionController extends AbstractController
     #[Route('/api/push-subscriptions/{id}', name: 'push_subscription_update', methods: ['PUT'])]
     #[IsGranted(PushSubscriptionVoter::PUSH_SUBSCRIPTION, subject: 'id')]
     #[OA\Put(
-        summary: 'Update push subscription',
+        summary: 'Update push subscription - endpoint for owner',
         requestBody: new Body(PushSubscriptionDto::class),
         tags: ['push subscriptions'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -55,10 +55,29 @@ class PushSubscriptionController extends AbstractController
         return ApiResponse::ok($pushSubscriptionId);
     }
 
+    #[Route('/api/push-subscriptions/{id}/status', name: 'push_subscription_update_status', methods: ['PATCH'])]
+    #[IsGranted(PushSubscriptionVoter::PUSH_SUBSCRIPTION, subject: 'id')]
+    #[OA\Patch(
+        summary: 'Update push subscription status - endpoint for owner',
+        requestBody: new Body(PushSubscriptionStatusDto::class),
+        tags: ['push subscriptions'],
+        responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
+    )]
+    final public function updateStatus(
+        Uuid $id,
+        #[MapRequestPayload]
+        PushSubscriptionStatusDto $dto,
+        PushSubscriptionService $service,
+    ): JsonResponse {
+        $pushSubscriptionId = $service->updateStatus($id, $dto);
+
+        return ApiResponse::ok($pushSubscriptionId);
+    }
+
     #[Route('/api/push-subscriptions/{id}', name: 'push_subscription_delete', methods: ['DELETE'])]
     #[IsGranted(PushSubscriptionVoter::PUSH_SUBSCRIPTION, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete push subscription',
+        summary: 'Delete push subscription - endpoint for owner',
         tags: ['push subscriptions'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -74,7 +93,7 @@ class PushSubscriptionController extends AbstractController
     #[Route('/api/push-subscriptions', name: 'push_subscription_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of push subscriptions',
+        summary: 'Index of push subscriptions - endpoint for authenticated user',
         tags: ['push subscriptions'],
         responses: [new Collection(PushSubscriptionResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -93,7 +112,7 @@ class PushSubscriptionController extends AbstractController
     #[Route('/api/push-subscriptions/{id}', name: 'push_subscription_details', methods: ['GET'])]
     #[IsGranted(PushSubscriptionVoter::PUSH_SUBSCRIPTION, subject: 'id')]
     #[OA\Get(
-        summary: 'Details of push subscription',
+        summary: 'Details of push subscription - endpoint for owner',
         tags: ['push subscriptions'],
         responses: [new Item(PushSubscriptionResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]

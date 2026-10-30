@@ -1,6 +1,6 @@
 ---
 name: ui-design-system
-description: Standardy projektowe i wizualne interfejsu (UI Design System) w projekcie Sportgram. Obejmuje: odwołanie do README.md, jednolite wymiary elementów (szerokości, wysokości, cienie, czcionki, ikony, paddingi, marginesy, animacje), pełną obsługę motywów jasnego i ciemnego (Light / Dark mode) oraz stuprocentową responsywność całego interfejsu.
+description: Standardy projektowe i wizualne interfejsu (UI Design System) w projekcie Sportgram. Obejmuje: odwołanie do README.md, jednolite wymiary elementów (szerokości, wysokości, cienie, czcionki, ikony, paddingi, marginesy, animacje), pełną obsługę motywów jasnego i ciemnego (Light / Dark mode), dynamiczne motywy kolorystyczne podstron (user.theme i page.theme) oraz stuprocentową responsywność całego interfejsu.
 ---
 
 # UI Design System i Spójność Wizualna (Sportgram)
@@ -59,7 +59,20 @@ Cały interfejs musi poprawnie działać i idealnie prezentować się zarówno w
 
 ---
 
-## 3. Stuprocentowa Responsywność (Mobile, Tablet, Desktop)
+## 3. Motywy Kolorystyczne Podstron (Kolor Przewodni)
+
+W aplikacji obowiązuje reguła dynamicznego dostosowywania koloru przewodniego (motywu) na poszczególnych podstronach:
+
+1. **Podstrony powiązane z użytkownikiem:**
+   - Podstrony `/users/*`, `/trainings/*`, `/goals/*` mają mieć kolor motywu przewodni z obiektu `user.theme`.
+2. **Podstrony powiązane ze stronami i wydarzeniami:**
+   - Podstrony `/pages/*`, `/events/*` mają mieć kolor motywu z obiektu `page.theme`.
+3. **Zasada działania:**
+   - Na powyższych podstronach wszystkie elementy interfejsu, które domyślnie występują w błękitnym (domyślnym) kolorze Mantine, muszą przyjmować kolory zdefiniowanego motywu (`user.theme` lub `page.theme`).
+
+---
+
+## 4. Stuprocentowa Responsywność (Mobile, Tablet, Desktop)
 
 1. **Podejście Mobile-First:**
    - Każdy widok i formularz musi być w pełni czytelny i ergonomiczny na ekranach smartfonów (od 320px szerokości).

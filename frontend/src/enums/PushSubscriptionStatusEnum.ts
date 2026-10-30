@@ -1,7 +1,6 @@
 export enum PushSubscriptionStatusEnum {
     ACTIVE = 1,
-    INACTIVE = 2,
-    REVOKED = 3,
+    REJECTED = 2,
 }
 
 export namespace PushSubscriptionStatusEnum {

@@ -12,9 +12,10 @@ import {
     Loader,
     ActionIcon,
     Tooltip,
+    Menu,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconTrash } from '@tabler/icons-react';
+import { IconTrash, IconAdjustments } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -25,11 +26,12 @@ import {
     type GetNotificationsQuery,
 } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
+import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
 import { NotificationStatusEnum } from '../../enums/NotificationStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
-import {getErrorMessage} from "../../api/client.ts";
+import { getErrorMessage } from '../../api/client';
 
 export default function UserNotifications() {
     const { link } = useParams<{ link: string }>();
@@ -49,6 +51,15 @@ export default function UserNotifications() {
         queryKey: ['user', link],
         queryFn: () => userService.getUserByLink(link || ''),
         enabled: !!link,
+    });
+
+    const {
+        isOwner,
+        canAccessSubpage,
+        isLoading: accessLoading,
+    } = useUserSubpageAccess({
+        targetUser,
+        ownerOrAdminOnly: true,
     });
 
     const sortOptions: SortOption[] = [
@@ -81,7 +92,7 @@ export default function UserNotifications() {
     }, [textFilter, statusFilter]);
 
     const { data, isLoading } = useQuery({
-        queryKey: ['notifications', currentUser?.id, page, limit, sort, queryFilter],
+        queryKey: ['notifications', targetUser?.id, page, limit, sort, queryFilter],
         queryFn: () => {
             if (!currentUser?.id) return null;
             return notificationService.getNotifications({
@@ -91,16 +102,21 @@ export default function UserNotifications() {
                 sort: (sort as NonNullable<GetNotificationsQuery>['sort']) ?? 'createdAt:desc',
             });
         },
-        enabled: !!currentUser?.id,
+        enabled: !!currentUser?.id && canAccessSubpage,
     });
 
     const notifs = data?.data ?? [];
     const pagination = data?.pagination;
 
-    const markAsReadMutation = useMutation({
-        mutationFn: (id: string) => notificationService.markAsRead(id),
+    const updateStatusMutation = useMutation({
+        mutationFn: ({ id, status }: { id: string; status: NotificationStatusEnum }) =>
+            notificationService.updateNotificationStatus(id, status),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['notifications'] });
+            notifications.show({ title: t('notifications'), message: t('statusUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
 
@@ -108,7 +124,7 @@ export default function UserNotifications() {
         mutationFn: (id: string) => notificationService.deleteNotification(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['notifications'] });
-            notifications.show({ title: t('notifications'), message: t('notificationDeleted'), color: 'green' });
+            notifications.show({ title: t('notifications'), message: t('deleted'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -146,7 +162,7 @@ export default function UserNotifications() {
             render: (n) => {
                 const isRead = n.status === NotificationStatusEnum.READ;
                 return (
-                    <Badge size="xs" color={isRead ? 'gray' : 'blue'} variant={isRead ? 'subtle' : 'filled'}>
+                    <Badge size="xs" color={isRead ? 'gray' : undefined} variant={isRead ? 'subtle' : 'filled'}>
                         {isRead ? t('notificationStatuses.read') : t('notificationStatuses.sent')}
                     </Badge>
                 );
@@ -178,7 +194,7 @@ export default function UserNotifications() {
         </SimpleGrid>
     );
 
-    if (userLoading) {
+    if (userLoading || accessLoading) {
         return (
             <Center h={200}>
                 <Loader />
@@ -190,9 +206,13 @@ export default function UserNotifications() {
         return <NotFound title={t('userNotFound')} />;
     }
 
+    if (!canAccessSubpage) {
+        return <NotFound title={t('accessDenied')} />;
+    }
+
     return (
         <Stack gap="md">
-            <UserProfileNav user={targetUser} isOwner={currentUser?.id === targetUser.id} />
+            <UserProfileNav user={targetUser} isOwner={isOwner} />
             <DataTable
                 columns={columns}
                 data={notifs}
@@ -216,22 +236,28 @@ export default function UserNotifications() {
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
                 actions={(n) => (
-                    <Group gap="xs" justify="flex-end">
-                        {n.status !== NotificationStatusEnum.READ && (
-                            <Tooltip label={t('markAsRead')} withArrow>
-                                <ActionIcon
-                                    size={30}
-                                    variant="light"
-                                    color="green"
-                                    onClick={() => markAsReadMutation.mutate(n.id)}
-                                    loading={markAsReadMutation.isPending}
-                                    disabled={markAsReadMutation.isPending}
-                                    aria-label={t('markAsRead')}
-                                >
-                                    <IconCheck size={16} />
-                                </ActionIcon>
-                            </Tooltip>
-                        )}
+                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                        <Menu shadow="md" width={160}>
+                            <Menu.Target>
+                                <Tooltip label={t('changeStatus')} withArrow>
+                                    <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
+                                        <IconAdjustments size={16} />
+                                    </ActionIcon>
+                                </Tooltip>
+                            </Menu.Target>
+                            <Menu.Dropdown>
+                                {NotificationStatusEnum.getOptions(t).map((opt) => (
+                                    <Menu.Item
+                                        key={opt.value}
+                                        disabled={n.status === opt.value || updateStatusMutation.isPending}
+                                        onClick={() => updateStatusMutation.mutate({ id: n.id, status: opt.value })}
+                                    >
+                                        {opt.label}
+                                    </Menu.Item>
+                                ))}
+                            </Menu.Dropdown>
+                        </Menu>
+
                         <Tooltip label={t('delete')} withArrow>
                             <ActionIcon
                                 size={30}

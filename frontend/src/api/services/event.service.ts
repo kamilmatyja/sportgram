@@ -196,7 +196,12 @@ export const eventService = {
             },
         });
         if (res.error) throw res.error;
-        return res.data?.data?.[0] ?? null;
+        const item = res.data?.data?.[0];
+        if (!item) return null;
+        const detail = await this.getEvent(item.id, {
+            'include[]': ['eventDisciplines', 'eventDisciplineDistances', 'eventDisciplineSubDistances'],
+        });
+        return detail.data ?? null;
     },
 
     async signUpForDistance(distanceId: string): Promise<CreateEventDisciplineDistanceResponse> {

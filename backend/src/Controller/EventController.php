@@ -34,7 +34,7 @@ class EventController extends AbstractController
     #[Route('/api/event-pages/{id}', name: 'event_create', methods: ['POST'])]
     #[IsGranted(EventCreatorVoter::EVENT_CREATOR, subject: 'id')]
     #[OA\Post(
-        summary: 'Create event',
+        summary: 'Create event - endpoint for page participants',
         requestBody: new Body(EventDto::class),
         tags: ['events'],
         responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -53,7 +53,7 @@ class EventController extends AbstractController
     #[Route('/api/events/{id}', name: 'event_update', methods: ['PUT'])]
     #[IsGranted(EventUpdaterVoter::EVENT_UPDATER, subject: 'id')]
     #[OA\Put(
-        summary: 'Update event',
+        summary: 'Update event - endpoint for owner',
         requestBody: new Body(EventDto::class),
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -72,7 +72,7 @@ class EventController extends AbstractController
     #[Route('/api/events/{id}/status', name: 'event_update_status', methods: ['PATCH'])]
     #[IsGranted(EventVoter::EVENT, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update event status',
+        summary: 'Update event status - endpoint for owner or user with administrator role',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -91,7 +91,7 @@ class EventController extends AbstractController
     #[Route('/api/events/{id}', name: 'event_delete', methods: ['DELETE'])]
     #[IsGranted(EventUpdaterVoter::EVENT_UPDATER, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete event',
+        summary: 'Delete event - endpoint for owner',
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -107,7 +107,7 @@ class EventController extends AbstractController
     #[Route('/api/events', name: 'event_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of events',
+        summary: 'Index of events - endpoint for authenticated user',
         tags: ['events'],
         responses: [new Collection(EventResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -128,7 +128,7 @@ class EventController extends AbstractController
     #[Route('/api/events/{id}', name: 'event_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of event',
+        summary: 'Details of event - endpoint for authenticated user',
         tags: ['events'],
         responses: [new Item(EventResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
@@ -148,7 +148,7 @@ class EventController extends AbstractController
     #[Route('/api/event-discipline-distances/{id}', name: 'event_discipline_distance_list_create', methods: ['POST'])]
     #[IsGranted(RoleEnum::ROLE_PARTICIPANT)]
     #[OA\Post(
-        summary: 'Create event discipline distance list',
+        summary: 'Create event discipline distance list - endpoint for user with participant role',
         tags: ['events'],
         responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -164,7 +164,7 @@ class EventController extends AbstractController
     #[Route('/api/event-discipline-distance-lists/{id}/status', name: 'event_discipline_distance_list_update_status', methods: ['PATCH'])]
     #[IsGranted(EventListVoter::EVENT_LIST, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update event discipline distance list status',
+        summary: 'Update event discipline distance list status - endpoint for owner, user with participant role or user with administrator role',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -183,7 +183,7 @@ class EventController extends AbstractController
     #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_list_delete', methods: ['DELETE'])]
     #[IsGranted(EventListCreatorVoter::EVENT_LIST_CREATOR, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete event discipline distance list',
+        summary: 'Delete event discipline distance list - endpoint for owner',
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -199,7 +199,7 @@ class EventController extends AbstractController
     #[Route('/api/event-discipline-distances/{id}', name: 'event_discipline_distance_list_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of event discipline distance lists',
+        summary: 'Index of event discipline distance lists - endpoint for authenticated user',
         tags: ['events'],
         responses: [new Collection(EventDisciplineDistanceListResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
@@ -221,7 +221,7 @@ class EventController extends AbstractController
     #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_list_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of event discipline distance list',
+        summary: 'Details of event discipline distance list - endpoint for authenticated user',
         tags: ['events'],
         responses: [new Item(EventDisciplineDistanceListResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
@@ -241,7 +241,7 @@ class EventController extends AbstractController
     #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_result_create', methods: ['POST'])]
     #[IsGranted(EventListCreatorVoter::EVENT_LIST_CREATOR, subject: 'id')]
     #[OA\Post(
-        summary: 'Create event discipline distance result',
+        summary: 'Create event discipline distance result - endpoint for owner',
         requestBody: new Body(EventResultDto::class),
         tags: ['events'],
         responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -260,7 +260,7 @@ class EventController extends AbstractController
     #[Route('/api/event-discipline-distance-results/{id}', name: 'event_discipline_distance_result_update', methods: ['PUT'])]
     #[IsGranted(EventResultVoter::EVENT_RESULT, subject: 'id')]
     #[OA\Put(
-        summary: 'Update event discipline distance result',
+        summary: 'Update event discipline distance result - endpoint for owner',
         requestBody: new Body(EventResultDto::class),
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -279,7 +279,7 @@ class EventController extends AbstractController
     #[Route('/api/event-discipline-distance-results/{id}', name: 'event_discipline_distance_result_delete', methods: ['DELETE'])]
     #[IsGranted(EventResultVoter::EVENT_RESULT, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete event discipline distance result',
+        summary: 'Delete event discipline distance result - endpoint for owner',
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]

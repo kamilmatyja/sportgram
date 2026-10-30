@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Dto;
 
 use App\Dto\PushSubscriptionDto;
-use App\Enum\PushSubscriptionStatusEnum;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 class PushSubscriptionDtoTest extends DtoTestCase
@@ -15,28 +14,12 @@ class PushSubscriptionDtoTest extends DtoTestCase
         $dto = new PushSubscriptionDto();
 
         $this->assertNull($dto->userAgent);
-        $this->assertViolations($dto, ['endpoint', 'p256dh', 'auth', 'status']);
+        $this->assertViolations($dto, ['endpoint', 'p256dh', 'auth']);
     }
 
     final public function testValidDto(): void
     {
         $this->assertValid($this->validDto());
-    }
-
-    #[DataProvider('statusProvider')]
-    final public function testAcceptsStatus(PushSubscriptionStatusEnum $status): void
-    {
-        $dto = $this->validDto();
-        $dto->status = $status;
-
-        $this->assertValid($dto);
-    }
-
-    public static function statusProvider(): iterable
-    {
-        foreach (PushSubscriptionStatusEnum::cases() as $case) {
-            yield $case->name => [$case];
-        }
     }
 
     final public function testBoundaryValuesAreValid(): void
@@ -86,7 +69,6 @@ class PushSubscriptionDtoTest extends DtoTestCase
         $dto->p256dh = 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA';
         $dto->auth = 'tBHItJI5svbpez7KI4CCXg';
         $dto->userAgent = 'Mozilla/5.0';
-        $dto->status = PushSubscriptionStatusEnum::Active;
 
         return $dto;
     }

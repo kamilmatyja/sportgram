@@ -79,7 +79,7 @@ export default function Statistics() {
             key: 'discipline',
             header: t('discipline'),
             render: (s) => (
-                <Badge size="xs" color="blue" variant="light">
+                <Badge size="xs" variant="light">
                     {DisciplineEnum.getOptions(t).find((o) => o.value === s.discipline)?.label ?? s.discipline}
                 </Badge>
             ),

@@ -28,7 +28,7 @@ class PageController extends AbstractController
     #[Route('/api/pages', name: 'page_create', methods: ['POST'])]
     #[IsGranted(RoleEnum::ROLE_ORGANIZER)]
     #[OA\Post(
-        summary: 'Create page',
+        summary: 'Create page - endpoint for user with organizer role',
         requestBody: new Body(PageDto::class),
         tags: ['pages'],
         responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
@@ -46,7 +46,7 @@ class PageController extends AbstractController
     #[Route('/api/pages/{id}', name: 'page_update', methods: ['PUT'])]
     #[IsGranted(PageCreatorVoter::PAGE_CREATOR, subject: 'id')]
     #[OA\Put(
-        summary: 'Update page',
+        summary: 'Update page - endpoint for owner',
         requestBody: new Body(PageDto::class),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -65,7 +65,7 @@ class PageController extends AbstractController
     #[Route('/api/pages/{id}/status', name: 'page_patch_status', methods: ['PATCH'])]
     #[IsGranted(PageVoter::PAGE, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update page status',
+        summary: 'Update page status - endpoint for owner or user with administrator role',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -84,7 +84,7 @@ class PageController extends AbstractController
     #[Route('/api/pages/{id}', name: 'page_delete', methods: ['DELETE'])]
     #[IsGranted(PageCreatorVoter::PAGE_CREATOR, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete page',
+        summary: 'Delete page - endpoint for owner',
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -100,7 +100,7 @@ class PageController extends AbstractController
     #[Route('/api/pages', name: 'page_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of pages',
+        summary: 'Index of pages - endpoint for authenticated user',
         tags: ['pages'],
         responses: [new Collection(PageResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -121,7 +121,7 @@ class PageController extends AbstractController
     #[Route('/api/pages/{id}', name: 'page_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of page',
+        summary: 'Details of page - endpoint for authenticated user',
         tags: ['pages'],
         responses: [new Item(PageResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
@@ -141,7 +141,7 @@ class PageController extends AbstractController
     #[Route('/api/page-participants/{id}/status', name: 'page_participant_patch_status', methods: ['PATCH'])]
     #[IsGranted(PageParticipantVoter::PAGE_PARTICIPANT, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update page participant status',
+        summary: 'Update page participant status - endpoint for page participant',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -160,7 +160,7 @@ class PageController extends AbstractController
     #[Route('/api/pages/{id}/follows', name: 'page_follow_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
-        summary: 'Create page follow',
+        summary: 'Create page follow - endpoint for authenticated user',
         requestBody: new Body(PageFollowStatusDto::class),
         tags: ['pages'],
         responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -179,7 +179,7 @@ class PageController extends AbstractController
     #[Route('/api/page-follows/{id}/status', name: 'page_follow_patch_status', methods: ['PATCH'])]
     #[IsGranted(PageFollowVoter::PAGE_FOLLOW, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update page follow status',
+        summary: 'Update page follow status - endpoint for owner',
         requestBody: new Body(PageFollowStatusDto::class),
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -198,7 +198,7 @@ class PageController extends AbstractController
     #[Route('/api/page-follows/{id}', name: 'page_follow_delete', methods: ['DELETE'])]
     #[IsGranted(PageFollowVoter::PAGE_FOLLOW, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete page follow',
+        summary: 'Delete page follow - endpoint for owner',
         tags: ['pages'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -214,7 +214,7 @@ class PageController extends AbstractController
     #[Route('/api/page-follows', name: 'page_follow_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of page follows',
+        summary: 'Index of page follows - endpoint for authenticated user',
         tags: ['pages'],
         responses: [new Collection(PageResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -233,7 +233,7 @@ class PageController extends AbstractController
     #[Route('/api/page-follows/{id}', name: 'page_follow_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of page follow',
+        summary: 'Details of page follow - endpoint for authenticated user',
         tags: ['pages'],
         responses: [new Item(PageResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]

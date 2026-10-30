@@ -26,7 +26,7 @@ class FeedController extends AbstractController
     #[Route('/api/feeds', name: 'feed_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
-        summary: 'Create feed',
+        summary: 'Create feed - endpoint for authenticated user',
         requestBody: new Body(FeedDto::class),
         tags: ['feeds'],
         responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
@@ -44,7 +44,7 @@ class FeedController extends AbstractController
     #[Route('/api/feeds/{id}', name: 'feed_update', methods: ['PUT'])]
     #[IsGranted(FeedCreatorVoter::FEED_CREATOR, subject: 'id')]
     #[OA\Put(
-        summary: 'Update feed',
+        summary: 'Update feed - endpoint for owner',
         requestBody: new Body(FeedDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -63,7 +63,7 @@ class FeedController extends AbstractController
     #[Route('/api/feeds/{id}/status', name: 'feed_update_status', methods: ['PATCH'])]
     #[IsGranted(FeedVoter::FEED, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update feed status',
+        summary: 'Update feed status - endpoint for owner or user with administrator role',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -82,7 +82,7 @@ class FeedController extends AbstractController
     #[Route('/api/feeds/{id}', name: 'feed_delete', methods: ['DELETE'])]
     #[IsGranted(FeedCreatorVoter::FEED_CREATOR, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete feed',
+        summary: 'Delete feed - endpoint for owner',
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -98,7 +98,7 @@ class FeedController extends AbstractController
     #[Route('/api/feeds', name: 'feed_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of feeds',
+        summary: 'Index of feeds - endpoint for authenticated user',
         tags: ['feeds'],
         responses: [new Collection(FeedResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -119,7 +119,7 @@ class FeedController extends AbstractController
     #[Route('/api/feeds/{id}', name: 'feed_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of feed',
+        summary: 'Details of feed - endpoint for authenticated user',
         tags: ['feeds'],
         responses: [new Item(FeedResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
@@ -139,7 +139,7 @@ class FeedController extends AbstractController
     #[Route('/api/feeds/{id}/comments', name: 'feed_comment_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
-        summary: 'Create feed comment',
+        summary: 'Create feed comment - endpoint for authenticated user',
         requestBody: new Body(FeedCommentDto::class),
         tags: ['feeds'],
         responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -158,7 +158,7 @@ class FeedController extends AbstractController
     #[Route('/api/feed-comments/{id}', name: 'feed_comment_update', methods: ['PUT'])]
     #[IsGranted(FeedCommentCreatorVoter::FEED_COMMENT_CREATOR, subject: 'id')]
     #[OA\Put(
-        summary: 'Update feed comment',
+        summary: 'Update feed comment - endpoint for owner',
         requestBody: new Body(FeedCommentDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -177,7 +177,7 @@ class FeedController extends AbstractController
     #[Route('/api/feed-comments/{id}/status', name: 'feed_comment_update_status', methods: ['PATCH'])]
     #[IsGranted(FeedCommentVoter::FEED_COMMENT, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update feed comment status',
+        summary: 'Update feed comment status - endpoint for owner or user with administrator role',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -196,7 +196,7 @@ class FeedController extends AbstractController
     #[Route('/api/feed-comments/{id}', name: 'feed_comment_delete', methods: ['DELETE'])]
     #[IsGranted(FeedCommentCreatorVoter::FEED_COMMENT_CREATOR, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete feed comment',
+        summary: 'Delete feed comment - endpoint for owner',
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -212,7 +212,7 @@ class FeedController extends AbstractController
     #[Route('/api/feeds/{id}/reactions', name: 'feed_reaction_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
-        summary: 'Create feed reaction',
+        summary: 'Create feed reaction - endpoint for authenticated user',
         requestBody: new Body(FeedReactionDto::class),
         tags: ['feeds'],
         responses: [new Created(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -231,7 +231,7 @@ class FeedController extends AbstractController
     #[Route('/api/feed-reactions/{id}', name: 'feed_reaction_update', methods: ['PUT'])]
     #[IsGranted(FeedReactionCreatorVoter::FEED_REACTION_CREATOR, subject: 'id')]
     #[OA\Put(
-        summary: 'Update feed reaction',
+        summary: 'Update feed reaction - endpoint for owner',
         requestBody: new Body(FeedReactionDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -250,7 +250,7 @@ class FeedController extends AbstractController
     #[Route('/api/feed-reactions/{id}/status', name: 'feed_reaction_update_status', methods: ['PATCH'])]
     #[IsGranted(FeedReactionVoter::FEED_REACTION, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update feed reaction status',
+        summary: 'Update feed reaction status - endpoint for owner or user with administrator role',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -269,7 +269,7 @@ class FeedController extends AbstractController
     #[Route('/api/feed-reactions/{id}', name: 'feed_reaction_delete', methods: ['DELETE'])]
     #[IsGranted(FeedReactionCreatorVoter::FEED_REACTION_CREATOR, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete feed reaction',
+        summary: 'Delete feed reaction - endpoint for owner',
         tags: ['feeds'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]

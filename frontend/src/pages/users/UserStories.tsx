@@ -17,16 +17,18 @@ import {
     Badge,
     Center,
     Loader,
+    Group,
+    Menu,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconTrash, IconPhoto } from '@tabler/icons-react';
+import { IconTrash, IconPhoto, IconEdit, IconAdjustments, IconEye } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { storyService, userService, type StoryResource, type GetStoriesQuery } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
+import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { UserProfileNav } from '../../components/UserProfileNav';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
@@ -37,7 +39,6 @@ export default function UserStories() {
     const { link } = useParams<{ link: string }>();
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const { currentUser, isAdmin } = useAuth();
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
@@ -47,10 +48,19 @@ export default function UserStories() {
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    const [opened, { open, close }] = useDisclosure(false);
+    // Create modal
+    const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
     const [text, setText] = useState('');
     const [photo, setPhoto] = useState<File | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    // Edit modal
+    const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
+    const [editingStory, setEditingStory] = useState<StoryResource | null>(null);
+    const [editText, setEditText] = useState('');
+    const [editPhoto, setEditPhoto] = useState<File | null>(null);
+    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
+
     const [viewingStory, setViewingStory] = useState<StoryResource | null>(null);
 
     // Fetch target user
@@ -63,7 +73,14 @@ export default function UserStories() {
         enabled: !!link,
     });
 
-    const isOwner = currentUser?.id === targetUser?.id;
+    const {
+        isOwner,
+        isAdmin,
+        canAccessSubpage,
+        isLoading: accessLoading,
+    } = useUserSubpageAccess({
+        targetUser,
+    });
 
     const sortOptions: SortOption[] = [
         { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
@@ -107,7 +124,7 @@ export default function UserStories() {
                 sort: (sort as NonNullable<GetStoriesQuery>['sort']) ?? 'createdAt:desc',
             });
         },
-        enabled: !!targetUser?.id,
+        enabled: !!targetUser?.id && canAccessSubpage,
     });
 
     const stories = data?.data ?? [];
@@ -123,7 +140,7 @@ export default function UserStories() {
             setText('');
             setPhoto(null);
             setFieldErrors({});
-            close();
+            closeCreate();
             queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['stories'] });
@@ -132,6 +149,51 @@ export default function UserStories() {
         onError: (err) => {
             const fe = extractFieldErrors(err);
             setFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingStory) return;
+            let photoStr = editingStory.photo;
+            if (editPhoto) {
+                photoStr = await fileToBase64(editPhoto);
+            }
+            await storyService.updateStory(editingStory.id, {
+                text: editText,
+                photo: photoStr,
+            });
+        },
+        onSuccess: () => {
+            closeEdit();
+            setEditingStory(null);
+            setEditText('');
+            setEditPhoto(null);
+            setEditFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['stories'] });
+            notifications.show({ title: t('stories'), message: t('storyUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const statusMutation = useMutation({
+        mutationFn: async ({ id, status }: { id: string; status: ElementStatusEnum }) => {
+            await storyService.updateStoryStatus(id, status);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['stories'] });
+            notifications.show({ title: t('stories'), message: t('statusUpdated'), color: 'green' });
+        },
+        onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -151,6 +213,14 @@ export default function UserStories() {
         },
     });
 
+    const handleOpenEdit = (story: StoryResource) => {
+        setEditingStory(story);
+        setEditText(story.text);
+        setEditPhoto(null);
+        setEditFieldErrors({});
+        openEdit();
+    };
+
     const handleDelete = (id: string) => {
         openConfirmActionModal({
             title: t('confirmDeleteTitle'),
@@ -168,7 +238,7 @@ export default function UserStories() {
             render: (s) => (
                 <Avatar
                     src={formatImageSrc(s.photo)}
-                    radius="sm"
+                    radius={5}
                     size="md"
                     className="pointer"
                     onClick={() => setViewingStory(s)}
@@ -197,7 +267,11 @@ export default function UserStories() {
             render: (s) => {
                 const opt = ElementStatusEnum.getOptions(t).find((o) => o.value === s.status);
                 return (
-                    <Badge size="xs" variant="light" color={s.status === ElementStatusEnum.ACTIVE ? 'green' : 'blue'}>
+                    <Badge
+                        size="xs"
+                        variant="light"
+                        color={s.status === ElementStatusEnum.ACTIVE ? 'green' : undefined}
+                    >
                         {opt?.label ?? s.status}
                     </Badge>
                 );
@@ -229,7 +303,7 @@ export default function UserStories() {
         </SimpleGrid>
     );
 
-    if (userLoading) {
+    if (userLoading || accessLoading) {
         return (
             <Center h={200}>
                 <Loader />
@@ -239,6 +313,10 @@ export default function UserStories() {
 
     if (!targetUser) {
         return <NotFound title={t('userNotFound')} />;
+    }
+
+    if (!canAccessSubpage) {
+        return <NotFound title={t('accessDenied')} />;
     }
 
     return (
@@ -266,28 +344,85 @@ export default function UserStories() {
                 hasActiveFilters={activeFiltersCount > 0}
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
-                onAdd={isOwner || isAdmin ? open : undefined}
+                onAdd={isOwner ? openCreate : undefined}
                 addLabel={t('addStory')}
-                actions={(s) =>
-                    isOwner || isAdmin ? (
-                        <Tooltip label={t('delete')} withArrow>
+                actions={(s) => (
+                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                        <Tooltip label={t('details')} withArrow>
                             <ActionIcon
                                 variant="light"
-                                color="red"
                                 size={30}
-                                onClick={() => handleDelete(s.id)}
-                                loading={deleteMutation.isPending}
-                                disabled={deleteMutation.isPending}
-                                aria-label={t('delete')}
+                                onClick={() => setViewingStory(s)}
+                                aria-label={t('details')}
                             >
-                                <IconTrash size={16} />
+                                <IconEye size={16} />
                             </ActionIcon>
                         </Tooltip>
-                    ) : null
-                }
+                        {(isOwner || isAdmin) && (
+                            <Menu shadow="md" width={140} position="bottom-end">
+                                <Menu.Target>
+                                    <Tooltip label={t('changeStatus')} withArrow>
+                                        <ActionIcon
+                                            variant="light"
+                                            size={30}
+                                            aria-label={t('changeStatus')}
+                                            loading={statusMutation.isPending}
+                                        >
+                                            <IconAdjustments size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </Menu.Target>
+                                <Menu.Dropdown>
+                                    {ElementStatusEnum.getOptions(t).map((opt) => (
+                                        <Menu.Item
+                                            key={opt.value}
+                                            onClick={() =>
+                                                statusMutation.mutate({
+                                                    id: s.id,
+                                                    status: opt.value as ElementStatusEnum,
+                                                })
+                                            }
+                                            disabled={s.status === opt.value}
+                                        >
+                                            {opt.label}
+                                        </Menu.Item>
+                                    ))}
+                                </Menu.Dropdown>
+                            </Menu>
+                        )}
+                        {isOwner && (
+                            <Tooltip label={t('edit')} withArrow>
+                                <ActionIcon
+                                    variant="light"
+                                    size={30}
+                                    onClick={() => handleOpenEdit(s)}
+                                    aria-label={t('edit')}
+                                >
+                                    <IconEdit size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
+                        {(isOwner || isAdmin) && (
+                            <Tooltip label={t('delete')} withArrow>
+                                <ActionIcon
+                                    variant="light"
+                                    color="red"
+                                    size={30}
+                                    onClick={() => handleDelete(s.id)}
+                                    loading={deleteMutation.isPending}
+                                    disabled={deleteMutation.isPending}
+                                    aria-label={t('delete')}
+                                >
+                                    <IconTrash size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
+                    </Group>
+                )}
             />
 
-            <Modal opened={opened} onClose={close} title={t('addStory')} size="lg">
+            {/* Create modal */}
+            <Modal opened={createOpened} onClose={closeCreate} title={t('addStory')} size="lg">
                 <Stack gap="sm">
                     <Textarea
                         label={t('text')}
@@ -315,6 +450,39 @@ export default function UserStories() {
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}
+                    </Button>
+                </Stack>
+            </Modal>
+
+            {/* Edit modal */}
+            <Modal opened={editOpened} onClose={closeEdit} title={t('editStory')} size="lg">
+                <Stack gap="sm">
+                    <Textarea
+                        label={t('text')}
+                        placeholder={t('storyDescriptionPlaceholder')}
+                        rows={3}
+                        value={editText}
+                        error={editFieldErrors.text}
+                        onChange={(e) => setEditText(e.currentTarget.value)}
+                        required
+                    />
+                    <FileInput
+                        label={t('photo')}
+                        placeholder={t('selectPhotoPlaceholder')}
+                        description={t('leaveEmptyToKeep')}
+                        accept="image/*"
+                        leftSection={<IconPhoto size={16} />}
+                        value={editPhoto}
+                        error={editFieldErrors.photo}
+                        onChange={setEditPhoto}
+                        clearable
+                    />
+                    <Button
+                        loading={updateMutation.isPending}
+                        disabled={updateMutation.isPending || !editText.trim()}
+                        onClick={() => updateMutation.mutate()}
+                    >
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>

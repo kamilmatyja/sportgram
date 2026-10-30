@@ -12,13 +12,17 @@ import {
     Loader,
     ActionIcon,
     Tooltip,
+    Modal,
+    Button,
+    Menu,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconCheck, IconX, IconTrash, IconMessage } from '@tabler/icons-react';
+import { IconAdjustments, IconTrash, IconEye } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
+import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import {
     userService,
     friendService,
@@ -27,6 +31,7 @@ import {
     type GetFriendsQuery,
 } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
+import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
@@ -46,13 +51,24 @@ export default function UserFriends() {
     // Filters
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
+    // Add friend modal
+    const [addOpened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
     const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: () => userService.getUserByLink(link || ''),
         enabled: !!link,
     });
 
-    const isOwner = currentUser?.id === targetUser?.id;
+    const {
+        isOwner,
+        canAccessSubpage,
+        isLoading: accessLoading,
+    } = useUserSubpageAccess({
+        targetUser,
+    });
 
     const sortOptions: SortOption[] = [
         { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
@@ -90,7 +106,7 @@ export default function UserFriends() {
                 sort: (sort as NonNullable<GetFriendsQuery>['sort']) ?? 'createdAt:desc',
             });
         },
-        enabled: !!targetUser?.id,
+        enabled: !!targetUser?.id && canAccessSubpage,
     });
 
     const friends = data?.data ?? [];
@@ -120,11 +136,46 @@ export default function UserFriends() {
 
     const relatedUsers = relatedUsersData ?? {};
 
+    // Candidates for adding as friend (excluding current user and existing friends)
+    const { data: allUsersData } = useQuery({
+        queryKey: ['potential-friends', targetUser?.id],
+        queryFn: async () => {
+            const res = await userService.getUsers({ limit: 50 });
+            return res.data ?? [];
+        },
+        enabled: addOpened && !!targetUser?.id,
+    });
+
+    const candidateUsers = useMemo(() => {
+        const existingIds = new Set(otherUserIds);
+        if (targetUser?.id) existingIds.add(targetUser.id);
+        if (currentUser?.id) existingIds.add(currentUser.id);
+        return (allUsersData ?? []).filter((u) => !existingIds.has(u.id));
+    }, [allUsersData, otherUserIds, targetUser?.id, currentUser?.id]);
+
+    const addFriendMutation = useMutation({
+        mutationFn: async (userId: string) => {
+            await friendService.sendFriendRequest(userId);
+        },
+        onSuccess: () => {
+            closeAdd();
+            setSelectedUserId(null);
+            setFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['friends'] });
+            notifications.show({ title: t('friend'), message: t('friendRequestSent'), color: 'green' });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
     const updateStatusMutation = useMutation({
         mutationFn: ({ id, status }: { id: string; status: number }) => friendService.updateStatus(id, status),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['friends'] });
-            notifications.show({ title: t('friends'), message: t('friendStatusUpdated'), color: 'green' });
+            notifications.show({ title: t('friend'), message: t('friendStatusUpdated'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -135,7 +186,7 @@ export default function UserFriends() {
         mutationFn: (id: string) => friendService.deleteFriend(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['friends'] });
-            notifications.show({ title: t('friends'), message: t('friendRemoved'), color: 'green' });
+            notifications.show({ title: t('friend'), message: t('friendRemoved'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -152,6 +203,38 @@ export default function UserFriends() {
         });
     };
 
+    if (userLoading || accessLoading) {
+        return (
+            <Center h={200}>
+                <Loader />
+            </Center>
+        );
+    }
+
+    if (!targetUser) {
+        return <NotFound title={t('userNotFound')} />;
+    }
+
+    if (!canAccessSubpage) {
+        return <NotFound title={t('accessDenied')} />;
+    }
+
+    const filtersNode = (
+        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+            <Select
+                label={t('status')}
+                placeholder={t('allStatuses')}
+                data={FriendStatusEnum.getOptions(t).map((s) => ({ value: String(s.value), label: s.label }))}
+                value={statusFilter}
+                onChange={(v) => {
+                    setStatusFilter(v);
+                    setPage(1);
+                }}
+                clearable
+            />
+        </SimpleGrid>
+    );
+
     const columns: Column<FriendResource>[] = [
         {
             key: 'user',
@@ -161,7 +244,7 @@ export default function UserFriends() {
                 const otherUser = relatedUsers[otherId];
                 return (
                     <Group gap="sm">
-                        <Avatar src={formatImageSrc(otherUser?.profilePhoto)} radius="xl">
+                        <Avatar src={formatImageSrc(otherUser?.profilePhoto)} radius={5}>
                             ?
                         </Avatar>
                         <div>
@@ -189,22 +272,27 @@ export default function UserFriends() {
             header: t('status'),
             render: (f) => {
                 let color = 'gray';
-                let label = t('unknown');
-                if (f.status === FriendStatusEnum.ACCEPTED) {
-                    color = 'green';
-                    label = t('friends.accepted');
-                } else if (f.status === FriendStatusEnum.PENDING) {
-                    color = 'yellow';
-                    label = t('friends.pending');
-                } else if (f.status === FriendStatusEnum.REJECTED) {
-                    color = 'red';
-                    label = t('friends.rejected');
-                } else if (f.status === FriendStatusEnum.BLOCKED) {
-                    color = 'dark';
-                    label = t('friends.blocked');
+                let label = '';
+                switch (f.status) {
+                    case FriendStatusEnum.PENDING:
+                        color = 'yellow';
+                        label = t('friends.pending');
+                        break;
+                    case FriendStatusEnum.ACCEPTED:
+                        color = 'green';
+                        label = t('friends.accepted');
+                        break;
+                    case FriendStatusEnum.REJECTED:
+                        color = 'red';
+                        label = t('friends.rejected');
+                        break;
+                    case FriendStatusEnum.BLOCKED:
+                        color = 'dark';
+                        label = t('friends.blocked');
+                        break;
                 }
                 return (
-                    <Badge color={color} size="xs" variant="light">
+                    <Badge color={color} variant="light">
                         {label}
                     </Badge>
                 );
@@ -221,37 +309,10 @@ export default function UserFriends() {
         },
     ];
 
-    const filtersNode = (
-        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-            <Select
-                label={t('status')}
-                placeholder={t('allStatuses')}
-                data={FriendStatusEnum.getOptions(t).map((s) => ({ value: String(s.value), label: s.label }))}
-                value={statusFilter}
-                onChange={(v) => {
-                    setStatusFilter(v);
-                    setPage(1);
-                }}
-                clearable
-            />
-        </SimpleGrid>
-    );
-
-    if (userLoading) {
-        return (
-            <Center h={200}>
-                <Loader />
-            </Center>
-        );
-    }
-
-    if (!targetUser) {
-        return <NotFound title={t('userNotFound')} />;
-    }
-
     return (
-        <Stack gap="md">
-            <UserProfileNav user={targetUser} isOwner={isOwner} />
+        <Stack gap="lg">
+            <UserProfileNav user={targetUser} />
+
             <DataTable
                 columns={columns}
                 data={friends}
@@ -274,66 +335,65 @@ export default function UserFriends() {
                 hasActiveFilters={activeFiltersCount > 0}
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
+                onAdd={isOwner ? openAdd : undefined}
+                addLabel={t('addFriend')}
                 actions={(f) => {
-                    const canManage = isOwner || isAdmin;
-                    const isReceiver = f.receiverUserId === currentUser?.id;
+                    const isParticipant = f.senderUserId === currentUser?.id || f.receiverUserId === currentUser?.id;
+                    const canEditStatus = isOwner || isParticipant || isAdmin;
+                    const canDelete = isOwner || isAdmin;
                     const otherId = f.senderUserId === targetUser?.id ? f.receiverUserId : f.senderUserId;
                     const otherUser = relatedUsers[otherId];
 
                     return (
-                        <Group gap="xs" justify="flex-end">
-                            {canManage && isReceiver && f.status === FriendStatusEnum.PENDING && (
-                                <>
-                                    <Tooltip label={t('accept')} withArrow>
-                                        <ActionIcon
-                                            size={30}
-                                            color="green"
-                                            variant="light"
-                                            onClick={() =>
-                                                updateStatusMutation.mutate({
-                                                    id: f.id,
-                                                    status: FriendStatusEnum.ACCEPTED,
-                                                })
-                                            }
-                                            loading={updateStatusMutation.isPending}
-                                        >
-                                            <IconCheck size={16} />
-                                        </ActionIcon>
-                                    </Tooltip>
-                                    <Tooltip label={t('reject')} withArrow>
-                                        <ActionIcon
-                                            size={30}
-                                            color="red"
-                                            variant="light"
-                                            onClick={() =>
-                                                updateStatusMutation.mutate({
-                                                    id: f.id,
-                                                    status: FriendStatusEnum.REJECTED,
-                                                })
-                                            }
-                                            loading={updateStatusMutation.isPending}
-                                        >
-                                            <IconX size={16} />
-                                        </ActionIcon>
-                                    </Tooltip>
-                                </>
-                            )}
-
-                            {f.status === FriendStatusEnum.ACCEPTED && otherUser && (
-                                <Tooltip label={t('chat')} withArrow>
+                        <Group gap="xs" justify="flex-end" wrap="nowrap">
+                            {otherUser && (
+                                <Tooltip label={t('details')} withArrow>
                                     <ActionIcon
                                         component={Link}
-                                        to={`/users/${otherUser.link}/conversations`}
+                                        to={`/users/${otherUser.link ?? otherId}`}
                                         variant="light"
-                                        color="blue"
                                         size={30}
+                                        aria-label={t('details')}
                                     >
-                                        <IconMessage size={16} />
+                                        <IconEye size={16} />
                                     </ActionIcon>
                                 </Tooltip>
                             )}
 
-                            {canManage && (
+                            {canEditStatus && (
+                                <Menu shadow="md" width={160} position="bottom-end">
+                                    <Menu.Target>
+                                        <Tooltip label={t('changeStatus')} withArrow>
+                                            <ActionIcon
+                                                variant="light"
+                                                size={30}
+                                                aria-label={t('changeStatus')}
+                                                loading={updateStatusMutation.isPending}
+                                            >
+                                                <IconAdjustments size={16} />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    </Menu.Target>
+                                    <Menu.Dropdown>
+                                        {FriendStatusEnum.getOptions(t).map((opt) => (
+                                            <Menu.Item
+                                                key={opt.value}
+                                                disabled={f.status === opt.value || updateStatusMutation.isPending}
+                                                onClick={() =>
+                                                    updateStatusMutation.mutate({
+                                                        id: f.id,
+                                                        status: opt.value as FriendStatusEnum,
+                                                    })
+                                                }
+                                            >
+                                                {opt.label}
+                                            </Menu.Item>
+                                        ))}
+                                    </Menu.Dropdown>
+                                </Menu>
+                            )}
+
+                            {canDelete && (
                                 <Tooltip label={t('delete')} withArrow>
                                     <ActionIcon
                                         size={30}
@@ -352,6 +412,33 @@ export default function UserFriends() {
                     );
                 }}
             />
+
+            {/* Add friend modal */}
+            <Modal opened={addOpened} onClose={closeAdd} title={t('addFriend')} size="md">
+                <Stack gap="sm">
+                    <Select
+                        label={t('user')}
+                        placeholder={t('select')}
+                        data={candidateUsers.map((u) => ({
+                            value: u.id,
+                            label: `${u.firstName} ${u.lastName} (@${u.link})`,
+                        }))}
+                        value={selectedUserId}
+                        onChange={setSelectedUserId}
+                        searchable
+                        clearable
+                        required
+                        error={fieldErrors.userId}
+                    />
+                    <Button
+                        loading={addFriendMutation.isPending}
+                        disabled={addFriendMutation.isPending || !selectedUserId}
+                        onClick={() => selectedUserId && addFriendMutation.mutate(selectedUserId)}
+                    >
+                        {t('add')}
+                    </Button>
+                </Stack>
+            </Modal>
         </Stack>
     );
 }

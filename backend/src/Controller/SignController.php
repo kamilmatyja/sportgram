@@ -19,7 +19,7 @@ class SignController extends AbstractController
     #[Route('/api/signs', name: 'user_sign', methods: ['POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
-        summary: 'Sign user',
+        summary: 'Sign user - endpoint for public',
         requestBody: new Body(UserSignDto::class),
         tags: ['signs'],
         responses: [new Created(), new BadRequest(), new Conflict()],
@@ -37,7 +37,7 @@ class SignController extends AbstractController
     #[Route('/api/signs/{id}/confirm', name: 'user_sign_confirm', methods: ['PATCH'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Patch(
-        summary: 'Confirm sign user',
+        summary: 'Confirm sign user - endpoint for public',
         requestBody: new Body(UserCodeDto::class),
         tags: ['signs'],
         responses: [new Token(), new BadRequest(), new Conflict(), new NotFound()],
@@ -56,7 +56,7 @@ class SignController extends AbstractController
     #[Route('/api/signs/{id}/resend', name: 'user_sign_resend', methods: ['POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
-        summary: 'Resend sign user',
+        summary: 'Resend sign user - endpoint for public',
         tags: ['signs'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound()],
     )]
@@ -72,7 +72,7 @@ class SignController extends AbstractController
     #[Route('/api/signs/{id}/refresh', name: 'user_sign_refresh', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
-        summary: 'Refresh sign user',
+        summary: 'Refresh sign user - endpoint for authenticated user',
         tags: ['signs'],
         responses: [new Token(), new BadRequest(), new Conflict(), new NotFound()],
     )]

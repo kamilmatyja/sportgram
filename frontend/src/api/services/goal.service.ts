@@ -119,6 +119,11 @@ export const goalService = {
             },
         });
         if (res.error) throw res.error;
-        return res.data?.data?.[0] ?? null;
+        const item = res.data?.data?.[0];
+        if (!item) return null;
+        const detail = await this.getGoal(item.id, {
+            'include[]': ['goalParticipants', 'goalParticipantResults'],
+        });
+        return detail.data ?? null;
     },
 };

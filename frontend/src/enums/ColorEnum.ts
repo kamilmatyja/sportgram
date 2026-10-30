@@ -45,8 +45,9 @@ export namespace ColorEnum {
         }
     };
 
-    export const getMantineColor = (color?: number | null): string => {
-        switch (color) {
+    export const getMantineColor = (color?: number | string | null): string => {
+        const num = color !== undefined && color !== null ? Number(color) : null;
+        switch (num) {
             case ColorEnum.RED:
                 return 'red';
             case ColorEnum.GREEN:

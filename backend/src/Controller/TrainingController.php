@@ -22,7 +22,7 @@ class TrainingController extends AbstractController
     #[Route('/api/trainings', name: 'training_create', methods: ['POST'])]
     #[IsGranted(RoleEnum::ROLE_PARTICIPANT)]
     #[OA\Post(
-        summary: 'Create training',
+        summary: 'Create training - endpoint for user with participant role',
         requestBody: new Body(TrainingDto::class),
         tags: ['trainings'],
         responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
@@ -40,7 +40,7 @@ class TrainingController extends AbstractController
     #[Route('/api/trainings/{id}', name: 'training_update', methods: ['PUT'])]
     #[IsGranted(TrainingCreatorVoter::TRAINING_CREATOR, subject: 'id')]
     #[OA\Put(
-        summary: 'Update training',
+        summary: 'Update training - endpoint for owner',
         requestBody: new Body(TrainingDto::class),
         tags: ['trainings'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -59,7 +59,7 @@ class TrainingController extends AbstractController
     #[Route('/api/trainings/{id}/status', name: 'training_update_status', methods: ['PATCH'])]
     #[IsGranted(TrainingVoter::TRAINING, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update training status',
+        summary: 'Update training status - endpoint for owner or user with administrator role',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['trainings'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -78,7 +78,7 @@ class TrainingController extends AbstractController
     #[Route('/api/trainings/{id}', name: 'training_delete', methods: ['DELETE'])]
     #[IsGranted(TrainingCreatorVoter::TRAINING_CREATOR, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete training',
+        summary: 'Delete training - endpoint for owner',
         tags: ['trainings'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -94,7 +94,7 @@ class TrainingController extends AbstractController
     #[Route('/api/trainings', name: 'training_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of trainings',
+        summary: 'Index of trainings - endpoint for authenticated user',
         tags: ['trainings'],
         responses: [new Collection(TrainingResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -115,7 +115,7 @@ class TrainingController extends AbstractController
     #[Route('/api/trainings/{id}', name: 'training_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of training',
+        summary: 'Details of training - endpoint for authenticated user',
         tags: ['trainings'],
         responses: [new Item(TrainingResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
@@ -135,7 +135,7 @@ class TrainingController extends AbstractController
     #[Route('/api/training-participants/{id}/status', name: 'training_participant_update_status', methods: ['PATCH'])]
     #[IsGranted(TrainingParticipantVoter::TRAINING_PARTICIPANT, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update training participant status',
+        summary: 'Update training participant status - endpoint for training participant',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['trainings'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],

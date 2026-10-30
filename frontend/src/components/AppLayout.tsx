@@ -62,7 +62,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                             <UnstyledButton className="pointer" onClick={() => handleNav('/')}>
                                 <Group gap="xs" wrap="nowrap">
                                     <RunnerLogo size={32} />
-                                    <Text fw={700} size="lg" c="blue.5">
+                                    <Text fw={700} size="lg" c="var(--mantine-primary-color)">
                                         Sportgram
                                     </Text>
                                 </Group>
@@ -71,10 +71,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                             {isAuthenticated && (
                                 <Group gap={4} visibleFrom="sm" wrap="nowrap">
                                     {navItems.map((item) => {
-                                        const isActive =
-                                            item.path === '/users'
-                                                ? location.pathname === '/users'
-                                                : location.pathname.startsWith(item.path);
+                                        const isActive = location.pathname === item.path;
                                         return (
                                             <Button
                                                 key={item.path}
@@ -130,9 +127,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                                             <Group gap="xs" wrap="nowrap">
                                                 <Avatar
                                                     src={formatImageSrc(currentUser.profilePhoto)}
-                                                    radius="xl"
+                                                    radius={5}
                                                     size="sm"
-                                                    color="blue"
                                                 >
                                                     ?
                                                 </Avatar>

@@ -14,10 +14,12 @@ import {
     MultiSelect,
     ActionIcon,
     Tooltip,
+    Menu,
+    Badge,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconEye } from '@tabler/icons-react';
+import { IconEye, IconEdit, IconTrash, IconAdjustments } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -29,6 +31,7 @@ import { DataTable, type Column, type SortOption } from '../../components/DataTa
 import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
+import { openConfirmActionModal } from '../../utils/confirmModal';
 
 export default function PagesList() {
     const { t } = useTranslation();
@@ -39,11 +42,12 @@ export default function PagesList() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('createdAt:desc');
 
-    // Filters (no UUID fields in UI)
+    // Filters
     const [title, setTitle] = useState('');
     const [linkFilter, setLinkFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
+    // Create modal
     const [opened, { open, close }] = useDisclosure(false);
     const [formData, setFormData] = useState({
         title: '',
@@ -55,6 +59,20 @@ export default function PagesList() {
     const [bgPhotoFile, setBgPhotoFile] = useState<File | null>(null);
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    // Edit modal
+    const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
+    const [editingPage, setEditingPage] = useState<PageResource | null>(null);
+    const [editFormData, setEditFormData] = useState({
+        title: '',
+        description: '',
+        link: '',
+        color: null as string | null,
+    });
+    const [editCollaboratorIds, setEditCollaboratorIds] = useState<string[]>([]);
+    const [editProfilePhotoFile, setEditProfilePhotoFile] = useState<File | null>(null);
+    const [editBgPhotoFile, setEditBgPhotoFile] = useState<File | null>(null);
+    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
 
     const sortOptions: SortOption[] = [
         { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
@@ -100,21 +118,40 @@ export default function PagesList() {
             const otherIds = friendsList.map((f) =>
                 f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId,
             );
-            if (otherIds.length === 0) return [];
-            return await userService.getUsersByIds(otherIds);
+            return otherIds;
         },
-        enabled: !!currentUser?.id,
+        enabled: !!currentUser?.id && (isOrganizer || isAdmin),
     });
+
+    const friendUserIds = myFriendsData ?? [];
+
+    const { data: friendUsers } = useQuery({
+        queryKey: ['friend-users-details', friendUserIds],
+        queryFn: async () => {
+            if (friendUserIds.length === 0) return [];
+            return await userService.getUsersByIds(friendUserIds);
+        },
+        enabled: friendUserIds.length > 0 && (isOrganizer || isAdmin),
+    });
+
+    const collaboratorOptions = useMemo(() => {
+        if (!friendUsers) return [];
+        return friendUsers.map((u) => ({
+            value: u.id,
+            label: `${u.firstName} ${u.lastName} (@${u.link})`,
+        }));
+    }, [friendUsers]);
 
     const { data, isLoading } = useQuery({
         queryKey: ['pages', page, limit, sort, queryFilter],
-        queryFn: () =>
-            pageService.getPages({
+        queryFn: () => {
+            return pageService.getPages({
                 page,
                 limit,
                 filter: queryFilter,
                 sort: (sort as NonNullable<GetPagesQuery>['sort']) ?? 'createdAt:desc',
-            }),
+            });
+        },
     });
 
     const pages = data?.data ?? [];
@@ -158,13 +195,103 @@ export default function PagesList() {
         },
     });
 
+    const handleOpenEdit = (p: PageResource) => {
+        setEditingPage(p);
+        setEditFormData({
+            title: p.title || '',
+            description: p.description || '',
+            link: p.link || '',
+            color: p.color !== undefined ? String(p.color) : null,
+        });
+        const otherParticipantIds = (p.participants ?? [])
+            .map((part) => part.userId)
+            .filter((uid) => uid !== currentUser?.id);
+        setEditCollaboratorIds(otherParticipantIds);
+        setEditProfilePhotoFile(null);
+        setEditBgPhotoFile(null);
+        setEditFieldErrors({});
+        openEdit();
+    };
+
+    const updateMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingPage || !editFormData.color) return;
+            let profilePhoto = editingPage.profilePhoto;
+            let backgroundPhoto = editingPage.backgroundPhoto;
+            if (editProfilePhotoFile) {
+                profilePhoto = await fileToBase64(editProfilePhotoFile);
+            }
+            if (editBgPhotoFile) {
+                backgroundPhoto = await fileToBase64(editBgPhotoFile);
+            }
+
+            await pageService.updatePage(editingPage.id, {
+                title: editFormData.title,
+                description: editFormData.description,
+                link: editFormData.link,
+                color: Number(editFormData.color) as ColorEnum,
+                profilePhoto,
+                backgroundPhoto,
+                userIds: currentUser?.id
+                    ? Array.from(new Set([currentUser.id, ...editCollaboratorIds]))
+                    : editCollaboratorIds,
+            });
+        },
+        onSuccess: () => {
+            closeEdit();
+            setEditingPage(null);
+            setEditCollaboratorIds([]);
+            setEditFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['pages'] });
+            notifications.show({ title: t('pages'), message: t('pageUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const statusMutation = useMutation({
+        mutationFn: ({ id, status }: { id: string; status: ElementStatusEnum }) =>
+            pageService.updatePageStatus(id, status),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['pages'] });
+            notifications.show({ title: t('pages'), message: t('statusUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => pageService.deletePage(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['pages'] });
+            notifications.show({ title: t('pages'), message: t('pageDeleted'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const handleDelete = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(id),
+        });
+    };
+
     const columns: Column<PageResource>[] = [
         {
             key: 'page',
             header: t('title'),
             render: (p) => (
                 <Group gap="sm">
-                    <Avatar src={formatImageSrc(p.profilePhoto)} radius="md">
+                    <Avatar src={formatImageSrc(p.profilePhoto)} radius={5}>
                         ?
                     </Avatar>
                     <div>
@@ -188,13 +315,27 @@ export default function PagesList() {
             ),
         },
         {
+            key: 'status',
+            header: t('status'),
+            render: (p) => {
+                const opt = ElementStatusEnum.getOptions(t).find((o) => o.value === p.status);
+                const color =
+                    p.status === ElementStatusEnum.ACTIVE
+                        ? 'green'
+                        : p.status === ElementStatusEnum.REJECTED
+                          ? 'red'
+                          : 'gray';
+                return (
+                    <Badge color={color} variant="light">
+                        {opt?.label ?? p.status}
+                    </Badge>
+                );
+            },
+        },
+        {
             key: 'createdAt',
             header: t('createdAt'),
-            render: (p) => (
-                <Text size="xs" c="dimmed">
-                    {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}
-                </Text>
-            ),
+            render: (p) => <Text size="xs">{p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}</Text>,
         },
     ];
 
@@ -205,6 +346,12 @@ export default function PagesList() {
         formData.color !== null &&
         profilePhotoFile !== null &&
         bgPhotoFile !== null;
+
+    const canSubmitEdit =
+        editFormData.title.trim().length > 0 &&
+        editFormData.link.trim().length > 0 &&
+        editFormData.description.trim().length > 0 &&
+        editFormData.color !== null;
 
     const filtersNode = (
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
@@ -264,22 +411,78 @@ export default function PagesList() {
                 onResetFilters={handleResetFilters}
                 onAdd={isOrganizer || isAdmin ? open : undefined}
                 addLabel={t('addPage')}
-                actions={(p) => (
-                    <Tooltip label={t('details')} withArrow>
-                        <ActionIcon
-                            component={Link}
-                            to={`/pages/${p.link}`}
-                            variant="light"
-                            color="blue"
-                            size={30}
-                            aria-label={t('details')}
-                        >
-                            <IconEye size={16} />
-                        </ActionIcon>
-                    </Tooltip>
-                )}
+                actions={(p) => {
+                    const isPageOwner = currentUser?.id === p.userId;
+                    const canManagePage = isPageOwner || isAdmin;
+
+                    return (
+                        <Group gap="xs" justify="flex-end" wrap="nowrap">
+                            <Tooltip label={t('details')} withArrow>
+                                <ActionIcon
+                                    component={Link}
+                                    to={`/pages/${p.link}`}
+                                    variant="light"
+                                    size={30}
+                                    aria-label={t('details')}
+                                >
+                                    <IconEye size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                            {canManagePage && (
+                                <Menu shadow="md" width={160}>
+                                    <Menu.Target>
+                                        <Tooltip label={t('changeStatus')} withArrow>
+                                            <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
+                                                <IconAdjustments size={16} />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    </Menu.Target>
+                                    <Menu.Dropdown>
+                                        {ElementStatusEnum.getOptions(t).map((opt) => (
+                                            <Menu.Item
+                                                key={opt.value}
+                                                disabled={p.status === opt.value || statusMutation.isPending}
+                                                onClick={() => statusMutation.mutate({ id: p.id, status: opt.value })}
+                                            >
+                                                {opt.label}
+                                            </Menu.Item>
+                                        ))}
+                                    </Menu.Dropdown>
+                                </Menu>
+                            )}
+                            {isPageOwner && (
+                                <>
+                                    <Tooltip label={t('editPage')} withArrow>
+                                        <ActionIcon
+                                            variant="light"
+                                            size={30}
+                                            onClick={() => handleOpenEdit(p)}
+                                            aria-label={t('editPage')}
+                                        >
+                                            <IconEdit size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                    <Tooltip label={t('delete')} withArrow>
+                                        <ActionIcon
+                                            variant="light"
+                                            color="red"
+                                            size={30}
+                                            onClick={() => handleDelete(p.id)}
+                                            loading={deleteMutation.isPending}
+                                            disabled={deleteMutation.isPending}
+                                            aria-label={t('delete')}
+                                        >
+                                            <IconTrash size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </>
+                            )}
+                        </Group>
+                    );
+                }}
             />
 
+            {/* Create modal */}
             <Modal opened={opened} onClose={close} title={t('addPage')} size="lg">
                 <Stack gap="sm">
                     <TextInput
@@ -313,10 +516,13 @@ export default function PagesList() {
                     />
                     <Select
                         label={t('color')}
-                        placeholder={t('color')}
+                        placeholder={t('selectOption')}
                         required
                         clearable
-                        data={ColorEnum.getOptions(t).map((c) => ({ value: String(c.value), label: c.label }))}
+                        data={ColorEnum.getOptions(t).map((opt) => ({
+                            value: String(opt.value),
+                            label: opt.label,
+                        }))}
                         value={formData.color}
                         error={fieldErrors.color}
                         onChange={(val) => setFormData({ ...formData, color: val })}
@@ -324,37 +530,34 @@ export default function PagesList() {
                     <MultiSelect
                         label={t('collaborators')}
                         placeholder={t('selectCollaborators')}
-                        data={
-                            myFriendsData?.map((u) => ({
-                                value: u.id,
-                                label: `${u.firstName} ${u.lastName} (@${u.link})`,
-                            })) ?? []
-                        }
+                        data={collaboratorOptions}
                         value={collaboratorIds}
                         onChange={setCollaboratorIds}
                         searchable
                         clearable
                     />
-                    <FileInput
-                        label={t('profilePhoto')}
-                        placeholder={t('selectPhotoPlaceholder')}
-                        required
-                        accept="image/*"
-                        value={profilePhotoFile}
-                        error={fieldErrors.profilePhoto}
-                        onChange={setProfilePhotoFile}
-                        clearable
-                    />
-                    <FileInput
-                        label={t('backgroundPhoto')}
-                        placeholder={t('selectPhotoPlaceholder')}
-                        required
-                        accept="image/*"
-                        value={bgPhotoFile}
-                        error={fieldErrors.backgroundPhoto}
-                        onChange={setBgPhotoFile}
-                        clearable
-                    />
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                        <FileInput
+                            label={t('profilePhoto')}
+                            placeholder={t('selectPhotoPlaceholder')}
+                            required
+                            accept="image/*"
+                            value={profilePhotoFile}
+                            error={fieldErrors.profilePhoto}
+                            onChange={setProfilePhotoFile}
+                            clearable
+                        />
+                        <FileInput
+                            label={t('backgroundPhoto')}
+                            placeholder={t('selectPhotoPlaceholder')}
+                            required
+                            accept="image/*"
+                            value={bgPhotoFile}
+                            error={fieldErrors.backgroundPhoto}
+                            onChange={setBgPhotoFile}
+                            clearable
+                        />
+                    </SimpleGrid>
                     <Button
                         mt="md"
                         loading={createMutation.isPending}
@@ -362,6 +565,93 @@ export default function PagesList() {
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}
+                    </Button>
+                </Stack>
+            </Modal>
+
+            {/* Edit modal */}
+            <Modal opened={editOpened} onClose={closeEdit} title={t('editPage')} size="lg">
+                <Stack gap="sm">
+                    <TextInput
+                        label={t('title')}
+                        required
+                        value={editFormData.title}
+                        error={editFieldErrors.title}
+                        onChange={(e) => {
+                            const val = e.currentTarget.value;
+                            const generatedLink = val
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, '-')
+                                .replace(/(^-|-$)/g, '');
+                            setEditFormData({ ...editFormData, title: val, link: generatedLink });
+                        }}
+                    />
+                    <TextInput
+                        label={t('link')}
+                        required
+                        value={editFormData.link}
+                        error={editFieldErrors.link}
+                        onChange={(e) => setEditFormData({ ...editFormData, link: e.currentTarget.value })}
+                    />
+                    <Textarea
+                        label={t('description')}
+                        required
+                        rows={3}
+                        value={editFormData.description}
+                        error={editFieldErrors.description}
+                        onChange={(e) => setEditFormData({ ...editFormData, description: e.currentTarget.value })}
+                    />
+                    <Select
+                        label={t('color')}
+                        placeholder={t('selectOption')}
+                        required
+                        clearable
+                        data={ColorEnum.getOptions(t).map((opt) => ({
+                            value: String(opt.value),
+                            label: opt.label,
+                        }))}
+                        value={editFormData.color}
+                        error={editFieldErrors.color}
+                        onChange={(val) => setEditFormData({ ...editFormData, color: val })}
+                    />
+                    <MultiSelect
+                        label={t('collaborators')}
+                        placeholder={t('selectCollaborators')}
+                        data={collaboratorOptions}
+                        value={editCollaboratorIds}
+                        onChange={setEditCollaboratorIds}
+                        searchable
+                        clearable
+                    />
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                        <FileInput
+                            label={t('profilePhoto')}
+                            placeholder={t('selectPhotoPlaceholder')}
+                            description={t('leaveEmptyToKeep')}
+                            accept="image/*"
+                            value={editProfilePhotoFile}
+                            error={editFieldErrors.profilePhoto}
+                            onChange={setEditProfilePhotoFile}
+                            clearable
+                        />
+                        <FileInput
+                            label={t('backgroundPhoto')}
+                            placeholder={t('selectPhotoPlaceholder')}
+                            description={t('leaveEmptyToKeep')}
+                            accept="image/*"
+                            value={editBgPhotoFile}
+                            error={editFieldErrors.backgroundPhoto}
+                            onChange={setEditBgPhotoFile}
+                            clearable
+                        />
+                    </SimpleGrid>
+                    <Button
+                        mt="md"
+                        loading={updateMutation.isPending}
+                        disabled={updateMutation.isPending || !canSubmitEdit}
+                        onClick={() => updateMutation.mutate()}
+                    >
+                        {t('saveChanges')}
                     </Button>
                 </Stack>
             </Modal>

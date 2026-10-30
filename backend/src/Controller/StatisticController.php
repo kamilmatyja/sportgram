@@ -19,7 +19,7 @@ class StatisticController extends AbstractController
     #[Route('/api/statistics/records', name: 'statistic_record_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of statistic records',
+        summary: 'Index of statistic records - endpoint for authenticated user',
         tags: ['statistics'],
         responses: [new Collection(StatisticResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -38,7 +38,7 @@ class StatisticController extends AbstractController
     #[Route('/api/statistics/progress', name: 'statistic_progres_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of statistic progress',
+        summary: 'Index of statistic progress - endpoint for authenticated user',
         tags: ['statistics'],
         responses: [new Collection(StatisticResource::class), new BadRequest(), new Unauthorized()],
     )]

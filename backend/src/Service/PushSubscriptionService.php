@@ -2,8 +2,9 @@
 
 namespace App\Service;
 
-use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto};
+use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto, PushSubscriptionStatusDto};
 use App\Entity\{PushSubscription, User};
+use App\Enum\PushSubscriptionStatusEnum;
 use App\Repository\PushSubscriptionRepository;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -28,7 +29,7 @@ readonly class PushSubscriptionService
             $dto->p256dh,
             $dto->auth,
             $dto->userAgent,
-            $dto->status,
+            PushSubscriptionStatusEnum::Active,
         );
 
         $this->pushSubscriptionRepository->save($pushSubscription);
@@ -43,6 +44,16 @@ readonly class PushSubscriptionService
         $pushSubscription->endpoint = $dto->endpoint;
         $pushSubscription->p256dh = $dto->p256dh;
         $pushSubscription->auth = $dto->auth;
+        $pushSubscription->userAgent = $dto->userAgent;
+        $this->pushSubscriptionRepository->save($pushSubscription);
+
+        return $pushSubscription->id;
+    }
+
+    final public function updateStatus(Uuid $pushSubscriptionId, PushSubscriptionStatusDto $dto): Uuid
+    {
+        $pushSubscription = $this->pushSubscriptionRepository->findById($pushSubscriptionId);
+
         $pushSubscription->status = $dto->status;
         $this->pushSubscriptionRepository->save($pushSubscription);
 

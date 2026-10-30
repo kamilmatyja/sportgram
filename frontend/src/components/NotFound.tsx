@@ -14,7 +14,7 @@ export function NotFound({ title, message }: NotFoundProps) {
     return (
         <Center py={60}>
             <Stack align="center" gap="sm">
-                <Text size="48px" fw={800} c="blue.5">
+                <Text size="48px" fw={800} c="var(--mantine-primary-color)">
                     404
                 </Text>
                 <Text size="xl" fw={600} ta="center">

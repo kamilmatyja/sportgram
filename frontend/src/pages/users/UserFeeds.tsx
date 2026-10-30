@@ -16,16 +16,18 @@ import {
     TextInput,
     Select,
     Badge,
+    Group,
+    Menu,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconTrash } from '@tabler/icons-react';
+import { IconTrash, IconEdit, IconAdjustments, IconEye } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { userService, feedService, type FeedResource, type GetFeedsQuery } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
+import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
@@ -36,7 +38,6 @@ export default function UserFeeds() {
     const { link } = useParams<{ link: string }>();
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const { currentUser, isAdmin } = useAuth();
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
@@ -46,10 +47,18 @@ export default function UserFeeds() {
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    const [opened, { open, close }] = useDisclosure(false);
+    // Create modal
+    const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
     const [text, setText] = useState('');
     const [photo, setPhoto] = useState<File | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    // Edit modal
+    const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
+    const [editingFeed, setEditingFeed] = useState<FeedResource | null>(null);
+    const [editText, setEditText] = useState('');
+    const [editPhoto, setEditPhoto] = useState<File | null>(null);
+    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
 
     const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
@@ -57,7 +66,14 @@ export default function UserFeeds() {
         enabled: !!link,
     });
 
-    const isOwner = currentUser?.id === targetUser?.id;
+    const {
+        isOwner,
+        isAdmin,
+        canAccessSubpage,
+        isLoading: accessLoading,
+    } = useUserSubpageAccess({
+        targetUser,
+    });
 
     const sortOptions: SortOption[] = [
         { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
@@ -100,7 +116,7 @@ export default function UserFeeds() {
                 sort: (sort as NonNullable<GetFeedsQuery>['sort']) ?? 'createdAt:desc',
             });
         },
-        enabled: !!targetUser?.id,
+        enabled: !!targetUser?.id && canAccessSubpage,
     });
 
     const feeds = data?.data ?? [];
@@ -118,7 +134,7 @@ export default function UserFeeds() {
             setText('');
             setPhoto(null);
             setFieldErrors({});
-            close();
+            closeCreate();
             queryClient.invalidateQueries({ queryKey: ['user-feeds', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['feeds'] });
@@ -127,6 +143,51 @@ export default function UserFeeds() {
         onError: (err) => {
             const fe = extractFieldErrors(err);
             setFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingFeed) return;
+            let photoStr = editingFeed.photo;
+            if (editPhoto) {
+                photoStr = await fileToBase64(editPhoto);
+            }
+            await feedService.updateFeed(editingFeed.id, {
+                text: editText,
+                photo: photoStr ?? '',
+            });
+        },
+        onSuccess: () => {
+            closeEdit();
+            setEditingFeed(null);
+            setEditText('');
+            setEditPhoto(null);
+            setEditFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['user-feeds', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifications.show({ title: t('feeds'), message: t('feedUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const statusMutation = useMutation({
+        mutationFn: async ({ id, status }: { id: string; status: ElementStatusEnum }) => {
+            await feedService.updateFeedStatus(id, status);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user-feeds', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', targetUser?.id] });
+            queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifications.show({ title: t('feeds'), message: t('statusUpdated'), color: 'green' });
+        },
+        onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
@@ -143,6 +204,14 @@ export default function UserFeeds() {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
+
+    const handleOpenEdit = (feed: FeedResource) => {
+        setEditingFeed(feed);
+        setEditText(feed.text ?? '');
+        setEditPhoto(null);
+        setEditFieldErrors({});
+        openEdit();
+    };
 
     const handleDelete = (id: string) => {
         openConfirmActionModal({
@@ -184,7 +253,11 @@ export default function UserFeeds() {
             render: (f) => {
                 const opt = ElementStatusEnum.getOptions(t).find((o) => o.value === f.status);
                 return (
-                    <Badge size="xs" variant="light" color={f.status === ElementStatusEnum.ACTIVE ? 'green' : 'blue'}>
+                    <Badge
+                        size="xs"
+                        variant="light"
+                        color={f.status === ElementStatusEnum.ACTIVE ? 'green' : undefined}
+                    >
                         {opt?.label ?? f.status}
                     </Badge>
                 );
@@ -216,7 +289,7 @@ export default function UserFeeds() {
         </SimpleGrid>
     );
 
-    if (userLoading) {
+    if (userLoading || accessLoading) {
         return (
             <Center h={200}>
                 <Loader />
@@ -226,6 +299,10 @@ export default function UserFeeds() {
 
     if (!targetUser) {
         return <NotFound title={t('userNotFound')} />;
+    }
+
+    if (!canAccessSubpage) {
+        return <NotFound title={t('accessDenied')} />;
     }
 
     return (
@@ -253,28 +330,88 @@ export default function UserFeeds() {
                 hasActiveFilters={activeFiltersCount > 0}
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
-                onAdd={isOwner || isAdmin ? open : undefined}
+                onAdd={isOwner ? openCreate : undefined}
                 addLabel={t('addFeed')}
-                actions={(f) =>
-                    isOwner || isAdmin ? (
-                        <Tooltip label={t('delete')} withArrow>
-                            <ActionIcon
-                                variant="light"
-                                color="red"
-                                size={30}
-                                onClick={() => handleDelete(f.id)}
-                                loading={deleteMutation.isPending}
-                                disabled={deleteMutation.isPending}
-                                aria-label={t('delete')}
-                            >
-                                <IconTrash size={16} />
-                            </ActionIcon>
-                        </Tooltip>
-                    ) : null
-                }
+                actions={(f) => (
+                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                        {targetUser?.link && (
+                            <Tooltip label={t('details')} withArrow>
+                                <ActionIcon
+                                    component={Link}
+                                    to={`/users/${targetUser.link}`}
+                                    variant="light"
+                                    size={30}
+                                    aria-label={t('details')}
+                                >
+                                    <IconEye size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
+                        {(isOwner || isAdmin) && (
+                            <Menu shadow="md" width={140} position="bottom-end">
+                                <Menu.Target>
+                                    <Tooltip label={t('changeStatus')} withArrow>
+                                        <ActionIcon
+                                            variant="light"
+                                            size={30}
+                                            aria-label={t('changeStatus')}
+                                            loading={statusMutation.isPending}
+                                        >
+                                            <IconAdjustments size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </Menu.Target>
+                                <Menu.Dropdown>
+                                    {ElementStatusEnum.getOptions(t).map((opt) => (
+                                        <Menu.Item
+                                            key={opt.value}
+                                            onClick={() =>
+                                                statusMutation.mutate({
+                                                    id: f.id,
+                                                    status: opt.value as ElementStatusEnum,
+                                                })
+                                            }
+                                            disabled={f.status === opt.value}
+                                        >
+                                            {opt.label}
+                                        </Menu.Item>
+                                    ))}
+                                </Menu.Dropdown>
+                            </Menu>
+                        )}
+                        {isOwner && (
+                            <Tooltip label={t('edit')} withArrow>
+                                <ActionIcon
+                                    variant="light"
+                                    size={30}
+                                    onClick={() => handleOpenEdit(f)}
+                                    aria-label={t('edit')}
+                                >
+                                    <IconEdit size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
+                        {(isOwner || isAdmin) && (
+                            <Tooltip label={t('delete')} withArrow>
+                                <ActionIcon
+                                    variant="light"
+                                    color="red"
+                                    size={30}
+                                    onClick={() => handleDelete(f.id)}
+                                    loading={deleteMutation.isPending}
+                                    disabled={deleteMutation.isPending}
+                                    aria-label={t('delete')}
+                                >
+                                    <IconTrash size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
+                    </Group>
+                )}
             />
 
-            <Modal opened={opened} onClose={close} title={t('addFeed')} size="lg">
+            {/* Create modal */}
+            <Modal opened={createOpened} onClose={closeCreate} title={t('addFeed')} size="lg">
                 <Stack gap="sm">
                     <Textarea
                         required
@@ -301,6 +438,38 @@ export default function UserFeeds() {
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}
+                    </Button>
+                </Stack>
+            </Modal>
+
+            {/* Edit modal */}
+            <Modal opened={editOpened} onClose={closeEdit} title={t('editFeed')} size="lg">
+                <Stack gap="sm">
+                    <Textarea
+                        required
+                        label={t('description')}
+                        placeholder={t('feedTextPlaceholder')}
+                        rows={3}
+                        value={editText}
+                        error={editFieldErrors.text}
+                        onChange={(e) => setEditText(e.currentTarget.value)}
+                    />
+                    <FileInput
+                        label={t('photo')}
+                        placeholder={t('selectPhotoPlaceholder')}
+                        description={t('leaveEmptyToKeep')}
+                        accept="image/*"
+                        value={editPhoto}
+                        error={editFieldErrors.photo}
+                        onChange={setEditPhoto}
+                        clearable
+                    />
+                    <Button
+                        loading={updateMutation.isPending}
+                        disabled={updateMutation.isPending || !editText.trim()}
+                        onClick={() => updateMutation.mutate()}
+                    >
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>

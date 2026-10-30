@@ -22,7 +22,7 @@ class UserController extends AbstractController
     #[Route('/api/users', name: 'user_create', methods: ['POST'])]
     #[IsGranted(RoleEnum::ROLE_ADMINISTRATOR)]
     #[OA\Post(
-        summary: 'Create user',
+        summary: 'Create user - endpoint for user with administrator role',
         requestBody: new Body(UserCreateDto::class),
         tags: ['users'],
         responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
@@ -40,7 +40,7 @@ class UserController extends AbstractController
     #[Route('/api/user-nano', name: 'user_create_nano', methods: ['POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
-        summary: 'Create user nano',
+        summary: 'Create user nano - endpoint for public',
         requestBody: new Body(UserCreateNanoDto::class),
         tags: ['users'],
         responses: [new Created(), new BadRequest(), new Conflict()],
@@ -58,7 +58,7 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}', name: 'user_update', methods: ['PUT'])]
     #[IsGranted(UserVoter::USER, subject: 'id')]
     #[OA\Put(
-        summary: 'Update user',
+        summary: 'Update user - endpoint for owner',
         requestBody: new Body(UserUpdateDto::class),
         tags: ['users'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -77,7 +77,7 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}/status', name: 'user_update_status', methods: ['PATCH'])]
     #[IsGranted(RoleEnum::ROLE_ADMINISTRATOR)]
     #[OA\Patch(
-        summary: 'Update user status',
+        summary: 'Update user status - endpoint for user with administrator role',
         requestBody: new Body(UserStatusDto::class),
         tags: ['users'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -96,7 +96,7 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}', name: 'user_delete', methods: ['DELETE'])]
     #[IsGranted(UserVoter::USER, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete user',
+        summary: 'Delete user - endpoint for owner',
         tags: ['users'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -112,7 +112,7 @@ class UserController extends AbstractController
     #[Route('/api/users', name: 'user_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of users',
+        summary: 'Index of users - endpoint for authenticated user',
         tags: ['users'],
         responses: [new Collection(UserResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -133,7 +133,7 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}', name: 'user_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of user',
+        summary: 'Details of user - endpoint for authenticated user',
         tags: ['users'],
         responses: [new Item(UserResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]

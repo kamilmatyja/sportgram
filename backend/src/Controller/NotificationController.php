@@ -21,7 +21,7 @@ class NotificationController extends AbstractController
     #[Route('/api/notifications/{id}/status', name: 'notification_update_status', methods: ['PATCH'])]
     #[IsGranted(NotificationVoter::NOTIFICATION, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update notification status',
+        summary: 'Update notification status - endpoint for owner',
         requestBody: new Body(NotificationStatusDto::class),
         tags: ['notifications'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -40,7 +40,7 @@ class NotificationController extends AbstractController
     #[Route('/api/notifications/{id}', name: 'notification_delete', methods: ['DELETE'])]
     #[IsGranted(NotificationVoter::NOTIFICATION, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete notification',
+        summary: 'Delete notification - endpoint for owner',
         tags: ['notifications'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -56,7 +56,7 @@ class NotificationController extends AbstractController
     #[Route('/api/notifications', name: 'notification_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of notifications',
+        summary: 'Index of notifications - endpoint for authenticated user',
         tags: ['notifications'],
         responses: [new Collection(NotificationResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -75,7 +75,7 @@ class NotificationController extends AbstractController
     #[Route('/api/notifications/{id}', name: 'notification_details', methods: ['GET'])]
     #[IsGranted(NotificationVoter::NOTIFICATION, subject: 'id')]
     #[OA\Get(
-        summary: 'Details of notification',
+        summary: 'Details of notification - endpoint for owner',
         tags: ['notifications'],
         responses: [new Item(NotificationResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]

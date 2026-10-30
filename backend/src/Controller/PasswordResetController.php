@@ -19,7 +19,7 @@ class PasswordResetController extends AbstractController
     #[Route('/api/password-resets', name: 'user_password_reset', methods: ['POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
-        summary: 'Reset user password',
+        summary: 'Reset user password - endpoint for public',
         requestBody: new Body(UserEmailDto::class),
         tags: ['password resets'],
         responses: [new Created(), new BadRequest(), new Conflict()],
@@ -37,7 +37,7 @@ class PasswordResetController extends AbstractController
     #[Route('/api/password-resets/{id}/confirm', name: 'user_password_reset_confirm', methods: ['PATCH'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Patch(
-        summary: 'Confirm reset user password',
+        summary: 'Confirm reset user password - endpoint for public',
         requestBody: new Body(UserPasswordDto::class),
         tags: ['password resets'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound()],
@@ -56,7 +56,7 @@ class PasswordResetController extends AbstractController
     #[Route('/api/password-resets/{id}/resend', name: 'user_password_reset_resend', methods: ['POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
-        summary: 'Resend reset user password',
+        summary: 'Resend reset user password - endpoint for public',
         tags: ['password resets'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound()],
     )]

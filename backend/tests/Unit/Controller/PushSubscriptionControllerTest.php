@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Controller;
 
 use App\Controller\PushSubscriptionController;
-use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto};
+use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto, PushSubscriptionStatusDto};
 use App\Entity\PushSubscription;
 use App\Resource\PushSubscriptionResource;
 use App\Security\Voter\PushSubscriptionVoter;
@@ -38,6 +38,7 @@ class PushSubscriptionControllerTest extends ControllerTestCase
     {
         yield 'create' => ['create', '/api/push-subscriptions', 'POST', 'push_subscription_create', 'IS_AUTHENTICATED_FULLY', null];
         yield 'update' => ['update', '/api/push-subscriptions/{id}', 'PUT', 'push_subscription_update', PushSubscriptionVoter::PUSH_SUBSCRIPTION, 'id'];
+        yield 'updateStatus' => ['updateStatus', '/api/push-subscriptions/{id}/status', 'PATCH', 'push_subscription_update_status', PushSubscriptionVoter::PUSH_SUBSCRIPTION, 'id'];
         yield 'delete' => ['delete', '/api/push-subscriptions/{id}', 'DELETE', 'push_subscription_delete', PushSubscriptionVoter::PUSH_SUBSCRIPTION, 'id'];
         yield 'index' => ['index', '/api/push-subscriptions', 'GET', 'push_subscription_index', 'IS_AUTHENTICATED_FULLY', null];
         yield 'details' => ['details', '/api/push-subscriptions/{id}', 'GET', 'push_subscription_details', PushSubscriptionVoter::PUSH_SUBSCRIPTION, 'id'];
@@ -52,6 +53,7 @@ class PushSubscriptionControllerTest extends ControllerTestCase
     {
         $this->assertMapsRequestPayload([PushSubscriptionController::class, 'create'], 'dto');
         $this->assertMapsRequestPayload([PushSubscriptionController::class, 'update'], 'dto');
+        $this->assertMapsRequestPayload([PushSubscriptionController::class, 'updateStatus'], 'dto');
         $this->assertMapsQueryString([PushSubscriptionController::class, 'index'], 'dto');
     }
 
@@ -73,6 +75,17 @@ class PushSubscriptionControllerTest extends ControllerTestCase
         $this->service()->expects($this->once())->method('update')->with($id, $dto)->willReturn($id);
 
         $response = $this->controller->update($id, $dto, $this->service());
+
+        $this->assertJsonResponse(Response::HTTP_OK, ['id' => (string) $id], $response);
+    }
+
+    final public function testUpdateStatus(): void
+    {
+        $id = Uuid::v4();
+        $dto = new PushSubscriptionStatusDto();
+        $this->service()->expects($this->once())->method('updateStatus')->with($id, $dto)->willReturn($id);
+
+        $response = $this->controller->updateStatus($id, $dto, $this->service());
 
         $this->assertJsonResponse(Response::HTTP_OK, ['id' => (string) $id], $response);
     }

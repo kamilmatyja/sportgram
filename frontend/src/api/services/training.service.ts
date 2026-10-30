@@ -7,6 +7,9 @@ import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
 export type TrainingResource = components['schemas']['TrainingResource'];
 export type TrainingDto = components['schemas']['TrainingDto'];
 export type TrainingFilterDto = components['schemas']['TrainingFilterDto'];
+export type TrainingDisciplineResource = components['schemas']['TrainingDisciplineResource'];
+export type TrainingDisciplineDistanceResource = components['schemas']['TrainingDisciplineDistanceResource'];
+export type TrainingDisciplineSubDistanceResource = components['schemas']['TrainingDisciplineSubDistanceResource'];
 export type TrainingParticipantResource = components['schemas']['TrainingParticipantResource'];
 export type SaveStatusDto = components['schemas']['SaveStatusDto'];
 
@@ -104,6 +107,16 @@ export const trainingService = {
             },
         });
         if (res.error) throw res.error;
-        return res.data?.data?.[0] ?? null;
+        const item = res.data?.data?.[0];
+        if (!item) return null;
+        const detail = await this.getTraining(item.id, {
+            'include[]': [
+                'trainingDisciplines',
+                'trainingDisciplineDistances',
+                'trainingDisciplineSubDistances',
+                'trainingParticipants',
+            ],
+        });
+        return detail.data ?? null;
     },
 };

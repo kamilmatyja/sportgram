@@ -21,7 +21,7 @@ class StoryController extends AbstractController
     #[Route('/api/stories', name: 'story_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
-        summary: 'Create story',
+        summary: 'Create story - endpoint for authenticated user',
         requestBody: new Body(StoryDto::class),
         tags: ['stories'],
         responses: [new Created(), new BadRequest(), new Unauthorized(), new Forbidden()],
@@ -39,7 +39,7 @@ class StoryController extends AbstractController
     #[Route('/api/stories/{id}', name: 'story_update', methods: ['PUT'])]
     #[IsGranted(StoryCreatorVoter::STORY_CREATOR, subject: 'id')]
     #[OA\Put(
-        summary: 'Update story',
+        summary: 'Update story - endpoint for owner',
         requestBody: new Body(StoryDto::class),
         tags: ['stories'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -58,7 +58,7 @@ class StoryController extends AbstractController
     #[Route('/api/stories/{id}/status', name: 'story_update_status', methods: ['PATCH'])]
     #[IsGranted(StoryVoter::STORY, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update story status',
+        summary: 'Update story status - endpoint for owner or user with administrator role',
         requestBody: new Body(ElementStatusDto::class),
         tags: ['stories'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -77,7 +77,7 @@ class StoryController extends AbstractController
     #[Route('/api/stories/{id}', name: 'story_delete', methods: ['DELETE'])]
     #[IsGranted(StoryCreatorVoter::STORY_CREATOR, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete story',
+        summary: 'Delete story - endpoint for owner',
         tags: ['stories'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -93,7 +93,7 @@ class StoryController extends AbstractController
     #[Route('/api/stories', name: 'story_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of stories',
+        summary: 'Index of stories - endpoint for authenticated user',
         tags: ['stories'],
         responses: [new Collection(StoryResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -112,7 +112,7 @@ class StoryController extends AbstractController
     #[Route('/api/stories/{id}', name: 'story_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of story',
+        summary: 'Details of story - endpoint for authenticated user',
         tags: ['stories'],
         responses: [new Item(StoryResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]

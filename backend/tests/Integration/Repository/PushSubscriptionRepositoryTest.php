@@ -54,12 +54,12 @@ class PushSubscriptionRepositoryTest extends RepositoryTestCase
     {
         $subscription = $this->subscription($this->user(), ['status' => PushSubscriptionStatusEnum::Active]);
 
-        $subscription->status = PushSubscriptionStatusEnum::Revoked;
+        $subscription->status = PushSubscriptionStatusEnum::Rejected;
         $this->pushSubscriptionRepository->save($subscription);
         $this->clear();
 
         $this->assertSame(
-            PushSubscriptionStatusEnum::Revoked,
+            PushSubscriptionStatusEnum::Rejected,
             $this->pushSubscriptionRepository->findById(self::id($subscription))->status,
         );
     }
@@ -88,8 +88,7 @@ class PushSubscriptionRepositoryTest extends RepositoryTestCase
         $user = $this->user();
         $active1 = $this->subscription($user, ['status' => PushSubscriptionStatusEnum::Active]);
         $active2 = $this->subscription($user, ['status' => PushSubscriptionStatusEnum::Active]);
-        $this->subscription($user, ['status' => PushSubscriptionStatusEnum::Inactive]);
-        $this->subscription($user, ['status' => PushSubscriptionStatusEnum::Revoked]);
+        $this->subscription($user, ['status' => PushSubscriptionStatusEnum::Rejected]);
         $this->subscription($this->user(), ['status' => PushSubscriptionStatusEnum::Active]);
 
         $window = $this->pushSubscriptionRepository->findActiveByUserId(self::id($user));
@@ -102,7 +101,7 @@ class PushSubscriptionRepositoryTest extends RepositoryTestCase
     final public function testFindActiveByUserIdReturnsEmptyWindow(): void
     {
         $user = $this->user();
-        $this->subscription($user, ['status' => PushSubscriptionStatusEnum::Revoked]);
+        $this->subscription($user, ['status' => PushSubscriptionStatusEnum::Rejected]);
 
         $window = $this->pushSubscriptionRepository->findActiveByUserId(self::id($user));
 
@@ -124,7 +123,7 @@ class PushSubscriptionRepositoryTest extends RepositoryTestCase
         $window = $this->pushSubscriptionRepository->findPushSubscriptions(self::id($user), $this->indexDto());
 
         $this->assertEqualsCanonicalizing(self::ids($own), self::ids($window->getItems()));
-        $this->assertSame(3, $window->getTotalCount());
+        $this->assertSame(\count($own), $window->getTotalCount());
     }
 
     final public function testFindPushSubscriptionsReturnsEmptyWindow(): void

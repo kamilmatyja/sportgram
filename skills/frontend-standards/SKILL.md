@@ -1,6 +1,6 @@
 ---
 name: frontend-standards
-description: Obowiązkowe standardy architektury i implementacji frontendu w projekcie Sportgram. Obejmuje: odwołanie do README.md, maksymalną abstrakcję i brak duplikacji kodu (DRY), wykorzystanie gotowych paczek, spójność architektoniczną i behawioralną elementów, absolutny zakaz pisania inline styli i używania atrybutu/tagu style (wszystkie style w osobnych plikach CSS), 100% widocznych tekstów jako translacje i18n, ścisłe reguły formularzy (brak wartości domyślnych, zasady stosowania placeholderów (tam gdzie zasadne: inputy zdjęć, selekty, wyszukiwarki), brak ukrytych pól i wartości przypisywanych w tle, zabezpieczenie double-submit), ujednolicone toasty powiadomień dla każdej akcji mutującej API (POST, PUT, PATCH, DELETE) z błędami pól pod konkretnymi inputami, konwencje nazewnictwa plików, czystość kodu produkcyjnego oraz procedurę Definition of Done (weryfikacja linters & build).
+description: Obowiązkowe standardy architektury i implementacji frontendu w projekcie Sportgram. Obejmuje: odwołanie do README.md, maksymalną abstrakcję i brak duplikacji kodu (DRY), wykorzystanie gotowych paczek, spójność architektoniczną i behawioralną elementów, absolutny zakaz pisania inline styli i używania atrybutu/tagu style (wszystkie style w osobnych plikach CSS), dynamiczne motywy kolorystyczne podstron (user.theme i page.theme), 100% widocznych tekstów jako translacje i18n, ścisłe reguły formularzy (brak wartości domyślnych, zasady stosowania placeholderów (tam gdzie zasadne: inputy zdjęć, selekty, wyszukiwarki), brak ukrytych pól i wartości przypisywanych w tle, zabezpieczenie double-submit), ujednolicone toasty powiadomień dla każdej akcji mutującej API (POST, PUT, PATCH, DELETE) z błędami pól pod konkretnymi inputami, konwencje nazewnictwa plików, czystość kodu produkcyjnego oraz procedurę Definition of Done (weryfikacja linters & build).
 ---
 
 # Standardy Architektury i Kodu Frontendu (Sportgram)
@@ -48,6 +48,10 @@ Wszystkie widoki, elementy i podstrony muszą być spójne:
 2. **Wszystkie style wyłącznie w dedykowanych plikach CSS:**
    - Każdy niestandardowy styl musi znajdować się w osobnym pliku CSS (np. `[NazwaKomponentu].module.css` lub dedykowanym pliku `.css` powiązanym z komponentem/stroną) albo w globalnych klasach motywu Mantine.
    - Kolory i odstępy w stylach muszą korzystać ze zmiennych Mantine (`var(--mantine-...)`) lub tokenów motywu.
+3. **Motywy kolorystyczne podstron (kolor przewodni):**
+   - Podstrony `/users/*`, `/trainings/*`, `/goals/*` mają mieć kolor motywu przewodni z obiektu `user.theme`.
+   - Podstrony `/pages/*`, `/events/*` mają mieć kolor motywu z obiektu `page.theme`.
+   - Na powyższych podstronach wszystkie elementy interfejsu, które domyślnie są w błękitnym (domyślnym) kolorze Mantine, muszą przyjmować kolory zdefiniowanego motywu (`user.theme` lub `page.theme`). Szczegółowe zasady i tokeny opisano w skilu [ui-design-system](file:///home/kamil-matyja/PhpstormProjects/sportgram/skills/ui-design-system/SKILL.md).
 
 ---
 
@@ -98,6 +102,9 @@ Wszystkie widoki, elementy i podstrony muszą być spójne:
    - Błędy walidacji odnoszące się do konkretnego pola (np. `"email" => "This value already used."`, naruszenia walidacji formularza, błędy backendowe zwracane dla danego pola):
      - **Lecą wyłącznie bezpośrednio pod dane pole formularza** (np. za pomocą `form.setErrors(fieldErrors)` w `@mantine/form`).
      - **NIE trafiają do toasta** (toast nie powinien być zaśmiecany szczegółami walidacji poszczególnych pól ani ich duplikować).
+   - Do toasta trafiają **tylko błędy ogólne**, które nie dotyczą konkretnego pola (np. `401 Unauthorized`, `403 Forbidden`, `500 Internal Server Error`, błąd sieci czy ogólna wiadomość `detail` / `error` z API nieprzypisana do żadnego pola).
+4. **Brak duplikacji i znoszenia się komunikatów:**
+   - Absolutny zakaz dublowania tego samego błędu w toascie i pod polem formularza.
 
 ---
 

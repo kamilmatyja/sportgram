@@ -20,7 +20,7 @@ class EntryController extends AbstractController
     #[Route('/api/entries', name: 'entry_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
-        summary: 'Create entry',
+        summary: 'Create entry - endpoint for authenticated user',
         requestBody: new Body(EntryDto::class),
         tags: ['entries'],
         responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
@@ -38,7 +38,7 @@ class EntryController extends AbstractController
     #[Route('/api/entries', name: 'entry_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of entries',
+        summary: 'Index of entries - endpoint for authenticated user',
         tags: ['entries'],
         responses: [new Collection(EntryResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -57,7 +57,7 @@ class EntryController extends AbstractController
     #[Route('/api/entries/{id}', name: 'entry_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of entry',
+        summary: 'Details of entry - endpoint for authenticated user',
         tags: ['entries'],
         responses: [new Item(EntryResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
@@ -75,7 +75,7 @@ class EntryController extends AbstractController
     #[Route('/api/entry-counts', name: 'entry_count_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of entry counts',
+        summary: 'Index of entry counts - endpoint for authenticated user',
         tags: ['entries'],
         responses: [new Collection(EntryCountResource::class), new BadRequest(), new Unauthorized()],
     )]

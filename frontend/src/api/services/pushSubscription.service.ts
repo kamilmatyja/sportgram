@@ -1,8 +1,10 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
+import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 
 export type PushSubscriptionResource = components['schemas']['PushSubscriptionResource'];
 export type PushSubscriptionDto = components['schemas']['PushSubscriptionDto'];
+export type PushSubscriptionStatusDto = components['schemas']['PushSubscriptionStatusDto'];
 export type PushSubscriptionFilterDto = components['schemas']['PushSubscriptionFilterDto'];
 
 export type GetPushSubscriptionsQuery = operations['get_push_subscription_index']['parameters']['query'];
@@ -15,6 +17,8 @@ export type GetPushSubscriptionResponse =
     operations['get_push_subscription_details']['responses'][200]['content']['application/json'];
 export type UpdatePushSubscriptionResponse =
     operations['put_push_subscription_update']['responses'][200]['content']['application/json'];
+export type UpdatePushSubscriptionStatusResponse =
+    operations['patch_push_subscription_update_status']['responses'][200]['content']['application/json'];
 export type DeletePushSubscriptionResponse =
     operations['delete_push_subscription_delete']['responses'][200]['content']['application/json'];
 
@@ -50,6 +54,22 @@ export const pushSubscriptionService = {
         return res.data;
     },
 
+    async updatePushSubscriptionStatus(
+        id: string,
+        bodyOrStatus: PushSubscriptionStatusDto | PushSubscriptionStatusEnum,
+    ): Promise<UpdatePushSubscriptionStatusResponse> {
+        const body: PushSubscriptionStatusDto =
+            typeof bodyOrStatus === 'number'
+                ? { status: bodyOrStatus as PushSubscriptionStatusDto['status'] }
+                : bodyOrStatus;
+        const res = await api.PATCH('/api/push-subscriptions/{id}/status', {
+            params: { path: { id } },
+            body,
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
     async deletePushSubscription(id: string): Promise<DeletePushSubscriptionResponse> {
         const res = await api.DELETE('/api/push-subscriptions/{id}', {
             params: { path: { id } },
@@ -65,6 +85,13 @@ export const pushSubscriptionService = {
 
     async createSubscription(body: PushSubscriptionDto): Promise<CreatePushSubscriptionResponse> {
         return await pushSubscriptionService.createPushSubscription(body);
+    },
+
+    async updateSubscriptionStatus(
+        id: string,
+        status: PushSubscriptionStatusEnum,
+    ): Promise<UpdatePushSubscriptionStatusResponse> {
+        return await pushSubscriptionService.updatePushSubscriptionStatus(id, status);
     },
 
     async deleteSubscription(id: string): Promise<DeletePushSubscriptionResponse> {

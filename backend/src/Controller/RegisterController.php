@@ -19,7 +19,7 @@ class RegisterController extends AbstractController
     #[Route('/api/registers', name: 'user_register', methods: ['POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
-        summary: 'Register user',
+        summary: 'Register user - endpoint for public',
         requestBody: new Body(UserEmailDto::class),
         tags: ['registers'],
         responses: [new Created(), new BadRequest(), new Conflict()],
@@ -37,7 +37,7 @@ class RegisterController extends AbstractController
     #[Route('/api/registers/{id}/confirm', name: 'user_register_confirm', methods: ['PATCH'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Patch(
-        summary: 'Confirm register user',
+        summary: 'Confirm register user - endpoint for public',
         requestBody: new Body(UserCodeDto::class),
         tags: ['registers'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound()],
@@ -56,7 +56,7 @@ class RegisterController extends AbstractController
     #[Route('/api/registers/{id}/resend', name: 'user_register_resend', methods: ['POST'])]
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Post(
-        summary: 'Resend register user',
+        summary: 'Resend register user - endpoint for public',
         tags: ['registers'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound()],
     )]

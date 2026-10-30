@@ -12,7 +12,7 @@
 }
 
 .chat-bubble-mine {
-    background-color: var(--mantine-color-blue-filled);
+    background-color: var(--mantine-primary-color-filled);
     color: var(--mantine-color-white);
     max-width: 75%;
 }
@@ -26,7 +26,7 @@
 }
 
 .story-avatar-border {
-    border: 2px solid var(--mantine-color-blue-filled);
+    border: 2px solid var(--mantine-primary-color-filled);
 }
 
 .profile-avatar-border {
@@ -60,7 +60,7 @@
 .feed-image-box {
     max-height: 300px;
     overflow: hidden;
-    border-radius: var(--mantine-radius-md);
+    border-radius: 5px;
 }
 
 .feed-image {
@@ -73,8 +73,8 @@
     height: 180px;
     background-size: cover;
     background-position: center;
-    border-top-left-radius: var(--mantine-radius-md);
-    border-top-right-radius: var(--mantine-radius-md);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 
 .page-avatar-overlap {
@@ -103,6 +103,15 @@
     min-height: 16px !important;
     max-width: 16px !important;
     max-height: 16px !important;
+}
+
+/* Global 5px border-radius for all avatars, images, and image placeholders */
+.mantine-Avatar-root,
+.mantine-Avatar-image,
+.mantine-Avatar-placeholder,
+.mantine-Image-root,
+.mantine-Image-image {
+    border-radius: 5px !important;
 }
 
 /* Reaction dropdown menu styles */
@@ -144,7 +153,7 @@
 
 /* Sub-distances left border */
 .subdistances-container {
-    border-left: 2px solid var(--mantine-color-blue-filled);
+    border-left: 2px solid var(--mantine-primary-color-filled);
 }
 
 /* Story Viewer Styles */
@@ -194,33 +203,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--mantine-radius-md);
+    border-radius: 5px;
     overflow: hidden;
     background-color: var(--mantine-color-black);
-}
-
-.story-click-zone-left {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 35%;
-    z-index: 5;
-    cursor: pointer;
-}
-
-.story-click-zone-left.disabled {
-    cursor: default;
-}
-
-.story-click-zone-right {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 65%;
-    z-index: 5;
-    cursor: pointer;
 }
 
 .story-nav-btn {

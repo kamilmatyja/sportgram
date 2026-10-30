@@ -21,7 +21,7 @@ class FriendController extends AbstractController
     #[Route('/api/friends', name: 'friend_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
-        summary: 'Create friend',
+        summary: 'Create friend - endpoint for authenticated user',
         requestBody: new Body(FriendDto::class),
         tags: ['friends'],
         responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
@@ -39,7 +39,7 @@ class FriendController extends AbstractController
     #[Route('/api/friends/{id}/status', name: 'friend_update_status', methods: ['PATCH'])]
     #[IsGranted(FriendVoter::FRIEND, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update friend status',
+        summary: 'Update friend status - endpoint for owner or friend participant',
         requestBody: new Body(FriendStatusDto::class),
         tags: ['friends'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -58,7 +58,7 @@ class FriendController extends AbstractController
     #[Route('/api/friends/{id}', name: 'friend_delete', methods: ['DELETE'])]
     #[IsGranted(FriendSenderVoter::FRIEND_SENDER, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete friend',
+        summary: 'Delete friend - endpoint for owner',
         tags: ['friends'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -74,7 +74,7 @@ class FriendController extends AbstractController
     #[Route('/api/friends', name: 'friend_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of friends',
+        summary: 'Index of friends - endpoint for authenticated user',
         tags: ['friends'],
         responses: [new Collection(FriendResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -93,7 +93,7 @@ class FriendController extends AbstractController
     #[Route('/api/friends/{id}', name: 'friend_details', methods: ['GET'])]
     #[IsGranted(FriendVoter::FRIEND, subject: 'id')]
     #[OA\Get(
-        summary: 'Details of friend',
+        summary: 'Details of friend - endpoint for owner or friend participant',
         tags: ['friends'],
         responses: [new Item(FriendResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]

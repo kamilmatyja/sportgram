@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Modal, Stack, Group, Avatar, Text, Image, Box, ActionIcon, Tooltip, Badge } from '@mantine/core';
+import { Modal, Stack, Group, Avatar, Text, Image, Box, ActionIcon, Badge } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
@@ -130,12 +130,12 @@ export function StoryViewerModal({
                         <Group gap="sm" wrap="nowrap">
                             {currentAuthor?.link ? (
                                 <Link to={`/users/${currentAuthor.link}`} className="no-decoration">
-                                    <Avatar src={authorPhoto} radius="xl" size="md">
+                                    <Avatar src={authorPhoto} radius={5} size="md">
                                         ?
                                     </Avatar>
                                 </Link>
                             ) : (
-                                <Avatar src={authorPhoto} radius="xl" size="md">
+                                <Avatar src={authorPhoto} radius={5} size="md">
                                     ?
                                 </Avatar>
                             )}
@@ -172,41 +172,25 @@ export function StoryViewerModal({
         >
             <Stack gap="md" align="center" pos="relative">
                 <Box className="story-viewer-viewport">
-                    {/* Left click area to navigate to previous story */}
-                    <Box
-                        className={`story-click-zone-left ${hasPrevStory || hasPrevGroup ? '' : 'disabled'}`}
+                    {/* Previous Button - statically pinned */}
+                    <ActionIcon
+                        variant="filled"
+                        size={32}
+                        className="story-nav-btn story-nav-btn-prev"
+                        disabled={!hasPrevStory && !hasPrevGroup}
+                        style={{
+                            opacity: hasPrevStory || hasPrevGroup ? 1 : 0.3,
+                            cursor: hasPrevStory || hasPrevGroup ? 'pointer' : 'default',
+                            pointerEvents: hasPrevStory || hasPrevGroup ? 'auto' : 'none',
+                        }}
                         onClick={(e) => {
                             e.stopPropagation();
                             handlePrevStory();
                         }}
-                    />
-
-                    {/* Right click area to navigate to next story */}
-                    <Box
-                        className="story-click-zone-right"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleNextStory();
-                        }}
-                    />
-
-                    {/* Previous Button */}
-                    {(hasPrevStory || hasPrevGroup) && (
-                        <Tooltip label={t('previous', 'Poprzedni')} withArrow>
-                            <ActionIcon
-                                variant="filled"
-                                size={30}
-                                className="story-nav-btn story-nav-btn-prev"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handlePrevStory();
-                                }}
-                                aria-label={t('previous', 'Poprzedni')}
-                            >
-                                <IconChevronLeft size={16} />
-                            </ActionIcon>
-                        </Tooltip>
-                    )}
+                        aria-label={t('previous', 'Poprzedni')}
+                    >
+                        <IconChevronLeft size={18} />
+                    </ActionIcon>
 
                     {/* Story photo */}
                     {storyPhotoSrc ? (
@@ -219,21 +203,19 @@ export function StoryViewerModal({
                         <Box className="story-empty-box" />
                     )}
 
-                    {/* Next Button */}
-                    <Tooltip label={t('next', 'Następny')} withArrow>
-                        <ActionIcon
-                            variant="filled"
-                            size={30}
-                            className="story-nav-btn story-nav-btn-next"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleNextStory();
-                            }}
-                            aria-label={t('next', 'Następny')}
-                        >
-                            <IconChevronRight size={16} />
-                        </ActionIcon>
-                    </Tooltip>
+                    {/* Next Button - statically pinned */}
+                    <ActionIcon
+                        variant="filled"
+                        size={32}
+                        className="story-nav-btn story-nav-btn-next"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleNextStory();
+                        }}
+                        aria-label={t('next', 'Następny')}
+                    >
+                        <IconChevronRight size={18} />
+                    </ActionIcon>
                 </Box>
 
                 <Box className="story-text-caption">

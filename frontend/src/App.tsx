@@ -1,12 +1,14 @@
+import { brown } from './theme';
 import NotFound from './components/NotFound';
-import React from 'react';
-import { Routes, Route, Navigate, useParams, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, useParams, Outlet, useLocation } from 'react-router-dom';
 import { Center, Loader, MantineThemeProvider } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from './auth/AuthContext';
 import { AppLayout } from './components/AppLayout';
 import { userService } from './api/services';
 import { ColorEnum } from './enums/ColorEnum';
+import { applyThemeColor } from './utils/themeUtils';
 
 // Pages
 import Home from './pages/Home';
@@ -63,6 +65,14 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
+function ProtectedLayout() {
+    return (
+        <ProtectedRoute>
+            <Outlet />
+        </ProtectedRoute>
+    );
+}
+
 function UserProfileThemeLayout() {
     const { link } = useParams<{ link: string }>();
     const { data: user } = useQuery({
@@ -73,14 +83,35 @@ function UserProfileThemeLayout() {
 
     const primaryColor = ColorEnum.getMantineColor(user?.color);
 
+    useEffect(() => {
+        applyThemeColor(primaryColor);
+        return () => {
+            applyThemeColor('blue');
+        };
+    }, [primaryColor]);
+
     return (
-        <MantineThemeProvider theme={{ primaryColor }} inherit>
+        <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
             <Outlet />
         </MantineThemeProvider>
     );
 }
 
 export default function App() {
+    const location = useLocation();
+
+    useEffect(() => {
+        if (
+            location.pathname === '/' ||
+            location.pathname === '/users' ||
+            location.pathname === '/pages' ||
+            location.pathname === '/events' ||
+            location.pathname === '/statistics'
+        ) {
+            applyThemeColor('blue');
+        }
+    }, [location.pathname]);
+
     return (
         <AppLayout>
             <Routes>
@@ -113,94 +144,33 @@ export default function App() {
                 />
 
                 {/* Protected routes */}
-                <Route
-                    path="/users"
-                    element={
-                        <ProtectedRoute>
-                            <UsersList />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/users/:link"
-                    element={
-                        <ProtectedRoute>
-                            <UserProfileThemeLayout />
-                        </ProtectedRoute>
-                    }
-                >
-                    <Route index element={<UserProfile />} />
-                    <Route path="feeds" element={<UserFeeds />} />
-                    <Route path="stories" element={<UserStories />} />
-                    <Route path="friends" element={<UserFriends />} />
-                    <Route path="goals" element={<UserGoals />} />
-                    <Route path="pages" element={<UserPages />} />
-                    <Route path="events" element={<UserEvents />} />
-                    <Route path="trainings" element={<UserTrainings />} />
-                    <Route path="notifications" element={<UserNotifications />} />
-                    <Route path="push-subscriptions" element={<UserPushSubscriptions />} />
-                    <Route path="conversations" element={<UserConversations />} />
+                <Route element={<ProtectedLayout />}>
+                    <Route path="/users" element={<UsersList />} />
+                    <Route path="/users/:link" element={<UserProfileThemeLayout />}>
+                        <Route index element={<UserProfile />} />
+                        <Route path="feeds" element={<UserFeeds />} />
+                        <Route path="stories" element={<UserStories />} />
+                        <Route path="friends" element={<UserFriends />} />
+                        <Route path="goals" element={<UserGoals />} />
+                        <Route path="pages" element={<UserPages />} />
+                        <Route path="events" element={<UserEvents />} />
+                        <Route path="trainings" element={<UserTrainings />} />
+                        <Route path="notifications" element={<UserNotifications />} />
+                        <Route path="push-subscriptions" element={<UserPushSubscriptions />} />
+                        <Route path="conversations" element={<UserConversations />} />
+                    </Route>
+
+                    <Route path="/goals/:link" element={<GoalDetails />} />
+                    <Route path="/trainings/:link" element={<TrainingDetails />} />
+
+                    <Route path="/pages" element={<PagesList />} />
+                    <Route path="/pages/:link" element={<PageDetails />} />
+
+                    <Route path="/events" element={<EventsList />} />
+                    <Route path="/events/:link" element={<EventDetails />} />
+
+                    <Route path="/statistics" element={<Statistics />} />
                 </Route>
-
-                <Route
-                    path="/goals/:link"
-                    element={
-                        <ProtectedRoute>
-                            <GoalDetails />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/trainings/:link"
-                    element={
-                        <ProtectedRoute>
-                            <TrainingDetails />
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/pages"
-                    element={
-                        <ProtectedRoute>
-                            <PagesList />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/pages/:link"
-                    element={
-                        <ProtectedRoute>
-                            <PageDetails />
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/events"
-                    element={
-                        <ProtectedRoute>
-                            <EventsList />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/events/:link"
-                    element={
-                        <ProtectedRoute>
-                            <EventDetails />
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/statistics"
-                    element={
-                        <ProtectedRoute>
-                            <Statistics />
-                        </ProtectedRoute>
-                    }
-                />
 
                 {/* 404 */}
                 <Route path="*" element={<NotFound />} />

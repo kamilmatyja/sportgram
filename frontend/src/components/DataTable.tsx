@@ -179,7 +179,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                 ))}
                                 {actions && (
                                     <Table.Th w={120} ta="right">
-                                        {t('manage')}
+                                        {t('actions')}
                                     </Table.Th>
                                 )}
                             </Table.Tr>

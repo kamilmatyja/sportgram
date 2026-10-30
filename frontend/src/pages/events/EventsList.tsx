@@ -15,10 +15,11 @@ import {
     Paper,
     ActionIcon,
     Tooltip,
+    Menu,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconEye, IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconEye, IconPlus, IconTrash, IconEdit, IconAdjustments } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -29,6 +30,7 @@ import { DataTable, type Column, type SortOption } from '../../components/DataTa
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
+import { openConfirmActionModal } from '../../utils/confirmModal';
 
 interface FormEventSubDistance {
     id: string;
@@ -56,11 +58,12 @@ export default function EventsList() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('startedAt:desc');
 
-    // Filters (no UUID fields in UI)
+    // Filters
     const [titleFilter, setTitleFilter] = useState('');
     const [linkFilter, setLinkFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
+    // Create modal
     const [opened, { open, close }] = useDisclosure(false);
     const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
     const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -75,6 +78,22 @@ export default function EventsList() {
     });
     const [disciplines, setDisciplines] = useState<FormEventDiscipline[]>([]);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    // Edit modal
+    const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
+    const [editingEvent, setEditingEvent] = useState<EventResource | null>(null);
+    const [editPhotoFile, setEditPhotoFile] = useState<File | null>(null);
+    const [editFormData, setEditFormData] = useState({
+        title: '',
+        description: '',
+        link: '',
+        location: '',
+        rules: '',
+        startedAt: '',
+        endedAt: '',
+    });
+    const [editDisciplines, setEditDisciplines] = useState<FormEventDiscipline[]>([]);
+    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
 
     const sortOptions: SortOption[] = [
         { value: 'startedAt:desc', label: t('sort_startedAt_desc') },
@@ -114,35 +133,43 @@ export default function EventsList() {
         };
     }, [titleFilter, linkFilter, statusFilter]);
 
-    // Fetch organizer pages for creating an event
     const { data: myPages } = useQuery({
         queryKey: ['my-pages', currentUser?.id],
         queryFn: async () => {
-            if (!currentUser) return [];
+            if (!currentUser?.id) return [];
             const res = await pageService.getPages({
                 filter: { userId: currentUser.id },
                 limit: 50,
             });
             return res?.data ?? [];
         },
-        enabled: !!currentUser && (isOrganizer || isAdmin),
+        enabled: !!currentUser?.id,
     });
 
-    // Fetch events
+    const editPageId = useMemo(() => {
+        if (!editingEvent) return null;
+        const p = myPages?.find((page) =>
+            page.participants?.some((part) => part.id === editingEvent.pageParticipantId),
+        );
+        return p?.id ?? null;
+    }, [editingEvent, myPages]);
+
     const { data, isLoading } = useQuery({
         queryKey: ['events', page, limit, sort, queryFilter],
-        queryFn: () =>
-            eventService.getEvents({
+        queryFn: () => {
+            return eventService.getEvents({
                 page,
                 limit,
                 filter: queryFilter,
                 sort: (sort as NonNullable<GetEventsQuery>['sort']) ?? 'startedAt:desc',
-            }),
+            });
+        },
     });
 
     const events = data?.data ?? [];
     const pagination = data?.pagination;
 
+    // Create discipline handlers
     const handleAddDiscipline = () => {
         setDisciplines((prev) => [
             ...prev,
@@ -169,6 +196,30 @@ export default function EventsList() {
                 return {
                     ...d,
                     distances: [...d.distances, { id: crypto.randomUUID(), distance: '', subDistances: [] }],
+                };
+            }),
+        );
+    };
+
+    const handleRemoveDistance = (discId: string, distId: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.filter((dist) => dist.id !== distId),
+                };
+            }),
+        );
+    };
+
+    const handleDistanceChange = (discId: string, distId: string, value: string) => {
+        setDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => (dist.id === distId ? { ...dist, distance: value } : dist)),
                 };
             }),
         );
@@ -230,8 +281,40 @@ export default function EventsList() {
         );
     };
 
-    const handleRemoveDistance = (discId: string, distId: string) => {
-        setDisciplines((prev) =>
+    // Edit discipline handlers
+    const handleAddEditDiscipline = () => {
+        setEditDisciplines((prev) => [
+            ...prev,
+            {
+                id: crypto.randomUUID(),
+                discipline: null,
+                distances: [{ id: crypto.randomUUID(), distance: '', subDistances: [] }],
+            },
+        ]);
+    };
+
+    const handleRemoveEditDiscipline = (id: string) => {
+        setEditDisciplines((prev) => prev.filter((d) => d.id !== id));
+    };
+
+    const handleEditDisciplineChange = (id: string, value: string | null) => {
+        setEditDisciplines((prev) => prev.map((d) => (d.id === id ? { ...d, discipline: value } : d)));
+    };
+
+    const handleAddEditDistance = (discId: string) => {
+        setEditDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: [...d.distances, { id: crypto.randomUUID(), distance: '', subDistances: [] }],
+                };
+            }),
+        );
+    };
+
+    const handleRemoveEditDistance = (discId: string, distId: string) => {
+        setEditDisciplines((prev) =>
             prev.map((d) => {
                 if (d.id !== discId) return d;
                 return {
@@ -242,8 +325,8 @@ export default function EventsList() {
         );
     };
 
-    const handleDistanceChange = (discId: string, distId: string, value: string) => {
-        setDisciplines((prev) =>
+    const handleEditDistanceChange = (discId: string, distId: string, value: string) => {
+        setEditDisciplines((prev) =>
             prev.map((d) => {
                 if (d.id !== discId) return d;
                 return {
@@ -252,6 +335,92 @@ export default function EventsList() {
                 };
             }),
         );
+    };
+
+    const handleAddEditSubDistance = (discId: string, distId: string) => {
+        setEditDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => {
+                        if (dist.id !== distId) return dist;
+                        return {
+                            ...dist,
+                            subDistances: [...(dist.subDistances || []), { id: crypto.randomUUID(), subDistance: '' }],
+                        };
+                    }),
+                };
+            }),
+        );
+    };
+
+    const handleRemoveEditSubDistance = (discId: string, distId: string, subDistId: string) => {
+        setEditDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => {
+                        if (dist.id !== distId) return dist;
+                        return {
+                            ...dist,
+                            subDistances: (dist.subDistances || []).filter((sd) => sd.id !== subDistId),
+                        };
+                    }),
+                };
+            }),
+        );
+    };
+
+    const handleEditSubDistanceChange = (discId: string, distId: string, subDistId: string, value: string) => {
+        setEditDisciplines((prev) =>
+            prev.map((d) => {
+                if (d.id !== discId) return d;
+                return {
+                    ...d,
+                    distances: d.distances.map((dist) => {
+                        if (dist.id !== distId) return dist;
+                        return {
+                            ...dist,
+                            subDistances: (dist.subDistances || []).map((sd) =>
+                                sd.id === subDistId ? { ...sd, subDistance: value } : sd,
+                            ),
+                        };
+                    }),
+                };
+            }),
+        );
+    };
+
+    const handleOpenEdit = (ev: EventResource) => {
+        setEditingEvent(ev);
+        setEditPhotoFile(null);
+        setEditFormData({
+            title: ev.title || '',
+            description: ev.description || '',
+            link: ev.link || '',
+            location: ev.location || '',
+            rules: ev.rules || '',
+            startedAt: ev.startedAt ? ev.startedAt.slice(0, 16) : '',
+            endedAt: ev.endedAt ? ev.endedAt.slice(0, 16) : '',
+        });
+        setEditDisciplines(
+            (ev.disciplines || []).map((d) => ({
+                id: d.id || crypto.randomUUID(),
+                discipline: d.discipline !== undefined ? String(d.discipline) : null,
+                distances: (d.distances || []).map((dist) => ({
+                    id: dist.id || crypto.randomUUID(),
+                    distance: String(dist.distance ?? ''),
+                    subDistances: (dist.subDistances || []).map((sd) => ({
+                        id: sd.id || crypto.randomUUID(),
+                        subDistance: String(sd.subDistance ?? ''),
+                    })),
+                })),
+            })),
+        );
+        setEditFieldErrors({});
+        openEdit();
     };
 
     const createMutation = useMutation({
@@ -306,13 +475,88 @@ export default function EventsList() {
         },
     });
 
+    const updateMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingEvent) return;
+            let photoStr = editingEvent.photo;
+            if (editPhotoFile) {
+                photoStr = await fileToBase64(editPhotoFile);
+            }
+            await eventService.updateEvent(editingEvent.id, {
+                title: editFormData.title,
+                description: editFormData.description,
+                link: editFormData.link,
+                location: editFormData.location,
+                rules: editFormData.rules,
+                startedAt: editFormData.startedAt,
+                endedAt: editFormData.endedAt,
+                photo: photoStr,
+                disciplines: editDisciplines.map((d) => ({
+                    discipline: Number(d.discipline) as DisciplineEnum,
+                    distances: d.distances.map((dist) => ({
+                        distance: Math.round(Number(dist.distance)) || 0,
+                        subDistances: (dist.subDistances || []).map((sd) => ({
+                            subDistance: Math.round(Number(sd.subDistance)) || 0,
+                        })),
+                    })),
+                })),
+            });
+        },
+        onSuccess: () => {
+            closeEdit();
+            setEditingEvent(null);
+            setEditPhotoFile(null);
+            setEditFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['events'] });
+            notifications.show({ title: t('events'), message: t('eventUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const statusMutation = useMutation({
+        mutationFn: ({ id, status }: { id: string; status: ElementStatusEnum }) =>
+            eventService.updateEventStatus(id, status),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['events'] });
+            notifications.show({ title: t('events'), message: t('statusUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => eventService.deleteEvent(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['events'] });
+            notifications.show({ title: t('events'), message: t('eventDeleted'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const handleDelete = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteMutation.mutate(id),
+        });
+    };
+
     const columns: Column<EventResource>[] = [
         {
             key: 'title',
             header: t('title'),
             render: (ev) => (
                 <Group gap="sm">
-                    <Avatar src={formatImageSrc(ev.photo)} radius="sm" size="md">
+                    <Avatar src={formatImageSrc(ev.photo)} radius={5} size="md">
                         ?
                     </Avatar>
                     <div>
@@ -349,6 +593,24 @@ export default function EventsList() {
             header: t('endedAt'),
             render: (ev) => <Text size="xs">{ev.endedAt ? new Date(ev.endedAt).toLocaleString() : '-'}</Text>,
         },
+        {
+            key: 'status',
+            header: t('status'),
+            render: (ev) => {
+                const opt = ElementStatusEnum.getOptions(t).find((o) => o.value === ev.status);
+                const color =
+                    ev.status === ElementStatusEnum.ACTIVE
+                        ? 'green'
+                        : ev.status === ElementStatusEnum.REJECTED
+                          ? 'red'
+                          : 'gray';
+                return (
+                    <Badge color={color} size="sm">
+                        {opt?.label ?? ev.status}
+                    </Badge>
+                );
+            },
+        },
     ];
 
     const canSubmit =
@@ -363,6 +625,22 @@ export default function EventsList() {
         photoFile !== null &&
         disciplines.length > 0 &&
         disciplines.every(
+            (d) =>
+                d.discipline !== null &&
+                d.distances.length > 0 &&
+                d.distances.every((dist) => dist.distance.trim().length > 0),
+        );
+
+    const canSubmitEdit =
+        editFormData.title.trim().length > 0 &&
+        editFormData.link.trim().length > 0 &&
+        editFormData.location.trim().length > 0 &&
+        editFormData.startedAt.length > 0 &&
+        editFormData.endedAt.length > 0 &&
+        editFormData.description.trim().length > 0 &&
+        editFormData.rules.trim().length > 0 &&
+        editDisciplines.length > 0 &&
+        editDisciplines.every(
             (d) =>
                 d.discipline !== null &&
                 d.distances.length > 0 &&
@@ -427,20 +705,79 @@ export default function EventsList() {
                 onResetFilters={handleResetFilters}
                 onAdd={isOrganizer || isAdmin ? open : undefined}
                 addLabel={t('addEvent')}
-                actions={(ev) => (
-                    <Tooltip label={t('details')} withArrow>
-                        <ActionIcon
-                            component={Link}
-                            to={`/events/${ev.link}`}
-                            variant="light"
-                            color="blue"
-                            size={30}
-                            aria-label={t('details')}
-                        >
-                            <IconEye size={16} />
-                        </ActionIcon>
-                    </Tooltip>
-                )}
+                actions={(ev) => {
+                    const isEventOwner =
+                        isAdmin ||
+                        (myPages?.some((p) => p.participants?.some((part) => part.id === ev.pageParticipantId)) ??
+                            false);
+
+                    return (
+                        <Group gap="xs" justify="flex-end" wrap="nowrap">
+                            <Tooltip label={t('details')} withArrow>
+                                <ActionIcon
+                                    component={Link}
+                                    to={`/events/${ev.link}`}
+                                    variant="light"
+                                    size={30}
+                                    aria-label={t('details')}
+                                >
+                                    <IconEye size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                            {isEventOwner && (
+                                <>
+                                    <Menu shadow="md" width={160}>
+                                        <Menu.Target>
+                                            <Tooltip label={t('changeStatus')} withArrow>
+                                                <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
+                                                    <IconAdjustments size={16} />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        </Menu.Target>
+                                        <Menu.Dropdown>
+                                            {ElementStatusEnum.getOptions(t).map((opt) => (
+                                                <Menu.Item
+                                                    key={opt.value}
+                                                    disabled={ev.status === opt.value || statusMutation.isPending}
+                                                    onClick={() =>
+                                                        statusMutation.mutate({ id: ev.id, status: opt.value })
+                                                    }
+                                                >
+                                                    {opt.label}
+                                                </Menu.Item>
+                                            ))}
+                                        </Menu.Dropdown>
+                                    </Menu>
+
+                                    <Tooltip label={t('editEvent')} withArrow>
+                                        <ActionIcon
+                                            variant="light"
+                                            size={30}
+                                            onClick={() => handleOpenEdit(ev)}
+                                            aria-label={t('editEvent')}
+                                        >
+                                            <IconEdit size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+
+                                    <Tooltip label={t('delete')} withArrow>
+                                        <ActionIcon
+                                            variant="light"
+                                            color="red"
+                                            size={30}
+                                            onClick={() => handleDelete(ev.id)}
+                                            loading={deleteMutation.isPending}
+                                            disabled={deleteMutation.isPending}
+                                            aria-label={t('delete')}
+                                        >
+                                            <IconTrash size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </>
+                            )}
+                        </Group>
+                    );
+                }}
             />
 
             {/* Add Event Modal */}
@@ -589,7 +926,6 @@ export default function EventsList() {
                                                 </ActionIcon>
                                             </Group>
 
-                                            {/* Sub-distances section */}
                                             <Stack gap="xs" mt="xs" pl="sm" className="subdistances-container">
                                                 <Group justify="space-between" align="center">
                                                     <Text size="xs" fw={600} c="dimmed">
@@ -677,6 +1013,241 @@ export default function EventsList() {
                         onClick={() => createMutation.mutate()}
                     >
                         {t('add')}
+                    </Button>
+                </Stack>
+            </Modal>
+
+            {/* Edit Event Modal */}
+            <Modal opened={editOpened} onClose={closeEdit} title={t('editEvent')} size="lg">
+                <Stack gap="sm">
+                    <Select
+                        label={t('selectPage')}
+                        placeholder={t('selectPage')}
+                        disabled
+                        data={myPages?.map((p) => ({ value: p.id, label: p.title })) ?? []}
+                        value={editPageId}
+                    />
+
+                    <TextInput
+                        label={t('title')}
+                        required
+                        value={editFormData.title}
+                        error={editFieldErrors.title}
+                        onChange={(e) => {
+                            const title = e.currentTarget.value;
+                            const link = title
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]+/g, '-')
+                                .replace(/(^-|-$)/g, '');
+                            setEditFormData({ ...editFormData, title, link });
+                        }}
+                    />
+
+                    <TextInput
+                        label={t('link')}
+                        required
+                        value={editFormData.link}
+                        error={editFieldErrors.link}
+                        onChange={(e) => setEditFormData({ ...editFormData, link: e.currentTarget.value })}
+                    />
+
+                    <TextInput
+                        label={t('location')}
+                        required
+                        value={editFormData.location}
+                        error={editFieldErrors.location}
+                        onChange={(e) => setEditFormData({ ...editFormData, location: e.currentTarget.value })}
+                    />
+
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                        <TextInput
+                            label={t('startedAt')}
+                            type="datetime-local"
+                            required
+                            value={editFormData.startedAt}
+                            error={editFieldErrors.startedAt}
+                            onChange={(e) => setEditFormData({ ...editFormData, startedAt: e.currentTarget.value })}
+                        />
+                        <TextInput
+                            label={t('endedAt')}
+                            type="datetime-local"
+                            required
+                            value={editFormData.endedAt}
+                            error={editFieldErrors.endedAt}
+                            onChange={(e) => setEditFormData({ ...editFormData, endedAt: e.currentTarget.value })}
+                        />
+                    </SimpleGrid>
+
+                    <FileInput
+                        label={t('photo')}
+                        placeholder={t('selectPhotoPlaceholder')}
+                        description={t('leaveEmptyToKeep')}
+                        accept="image/*"
+                        value={editPhotoFile}
+                        error={editFieldErrors.photo}
+                        onChange={setEditPhotoFile}
+                        clearable
+                    />
+
+                    <Group justify="space-between" align="center" mt="xs">
+                        <Text fw={500} size="sm">
+                            {t('disciplinesAndDistances')}
+                        </Text>
+                        <Button
+                            size="xs"
+                            variant="light"
+                            leftSection={<IconPlus size={16} />}
+                            onClick={handleAddEditDiscipline}
+                        >
+                            {t('addDiscipline')}
+                        </Button>
+                    </Group>
+
+                    <Stack gap="sm">
+                        {editDisciplines.map((d) => (
+                            <Paper key={d.id} withBorder p="sm" radius="md">
+                                <Group justify="space-between" align="flex-end" mb="xs">
+                                    <Select
+                                        label={t('discipline')}
+                                        placeholder={t('discipline')}
+                                        required
+                                        clearable
+                                        data={DisciplineEnum.getOptions(t).map((opt) => ({
+                                            value: String(opt.value),
+                                            label: opt.label,
+                                        }))}
+                                        value={d.discipline}
+                                        onChange={(val) => handleEditDisciplineChange(d.id, val)}
+                                        flex={1}
+                                    />
+                                    <Button
+                                        size="xs"
+                                        color="red"
+                                        variant="subtle"
+                                        leftSection={<IconTrash size={16} />}
+                                        onClick={() => handleRemoveEditDiscipline(d.id)}
+                                    >
+                                        {t('delete')}
+                                    </Button>
+                                </Group>
+
+                                <Stack gap="sm" mt="xs">
+                                    {d.distances.map((dist) => (
+                                        <Paper
+                                            key={dist.id}
+                                            p="xs"
+                                            radius="sm"
+                                            withBorder
+                                            bg="var(--mantine-color-gray-light)"
+                                        >
+                                            <Group gap="xs" align="flex-end">
+                                                <TextInput
+                                                    label={t('distanceMeters')}
+                                                    required
+                                                    flex={1}
+                                                    value={dist.distance}
+                                                    onChange={(e) =>
+                                                        handleEditDistanceChange(d.id, dist.id, e.currentTarget.value)
+                                                    }
+                                                />
+                                                <ActionIcon
+                                                    color="red"
+                                                    variant="light"
+                                                    size={30}
+                                                    onClick={() => handleRemoveEditDistance(d.id, dist.id)}
+                                                    title={t('delete')}
+                                                >
+                                                    <IconTrash size={16} />
+                                                </ActionIcon>
+                                            </Group>
+
+                                            <Stack gap="xs" mt="xs" pl="sm" className="subdistances-container">
+                                                <Group justify="space-between" align="center">
+                                                    <Text size="xs" fw={600} c="dimmed">
+                                                        {t('subDistances')}
+                                                    </Text>
+                                                    <Button
+                                                        size="compact-xs"
+                                                        variant="subtle"
+                                                        leftSection={<IconPlus size={16} />}
+                                                        onClick={() => handleAddEditSubDistance(d.id, dist.id)}
+                                                    >
+                                                        {t('addSubDistance')}
+                                                    </Button>
+                                                </Group>
+
+                                                {dist.subDistances?.map((sd) => (
+                                                    <Group key={sd.id} gap="xs" align="flex-end">
+                                                        <TextInput
+                                                            size="xs"
+                                                            label={t('subDistanceMeters')}
+                                                            required
+                                                            flex={1}
+                                                            value={sd.subDistance}
+                                                            onChange={(e) =>
+                                                                handleEditSubDistanceChange(
+                                                                    d.id,
+                                                                    dist.id,
+                                                                    sd.id,
+                                                                    e.currentTarget.value,
+                                                                )
+                                                            }
+                                                        />
+                                                        <ActionIcon
+                                                            color="red"
+                                                            variant="subtle"
+                                                            size={30}
+                                                            onClick={() =>
+                                                                handleRemoveEditSubDistance(d.id, dist.id, sd.id)
+                                                            }
+                                                            title={t('delete')}
+                                                        >
+                                                            <IconTrash size={16} />
+                                                        </ActionIcon>
+                                                    </Group>
+                                                ))}
+                                            </Stack>
+                                        </Paper>
+                                    ))}
+
+                                    <Button
+                                        size="xs"
+                                        variant="subtle"
+                                        leftSection={<IconPlus size={16} />}
+                                        onClick={() => handleAddEditDistance(d.id)}
+                                    >
+                                        {t('addDistance')}
+                                    </Button>
+                                </Stack>
+                            </Paper>
+                        ))}
+                    </Stack>
+
+                    <Textarea
+                        label={t('description')}
+                        required
+                        rows={2}
+                        value={editFormData.description}
+                        error={editFieldErrors.description}
+                        onChange={(e) => setEditFormData({ ...editFormData, description: e.currentTarget.value })}
+                    />
+
+                    <Textarea
+                        label={t('rules')}
+                        required
+                        rows={2}
+                        value={editFormData.rules}
+                        error={editFieldErrors.rules}
+                        onChange={(e) => setEditFormData({ ...editFormData, rules: e.currentTarget.value })}
+                    />
+
+                    <Button
+                        mt="md"
+                        loading={updateMutation.isPending}
+                        disabled={updateMutation.isPending || !canSubmitEdit}
+                        onClick={() => updateMutation.mutate()}
+                    >
+                        {t('saveChanges')}
                     </Button>
                 </Stack>
             </Modal>

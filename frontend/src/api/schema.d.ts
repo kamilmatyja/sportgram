@@ -11,6 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Swagger ui - endpoint for public */
         get: operations['get_swagger_ui'];
         put?: never;
         post?: never;
@@ -27,6 +28,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Swagger json - endpoint for public */
         get: operations['get_swagger_json'];
         put?: never;
         post?: never;
@@ -43,7 +45,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Health check */
+        /** Health check - endpoint for public */
         get: operations['get_health'];
         put?: never;
         post?: never;
@@ -62,7 +64,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create conversation */
+        /** Create conversation - endpoint for authenticated user */
         post: operations['post_conversation_create'];
         delete?: never;
         options?: never;
@@ -77,12 +79,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of conversation */
+        /** Details of conversation - endpoint for owner or conversation participant */
         get: operations['get_conversation_details'];
-        /** Update conversation */
+        /** Update conversation - endpoint for owner */
         put: operations['put_conversation_update'];
         post?: never;
-        /** Delete conversation */
+        /** Delete conversation - endpoint for owner */
         delete: operations['delete_conversation_delete'];
         options?: never;
         head?: never;
@@ -102,7 +104,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update conversation status */
+        /** Update conversation status - endpoint for owner or conversation participant */
         patch: operations['patch_conversation_update_status'];
         trace?: never;
     };
@@ -113,7 +115,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of conversations */
+        /** Index of conversations - endpoint for authenticated user */
         get: operations['get_conversation_index'];
         put?: never;
         post?: never;
@@ -136,7 +138,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update conversation activity updated_at */
+        /** Update conversation activity updated_at - endpoint for owner */
         patch: operations['patch_conversation_activity_update_updated_at'];
         trace?: never;
     };
@@ -147,7 +149,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of conversation activities */
+        /** Index of conversation activities - endpoint for authenticated user */
         get: operations['get_conversation_activity_index'];
         put?: never;
         post?: never;
@@ -164,7 +166,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of conversation activity */
+        /** Details of conversation activity - endpoint for owner or conversation participant */
         get: operations['get_conversation_activity_details'];
         put?: never;
         post?: never;
@@ -181,10 +183,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of entries */
+        /** Index of entries - endpoint for authenticated user */
         get: operations['get_entry_index'];
         put?: never;
-        /** Create entry */
+        /** Create entry - endpoint for authenticated user */
         post: operations['post_entry_create'];
         delete?: never;
         options?: never;
@@ -199,7 +201,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of entry */
+        /** Details of entry - endpoint for authenticated user */
         get: operations['get_entry_details'];
         put?: never;
         post?: never;
@@ -216,7 +218,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of entry counts */
+        /** Index of entry counts - endpoint for authenticated user */
         get: operations['get_entry_count_index'];
         put?: never;
         post?: never;
@@ -235,7 +237,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create event */
+        /** Create event - endpoint for page participants */
         post: operations['post_event_create'];
         delete?: never;
         options?: never;
@@ -250,12 +252,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of event */
+        /** Details of event - endpoint for authenticated user */
         get: operations['get_event_details'];
-        /** Update event */
+        /** Update event - endpoint for owner */
         put: operations['put_event_update'];
         post?: never;
-        /** Delete event */
+        /** Delete event - endpoint for owner */
         delete: operations['delete_event_delete'];
         options?: never;
         head?: never;
@@ -275,7 +277,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update event status */
+        /** Update event status - endpoint for owner or user with administrator role */
         patch: operations['patch_event_update_status'];
         trace?: never;
     };
@@ -286,7 +288,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of events */
+        /** Index of events - endpoint for authenticated user */
         get: operations['get_event_index'];
         put?: never;
         post?: never;
@@ -303,10 +305,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of event discipline distance lists */
+        /** Index of event discipline distance lists - endpoint for authenticated user */
         get: operations['get_event_discipline_distance_list_index'];
         put?: never;
-        /** Create event discipline distance list */
+        /** Create event discipline distance list - endpoint for user with participant role */
         post: operations['post_event_discipline_distance_list_create'];
         delete?: never;
         options?: never;
@@ -327,7 +329,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update event discipline distance list status */
+        /** Update event discipline distance list status - endpoint for owner, user with participant role or user with administrator role */
         patch: operations['patch_event_discipline_distance_list_update_status'];
         trace?: never;
     };
@@ -338,12 +340,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of event discipline distance list */
+        /** Details of event discipline distance list - endpoint for authenticated user */
         get: operations['get_event_discipline_distance_list_details'];
         put?: never;
-        /** Create event discipline distance result */
+        /** Create event discipline distance result - endpoint for owner */
         post: operations['post_event_discipline_distance_result_create'];
-        /** Delete event discipline distance list */
+        /** Delete event discipline distance list - endpoint for owner */
         delete: operations['delete_event_discipline_distance_list_delete'];
         options?: never;
         head?: never;
@@ -358,10 +360,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update event discipline distance result */
+        /** Update event discipline distance result - endpoint for owner */
         put: operations['put_event_discipline_distance_result_update'];
         post?: never;
-        /** Delete event discipline distance result */
+        /** Delete event discipline distance result - endpoint for owner */
         delete: operations['delete_event_discipline_distance_result_delete'];
         options?: never;
         head?: never;
@@ -375,10 +377,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of feeds */
+        /** Index of feeds - endpoint for authenticated user */
         get: operations['get_feed_index'];
         put?: never;
-        /** Create feed */
+        /** Create feed - endpoint for authenticated user */
         post: operations['post_feed_create'];
         delete?: never;
         options?: never;
@@ -393,12 +395,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of feed */
+        /** Details of feed - endpoint for authenticated user */
         get: operations['get_feed_details'];
-        /** Update feed */
+        /** Update feed - endpoint for owner */
         put: operations['put_feed_update'];
         post?: never;
-        /** Delete feed */
+        /** Delete feed - endpoint for owner */
         delete: operations['delete_feed_delete'];
         options?: never;
         head?: never;
@@ -418,7 +420,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update feed status */
+        /** Update feed status - endpoint for owner or user with administrator role */
         patch: operations['patch_feed_update_status'];
         trace?: never;
     };
@@ -431,7 +433,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create feed comment */
+        /** Create feed comment - endpoint for authenticated user */
         post: operations['post_feed_comment_create'];
         delete?: never;
         options?: never;
@@ -447,10 +449,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update feed comment */
+        /** Update feed comment - endpoint for owner */
         put: operations['put_feed_comment_update'];
         post?: never;
-        /** Delete feed comment */
+        /** Delete feed comment - endpoint for owner */
         delete: operations['delete_feed_comment_delete'];
         options?: never;
         head?: never;
@@ -470,7 +472,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update feed comment status */
+        /** Update feed comment status - endpoint for owner or user with administrator role */
         patch: operations['patch_feed_comment_update_status'];
         trace?: never;
     };
@@ -483,7 +485,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create feed reaction */
+        /** Create feed reaction - endpoint for authenticated user */
         post: operations['post_feed_reaction_create'];
         delete?: never;
         options?: never;
@@ -499,10 +501,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update feed reaction */
+        /** Update feed reaction - endpoint for owner */
         put: operations['put_feed_reaction_update'];
         post?: never;
-        /** Delete feed reaction */
+        /** Delete feed reaction - endpoint for owner */
         delete: operations['delete_feed_reaction_delete'];
         options?: never;
         head?: never;
@@ -522,7 +524,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update feed reaction status */
+        /** Update feed reaction status - endpoint for owner or user with administrator role */
         patch: operations['patch_feed_reaction_update_status'];
         trace?: never;
     };
@@ -533,10 +535,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of friends */
+        /** Index of friends - endpoint for authenticated user */
         get: operations['get_friend_index'];
         put?: never;
-        /** Create friend */
+        /** Create friend - endpoint for authenticated user */
         post: operations['post_friend_create'];
         delete?: never;
         options?: never;
@@ -557,7 +559,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update friend status */
+        /** Update friend status - endpoint for owner or friend participant */
         patch: operations['patch_friend_update_status'];
         trace?: never;
     };
@@ -568,11 +570,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of friend */
+        /** Details of friend - endpoint for owner or friend participant */
         get: operations['get_friend_details'];
         put?: never;
         post?: never;
-        /** Delete friend */
+        /** Delete friend - endpoint for owner */
         delete: operations['delete_friend_delete'];
         options?: never;
         head?: never;
@@ -586,10 +588,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of goals */
+        /** Index of goals - endpoint for authenticated user */
         get: operations['get_goal_index'];
         put?: never;
-        /** Create goal */
+        /** Create goal - endpoint for user with participant role */
         post: operations['post_goal_create'];
         delete?: never;
         options?: never;
@@ -604,12 +606,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of goal */
+        /** Details of goal - endpoint for authenticated user */
         get: operations['get_goal_details'];
-        /** Update goal */
+        /** Update goal - endpoint for owner */
         put: operations['put_goal_update'];
         post?: never;
-        /** Delete goal */
+        /** Delete goal - endpoint for owner */
         delete: operations['delete_goal_delete'];
         options?: never;
         head?: never;
@@ -629,7 +631,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update goal status */
+        /** Update goal status - endpoint for owner or user with administrator role */
         patch: operations['patch_goal_update_status'];
         trace?: never;
     };
@@ -646,7 +648,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update goal participant status */
+        /** Update goal participant status - endpoint for goal participant */
         patch: operations['patch_goal_participant_update_status'];
         trace?: never;
     };
@@ -663,7 +665,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update goal participant result status */
+        /** Update goal participant result status - endpoint for goal participant */
         patch: operations['patch_goal_participant_result_update_status'];
         trace?: never;
     };
@@ -680,7 +682,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update notification status */
+        /** Update notification status - endpoint for owner */
         patch: operations['patch_notification_update_status'];
         trace?: never;
     };
@@ -691,11 +693,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of notification */
+        /** Details of notification - endpoint for owner */
         get: operations['get_notification_details'];
         put?: never;
         post?: never;
-        /** Delete notification */
+        /** Delete notification - endpoint for owner */
         delete: operations['delete_notification_delete'];
         options?: never;
         head?: never;
@@ -709,7 +711,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of notifications */
+        /** Index of notifications - endpoint for authenticated user */
         get: operations['get_notification_index'];
         put?: never;
         post?: never;
@@ -726,10 +728,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of pages */
+        /** Index of pages - endpoint for authenticated user */
         get: operations['get_page_index'];
         put?: never;
-        /** Create page */
+        /** Create page - endpoint for user with organizer role */
         post: operations['post_page_create'];
         delete?: never;
         options?: never;
@@ -744,12 +746,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of page */
+        /** Details of page - endpoint for authenticated user */
         get: operations['get_page_details'];
-        /** Update page */
+        /** Update page - endpoint for owner */
         put: operations['put_page_update'];
         post?: never;
-        /** Delete page */
+        /** Delete page - endpoint for owner */
         delete: operations['delete_page_delete'];
         options?: never;
         head?: never;
@@ -769,7 +771,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update page status */
+        /** Update page status - endpoint for owner or user with administrator role */
         patch: operations['patch_page_patch_status'];
         trace?: never;
     };
@@ -786,7 +788,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update page participant status */
+        /** Update page participant status - endpoint for page participant */
         patch: operations['patch_page_participant_patch_status'];
         trace?: never;
     };
@@ -799,7 +801,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create page follow */
+        /** Create page follow - endpoint for authenticated user */
         post: operations['post_page_follow_create'];
         delete?: never;
         options?: never;
@@ -820,7 +822,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update page follow status */
+        /** Update page follow status - endpoint for owner */
         patch: operations['patch_page_follow_patch_status'];
         trace?: never;
     };
@@ -831,11 +833,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of page follow */
+        /** Details of page follow - endpoint for authenticated user */
         get: operations['get_page_follow_details'];
         put?: never;
         post?: never;
-        /** Delete page follow */
+        /** Delete page follow - endpoint for owner */
         delete: operations['delete_page_follow_delete'];
         options?: never;
         head?: never;
@@ -849,7 +851,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of page follows */
+        /** Index of page follows - endpoint for authenticated user */
         get: operations['get_page_follow_index'];
         put?: never;
         post?: never;
@@ -868,7 +870,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Reset user password */
+        /** Reset user password - endpoint for public */
         post: operations['post_user_password_reset'];
         delete?: never;
         options?: never;
@@ -889,7 +891,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Confirm reset user password */
+        /** Confirm reset user password - endpoint for public */
         patch: operations['patch_user_password_reset_confirm'];
         trace?: never;
     };
@@ -902,7 +904,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Resend reset user password */
+        /** Resend reset user password - endpoint for public */
         post: operations['post_user_password_reset_resend'];
         delete?: never;
         options?: never;
@@ -917,10 +919,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of push subscriptions */
+        /** Index of push subscriptions - endpoint for authenticated user */
         get: operations['get_push_subscription_index'];
         put?: never;
-        /** Create push subscription */
+        /** Create push subscription - endpoint for authenticated user */
         post: operations['post_push_subscription_create'];
         delete?: never;
         options?: never;
@@ -935,16 +937,33 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of push subscription */
+        /** Details of push subscription - endpoint for owner */
         get: operations['get_push_subscription_details'];
-        /** Update push subscription */
+        /** Update push subscription - endpoint for owner */
         put: operations['put_push_subscription_update'];
         post?: never;
-        /** Delete push subscription */
+        /** Delete push subscription - endpoint for owner */
         delete: operations['delete_push_subscription_delete'];
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    '/api/push-subscriptions/{id}/status': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update push subscription status - endpoint for owner */
+        patch: operations['patch_push_subscription_update_status'];
         trace?: never;
     };
     '/api/registers': {
@@ -956,7 +975,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Register user */
+        /** Register user - endpoint for public */
         post: operations['post_user_register'];
         delete?: never;
         options?: never;
@@ -977,7 +996,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Confirm register user */
+        /** Confirm register user - endpoint for public */
         patch: operations['patch_user_register_confirm'];
         trace?: never;
     };
@@ -990,7 +1009,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Resend register user */
+        /** Resend register user - endpoint for public */
         post: operations['post_user_register_resend'];
         delete?: never;
         options?: never;
@@ -1007,7 +1026,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Sign user */
+        /** Sign user - endpoint for public */
         post: operations['post_user_sign'];
         delete?: never;
         options?: never;
@@ -1028,7 +1047,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Confirm sign user */
+        /** Confirm sign user - endpoint for public */
         patch: operations['patch_user_sign_confirm'];
         trace?: never;
     };
@@ -1041,7 +1060,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Resend sign user */
+        /** Resend sign user - endpoint for public */
         post: operations['post_user_sign_resend'];
         delete?: never;
         options?: never;
@@ -1058,7 +1077,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Refresh sign user */
+        /** Refresh sign user - endpoint for authenticated user */
         post: operations['post_user_sign_refresh'];
         delete?: never;
         options?: never;
@@ -1073,7 +1092,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of statistic records */
+        /** Index of statistic records - endpoint for authenticated user */
         get: operations['get_statistic_record_index'];
         put?: never;
         post?: never;
@@ -1090,7 +1109,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of statistic progress */
+        /** Index of statistic progress - endpoint for authenticated user */
         get: operations['get_statistic_progres_index'];
         put?: never;
         post?: never;
@@ -1107,10 +1126,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of stories */
+        /** Index of stories - endpoint for authenticated user */
         get: operations['get_story_index'];
         put?: never;
-        /** Create story */
+        /** Create story - endpoint for authenticated user */
         post: operations['post_story_create'];
         delete?: never;
         options?: never;
@@ -1125,12 +1144,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of story */
+        /** Details of story - endpoint for authenticated user */
         get: operations['get_story_details'];
-        /** Update story */
+        /** Update story - endpoint for owner */
         put: operations['put_story_update'];
         post?: never;
-        /** Delete story */
+        /** Delete story - endpoint for owner */
         delete: operations['delete_story_delete'];
         options?: never;
         head?: never;
@@ -1150,7 +1169,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update story status */
+        /** Update story status - endpoint for owner or user with administrator role */
         patch: operations['patch_story_update_status'];
         trace?: never;
     };
@@ -1161,10 +1180,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of trainings */
+        /** Index of trainings - endpoint for authenticated user */
         get: operations['get_training_index'];
         put?: never;
-        /** Create training */
+        /** Create training - endpoint for user with participant role */
         post: operations['post_training_create'];
         delete?: never;
         options?: never;
@@ -1179,12 +1198,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of training */
+        /** Details of training - endpoint for authenticated user */
         get: operations['get_training_details'];
-        /** Update training */
+        /** Update training - endpoint for owner */
         put: operations['put_training_update'];
         post?: never;
-        /** Delete training */
+        /** Delete training - endpoint for owner */
         delete: operations['delete_training_delete'];
         options?: never;
         head?: never;
@@ -1204,7 +1223,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update training status */
+        /** Update training status - endpoint for owner or user with administrator role */
         patch: operations['patch_training_update_status'];
         trace?: never;
     };
@@ -1221,7 +1240,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update training participant status */
+        /** Update training participant status - endpoint for training participant */
         patch: operations['patch_training_participant_update_status'];
         trace?: never;
     };
@@ -1232,10 +1251,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of users */
+        /** Index of users - endpoint for authenticated user */
         get: operations['get_user_index'];
         put?: never;
-        /** Create user */
+        /** Create user - endpoint for user with administrator role */
         post: operations['post_user_create'];
         delete?: never;
         options?: never;
@@ -1252,7 +1271,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create user nano */
+        /** Create user nano - endpoint for public */
         post: operations['post_user_create_nano'];
         delete?: never;
         options?: never;
@@ -1267,12 +1286,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Details of user */
+        /** Details of user - endpoint for authenticated user */
         get: operations['get_user_details'];
-        /** Update user */
+        /** Update user - endpoint for owner */
         put: operations['put_user_update'];
         post?: never;
-        /** Delete user */
+        /** Delete user - endpoint for owner */
         delete: operations['delete_user_delete'];
         options?: never;
         head?: never;
@@ -1292,7 +1311,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update user status */
+        /** Update user status - endpoint for user with administrator role */
         patch: operations['patch_user_update_status'];
         trace?: never;
     };
@@ -2022,6 +2041,8 @@ export interface components {
             auth: string;
             /** @example user-agent-string */
             userAgent: string;
+        };
+        PushSubscriptionStatusDto: {
             /**
              * @example 1
              * @enum {integer}
@@ -11727,6 +11748,120 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Ok */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /** @example b3b6c1e2-8e2a-4c1a-9e2a-8e2a4c1a9e2a */
+                        id?: string;
+                    };
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example {
+                         *       "email": [
+                         *         "This value is already used."
+                         *       ],
+                         *       "password": [
+                         *         "This value is too short."
+                         *       ]
+                         *     }
+                         */
+                        errors?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example [
+                         *       "Authentication required."
+                         *     ]
+                         */
+                        error?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example [
+                         *       "Access Denied."
+                         *     ]
+                         */
+                        error?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example [
+                         *       "Element not found."
+                         *     ]
+                         */
+                        error?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example [
+                         *       "User is banned."
+                         *     ]
+                         */
+                        error?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    patch_push_subscription_update_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['PushSubscriptionStatusDto'];
+            };
+        };
         responses: {
             /** @description Ok */
             200: {

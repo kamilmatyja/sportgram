@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Enum\{PushSubscriptionStatusEnum, RoleEnum};
+use App\Enum\RoleEnum;
 
 class PushSubscriptionCreateTest extends ApiTestCase
 {
@@ -23,7 +23,6 @@ class PushSubscriptionCreateTest extends ApiTestCase
             'endpoint' => 'https://fcm.googleapis.com/fcm/send/12345',
             'p256dh' => 'BNcRdreALRFGsyfC3...',
             'auth' => 'AUTH_KEY_STRING',
-            'status' => PushSubscriptionStatusEnum::Active->value,
         ];
 
         $result = $this->post('/api/push-subscriptions', $payload);
@@ -38,7 +37,7 @@ class PushSubscriptionCreateTest extends ApiTestCase
         $this->assertEquals(400, $result['status']);
         $this->assertArrayHasKey('errors', $result['json']);
 
-        $expected = ['endpoint', 'p256dh', 'auth', 'status'];
+        $expected = ['endpoint', 'p256dh', 'auth'];
         foreach ($expected as $field) {
             $this->assertArrayHasKey($field, $result['json']['errors']);
         }
@@ -53,7 +52,6 @@ class PushSubscriptionCreateTest extends ApiTestCase
             'p256dh' => 'BNcRdreALRFGsyfC3...',
             'auth' => 'AUTH_KEY_STRING',
             'userAgent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-            'status' => PushSubscriptionStatusEnum::Active->value,
         ];
 
         $result = $this->post('/api/push-subscriptions', $payload, $user);

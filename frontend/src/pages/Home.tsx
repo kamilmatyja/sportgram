@@ -17,7 +17,6 @@ import {
     TextInput,
     Box,
     Image,
-    Menu,
     Tooltip,
     Skeleton,
 } from '@mantine/core';
@@ -378,7 +377,7 @@ export default function Home() {
                     <Group gap="md" wrap="nowrap">
                         {/* Add Story Button */}
                         <Stack align="center" gap={4} className="pointer" onClick={openStoryModal} miw={64}>
-                            <Avatar radius="xl" size="lg" color="blue" variant="light">
+                            <Avatar radius="xl" size="lg" variant="light">
                                 <IconPlus size={24} />
                             </Avatar>
                             <Text size="xs" lineClamp={1}>
@@ -403,7 +402,7 @@ export default function Home() {
                                         setStoryViewerOpened(true);
                                     }}
                                 >
-                                    <Avatar src={storyImg} radius="xl" size="lg" className="story-avatar-border">
+                                    <Avatar src={storyImg} radius={5} size="lg" className="story-avatar-border">
                                         ?
                                     </Avatar>
                                     <Text size="xs" lineClamp={1}>
@@ -552,7 +551,7 @@ export default function Home() {
                                         alt={t('photo')}
                                         mah={400}
                                         fit="cover"
-                                        radius="md"
+                                        radius={5}
                                         mb="sm"
                                     />
                                 )}
@@ -560,44 +559,31 @@ export default function Home() {
                                 {/* Actions & stats */}
                                 <Group justify="space-between" mt="xs">
                                     <Group gap="xs">
-                                        {/* Reaction Picker Menu */}
-                                        <Menu shadow="md" position="top-start" withArrow width="max-content">
-                                            <Menu.Target>
-                                                <Button
-                                                    variant="subtle"
-                                                    size="xs"
-                                                    color={myReaction ? undefined : 'gray'}
-                                                    leftSection={
-                                                        <span className="reaction-target-emoji">
-                                                            {myReaction
-                                                                ? FeedReactionEnum.getEmoji(myReaction.reaction)
-                                                                : '👍'}
-                                                        </span>
-                                                    }
-                                                >
-                                                    {feed.reactions?.length ?? 0}
-                                                </Button>
-                                            </Menu.Target>
-                                            <Menu.Dropdown className="reaction-menu-dropdown">
-                                                <Group className="reaction-menu-group">
-                                                    {FeedReactionEnum.ALL_REACTIONS.map((r) => (
-                                                        <ActionIcon
-                                                            key={r.type}
-                                                            variant={
-                                                                myReaction?.reaction === r.type ? 'filled' : 'subtle'
-                                                            }
-                                                            color={myReaction?.reaction === r.type ? undefined : 'gray'}
-                                                            size={30}
-                                                            className="reaction-action-icon"
-                                                            onClick={() => handleReaction(feed.id, r.type, myReaction)}
-                                                            title={t(`feedReactions.${r.key}`)}
-                                                        >
-                                                            <span className="reaction-item-emoji">{r.emoji}</span>
-                                                        </ActionIcon>
-                                                    ))}
-                                                </Group>
-                                            </Menu.Dropdown>
-                                        </Menu>
+                                        <Group gap={4} wrap="wrap">
+                                            {FeedReactionEnum.ALL_REACTIONS.map((r) => {
+                                                const count =
+                                                    feed.reactions?.filter((rx) => rx.reaction === r.type).length ?? 0;
+                                                const isMy = myReaction?.reaction === r.type;
+                                                return (
+                                                    <Button
+                                                        key={r.type}
+                                                        variant={isMy ? 'light' : 'subtle'}
+                                                        color={isMy ? undefined : 'gray'}
+                                                        size="xs"
+                                                        px={6}
+                                                        onClick={() => handleReaction(feed.id, r.type, myReaction)}
+                                                        aria-label={t(`feedReactions.${r.key}`)}
+                                                    >
+                                                        <span className="reaction-item-emoji">{r.emoji}</span>
+                                                        {count > 0 && (
+                                                            <Text span size="xs" ml={4} fw={isMy ? 600 : 400}>
+                                                                {count}
+                                                            </Text>
+                                                        )}
+                                                    </Button>
+                                                );
+                                            })}
+                                        </Group>
 
                                         <Button
                                             variant="subtle"
@@ -642,7 +628,6 @@ export default function Home() {
                                                                         <ActionIcon
                                                                             size={30}
                                                                             variant="light"
-                                                                            color="blue"
                                                                             onClick={() => {
                                                                                 setEditingCommentId(c.id);
                                                                                 setEditingCommentText(c.text);

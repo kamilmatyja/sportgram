@@ -22,7 +22,7 @@ class GoalController extends AbstractController
     #[Route('/api/goals', name: 'goal_create', methods: ['POST'])]
     #[IsGranted(RoleEnum::ROLE_PARTICIPANT)]
     #[OA\Post(
-        summary: 'Create goal',
+        summary: 'Create goal - endpoint for user with participant role',
         requestBody: new Body(GoalDto::class),
         tags: ['goals'],
         responses: [new Created(), new BadRequest(), new Conflict(), new Unauthorized(), new Forbidden()],
@@ -40,7 +40,7 @@ class GoalController extends AbstractController
     #[Route('/api/goals/{id}', name: 'goal_update', methods: ['PUT'])]
     #[IsGranted(GoalCreatorVoter::GOAL_CREATOR, subject: 'id')]
     #[OA\Put(
-        summary: 'Update goal',
+        summary: 'Update goal - endpoint for owner',
         requestBody: new Body(GoalDto::class),
         tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -59,7 +59,7 @@ class GoalController extends AbstractController
     #[Route('/api/goals/{id}/status', name: 'goal_update_status', methods: ['PATCH'])]
     #[IsGranted(GoalVoter::GOAL, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update goal status',
+        summary: 'Update goal status - endpoint for owner or user with administrator role',
         requestBody: new Body(GoalStatusDto::class),
         tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -78,7 +78,7 @@ class GoalController extends AbstractController
     #[Route('/api/goals/{id}', name: 'goal_delete', methods: ['DELETE'])]
     #[IsGranted(GoalCreatorVoter::GOAL_CREATOR, subject: 'id')]
     #[OA\Delete(
-        summary: 'Delete goal',
+        summary: 'Delete goal - endpoint for owner',
         tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
     )]
@@ -94,7 +94,7 @@ class GoalController extends AbstractController
     #[Route('/api/goals', name: 'goal_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Index of goals',
+        summary: 'Index of goals - endpoint for authenticated user',
         tags: ['goals'],
         responses: [new Collection(GoalResource::class), new BadRequest(), new Unauthorized()],
     )]
@@ -115,7 +115,7 @@ class GoalController extends AbstractController
     #[Route('/api/goals/{id}', name: 'goal_details', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
-        summary: 'Details of goal',
+        summary: 'Details of goal - endpoint for authenticated user',
         tags: ['goals'],
         responses: [new Item(GoalResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
@@ -135,7 +135,7 @@ class GoalController extends AbstractController
     #[Route('/api/goal-participants/{id}/status', name: 'goal_participant_update_status', methods: ['PATCH'])]
     #[IsGranted(GoalParticipantVoter::GOAL_PARTICIPANT, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update goal participant status',
+        summary: 'Update goal participant status - endpoint for goal participant',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
@@ -154,7 +154,7 @@ class GoalController extends AbstractController
     #[Route('/api/goal-participant-results/{id}/status', name: 'goal_participant_result_update_status', methods: ['PATCH'])]
     #[IsGranted(GoalParticipantResultVoter::GOAL_PARTICIPANT_RESULT, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update goal participant result status',
+        summary: 'Update goal participant result status - endpoint for goal participant',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['goals'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],
