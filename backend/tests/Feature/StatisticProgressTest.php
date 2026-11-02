@@ -33,14 +33,14 @@ class StatisticProgressTest extends ApiTestCase
         $this->assertEquals(401, $result['status']);
     }
 
-    final public function testValidationFailedMissingUserIds(): void
+    final public function testWithoutUserIdsFilterReturnsProgress(): void
     {
         $user = self::createUser(RoleEnum::Participant);
 
         $result = $this->get('/api/statistics/progress', $user);
 
-        $this->assertEquals(400, $result['status']);
-        $this->assertArrayHasKey('filter.userIds', $result['json']['errors']);
+        $this->assertEquals(200, $result['status']);
+        $this->assertArrayHasKey('data', $result['json']);
     }
 
     final public function testSuccessAndSorting(): void

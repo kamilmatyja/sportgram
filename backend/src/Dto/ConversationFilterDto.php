@@ -16,6 +16,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             type: 'string',
             format: 'uuid',
             example: 'b1a7c8e2-1d2f-4e3a-9b2c-123456789abc',
+            nullable: true,
         ),
         new OA\Property(property: 'status', type: 'integer', example: 1, nullable: true),
     ],
@@ -23,10 +24,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class ConversationFilterDto
 {
-    #[Assert\NotBlank]
     #[Assert\Uuid]
     #[EntityExistsField(entity: User::class)]
-    public Uuid $userId;
+    public ?Uuid $userId = null;
 
     #[Assert\Choice(callback: [ConversationStatusEnum::class, 'cases'])]
     public ?ConversationStatusEnum $status = null;

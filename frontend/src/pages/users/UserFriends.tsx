@@ -37,6 +37,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatImageSrc } from '../../utils/imageUtils';
+import { formatDate } from '../../utils/date';
 
 export default function UserFriends() {
     const { link } = useParams<{ link: string }>();
@@ -275,7 +276,7 @@ export default function UserFriends() {
                 let label = '';
                 switch (f.status) {
                     case FriendStatusEnum.PENDING:
-                        color = 'yellow';
+                        color = 'gray';
                         label = t('friends.pending');
                         break;
                     case FriendStatusEnum.ACCEPTED:
@@ -287,7 +288,7 @@ export default function UserFriends() {
                         label = t('friends.rejected');
                         break;
                     case FriendStatusEnum.BLOCKED:
-                        color = 'dark';
+                        color = 'red';
                         label = t('friends.blocked');
                         break;
                 }
@@ -303,7 +304,7 @@ export default function UserFriends() {
             header: t('createdAt'),
             render: (f) => (
                 <Text size="xs" c="dimmed">
-                    {f.createdAt ? new Date(f.createdAt).toLocaleDateString() : '-'}
+                    {formatDate(f.createdAt)}
                 </Text>
             ),
         },
@@ -340,7 +341,7 @@ export default function UserFriends() {
                 actions={(f) => {
                     const isParticipant = f.senderUserId === currentUser?.id || f.receiverUserId === currentUser?.id;
                     const canEditStatus = isOwner || isParticipant || isAdmin;
-                    const canDelete = isOwner || isAdmin;
+                    const canDelete = isOwner;
                     const otherId = f.senderUserId === targetUser?.id ? f.receiverUserId : f.senderUserId;
                     const otherUser = relatedUsers[otherId];
 
@@ -414,11 +415,11 @@ export default function UserFriends() {
             />
 
             {/* Add friend modal */}
-            <Modal opened={addOpened} onClose={closeAdd} title={t('addFriend')} size="md">
+            <Modal opened={addOpened} onClose={closeAdd} title={t('addFriend')} size="lg">
                 <Stack gap="sm">
                     <Select
                         label={t('user')}
-                        placeholder={t('select')}
+                        placeholder={t('selectPerson')}
                         data={candidateUsers.map((u) => ({
                             value: u.id,
                             label: `${u.firstName} ${u.lastName} (@${u.link})`,

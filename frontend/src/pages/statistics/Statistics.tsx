@@ -1,11 +1,32 @@
 import { useState, useMemo } from 'react';
-import { SegmentedControl, Badge, Text, SimpleGrid, TextInput, Select } from '@mantine/core';
+import {
+    SegmentedControl,
+    Badge,
+    Text,
+    SimpleGrid,
+    TextInput,
+    Select,
+    Group,
+    Avatar,
+    ActionIcon,
+    Tooltip,
+} from '@mantine/core';
+import { IconEye } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { statisticService, type StatisticResource, type GetStatisticRecordsQuery } from '../../api/services';
+import {
+    statisticService,
+    userService,
+    type StatisticResource,
+    type GetStatisticRecordsQuery,
+    type UserResource,
+} from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { formatDate } from '../../utils/date';
+import { formatImageSrc } from '../../utils/imageUtils';
 
 export default function Statistics() {
     const { t } = useTranslation();
@@ -48,12 +69,12 @@ export default function Statistics() {
         return {
             discipline: disciplineFilter ? (Number(disciplineFilter) as DisciplineEnum) : null,
             distance: distanceFilter.trim() ? Number(distanceFilter) : null,
-            userIds: currentUser?.id ? [currentUser.id] : null,
+            userIds: null,
         };
-    }, [disciplineFilter, distanceFilter, currentUser?.id]);
+    }, [disciplineFilter, distanceFilter]);
 
     const { data, isLoading } = useQuery({
-        queryKey: ['statistics', activeTab, currentUser?.id, page, limit, sort, queryFilter],
+        queryKey: ['statistics', activeTab, page, limit, sort, queryFilter],
         queryFn: () => {
             const query = {
                 page,
@@ -74,12 +95,57 @@ export default function Statistics() {
     const stats = data?.data ?? [];
     const pagination = data?.pagination;
 
+    const userIds = useMemo(() => {
+        const ids = stats.map((s) => s.userId).filter(Boolean);
+        return Array.from(new Set(ids));
+    }, [stats]);
+
+    const { data: usersMapData } = useQuery({
+        queryKey: ['stats-users', userIds],
+        queryFn: async () => {
+            if (userIds.length === 0) return {};
+            const users = await userService.getUsersByIds(userIds);
+            const map: Record<string, UserResource> = {};
+            users.forEach((u) => {
+                map[u.id] = u;
+            });
+            return map;
+        },
+        enabled: userIds.length > 0,
+    });
+
+    const usersMap = usersMapData ?? {};
+
     const columns: Column<StatisticResource>[] = [
+        {
+            key: 'user',
+            header: t('user'),
+            render: (s) => {
+                const u = usersMap[s.userId];
+                return (
+                    <Group gap="sm">
+                        <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
+                            ?
+                        </Avatar>
+                        <div>
+                            <Text size="sm" fw={600}>
+                                {u ? `${u.firstName} ${u.lastName}` : s.userId}
+                            </Text>
+                            {u?.link && (
+                                <Text size="xs" c="dimmed">
+                                    @{u.link}
+                                </Text>
+                            )}
+                        </div>
+                    </Group>
+                );
+            },
+        },
         {
             key: 'discipline',
             header: t('discipline'),
             render: (s) => (
-                <Badge size="xs" variant="light">
+                <Badge color="gray" variant="light">
                     {DisciplineEnum.getOptions(t).find((o) => o.value === s.discipline)?.label ?? s.discipline}
                 </Badge>
             ),
@@ -103,7 +169,7 @@ export default function Statistics() {
             header: t('createdAt'),
             render: (s) => (
                 <Text size="xs" c="dimmed">
-                    {s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '-'}
+                    {formatDate(s.createdAt)}
                 </Text>
             ),
         },
@@ -156,6 +222,26 @@ export default function Statistics() {
             hasActiveFilters={activeFiltersCount > 0}
             activeFiltersCount={activeFiltersCount}
             onResetFilters={handleResetFilters}
+            actions={(s) => {
+                const u = usersMap[s.userId];
+                return (
+                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                        {u?.link && (
+                            <Tooltip label={t('details')} withArrow>
+                                <ActionIcon
+                                    component={Link}
+                                    to={`/users/${u.link}`}
+                                    variant="light"
+                                    size={30}
+                                    aria-label={t('details')}
+                                >
+                                    <IconEye size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
+                    </Group>
+                );
+            }}
             toolbarExtra={
                 <SegmentedControl
                     value={activeTab}

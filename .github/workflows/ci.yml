@@ -30,7 +30,7 @@ jobs:
           docker compose exec  php php bin/console lexik:jwt:generate-keypair --skip-if-exists
           docker compose exec php php bin/console app:generate-vapid-keys
           cd frontend
-          npm install --force
+          npm install
           npm run build
           npm run dev &
 

@@ -203,7 +203,7 @@ export function DataTable<T extends Record<string, unknown>>({
                             ) : data.length === 0 ? (
                                 <Table.Tr>
                                     <Table.Td colSpan={columns.length + (actions ? 1 : 0)} p="md">
-                                        <EmptyState title={t('noRecords')} />
+                                        <EmptyState title={t('noData')} />
                                     </Table.Td>
                                 </Table.Tr>
                             ) : (

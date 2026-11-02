@@ -135,6 +135,27 @@ class ConversationRepositoryTest extends RepositoryTestCase
         $this->assertSame(self::ids([$self]), self::ids($window->getItems()));
     }
 
+    final public function testFindConversationsWithoutUserIdReturnsAllUserMessages(): void
+    {
+        $user = $this->user();
+        $partner1 = $this->user();
+        $partner2 = $this->user();
+        $unrelated = $this->user();
+
+        $c1 = $this->conversation($user, $partner1, createdAt: '2026-01-01 10:00:00');
+        $c2 = $this->conversation($partner2, $user, createdAt: '2026-01-01 11:00:00');
+        $this->conversation($partner1, $unrelated, createdAt: '2026-01-01 12:00:00');
+        $this->clear();
+
+        $dto = new ConversationIndexDto();
+        $dto->sort = 'createdAt:asc';
+
+        $window = $this->conversationRepository->findConversations(self::id($user), $dto);
+
+        $this->assertSame(self::ids([$c1, $c2]), self::ids($window->getItems()));
+        $this->assertSame(2, $window->getTotalCount());
+    }
+
     #[DataProvider('statusProvider')]
     final public function testFindConversationsFiltersByStatus(ConversationStatusEnum $status): void
     {

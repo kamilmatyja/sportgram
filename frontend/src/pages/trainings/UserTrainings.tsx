@@ -42,6 +42,7 @@ import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
+import { formatDateTime } from '../../utils/date';
 
 interface FormTrainingSubDistance {
     id: string;
@@ -212,6 +213,12 @@ export default function UserTrainings() {
                 limit,
                 filter: queryFilter,
                 sort: (sort as NonNullable<GetTrainingsQuery>['sort']) ?? 'startedAt:desc',
+                'include[]': [
+                    'trainingDisciplines',
+                    'trainingDisciplineDistances',
+                    'trainingDisciplineSubDistances',
+                    'trainingParticipants',
+                ],
             });
         },
         enabled: !!targetUser?.id && canAccessSubpage && hasRequiredRole,
@@ -664,32 +671,11 @@ export default function UserTrainings() {
             ),
         },
         {
-            key: 'disciplines',
-            header: t('discipline'),
-            render: (tr) => (
-                <Group gap={4}>
-                    {tr.disciplines?.map((d) => (
-                        <Badge key={d.id} size="xs" variant="outline">
-                            {DisciplineEnum.getOptions(t).find((o) => o.value === d.discipline)?.label ?? d.discipline}
-                        </Badge>
-                    ))}
-                </Group>
-            ),
-        },
-        {
-            key: 'participantsCount',
-            header: t('participants'),
-            render: (tr) => {
-                const count = tr.participants?.length ?? 1;
-                return <Badge size="xs">{count}</Badge>;
-            },
-        },
-        {
             key: 'startedAt',
             header: t('startedAt'),
             render: (tr) => (
                 <Text size="xs" c="dimmed">
-                    {tr.startedAt ? new Date(tr.startedAt).toLocaleString() : '-'}
+                    {formatDateTime(tr.startedAt)}
                 </Text>
             ),
         },
@@ -698,7 +684,7 @@ export default function UserTrainings() {
             header: t('endedAt'),
             render: (tr) => (
                 <Text size="xs" c="dimmed">
-                    {tr.endedAt ? new Date(tr.endedAt).toLocaleString() : '-'}
+                    {formatDateTime(tr.endedAt)}
                 </Text>
             ),
         },
@@ -714,7 +700,7 @@ export default function UserTrainings() {
                           ? 'red'
                           : 'gray';
                 return (
-                    <Badge color={color} size="sm">
+                    <Badge color={color} variant="light">
                         {opt?.label ?? tr.status}
                     </Badge>
                 );
@@ -841,27 +827,29 @@ export default function UserTrainings() {
                             </ActionIcon>
                         </Tooltip>
                         {canManage && (
+                            <Menu shadow="md" width={160}>
+                                <Menu.Target>
+                                    <Tooltip label={t('changeStatus')} withArrow>
+                                        <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
+                                            <IconAdjustments size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </Menu.Target>
+                                <Menu.Dropdown>
+                                    {ElementStatusEnum.getOptions(t).map((opt) => (
+                                        <Menu.Item
+                                            key={opt.value}
+                                            disabled={tr.status === opt.value || statusMutation.isPending}
+                                            onClick={() => statusMutation.mutate({ id: tr.id, status: opt.value })}
+                                        >
+                                            {opt.label}
+                                        </Menu.Item>
+                                    ))}
+                                </Menu.Dropdown>
+                            </Menu>
+                        )}
+                        {isOwner && (
                             <>
-                                <Menu shadow="md" width={160}>
-                                    <Menu.Target>
-                                        <Tooltip label={t('changeStatus')} withArrow>
-                                            <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
-                                                <IconAdjustments size={16} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    </Menu.Target>
-                                    <Menu.Dropdown>
-                                        {ElementStatusEnum.getOptions(t).map((opt) => (
-                                            <Menu.Item
-                                                key={opt.value}
-                                                disabled={tr.status === opt.value || statusMutation.isPending}
-                                                onClick={() => statusMutation.mutate({ id: tr.id, status: opt.value })}
-                                            >
-                                                {opt.label}
-                                            </Menu.Item>
-                                        ))}
-                                    </Menu.Dropdown>
-                                </Menu>
                                 <Tooltip label={t('editTraining')} withArrow>
                                     <ActionIcon
                                         variant="light"
@@ -982,15 +970,17 @@ export default function UserTrainings() {
                                         onChange={(val) => handleDisciplineChange(d.id, val)}
                                         flex={1}
                                     />
-                                    <Button
-                                        size="xs"
-                                        color="red"
-                                        variant="subtle"
-                                        leftSection={<IconTrash size={16} />}
-                                        onClick={() => handleRemoveDiscipline(d.id)}
-                                    >
-                                        {t('delete')}
-                                    </Button>
+                                    <Tooltip label={t('delete')} withArrow>
+                                        <ActionIcon
+                                            color="red"
+                                            variant="light"
+                                            size={30}
+                                            onClick={() => handleRemoveDiscipline(d.id)}
+                                            aria-label={t('delete')}
+                                        >
+                                            <IconTrash size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
                                 </Group>
 
                                 <Stack gap="sm" mt="xs">
@@ -1149,17 +1139,19 @@ export default function UserTrainings() {
                                                             />
                                                         </SimpleGrid>
                                                         <Group justify="flex-end" mt={4}>
-                                                            <ActionIcon
-                                                                color="red"
-                                                                variant="subtle"
-                                                                size="xs"
-                                                                onClick={() =>
-                                                                    handleRemoveSubDistance(d.id, dist.id, sd.id)
-                                                                }
-                                                                title={t('delete')}
-                                                            >
-                                                                <IconTrash size={14} />
-                                                            </ActionIcon>
+                                                            <Tooltip label={t('delete')} withArrow>
+                                                                <ActionIcon
+                                                                    color="red"
+                                                                    variant="light"
+                                                                    size={30}
+                                                                    onClick={() =>
+                                                                        handleRemoveSubDistance(d.id, dist.id, sd.id)
+                                                                    }
+                                                                    aria-label={t('delete')}
+                                                                >
+                                                                    <IconTrash size={16} />
+                                                                </ActionIcon>
+                                                            </Tooltip>
                                                         </Group>
                                                     </Paper>
                                                 ))}
@@ -1291,15 +1283,17 @@ export default function UserTrainings() {
                                         onChange={(val) => handleEditDisciplineChange(d.id, val)}
                                         flex={1}
                                     />
-                                    <Button
-                                        size="xs"
-                                        color="red"
-                                        variant="subtle"
-                                        leftSection={<IconTrash size={16} />}
-                                        onClick={() => handleRemoveEditDiscipline(d.id)}
-                                    >
-                                        {t('delete')}
-                                    </Button>
+                                    <Tooltip label={t('delete')} withArrow>
+                                        <ActionIcon
+                                            color="red"
+                                            variant="light"
+                                            size={30}
+                                            onClick={() => handleRemoveEditDiscipline(d.id)}
+                                            aria-label={t('delete')}
+                                        >
+                                            <IconTrash size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
                                 </Group>
 
                                 <Stack gap="sm" mt="xs">
@@ -1458,17 +1452,23 @@ export default function UserTrainings() {
                                                             />
                                                         </SimpleGrid>
                                                         <Group justify="flex-end" mt={4}>
-                                                            <ActionIcon
-                                                                color="red"
-                                                                variant="subtle"
-                                                                size="xs"
-                                                                onClick={() =>
-                                                                    handleRemoveEditSubDistance(d.id, dist.id, sd.id)
-                                                                }
-                                                                title={t('delete')}
-                                                            >
-                                                                <IconTrash size={14} />
-                                                            </ActionIcon>
+                                                            <Tooltip label={t('delete')} withArrow>
+                                                                <ActionIcon
+                                                                    color="red"
+                                                                    variant="light"
+                                                                    size={30}
+                                                                    onClick={() =>
+                                                                        handleRemoveEditSubDistance(
+                                                                            d.id,
+                                                                            dist.id,
+                                                                            sd.id,
+                                                                        )
+                                                                    }
+                                                                    aria-label={t('delete')}
+                                                                >
+                                                                    <IconTrash size={16} />
+                                                                </ActionIcon>
+                                                            </Tooltip>
                                                         </Group>
                                                     </Paper>
                                                 ))}

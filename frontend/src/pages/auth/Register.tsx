@@ -368,7 +368,7 @@ export default function Register() {
                                         setFieldErrors({});
                                     }}
                                 >
-                                    {t('cancel')}
+                                    {t('back')}
                                 </Button>
                                 <Button
                                     variant="subtle"

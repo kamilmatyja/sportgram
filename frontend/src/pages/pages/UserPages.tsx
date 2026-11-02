@@ -38,6 +38,7 @@ import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
+import { formatDate } from '../../utils/date';
 
 export default function UserPages() {
     const { link } = useParams<{ link: string }>();
@@ -315,15 +316,6 @@ export default function UserPages() {
             ),
         },
         {
-            key: 'description',
-            header: t('description'),
-            render: (p) => (
-                <Text size="xs" lineClamp={2} c="dimmed">
-                    {p.description || '-'}
-                </Text>
-            ),
-        },
-        {
             key: 'status',
             header: t('status'),
             render: (p) => {
@@ -344,19 +336,23 @@ export default function UserPages() {
         {
             key: 'createdAt',
             header: t('createdAt'),
-            render: (p) => <Text size="xs">{p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}</Text>,
+            render: (p) => <Text size="xs">{formatDate(p.createdAt)}</Text>,
         },
     ];
 
     const canSubmit =
         formData.title.trim().length > 0 &&
         formData.link.trim().length > 0 &&
+        formData.description.trim().length > 0 &&
         formData.color !== null &&
         profilePhotoFile !== null &&
         bgPhotoFile !== null;
 
     const canSubmitEdit =
-        editFormData.title.trim().length > 0 && editFormData.link.trim().length > 0 && editFormData.color !== null;
+        editFormData.title.trim().length > 0 &&
+        editFormData.link.trim().length > 0 &&
+        editFormData.description.trim().length > 0 &&
+        editFormData.color !== null;
 
     const filtersNode = (
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
@@ -535,6 +531,7 @@ export default function UserPages() {
                     />
                     <Textarea
                         label={t('description')}
+                        required
                         value={formData.description}
                         error={fieldErrors.description}
                         onChange={(e) => setFormData({ ...formData, description: e.currentTarget.value })}
@@ -566,7 +563,7 @@ export default function UserPages() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <FileInput
                             label={t('profilePhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             accept="image/*"
                             value={profilePhotoFile}
                             error={fieldErrors.profilePhoto}
@@ -575,7 +572,7 @@ export default function UserPages() {
                         />
                         <FileInput
                             label={t('backgroundPhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             accept="image/*"
                             value={bgPhotoFile}
                             error={fieldErrors.backgroundPhoto}
@@ -613,6 +610,7 @@ export default function UserPages() {
                     />
                     <Textarea
                         label={t('description')}
+                        required
                         value={editFormData.description}
                         error={editFieldErrors.description}
                         onChange={(e) => setEditFormData({ ...editFormData, description: e.currentTarget.value })}
@@ -644,7 +642,7 @@ export default function UserPages() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <FileInput
                             label={t('profilePhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             description={t('leaveEmptyToKeep')}
                             accept="image/*"
                             value={editProfilePhotoFile}
@@ -654,7 +652,7 @@ export default function UserPages() {
                         />
                         <FileInput
                             label={t('backgroundPhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             description={t('leaveEmptyToKeep')}
                             accept="image/*"
                             value={editBgPhotoFile}

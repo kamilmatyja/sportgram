@@ -1335,7 +1335,7 @@ export interface components {
              * Format: uuid
              * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
              */
-            userId: string;
+            userId?: string | null;
             /**
              * @example 1
              * @enum {integer|null}
@@ -1727,7 +1727,7 @@ export interface components {
              * @example 1
              * @enum {integer}
              */
-            status: 2 | 3 | 4;
+            status: 1 | 2 | 3 | 4;
         };
         FriendFilterDto: {
             /**
@@ -2047,7 +2047,7 @@ export interface components {
              * @example 1
              * @enum {integer}
              */
-            status: 1 | 2 | 3;
+            status: 1 | 2;
         };
         PushSubscriptionFilterDto: {
             /** @example endpoint-url */
@@ -2090,7 +2090,7 @@ export interface components {
             password: string;
         };
         StatisticFilterDto: {
-            /** @default [] */
+            /** @default null */
             userIds: string[] | null;
             /**
              * @example 1

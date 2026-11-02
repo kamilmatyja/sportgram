@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import {
-    Badge,
     Button,
     SimpleGrid,
     TextInput,
@@ -36,6 +35,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import NotFound from '../../components/NotFound';
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
+import { formatDate } from '../../utils/date';
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -174,6 +174,13 @@ export default function UserPushSubscriptions() {
         setSubscribing(true);
 
         try {
+            if ('Notification' in window && Notification.permission !== 'granted') {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    throw new Error(t('pushNotificationsNotSupported'));
+                }
+            }
+            await navigator.serviceWorker.register('/sw.js');
             const reg = await navigator.serviceWorker.ready;
             const subscription = await reg.pushManager.subscribe({
                 userVisibleOnly: true,
@@ -352,6 +359,7 @@ export default function UserPushSubscriptions() {
             render: (s) => (
                 <StatusBadge
                     status={s.status}
+                    color={s.status === PushSubscriptionStatusEnum.ACTIVE ? 'green' : 'red'}
                     label={
                         s.status === PushSubscriptionStatusEnum.ACTIVE
                             ? t('pushSubscriptionStatuses.active')
@@ -365,17 +373,8 @@ export default function UserPushSubscriptions() {
             header: t('createdAt'),
             render: (s) => (
                 <Text size="xs" c="dimmed">
-                    {s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '-'}
+                    {formatDate(s.createdAt)}
                 </Text>
-            ),
-        },
-        {
-            key: 'keys',
-            header: t('keysPresent'),
-            render: (s) => (
-                <Badge size="xs" variant="outline" color={s.p256dh && s.auth ? 'green' : 'gray'}>
-                    {s.p256dh && s.auth ? t('valid') : t('incomplete')}
-                </Badge>
             ),
         },
     ];
@@ -455,33 +454,35 @@ export default function UserPushSubscriptions() {
                 actions={(s) => (
                     <Group gap="xs" justify="flex-end" wrap="nowrap">
                         {canManage && (
-                            <>
-                                <Menu shadow="md" width={160}>
-                                    <Menu.Target>
-                                        <Tooltip label={t('changeStatus')} withArrow>
-                                            <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
-                                                <IconAdjustments size={16} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    </Menu.Target>
-                                    <Menu.Dropdown>
-                                        {PushSubscriptionStatusEnum.getOptions(t).map((opt) => (
-                                            <Menu.Item
-                                                key={opt.value}
-                                                disabled={s.status === opt.value || updateStatusMutation.isPending}
-                                                onClick={() =>
-                                                    updateStatusMutation.mutate({
-                                                        id: s.id,
-                                                        status: opt.value as PushSubscriptionStatusEnum,
-                                                    })
-                                                }
-                                            >
-                                                {opt.label}
-                                            </Menu.Item>
-                                        ))}
-                                    </Menu.Dropdown>
-                                </Menu>
+                            <Menu shadow="md" width={160}>
+                                <Menu.Target>
+                                    <Tooltip label={t('changeStatus')} withArrow>
+                                        <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
+                                            <IconAdjustments size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </Menu.Target>
+                                <Menu.Dropdown>
+                                    {PushSubscriptionStatusEnum.getOptions(t).map((opt) => (
+                                        <Menu.Item
+                                            key={opt.value}
+                                            disabled={s.status === opt.value || updateStatusMutation.isPending}
+                                            onClick={() =>
+                                                updateStatusMutation.mutate({
+                                                    id: s.id,
+                                                    status: opt.value as PushSubscriptionStatusEnum,
+                                                })
+                                            }
+                                        >
+                                            {opt.label}
+                                        </Menu.Item>
+                                    ))}
+                                </Menu.Dropdown>
+                            </Menu>
+                        )}
 
+                        {isOwner && (
+                            <>
                                 <Tooltip label={t('editBrowser')} withArrow>
                                     <ActionIcon
                                         variant="light"

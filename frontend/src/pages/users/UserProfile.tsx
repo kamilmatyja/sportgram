@@ -52,6 +52,8 @@ import {
     feedService,
     storyService,
     type UserResource,
+    type FeedResource,
+    type StoryResource,
     type FeedReactionResource,
 } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
@@ -67,6 +69,7 @@ import { ThemeEnum } from '../../enums/ThemeEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
 import { UserProfileNav } from '../../components/UserProfileNav';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
+import { formatDateTime } from '../../utils/date';
 import { openConfirmActionModal } from '../../utils/confirmModal.tsx';
 
 export default function UserProfile() {
@@ -87,9 +90,24 @@ export default function UserProfile() {
     const [feedFieldErrors, setFeedFieldErrors] = useState<Record<string, string>>({});
     const [storyFieldErrors, setStoryFieldErrors] = useState<Record<string, string>>({});
 
-    // New feed input
+    // Story edit modal
+    const [editingStory, setEditingStory] = useState<StoryResource | null>(null);
+    const [editStoryOpened, { open: openEditStoryModal, close: closeEditStoryModal }] = useDisclosure(false);
+    const [editStoryText, setEditStoryText] = useState('');
+    const [editStoryPhoto, setEditStoryPhoto] = useState<File | null>(null);
+    const [editStoryFieldErrors, setEditStoryFieldErrors] = useState<Record<string, string>>({});
+
+    // Feed creation modal
+    const [feedOpened, { open: openFeedModal, close: closeFeedModal }] = useDisclosure(false);
     const [feedText, setFeedText] = useState('');
     const [feedPhoto, setFeedPhoto] = useState<File | null>(null);
+
+    // Feed edit modal
+    const [editingFeed, setEditingFeed] = useState<FeedResource | null>(null);
+    const [editFeedOpened, { open: openEditFeedModal, close: closeEditFeedModal }] = useDisclosure(false);
+    const [editFeedText, setEditFeedText] = useState('');
+    const [editFeedPhoto, setEditFeedPhoto] = useState<File | null>(null);
+    const [editFeedFieldErrors, setEditFeedFieldErrors] = useState<Record<string, string>>({});
 
     // Active comments collapse for feeds
     const [openCommentsFeedId, setOpenCommentsFeedId] = useState<string | null>(null);
@@ -112,7 +130,7 @@ export default function UserProfile() {
     });
 
     const isOwner = currentUser?.id === user?.id;
-    const canEdit = isOwner || isAdmin;
+    const primaryColor = ColorEnum.getMantineColor(user?.color);
 
     // Check friendship status
     const { data: friendship, refetch: refetchFriendship } = useQuery({
@@ -437,6 +455,7 @@ export default function UserProfile() {
             setFeedText('');
             setFeedPhoto(null);
             setFeedFieldErrors({});
+            closeFeedModal();
             queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
             queryClient.invalidateQueries({ queryKey: ['feeds'] });
             notifications.show({ title: t('feeds'), message: t('feedAdded'), color: 'green' });
@@ -447,6 +466,43 @@ export default function UserProfile() {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
+
+    // Edit feed mutation
+    const updateFeedMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingFeed) return;
+            let photoStr = editingFeed.photo;
+            if (editFeedPhoto) {
+                photoStr = await fileToBase64(editFeedPhoto);
+            }
+            await feedService.updateFeed(editingFeed.id, {
+                text: editFeedText,
+                photo: photoStr ?? '',
+            });
+        },
+        onSuccess: () => {
+            closeEditFeedModal();
+            setEditingFeed(null);
+            setEditFeedPhoto(null);
+            setEditFeedFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
+            queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifications.show({ title: t('feeds'), message: t('feedUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditFeedFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const handleOpenEditFeed = (feed: FeedResource) => {
+        setEditingFeed(feed);
+        setEditFeedText(feed.text || '');
+        setEditFeedPhoto(null);
+        setEditFeedFieldErrors({});
+        openEditFeedModal();
+    };
 
     // Add story mutation
     const createStoryMutation = useMutation({
@@ -470,6 +526,69 @@ export default function UserProfile() {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
+
+    // Edit story mutation
+    const updateStoryMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingStory) return;
+            let photoStr = editingStory.photo;
+            if (editStoryPhoto) {
+                photoStr = await fileToBase64(editStoryPhoto);
+            }
+            await storyService.updateStory(editingStory.id, {
+                text: editStoryText,
+                photo: photoStr ?? '',
+            });
+        },
+        onSuccess: () => {
+            closeEditStoryModal();
+            setEditingStory(null);
+            setEditStoryPhoto(null);
+            setEditStoryFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['user-profile-stories', user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['stories'] });
+            notifications.show({ title: t('stories'), message: t('storyUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditStoryFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const handleOpenEditStory = (story: StoryResource) => {
+        setEditingStory(story);
+        setEditStoryText(story.text || '');
+        setEditStoryPhoto(null);
+        setEditStoryFieldErrors({});
+        openEditStoryModal();
+    };
+
+    // Delete story mutation
+    const deleteStoryMutation = useMutation({
+        mutationFn: async (id: string) => {
+            await storyService.deleteStory(id);
+        },
+        onSuccess: () => {
+            setStoryViewerOpened(false);
+            queryClient.invalidateQueries({ queryKey: ['user-profile-stories', user?.id] });
+            queryClient.invalidateQueries({ queryKey: ['stories'] });
+            notifications.show({ title: t('stories'), message: t('storyDeleted'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const handleDeleteStory = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteStoryMutation.mutate(id),
+        });
+    };
 
     // Delete feed mutation
     const deleteFeedMutation = useMutation({
@@ -639,7 +758,7 @@ export default function UserProfile() {
                     </Center>
                 )}
 
-                <Box p="md" pos="relative">
+                <Box p="md" pos="relative" style={{ zIndex: 2 }}>
                     <Avatar
                         src={userProfilePhotoSrc}
                         size={100}
@@ -648,6 +767,7 @@ export default function UserProfile() {
                         top={-50}
                         left={24}
                         className="profile-avatar-border"
+                        style={{ zIndex: 3 }}
                     >
                         ?
                     </Avatar>
@@ -725,7 +845,7 @@ export default function UserProfile() {
 
                             {!isOwner && currentUser && (
                                 <Group gap="xs">
-                                    {(!friendship || friendship.status === FriendStatusEnum.REJECTED) && (
+                                    {!friendship && (
                                         <Button
                                             size="xs"
                                             leftSection={<IconUserPlus size={16} />}
@@ -734,6 +854,18 @@ export default function UserProfile() {
                                             disabled={sendFriendMutation.isPending}
                                         >
                                             {t('addFriend')}
+                                        </Button>
+                                    )}
+
+                                    {friendship && friendship.status === FriendStatusEnum.REJECTED && (
+                                        <Button
+                                            variant="default"
+                                            size="xs"
+                                            onClick={() => deleteFriendMutation.mutate(friendship.id)}
+                                            loading={deleteFriendMutation.isPending}
+                                            disabled={deleteFriendMutation.isPending}
+                                        >
+                                            {t('cancelFriendRequest')}
                                         </Button>
                                     )}
 
@@ -816,7 +948,7 @@ export default function UserProfile() {
 
                     <Group gap="xs" mt="md">
                         {user.roles?.map((r) => (
-                            <Badge key={r.id}>
+                            <Badge key={r.id} color="gray" variant="light">
                                 {r.role === RoleEnum.ADMINISTRATOR
                                     ? t('roles.administrator')
                                     : r.role === RoleEnum.ORGANIZER
@@ -825,7 +957,7 @@ export default function UserProfile() {
                             </Badge>
                         ))}
                         {user.disciplines?.map((d) => (
-                            <Badge key={d.id} color="cyan" variant="outline">
+                            <Badge key={d.id} color={primaryColor} variant="outline">
                                 {DisciplineEnum.getOptions(t).find((o) => o.value === d.discipline)?.label ??
                                     d.discipline}
                             </Badge>
@@ -856,6 +988,18 @@ export default function UserProfile() {
                                     </Stack>
                                 )}
 
+                                {/* Add Feed Button (only owner) */}
+                                {isOwner && (
+                                    <Stack align="center" gap={4} className="pointer" onClick={openFeedModal}>
+                                        <Avatar radius={5} size="lg">
+                                            <IconPlus size={24} />
+                                        </Avatar>
+                                        <Text size="xs" fw={500}>
+                                            {t('addFeed')}
+                                        </Text>
+                                    </Stack>
+                                )}
+
                                 {/* Stories of this user grouped */}
                                 {userStoryGroups.map((group) => {
                                     const storyImg = formatImageSrc(group.newestStory?.photo) || userProfilePhotoSrc;
@@ -880,55 +1024,12 @@ export default function UserProfile() {
 
                                 {!isOwner && userStoriesData?.length === 0 && (
                                     <Text size="xs" c="dimmed" py="xs">
-                                        {t('noRecords')}
+                                        {t('noData')}
                                     </Text>
                                 )}
                             </Group>
                         </ScrollArea>
                     </Card>
-
-                    {/* Add new Feed box (only owner) */}
-                    {isOwner && (
-                        <Paper withBorder radius="md" p="md" shadow="xs">
-                            <Stack gap="sm">
-                                <Textarea
-                                    label={t('feeds')}
-                                    placeholder={t('whatIsOnYourMind')}
-                                    required
-                                    autosize
-                                    minRows={2}
-                                    value={feedText}
-                                    error={feedFieldErrors.text}
-                                    onChange={(e) => setFeedText(e.currentTarget.value)}
-                                />
-
-                                <Group justify="space-between" align="flex-end">
-                                    <FileInput
-                                        label={t('photo')}
-                                        placeholder={t('selectPhoto')}
-                                        required
-                                        leftSection={<IconPhoto size={16} />}
-                                        accept="image/*"
-                                        size="xs"
-                                        value={feedPhoto}
-                                        error={feedFieldErrors.photo}
-                                        onChange={setFeedPhoto}
-                                        clearable
-                                        maw={200}
-                                    />
-
-                                    <Button
-                                        size="xs"
-                                        loading={createFeedMutation.isPending}
-                                        disabled={createFeedMutation.isPending || !feedText.trim() || !feedPhoto}
-                                        onClick={() => createFeedMutation.mutate()}
-                                    >
-                                        {t('send')}
-                                    </Button>
-                                </Group>
-                            </Stack>
-                        </Paper>
-                    )}
 
                     {/* Feeds stream */}
                     <Stack gap="md">
@@ -938,7 +1039,7 @@ export default function UserProfile() {
                             </Text>
                         ) : userFeedsData?.length === 0 ? (
                             <Paper withBorder p="xl" radius="md" ta="center">
-                                <Text c="dimmed">{t('noMoreFeeds')}</Text>
+                                <Text c="dimmed">{t('noData')}</Text>
                             </Paper>
                         ) : (
                             userFeedsData?.map((feed) => {
@@ -962,27 +1063,37 @@ export default function UserProfile() {
                                                         {user.firstName} {user.lastName}
                                                     </Text>
                                                     <Text size="xs" c="dimmed">
-                                                        {feed.createdAt
-                                                            ? new Date(feed.createdAt).toLocaleString()
-                                                            : ''}
+                                                        {formatDateTime(feed.createdAt)}
                                                     </Text>
                                                 </Box>
                                             </Group>
 
-                                            {canEdit && (
-                                                <Tooltip label={t('delete')} withArrow>
-                                                    <ActionIcon
-                                                        variant="light"
-                                                        color="red"
-                                                        size={30}
-                                                        onClick={() => handleDeleteFeed(feed.id)}
-                                                        loading={deleteFeedMutation.isPending}
-                                                        disabled={deleteFeedMutation.isPending}
-                                                        aria-label={t('delete')}
-                                                    >
-                                                        <IconTrash size={16} />
-                                                    </ActionIcon>
-                                                </Tooltip>
+                                            {currentUser?.id === feed.userId && (
+                                                <Group gap="xs">
+                                                    <Tooltip label={t('editFeed')} withArrow>
+                                                        <ActionIcon
+                                                            variant="light"
+                                                            size={30}
+                                                            onClick={() => handleOpenEditFeed(feed)}
+                                                            aria-label={t('editFeed')}
+                                                        >
+                                                            <IconEdit size={16} />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                    <Tooltip label={t('delete')} withArrow>
+                                                        <ActionIcon
+                                                            variant="light"
+                                                            color="red"
+                                                            size={30}
+                                                            onClick={() => handleDeleteFeed(feed.id)}
+                                                            loading={deleteFeedMutation.isPending}
+                                                            disabled={deleteFeedMutation.isPending}
+                                                            aria-label={t('delete')}
+                                                        >
+                                                            <IconTrash size={16} />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                </Group>
                                             )}
                                         </Group>
 
@@ -1051,7 +1162,7 @@ export default function UserProfile() {
                                             <Stack gap="xs" mt="sm">
                                                 {feed.comments?.map((c) => {
                                                     const cAuthor = commentUsersMap[c.userId];
-                                                    const canManageComment = currentUser?.id === c.userId || isAdmin;
+                                                    const canManageComment = currentUser?.id === c.userId;
                                                     const isEditing = editingCommentId === c.id;
 
                                                     return (
@@ -1065,9 +1176,7 @@ export default function UserProfile() {
                                                                 </Text>
                                                                 <Group gap={6}>
                                                                     <Text size="xs" c="dimmed">
-                                                                        {c.createdAt
-                                                                            ? new Date(c.createdAt).toLocaleTimeString()
-                                                                            : ''}
+                                                                        {formatDateTime(c.createdAt)}
                                                                     </Text>
                                                                     {canManageComment && !isEditing && (
                                                                         <Group gap={4}>
@@ -1214,7 +1323,7 @@ export default function UserProfile() {
                                                             })
                                                         }
                                                     >
-                                                        {t('send')}
+                                                        {t('add')}
                                                     </Button>
                                                 </Group>
                                             </Stack>
@@ -1232,7 +1341,6 @@ export default function UserProfile() {
                 <Stack gap="sm">
                     <Textarea
                         label={t('text')}
-                        placeholder={t('storyDescriptionPlaceholder')}
                         value={storyText}
                         error={storyFieldErrors.text}
                         onChange={(e) => setStoryText(e.currentTarget.value)}
@@ -1240,7 +1348,7 @@ export default function UserProfile() {
                     />
                     <FileInput
                         label={t('photo')}
-                        placeholder={t('selectPhotoPlaceholder')}
+                        placeholder={t('selectPhoto')}
                         accept="image/*"
                         value={storyPhoto}
                         error={storyFieldErrors.photo}
@@ -1414,7 +1522,7 @@ export default function UserProfile() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <FileInput
                             label={t('profilePhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             description={t('leaveEmptyToKeep')}
                             accept="image/*"
                             leftSection={<IconPhoto size={16} />}
@@ -1425,7 +1533,7 @@ export default function UserProfile() {
                         />
                         <FileInput
                             label={t('backgroundPhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             description={t('leaveEmptyToKeep')}
                             accept="image/*"
                             leftSection={<IconPhoto size={16} />}
@@ -1463,11 +1571,129 @@ export default function UserProfile() {
                 </Stack>
             </Modal>
 
+            {/* Story Edit Modal */}
+            <Modal
+                opened={editStoryOpened}
+                onClose={closeEditStoryModal}
+                title={t('editStory')}
+                size="lg"
+                zIndex={1000}
+            >
+                <Stack gap="sm">
+                    <Textarea
+                        label={t('text')}
+                        value={editStoryText}
+                        error={editStoryFieldErrors.text}
+                        onChange={(e) => setEditStoryText(e.currentTarget.value)}
+                        required
+                    />
+                    <FileInput
+                        label={t('photo')}
+                        placeholder={t('selectPhoto')}
+                        description={t('leaveEmptyToKeep')}
+                        accept="image/*"
+                        leftSection={<IconPhoto size={16} />}
+                        value={editStoryPhoto}
+                        error={editStoryFieldErrors.photo}
+                        onChange={setEditStoryPhoto}
+                        clearable
+                    />
+                    <Button
+                        mt="md"
+                        loading={updateStoryMutation.isPending}
+                        disabled={updateStoryMutation.isPending || !editStoryText.trim()}
+                        onClick={() => updateStoryMutation.mutate()}
+                    >
+                        {t('save')}
+                    </Button>
+                </Stack>
+            </Modal>
+
+            {/* Feed Creation Modal */}
+            <Modal opened={feedOpened} onClose={closeFeedModal} title={t('addFeed')} size="lg">
+                <Stack gap="sm">
+                    <Textarea
+                        label={t('text')}
+                        required
+                        autosize
+                        minRows={2}
+                        value={feedText}
+                        error={feedFieldErrors.text}
+                        onChange={(e) => {
+                            setFeedText(e.currentTarget.value);
+                            if (feedFieldErrors.text) setFeedFieldErrors({ ...feedFieldErrors, text: '' });
+                        }}
+                    />
+
+                    <FileInput
+                        label={t('photo')}
+                        required
+                        leftSection={<IconPhoto size={16} />}
+                        placeholder={t('selectPhoto')}
+                        accept="image/*"
+                        value={feedPhoto}
+                        error={feedFieldErrors.photo}
+                        onChange={setFeedPhoto}
+                        clearable
+                    />
+
+                    <Button
+                        mt="md"
+                        loading={createFeedMutation.isPending}
+                        disabled={createFeedMutation.isPending || !feedText.trim() || !feedPhoto}
+                        onClick={() => createFeedMutation.mutate()}
+                    >
+                        {t('add')}
+                    </Button>
+                </Stack>
+            </Modal>
+
+            {/* Feed Edit Modal */}
+            <Modal opened={editFeedOpened} onClose={closeEditFeedModal} title={t('editFeed')} size="lg">
+                <Stack gap="sm">
+                    <Textarea
+                        label={t('text')}
+                        required
+                        autosize
+                        minRows={2}
+                        value={editFeedText}
+                        error={editFeedFieldErrors.text}
+                        onChange={(e) => {
+                            setEditFeedText(e.currentTarget.value);
+                            if (editFeedFieldErrors.text) setEditFeedFieldErrors({ ...editFeedFieldErrors, text: '' });
+                        }}
+                    />
+
+                    <FileInput
+                        label={t('photo')}
+                        leftSection={<IconPhoto size={16} />}
+                        placeholder={t('selectPhoto')}
+                        description={t('leaveEmptyToKeep')}
+                        accept="image/*"
+                        value={editFeedPhoto}
+                        error={editFeedFieldErrors.photo}
+                        onChange={setEditFeedPhoto}
+                        clearable
+                    />
+
+                    <Button
+                        mt="md"
+                        loading={updateFeedMutation.isPending}
+                        disabled={updateFeedMutation.isPending || !editFeedText.trim()}
+                        onClick={() => updateFeedMutation.mutate()}
+                    >
+                        {t('save')}
+                    </Button>
+                </Stack>
+            </Modal>
+
             {/* Story Viewer Modal */}
             <StoryViewerModal
                 opened={storyViewerOpened}
                 onClose={() => setStoryViewerOpened(false)}
                 groups={userStoryGroups}
+                onEdit={handleOpenEditStory}
+                onDelete={handleDeleteStory}
             />
         </Stack>
     );

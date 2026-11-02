@@ -42,6 +42,7 @@ import { ConversationStatusEnum } from '../../enums/ConversationStatusEnum';
 import UserProfileNav from '../../components/UserProfileNav';
 import { formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
+import { formatDateTime, formatTime } from '../../utils/date';
 
 export default function UserConversations() {
     const { link } = useParams<{ link: string }>();
@@ -145,7 +146,6 @@ export default function UserConversations() {
     });
 
     // Fetch conversations list or chat messages from /api/conversations
-    // Filter userId ALWAYS contains the owner's id (targetUser.id)
     const { data: conversationsResponse, isLoading: conversationsLoading } = useQuery({
         queryKey: [
             'conversations-data',
@@ -159,13 +159,22 @@ export default function UserConversations() {
         ],
         queryFn: async () => {
             if (!currentUser || !targetUser) return { data: [], pagination: null };
+            if (isOwner) {
+                return await conversationService.getConversations({
+                    page,
+                    limit,
+                    sort,
+                    filter: {
+                        ...(statusFilter ? { status: statusFilter as any } : {}),
+                    },
+                });
+            }
             return await conversationService.getConversations({
-                page: isOwner ? page : 1,
-                limit: isOwner ? limit : 100,
-                sort: isOwner ? ((sort as any) ?? 'createdAt:desc') : 'createdAt:asc',
+                page: 1,
+                limit: 100,
+                sort: 'createdAt:asc',
                 filter: {
                     userId: targetUser.id,
-                    ...(isOwner && statusFilter ? { status: statusFilter as any } : {}),
                 },
             });
         },
@@ -321,7 +330,7 @@ export default function UserConversations() {
             render: (c) => {
                 const isSent = c.status === ConversationStatusEnum.SENT;
                 return (
-                    <Badge color={isSent ? 'blue' : 'gray'} variant="light">
+                    <Badge color={isSent ? 'gray' : 'green'} variant="light">
                         {isSent ? t('conversationStatuses.sent') : t('conversationStatuses.read')}
                     </Badge>
                 );
@@ -332,7 +341,7 @@ export default function UserConversations() {
             header: t('createdAt'),
             render: (c) => (
                 <Text size="xs" c="dimmed">
-                    {c.createdAt ? new Date(c.createdAt).toLocaleString() : '-'}
+                    {formatDateTime(c.createdAt)}
                 </Text>
             ),
         },
@@ -511,7 +520,7 @@ export default function UserConversations() {
                     opened={editModalOpened}
                     onClose={() => setEditModalOpened(false)}
                     title={t('editMessage')}
-                    size="md"
+                    size="lg"
                 >
                     <Stack gap="sm">
                         <TextInput
@@ -542,7 +551,7 @@ export default function UserConversations() {
                     opened={sendModalOpened}
                     onClose={() => setSendModalOpened(false)}
                     title={t('sendMessage')}
-                    size="md"
+                    size="lg"
                 >
                     <Stack gap="sm">
                         <Select
@@ -648,12 +657,7 @@ export default function UserConversations() {
                                             <Text size="sm">{m.text}</Text>
                                             <Group justify="flex-end" gap={6} mt={2}>
                                                 <Text size="10px" className="opacity-70">
-                                                    {m.createdAt
-                                                        ? new Date(m.createdAt).toLocaleTimeString([], {
-                                                              hour: '2-digit',
-                                                              minute: '2-digit',
-                                                          })
-                                                        : ''}
+                                                    {formatTime(m.createdAt)}
                                                 </Text>
                                                 {isMine && (
                                                     <Group gap={2}>
@@ -723,7 +727,7 @@ export default function UserConversations() {
                 opened={editModalOpened}
                 onClose={() => setEditModalOpened(false)}
                 title={t('editMessage')}
-                size="md"
+                size="lg"
             >
                 <Stack gap="sm">
                     <TextInput

@@ -34,6 +34,7 @@ import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
+import { formatDateTime } from '../../utils/date';
 
 export default function UserGoals() {
     const { link } = useParams<{ link: string }>();
@@ -319,43 +320,40 @@ export default function UserGoals() {
             ),
         },
         {
-            key: 'discipline',
-            header: t('discipline'),
+            key: 'startedAt',
+            header: t('startedAt'),
             render: (g) => (
-                <Badge size="xs" variant="outline">
-                    {DisciplineEnum.getOptions(t).find((o) => o.value === g.discipline)?.label ?? g.discipline}
-                </Badge>
+                <Text size="xs" c="dimmed">
+                    {formatDateTime(g.startedAt)}
+                </Text>
             ),
         },
         {
-            key: 'distance',
-            header: t('distance'),
-            render: (g) => <Text size="xs">{g.distance} m</Text>,
+            key: 'endedAt',
+            header: t('endedAt'),
+            render: (g) => (
+                <Text size="xs" c="dimmed">
+                    {formatDateTime(g.endedAt)}
+                </Text>
+            ),
         },
         {
             key: 'status',
             header: t('status'),
             render: (g) => {
                 const opt = GoalStatusEnum.getOptions(t).find((o) => o.value === g.status);
+                const color =
+                    g.status === GoalStatusEnum.ACTIVE || g.status === GoalStatusEnum.COMPLETED
+                        ? 'green'
+                        : g.status === GoalStatusEnum.REJECTED
+                          ? 'red'
+                          : 'gray';
                 return (
-                    <Badge
-                        size="xs"
-                        variant="light"
-                        color={g.status === GoalStatusEnum.COMPLETED ? 'green' : undefined}
-                    >
+                    <Badge variant="light" color={color}>
                         {opt?.label ?? g.status}
                     </Badge>
                 );
             },
-        },
-        {
-            key: 'createdAt',
-            header: t('createdAt'),
-            render: (g) => (
-                <Text size="xs" c="dimmed">
-                    {g.createdAt ? new Date(g.createdAt).toLocaleDateString() : '-'}
-                </Text>
-            ),
         },
     ];
 

@@ -56,6 +56,14 @@ class EventListUpdateStatusTest extends ApiTestCase
             $randomUser,
         );
         $this->assertEquals(403, $result['status']);
+
+        $admin = self::createUser(RoleEnum::Administrator);
+        $adminResult = $this->patch(
+            "/api/event-discipline-distance-lists/{$list->id->toString()}/status",
+            ['status' => 2],
+            $admin,
+        );
+        $this->assertEquals(403, $adminResult['status']);
     }
 
     final public function testValidationFailed(): void

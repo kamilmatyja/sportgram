@@ -53,6 +53,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { brown } from '../../theme';
 import { formatImageSrc } from '../../utils/imageUtils';
+import { formatDate, formatDateTime } from '../../utils/date';
 
 interface FormTrainingSubDistance {
     id: string;
@@ -113,7 +114,6 @@ export default function TrainingDetails() {
     const ownerUser = ownerUserData?.data ?? null;
 
     const {
-        isOwner,
         isAdmin,
         canAccessSubpage,
         isLoading: accessLoading,
@@ -121,6 +121,7 @@ export default function TrainingDetails() {
         targetUser: ownerUser,
     });
 
+    const isOwner = !!(currentUser?.id && training?.userId && currentUser.id === training.userId);
     const canManage = isOwner || isAdmin;
 
     // Fetch participant users info
@@ -566,7 +567,7 @@ export default function TrainingDetails() {
                     </Group>
 
                     <Group gap="sm" mb="md">
-                        <Badge size="lg" color={trainingStatusColor} variant="filled">
+                        <Badge color={trainingStatusColor} variant="light">
                             {trainingStatusOpt?.label ?? training.status}
                         </Badge>
                     </Group>
@@ -574,8 +575,8 @@ export default function TrainingDetails() {
                     <Group gap="xs" mb="md">
                         <IconClock size={16} />
                         <Text size="xs" c="dimmed">
-                            {training.startedAt ? new Date(training.startedAt).toLocaleString() : ''} -{' '}
-                            {training.endedAt ? new Date(training.endedAt).toLocaleString() : ''}
+                            {training.startedAt ? formatDateTime(training.startedAt) : ''} -{' '}
+                            {training.endedAt ? formatDateTime(training.endedAt) : ''}
                         </Text>
                     </Group>
 
@@ -601,7 +602,7 @@ export default function TrainingDetails() {
                             {training.participants?.map((p: TrainingParticipantResource) => {
                                 const u = participantUsers[p.userId];
                                 const isSelf = p.userId === currentUser?.id;
-                                const canManageParticipant = isSelf || canManage;
+                                const canManageParticipant = isSelf || isOwner;
                                 const pOpt = SaveStatusEnum.getOptions(t).find((o) => o.value === p.status);
                                 const pColor =
                                     p.status === SaveStatusEnum.ACCEPTED
@@ -630,7 +631,7 @@ export default function TrainingDetails() {
                                             </Group>
                                         </Table.Td>
                                         <Table.Td>
-                                            <Badge size="xs" color={pColor} variant="light">
+                                            <Badge color={pColor} variant="light">
                                                 {pOpt?.label ?? p.status}
                                             </Badge>
                                         </Table.Td>
@@ -698,7 +699,7 @@ export default function TrainingDetails() {
                     <Stack gap="md">
                         {training.disciplines?.map((disc: TrainingDisciplineResource) => (
                             <Paper key={disc.id} withBorder p="md" radius="md">
-                                <Badge size="md" mb="sm">
+                                <Badge variant="light" mb="sm">
                                     {DisciplineEnum.getOptions(t).find((o) => o.value === disc.discipline)?.label ??
                                         disc.discipline}
                                 </Badge>
@@ -708,17 +709,15 @@ export default function TrainingDetails() {
                                         <Paper key={dist.id} p="sm" radius="sm" withBorder>
                                             <Group justify="space-between" mb="xs">
                                                 <Group gap="xs">
-                                                    <Badge color="teal" variant="light">
+                                                    <Badge color="gray" variant="light">
                                                         {dist.distance} m
                                                     </Badge>
-                                                    <Badge color="orange" variant="light">
+                                                    <Badge color="gray" variant="light">
                                                         {dist.time} s
                                                     </Badge>
                                                 </Group>
                                                 <Text size="xs" c="dimmed">
-                                                    {dist.createdAt
-                                                        ? new Date(dist.createdAt).toLocaleDateString()
-                                                        : ''}
+                                                    {dist.createdAt ? formatDate(dist.createdAt) : ''}
                                                 </Text>
                                             </Group>
 
@@ -850,15 +849,17 @@ export default function TrainingDetails() {
                                             onChange={(val) => handleEditDisciplineChange(d.id, val)}
                                             flex={1}
                                         />
-                                        <Button
-                                            size="xs"
-                                            color="red"
-                                            variant="subtle"
-                                            leftSection={<IconTrash size={16} />}
-                                            onClick={() => handleRemoveEditDiscipline(d.id)}
-                                        >
-                                            {t('delete')}
-                                        </Button>
+                                        <Tooltip label={t('delete')} withArrow>
+                                            <ActionIcon
+                                                color="red"
+                                                variant="light"
+                                                size={30}
+                                                onClick={() => handleRemoveEditDiscipline(d.id)}
+                                                aria-label={t('delete')}
+                                            >
+                                                <IconTrash size={16} />
+                                            </ActionIcon>
+                                        </Tooltip>
                                     </Group>
 
                                     <Stack gap="sm" mt="xs">
@@ -1017,21 +1018,23 @@ export default function TrainingDetails() {
                                                                 />
                                                             </SimpleGrid>
                                                             <Group justify="flex-end" mt={4}>
-                                                                <ActionIcon
-                                                                    color="red"
-                                                                    variant="subtle"
-                                                                    size="xs"
-                                                                    onClick={() =>
-                                                                        handleRemoveEditSubDistance(
-                                                                            d.id,
-                                                                            dist.id,
-                                                                            sd.id,
-                                                                        )
-                                                                    }
-                                                                    title={t('delete')}
-                                                                >
-                                                                    <IconTrash size={14} />
-                                                                </ActionIcon>
+                                                                <Tooltip label={t('delete')} withArrow>
+                                                                    <ActionIcon
+                                                                        color="red"
+                                                                        variant="light"
+                                                                        size={30}
+                                                                        onClick={() =>
+                                                                            handleRemoveEditSubDistance(
+                                                                                d.id,
+                                                                                dist.id,
+                                                                                sd.id,
+                                                                            )
+                                                                        }
+                                                                        aria-label={t('delete')}
+                                                                    >
+                                                                        <IconTrash size={16} />
+                                                                    </ActionIcon>
+                                                                </Tooltip>
                                                             </Group>
                                                         </Paper>
                                                     ))}

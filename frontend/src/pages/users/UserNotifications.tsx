@@ -32,6 +32,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import { NotificationStatusEnum } from '../../enums/NotificationStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { getErrorMessage } from '../../api/client';
+import { formatDateTime } from '../../utils/date';
 
 export default function UserNotifications() {
     const { link } = useParams<{ link: string }>();
@@ -146,14 +147,9 @@ export default function UserNotifications() {
             key: 'text',
             header: t('text'),
             render: (n) => (
-                <div>
-                    <Text size="sm" fw={n.status !== NotificationStatusEnum.READ ? 600 : 400}>
-                        {n.text}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                        {n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}
-                    </Text>
-                </div>
+                <Text size="sm" fw={n.status !== NotificationStatusEnum.READ ? 600 : 400}>
+                    {n.text}
+                </Text>
             ),
         },
         {
@@ -162,11 +158,20 @@ export default function UserNotifications() {
             render: (n) => {
                 const isRead = n.status === NotificationStatusEnum.READ;
                 return (
-                    <Badge size="xs" color={isRead ? 'gray' : undefined} variant={isRead ? 'subtle' : 'filled'}>
+                    <Badge color={isRead ? 'green' : 'gray'} variant="light">
                         {isRead ? t('notificationStatuses.read') : t('notificationStatuses.sent')}
                     </Badge>
                 );
             },
+        },
+        {
+            key: 'createdAt',
+            header: t('createdAt'),
+            render: (n) => (
+                <Text size="xs" c="dimmed">
+                    {formatDateTime(n.createdAt)}
+                </Text>
+            ),
         },
     ];
 
@@ -258,19 +263,21 @@ export default function UserNotifications() {
                             </Menu.Dropdown>
                         </Menu>
 
-                        <Tooltip label={t('delete')} withArrow>
-                            <ActionIcon
-                                size={30}
-                                color="red"
-                                variant="light"
-                                onClick={() => handleDelete(n.id)}
-                                loading={deleteMutation.isPending}
-                                disabled={deleteMutation.isPending}
-                                aria-label={t('delete')}
-                            >
-                                <IconTrash size={16} />
-                            </ActionIcon>
-                        </Tooltip>
+                        {isOwner && (
+                            <Tooltip label={t('delete')} withArrow>
+                                <ActionIcon
+                                    size={30}
+                                    color="red"
+                                    variant="light"
+                                    onClick={() => handleDelete(n.id)}
+                                    loading={deleteMutation.isPending}
+                                    disabled={deleteMutation.isPending}
+                                    aria-label={t('delete')}
+                                >
+                                    <IconTrash size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
                     </Group>
                 )}
             />

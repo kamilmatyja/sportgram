@@ -18,7 +18,7 @@ class ConversationIndexDtoTest extends DtoTestCase
         $this->assertSame(10, $dto->limit);
         $this->assertSame('createdAt:desc', $dto->sort);
         $this->assertInstanceOf(ConversationFilterDto::class, $dto->filter);
-        $this->assertViolations($dto, ['filter.userId']);
+        $this->assertValid($dto);
     }
 
     final public function testEachInstanceHasOwnFilter(): void

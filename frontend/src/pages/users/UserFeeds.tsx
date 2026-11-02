@@ -33,6 +33,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
+import { formatDateTime } from '../../utils/date';
 
 export default function UserFeeds() {
     const { link } = useParams<{ link: string }>();
@@ -237,14 +238,9 @@ export default function UserFeeds() {
             key: 'text',
             header: t('text'),
             render: (f) => (
-                <div>
-                    <Text size="sm" lineClamp={2} fw={500}>
-                        {f.text}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                        {f.createdAt ? new Date(f.createdAt).toLocaleString() : ''}
-                    </Text>
-                </div>
+                <Text size="sm" lineClamp={2} fw={500}>
+                    {f.text}
+                </Text>
             ),
         },
         {
@@ -252,16 +248,27 @@ export default function UserFeeds() {
             header: t('status'),
             render: (f) => {
                 const opt = ElementStatusEnum.getOptions(t).find((o) => o.value === f.status);
+                const color =
+                    f.status === ElementStatusEnum.ACTIVE
+                        ? 'green'
+                        : f.status === ElementStatusEnum.REJECTED
+                          ? 'red'
+                          : 'gray';
                 return (
-                    <Badge
-                        size="xs"
-                        variant="light"
-                        color={f.status === ElementStatusEnum.ACTIVE ? 'green' : undefined}
-                    >
+                    <Badge variant="light" color={color}>
                         {opt?.label ?? f.status}
                     </Badge>
                 );
             },
+        },
+        {
+            key: 'createdAt',
+            header: t('createdAt'),
+            render: (f) => (
+                <Text size="xs" c="dimmed">
+                    {formatDateTime(f.createdAt)}
+                </Text>
+            ),
         },
     ];
 
@@ -391,7 +398,7 @@ export default function UserFeeds() {
                                 </ActionIcon>
                             </Tooltip>
                         )}
-                        {(isOwner || isAdmin) && (
+                        {isOwner && (
                             <Tooltip label={t('delete')} withArrow>
                                 <ActionIcon
                                     variant="light"
@@ -416,7 +423,6 @@ export default function UserFeeds() {
                     <Textarea
                         required
                         label={t('description')}
-                        placeholder={t('feedTextPlaceholder')}
                         rows={3}
                         value={text}
                         error={fieldErrors.text}
@@ -425,7 +431,7 @@ export default function UserFeeds() {
                     <FileInput
                         required
                         label={t('photo')}
-                        placeholder={t('selectPhotoPlaceholder')}
+                        placeholder={t('selectPhoto')}
                         accept="image/*"
                         value={photo}
                         error={fieldErrors.photo}
@@ -448,7 +454,6 @@ export default function UserFeeds() {
                     <Textarea
                         required
                         label={t('description')}
-                        placeholder={t('feedTextPlaceholder')}
                         rows={3}
                         value={editText}
                         error={editFieldErrors.text}
@@ -456,7 +461,7 @@ export default function UserFeeds() {
                     />
                     <FileInput
                         label={t('photo')}
-                        placeholder={t('selectPhotoPlaceholder')}
+                        placeholder={t('selectPhoto')}
                         description={t('leaveEmptyToKeep')}
                         accept="image/*"
                         value={editPhoto}

@@ -32,6 +32,7 @@ import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
+import { formatDate } from '../../utils/date';
 
 export default function PagesList() {
     const { t } = useTranslation();
@@ -306,15 +307,6 @@ export default function PagesList() {
             ),
         },
         {
-            key: 'description',
-            header: t('description'),
-            render: (p) => (
-                <Text size="xs" lineClamp={2} c="dimmed">
-                    {p.description || '-'}
-                </Text>
-            ),
-        },
-        {
             key: 'status',
             header: t('status'),
             render: (p) => {
@@ -335,7 +327,7 @@ export default function PagesList() {
         {
             key: 'createdAt',
             header: t('createdAt'),
-            render: (p) => <Text size="xs">{p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-'}</Text>,
+            render: (p) => <Text size="xs">{formatDate(p.createdAt)}</Text>,
         },
     ];
 
@@ -539,7 +531,7 @@ export default function PagesList() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <FileInput
                             label={t('profilePhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             required
                             accept="image/*"
                             value={profilePhotoFile}
@@ -549,7 +541,7 @@ export default function PagesList() {
                         />
                         <FileInput
                             label={t('backgroundPhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             required
                             accept="image/*"
                             value={bgPhotoFile}
@@ -626,7 +618,7 @@ export default function PagesList() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <FileInput
                             label={t('profilePhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             description={t('leaveEmptyToKeep')}
                             accept="image/*"
                             value={editProfilePhotoFile}
@@ -636,7 +628,7 @@ export default function PagesList() {
                         />
                         <FileInput
                             label={t('backgroundPhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             description={t('leaveEmptyToKeep')}
                             accept="image/*"
                             value={editBgPhotoFile}

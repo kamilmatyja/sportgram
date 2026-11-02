@@ -63,18 +63,20 @@ class EventListVoterTest extends VoterTestCase
         );
     }
 
-    final public function testGrantsAdministratorWithoutLookup(): void
+    final public function testDeniesAdministratorWhenNotOwnerOrParticipant(): void
     {
-        $this->eventDisciplineListRepository->expects($this->never())->method('findById');
+        $organizer = self::user(RoleEnum::Organizer);
+        $listUser = self::user(RoleEnum::Participant);
+        $admin = self::admin();
 
-        $this->assertGranted($this->voter, self::admin(), Uuid::v4(), EventListVoter::EVENT_LIST);
-    }
+        $list = $this->eventList($organizer, $listUser);
 
-    final public function testAdministratorIsGrantedEvenForInvalidSubject(): void
-    {
-        $this->eventDisciplineListRepository->expects($this->never())->method('findById');
+        $this->eventDisciplineListRepository->expects($this->once())
+            ->method('findById')
+            ->with(self::idOf($list))
+            ->willReturn($list);
 
-        $this->assertGranted($this->voter, self::admin(), 'not-a-uuid', EventListVoter::EVENT_LIST);
+        $this->assertDenied($this->voter, $admin, self::idOf($list), EventListVoter::EVENT_LIST);
     }
 
     #[DataProvider('invalidSubjectProvider')]

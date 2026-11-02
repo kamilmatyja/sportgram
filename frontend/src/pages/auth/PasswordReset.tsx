@@ -227,7 +227,7 @@ export default function PasswordReset() {
                                         setFieldErrors({});
                                     }}
                                 >
-                                    {t('cancel')}
+                                    {t('back')}
                                 </Button>
                                 <Button
                                     variant="subtle"

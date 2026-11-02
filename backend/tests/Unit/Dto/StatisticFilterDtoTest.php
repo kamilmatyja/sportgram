@@ -11,14 +11,14 @@ use Symfony\Component\Uid\Uuid;
 
 class StatisticFilterDtoTest extends DtoTestCase
 {
-    final public function testEmptyDtoRequiresUserIds(): void
+    final public function testEmptyDtoIsValid(): void
     {
         $dto = new StatisticFilterDto();
 
-        $this->assertSame([], $dto->userIds);
+        $this->assertNull($dto->userIds);
         $this->assertNull($dto->discipline);
         $this->assertNull($dto->distance);
-        $this->assertOnlyViolation($dto, 'userIds');
+        $this->assertValid($dto);
     }
 
     final public function testValidDto(): void

@@ -18,9 +18,11 @@ class ConversationFilterDtoTest extends DtoTestCase
         $this->assertNull($dto->status);
     }
 
-    final public function testRequiresUserId(): void
+    final public function testValidWithoutUserId(): void
     {
-        $this->assertViolations(new ConversationFilterDto(), ['userId']);
+        $dto = new ConversationFilterDto();
+
+        $this->assertValid($dto);
     }
 
     final public function testValidWithUserIdOnly(): void

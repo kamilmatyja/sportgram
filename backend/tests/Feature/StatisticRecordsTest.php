@@ -44,14 +44,14 @@ class StatisticRecordsTest extends ApiTestCase
         $this->assertEquals('Authentication required.', $result['json']['error']);
     }
 
-    final public function testValidationFailedMissingUserIds(): void
+    final public function testWithoutUserIdsFilterReturnsRecords(): void
     {
         $user = self::createUser(RoleEnum::Participant);
 
         $result = $this->get('/api/statistics/records', $user);
 
-        $this->assertEquals(400, $result['status']);
-        $this->assertArrayHasKey('filter.userIds', $result['json']['errors']);
+        $this->assertEquals(200, $result['status']);
+        $this->assertArrayHasKey('data', $result['json']);
     }
 
     final public function testSuccessAndSorting(): void

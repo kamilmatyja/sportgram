@@ -234,7 +234,7 @@ export default function Login() {
 
                             <Group justify="space-between" w="100%" mt="xs">
                                 <Button variant="subtle" size="xs" onClick={handleBackToStep1} disabled={loading}>
-                                    {t('cancel')}
+                                    {t('back')}
                                 </Button>
                                 <Button
                                     variant="subtle"

@@ -43,8 +43,12 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 docker compose up -d --build
 docker compose exec php composer install
+docker compose exec php php bin/console app:generate-app-secret
+docker compose exec php php bin/console doctrine:database:create --if-not-exists
 docker compose exec php php bin/console doctrine:migrations:migrate -n
-docker compose exec  php php bin/console lexik:jwt:generate-keypair
+docker compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
+docker compose exec php php bin/console doctrine:migrations:migrate --env=test -n
+docker compose exec  php php bin/console lexik:jwt:generate-keypair --skip-if-exists
 docker compose exec php php bin/console app:generate-vapid-keys
 cd frontend
 npm install
@@ -78,9 +82,18 @@ npm run dev
 
 ## Migracje
 
+### Baza aplikacyjna (dev)
+
 ```bash
 docker compose exec php php bin/console doctrine:migrations:diff
 docker compose exec php php bin/console doctrine:migrations:migrate -n
+```
+
+### Baza testowa
+
+```bash
+docker compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
+docker compose exec php php bin/console doctrine:migrations:migrate --env=test -n
 ```
 
 ## Testy
@@ -89,6 +102,20 @@ docker compose exec php php bin/console doctrine:migrations:migrate -n
 docker compose exec php vendor/bin/phpunit
 docker compose exec php bin/phpunit --coverage-html var/coverage
 docker compose exec php vendor/bin/phpunit tests/Factory/FactorySmokeTest.php --testdox
+```
+
+## Seedowanie bazy danych
+
+### Automatycznie
+
+```bash
+make seed
+```
+
+### Ręcznie
+
+```bash
+docker compose exec php php bin/console app:seed --fresh
 ```
 
 ## Formatowanie kodu

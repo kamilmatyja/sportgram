@@ -50,6 +50,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { brown } from '../../theme';
 import { formatImageSrc } from '../../utils/imageUtils';
+import { formatDateTime } from '../../utils/date';
 
 export default function GoalDetails() {
     const { link } = useParams<{ link: string }>();
@@ -87,7 +88,6 @@ export default function GoalDetails() {
     const ownerUser = ownerUserData?.data ?? null;
 
     const {
-        isOwner,
         isAdmin,
         canAccessSubpage,
         isLoading: accessLoading,
@@ -95,6 +95,7 @@ export default function GoalDetails() {
         targetUser: ownerUser,
     });
 
+    const isOwner = !!(currentUser?.id && goal?.userId && currentUser.id === goal.userId);
     const canManage = isOwner || isAdmin;
 
     // Fetch friends for collaborator selection
@@ -270,13 +271,11 @@ export default function GoalDetails() {
 
     const goalStatusOpt = GoalStatusEnum.getOptions(t).find((o) => o.value === goal.status);
     const goalStatusColor =
-        goal.status === GoalStatusEnum.ACTIVE
+        goal.status === GoalStatusEnum.ACTIVE || goal.status === GoalStatusEnum.COMPLETED
             ? 'green'
-            : goal.status === GoalStatusEnum.COMPLETED
-              ? 'blue'
-              : goal.status === GoalStatusEnum.REJECTED
-                ? 'red'
-                : 'gray';
+            : goal.status === GoalStatusEnum.REJECTED
+              ? 'red'
+              : 'gray';
 
     return (
         <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
@@ -348,19 +347,19 @@ export default function GoalDetails() {
                     </Group>
 
                     <Group gap="sm" mb="md" wrap="wrap">
-                        <Badge size="lg">
+                        <Badge variant="light">
                             {DisciplineEnum.getOptions(t).find((o) => o.value === goal.discipline)?.label ??
                                 goal.discipline}
                         </Badge>
-                        <Badge size="lg" color="teal" variant="light">
+                        <Badge color="gray" variant="light">
                             {goal.distance} m
                         </Badge>
                         {goal.time && (
-                            <Badge size="lg" color="orange" variant="light">
+                            <Badge color="gray" variant="light">
                                 {goal.time} s
                             </Badge>
                         )}
-                        <Badge size="lg" color={goalStatusColor} variant="filled">
+                        <Badge color={goalStatusColor} variant="light">
                             {goalStatusOpt?.label ?? goal.status}
                         </Badge>
                     </Group>
@@ -368,8 +367,8 @@ export default function GoalDetails() {
                     {(goal.startedAt || goal.endedAt) && (
                         <Group gap="xs" mb="lg">
                             <Text size="xs" c="dimmed">
-                                {goal.startedAt ? new Date(goal.startedAt).toLocaleString() : ''} -{' '}
-                                {goal.endedAt ? new Date(goal.endedAt).toLocaleString() : ''}
+                                {goal.startedAt ? formatDateTime(goal.startedAt) : ''} -{' '}
+                                {goal.endedAt ? formatDateTime(goal.endedAt) : ''}
                             </Text>
                         </Group>
                     )}
@@ -389,7 +388,7 @@ export default function GoalDetails() {
                             {goal.participants?.map((p: GoalParticipantResource) => {
                                 const u = participantUsers[p.userId];
                                 const isSelf = p.userId === currentUser?.id;
-                                const canManageParticipant = isSelf || canManage;
+                                const canManageParticipant = isSelf || isOwner;
                                 const pOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === p.status);
                                 const pColor =
                                     p.status === ElementStatusEnum.ACTIVE
@@ -418,7 +417,7 @@ export default function GoalDetails() {
                                             </Group>
                                         </Table.Td>
                                         <Table.Td>
-                                            <Badge size="xs" color={pColor} variant="light">
+                                            <Badge color={pColor} variant="light">
                                                 {pOpt?.label ?? p.status}
                                             </Badge>
                                         </Table.Td>
@@ -522,13 +521,11 @@ export default function GoalDetails() {
                                                             <Table.Td>{res.time} s</Table.Td>
                                                             <Table.Td>
                                                                 <Text size="xs" c="dimmed">
-                                                                    {res.createdAt
-                                                                        ? new Date(res.createdAt).toLocaleString()
-                                                                        : '-'}
+                                                                    {formatDateTime(res.createdAt)}
                                                                 </Text>
                                                             </Table.Td>
                                                             <Table.Td>
-                                                                <Badge size="xs" color={rColor} variant="light">
+                                                                <Badge color={rColor} variant="light">
                                                                     {rOpt?.label ?? res.status}
                                                                 </Badge>
                                                             </Table.Td>

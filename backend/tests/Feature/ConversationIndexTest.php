@@ -145,6 +145,41 @@ class ConversationIndexTest extends ApiTestCase
         $this->assertCount(2, $result['json']['data']);
     }
 
+    final public function testWithoutUserIdFilter(): void
+    {
+        $user = self::createUser(RoleEnum::Participant);
+
+        $receiver1 = UserFactory::make(em: $this->em);
+        $receiver2 = UserFactory::make(em: $this->em);
+        $otherUser = UserFactory::make(em: $this->em);
+
+        // Multiple messages between $user and $receiver1
+        for ($i = 0; $i < 5; ++$i) {
+            ConversationFactory::make([
+                'senderUser' => $i % 2 === 0 ? $user : $receiver1,
+                'receiverUser' => $i % 2 === 0 ? $receiver1 : $user,
+            ], $this->em);
+        }
+
+        // Multiple messages between $user and $receiver2
+        for ($i = 0; $i < 3; ++$i) {
+            ConversationFactory::make([
+                'senderUser' => $receiver2,
+                'receiverUser' => $user,
+            ], $this->em);
+        }
+
+        // Messages between other users (not involving $user)
+        ConversationFactory::make([
+            'senderUser' => $receiver1,
+            'receiverUser' => $otherUser,
+        ], $this->em);
+
+        $result = $this->get('/api/conversations', $user);
+        $this->assertEquals(200, $result['status']);
+        $this->assertCount(2, $result['json']['data']);
+    }
+
     final public function testInvalidParams(): void
     {
         $user = self::createUser(RoleEnum::Participant);

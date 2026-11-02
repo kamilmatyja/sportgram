@@ -36,6 +36,7 @@ import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
+import { formatDateTime } from '../../utils/date';
 
 interface FormEventSubDistance {
     id: string;
@@ -166,6 +167,7 @@ export default function UserEvents() {
             const res = await pageService.getPages({
                 filter: { userId: targetUser.id },
                 limit: 50,
+                'include[]': ['pageParticipants'],
             });
             return res?.data ?? [];
         },
@@ -189,6 +191,7 @@ export default function UserEvents() {
                 limit,
                 filter: queryFilter,
                 sort: (sort as NonNullable<GetEventsQuery>['sort']) ?? 'startedAt:desc',
+                'include[]': ['eventDisciplines', 'eventDisciplineDistances', 'eventDisciplineSubDistances'],
             });
         },
         enabled: !!targetUser?.id && canAccessSubpage && hasRequiredRole,
@@ -599,27 +602,14 @@ export default function UserEvents() {
             ),
         },
         {
-            key: 'disciplines',
-            header: t('discipline'),
-            render: (ev) => (
-                <Group gap={4}>
-                    {ev.disciplines?.map((d) => (
-                        <Badge key={d.id} size="xs" variant="outline">
-                            {DisciplineEnum.getOptions(t).find((o) => o.value === d.discipline)?.label ?? d.discipline}
-                        </Badge>
-                    ))}
-                </Group>
-            ),
-        },
-        {
             key: 'startedAt',
             header: t('startedAt'),
-            render: (ev) => <Text size="xs">{ev.startedAt ? new Date(ev.startedAt).toLocaleString() : '-'}</Text>,
+            render: (ev) => <Text size="xs">{formatDateTime(ev.startedAt)}</Text>,
         },
         {
             key: 'endedAt',
             header: t('endedAt'),
-            render: (ev) => <Text size="xs">{ev.endedAt ? new Date(ev.endedAt).toLocaleString() : '-'}</Text>,
+            render: (ev) => <Text size="xs">{formatDateTime(ev.endedAt)}</Text>,
         },
         {
             key: 'status',
@@ -633,7 +623,7 @@ export default function UserEvents() {
                           ? 'red'
                           : 'gray';
                 return (
-                    <Badge color={color} size="sm">
+                    <Badge color={color} variant="light">
                         {opt?.label ?? ev.status}
                     </Badge>
                 );
@@ -764,27 +754,29 @@ export default function UserEvents() {
                             </ActionIcon>
                         </Tooltip>
                         {canManage && (
+                            <Menu shadow="md" width={160}>
+                                <Menu.Target>
+                                    <Tooltip label={t('changeStatus')} withArrow>
+                                        <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
+                                            <IconAdjustments size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                </Menu.Target>
+                                <Menu.Dropdown>
+                                    {ElementStatusEnum.getOptions(t).map((opt) => (
+                                        <Menu.Item
+                                            key={opt.value}
+                                            disabled={ev.status === opt.value || statusMutation.isPending}
+                                            onClick={() => statusMutation.mutate({ id: ev.id, status: opt.value })}
+                                        >
+                                            {opt.label}
+                                        </Menu.Item>
+                                    ))}
+                                </Menu.Dropdown>
+                            </Menu>
+                        )}
+                        {isOwner && (
                             <>
-                                <Menu shadow="md" width={160}>
-                                    <Menu.Target>
-                                        <Tooltip label={t('changeStatus')} withArrow>
-                                            <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
-                                                <IconAdjustments size={16} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    </Menu.Target>
-                                    <Menu.Dropdown>
-                                        {ElementStatusEnum.getOptions(t).map((opt) => (
-                                            <Menu.Item
-                                                key={opt.value}
-                                                disabled={ev.status === opt.value || statusMutation.isPending}
-                                                onClick={() => statusMutation.mutate({ id: ev.id, status: opt.value })}
-                                            >
-                                                {opt.label}
-                                            </Menu.Item>
-                                        ))}
-                                    </Menu.Dropdown>
-                                </Menu>
                                 <Tooltip label={t('editEvent')} withArrow>
                                     <ActionIcon
                                         variant="light"
@@ -879,7 +871,7 @@ export default function UserEvents() {
 
                     <FileInput
                         label={t('photo')}
-                        placeholder={t('selectPhotoPlaceholder')}
+                        placeholder={t('selectPhoto')}
                         required
                         accept="image/*"
                         value={photoFile}
@@ -919,15 +911,17 @@ export default function UserEvents() {
                                         onChange={(val) => handleDisciplineChange(d.id, val)}
                                         flex={1}
                                     />
-                                    <Button
-                                        size="xs"
-                                        color="red"
-                                        variant="subtle"
-                                        leftSection={<IconTrash size={16} />}
-                                        onClick={() => handleRemoveDiscipline(d.id)}
-                                    >
-                                        {t('delete')}
-                                    </Button>
+                                    <Tooltip label={t('delete')} withArrow>
+                                        <ActionIcon
+                                            color="red"
+                                            variant="light"
+                                            size={30}
+                                            onClick={() => handleRemoveDiscipline(d.id)}
+                                            aria-label={t('delete')}
+                                        >
+                                            <IconTrash size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
                                 </Group>
 
                                 <Stack gap="sm" mt="xs">
@@ -949,15 +943,17 @@ export default function UserEvents() {
                                                         handleDistanceChange(d.id, dist.id, e.currentTarget.value)
                                                     }
                                                 />
-                                                <ActionIcon
-                                                    color="red"
-                                                    variant="light"
-                                                    size={30}
-                                                    onClick={() => handleRemoveDistance(d.id, dist.id)}
-                                                    title={t('delete')}
-                                                >
-                                                    <IconTrash size={16} />
-                                                </ActionIcon>
+                                                <Tooltip label={t('delete')} withArrow>
+                                                    <ActionIcon
+                                                        color="red"
+                                                        variant="light"
+                                                        size={30}
+                                                        onClick={() => handleRemoveDistance(d.id, dist.id)}
+                                                        aria-label={t('delete')}
+                                                    >
+                                                        <IconTrash size={16} />
+                                                    </ActionIcon>
+                                                </Tooltip>
                                             </Group>
 
                                             <Stack gap="xs" mt="xs" pl="sm" className="subdistances-container">
@@ -992,17 +988,19 @@ export default function UserEvents() {
                                                                 )
                                                             }
                                                         />
-                                                        <ActionIcon
-                                                            color="red"
-                                                            variant="subtle"
-                                                            size={30}
-                                                            onClick={() =>
-                                                                handleRemoveSubDistance(d.id, dist.id, sd.id)
-                                                            }
-                                                            title={t('delete')}
-                                                        >
-                                                            <IconTrash size={16} />
-                                                        </ActionIcon>
+                                                        <Tooltip label={t('delete')} withArrow>
+                                                            <ActionIcon
+                                                                color="red"
+                                                                variant="light"
+                                                                size={30}
+                                                                onClick={() =>
+                                                                    handleRemoveSubDistance(d.id, dist.id, sd.id)
+                                                                }
+                                                                aria-label={t('delete')}
+                                                            >
+                                                                <IconTrash size={16} />
+                                                            </ActionIcon>
+                                                        </Tooltip>
                                                     </Group>
                                                 ))}
                                             </Stack>
@@ -1114,7 +1112,7 @@ export default function UserEvents() {
 
                     <FileInput
                         label={t('photo')}
-                        placeholder={t('selectPhotoPlaceholder')}
+                        placeholder={t('selectPhoto')}
                         description={t('leaveEmptyToKeep')}
                         accept="image/*"
                         value={editPhotoFile}
@@ -1154,15 +1152,17 @@ export default function UserEvents() {
                                         onChange={(val) => handleEditDisciplineChange(d.id, val)}
                                         flex={1}
                                     />
-                                    <Button
-                                        size="xs"
-                                        color="red"
-                                        variant="subtle"
-                                        leftSection={<IconTrash size={16} />}
-                                        onClick={() => handleRemoveEditDiscipline(d.id)}
-                                    >
-                                        {t('delete')}
-                                    </Button>
+                                    <Tooltip label={t('delete')} withArrow>
+                                        <ActionIcon
+                                            color="red"
+                                            variant="light"
+                                            size={30}
+                                            onClick={() => handleRemoveEditDiscipline(d.id)}
+                                            aria-label={t('delete')}
+                                        >
+                                            <IconTrash size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
                                 </Group>
 
                                 <Stack gap="sm" mt="xs">
@@ -1184,15 +1184,17 @@ export default function UserEvents() {
                                                         handleEditDistanceChange(d.id, dist.id, e.currentTarget.value)
                                                     }
                                                 />
-                                                <ActionIcon
-                                                    color="red"
-                                                    variant="light"
-                                                    size={30}
-                                                    onClick={() => handleRemoveEditDistance(d.id, dist.id)}
-                                                    title={t('delete')}
-                                                >
-                                                    <IconTrash size={16} />
-                                                </ActionIcon>
+                                                <Tooltip label={t('delete')} withArrow>
+                                                    <ActionIcon
+                                                        color="red"
+                                                        variant="light"
+                                                        size={30}
+                                                        onClick={() => handleRemoveEditDistance(d.id, dist.id)}
+                                                        aria-label={t('delete')}
+                                                    >
+                                                        <IconTrash size={16} />
+                                                    </ActionIcon>
+                                                </Tooltip>
                                             </Group>
 
                                             <Stack gap="xs" mt="xs" pl="sm" className="subdistances-container">
@@ -1227,17 +1229,19 @@ export default function UserEvents() {
                                                                 )
                                                             }
                                                         />
-                                                        <ActionIcon
-                                                            color="red"
-                                                            variant="subtle"
-                                                            size={30}
-                                                            onClick={() =>
-                                                                handleRemoveEditSubDistance(d.id, dist.id, sd.id)
-                                                            }
-                                                            title={t('delete')}
-                                                        >
-                                                            <IconTrash size={16} />
-                                                        </ActionIcon>
+                                                        <Tooltip label={t('delete')} withArrow>
+                                                            <ActionIcon
+                                                                color="red"
+                                                                variant="light"
+                                                                size={30}
+                                                                onClick={() =>
+                                                                    handleRemoveEditSubDistance(d.id, dist.id, sd.id)
+                                                                }
+                                                                aria-label={t('delete')}
+                                                            >
+                                                                <IconTrash size={16} />
+                                                            </ActionIcon>
+                                                        </Tooltip>
                                                     </Group>
                                                 ))}
                                             </Stack>

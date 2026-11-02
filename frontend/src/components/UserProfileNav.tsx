@@ -125,7 +125,7 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                         </Center>
                     )}
 
-                    <Box p="md" pos="relative">
+                    <Box p="md" pos="relative" style={{ zIndex: 2 }}>
                         <Avatar
                             src={profileSrc}
                             size={100}
@@ -134,6 +134,7 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                             top={-50}
                             left={24}
                             className="profile-avatar-border"
+                            style={{ zIndex: 3 }}
                             component={Link}
                             to={`/users/${link}`}
                         >

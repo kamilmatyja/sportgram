@@ -164,7 +164,7 @@ class EventController extends AbstractController
     #[Route('/api/event-discipline-distance-lists/{id}/status', name: 'event_discipline_distance_list_update_status', methods: ['PATCH'])]
     #[IsGranted(EventListVoter::EVENT_LIST, subject: 'id')]
     #[OA\Patch(
-        summary: 'Update event discipline distance list status - endpoint for owner, user with participant role or user with administrator role',
+        summary: 'Update event discipline distance list status - endpoint for owner or distance participant',
         requestBody: new Body(SaveStatusDto::class),
         tags: ['events'],
         responses: [new Ok(), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized(), new Forbidden()],

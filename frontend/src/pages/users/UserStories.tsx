@@ -34,6 +34,7 @@ import { UserProfileNav } from '../../components/UserProfileNav';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
+import { formatDateTime } from '../../utils/date';
 
 export default function UserStories() {
     const { link } = useParams<{ link: string }>();
@@ -251,14 +252,9 @@ export default function UserStories() {
             key: 'text',
             header: t('text'),
             render: (s) => (
-                <div>
-                    <Text size="sm" lineClamp={2} fw={500}>
-                        {s.text}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                        {s.createdAt ? new Date(s.createdAt).toLocaleString() : ''}
-                    </Text>
-                </div>
+                <Text size="sm" lineClamp={2} fw={500}>
+                    {s.text}
+                </Text>
             ),
         },
         {
@@ -266,16 +262,27 @@ export default function UserStories() {
             header: t('status'),
             render: (s) => {
                 const opt = ElementStatusEnum.getOptions(t).find((o) => o.value === s.status);
+                const color =
+                    s.status === ElementStatusEnum.ACTIVE
+                        ? 'green'
+                        : s.status === ElementStatusEnum.REJECTED
+                          ? 'red'
+                          : 'gray';
                 return (
-                    <Badge
-                        size="xs"
-                        variant="light"
-                        color={s.status === ElementStatusEnum.ACTIVE ? 'green' : undefined}
-                    >
+                    <Badge variant="light" color={color}>
                         {opt?.label ?? s.status}
                     </Badge>
                 );
             },
+        },
+        {
+            key: 'createdAt',
+            header: t('createdAt'),
+            render: (s) => (
+                <Text size="xs" c="dimmed">
+                    {formatDateTime(s.createdAt)}
+                </Text>
+            ),
         },
     ];
 
@@ -402,7 +409,7 @@ export default function UserStories() {
                                 </ActionIcon>
                             </Tooltip>
                         )}
-                        {(isOwner || isAdmin) && (
+                        {isOwner && (
                             <Tooltip label={t('delete')} withArrow>
                                 <ActionIcon
                                     variant="light"
@@ -426,7 +433,6 @@ export default function UserStories() {
                 <Stack gap="sm">
                     <Textarea
                         label={t('text')}
-                        placeholder={t('storyDescriptionPlaceholder')}
                         rows={3}
                         value={text}
                         error={fieldErrors.text}
@@ -435,7 +441,7 @@ export default function UserStories() {
                     />
                     <FileInput
                         label={t('photo')}
-                        placeholder={t('selectPhotoPlaceholder')}
+                        placeholder={t('selectPhoto')}
                         accept="image/*"
                         leftSection={<IconPhoto size={16} />}
                         value={photo}
@@ -455,11 +461,10 @@ export default function UserStories() {
             </Modal>
 
             {/* Edit modal */}
-            <Modal opened={editOpened} onClose={closeEdit} title={t('editStory')} size="lg">
+            <Modal opened={editOpened} onClose={closeEdit} title={t('editStory')} size="lg" zIndex={1000}>
                 <Stack gap="sm">
                     <Textarea
                         label={t('text')}
-                        placeholder={t('storyDescriptionPlaceholder')}
                         rows={3}
                         value={editText}
                         error={editFieldErrors.text}
@@ -468,7 +473,7 @@ export default function UserStories() {
                     />
                     <FileInput
                         label={t('photo')}
-                        placeholder={t('selectPhotoPlaceholder')}
+                        placeholder={t('selectPhoto')}
                         description={t('leaveEmptyToKeep')}
                         accept="image/*"
                         leftSection={<IconPhoto size={16} />}
@@ -505,6 +510,8 @@ export default function UserStories() {
                 }
                 story={viewingStory}
                 author={targetUser}
+                onEdit={handleOpenEdit}
+                onDelete={handleDelete}
             />
         </Stack>
     );

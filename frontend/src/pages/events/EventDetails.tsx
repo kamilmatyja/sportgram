@@ -58,6 +58,7 @@ import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { formatImageSrc, fileToBase64 } from '../../utils/imageUtils';
 import { PageNav } from '../../components/PageNav';
+import { formatDateTime } from '../../utils/date';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 
 interface FormEventSubDistance {
@@ -80,6 +81,7 @@ interface FormEventDiscipline {
 interface DistanceParticipantsProps {
     distance: EventDisciplineDistanceResource;
     isOwner: boolean;
+    isAdmin?: boolean;
     isParticipant: boolean;
     currentUserId?: string;
     onSignUp: (distId: string) => void;
@@ -89,6 +91,7 @@ interface DistanceParticipantsProps {
 function DistanceParticipantsSection({
     distance,
     isOwner,
+    isAdmin = false,
     isParticipant,
     currentUserId,
     onSignUp,
@@ -320,7 +323,7 @@ function DistanceParticipantsSection({
                                             </Group>
                                         </Table.Td>
                                         <Table.Td>
-                                            <Badge size="xs" color={pColor} variant="light">
+                                            <Badge color={pColor} variant="light">
                                                 {pOpt?.label ?? p.status}
                                             </Badge>
                                         </Table.Td>
@@ -373,16 +376,18 @@ function DistanceParticipantsSection({
                                                         </Menu.Dropdown>
                                                     </Menu>
                                                 )}
-                                                {isOwner && (
-                                                    <Button
-                                                        size="compact-xs"
-                                                        variant="subtle"
-                                                        leftSection={<IconPlus size={14} />}
-                                                        onClick={() => handleOpenAddResult(p.id)}
-                                                    >
-                                                        {t('addResult')}
-                                                    </Button>
-                                                )}
+                                                {isOwner &&
+                                                    p.status === ElementStatusEnum.ACTIVE &&
+                                                    (!p.results || p.results.length === 0) && (
+                                                        <Button
+                                                            size="compact-xs"
+                                                            variant="subtle"
+                                                            leftSection={<IconPlus size={14} />}
+                                                            onClick={() => handleOpenAddResult(p.id)}
+                                                        >
+                                                            {t('addResult')}
+                                                        </Button>
+                                                    )}
                                             </Group>
                                         </Table.Td>
                                     </Table.Tr>
@@ -422,7 +427,7 @@ function DistanceParticipantsSection({
                                                             {res.subResults && res.subResults.length > 0 ? (
                                                                 <Group gap={4}>
                                                                     {res.subResults.map((sr, idx) => (
-                                                                        <Badge key={sr.id} size="xs" variant="outline">
+                                                                        <Badge key={sr.id} variant="light">
                                                                             #{idx + 1}: {sr.time}s
                                                                         </Badge>
                                                                     ))}
@@ -471,7 +476,7 @@ function DistanceParticipantsSection({
             )}
 
             {/* Add Result Modal */}
-            <Modal opened={addResultOpened} onClose={closeAddResult} title={t('addResult')} size="sm">
+            <Modal opened={addResultOpened} onClose={closeAddResult} title={t('addResult')} size="lg">
                 <Stack gap="sm">
                     <TextInput
                         label={t('timeSeconds')}
@@ -515,7 +520,7 @@ function DistanceParticipantsSection({
             </Modal>
 
             {/* Edit Result Modal */}
-            <Modal opened={editResultOpened} onClose={closeEditResult} title={t('editResult')} size="sm">
+            <Modal opened={editResultOpened} onClose={closeEditResult} title={t('editResult')} size="lg">
                 <Stack gap="sm">
                     <TextInput
                         label={t('timeSeconds')}
@@ -601,9 +606,8 @@ export default function EventDetails() {
     }, [event?.pageParticipantId, pagesData]);
 
     const isOwner =
-        isAdmin ||
-        page?.userId === currentUser?.id ||
-        (page?.participants?.some((p) => p.id === event?.pageParticipantId && p.userId === currentUser?.id) ?? false);
+        page?.participants?.some((p) => p.id === event?.pageParticipantId && p.userId === currentUser?.id) ?? false;
+    const canManageStatus = isOwner || isAdmin;
 
     // Sign up for distance mutation
     const signUpMutation = useMutation({
@@ -907,36 +911,38 @@ export default function EventDetails() {
                             <Group gap="xs" mt={4}>
                                 <IconClock size={16} />
                                 <Text size="xs" c="dimmed">
-                                    {event.startedAt ? new Date(event.startedAt).toLocaleString() : ''} -{' '}
-                                    {event.endedAt ? new Date(event.endedAt).toLocaleString() : ''}
+                                    {event.startedAt ? formatDateTime(event.startedAt) : ''} -{' '}
+                                    {event.endedAt ? formatDateTime(event.endedAt) : ''}
                                 </Text>
                             </Group>
                         </div>
 
                         <Group gap="xs" wrap="nowrap">
+                            {canManageStatus && (
+                                <Menu shadow="md" width={160}>
+                                    <Menu.Target>
+                                        <Tooltip label={t('changeStatus')} withArrow>
+                                            <ActionIcon variant="light" size={32} aria-label={t('changeStatus')}>
+                                                <IconAdjustments size={18} />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    </Menu.Target>
+                                    <Menu.Dropdown>
+                                        {ElementStatusEnum.getOptions(t).map((opt) => (
+                                            <Menu.Item
+                                                key={opt.value}
+                                                disabled={event.status === opt.value || statusMutation.isPending}
+                                                onClick={() => statusMutation.mutate(opt.value)}
+                                            >
+                                                {opt.label}
+                                            </Menu.Item>
+                                        ))}
+                                    </Menu.Dropdown>
+                                </Menu>
+                            )}
+
                             {isOwner && (
                                 <>
-                                    <Menu shadow="md" width={160}>
-                                        <Menu.Target>
-                                            <Tooltip label={t('changeStatus')} withArrow>
-                                                <ActionIcon variant="light" size={32} aria-label={t('changeStatus')}>
-                                                    <IconAdjustments size={18} />
-                                                </ActionIcon>
-                                            </Tooltip>
-                                        </Menu.Target>
-                                        <Menu.Dropdown>
-                                            {ElementStatusEnum.getOptions(t).map((opt) => (
-                                                <Menu.Item
-                                                    key={opt.value}
-                                                    disabled={event.status === opt.value || statusMutation.isPending}
-                                                    onClick={() => statusMutation.mutate(opt.value)}
-                                                >
-                                                    {opt.label}
-                                                </Menu.Item>
-                                            ))}
-                                        </Menu.Dropdown>
-                                    </Menu>
-
                                     <Tooltip label={t('editEvent')} withArrow>
                                         <ActionIcon
                                             variant="light"
@@ -967,7 +973,7 @@ export default function EventDetails() {
                     </Group>
 
                     <Group gap="sm" mb="md">
-                        <Badge size="lg" color={eventStatusColor} variant="filled">
+                        <Badge color={eventStatusColor} variant="light">
                             {eventStatusOpt?.label ?? event.status}
                         </Badge>
                     </Group>
@@ -997,7 +1003,7 @@ export default function EventDetails() {
                     <Stack gap="md">
                         {event.disciplines?.map((disc) => (
                             <Paper key={disc.id} withBorder p="md" radius="md">
-                                <Badge size="md" mb="sm">
+                                <Badge variant="light" mb="sm">
                                     {DisciplineEnum.getOptions(t).find((o) => o.value === disc.discipline)?.label ??
                                         disc.discipline}
                                 </Badge>
@@ -1008,6 +1014,7 @@ export default function EventDetails() {
                                             key={dist.id}
                                             distance={dist}
                                             isOwner={isOwner}
+                                            isAdmin={isAdmin}
                                             isParticipant={isParticipant}
                                             currentUserId={currentUser?.id}
                                             onSignUp={(dId) => signUpMutation.mutate(dId)}
@@ -1075,7 +1082,7 @@ export default function EventDetails() {
 
                         <FileInput
                             label={t('photo')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             description={t('leaveEmptyToKeep')}
                             accept="image/*"
                             value={editPhotoFile}
@@ -1115,15 +1122,17 @@ export default function EventDetails() {
                                             onChange={(val) => handleEditDisciplineChange(d.id, val)}
                                             flex={1}
                                         />
-                                        <Button
-                                            size="xs"
-                                            color="red"
-                                            variant="subtle"
-                                            leftSection={<IconTrash size={16} />}
-                                            onClick={() => handleRemoveEditDiscipline(d.id)}
-                                        >
-                                            {t('delete')}
-                                        </Button>
+                                        <Tooltip label={t('delete')} withArrow>
+                                            <ActionIcon
+                                                color="red"
+                                                variant="light"
+                                                size={30}
+                                                onClick={() => handleRemoveEditDiscipline(d.id)}
+                                                aria-label={t('delete')}
+                                            >
+                                                <IconTrash size={16} />
+                                            </ActionIcon>
+                                        </Tooltip>
                                     </Group>
 
                                     <Stack gap="sm" mt="xs">
@@ -1192,17 +1201,23 @@ export default function EventDetails() {
                                                                     )
                                                                 }
                                                             />
-                                                            <ActionIcon
-                                                                color="red"
-                                                                variant="subtle"
-                                                                size={30}
-                                                                onClick={() =>
-                                                                    handleRemoveEditSubDistance(d.id, dist.id, sd.id)
-                                                                }
-                                                                title={t('delete')}
-                                                            >
-                                                                <IconTrash size={16} />
-                                                            </ActionIcon>
+                                                            <Tooltip label={t('delete')} withArrow>
+                                                                <ActionIcon
+                                                                    color="red"
+                                                                    variant="light"
+                                                                    size={30}
+                                                                    onClick={() =>
+                                                                        handleRemoveEditSubDistance(
+                                                                            d.id,
+                                                                            dist.id,
+                                                                            sd.id,
+                                                                        )
+                                                                    }
+                                                                    aria-label={t('delete')}
+                                                                >
+                                                                    <IconTrash size={16} />
+                                                                </ActionIcon>
+                                                            </Tooltip>
                                                         </Group>
                                                     ))}
                                                 </Stack>

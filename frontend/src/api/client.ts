@@ -36,7 +36,20 @@ function serializeQuery(params: Record<string, unknown>, prefix = ''): string[] 
             const arrayKey = paramKey.endsWith('[]') ? paramKey : `${paramKey}[]`;
             value.forEach((item) => {
                 if (item !== undefined && item !== null) {
-                    pairs.push(`${encodeURIComponent(arrayKey)}=${encodeURIComponent(String(item))}`);
+                    let strVal: string | null = null;
+                    if (typeof item === 'object') {
+                        const obj = item as Record<string, unknown>;
+                        if (obj.id && typeof obj.id === 'string') {
+                            strVal = obj.id;
+                        } else if (obj.value && (typeof obj.value === 'string' || typeof obj.value === 'number')) {
+                            strVal = String(obj.value);
+                        }
+                    } else {
+                        strVal = String(item);
+                    }
+                    if (strVal && strVal !== '[object Object]') {
+                        pairs.push(`${encodeURIComponent(arrayKey)}=${encodeURIComponent(strVal)}`);
+                    }
                 }
             });
         } else if (typeof value === 'object') {

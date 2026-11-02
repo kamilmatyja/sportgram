@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Modal, Stack, Group, Avatar, Text, Image, Box, ActionIcon, Badge } from '@mantine/core';
+import { Modal, Stack, Group, Avatar, Text, Image, Box, ActionIcon, Badge, Tooltip } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { IconChevronLeft, IconChevronRight, IconEdit, IconTrash } from '@tabler/icons-react';
 import { formatImageSrc } from '../utils/imageUtils';
+import { formatDateTime } from '../utils/date';
+import { useAuth } from '../auth/AuthContext';
 import type { StoryResource } from '../api/services/story.service';
 import type { UserResource } from '../api/services/user.service';
 
@@ -22,6 +24,8 @@ interface StoryViewerModalProps {
     initialStoryIndex?: number;
     story?: StoryResource | null;
     author?: UserResource | null;
+    onEdit?: (story: StoryResource) => void;
+    onDelete?: (storyId: string) => void;
 }
 
 export function StoryViewerModal({
@@ -32,8 +36,11 @@ export function StoryViewerModal({
     initialStoryIndex = 0,
     story,
     author,
+    onEdit,
+    onDelete,
 }: StoryViewerModalProps) {
     const { t } = useTranslation();
+    const { currentUser, isAdmin } = useAuth();
 
     const effectiveGroups: UserStoriesGroup[] =
         groups && groups.length > 0 ? groups : story ? [{ userId: story.userId, author, stories: [story] }] : [];
@@ -102,11 +109,13 @@ export function StoryViewerModal({
     const authorPhoto = formatImageSrc(currentAuthor?.profilePhoto);
     const storyPhotoSrc = formatImageSrc(currentStory.photo);
 
+    const isStoryOwner = !!(currentUser && currentStory && currentUser.id === currentStory.userId);
+
     return (
         <Modal
             opened={opened}
             onClose={onClose}
-            size="md"
+            size="lg"
             centered
             closeButtonProps={{ size: 30 }}
             title={
@@ -156,16 +165,51 @@ export function StoryViewerModal({
                                     </Text>
                                 )}
                                 <Text size="xs" c="dimmed">
-                                    {currentStory.createdAt
-                                        ? new Date(currentStory.createdAt.replace(' ', 'T')).toLocaleString()
-                                        : ''}
+                                    {formatDateTime(currentStory.createdAt)}
                                 </Text>
                             </Box>
                         </Group>
 
-                        <Badge variant="light" size="sm" className="story-counter-badge">
-                            {currentStoryIdx + 1} / {currentStories.length}
-                        </Badge>
+                        <Group gap="xs" align="center" wrap="nowrap">
+                            <Badge variant="light" size="sm" className="story-counter-badge">
+                                {currentStoryIdx + 1} / {currentStories.length}
+                            </Badge>
+                            {isStoryOwner && (
+                                <>
+                                    {onEdit && (
+                                        <Tooltip label={t('editStory')} withArrow>
+                                            <ActionIcon
+                                                variant="light"
+                                                size={30}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onEdit(currentStory);
+                                                }}
+                                                aria-label={t('editStory')}
+                                            >
+                                                <IconEdit size={16} />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    )}
+                                    {onDelete && (
+                                        <Tooltip label={t('delete')} withArrow>
+                                            <ActionIcon
+                                                variant="light"
+                                                color="red"
+                                                size={30}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onDelete(currentStory.id);
+                                                }}
+                                                aria-label={t('delete')}
+                                            >
+                                                <IconTrash size={16} />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    )}
+                                </>
+                            )}
+                        </Group>
                     </Group>
                 </Stack>
             }

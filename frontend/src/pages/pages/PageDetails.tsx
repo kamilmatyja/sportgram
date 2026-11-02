@@ -52,6 +52,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { PageNav } from '../../components/PageNav';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
+import { formatDateTime } from '../../utils/date';
 
 interface FormEventSubDistance {
     id: string;
@@ -75,7 +76,7 @@ export default function PageDetails() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const { currentUser, isAdmin } = useAuth();
+    const { currentUser, isOrganizer, isAdmin } = useAuth();
 
     // Edit page modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
@@ -137,7 +138,7 @@ export default function PageDetails() {
         );
     }, [myFriendsData]);
 
-    const isOwner = currentUser?.id === page?.userId || isAdmin;
+    const isOwner = currentUser?.id === page?.userId;
     const isParticipant =
         isOwner ||
         (page?.participants?.some((p) => p.userId === currentUser?.id && p.status === ElementStatusEnum.ACTIVE) ??
@@ -551,29 +552,31 @@ export default function PageDetails() {
                 </Button>
             )}
 
+            {(isOwner || isAdmin) && (
+                <Menu shadow="md" width={160}>
+                    <Menu.Target>
+                        <Tooltip label={t('changeStatus')} withArrow>
+                            <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
+                                <IconAdjustments size={16} />
+                            </ActionIcon>
+                        </Tooltip>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                        {ElementStatusEnum.getOptions(t).map((opt) => (
+                            <Menu.Item
+                                key={opt.value}
+                                disabled={page.status === opt.value || statusMutation.isPending}
+                                onClick={() => statusMutation.mutate(opt.value)}
+                            >
+                                {opt.label}
+                            </Menu.Item>
+                        ))}
+                    </Menu.Dropdown>
+                </Menu>
+            )}
+
             {isOwner && (
                 <>
-                    <Menu shadow="md" width={160}>
-                        <Menu.Target>
-                            <Tooltip label={t('changeStatus')} withArrow>
-                                <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
-                                    <IconAdjustments size={16} />
-                                </ActionIcon>
-                            </Tooltip>
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                            {ElementStatusEnum.getOptions(t).map((opt) => (
-                                <Menu.Item
-                                    key={opt.value}
-                                    disabled={page.status === opt.value || statusMutation.isPending}
-                                    onClick={() => statusMutation.mutate(opt.value)}
-                                >
-                                    {opt.label}
-                                </Menu.Item>
-                            ))}
-                        </Menu.Dropdown>
-                    </Menu>
-
                     <Tooltip label={t('editPage')} withArrow>
                         <ActionIcon variant="light" size={30} onClick={handleOpenEdit} aria-label={t('editPage')}>
                             <IconEdit size={16} />
@@ -657,7 +660,7 @@ export default function PageDetails() {
                                             </Group>
                                         </Table.Td>
                                         <Table.Td>
-                                            <Badge size="xs" color={pColor} variant="light">
+                                            <Badge color={pColor} variant="light">
                                                 {pOpt?.label ?? p.status}
                                             </Badge>
                                         </Table.Td>
@@ -723,7 +726,7 @@ export default function PageDetails() {
                 <Card withBorder radius="md" p="md" shadow="xs">
                     <Group justify="space-between" align="center" mb="xs">
                         <Title order={4}>{t('events')}</Title>
-                        {isParticipant && (
+                        {isOrganizer && isParticipant && (
                             <Button
                                 size="xs"
                                 variant="light"
@@ -782,17 +785,13 @@ export default function PageDetails() {
                                                 </Group>
                                             </Table.Td>
                                             <Table.Td>
-                                                <Text size="xs">
-                                                    {ev.startedAt ? new Date(ev.startedAt).toLocaleString() : '-'}
-                                                </Text>
+                                                <Text size="xs">{formatDateTime(ev.startedAt)}</Text>
                                             </Table.Td>
                                             <Table.Td>
-                                                <Text size="xs">
-                                                    {ev.endedAt ? new Date(ev.endedAt).toLocaleString() : '-'}
-                                                </Text>
+                                                <Text size="xs">{formatDateTime(ev.endedAt)}</Text>
                                             </Table.Td>
                                             <Table.Td>
-                                                <Badge size="xs" color={evColor} variant="light">
+                                                <Badge color={evColor} variant="light">
                                                     {evOpt?.label ?? ev.status}
                                                 </Badge>
                                             </Table.Td>
@@ -843,6 +842,7 @@ export default function PageDetails() {
                         />
                         <Textarea
                             label={t('description')}
+                            required
                             rows={3}
                             value={editFormData.description}
                             error={editFieldErrors.description}
@@ -873,7 +873,7 @@ export default function PageDetails() {
                         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                             <FileInput
                                 label={t('profilePhoto')}
-                                placeholder={t('selectPhotoPlaceholder')}
+                                placeholder={t('selectPhoto')}
                                 description={t('leaveEmptyToKeep')}
                                 accept="image/*"
                                 value={editProfilePhotoFile}
@@ -883,7 +883,7 @@ export default function PageDetails() {
                             />
                             <FileInput
                                 label={t('backgroundPhoto')}
-                                placeholder={t('selectPhotoPlaceholder')}
+                                placeholder={t('selectPhoto')}
                                 description={t('leaveEmptyToKeep')}
                                 accept="image/*"
                                 value={editBgPhotoFile}
@@ -957,7 +957,7 @@ export default function PageDetails() {
 
                         <FileInput
                             label={t('photo')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             required
                             accept="image/*"
                             value={eventPhotoFile}
@@ -997,15 +997,17 @@ export default function PageDetails() {
                                             onChange={(val) => handleDisciplineChange(d.id, val)}
                                             flex={1}
                                         />
-                                        <Button
-                                            size="xs"
-                                            color="red"
-                                            variant="subtle"
-                                            leftSection={<IconTrash size={16} />}
-                                            onClick={() => handleRemoveDiscipline(d.id)}
-                                        >
-                                            {t('delete')}
-                                        </Button>
+                                        <Tooltip label={t('delete')} withArrow>
+                                            <ActionIcon
+                                                color="red"
+                                                variant="light"
+                                                size={30}
+                                                onClick={() => handleRemoveDiscipline(d.id)}
+                                                aria-label={t('delete')}
+                                            >
+                                                <IconTrash size={16} />
+                                            </ActionIcon>
+                                        </Tooltip>
                                     </Group>
 
                                     <Stack gap="sm" mt="xs">
@@ -1027,15 +1029,17 @@ export default function PageDetails() {
                                                             handleDistanceChange(d.id, dist.id, e.currentTarget.value)
                                                         }
                                                     />
-                                                    <ActionIcon
-                                                        color="red"
-                                                        variant="light"
-                                                        size={30}
-                                                        onClick={() => handleRemoveDistance(d.id, dist.id)}
-                                                        title={t('delete')}
-                                                    >
-                                                        <IconTrash size={16} />
-                                                    </ActionIcon>
+                                                    <Tooltip label={t('delete')} withArrow>
+                                                        <ActionIcon
+                                                            color="red"
+                                                            variant="light"
+                                                            size={30}
+                                                            onClick={() => handleRemoveDistance(d.id, dist.id)}
+                                                            aria-label={t('delete')}
+                                                        >
+                                                            <IconTrash size={16} />
+                                                        </ActionIcon>
+                                                    </Tooltip>
                                                 </Group>
 
                                                 <Stack gap="xs" mt="xs" pl="sm" className="subdistances-container">
@@ -1070,17 +1074,19 @@ export default function PageDetails() {
                                                                     )
                                                                 }
                                                             />
-                                                            <ActionIcon
-                                                                color="red"
-                                                                variant="subtle"
-                                                                size={30}
-                                                                onClick={() =>
-                                                                    handleRemoveSubDistance(d.id, dist.id, sd.id)
-                                                                }
-                                                                title={t('delete')}
-                                                            >
-                                                                <IconTrash size={16} />
-                                                            </ActionIcon>
+                                                            <Tooltip label={t('delete')} withArrow>
+                                                                <ActionIcon
+                                                                    color="red"
+                                                                    variant="light"
+                                                                    size={30}
+                                                                    onClick={() =>
+                                                                        handleRemoveSubDistance(d.id, dist.id, sd.id)
+                                                                    }
+                                                                    aria-label={t('delete')}
+                                                                >
+                                                                    <IconTrash size={16} />
+                                                                </ActionIcon>
+                                                            </Tooltip>
                                                         </Group>
                                                     ))}
                                                 </Stack>

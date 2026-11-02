@@ -52,7 +52,7 @@ export function PageNav({ page, extraActions }: PageNavProps) {
                     </Center>
                 )}
 
-                <Box p="md" pos="relative">
+                <Box p="md" pos="relative" style={{ zIndex: 2 }}>
                     <Avatar
                         src={profileSrc}
                         size={100}
@@ -61,6 +61,7 @@ export function PageNav({ page, extraActions }: PageNavProps) {
                         top={-50}
                         left={24}
                         className="profile-avatar-border"
+                        style={{ zIndex: 3 }}
                         component={Link}
                         to={`/pages/${page.link}`}
                     >

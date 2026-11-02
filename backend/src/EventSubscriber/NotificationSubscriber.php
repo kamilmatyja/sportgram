@@ -11,6 +11,7 @@ use ErrorException;
 use Random\RandomException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
 
 readonly class NotificationSubscriber implements EventSubscriberInterface
 {
@@ -70,6 +71,7 @@ readonly class NotificationSubscriber implements EventSubscriberInterface
                     $payload,
                 );
             }
+        } catch (Throwable) {
         } finally {
             $notification->status = NotificationStatusEnum::Sent;
             $this->notificationRepository->save($notification);

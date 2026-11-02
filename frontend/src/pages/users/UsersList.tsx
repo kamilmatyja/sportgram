@@ -3,7 +3,6 @@ import {
     Avatar,
     Group,
     Text,
-    Badge,
     Button,
     SimpleGrid,
     TextInput,
@@ -39,6 +38,7 @@ import { RoleEnum } from '../../enums/RoleEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
 import { formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
+import { formatDate } from '../../utils/date';
 
 export default function UsersList() {
     const { t } = useTranslation();
@@ -71,7 +71,7 @@ export default function UsersList() {
     const createMutation = useMutation({
         mutationFn: async () => {
             if (!profilePhotoFile || !bgPhotoFile) {
-                throw new Error(t('selectPhotoPlaceholder'));
+                throw new Error(t('selectPhoto'));
             }
             if (
                 !formData.bio.trim() ||
@@ -346,26 +346,13 @@ export default function UsersList() {
     const users = data?.data ?? [];
     const pagination = data?.pagination;
 
-    const getRoleLabel = (roleId: number) => {
-        switch (roleId) {
-            case RoleEnum.ADMINISTRATOR:
-                return t('roles.administrator');
-            case RoleEnum.ORGANIZER:
-                return t('roles.organizer');
-            case RoleEnum.PARTICIPANT:
-                return t('roles.participant');
-            default:
-                return String(roleId);
-        }
-    };
-
     const columns: Column<UserResource>[] = [
         {
             key: 'user',
             header: t('user'),
             render: (u) => (
                 <Group gap="sm">
-                    <Avatar src={formatImageSrc(u.profilePhoto)} radius="xl" size="sm">
+                    <Avatar src={formatImageSrc(u.profilePhoto)} radius={5}>
                         ?
                     </Avatar>
                     <div>
@@ -383,19 +370,6 @@ export default function UsersList() {
             key: 'email',
             header: t('email'),
             render: (u) => <Text size="xs">{u.email}</Text>,
-        },
-        {
-            key: 'roles',
-            header: t('role'),
-            render: (u) => (
-                <Group gap={4}>
-                    {u.roles?.map((r) => (
-                        <Badge key={r.id} size="xs" variant="outline">
-                            {getRoleLabel(r.role)}
-                        </Badge>
-                    ))}
-                </Group>
-            ),
         },
         {
             key: 'status',
@@ -418,7 +392,7 @@ export default function UsersList() {
             header: t('createdAt'),
             render: (u) => (
                 <Text size="xs" c="dimmed">
-                    {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '-'}
+                    {formatDate(u.createdAt)}
                 </Text>
             ),
         },
@@ -785,7 +759,7 @@ export default function UsersList() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <FileInput
                             label={t('profilePhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             accept="image/*"
                             leftSection={<IconPhoto size={16} />}
                             value={profilePhotoFile}
@@ -796,7 +770,7 @@ export default function UsersList() {
                         />
                         <FileInput
                             label={t('backgroundPhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             accept="image/*"
                             leftSection={<IconPhoto size={16} />}
                             value={bgPhotoFile}
@@ -974,7 +948,7 @@ export default function UsersList() {
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                         <FileInput
                             label={t('profilePhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             description={t('leaveEmptyToKeep')}
                             accept="image/*"
                             leftSection={<IconPhoto size={16} />}
@@ -985,7 +959,7 @@ export default function UsersList() {
                         />
                         <FileInput
                             label={t('backgroundPhoto')}
-                            placeholder={t('selectPhotoPlaceholder')}
+                            placeholder={t('selectPhoto')}
                             description={t('leaveEmptyToKeep')}
                             accept="image/*"
                             leftSection={<IconPhoto size={16} />}

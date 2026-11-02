@@ -41,20 +41,62 @@ class ConversationRepository extends BaseRepository
     {
         $qb = $this->createQueryBuilder('c');
 
-        $qb->andWhere(
-            $qb->expr()->orX(
-                $qb->expr()->andX(
-                    $qb->expr()->eq('c.senderUser', ':userId1'),
-                    $qb->expr()->eq('c.receiverUser', ':userId2'),
+        if ($dto->filter->userId) {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('c.senderUser', ':userId1'),
+                        $qb->expr()->eq('c.receiverUser', ':userId2'),
+                    ),
+                    $qb->expr()->andX(
+                        $qb->expr()->eq('c.senderUser', ':userId2'),
+                        $qb->expr()->eq('c.receiverUser', ':userId1'),
+                    ),
                 ),
-                $qb->expr()->andX(
-                    $qb->expr()->eq('c.senderUser', ':userId2'),
-                    $qb->expr()->eq('c.receiverUser', ':userId1'),
+            )
+                ->setParameter('userId1', $userId)
+                ->setParameter('userId2', $dto->filter->userId);
+        } else {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->eq('c.senderUser', ':userId'),
+                    $qb->expr()->eq('c.receiverUser', ':userId'),
                 ),
-            ),
-        )
-            ->setParameter('userId1', $userId)
-            ->setParameter('userId2', $dto->filter->userId);
+            )->setParameter('userId', $userId);
+
+            $subQb = $this->getEntityManager()->createQueryBuilder();
+            $subQb->select('1')
+                ->from(\App\Entity\Conversation::class, 'c2')
+                ->where(
+                    $subQb->expr()->orX(
+                        $subQb->expr()->eq('c2.senderUser', ':userId'),
+                        $subQb->expr()->eq('c2.receiverUser', ':userId'),
+                    ),
+                )
+                ->andWhere(
+                    $subQb->expr()->orX(
+                        $subQb->expr()->andX(
+                            $subQb->expr()->eq('c2.senderUser', 'c.senderUser'),
+                            $subQb->expr()->eq('c2.receiverUser', 'c.receiverUser'),
+                        ),
+                        $subQb->expr()->andX(
+                            $subQb->expr()->eq('c2.senderUser', 'c.receiverUser'),
+                            $subQb->expr()->eq('c2.receiverUser', 'c.senderUser'),
+                        ),
+                    ),
+                )
+                ->andWhere(
+                    $subQb->expr()->orX(
+                        $subQb->expr()->gt('c2.createdAt', 'c.createdAt'),
+                        $subQb->expr()->andX(
+                            $subQb->expr()->eq('c2.createdAt', 'c.createdAt'),
+                            $subQb->expr()->gt('c2.id', 'c.id'),
+                        ),
+                    ),
+                );
+
+            $qb->andWhere($qb->expr()->not($qb->expr()->exists($subQb->getDQL())));
+        }
 
         if ($dto->filter->status) {
             $qb->andWhere('c.status = :status')

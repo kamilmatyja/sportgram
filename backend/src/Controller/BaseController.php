@@ -17,7 +17,7 @@ class BaseController extends AbstractController
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Get(
         summary: 'Swagger ui - endpoint for public',
-        tags: ['default'],
+        tags: ['base'],
     )]
     final public function swagger(): Response
     {
@@ -28,7 +28,7 @@ class BaseController extends AbstractController
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Get(
         summary: 'Swagger json - endpoint for public',
-        tags: ['default'],
+        tags: ['base'],
     )]
     final public function swaggerJson(): Response
     {
@@ -39,7 +39,7 @@ class BaseController extends AbstractController
     #[IsGranted('PUBLIC_ACCESS')]
     #[OA\Get(
         summary: 'Health check - endpoint for public',
-        tags: ['default'],
+        tags: ['base'],
         responses: [new Ok()],
     )]
     final public function health(): Response

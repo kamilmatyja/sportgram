@@ -19,6 +19,7 @@ import {
     Image,
     Tooltip,
     Skeleton,
+    Container,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -32,6 +33,7 @@ import {
     storyService,
     userService,
     type StoryResource,
+    type FeedResource,
     type UserResource,
     type FeedReactionResource,
 } from '../api/services';
@@ -42,6 +44,7 @@ import { EmptyState } from '../components/EmptyState';
 import { openConfirmActionModal } from '../utils/confirmModal';
 import { FeedReactionEnum } from '../enums/FeedReactionEnum';
 import { fileToBase64, formatImageSrc } from '../utils/imageUtils';
+import { formatDateTime } from '../utils/date';
 
 export default function Home() {
     const { t } = useTranslation();
@@ -58,11 +61,26 @@ export default function Home() {
     const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
     const [storyViewerOpened, setStoryViewerOpened] = useState(false);
 
-    // New feed input
+    // Story edit modal
+    const [editingStory, setEditingStory] = useState<StoryResource | null>(null);
+    const [editStoryOpened, { open: openEditStoryModal, close: closeEditStoryModal }] = useDisclosure(false);
+    const [editStoryText, setEditStoryText] = useState('');
+    const [editStoryPhoto, setEditStoryPhoto] = useState<File | null>(null);
+    const [editStoryFieldErrors, setEditStoryFieldErrors] = useState<Record<string, string>>({});
+
+    // Feed creation modal
+    const [feedOpened, { open: openFeedModal, close: closeFeedModal }] = useDisclosure(false);
     const [feedText, setFeedText] = useState('');
     const [feedPhoto, setFeedPhoto] = useState<File | null>(null);
     const [feedFieldErrors, setFeedFieldErrors] = useState<Record<string, string>>({});
     const [storyFieldErrors, setStoryFieldErrors] = useState<Record<string, string>>({});
+
+    // Feed edit modal
+    const [editingFeed, setEditingFeed] = useState<FeedResource | null>(null);
+    const [editFeedOpened, { open: openEditFeedModal, close: closeEditFeedModal }] = useDisclosure(false);
+    const [editFeedText, setEditFeedText] = useState('');
+    const [editFeedPhoto, setEditFeedPhoto] = useState<File | null>(null);
+    const [editFeedFieldErrors, setEditFeedFieldErrors] = useState<Record<string, string>>({});
 
     // Active comments collapse for feeds
     const [openCommentsFeedId, setOpenCommentsFeedId] = useState<string | null>(null);
@@ -178,6 +196,7 @@ export default function Home() {
             setFeedText('');
             setFeedPhoto(null);
             setFeedFieldErrors({});
+            closeFeedModal();
             queryClient.invalidateQueries({ queryKey: ['feeds'] });
             notifications.show({ title: t('feeds'), message: t('feedAdded'), color: 'green' });
         },
@@ -187,6 +206,42 @@ export default function Home() {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
+
+    // Edit feed mutation
+    const updateFeedMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingFeed) return;
+            let photoStr = editingFeed.photo;
+            if (editFeedPhoto) {
+                photoStr = await fileToBase64(editFeedPhoto);
+            }
+            await feedService.updateFeed(editingFeed.id, {
+                text: editFeedText,
+                photo: photoStr ?? '',
+            });
+        },
+        onSuccess: () => {
+            closeEditFeedModal();
+            setEditingFeed(null);
+            setEditFeedPhoto(null);
+            setEditFeedFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifications.show({ title: t('feeds'), message: t('feedUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditFeedFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const handleOpenEditFeed = (feed: FeedResource) => {
+        setEditingFeed(feed);
+        setEditFeedText(feed.text || '');
+        setEditFeedPhoto(null);
+        setEditFeedFieldErrors({});
+        openEditFeedModal();
+    };
 
     // Add story mutation
     const createStoryMutation = useMutation({
@@ -209,6 +264,67 @@ export default function Home() {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
         },
     });
+
+    // Edit story mutation
+    const updateStoryMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingStory) return;
+            let photoStr = editingStory.photo;
+            if (editStoryPhoto) {
+                photoStr = await fileToBase64(editStoryPhoto);
+            }
+            await storyService.updateStory(editingStory.id, {
+                text: editStoryText,
+                photo: photoStr ?? '',
+            });
+        },
+        onSuccess: () => {
+            closeEditStoryModal();
+            setEditingStory(null);
+            setEditStoryPhoto(null);
+            setEditStoryFieldErrors({});
+            queryClient.invalidateQueries({ queryKey: ['stories'] });
+            notifications.show({ title: t('stories'), message: t('storyUpdated'), color: 'green' });
+        },
+        onError: (err) => {
+            const fe = extractFieldErrors(err);
+            setEditStoryFieldErrors(fe);
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const handleOpenEditStory = (story: StoryResource) => {
+        setEditingStory(story);
+        setEditStoryText(story.text || '');
+        setEditStoryPhoto(null);
+        setEditStoryFieldErrors({});
+        openEditStoryModal();
+    };
+
+    // Delete story mutation
+    const deleteStoryMutation = useMutation({
+        mutationFn: async (id: string) => {
+            await storyService.deleteStory(id);
+        },
+        onSuccess: () => {
+            setStoryViewerOpened(false);
+            queryClient.invalidateQueries({ queryKey: ['stories'] });
+            notifications.show({ title: t('stories'), message: t('storyDeleted'), color: 'green' });
+        },
+        onError: (err) => {
+            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+        },
+    });
+
+    const handleDeleteStory = (id: string) => {
+        openConfirmActionModal({
+            title: t('confirmDeleteTitle'),
+            message: t('confirmDeleteMessage'),
+            confirmLabel: t('delete'),
+            cancelLabel: t('cancel'),
+            onConfirm: () => deleteStoryMutation.mutate(id),
+        });
+    };
 
     // Delete feed mutation
     const deleteFeedMutation = useMutation({
@@ -345,12 +461,12 @@ export default function Home() {
     // Guest view
     if (!isAuthenticated) {
         return (
-            <Stack align="center" justify="center" py={60}>
-                <Paper withBorder p={40} radius="lg" shadow="md" maw={520} ta="center" mx="auto">
+            <Container size="xs" py="xl">
+                <Paper withBorder shadow="sm" p="xl" radius="md" ta="center">
                     <Box mb="md">
                         <RunnerLogo size={64} />
                     </Box>
-                    <Title order={1} mb="sm">
+                    <Title order={2} mb="sm">
                         {t('guestHomeTitle')}
                     </Title>
                     <Text c="dimmed" size="md" mb="xl">
@@ -365,7 +481,7 @@ export default function Home() {
                         </Button>
                     </Group>
                 </Paper>
-            </Stack>
+            </Container>
         );
     }
 
@@ -382,6 +498,16 @@ export default function Home() {
                             </Avatar>
                             <Text size="xs" lineClamp={1}>
                                 {t('addStory')}
+                            </Text>
+                        </Stack>
+
+                        {/* Add Feed Button */}
+                        <Stack align="center" gap={4} className="pointer" onClick={openFeedModal} miw={64}>
+                            <Avatar radius="xl" size="lg" variant="light">
+                                <IconPlus size={24} />
+                            </Avatar>
+                            <Text size="xs" lineClamp={1}>
+                                {t('addFeed')}
                             </Text>
                         </Stack>
 
@@ -418,49 +544,6 @@ export default function Home() {
                 </ScrollArea>
             </Card>
 
-            {/* Create Feed Card */}
-            <Paper withBorder p="md" radius="md" shadow="xs">
-                <Stack gap="sm">
-                    <Textarea
-                        label={t('feeds')}
-                        required
-                        placeholder={t('whatIsOnYourMind')}
-                        autosize
-                        minRows={2}
-                        value={feedText}
-                        error={feedFieldErrors.text}
-                        onChange={(e) => {
-                            setFeedText(e.currentTarget.value);
-                            if (feedFieldErrors.text) setFeedFieldErrors({ ...feedFieldErrors, text: '' });
-                        }}
-                    />
-
-                    <Group justify="space-between" align="flex-end">
-                        <FileInput
-                            label={t('photo')}
-                            required
-                            leftSection={<IconPhoto size={16} />}
-                            placeholder={t('selectPhoto')}
-                            accept="image/*"
-                            size="xs"
-                            value={feedPhoto}
-                            onChange={setFeedPhoto}
-                            clearable
-                            maw={200}
-                        />
-
-                        <Button
-                            size="xs"
-                            loading={createFeedMutation.isPending}
-                            disabled={createFeedMutation.isPending || !feedText.trim() || !feedPhoto}
-                            onClick={() => createFeedMutation.mutate()}
-                        >
-                            {t('send')}
-                        </Button>
-                    </Group>
-                </Stack>
-            </Paper>
-
             {/* Feeds stream */}
             <Stack gap="md">
                 {feedsLoading ? (
@@ -478,12 +561,12 @@ export default function Home() {
                         </Card>
                     ))
                 ) : feedsData?.length === 0 ? (
-                    <EmptyState title={t('noMoreFeeds')} />
+                    <EmptyState title={t('noData')} />
                 ) : (
                     feedsData?.map((feed) => {
                         const author =
                             usersMap[feed.userId] ?? (currentUser?.id === feed.userId ? currentUser : undefined);
-                        const isOwner = currentUser?.id === feed.userId || isAdmin;
+                        const isFeedOwner = currentUser?.id === feed.userId;
                         const commentsOpen = openCommentsFeedId === feed.id;
 
                         // Reaction counts
@@ -518,25 +601,37 @@ export default function Home() {
                                                 {author ? `${author.firstName} ${author.lastName}` : feed.userId}
                                             </Text>
                                             <Text size="xs" c="dimmed">
-                                                {feed.createdAt ? new Date(feed.createdAt).toLocaleString() : ''}
+                                                {formatDateTime(feed.createdAt)}
                                             </Text>
                                         </Box>
                                     </Group>
 
-                                    {isOwner && (
-                                        <Tooltip label={t('delete')} withArrow>
-                                            <ActionIcon
-                                                variant="light"
-                                                color="red"
-                                                size={30}
-                                                onClick={() => handleDeleteFeed(feed.id)}
-                                                loading={deleteFeedMutation.isPending}
-                                                disabled={deleteFeedMutation.isPending}
-                                                aria-label={t('delete')}
-                                            >
-                                                <IconTrash size={16} />
-                                            </ActionIcon>
-                                        </Tooltip>
+                                    {isFeedOwner && (
+                                        <Group gap="xs">
+                                            <Tooltip label={t('editFeed')} withArrow>
+                                                <ActionIcon
+                                                    variant="light"
+                                                    size={30}
+                                                    onClick={() => handleOpenEditFeed(feed)}
+                                                    aria-label={t('editFeed')}
+                                                >
+                                                    <IconEdit size={16} />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                            <Tooltip label={t('delete')} withArrow>
+                                                <ActionIcon
+                                                    variant="light"
+                                                    color="red"
+                                                    size={30}
+                                                    onClick={() => handleDeleteFeed(feed.id)}
+                                                    loading={deleteFeedMutation.isPending}
+                                                    disabled={deleteFeedMutation.isPending}
+                                                    aria-label={t('delete')}
+                                                >
+                                                    <IconTrash size={16} />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        </Group>
                                     )}
                                 </Group>
 
@@ -604,7 +699,7 @@ export default function Home() {
                                             const cAuthor =
                                                 usersMap[c.userId] ??
                                                 (currentUser?.id === c.userId ? currentUser : undefined);
-                                            const canManageComment = currentUser?.id === c.userId || isAdmin;
+                                            const canManageComment = currentUser?.id === c.userId;
                                             const isEditing = editingCommentId === c.id;
 
                                             return (
@@ -618,9 +713,7 @@ export default function Home() {
                                                         </Text>
                                                         <Group gap={6}>
                                                             <Text size="xs" c="dimmed">
-                                                                {c.createdAt
-                                                                    ? new Date(c.createdAt).toLocaleTimeString()
-                                                                    : ''}
+                                                                {formatDateTime(c.createdAt)}
                                                             </Text>
                                                             {canManageComment && !isEditing && (
                                                                 <Group gap={4}>
@@ -754,7 +847,7 @@ export default function Home() {
                                                     })
                                                 }
                                             >
-                                                {t('send')}
+                                                {t('add')}
                                             </Button>
                                         </Group>
                                     </Stack>
@@ -771,6 +864,8 @@ export default function Home() {
                 onClose={() => setStoryViewerOpened(false)}
                 groups={userStoryGroups}
                 initialGroupIndex={selectedGroupIndex}
+                onEdit={handleOpenEditStory}
+                onDelete={handleDeleteStory}
             />
 
             {/* Story Creation Modal */}
@@ -778,7 +873,6 @@ export default function Home() {
                 <Stack gap="sm">
                     <Textarea
                         label={t('text')}
-                        placeholder={t('storyDescriptionPlaceholder')}
                         value={storyText}
                         error={storyFieldErrors.text}
                         onChange={(e) => setStoryText(e.currentTarget.value)}
@@ -786,7 +880,7 @@ export default function Home() {
                     />
                     <FileInput
                         label={t('photo')}
-                        placeholder={t('selectPhotoPlaceholder')}
+                        placeholder={t('selectPhoto')}
                         accept="image/*"
                         value={storyPhoto}
                         error={storyFieldErrors.photo}
@@ -801,6 +895,122 @@ export default function Home() {
                         onClick={() => createStoryMutation.mutate()}
                     >
                         {t('add')}
+                    </Button>
+                </Stack>
+            </Modal>
+
+            {/* Story Edit Modal */}
+            <Modal
+                opened={editStoryOpened}
+                onClose={closeEditStoryModal}
+                title={t('editStory')}
+                size="lg"
+                zIndex={1000}
+            >
+                <Stack gap="sm">
+                    <Textarea
+                        label={t('text')}
+                        value={editStoryText}
+                        error={editStoryFieldErrors.text}
+                        onChange={(e) => setEditStoryText(e.currentTarget.value)}
+                        required
+                    />
+                    <FileInput
+                        label={t('photo')}
+                        placeholder={t('selectPhoto')}
+                        description={t('leaveEmptyToKeep')}
+                        accept="image/*"
+                        leftSection={<IconPhoto size={16} />}
+                        value={editStoryPhoto}
+                        error={editStoryFieldErrors.photo}
+                        onChange={setEditStoryPhoto}
+                        clearable
+                    />
+                    <Button
+                        mt="md"
+                        loading={updateStoryMutation.isPending}
+                        disabled={updateStoryMutation.isPending || !editStoryText.trim()}
+                        onClick={() => updateStoryMutation.mutate()}
+                    >
+                        {t('save')}
+                    </Button>
+                </Stack>
+            </Modal>
+
+            {/* Feed Creation Modal */}
+            <Modal opened={feedOpened} onClose={closeFeedModal} title={t('addFeed')} size="lg">
+                <Stack gap="sm">
+                    <Textarea
+                        label={t('text')}
+                        required
+                        autosize
+                        minRows={2}
+                        value={feedText}
+                        error={feedFieldErrors.text}
+                        onChange={(e) => {
+                            setFeedText(e.currentTarget.value);
+                            if (feedFieldErrors.text) setFeedFieldErrors({ ...feedFieldErrors, text: '' });
+                        }}
+                    />
+
+                    <FileInput
+                        label={t('photo')}
+                        required
+                        leftSection={<IconPhoto size={16} />}
+                        placeholder={t('selectPhoto')}
+                        accept="image/*"
+                        value={feedPhoto}
+                        error={feedFieldErrors.photo}
+                        onChange={setFeedPhoto}
+                        clearable
+                    />
+
+                    <Button
+                        mt="md"
+                        loading={createFeedMutation.isPending}
+                        disabled={createFeedMutation.isPending || !feedText.trim() || !feedPhoto}
+                        onClick={() => createFeedMutation.mutate()}
+                    >
+                        {t('add')}
+                    </Button>
+                </Stack>
+            </Modal>
+
+            {/* Feed Edit Modal */}
+            <Modal opened={editFeedOpened} onClose={closeEditFeedModal} title={t('editFeed')} size="lg">
+                <Stack gap="sm">
+                    <Textarea
+                        label={t('text')}
+                        required
+                        autosize
+                        minRows={2}
+                        value={editFeedText}
+                        error={editFeedFieldErrors.text}
+                        onChange={(e) => {
+                            setEditFeedText(e.currentTarget.value);
+                            if (editFeedFieldErrors.text) setEditFeedFieldErrors({ ...editFeedFieldErrors, text: '' });
+                        }}
+                    />
+
+                    <FileInput
+                        label={t('photo')}
+                        leftSection={<IconPhoto size={16} />}
+                        placeholder={t('selectPhoto')}
+                        description={t('leaveEmptyToKeep')}
+                        accept="image/*"
+                        value={editFeedPhoto}
+                        error={editFeedFieldErrors.photo}
+                        onChange={setEditFeedPhoto}
+                        clearable
+                    />
+
+                    <Button
+                        mt="md"
+                        loading={updateFeedMutation.isPending}
+                        disabled={updateFeedMutation.isPending || !editFeedText.trim()}
+                        onClick={() => updateFeedMutation.mutate()}
+                    >
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>

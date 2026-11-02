@@ -24,16 +24,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class StatisticFilterDto
 {
-    /** @var Uuid[] */
-    #[Assert\NotBlank]
+    /** @var Uuid[]|null */
     #[Assert\All([
         new Assert\NotBlank(),
         new Assert\Uuid(),
         new EntityExistsField(entity: User::class),
     ])]
-    #[Assert\Count(min: 1)]
     #[Assert\Unique]
-    public array $userIds = [];
+    public ?array $userIds = null;
 
     #[Assert\Choice(callback: [DisciplineEnum::class, 'cases'])]
     public ?DisciplineEnum $discipline = null;
