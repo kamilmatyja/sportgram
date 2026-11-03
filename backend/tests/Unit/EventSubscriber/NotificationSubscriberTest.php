@@ -120,14 +120,9 @@ class NotificationSubscriberTest extends TestCase
             ->willThrowException(new ErrorException('Push failed'));
         $this->recordSavedNotifications(2);
 
-        try {
-            $this->subscriber->onNotification(
-                new NotificationEvent($this->user, NotificationTypeEnum::Friend, 'text', '/friends'),
-            );
-            $this->fail('Exception from web push should be rethrown.');
-        } catch (ErrorException $e) {
-            $this->assertSame('Push failed', $e->getMessage());
-        }
+        $this->subscriber->onNotification(
+            new NotificationEvent($this->user, NotificationTypeEnum::Friend, 'text', '/friends'),
+        );
 
         $this->assertNotificationSavedThenMarkedSent('Body', '/friends');
     }

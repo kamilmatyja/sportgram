@@ -31,10 +31,7 @@ readonly class NotificationSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * @throws RandomException
-     * @throws ErrorException
-     */
+    /** @throws RandomException|ErrorException */
     final public function onNotification(NotificationEvent $event): void
     {
         $locale = $event->getUser()->language->getLocale();

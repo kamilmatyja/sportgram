@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
     Stack,
     Card,
@@ -24,8 +24,9 @@ import {
     Menu,
     Tooltip,
     Center,
+    Loader,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useInViewport } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
     IconEdit,
@@ -40,7 +41,7 @@ import {
     IconCheck,
     IconX,
 } from '@tabler/icons-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
@@ -155,37 +156,86 @@ export default function UserProfile() {
     const canViewPrivateContent = isOwner || isAdmin || isAcceptedFriend;
 
     // Fetch user feeds
-    const { data: userFeedsData, isLoading: feedsLoading } = useQuery({
+    const {
+        data: userFeedsInfiniteData,
+        isLoading: feedsLoading,
+        fetchNextPage: fetchNextFeedsPage,
+        hasNextPage: hasMoreFeeds,
+        isFetchingNextPage: isFetchingMoreFeeds,
+    } = useInfiniteQuery({
         queryKey: ['user-profile-feeds', user?.id],
-        queryFn: async () => {
-            if (!user?.id) return [];
-            const res = await feedService.getFeeds({
+        queryFn: async ({ pageParam = 1 }) => {
+            if (!user?.id) return { data: [], pagination: {} };
+            return await feedService.getFeeds({
                 filter: { userId: user.id },
-                page: 1,
-                limit: 30,
+                page: pageParam,
+                limit: 20,
                 sort: 'createdAt:desc',
                 'include[]': ['feedComments', 'feedReactions'],
             });
-            return res.data ?? [];
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            const p = lastPage.pagination;
+            if (p?.page && p?.pages && p.page < p.pages) {
+                return p.page + 1;
+            }
+            return undefined;
         },
         enabled: !!user?.id && canViewPrivateContent,
     });
 
+    const userFeedsData = useMemo(() => {
+        return userFeedsInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
+    }, [userFeedsInfiniteData]);
+
+    const { ref: feedsBottomRef, inViewport: feedsBottomInViewport } = useInViewport();
+
+    useEffect(() => {
+        if (feedsBottomInViewport && hasMoreFeeds && !isFetchingMoreFeeds) {
+            fetchNextFeedsPage();
+        }
+    }, [feedsBottomInViewport, hasMoreFeeds, isFetchingMoreFeeds, fetchNextFeedsPage]);
+
     // Fetch user stories
-    const { data: userStoriesData } = useQuery({
+    const {
+        data: userStoriesInfiniteData,
+        fetchNextPage: fetchNextStoriesPage,
+        hasNextPage: hasMoreStories,
+        isFetchingNextPage: isFetchingMoreStories,
+    } = useInfiniteQuery({
         queryKey: ['user-profile-stories', user?.id],
-        queryFn: async () => {
-            if (!user?.id) return [];
-            const res = await storyService.getStories({
+        queryFn: async ({ pageParam = 1 }) => {
+            if (!user?.id) return { data: [], pagination: {} };
+            return await storyService.getStories({
                 filter: { userId: user.id },
-                page: 1,
+                page: pageParam,
                 limit: 20,
                 sort: 'createdAt:desc',
             });
-            return res.data ?? [];
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            const p = lastPage.pagination;
+            if (p?.page && p?.pages && p.page < p.pages) {
+                return p.page + 1;
+            }
+            return undefined;
         },
         enabled: !!user?.id && canViewPrivateContent,
     });
+
+    const userStoriesData = useMemo(() => {
+        return userStoriesInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
+    }, [userStoriesInfiniteData]);
+
+    const { ref: storiesEndRef, inViewport: storiesEndInViewport } = useInViewport();
+
+    useEffect(() => {
+        if (storiesEndInViewport && hasMoreStories && !isFetchingMoreStories) {
+            fetchNextStoriesPage();
+        }
+    }, [storiesEndInViewport, hasMoreStories, isFetchingMoreStories, fetchNextStoriesPage]);
 
     const userStoryGroups = useMemo<UserStoriesGroup[]>(() => {
         if (!userStoriesData || userStoriesData.length === 0 || !user) return [];
@@ -948,7 +998,7 @@ export default function UserProfile() {
 
                     <Group gap="xs" mt="md">
                         {user.roles?.map((r) => (
-                            <Badge key={r.id} color="gray" variant="light">
+                            <Badge key={r.id} color={primaryColor} variant="outline">
                                 {r.role === RoleEnum.ADMINISTRATOR
                                     ? t('roles.administrator')
                                     : r.role === RoleEnum.ORGANIZER
@@ -957,7 +1007,7 @@ export default function UserProfile() {
                             </Badge>
                         ))}
                         {user.disciplines?.map((d) => (
-                            <Badge key={d.id} color={primaryColor} variant="outline">
+                            <Badge key={d.id} variant="light">
                                 {DisciplineEnum.getOptions(t).find((o) => o.value === d.discipline)?.label ??
                                     d.discipline}
                             </Badge>
@@ -1027,6 +1077,13 @@ export default function UserProfile() {
                                         {t('noData')}
                                     </Text>
                                 )}
+
+                                {isFetchingMoreStories && (
+                                    <Center px="md">
+                                        <Loader size="sm" />
+                                    </Center>
+                                )}
+                                <div ref={storiesEndRef} style={{ width: 1, minWidth: 1, flexShrink: 0 }} />
                             </Group>
                         </ScrollArea>
                     </Card>
@@ -1332,6 +1389,20 @@ export default function UserProfile() {
                                 );
                             })
                         )}
+
+                        {/* Infinite scroll sentinel and Load More button */}
+                        {hasMoreFeeds && (
+                            <Center my="md">
+                                <Button
+                                    variant="light"
+                                    onClick={() => fetchNextFeedsPage()}
+                                    loading={isFetchingMoreFeeds}
+                                >
+                                    {t('loadMore')}
+                                </Button>
+                            </Center>
+                        )}
+                        <div ref={feedsBottomRef} style={{ height: 1 }} />
                     </Stack>
                 </>
             )}

@@ -39,9 +39,7 @@ class GenerateAppSecretCommand extends Command
         return Command::SUCCESS;
     }
 
-    /**
-     * @param array<string, string> $variables
-     */
+    /** @param array<string, string> $variables */
     private function updateEnvFile(string $filePath, array $variables, SymfonyStyle $io): void
     {
         if (! file_exists($filePath)) {

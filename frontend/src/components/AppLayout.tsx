@@ -11,7 +11,11 @@ import {
     Container,
     SegmentedControl,
     UnstyledButton,
+    Burger,
+    Drawer,
+    Stack,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import {
     IconSun,
     IconMoon,
@@ -38,6 +42,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     const { isAuthenticated, currentUser, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
 
     const handleNav = (path: string) => {
         navigate(path);
@@ -58,7 +63,16 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <Container size="lg" h="100%">
                     <Group h="100%" justify="space-between" wrap="nowrap">
                         {/* Left: Brand + Navigation links */}
-                        <Group gap="lg" wrap="nowrap">
+                        <Group gap="sm" wrap="nowrap">
+                            {isAuthenticated && (
+                                <Burger
+                                    opened={drawerOpened}
+                                    onClick={toggleDrawer}
+                                    hiddenFrom="sm"
+                                    size="sm"
+                                    aria-label="Toggle navigation"
+                                />
+                            )}
                             <UnstyledButton className="pointer" onClick={() => handleNav('/')}>
                                 <Group gap="xs" wrap="nowrap">
                                     <RunnerLogo size={32} />
@@ -163,6 +177,43 @@ export function AppLayout({ children }: AppLayoutProps) {
                     {children}
                 </Container>
             </AppShell.Main>
+
+            {isAuthenticated && (
+                <Drawer
+                    opened={drawerOpened}
+                    onClose={closeDrawer}
+                    size="xs"
+                    title={
+                        <Group gap="xs">
+                            <RunnerLogo size={24} />
+                            <Text fw={700} size="md" c="var(--mantine-primary-color)">
+                                Sportgram
+                            </Text>
+                        </Group>
+                    }
+                    hiddenFrom="sm"
+                >
+                    <Stack gap="xs" mt="sm">
+                        {navItems.map((item) => {
+                            const isActive = location.pathname === item.path;
+                            return (
+                                <Button
+                                    key={item.path}
+                                    variant={isActive ? 'light' : 'subtle'}
+                                    justify="flex-start"
+                                    leftSection={item.icon}
+                                    onClick={() => {
+                                        handleNav(item.path);
+                                        closeDrawer();
+                                    }}
+                                >
+                                    {item.label}
+                                </Button>
+                            );
+                        })}
+                    </Stack>
+                </Drawer>
+            )}
         </AppShell>
     );
 }

@@ -33,9 +33,7 @@ readonly class GoalService
     ) {
     }
 
-    /**
-     * @throws DateMalformedStringException
-     */
+    /** @throws DateMalformedStringException */
     final public function create(GoalDto $dto): Uuid
     {
         /** @var User $user */
@@ -94,9 +92,7 @@ readonly class GoalService
         return $goal->id;
     }
 
-    /**
-     * @throws DateMalformedStringException
-     */
+    /** @throws DateMalformedStringException */
     final public function update(Uuid $goalId, GoalDto $dto): Uuid
     {
         $goal = $this->goalRepository->findById($goalId);

@@ -35,10 +35,7 @@ readonly class UserService
     ) {
     }
 
-    /**
-     * @throws DateMalformedStringException
-     * @throws RandomException
-     */
+    /** @throws DateMalformedStringException|RandomException */
     final public function create(UserCreateDto $dto): Uuid
     {
         $user = new User(
@@ -83,10 +80,7 @@ readonly class UserService
         return $user->id;
     }
 
-    /**
-     * @throws DateMalformedStringException
-     * @throws RandomException
-     */
+    /** @throws DateMalformedStringException|RandomException */
     final public function createNano(UserCreateNanoDto $dto): Uuid
     {
         $user = new User(
@@ -125,9 +119,7 @@ readonly class UserService
         return $user->id;
     }
 
-    /**
-     * @throws DateMalformedStringException
-     */
+    /** @throws DateMalformedStringException */
     final public function update(Uuid $userId, UserUpdateDto $dto): Uuid
     {
         if (! $this->authorizationChecker->isGranted(AssignAdminRoleVoter::ASSIGN_ADMIN_ROLE, $dto)) {

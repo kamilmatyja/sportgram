@@ -785,10 +785,14 @@ export default function PageDetails() {
                                                 </Group>
                                             </Table.Td>
                                             <Table.Td>
-                                                <Text size="xs">{formatDateTime(ev.startedAt)}</Text>
+                                                <Text size="xs" c="dimmed">
+                                                    {formatDateTime(ev.startedAt)}
+                                                </Text>
                                             </Table.Td>
                                             <Table.Td>
-                                                <Text size="xs">{formatDateTime(ev.endedAt)}</Text>
+                                                <Text size="xs" c="dimmed">
+                                                    {formatDateTime(ev.endedAt)}
+                                                </Text>
                                             </Table.Td>
                                             <Table.Td>
                                                 <Badge color={evColor} variant="light">

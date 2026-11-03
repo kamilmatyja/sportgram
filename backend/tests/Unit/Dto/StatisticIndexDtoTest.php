@@ -19,12 +19,12 @@ class StatisticIndexDtoTest extends DtoTestCase
         $this->assertSame(10, $dto->limit);
         $this->assertSame('createdAt:desc', $dto->sort);
         $this->assertInstanceOf(StatisticFilterDto::class, $dto->filter);
-        $this->assertSame([], $dto->filter->userIds);
+        $this->assertNull($dto->filter->userIds);
     }
 
-    final public function testDefaultFilterRequiresUserIds(): void
+    final public function testDefaultFilterIsValid(): void
     {
-        $this->assertViolations(new StatisticIndexDto(), ['filter.userIds']);
+        $this->assertValid(new StatisticIndexDto());
     }
 
     final public function testEachInstanceHasOwnFilter(): void

@@ -351,11 +351,11 @@ export default function GoalDetails() {
                             {DisciplineEnum.getOptions(t).find((o) => o.value === goal.discipline)?.label ??
                                 goal.discipline}
                         </Badge>
-                        <Badge color="gray" variant="light">
+                        <Badge color={primaryColor} variant="outline">
                             {goal.distance} m
                         </Badge>
                         {goal.time && (
-                            <Badge color="gray" variant="light">
+                            <Badge color={primaryColor} variant="outline">
                                 {goal.time} s
                             </Badge>
                         )}

@@ -15,10 +15,10 @@ import {
     Menu,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconTrash, IconAdjustments } from '@tabler/icons-react';
+import { IconTrash, IconAdjustments, IconEye } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
     userService,
     notificationService,
@@ -33,6 +33,7 @@ import { NotificationStatusEnum } from '../../enums/NotificationStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { getErrorMessage } from '../../api/client';
 import { formatDateTime } from '../../utils/date';
+import { truncate } from '../../utils/text';
 
 export default function UserNotifications() {
     const { link } = useParams<{ link: string }>();
@@ -147,8 +148,8 @@ export default function UserNotifications() {
             key: 'text',
             header: t('text'),
             render: (n) => (
-                <Text size="sm" fw={n.status !== NotificationStatusEnum.READ ? 600 : 400}>
-                    {n.text}
+                <Text size="sm" fw={n.status !== NotificationStatusEnum.READ ? 600 : 400} title={n.text}>
+                    {truncate(n.text, 50)}
                 </Text>
             ),
         },
@@ -242,6 +243,20 @@ export default function UserNotifications() {
                 onResetFilters={handleResetFilters}
                 actions={(n) => (
                     <Group gap="xs" justify="flex-end" wrap="nowrap">
+                        {n.link && (
+                            <Tooltip label={t('details')} withArrow>
+                                <ActionIcon
+                                    component={Link}
+                                    to={n.link}
+                                    variant="light"
+                                    size={30}
+                                    aria-label={t('details')}
+                                >
+                                    <IconEye size={16} />
+                                </ActionIcon>
+                            </Tooltip>
+                        )}
+
                         <Menu shadow="md" width={160}>
                             <Menu.Target>
                                 <Tooltip label={t('changeStatus')} withArrow>

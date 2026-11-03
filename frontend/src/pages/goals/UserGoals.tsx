@@ -35,6 +35,7 @@ import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
+import { truncate } from '../../utils/text';
 
 export default function UserGoals() {
     const { link } = useParams<{ link: string }>();
@@ -310,13 +311,22 @@ export default function UserGoals() {
             header: t('title'),
             render: (g) => (
                 <div>
-                    <Text size="sm" fw={600}>
-                        {g.text}
+                    <Text size="sm" fw={600} title={g.text}>
+                        {truncate(g.text, 50)}
                     </Text>
                     <Text size="xs" c="dimmed">
                         @{g.link}
                     </Text>
                 </div>
+            ),
+        },
+        {
+            key: 'discipline',
+            header: t('discipline'),
+            render: (g) => (
+                <Badge variant="light">
+                    {DisciplineEnum.getOptions(t).find((o) => o.value === g.discipline)?.label ?? g.discipline}
+                </Badge>
             ),
         },
         {

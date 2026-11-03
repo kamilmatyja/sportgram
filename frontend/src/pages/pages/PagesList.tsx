@@ -327,7 +327,11 @@ export default function PagesList() {
         {
             key: 'createdAt',
             header: t('createdAt'),
-            render: (p) => <Text size="xs">{formatDate(p.createdAt)}</Text>,
+            render: (p) => (
+                <Text size="xs" c="dimmed">
+                    {formatDate(p.createdAt)}
+                </Text>
+            ),
         },
     ];
 

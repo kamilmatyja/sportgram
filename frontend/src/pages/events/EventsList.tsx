@@ -576,12 +576,20 @@ export default function EventsList() {
         {
             key: 'startedAt',
             header: t('startedAt'),
-            render: (ev) => <Text size="xs">{formatDateTime(ev.startedAt)}</Text>,
+            render: (ev) => (
+                <Text size="xs" c="dimmed">
+                    {formatDateTime(ev.startedAt)}
+                </Text>
+            ),
         },
         {
             key: 'endedAt',
             header: t('endedAt'),
-            render: (ev) => <Text size="xs">{formatDateTime(ev.endedAt)}</Text>,
+            render: (ev) => (
+                <Text size="xs" c="dimmed">
+                    {formatDateTime(ev.endedAt)}
+                </Text>
+            ),
         },
         {
             key: 'status',

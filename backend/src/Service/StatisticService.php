@@ -15,19 +15,13 @@ readonly class StatisticService
     ) {
     }
 
-    /**
-     * @throws DateMalformedStringException
-     * @throws Exception
-     */
+    /** @throws DateMalformedStringException|Exception */
     final public function indexRecords(StatisticIndexDto $dto): WindowPage
     {
         return $this->statisticRepository->findRecords($dto);
     }
 
-    /**
-     * @throws DateMalformedStringException
-     * @throws Exception
-     */
+    /** @throws DateMalformedStringException|Exception */
     final public function indexProgress(StatisticIndexDto $dto): WindowPage
     {
         return $this->statisticRepository->findProgress($dto);

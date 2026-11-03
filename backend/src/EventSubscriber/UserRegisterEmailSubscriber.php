@@ -27,9 +27,7 @@ readonly class UserRegisterEmailSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     */
+    /** @throws TransportExceptionInterface */
     final public function onUserRegisterEmail(UserRegisterEmailEvent $event): void
     {
         $user = $event->getUser();

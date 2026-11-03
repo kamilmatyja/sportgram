@@ -34,6 +34,7 @@ import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 import { formatDateTime } from '../../utils/date';
+import { truncate } from '../../utils/text';
 
 export default function UserFeeds() {
     const { link } = useParams<{ link: string }>();
@@ -238,8 +239,8 @@ export default function UserFeeds() {
             key: 'text',
             header: t('text'),
             render: (f) => (
-                <Text size="sm" lineClamp={2} fw={500}>
-                    {f.text}
+                <Text size="sm" fw={500} title={f.text}>
+                    {truncate(f.text, 50)}
                 </Text>
             ),
         },

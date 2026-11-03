@@ -20,9 +20,7 @@ readonly class RegisterService
     ) {
     }
 
-    /**
-     * @throws ValidatorException
-     */
+    /** @throws ValidatorException */
     final public function register(UserEmailDto $dto): Uuid
     {
         $user = $this->userRepository->findByEmail($dto->email);
@@ -53,9 +51,7 @@ readonly class RegisterService
         return $userRegister->id;
     }
 
-    /**
-     * @throws ValidatorException
-     */
+    /** @throws ValidatorException */
     final public function confirm(Uuid $userRegisterId, UserCodeDto $dto): Uuid
     {
         $userRegister = $this->userRegisterRepository->findById($userRegisterId);

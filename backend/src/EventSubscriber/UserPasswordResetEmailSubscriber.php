@@ -27,9 +27,7 @@ readonly class UserPasswordResetEmailSubscriber implements EventSubscriberInterf
         ];
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     */
+    /** @throws TransportExceptionInterface */
     final public function onUserPasswordResetEmail(UserPasswordResetEmailEvent $event): void
     {
         $user = $event->getUser();

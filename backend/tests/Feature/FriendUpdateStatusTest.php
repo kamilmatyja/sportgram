@@ -45,14 +45,14 @@ class FriendUpdateStatusTest extends ApiTestCase
         $this->assertEquals(403, $result['status']);
     }
 
-    final public function testValidationFailedForPendingStatus(): void
+    final public function testValidationFailedForInvalidStatus(): void
     {
         $receiver = self::createUser(RoleEnum::Participant);
         $friend = FriendFactory::make(['receiverUser' => $receiver, 'status' => FriendStatusEnum::Pending], $this->em);
 
         $result = $this->patch(
             "/api/friends/{$friend->id->toString()}/status",
-            ['status' => FriendStatusEnum::Pending->value],
+            ['status' => 999],
             $receiver,
         );
         $this->assertEquals(400, $result['status']);

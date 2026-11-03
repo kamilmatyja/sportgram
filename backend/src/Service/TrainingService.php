@@ -43,9 +43,7 @@ readonly class TrainingService
     ) {
     }
 
-    /**
-     * @throws DateMalformedStringException
-     */
+    /** @throws DateMalformedStringException */
     final public function create(TrainingDto $dto): Uuid
     {
         /** @var User $user */
@@ -144,9 +142,7 @@ readonly class TrainingService
         return $training->id;
     }
 
-    /**
-     * @throws DateMalformedStringException
-     */
+    /** @throws DateMalformedStringException */
     final public function update(Uuid $trainingId, TrainingDto $dto): Uuid
     {
         $training = $this->trainingRepository->findById($trainingId);

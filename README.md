@@ -82,14 +82,22 @@ npm run dev
 
 ## Migracje
 
-### Baza aplikacyjna (dev)
+### Automatycznie
+
+```bash
+make migrate
+```
+
+### Ręcznie
+
+#### Baza aplikacyjna
 
 ```bash
 docker compose exec php php bin/console doctrine:migrations:diff
 docker compose exec php php bin/console doctrine:migrations:migrate -n
 ```
 
-### Baza testowa
+#### Baza testowa
 
 ```bash
 docker compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
@@ -97,6 +105,14 @@ docker compose exec php php bin/console doctrine:migrations:migrate --env=test -
 ```
 
 ## Testy
+
+### Automatycznie
+
+```bash
+make test
+```
+
+### Ręcznie
 
 ```bash
 docker compose exec php vendor/bin/phpunit
@@ -120,8 +136,17 @@ docker compose exec php php bin/console app:seed --fresh
 
 ## Formatowanie kodu
 
+### Automatycznie
+
+```bash
+make format
+```
+
+### Ręcznie
+
 ```bash
 docker compose exec php vendor/bin/php-cs-fixer fix
+cd frontend
 npm run fix
 ```
 

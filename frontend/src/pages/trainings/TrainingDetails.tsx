@@ -709,10 +709,10 @@ export default function TrainingDetails() {
                                         <Paper key={dist.id} p="sm" radius="sm" withBorder>
                                             <Group justify="space-between" mb="xs">
                                                 <Group gap="xs">
-                                                    <Badge color="gray" variant="light">
+                                                    <Badge color={primaryColor} variant="outline">
                                                         {dist.distance} m
                                                     </Badge>
-                                                    <Badge color="gray" variant="light">
+                                                    <Badge color={primaryColor} variant="outline">
                                                         {dist.time} s
                                                     </Badge>
                                                 </Group>

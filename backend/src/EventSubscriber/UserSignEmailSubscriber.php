@@ -27,9 +27,7 @@ readonly class UserSignEmailSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     */
+    /** @throws TransportExceptionInterface */
     final public function onUserSignEmail(UserSignEmailEvent $event): void
     {
         $user = $event->getUser();

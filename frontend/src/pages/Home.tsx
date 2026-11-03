@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
     Card,
     Title,
@@ -20,11 +20,13 @@ import {
     Tooltip,
     Skeleton,
     Container,
+    Center,
+    Loader,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useInViewport } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus, IconMessageCircle, IconTrash, IconPhoto, IconEdit, IconCheck, IconX } from '@tabler/icons-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../api/client';
@@ -91,29 +93,82 @@ export default function Home() {
     const [editingCommentText, setEditingCommentText] = useState('');
 
     // Fetch feeds with comments and reactions included
-    const { data: feedsData, isLoading: feedsLoading } = useQuery({
+    const {
+        data: feedsInfiniteData,
+        isLoading: feedsLoading,
+        fetchNextPage: fetchNextFeedsPage,
+        hasNextPage: hasMoreFeeds,
+        isFetchingNextPage: isFetchingMoreFeeds,
+    } = useInfiniteQuery({
         queryKey: ['feeds'],
-        queryFn: async () => {
-            const res = await feedService.getFeeds({
-                page: 1,
-                limit: 30,
+        queryFn: async ({ pageParam = 1 }) => {
+            return await feedService.getFeeds({
+                page: pageParam,
+                limit: 20,
                 sort: 'createdAt:desc',
                 'include[]': ['feedComments', 'feedReactions'],
             });
-            return res.data ?? [];
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            const p = lastPage.pagination;
+            if (p?.page && p?.pages && p.page < p.pages) {
+                return p.page + 1;
+            }
+            return undefined;
         },
         enabled: isAuthenticated,
     });
 
+    const feedsData = useMemo(() => {
+        return feedsInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
+    }, [feedsInfiniteData]);
+
+    const { ref: feedsBottomRef, inViewport: feedsBottomInViewport } = useInViewport();
+
+    useEffect(() => {
+        if (feedsBottomInViewport && hasMoreFeeds && !isFetchingMoreFeeds) {
+            fetchNextFeedsPage();
+        }
+    }, [feedsBottomInViewport, hasMoreFeeds, isFetchingMoreFeeds, fetchNextFeedsPage]);
+
     // Fetch stories
-    const { data: storiesData } = useQuery({
+    const {
+        data: storiesInfiniteData,
+        fetchNextPage: fetchNextStoriesPage,
+        hasNextPage: hasMoreStories,
+        isFetchingNextPage: isFetchingMoreStories,
+    } = useInfiniteQuery({
         queryKey: ['stories'],
-        queryFn: async () => {
-            const res = await storyService.getStories({ page: 1, limit: 20, sort: 'createdAt:desc' });
-            return res.data ?? [];
+        queryFn: async ({ pageParam = 1 }) => {
+            return await storyService.getStories({
+                page: pageParam,
+                limit: 20,
+                sort: 'createdAt:desc',
+            });
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            const p = lastPage.pagination;
+            if (p?.page && p?.pages && p.page < p.pages) {
+                return p.page + 1;
+            }
+            return undefined;
         },
         enabled: isAuthenticated,
     });
+
+    const storiesData = useMemo(() => {
+        return storiesInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
+    }, [storiesInfiniteData]);
+
+    const { ref: storiesEndRef, inViewport: storiesEndInViewport } = useInViewport();
+
+    useEffect(() => {
+        if (storiesEndInViewport && hasMoreStories && !isFetchingMoreStories) {
+            fetchNextStoriesPage();
+        }
+    }, [storiesEndInViewport, hasMoreStories, isFetchingMoreStories, fetchNextStoriesPage]);
 
     // Collect user IDs from feeds, comments, reactions and stories
     const relatedUserIds = useMemo(() => {
@@ -540,6 +595,13 @@ export default function Home() {
                                 </Stack>
                             );
                         })}
+
+                        {isFetchingMoreStories && (
+                            <Center px="md">
+                                <Loader size="sm" />
+                            </Center>
+                        )}
+                        <div ref={storiesEndRef} style={{ width: 1, minWidth: 1, flexShrink: 0 }} />
                     </Group>
                 </ScrollArea>
             </Card>
@@ -856,6 +918,16 @@ export default function Home() {
                         );
                     })
                 )}
+
+                {/* Infinite scroll sentinel and Load More button */}
+                {hasMoreFeeds && (
+                    <Center my="md">
+                        <Button variant="light" onClick={() => fetchNextFeedsPage()} loading={isFetchingMoreFeeds}>
+                            {t('loadMore')}
+                        </Button>
+                    </Center>
+                )}
+                <div ref={feedsBottomRef} style={{ height: 1 }} />
             </Stack>
 
             {/* Story Viewer Modal */}

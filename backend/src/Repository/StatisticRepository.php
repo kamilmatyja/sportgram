@@ -18,28 +18,19 @@ class StatisticRepository extends BaseRepository
         parent::__construct($registry, TrainingDisciplineDistance::class);
     }
 
-    /**
-     * @throws Exception
-     * @throws DateMalformedStringException
-     */
+    /** @throws Exception|DateMalformedStringException */
     final public function findRecords(StatisticIndexDto $dto): WindowPage
     {
         return $this->findStatistics($dto, true);
     }
 
-    /**
-     * @throws Exception
-     * @throws DateMalformedStringException
-     */
+    /** @throws Exception|DateMalformedStringException */
     final public function findProgress(StatisticIndexDto $dto): WindowPage
     {
         return $this->findStatistics($dto, false);
     }
 
-    /**
-     * @throws Exception
-     * @throws DateMalformedStringException
-     */
+    /** @throws Exception|DateMalformedStringException */
     private function findStatistics(
         StatisticIndexDto $dto,
         bool $recordsOnly,

@@ -33,10 +33,7 @@ readonly class SignService
     ) {
     }
 
-    /**
-     * @throws ValidatorException
-     * @throws RandomException
-     */
+    /** @throws ValidatorException|RandomException */
     final public function sign(UserSignDto $dto): Uuid
     {
         $user = $this->userRepository->findByEmail($dto->email);
@@ -76,9 +73,7 @@ readonly class SignService
         return $userSign->id;
     }
 
-    /**
-     * @throws ValidatorException
-     */
+    /** @throws ValidatorException */
     final public function confirm(Uuid $userSignId, UserCodeDto $dto): string
     {
         $userSign = $this->userSignRepository->findById($userSignId);
@@ -127,9 +122,7 @@ readonly class SignService
         return $userSign->id;
     }
 
-    /**
-     * @throws ValidatorException
-     */
+    /** @throws ValidatorException */
     final public function refresh(Uuid $userSignId): string
     {
         /** @var User $user */

@@ -26,10 +26,7 @@ readonly class PasswordResetService
     ) {
     }
 
-    /**
-     * @throws ValidatorException
-     * @throws RandomException
-     */
+    /** @throws ValidatorException|RandomException */
     final public function passwordReset(UserEmailDto $dto): Uuid
     {
         $user = $this->userRepository->findByEmail($dto->email);
@@ -70,9 +67,7 @@ readonly class PasswordResetService
         return $userPasswordReset->id;
     }
 
-    /**
-     * @throws ValidatorException
-     */
+    /** @throws ValidatorException */
     final public function confirm(Uuid $userPasswordResetId, UserPasswordDto $dto): Uuid
     {
         $userPasswordReset = $this->userPasswordResetRepository->findById($userPasswordResetId);

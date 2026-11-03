@@ -2,7 +2,7 @@ SHELL := /bin/bash
 .ONESHELL:
 .SHELLFLAGS := -eu -o pipefail -c
 
-.PHONY: build start seed
+.PHONY: build start stop seed migrate test format
 
 build:
 	cp backend/.env.example backend/.env
@@ -26,5 +26,23 @@ start:
 	cd frontend
 	npm run dev
 
+stop:
+	docker compose down
+
 seed:
 	docker compose exec php php bin/console app:seed --fresh
+
+migrate:
+	docker compose exec php php bin/console doctrine:database:create --if-not-exists
+	docker compose exec php php bin/console doctrine:migrations:migrate -n
+	docker compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
+	docker compose exec php php bin/console doctrine:migrations:migrate --env=test -n
+
+test:
+	docker compose exec php vendor/bin/phpunit
+
+format:
+	docker compose exec php vendor/bin/php-cs-fixer fix
+	cd frontend
+	npm run fix
+

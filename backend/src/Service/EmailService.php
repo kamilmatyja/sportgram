@@ -18,9 +18,7 @@ readonly class EmailService
         $this->fromEmail = $params->get('MAILER_FROM');
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     */
+    /** @throws TransportExceptionInterface */
     final public function send(string $to, string $title, string $text): void
     {
         $email = new Email()

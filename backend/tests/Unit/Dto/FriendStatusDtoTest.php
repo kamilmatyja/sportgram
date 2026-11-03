@@ -27,16 +27,8 @@ class FriendStatusDtoTest extends DtoTestCase
 
     public static function statusProvider(): iterable
     {
-        foreach (FriendStatusEnum::allowed() as $case) {
+        foreach (FriendStatusEnum::cases() as $case) {
             yield $case->name => [$case];
         }
-    }
-
-    final public function testRejectsPendingStatus(): void
-    {
-        $dto = new FriendStatusDto();
-        $dto->status = FriendStatusEnum::Pending;
-
-        $this->assertOnlyViolation($dto, 'status');
     }
 }

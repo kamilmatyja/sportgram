@@ -20,8 +20,9 @@ import {
     ScrollArea,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
+import { useInViewport } from '@mantine/hooks';
 import { IconSend, IconTrash, IconAdjustments, IconEdit, IconMessage } from '@tabler/icons-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import NotFound from '../../components/NotFound';
@@ -43,6 +44,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import { formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime, formatTime } from '../../utils/date';
+import { truncate } from '../../utils/text';
 
 export default function UserConversations() {
     const { link } = useParams<{ link: string }>();
@@ -145,42 +147,82 @@ export default function UserConversations() {
         enabled: friendPartnerIds.length > 0,
     });
 
-    // Fetch conversations list or chat messages from /api/conversations
+    // Fetch conversations list for owner
     const { data: conversationsResponse, isLoading: conversationsLoading } = useQuery({
-        queryKey: [
-            'conversations-data',
-            currentUser?.id,
-            targetUser?.id,
-            isOwner,
-            isOwner ? page : 1,
-            isOwner ? limit : 100,
-            isOwner ? sort : 'createdAt:asc',
-            isOwner ? statusFilter : null,
-        ],
+        queryKey: ['conversations-data', currentUser?.id, targetUser?.id, page, limit, sort, statusFilter],
         queryFn: async () => {
-            if (!currentUser || !targetUser) return { data: [], pagination: null };
-            if (isOwner) {
-                return await conversationService.getConversations({
-                    page,
-                    limit,
-                    sort,
-                    filter: {
-                        ...(statusFilter ? { status: statusFilter as any } : {}),
-                    },
-                });
-            }
+            if (!currentUser || !targetUser || !isOwner) return { data: [], pagination: null };
             return await conversationService.getConversations({
-                page: 1,
-                limit: 100,
-                sort: 'createdAt:asc',
+                page,
+                limit,
+                sort,
+                filter: {
+                    ...(statusFilter ? { status: statusFilter as any } : {}),
+                },
+            });
+        },
+        enabled: isOwner && !!currentUser && !!targetUser && canAccessSubpage,
+        refetchInterval: 10000,
+    });
+
+    // Fetch direct chat messages with pagination (20 per page, latest first)
+    const {
+        data: chatInfiniteData,
+        isLoading: chatLoading,
+        fetchNextPage: fetchNextChatPage,
+        hasNextPage: hasMoreChatMessages,
+        isFetchingNextPage: isFetchingMoreChatMessages,
+    } = useInfiniteQuery({
+        queryKey: ['chat-messages', currentUser?.id, targetUser?.id],
+        queryFn: async ({ pageParam = 1 }) => {
+            if (!currentUser || !targetUser) return { data: [], pagination: {} };
+            return await conversationService.getConversations({
+                page: pageParam,
+                limit: 20,
+                sort: 'createdAt:desc',
                 filter: {
                     userId: targetUser.id,
                 },
             });
         },
-        enabled: !!currentUser && !!targetUser && canAccessSubpage,
-        refetchInterval: isOwner ? 10000 : 3000,
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            const p = lastPage.pagination;
+            if (p?.page && p?.pages && p.page < p.pages) {
+                return p.page + 1;
+            }
+            return undefined;
+        },
+        enabled: !isOwner && !!currentUser && !!targetUser && canAccessSubpage,
+        refetchInterval: 3000,
     });
+
+    const chatMessages = useMemo(() => {
+        if (isOwner) return [];
+        const msgs = chatInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
+        return [...msgs].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    }, [isOwner, chatInfiniteData]);
+
+    const { ref: chatTopSentinelRef, inViewport: chatTopSentinelInViewport } = useInViewport();
+    const hasInitialScrolledRef = useRef(false);
+
+    useEffect(() => {
+        if (!isOwner && !hasInitialScrolledRef.current && chatMessages.length > 0) {
+            chatEndRef.current?.scrollIntoView({ behavior: 'instant' });
+            hasInitialScrolledRef.current = true;
+        }
+    }, [isOwner, chatMessages.length]);
+
+    useEffect(() => {
+        if (
+            hasInitialScrolledRef.current &&
+            chatTopSentinelInViewport &&
+            hasMoreChatMessages &&
+            !isFetchingMoreChatMessages
+        ) {
+            fetchNextChatPage();
+        }
+    }, [chatTopSentinelInViewport, hasMoreChatMessages, isFetchingMoreChatMessages, fetchNextChatPage]);
 
     // Collect user IDs present in the conversations to fetch their profiles for the table
     const userIdsToFetch = useMemo(() => {
@@ -209,12 +251,91 @@ export default function UserConversations() {
 
     const relatedUsers = relatedUsersMap ?? {};
 
-    // Auto-scroll to bottom of chat when messages update
+    const messages = isOwner ? (conversationsResponse?.data ?? []) : chatMessages;
+
+    // Query conversation activities every 5s when viewing someone else's chat
+    const { data: activitiesData } = useQuery({
+        queryKey: ['conversation-activities', currentUser?.id, targetUser?.id],
+        queryFn: async () => {
+            if (!currentUser || !targetUser || isOwner) return [];
+            return await conversationService.getActivities({
+                filter: { userId: targetUser.id },
+                limit: 10,
+                sort: 'updatedAt:desc',
+            });
+        },
+        enabled: !isOwner && !!currentUser && !!targetUser && canChat,
+        refetchInterval: 5000,
+    });
+
+    const isPartnerTyping = useMemo(() => {
+        if (!activitiesData || activitiesData.length === 0 || !targetUser?.id || !currentUser?.id) return false;
+        const partnerActivity = activitiesData.find(
+            (a) => a.senderUserId === targetUser.id && a.receiverUserId === currentUser.id,
+        );
+        if (!partnerActivity) return false;
+        if (partnerActivity.isWriting) return true;
+        const diffMs = Date.now() - new Date(partnerActivity.updatedAt).getTime();
+        return diffMs <= 6000;
+    }, [activitiesData, targetUser?.id, currentUser?.id]);
+
+    // Find the last incoming message from the partner
+    const lastIncomingMessage = useMemo(() => {
+        if (isOwner || !messages || messages.length === 0 || !targetUser?.id) return null;
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].senderUserId === targetUser.id) {
+                return messages[i];
+            }
+        }
+        return null;
+    }, [isOwner, messages, targetUser?.id]);
+
+    const markedReadMsgIdRef = useRef<string | null>(null);
+
+    // Reset markedReadMsgIdRef when switching target user
     useEffect(() => {
-        if (!isOwner) {
+        markedReadMsgIdRef.current = null;
+    }, [targetUser?.id]);
+
+    // Automatically mark the last message from the partner as READ
+    useEffect(() => {
+        if (
+            !isOwner &&
+            lastIncomingMessage &&
+            lastIncomingMessage.status !== ConversationStatusEnum.READ &&
+            markedReadMsgIdRef.current !== lastIncomingMessage.id
+        ) {
+            markedReadMsgIdRef.current = lastIncomingMessage.id;
+
+            // Persist status update to backend
+            conversationService
+                .updateConversationStatus(lastIncomingMessage.id, ConversationStatusEnum.READ)
+                .then(() => {
+                    queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
+                })
+                .catch(() => {});
+        }
+    }, [isOwner, lastIncomingMessage, queryClient]);
+
+    // Auto-scroll to bottom of chat when partner typing status updates
+    useEffect(() => {
+        if (!isOwner && isPartnerTyping) {
             chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [isOwner, conversationsResponse?.data]);
+    }, [isOwner, isPartnerTyping]);
+
+    const lastActivitySentRef = useRef<number>(0);
+
+    const handleInputChange = (val: string) => {
+        setMessageInput(val);
+        if (!targetUser?.id || isOwner) return;
+
+        const now = Date.now();
+        if (now - lastActivitySentRef.current >= 4500) {
+            lastActivitySentRef.current = now;
+            conversationService.touchActivityUpdatedAt(targetUser.id).catch(() => {});
+        }
+    };
 
     // Mutations
     const sendMutation = useMutation({
@@ -223,9 +344,14 @@ export default function UserConversations() {
         },
         onSuccess: () => {
             setMessageInput('');
+            lastActivitySentRef.current = 0;
             setSendModalText('');
             setSendModalOpened(false);
+            queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
             queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
+            setTimeout(() => {
+                chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, 50);
             notifications.show({ title: t('conversations'), message: t('messageSent'), color: 'green' });
         },
         onError: (err) => {
@@ -237,6 +363,7 @@ export default function UserConversations() {
         mutationFn: ({ id, text }: { id: string; text: string }) =>
             conversationService.updateConversation(id, { text }),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
             queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
             notifications.show({ title: t('conversations'), message: t('messageUpdated'), color: 'green' });
             setEditModalOpened(false);
@@ -251,6 +378,7 @@ export default function UserConversations() {
         mutationFn: ({ id, status }: { id: string; status: ConversationStatusEnum }) =>
             conversationService.updateConversationStatus(id, status),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
             queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
             notifications.show({ title: t('conversations'), message: t('statusUpdated'), color: 'green' });
         },
@@ -262,6 +390,7 @@ export default function UserConversations() {
     const deleteMessageMutation = useMutation({
         mutationFn: (id: string) => conversationService.deleteConversation(id),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
             queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
             notifications.show({ title: t('conversations'), message: t('deleted'), color: 'green' });
         },
@@ -322,7 +451,11 @@ export default function UserConversations() {
         {
             key: 'text',
             header: t('text'),
-            render: (c) => <Text size="sm">{c.text}</Text>,
+            render: (c) => (
+                <Text size="sm" title={c.text}>
+                    {truncate(c.text, 50)}
+                </Text>
+            ),
         },
         {
             key: 'status',
@@ -378,8 +511,6 @@ export default function UserConversations() {
             label: opt.label,
         })),
     ];
-
-    const messages = conversationsResponse?.data ?? [];
 
     // When viewer = owner (isOwner): display conversation table
     if (isOwner) {
@@ -623,72 +754,113 @@ export default function UserConversations() {
             <Card withBorder radius={5} p="md" shadow="xs">
                 <ScrollArea h={420} type="always">
                     <Stack gap="xs" p="xs">
-                        {conversationsLoading ? (
+                        {hasMoreChatMessages && (
+                            <Center my="xs">
+                                <Button
+                                    size="xs"
+                                    variant="subtle"
+                                    onClick={() => fetchNextChatPage()}
+                                    loading={isFetchingMoreChatMessages}
+                                >
+                                    {t('loadEarlier')}
+                                </Button>
+                            </Center>
+                        )}
+                        <div ref={chatTopSentinelRef} style={{ height: 1 }} />
+
+                        {chatLoading ? (
                             <Text ta="center" c="dimmed">
                                 {t('loadingMessages')}
                             </Text>
                         ) : messages.length === 0 ? (
                             <EmptyState title={t('noMessagesSayHello')} />
                         ) : (
-                            messages.map((m) => {
+                            messages.map((m, idx) => {
                                 const isMine = m.senderUserId === currentUser?.id;
+                                const isLastMessage = idx === messages.length - 1;
+
                                 return (
-                                    <Group
-                                        key={m.id}
-                                        justify={isMine ? 'flex-end' : 'flex-start'}
-                                        align="flex-end"
-                                        gap="xs"
-                                    >
-                                        {!isMine && (
-                                            <Avatar
-                                                src={formatImageSrc(targetUser?.profilePhoto)}
-                                                radius="xl"
-                                                size="xs"
+                                    <Stack key={m.id} gap={2} align={isMine ? 'flex-end' : 'flex-start'}>
+                                        <Group justify={isMine ? 'flex-end' : 'flex-start'} align="flex-end" gap="xs">
+                                            {!isMine && (
+                                                <Avatar
+                                                    src={formatImageSrc(targetUser?.profilePhoto)}
+                                                    radius="xl"
+                                                    size="xs"
+                                                >
+                                                    ?
+                                                </Avatar>
+                                            )}
+                                            <Paper
+                                                p="xs"
+                                                radius="md"
+                                                className={isMine ? 'chat-bubble-mine' : 'chat-bubble-other'}
+                                                withBorder={!isMine}
                                             >
-                                                ?
-                                            </Avatar>
-                                        )}
-                                        <Paper
-                                            p="xs"
-                                            radius="md"
-                                            className={isMine ? 'chat-bubble-mine' : 'chat-bubble-other'}
-                                            withBorder={!isMine}
-                                        >
-                                            <Text size="sm">{m.text}</Text>
-                                            <Group justify="flex-end" gap={6} mt={2}>
-                                                <Text size="10px" className="opacity-70">
-                                                    {formatTime(m.createdAt)}
-                                                </Text>
-                                                {isMine && (
-                                                    <Group gap={2}>
-                                                        <ActionIcon
-                                                            size="xs"
-                                                            variant="subtle"
-                                                            onClick={() => {
-                                                                setEditingMessage(m);
-                                                                setEditModalText(m.text);
-                                                                setEditModalOpened(true);
-                                                            }}
-                                                            aria-label={t('edit')}
-                                                        >
-                                                            <IconEdit size={12} />
-                                                        </ActionIcon>
-                                                        <ActionIcon
-                                                            size="xs"
-                                                            variant="subtle"
-                                                            color="red"
-                                                            onClick={() => handleDeleteMessage(m.id)}
-                                                            aria-label={t('delete')}
-                                                        >
-                                                            <IconTrash size={12} />
-                                                        </ActionIcon>
-                                                    </Group>
-                                                )}
+                                                <Text size="sm">{m.text}</Text>
+                                                <Group justify="flex-end" gap={6} mt={2}>
+                                                    <Text size="10px" className="opacity-70">
+                                                        {formatTime(m.createdAt)}
+                                                    </Text>
+                                                    {isMine && (
+                                                        <Group gap={2}>
+                                                            <ActionIcon
+                                                                size="xs"
+                                                                variant="subtle"
+                                                                onClick={() => {
+                                                                    setEditingMessage(m);
+                                                                    setEditModalText(m.text);
+                                                                    setEditModalOpened(true);
+                                                                }}
+                                                                aria-label={t('edit')}
+                                                            >
+                                                                <IconEdit size={12} />
+                                                            </ActionIcon>
+                                                            <ActionIcon
+                                                                size="xs"
+                                                                variant="subtle"
+                                                                color="red"
+                                                                onClick={() => handleDeleteMessage(m.id)}
+                                                                aria-label={t('delete')}
+                                                            >
+                                                                <IconTrash size={12} />
+                                                            </ActionIcon>
+                                                        </Group>
+                                                    )}
+                                                </Group>
+                                            </Paper>
+                                        </Group>
+                                        {isLastMessage && (
+                                            <Group justify={isMine ? 'flex-end' : 'flex-start'} mt={2} mb="xs">
+                                                <Badge
+                                                    size="xs"
+                                                    variant="light"
+                                                    color={m.status === ConversationStatusEnum.READ ? 'green' : 'gray'}
+                                                >
+                                                    {m.status === ConversationStatusEnum.READ
+                                                        ? t('conversationStatuses.read')
+                                                        : t('conversationStatuses.sent')}
+                                                </Badge>
                                             </Group>
-                                        </Paper>
-                                    </Group>
+                                        )}
+                                    </Stack>
                                 );
                             })
+                        )}
+                        {isPartnerTyping && (
+                            <Group gap="xs" align="center" mt="xs">
+                                <Avatar src={formatImageSrc(targetUser?.profilePhoto)} radius="xl" size="xs">
+                                    ?
+                                </Avatar>
+                                <Paper p="xs" radius="md" className="chat-bubble-other" withBorder>
+                                    <Group gap={6} align="center">
+                                        <Loader size={12} type="dots" />
+                                        <Text size="xs" c="dimmed" fs="italic">
+                                            {targetUser?.firstName} {t('isTyping')}...
+                                        </Text>
+                                    </Group>
+                                </Paper>
+                            </Group>
                         )}
                         <div ref={chatEndRef} />
                     </Stack>
@@ -702,12 +874,7 @@ export default function UserConversations() {
                             placeholder={canChat ? t('typeMessage') : t('mustBeFriendsToChat')}
                             disabled={!canChat || sendMutation.isPending}
                             value={messageInput}
-                            onChange={(e) => {
-                                setMessageInput(e.currentTarget.value);
-                                if (targetUser?.id) {
-                                    conversationService.touchActivityUpdatedAt(targetUser.id).catch(() => {});
-                                }
-                            }}
+                            onChange={(e) => handleInputChange(e.currentTarget.value)}
                             flex={1}
                         />
                         <Button

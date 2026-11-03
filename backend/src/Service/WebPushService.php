@@ -10,9 +10,7 @@ class WebPushService
 {
     private WebPush $webPush;
 
-    /**
-     * @throws ErrorException
-     */
+    /** @throws ErrorException */
     public function __construct(string $vapidSubject, string $vapidPublicKey, string $vapidPrivateKey)
     {
         $this->webPush = new WebPush([
@@ -24,10 +22,7 @@ class WebPushService
         ]);
     }
 
-    /**
-     * @throws RandomException
-     * @throws ErrorException
-     */
+    /** @throws RandomException|ErrorException */
     final public function sendNotification(string $endpoint, string $p256dh, string $auth, string $payload): bool
     {
         $subscription = Subscription::create([

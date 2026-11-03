@@ -53,9 +53,7 @@ readonly class EventService
     ) {
     }
 
-    /**
-     * @throws DateMalformedStringException
-     */
+    /** @throws DateMalformedStringException */
     final public function create(Uuid $pageId, EventDto $dto): Uuid
     {
         $page = $this->pageRepository->findById($pageId);
@@ -124,9 +122,7 @@ readonly class EventService
         return $event->id;
     }
 
-    /**
-     * @throws DateMalformedStringException
-     */
+    /** @throws DateMalformedStringException */
     final public function update(Uuid $eventId, EventDto $dto): Uuid
     {
         $event = $this->eventRepository->findById($eventId);

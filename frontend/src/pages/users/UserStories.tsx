@@ -35,6 +35,7 @@ import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 import { formatDateTime } from '../../utils/date';
+import { truncate } from '../../utils/text';
 
 export default function UserStories() {
     const { link } = useParams<{ link: string }>();
@@ -252,8 +253,8 @@ export default function UserStories() {
             key: 'text',
             header: t('text'),
             render: (s) => (
-                <Text size="sm" lineClamp={2} fw={500}>
-                    {s.text}
+                <Text size="sm" fw={500} title={s.text}>
+                    {truncate(s.text, 50)}
                 </Text>
             ),
         },
