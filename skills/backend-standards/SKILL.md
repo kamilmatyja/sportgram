@@ -1,6 +1,6 @@
 ---
 name: backend-standards
-description: Obowiązkowe standardy architektury i implementacji backendu w projekcie Sportgram (Symfony 8.1, PHP 8.5). Obejmuje: odwołanie do README.md, najnowsze standardy PHP 8.5 i Symfony 8, brak generycznych tablic (użycie DTO i kolekcji), silne i ścisłe typowanie (strict_types=1), enumy liczbowe dla typów i statusów (backed int enums), ID wszystkich encji jako UUID, pełne testy w PHPUnit, standardy REST API, wyczerpującą dokumentację OpenAPI/Swagger, podział warstw (Kontroler, Validator, Serwis, Repozytorium, Entity, Resource, Voter, Eventy) oraz Definition of Done (php-cs-fixer i phpunit).
+description: Obowiązkowe standardy architektury i implementacji backendu w projekcie Sportgram (Symfony 8.1, PHP 8.5). Obejmuje: odwołanie do README.md, najnowsze standardy PHP 8.5 i Symfony 8, brak generycznych tablic (użycie DTO i kolekcji), silne i ścisłe typowanie (strict_types=1), enumy liczbowe dla typów i statusów (backed int enums), ID wszystkich encji jako UUID, standardy REST API, wyczerpującą dokumentację OpenAPI/Swagger, podział warstw (Kontroler, Validator, Serwis, Repozytorium, Entity, Resource, Voter, Eventy) oraz Definition of Done (php-cs-fixer).
 ---
 
 # Standardy Architektury i Kodu Backendu (Sportgram)
@@ -105,18 +105,25 @@ Kod backendu musi być ściśle podzielony na odpowiedzialne warstwy:
 
 ---
 
-## 6. Pełne Testy w PHPUnit
+## 6. Testy w PHPUnit
 
-1. **Obowiązek testowania:**
-   - Wszystkie serwisy biznesowe, votery oraz reguły walidacji muszą być w 100% pokryte testami jednostkowymi (Unit Tests) w `tests/Unit/`.
-   - Kluczowe endpointy API i procesy domenowe muszą posiadać testy funkcjonalne/integracyjne (Functional/Web Tests) w `tests/Functional/`.
+1. **Zasady testowania:**
+   - Nowe serwisy biznesowe, votery oraz reguły walidacji powinny być pokryte testami jednostkowymi (Unit Tests) w `tests/Unit/`.
+   - Kluczowe endpointy API i procesy domenowe mogą posiadać testy funkcjonalne/integracyjne (Functional/Web Tests) w `tests/Functional/`.
    - Wykorzystanie fabryk i fixture do generowania danych testowych.
+2. **Zakaz uruchamiania pełnego zestawu testów przy zwykłych zadaniach:**
+   - Repozytorium zawiera tysiące testów, których pełne uruchomienie trwa bardzo długo.
+   - **Absolutny zakaz odpalania całego zestawu `vendor/bin/phpunit` przy standardowych pracach backendowych.**
+   - Weryfikacja testowa w trakcie developmentu musi być **celowana (selektywna)** – odpala się wyłącznie test powiązany z modyfikowanym komponentem lub nowo utworzony plik testowy, np.:
+     `docker compose exec php vendor/bin/phpunit tests/Unit/Service/ExampleServiceTest.php`
+     lub z filtrem:
+     `docker compose exec php vendor/bin/phpunit --filter testNazwaMetody`
+   - Cały zestaw testów uruchamiany jest automatycznie w pipeline GitHub Actions (CI) lub wyłącznie na bezpośrednie, jawne życzenie użytkownika.
 
 ---
 
 ## 7. Definition of Done dla Backendu
 
-Przed uznaniem jakichkolwiek prac backendowych za zakończone, asystent musi uruchomić w kontenerze PHP i zweryfikować:
+Przed uznaniem jakichkolwiek prac backendowych za zakończone, asystent musi zweryfikować:
 1. `docker compose exec php vendor/bin/php-cs-fixer fix --dry-run --diff` (brak błędów formatowania i naruszeń standardu PSR-12 / Symfony).
-2. `docker compose exec php vendor/bin/phpunit` (wszystkie testy muszą przechodzić na zielono).
-3. W przypadku zmian w encjach: wygenerowanie i przetestowanie migracji (`doctrine:migrations:diff` i `doctrine:migrations:migrate -n`).
+2. W przypadku zmian w encjach: wygenerowanie i przetestowanie migracji (`doctrine:migrations:diff` i `doctrine:migrations:migrate -n`).
