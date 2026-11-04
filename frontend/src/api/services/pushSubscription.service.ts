@@ -78,7 +78,6 @@ export const pushSubscriptionService = {
         return res.data;
     },
 
-    // Convenience helpers
     async getSubscriptions(query?: GetPushSubscriptionsQuery): Promise<GetPushSubscriptionsResponse> {
         return await pushSubscriptionService.getPushSubscriptions(query);
     },

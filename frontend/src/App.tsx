@@ -10,7 +10,6 @@ import { userService } from './api/services';
 import { ColorEnum } from './enums/ColorEnum';
 import { applyThemeColor } from './utils/themeUtils';
 
-// Pages
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -117,7 +116,6 @@ export default function App() {
             <Routes>
                 <Route path="/" element={<Home />} />
 
-                {/* Guest only routes */}
                 <Route
                     path="/sign"
                     element={
@@ -143,7 +141,6 @@ export default function App() {
                     }
                 />
 
-                {/* Protected routes */}
                 <Route element={<ProtectedLayout />}>
                     <Route path="/users" element={<UsersList />} />
                     <Route path="/users/:link" element={<UserProfileThemeLayout />}>
@@ -172,7 +169,6 @@ export default function App() {
                     <Route path="/statistics" element={<Statistics />} />
                 </Route>
 
-                {/* 404 */}
                 <Route path="*" element={<NotFound />} />
             </Routes>
         </AppLayout>

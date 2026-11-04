@@ -64,12 +64,10 @@ export default function UserEvents() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('startedAt:desc');
 
-    // Filters
     const [titleFilter, setTitleFilter] = useState('');
     const [linkFilter, setLinkFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    // Create modal
     const [opened, { open, close }] = useDisclosure(false);
     const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
     const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -85,7 +83,6 @@ export default function UserEvents() {
     const [disciplines, setDisciplines] = useState<FormEventDiscipline[]>([]);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    // Edit modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editingEvent, setEditingEvent] = useState<EventResource | null>(null);
     const [editPhotoFile, setEditPhotoFile] = useState<File | null>(null);
@@ -159,7 +156,6 @@ export default function UserEvents() {
         };
     }, [targetUser?.id, titleFilter, linkFilter, statusFilter]);
 
-    // Fetch organizer pages for creating an event
     const { data: myPages } = useQuery({
         queryKey: ['my-pages', targetUser?.id],
         queryFn: async () => {
@@ -200,7 +196,6 @@ export default function UserEvents() {
     const events = data?.data ?? [];
     const pagination = data?.pagination;
 
-    // Create disciplines helper functions
     const handleAddDiscipline = () => {
         setDisciplines((prev) => [
             ...prev,
@@ -312,7 +307,6 @@ export default function UserEvents() {
         );
     };
 
-    // Edit disciplines helper functions
     const handleAddEditDiscipline = () => {
         setEditDisciplines((prev) => [
             ...prev,
@@ -814,7 +808,6 @@ export default function UserEvents() {
                 )}
             />
 
-            {/* Create modal */}
             <Modal opened={opened} onClose={close} title={t('addEvent')} size="lg">
                 <Stack gap="sm">
                     <Select
@@ -1057,7 +1050,6 @@ export default function UserEvents() {
                 </Stack>
             </Modal>
 
-            {/* Edit modal */}
             <Modal opened={editOpened} onClose={closeEdit} title={t('editEvent')} size="lg">
                 <Stack gap="sm">
                     <Select
@@ -1293,7 +1285,7 @@ export default function UserEvents() {
                         disabled={updateMutation.isPending || !canSubmitEdit}
                         onClick={() => updateMutation.mutate()}
                     >
-                        {t('saveChanges')}
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>

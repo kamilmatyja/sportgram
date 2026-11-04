@@ -78,6 +78,9 @@ class Feed
     #[ORM\OneToMany(targetEntity: FeedReaction::class, mappedBy: 'feed')]
     public Collection $reactions;
 
+    #[ORM\OneToOne(targetEntity: Event::class, mappedBy: 'feed')]
+    public ?Event $event = null;
+
     #[ORM\OneToOne(targetEntity: EventDisciplineList::class, mappedBy: 'feed')]
     public ?EventDisciplineList $eventDisciplineList = null;
 

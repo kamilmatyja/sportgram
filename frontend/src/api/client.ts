@@ -76,7 +76,10 @@ const authMiddleware: Middleware = {
     },
     async onResponse({ response }) {
         if (response.status === 401) {
-            // 401 handling if required
+            authStorage.clear();
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event('auth:logout'));
+            }
         }
         return response;
     },
@@ -122,10 +125,17 @@ export function getErrorMessage(err: unknown): string {
     if (typeof err === 'object') {
         const record = err as Record<string, unknown>;
 
+        if (record.errors && typeof record.errors === 'object') {
+            const errorKeys = Object.keys(record.errors as Record<string, unknown>);
+            if (errorKeys.length > 0) {
+                return i18n.t('validationError');
+            }
+        }
+
         const fieldErrors = extractFieldErrors(err);
         const fieldErrorKeys = Object.keys(fieldErrors);
         if (fieldErrorKeys.length > 0) {
-            return fieldErrorKeys.map((k) => `${k}: ${fieldErrors[k]}`).join('\n');
+            return i18n.t('validationError');
         }
 
         if (typeof record.message === 'string') return record.message;

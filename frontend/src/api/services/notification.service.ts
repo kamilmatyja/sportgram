@@ -58,7 +58,6 @@ export const notificationService = {
         return res.data;
     },
 
-    // Convenience helpers
     async markAsRead(id: string): Promise<UpdateNotificationStatusResponse> {
         return await notificationService.updateNotificationStatus(id, NotificationStatusEnum.READ);
     },

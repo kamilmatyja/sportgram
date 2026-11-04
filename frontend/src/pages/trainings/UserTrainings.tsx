@@ -77,12 +77,10 @@ export default function UserTrainings() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('startedAt:desc');
 
-    // Filters
     const [titleFilter, setTitleFilter] = useState('');
     const [linkFilter, setLinkFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    // Create modal
     const [opened, { open, close }] = useDisclosure(false);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
@@ -96,7 +94,6 @@ export default function UserTrainings() {
     });
     const [disciplines, setDisciplines] = useState<FormTrainingDiscipline[]>([]);
 
-    // Edit modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editingTraining, setEditingTraining] = useState<TrainingResource | null>(null);
     const [editCollaboratorIds, setEditCollaboratorIds] = useState<string[]>([]);
@@ -227,7 +224,6 @@ export default function UserTrainings() {
     const trainings = data?.data ?? [];
     const pagination = data?.pagination;
 
-    // Create discipline helpers
     const handleAddDiscipline = () => {
         setDisciplines((prev) => [
             ...prev,
@@ -356,7 +352,6 @@ export default function UserTrainings() {
         );
     };
 
-    // Edit discipline helpers
     const handleAddEditDiscipline = () => {
         setEditDisciplines((prev) => [
             ...prev,
@@ -879,7 +874,6 @@ export default function UserTrainings() {
                 )}
             />
 
-            {/* Create modal */}
             <Modal opened={opened} onClose={close} title={t('addTraining')} size="lg">
                 <Stack gap="sm">
                     <TextInput
@@ -1192,7 +1186,6 @@ export default function UserTrainings() {
                 </Stack>
             </Modal>
 
-            {/* Edit modal */}
             <Modal opened={editOpened} onClose={closeEdit} title={t('editTraining')} size="lg">
                 <Stack gap="sm">
                     <TextInput
@@ -1504,7 +1497,7 @@ export default function UserTrainings() {
                         disabled={updateMutation.isPending || !canSubmitEdit}
                         onClick={() => updateMutation.mutate()}
                     >
-                        {t('saveChanges')}
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>

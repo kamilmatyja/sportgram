@@ -8,7 +8,6 @@ export default defineConfig({
         chunkSizeWarningLimit: 2000,
         rollupOptions: {
             output: {
-                // @ts-expect-error - rolldown/rollup codeSplitting
                 codeSplitting: false,
                 entryFileNames: 'assets/[name].min.js',
                 assetFileNames: 'assets/[name].min.[ext]',

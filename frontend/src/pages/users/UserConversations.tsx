@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, type SyntheticEvent } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback, type SyntheticEvent } from 'react';
 import {
     Title,
     Text,
@@ -20,7 +20,6 @@ import {
     ScrollArea,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { useInViewport } from '@mantine/hooks';
 import { IconSend, IconTrash, IconAdjustments, IconEdit, IconMessage } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -40,6 +39,8 @@ import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { ConversationStatusEnum } from '../../enums/ConversationStatusEnum';
+import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
+import { EntityViewCounter } from '../../components/EntityViewCounter';
 import UserProfileNav from '../../components/UserProfileNav';
 import { formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
@@ -59,17 +60,14 @@ export default function UserConversations() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('createdAt:desc');
 
-    // Edit modal state
     const [editModalOpened, setEditModalOpened] = useState(false);
     const [editingMessage, setEditingMessage] = useState<ConversationResource | null>(null);
     const [editModalText, setEditModalText] = useState('');
 
-    // Send modal state (used when owner starts a conversation from onAdd)
     const [sendModalOpened, setSendModalOpened] = useState(false);
     const [sendModalRecipientId, setSendModalRecipientId] = useState<string | null>(null);
     const [sendModalText, setSendModalText] = useState('');
 
-    // Target user from route link
     const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: async () => {
@@ -87,7 +85,6 @@ export default function UserConversations() {
         targetUser,
     });
 
-    // Check friendship with target user when visiting someone else's profile
     const { data: friendship } = useQuery({
         queryKey: ['friendship', currentUser?.id, targetUser?.id],
         queryFn: async () => {
@@ -109,7 +106,6 @@ export default function UserConversations() {
 
     const canChat = !isOwner && friendship?.status === FriendStatusEnum.ACCEPTED;
 
-    // For owner: fetch friends for the "New conversation" modal
     const { data: myFriendsRes } = useQuery({
         queryKey: ['my-friends-for-conversations', currentUser?.id],
         queryFn: async () => {
@@ -147,7 +143,6 @@ export default function UserConversations() {
         enabled: friendPartnerIds.length > 0,
     });
 
-    // Fetch conversations list for owner
     const { data: conversationsResponse, isLoading: conversationsLoading } = useQuery({
         queryKey: ['conversations-data', currentUser?.id, targetUser?.id, page, limit, sort, statusFilter],
         queryFn: async () => {
@@ -155,7 +150,7 @@ export default function UserConversations() {
             return await conversationService.getConversations({
                 page,
                 limit,
-                sort,
+                sort: sort as any,
                 filter: {
                     ...(statusFilter ? { status: statusFilter as any } : {}),
                 },
@@ -165,7 +160,6 @@ export default function UserConversations() {
         refetchInterval: 10000,
     });
 
-    // Fetch direct chat messages with pagination (20 per page, latest first)
     const {
         data: chatInfiniteData,
         isLoading: chatLoading,
@@ -178,7 +172,7 @@ export default function UserConversations() {
             if (!currentUser || !targetUser) return { data: [], pagination: {} };
             return await conversationService.getConversations({
                 page: pageParam,
-                limit: 20,
+                limit: 10,
                 sort: 'createdAt:desc',
                 filter: {
                     userId: targetUser.id,
@@ -188,7 +182,7 @@ export default function UserConversations() {
         initialPageParam: 1,
         getNextPageParam: (lastPage) => {
             const p = lastPage.pagination;
-            if (p?.page && p?.pages && p.page < p.pages) {
+            if (p?.hasNextPage && p?.page) {
                 return p.page + 1;
             }
             return undefined;
@@ -203,7 +197,9 @@ export default function UserConversations() {
         return [...msgs].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }, [isOwner, chatInfiniteData]);
 
-    const { ref: chatTopSentinelRef, inViewport: chatTopSentinelInViewport } = useInViewport();
+    const chatViewportRef = useRef<HTMLDivElement>(null);
+    const prevScrollHeightRef = useRef<number>(0);
+    const isPrependingRef = useRef<boolean>(false);
     const hasInitialScrolledRef = useRef(false);
 
     useEffect(() => {
@@ -213,18 +209,28 @@ export default function UserConversations() {
         }
     }, [isOwner, chatMessages.length]);
 
-    useEffect(() => {
-        if (
-            hasInitialScrolledRef.current &&
-            chatTopSentinelInViewport &&
-            hasMoreChatMessages &&
-            !isFetchingMoreChatMessages
-        ) {
-            fetchNextChatPage();
-        }
-    }, [chatTopSentinelInViewport, hasMoreChatMessages, isFetchingMoreChatMessages, fetchNextChatPage]);
+    const handleChatScroll = useCallback(
+        ({ y }: { y: number }) => {
+            if (!hasInitialScrolledRef.current) return;
+            if (y <= 30 && hasMoreChatMessages && !isFetchingMoreChatMessages) {
+                if (chatViewportRef.current) {
+                    prevScrollHeightRef.current = chatViewportRef.current.scrollHeight;
+                    isPrependingRef.current = true;
+                }
+                fetchNextChatPage();
+            }
+        },
+        [hasMoreChatMessages, isFetchingMoreChatMessages, fetchNextChatPage],
+    );
 
-    // Collect user IDs present in the conversations to fetch their profiles for the table
+    useEffect(() => {
+        if (isPrependingRef.current && chatViewportRef.current) {
+            const newScrollHeight = chatViewportRef.current.scrollHeight;
+            chatViewportRef.current.scrollTop = newScrollHeight - prevScrollHeightRef.current;
+            isPrependingRef.current = false;
+        }
+    }, [chatMessages.length]);
+
     const userIdsToFetch = useMemo(() => {
         if (!isOwner) return [];
         const set = new Set<string>();
@@ -253,7 +259,6 @@ export default function UserConversations() {
 
     const messages = isOwner ? (conversationsResponse?.data ?? []) : chatMessages;
 
-    // Query conversation activities every 5s when viewing someone else's chat
     const { data: activitiesData } = useQuery({
         queryKey: ['conversation-activities', currentUser?.id, targetUser?.id],
         queryFn: async () => {
@@ -279,7 +284,6 @@ export default function UserConversations() {
         return diffMs <= 6000;
     }, [activitiesData, targetUser?.id, currentUser?.id]);
 
-    // Find the last incoming message from the partner
     const lastIncomingMessage = useMemo(() => {
         if (isOwner || !messages || messages.length === 0 || !targetUser?.id) return null;
         for (let i = messages.length - 1; i >= 0; i--) {
@@ -292,12 +296,10 @@ export default function UserConversations() {
 
     const markedReadMsgIdRef = useRef<string | null>(null);
 
-    // Reset markedReadMsgIdRef when switching target user
     useEffect(() => {
         markedReadMsgIdRef.current = null;
     }, [targetUser?.id]);
 
-    // Automatically mark the last message from the partner as READ
     useEffect(() => {
         if (
             !isOwner &&
@@ -307,7 +309,6 @@ export default function UserConversations() {
         ) {
             markedReadMsgIdRef.current = lastIncomingMessage.id;
 
-            // Persist status update to backend
             conversationService
                 .updateConversationStatus(lastIncomingMessage.id, ConversationStatusEnum.READ)
                 .then(() => {
@@ -317,7 +318,6 @@ export default function UserConversations() {
         }
     }, [isOwner, lastIncomingMessage, queryClient]);
 
-    // Auto-scroll to bottom of chat when partner typing status updates
     useEffect(() => {
         if (!isOwner && isPartnerTyping) {
             chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -337,7 +337,6 @@ export default function UserConversations() {
         }
     };
 
-    // Mutations
     const sendMutation = useMutation({
         mutationFn: async ({ recipientId, text }: { recipientId: string; text: string }) => {
             await conversationService.sendMessage(recipientId, text);
@@ -512,7 +511,6 @@ export default function UserConversations() {
         })),
     ];
 
-    // When viewer = owner (isOwner): display conversation table
     if (isOwner) {
         return (
             <Stack gap="md">
@@ -646,7 +644,6 @@ export default function UserConversations() {
                     }}
                 />
 
-                {/* Edit message modal */}
                 <Modal
                     opened={editModalOpened}
                     onClose={() => setEditModalOpened(false)}
@@ -677,7 +674,6 @@ export default function UserConversations() {
                     </Stack>
                 </Modal>
 
-                {/* Send new message modal */}
                 <Modal
                     opened={sendModalOpened}
                     onClose={() => setSendModalOpened(false)}
@@ -713,7 +709,6 @@ export default function UserConversations() {
                                     });
                                 }
                             }}
-                            leftSection={<IconSend size={16} />}
                         >
                             {t('send')}
                         </Button>
@@ -723,7 +718,6 @@ export default function UserConversations() {
         );
     }
 
-    // When viewer != owner: display chat
     return (
         <Stack gap="md">
             <UserProfileNav user={targetUser} isOwner={false} />
@@ -750,23 +744,32 @@ export default function UserConversations() {
                 )}
             </Group>
 
-            {/* Chat messages box */}
             <Card withBorder radius={5} p="md" shadow="xs">
-                <ScrollArea h={420} type="always">
+                <ScrollArea
+                    h={420}
+                    type="always"
+                    viewportRef={chatViewportRef}
+                    onScrollPositionChange={handleChatScroll}
+                >
                     <Stack gap="xs" p="xs">
                         {hasMoreChatMessages && (
                             <Center my="xs">
                                 <Button
                                     size="xs"
                                     variant="subtle"
-                                    onClick={() => fetchNextChatPage()}
+                                    onClick={() => {
+                                        if (chatViewportRef.current) {
+                                            prevScrollHeightRef.current = chatViewportRef.current.scrollHeight;
+                                            isPrependingRef.current = true;
+                                        }
+                                        fetchNextChatPage();
+                                    }}
                                     loading={isFetchingMoreChatMessages}
                                 >
                                     {t('loadEarlier')}
                                 </Button>
                             </Center>
                         )}
-                        <div ref={chatTopSentinelRef} style={{ height: 1 }} />
 
                         {chatLoading ? (
                             <Text ta="center" c="dimmed">
@@ -799,6 +802,14 @@ export default function UserConversations() {
                                             >
                                                 <Text size="sm">{m.text}</Text>
                                                 <Group justify="flex-end" gap={6} mt={2}>
+                                                    <EntityViewCounter
+                                                        entityId={m.id}
+                                                        type={EntryTypeEnum.CONVERSATION}
+                                                        size={12}
+                                                        textSize="10px"
+                                                        track={true}
+                                                        className="opacity-70"
+                                                    />
                                                     <Text size="10px" className="opacity-70">
                                                         {formatTime(m.createdAt)}
                                                     </Text>
@@ -866,7 +877,6 @@ export default function UserConversations() {
                     </Stack>
                 </ScrollArea>
 
-                {/* Input box */}
                 <form onSubmit={handleSendChat}>
                     <Group gap="xs" mt="sm">
                         <TextInput
@@ -889,7 +899,6 @@ export default function UserConversations() {
                 </form>
             </Card>
 
-            {/* Edit message modal */}
             <Modal
                 opened={editModalOpened}
                 onClose={() => setEditModalOpened(false)}

@@ -1236,7 +1236,6 @@ class DatabaseSeedCommand extends Command
         $jan = $this->users[$janEmail];
         $count = 0;
 
-        // 55 friendships for Jan Kowalski to ensure >50 rows on /users/jan-kowalski/friends
         $otherEmails = array_values(array_filter(
             array_keys($this->users),
             static fn (string $email): bool => $email !== 'jan.kowalski@sportgram.local',
@@ -1244,7 +1243,6 @@ class DatabaseSeedCommand extends Command
 
         foreach (array_slice($otherEmails, 0, 55) as $i => $otherEmail) {
             $other = $this->users[$otherEmail];
-            // 42 Accepted, 7 Pending, 6 Rejected for realistic filtering
             $status = match (true) {
                 $i < 42 => FriendStatusEnum::Accepted,
                 $i < 49 => FriendStatusEnum::Pending,
@@ -1255,7 +1253,6 @@ class DatabaseSeedCommand extends Command
             $count++;
         }
 
-        // Cross-friendships between other users
         $extraPairs = [
             ['admin@sportgram.local', 'organizer@sportgram.local', FriendStatusEnum::Accepted],
             ['admin@sportgram.local', 'anna.nowak@sportgram.local', FriendStatusEnum::Accepted],
@@ -1385,19 +1382,16 @@ class DatabaseSeedCommand extends Command
             $this->em->persist($page);
             $this->pages[$key] = $page;
 
-            // Add owner participant
             $ownerPart = new PageParticipant($page, $owner, SaveStatusEnum::Accepted);
             $this->em->persist($ownerPart);
             $this->pageParticipants[sprintf('%s_%s', $key, $owner->email)] = $ownerPart;
 
-            // Ensure Jan Kowalski is participant on 55 pages so /users/jan-kowalski/pages has >=50 rows
             if ($owner->email !== $janEmail) {
                 $janPart = new PageParticipant($page, $jan, SaveStatusEnum::Accepted);
                 $this->em->persist($janPart);
                 $this->pageParticipants[sprintf('%s_%s', $key, $janEmail)] = $janPart;
             }
 
-            // Add sample followers
             $followerEmails = ['admin@sportgram.local', 'anna.nowak@sportgram.local', 'piotr.wisniewski@sportgram.local', 'magdalena.lewandowska@sportgram.local'];
             foreach ($followerEmails as $fEmail) {
                 $follower = $this->users[$fEmail] ?? null;
@@ -1480,7 +1474,6 @@ class DatabaseSeedCommand extends Command
         ];
 
         foreach ($eventDefs as $i => [$link, $title, $desc, $loc, $days, $disc, $dist, $finishTime, $pageKey]) {
-            // Jan Kowalski organizes 52 events so /users/jan-kowalski/events has >=50 rows
             $organizerUser = ($i < 55) ? $jan : $admin;
             $partKey = sprintf('%s_%s', $pageKey, $organizerUser->email);
             $part = $this->pageParticipants[$partKey] ?? array_values($this->pageParticipants)[0];
@@ -1495,6 +1488,7 @@ class DatabaseSeedCommand extends Command
 
             $event = new Event(
                 $part,
+                $eventFeed,
                 $startedAt,
                 $endedAt,
                 $title,
@@ -1518,7 +1512,6 @@ class DatabaseSeedCommand extends Command
             $subDist = new EventDisciplineSubDistance($edd, $subDistVal);
             $this->em->persist($subDist);
 
-            // Start list registration with 1-to-1 feed
             $runner = ($i % 2 === 0) ? $jan : $anna;
             $listFeed = new Feed($runner, null, null, ElementStatusEnum::Active);
             $this->em->persist($listFeed);
@@ -1527,7 +1520,6 @@ class DatabaseSeedCommand extends Command
             $listEntry = new EventDisciplineList($edd, $listFeed, $runner, SaveStatusEnum::Accepted);
             $this->em->persist($listEntry);
 
-            // Result for past events or sample participants
             if ($days < 0 || $i % 3 === 0) {
                 $resFeed = new Feed($runner, null, null, ElementStatusEnum::Active);
                 $this->em->persist($resFeed);
@@ -1636,7 +1628,6 @@ class DatabaseSeedCommand extends Command
             $this->em->persist($training);
             $this->trainings[$link] = $training;
 
-            // Participants: creator + 1 friend collaborator
             $tpCreator = new TrainingParticipant($training, $creator, SaveStatusEnum::Accepted);
             $this->em->persist($tpCreator);
             $partner = ($creator->email === $jan->email) ? $anna : $jan;
@@ -1649,7 +1640,6 @@ class DatabaseSeedCommand extends Command
             $tdd = new TrainingDisciplineDistance($td, $dist, $tm);
             $this->em->persist($tdd);
 
-            // 2 sub-distances with GPS coords
             $halfDist = (int) round($dist / 2);
             $halfTime = (int) round($tm / 2);
             $sub1 = new TrainingDisciplineSubDistance($tdd, $halfDist, $halfTime, 52231900, 21011500, 4, 15);
@@ -1752,12 +1742,10 @@ class DatabaseSeedCommand extends Command
             $gp = new GoalParticipant($goal, $creator, SaveStatusEnum::Accepted);
             $this->em->persist($gp);
 
-            // Add friend collaborator
             $friendUser = ($creator->email === $jan->email) ? $anna : $jan;
             $gpFriend = new GoalParticipant($goal, $friendUser, SaveStatusEnum::Accepted);
             $this->em->persist($gpFriend);
 
-            // Participant results with 1-to-1 feed
             $rFeed = new Feed($creator, null, null, ElementStatusEnum::Active);
             $this->em->persist($rFeed);
             $this->allFeeds[] = $rFeed;
@@ -1834,7 +1822,6 @@ class DatabaseSeedCommand extends Command
         ];
 
         $count = 0;
-        // 55 standalone feeds for Jan Kowalski to ensure >50 rows on /users/jan-kowalski/feeds
         foreach ($postTexts as $i => $text) {
             $photo = ($i % 3 === 0) ? $this->profilePhotoBase64 : (($i % 3 === 1) ? $this->backgroundPhotoBase64 : null);
             $feed = new Feed($jan, $text, $photo, ElementStatusEnum::Active);
@@ -1842,18 +1829,15 @@ class DatabaseSeedCommand extends Command
             $this->allFeeds[] = $feed;
             $count++;
 
-            // Add comments from friends
             $comment = new FeedComment($feed, $anna, 'Świetny trening Janek, gratulacje!', ElementStatusEnum::Active);
             $this->em->persist($comment);
 
-            // Add reactions
             $r1 = new FeedReaction($feed, $anna, FeedReactionEnum::Love, ElementStatusEnum::Active);
             $this->em->persist($r1);
             $r2 = new FeedReaction($feed, $admin, FeedReactionEnum::Like, ElementStatusEnum::Active);
             $this->em->persist($r2);
         }
 
-        // 25 feeds by other friends
         $otherPosts = [
             ['anna.nowak@sportgram.local', 'Wschód słońca nad Zegrzem i poranny trening pływacki na wodach otwartych.'],
             ['admin@sportgram.local', 'Zapisy na Półmaraton Warszawski oficjalnie otwarte! Zapraszamy wszystkich.'],
@@ -1874,32 +1858,37 @@ class DatabaseSeedCommand extends Command
 
     private function seedStories(): int
     {
-        $jan = $this->users['jan.kowalski@sportgram.local'];
-        $admin = $this->users['admin@sportgram.local'];
-        $anna = $this->users['anna.nowak@sportgram.local'];
         $count = 0;
 
-        // 55 stories for Jan Kowalski to ensure >50 rows on /users/jan-kowalski/stories
-        for ($i = 1; $i <= 55; $i++) {
-            $text = sprintf('Relacja #%d: Poranny rozruch w terenie - pozdrowienia dla całej społeczności Sportgram!', $i);
-            $status = ($i % 25 === 0) ? ElementStatusEnum::Rejected : ElementStatusEnum::Active;
-            $story = new Story($jan, $text, $this->profilePhotoBase64, $status);
-            $this->em->persist($story);
-            $count++;
+        $multiStoryUsers = [
+            'jan.kowalski@sportgram.local' => 'Jan Kowalski - Poranny rozruch w terenie i przygotowania do maratonu',
+            'anna.nowak@sportgram.local' => 'Anna Nowak - Trening pływacki i biegi o wschodzie słońca',
+            'admin@sportgram.local' => 'Adam Adamski - Przygotowania do triathlonu i organizacja zawodów',
+            'piotr.wisniewski@sportgram.local' => 'Piotr Wiśniewski - Wyprawa gravelowa i bikepacking po Jurze',
+            'organizer@sportgram.local' => 'Olga Organizerska - Trening rolkowy i koordynacja eventów biegowych',
+        ];
+
+        foreach ($multiStoryUsers as $email => $description) {
+            $user = $this->users[$email] ?? null;
+            if (! $user) {
+                continue;
+            }
+
+            for ($i = 1; $i <= 31; $i++) {
+                $text = sprintf('Relacja #%d: %s (#%d). Pozdrowienia dla społeczności Sportgram!', $i, $description, $i);
+                $story = new Story($user, $text, $this->profilePhotoBase64, ElementStatusEnum::Active);
+                $this->em->persist($story);
+                $count++;
+            }
         }
 
-        // Stories for other users
         $otherStories = [
-            [$anna, 'Nowa życiówka na 5 km - 22:15!'],
-            [$admin, 'Spotkanie organizacyjne z wolontariuszami półmaratonu.'],
-            [$this->users['piotr.wisniewski@sportgram.local'], 'Kierunek Jura Krakowsko-Częstochowska na weekend.'],
-            [$this->users['katarzyna.wojcik@sportgram.local'], 'Zachód słońca po 15 km w lesie kabackim.'],
-            [$this->users['tomasz.kaminski@sportgram.local'], 'Nowy łańcuch i smarowanie, rower gotowy do startu.'],
-            [$this->users['magdalena.lewandowska@sportgram.local'], 'Dzień podbiegów pod Kopiec Kościuszki.'],
-            [$this->users['michal.zielinski@sportgram.local'], '6 rano na basenie - puste tory to raj.'],
-            [$this->users['organizer@sportgram.local'], 'Objazd trasy gravelowej - nawierzchnia sztos.'],
-            [$this->users['aleksandra.szymanska@sportgram.local'], 'Cardio przed śniadaniem zrobione!'],
-            [$this->users['lukasz.grabowski@sportgram.local'], 'Beskidzkie szlaki nigdy nie zawodzą.'],
+            [$this->users['katarzyna.wojcik@sportgram.local'] ?? null, 'Zachód słońca po 15 km w lesie kabackim.'],
+            [$this->users['tomasz.kaminski@sportgram.local'] ?? null, 'Nowy łańcuch i smarowanie, rower gotowy do startu.'],
+            [$this->users['magdalena.lewandowska@sportgram.local'] ?? null, 'Dzień podbiegów pod Kopiec Kościuszki.'],
+            [$this->users['michal.zielinski@sportgram.local'] ?? null, '6 rano na basenie - puste tory to raj.'],
+            [$this->users['aleksandra.szymanska@sportgram.local'] ?? null, 'Cardio przed śniadaniem zrobione!'],
+            [$this->users['lukasz.grabowski@sportgram.local'] ?? null, 'Beskidzkie szlaki nigdy nie zawodzą.'],
         ];
         foreach ($otherStories as [$user, $text]) {
             if ($user) {
@@ -1917,7 +1906,6 @@ class DatabaseSeedCommand extends Command
         $jan = $this->users['jan.kowalski@sportgram.local'];
         $count = 0;
 
-        // Conversations between Jan and 52 different friends to guarantee >=50 rows in conversation table
         $otherUsers = array_values(array_filter(
             $this->users,
             static fn (User $u): bool => $u->email !== 'jan.kowalski@sportgram.local',
@@ -1935,7 +1923,6 @@ class DatabaseSeedCommand extends Command
         ];
 
         foreach (array_slice($otherUsers, 0, 52) as $i => $friend) {
-            // Activity in both directions
             $act1 = new ConversationActivity($jan, $friend);
             $this->em->persist($act1);
             $act2 = new ConversationActivity($friend, $jan);
@@ -1944,12 +1931,10 @@ class DatabaseSeedCommand extends Command
             $question = $sampleDialogs[$i % count($sampleDialogs)];
             $reply = 'Hej! Bardzo chętnie, pasuje mi jak najbardziej. Daj znać o której się widzimy!';
 
-            // First message
             $c1 = new Conversation($jan, $friend, $question, ConversationStatusEnum::Read);
             $this->em->persist($c1);
             $count++;
 
-            // Second reply message (latest message in thread)
             $status = ($i % 3 === 0) ? ConversationStatusEnum::Sent : ConversationStatusEnum::Read;
             $c2 = new Conversation($friend, $jan, $reply, $status);
             $this->em->persist($c2);
@@ -1976,7 +1961,6 @@ class DatabaseSeedCommand extends Command
             ['Przypomnienie: do zawodów Silesia Gravel Classic zostało 45 dni.', '/events/silesia-gravel-100', NotificationStatusEnum::NotSent],
         ];
 
-        // 55 notifications for Jan Kowalski to ensure >50 rows on /users/jan-kowalski/notifications
         for ($i = 1; $i <= 55; $i++) {
             [$tmpl, $link, $st] = $notificationTemplates[($i - 1) % count($notificationTemplates)];
             $text = sprintf($tmpl, 'Anna Nowak #' . $i);
@@ -1985,7 +1969,6 @@ class DatabaseSeedCommand extends Command
             $count++;
         }
 
-        // Additional notifications for Admin
         for ($j = 1; $j <= 15; $j++) {
             $notif = new Notification($admin, sprintf('Powiadomienie systemowe dla administratora #%d.', $j), '/pages/warszawski-klub-biegacza', NotificationStatusEnum::Sent);
             $this->em->persist($notif);
@@ -2014,7 +1997,6 @@ class DatabaseSeedCommand extends Command
             'Vivaldi 6.6 na macOS Ventura',
         ];
 
-        // 55 push subscriptions for Jan Kowalski to ensure >50 rows on /users/jan-kowalski/push-subscriptions
         for ($i = 1; $i <= 55; $i++) {
             $browser = $browsers[($i - 1) % count($browsers)];
             $status = ($i % 5 === 0) ? PushSubscriptionStatusEnum::Rejected : PushSubscriptionStatusEnum::Active;
@@ -2039,35 +2021,30 @@ class DatabaseSeedCommand extends Command
         $anna = $this->users['anna.nowak@sportgram.local'];
         $count = 0;
 
-        // View entries on users
         foreach (array_slice($this->users, 0, 20) as $user) {
             $entry = new Entry($jan, $user->id, EntryTypeEnum::User);
             $this->em->persist($entry);
             $count++;
         }
 
-        // View entries on pages
         foreach (array_slice($this->pages, 0, 15) as $page) {
             $entry = new Entry($jan, $page->id, EntryTypeEnum::Page);
             $this->em->persist($entry);
             $count++;
         }
 
-        // View entries on events
         foreach (array_slice($this->events, 0, 15) as $event) {
             $entry = new Entry($jan, $event->id, EntryTypeEnum::Event);
             $this->em->persist($entry);
             $count++;
         }
 
-        // View entries on trainings
         foreach (array_slice($this->trainings, 0, 10) as $training) {
             $entry = new Entry($anna, $training->id, EntryTypeEnum::Training);
             $this->em->persist($entry);
             $count++;
         }
 
-        // View entries on goals
         foreach (array_slice($this->goals, 0, 10) as $goal) {
             $entry = new Entry($jan, $goal->id, EntryTypeEnum::Goal);
             $this->em->persist($entry);

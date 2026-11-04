@@ -51,10 +51,10 @@ export function AppLayout({ children }: AppLayoutProps) {
     const userLink = currentUser?.link ?? '';
 
     const navItems = [
-        { path: '/users', label: t('navUsers'), icon: <IconUsers size={16} /> },
-        { path: '/pages', label: t('navPages'), icon: <IconBuildingStore size={16} /> },
-        { path: '/events', label: t('navEvents'), icon: <IconCalendarEvent size={16} /> },
-        { path: '/statistics', label: t('navStatistics'), icon: <IconChartBar size={16} /> },
+        { path: '/users', label: t('users'), icon: <IconUsers size={16} /> },
+        { path: '/pages', label: t('pages'), icon: <IconBuildingStore size={16} /> },
+        { path: '/events', label: t('events'), icon: <IconCalendarEvent size={16} /> },
+        { path: '/statistics', label: t('statistics'), icon: <IconChartBar size={16} /> },
     ];
 
     return (
@@ -62,7 +62,6 @@ export function AppLayout({ children }: AppLayoutProps) {
             <AppShell.Header>
                 <Container size="lg" h="100%">
                     <Group h="100%" justify="space-between" wrap="nowrap">
-                        {/* Left: Brand + Navigation links */}
                         <Group gap="sm" wrap="nowrap">
                             {isAuthenticated && (
                                 <Burger
@@ -102,11 +101,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                             )}
                         </Group>
 
-                        {/* Right: User menu OR guest controls */}
                         <Group gap="xs" wrap="nowrap">
                             {!isAuthenticated ? (
                                 <>
-                                    {/* Language toggle for guest */}
                                     <SegmentedControl
                                         size="xs"
                                         value={i18n.language.startsWith('en') ? 'en' : 'pl'}
@@ -117,7 +114,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                                         ]}
                                     />
 
-                                    {/* Dark / Light toggle for guest */}
                                     <ActionIcon
                                         variant="default"
                                         size={30}

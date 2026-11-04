@@ -14,6 +14,7 @@ final class EventFactory extends BaseFactory
     {
         $defaults = [
             'pageParticipant' => $overrides['pageParticipant'] ?? PageParticipantFactory::make(em: $em),
+            'feed' => $overrides['feed'] ?? FeedFactory::make(em: $em),
             'startedAt' => self::randomData(),
             'endedAt' => self::randomData(),
             'title' => self::randomString('title'),
@@ -29,6 +30,7 @@ final class EventFactory extends BaseFactory
 
         $object = new Event(
             $data['pageParticipant'],
+            $data['feed'],
             $data['startedAt'],
             $data['endedAt'],
             $data['title'],

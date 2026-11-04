@@ -61,7 +61,6 @@ export const friendService = {
         return res.data;
     },
 
-    // Convenience helpers
     async sendFriendRequest(userId: string): Promise<CreateFriendResponse> {
         return await friendService.createFriend({ userId });
     },

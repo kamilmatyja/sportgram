@@ -8,7 +8,15 @@ import importPlugin from 'eslint-plugin-import-x';
 
 export default tseslint.config(
     {
-        ignores: ['dist', 'node_modules', 'public', 'vite.config.ts', 'src/api/schema.d.ts', 'postcss.config.cjs'],
+        ignores: [
+            'dist',
+            'node_modules',
+            'public',
+            'vite.config.ts',
+            'vitest.config.ts',
+            'src/api/schema.d.ts',
+            'postcss.config.cjs',
+        ],
     },
     js.configs.recommended,
     ...tseslint.configs.recommended,

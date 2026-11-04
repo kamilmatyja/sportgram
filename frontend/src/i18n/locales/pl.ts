@@ -9,7 +9,6 @@ export const pl = {
     resendSuccess: 'Wysłano ponownie!',
     cancel: 'Anuluj',
     back: 'Cofnij',
-    backToStep1: 'Cofnij',
     sending: 'Wysyłanie...',
     gender: 'Płeć',
     genders: {
@@ -100,6 +99,7 @@ export const pl = {
     createdAt: 'Data utworzenia',
     profile: 'Profil',
     prev: 'Poprzednia',
+    previous: 'Poprzednie',
     next: 'Następna',
     page: 'Strona',
     addUser: 'Dodaj użytkownika',
@@ -135,6 +135,7 @@ export const pl = {
     removeFriend: 'Usuń ze znajomych',
     cancelFriendRequest: 'Anuluj zaproszenie',
     discipline: 'Dyscyplina',
+    disciplinesLabel: 'Dyscypliny',
     addDiscipline: 'Dodaj dyscyplinę',
     addDistance: 'Dodaj dystans',
     disciplines: {
@@ -201,7 +202,9 @@ export const pl = {
     conversations: 'Wiadomości',
     age: 'Wiek',
     unauthorizedEdit: 'Nie masz uprawnień do edycji.',
-    saveChanges: 'Zapisz zmiany',
+    saveChanges: 'Zapisz',
+    device: 'Urządzenie',
+    required: 'jest wymagane',
     passwordOptional: 'Pozostaw puste, jeśli nie chcesz zmieniać hasła',
     photoOptional: 'Pozostaw puste, jeśli nie chcesz zmieniać zdjęcia',
     leaveEmptyToKeep: 'Pozostaw puste, jeśli nie chcesz zmieniać',
@@ -211,9 +214,11 @@ export const pl = {
     edit: 'Edytuj',
     delete: 'Usuń',
     error: 'Wystąpił błąd',
+    validationError: 'Błąd walidacji',
     userNotFound: 'Nie znaleziono użytkownika',
     accessDenied: 'Brak dostępu',
     type: 'Typ',
+    feedOrigin: 'Pochodzenie wpisu',
     feedTypes: {
         eventDisciplineList: 'Zapis na wydarzenie',
         eventDisciplineResult: 'Wynik z wydarzenia',
@@ -289,27 +294,23 @@ export const pl = {
     save: 'Zapisz',
     guestHomeTitle: 'Witaj w Sportgram!',
     guestHomeSubtitle: 'Zaloguj się lub utwórz konto, aby kontynuować.',
-    guestHomeLogin: 'Logowanie',
-    guestHomeRegister: 'Rejestracja',
     auth: { loading: 'Sprawdzanie sesji...' },
     notFound: { title: '404 - Nie znaleziono', message: 'Strona, której szukasz, nie istnieje.' },
     unknownError: 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie.',
     brand: { sportgram: 'Sportgram' },
     logout: 'Wyloguj się',
     navHome: 'Kokpit',
-    navUsers: 'Użytkownicy',
-    navPages: 'Strony',
-    navEvents: 'Wydarzenia',
-    navStatistics: 'Statystyki',
     navProfile: 'Mój profil',
     lists: 'Listy',
     results: 'Wyniki',
     details: 'Szczegóły',
+    followers: 'Obserwacje',
+    views: 'Wyświetlenia',
     followPage: 'Zaobserwuj stronę',
     unfollowPage: 'Przestań obserwować',
     saveUp: 'Zapisz się',
     mustBeFriendsToChat: 'Musisz być znajomym, aby pisać.',
-    // Auth & Accounts
+
     loginSuccess: 'Zalogowano pomyślnie!',
     registerSuccess: 'Konto zarejestrowane! Wpisz kod logowania.',
     passwordResetSuccess: 'Hasło zmienione! Możesz się teraz zalogować.',
@@ -325,7 +326,6 @@ export const pl = {
     newPassword: 'Nowe hasło',
     newPasswordOptional: 'Nowe hasło (opcjonalnie)',
 
-    // Common / Layout / Navigation
     toggleTheme: 'Przełącz motyw',
     total: 'Razem',
     unknown: 'Nieznany',
@@ -336,7 +336,6 @@ export const pl = {
     deactivate: 'Deaktywuj',
     noLocation: 'Brak lokalizacji',
 
-    // Feeds & Stories & Comments
     feedAdded: 'Wpis został dodany!',
     feedDeleted: 'Wpis został usunięty',
     commentAdded: 'Komentarz dodany',
@@ -346,7 +345,6 @@ export const pl = {
     loadingFeeds: 'Ładowanie wpisów...',
     loadingStories: 'Ładowanie relacji...',
 
-    // Users & Friends & Chat & Notifications & Push
     searchUserPlaceholder: 'Szukaj użytkownika...',
     profileUpdated: 'Zaktualizowano profil!',
     friendRequestSent: 'Wysłano zaproszenie!',
@@ -361,7 +359,6 @@ export const pl = {
     unknownDevice: 'Nieznane urządzenie',
     missingVapidKey: 'Brak klucza VAPID w konfiguracji.',
 
-    // Pages
     pageCreated: 'Strona utworzona!',
     pageDeleted: 'Strona została usunięta',
     pageFollowed: 'Zaobserwowano stronę!',
@@ -370,7 +367,6 @@ export const pl = {
     loadingPage: 'Ładowanie strony...',
     pageNotFound: 'Nie znaleziono strony',
 
-    // Events
     eventCreated: 'Wydarzenie utworzone!',
     eventDeleted: 'Wydarzenie zostało usunięte',
     signedUpForStartList: 'Zapisano na listę startową!',
@@ -379,14 +375,12 @@ export const pl = {
     loadingEvent: 'Ładowanie wydarzenia...',
     eventNotFound: 'Nie znaleziono wydarzenia',
 
-    // Goals
     goalCreated: 'Cel utworzony!',
     goalDeleted: 'Cel usunięty',
     searchGoalPlaceholder: 'Szukaj celu...',
     loadingGoal: 'Ładowanie celu...',
     goalNotFound: 'Nie znaleziono celu',
 
-    // Trainings
     trainingAdded: 'Trening dodany!',
     trainingDeleted: 'Trening usunięty',
     searchTrainingPlaceholder: 'Szukaj treningu...',
@@ -396,7 +390,7 @@ export const pl = {
     geolocationUnavailable: 'Geolokalizacja niedostępna',
     geolocationFetched: 'Pobrano lokalizację',
     fetchFromGps: 'Pobierz z GPS',
-    // Filters & Sorting
+
     filters: 'Filtry',
     filter: 'Filtruj',
     clearFilters: 'Wyczyść filtry',
@@ -414,7 +408,6 @@ export const pl = {
     authKey: 'Klucz auth',
     activeFiltersCount: 'Aktywne filtry: {{count}}',
 
-    // Sort options
     sort_createdAt_desc: 'Data utworzenia: od najnowszych',
     sort_createdAt_asc: 'Data utworzenia: od najstarszych',
     sort_updatedAt_desc: 'Data aktualizacji: od najnowszych',
@@ -461,7 +454,7 @@ export const pl = {
     passwordResetVerification: 'Weryfikacja resetu hasła',
     markAsRead: 'Oznacz jako przeczytane',
     collaborators: 'Współuczestnicy',
-    selectCollaborators: 'Wybierz współpracowników',
+    selectCollaborators: 'Wybierz współuczestników',
     userCreated: 'Użytkownik utworzony!',
     addSubDistance: 'Dodaj sub-dystans',
     lat: 'Szerokość',
@@ -492,7 +485,6 @@ export const pl = {
     editPage: 'Edytuj stronę',
     editEvent: 'Edytuj wydarzenie',
     editBrowser: 'Edytuj przeglądarkę',
-    addBrowser: 'Dodaj przeglądarkę',
     feedUpdated: 'Zaktualizowano wpis',
     storyUpdated: 'Zaktualizowano relację',
     goalUpdated: 'Zaktualizowano cel',

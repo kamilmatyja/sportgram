@@ -70,7 +70,7 @@ export default function Login() {
                         return;
                     }
                 } catch {
-                    // Fallthrough to notifications
+                    void 0;
                 }
             }
             if (Object.keys(fe).length === 0) {

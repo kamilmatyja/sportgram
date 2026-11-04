@@ -22,9 +22,35 @@ self.addEventListener('fetch', event => {
     if (event.request.method !== 'GET') {
         return;
     }
+
+    const url = new URL(event.request.url);
+
+    if (!url.protocol.startsWith('http')) {
+        return;
+    }
+
+    if (url.pathname.startsWith('/api')) {
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request).then(cached => {
-            return cached || fetch(event.request);
+            if (cached) {
+                return cached;
+            }
+            return fetch(event.request).catch(async () => {
+                if (event.request.mode === 'navigate') {
+                    const fallback = await caches.match('/');
+                    if (fallback) {
+                        return fallback;
+                    }
+                }
+                return new Response('Network error', {
+                    status: 503,
+                    statusText: 'Service Unavailable',
+                    headers: { 'Content-Type': 'text/plain' },
+                });
+            });
         })
     );
 });

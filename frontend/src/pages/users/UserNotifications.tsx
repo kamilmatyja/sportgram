@@ -45,7 +45,6 @@ export default function UserNotifications() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('createdAt:desc');
 
-    // Filters
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 

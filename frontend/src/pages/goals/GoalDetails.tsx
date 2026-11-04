@@ -24,12 +24,13 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconTrash, IconEdit, IconAdjustments, IconEye } from '@tabler/icons-react';
+import { IconTrash, IconEdit, IconAdjustments, IconEye, IconClock } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { applyThemeColor } from '../../utils/themeUtils';
 import NotFound from '../../components/NotFound';
+import { EmptyState } from '../../components/EmptyState';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import {
     goalService,
@@ -46,6 +47,8 @@ import { ColorEnum } from '../../enums/ColorEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
+import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
+import { EntityViewCounter } from '../../components/EntityViewCounter';
 import UserProfileNav from '../../components/UserProfileNav';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { brown } from '../../theme';
@@ -59,7 +62,6 @@ export default function GoalDetails() {
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
 
-    // Edit modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editFormData, setEditFormData] = useState({
         text: '',
@@ -98,7 +100,6 @@ export default function GoalDetails() {
     const isOwner = !!(currentUser?.id && goal?.userId && currentUser.id === goal.userId);
     const canManage = isOwner || isAdmin;
 
-    // Fetch friends for collaborator selection
     const { data: myFriendsData } = useQuery({
         queryKey: ['my-friends-accepted-goal-details', currentUser?.id],
         queryFn: async () => {
@@ -116,7 +117,6 @@ export default function GoalDetails() {
         enabled: !!currentUser,
     });
 
-    // Fetch participant user info
     const participantUserIds = useMemo(() => {
         if (!goal?.participants) return [];
         return Array.from(new Set(goal.participants.map((p) => p.userId)));
@@ -286,9 +286,24 @@ export default function GoalDetails() {
                     <Group justify="space-between" align="flex-start" mb="md" wrap="nowrap">
                         <div>
                             <Title order={2}>{goal.text}</Title>
-                            <Text size="sm" c="dimmed">
-                                @{goal.link}
-                            </Text>
+                            <Group gap="xs" align="center" mt={2}>
+                                <Text size="sm" c="dimmed">
+                                    @{goal.link}
+                                </Text>
+                                <Text size="sm" c="dimmed">
+                                    •
+                                </Text>
+                                <EntityViewCounter entityId={goal.id} type={EntryTypeEnum.GOAL} track={true} />
+                            </Group>
+                            {(goal.startedAt || goal.endedAt) && (
+                                <Group gap="xs" mt={4}>
+                                    <IconClock size={16} />
+                                    <Text size="xs" c="dimmed">
+                                        {goal.startedAt ? formatDateTime(goal.startedAt) : ''} -{' '}
+                                        {goal.endedAt ? formatDateTime(goal.endedAt) : ''}
+                                    </Text>
+                                </Group>
+                            )}
                         </div>
 
                         <Group gap="xs" wrap="nowrap">
@@ -364,121 +379,115 @@ export default function GoalDetails() {
                         </Badge>
                     </Group>
 
-                    {(goal.startedAt || goal.endedAt) && (
-                        <Group gap="xs" mb="lg">
-                            <Text size="xs" c="dimmed">
-                                {goal.startedAt ? formatDateTime(goal.startedAt) : ''} -{' '}
-                                {goal.endedAt ? formatDateTime(goal.endedAt) : ''}
-                            </Text>
-                        </Group>
-                    )}
-
                     <Title order={4} mb="xs">
                         {t('participants')}
                     </Title>
-                    <Table striped withTableBorder withColumnBorders>
-                        <Table.Thead>
-                            <Table.Tr>
-                                <Table.Th>{t('user')}</Table.Th>
-                                <Table.Th>{t('status')}</Table.Th>
-                                <Table.Th ta="right">{t('actions')}</Table.Th>
-                            </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                            {goal.participants?.map((p: GoalParticipantResource) => {
-                                const u = participantUsers[p.userId];
-                                const isSelf = p.userId === currentUser?.id;
-                                const canManageParticipant = isSelf || isOwner;
-                                const pOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === p.status);
-                                const pColor =
-                                    p.status === ElementStatusEnum.ACTIVE
-                                        ? 'green'
-                                        : p.status === ElementStatusEnum.REJECTED
-                                          ? 'red'
-                                          : 'gray';
+                    {!goal.participants || goal.participants.length === 0 ? (
+                        <EmptyState title={t('noData')} />
+                    ) : (
+                        <Table striped withTableBorder withColumnBorders>
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>{t('user')}</Table.Th>
+                                    <Table.Th>{t('status')}</Table.Th>
+                                    <Table.Th ta="right">{t('actions')}</Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>
+                                {goal.participants?.map((p: GoalParticipantResource) => {
+                                    const u = participantUsers[p.userId];
+                                    const isSelf = p.userId === currentUser?.id;
+                                    const canManageParticipant = isSelf || isOwner;
+                                    const pOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === p.status);
+                                    const pColor =
+                                        p.status === ElementStatusEnum.ACTIVE
+                                            ? 'green'
+                                            : p.status === ElementStatusEnum.REJECTED
+                                              ? 'red'
+                                              : 'gray';
 
-                                return (
-                                    <Table.Tr key={p.id}>
-                                        <Table.Td>
-                                            <Group gap="sm">
-                                                <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
-                                                    ?
-                                                </Avatar>
-                                                <div>
-                                                    <Text size="sm" fw={600}>
-                                                        {u ? `${u.firstName} ${u.lastName}` : p.userId}
-                                                    </Text>
-                                                    {u?.link && (
-                                                        <Text size="xs" c="dimmed">
-                                                            @{u.link}
+                                    return (
+                                        <Table.Tr key={p.id}>
+                                            <Table.Td>
+                                                <Group gap="sm">
+                                                    <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
+                                                        ?
+                                                    </Avatar>
+                                                    <div>
+                                                        <Text size="sm" fw={600}>
+                                                            {u ? `${u.firstName} ${u.lastName}` : p.userId}
                                                         </Text>
+                                                        {u?.link && (
+                                                            <Text size="xs" c="dimmed">
+                                                                @{u.link}
+                                                            </Text>
+                                                        )}
+                                                    </div>
+                                                </Group>
+                                            </Table.Td>
+                                            <Table.Td>
+                                                <Badge color={pColor} variant="light">
+                                                    {pOpt?.label ?? p.status}
+                                                </Badge>
+                                            </Table.Td>
+                                            <Table.Td ta="right">
+                                                <Group gap="xs" justify="flex-end" wrap="nowrap">
+                                                    {u?.link && (
+                                                        <Tooltip label={t('details')} withArrow>
+                                                            <ActionIcon
+                                                                component={Link}
+                                                                to={`/users/${u.link}`}
+                                                                variant="light"
+                                                                size={28}
+                                                                aria-label={t('details')}
+                                                            >
+                                                                <IconEye size={14} />
+                                                            </ActionIcon>
+                                                        </Tooltip>
                                                     )}
-                                                </div>
-                                            </Group>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <Badge color={pColor} variant="light">
-                                                {pOpt?.label ?? p.status}
-                                            </Badge>
-                                        </Table.Td>
-                                        <Table.Td ta="right">
-                                            <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                {u?.link && (
-                                                    <Tooltip label={t('details')} withArrow>
-                                                        <ActionIcon
-                                                            component={Link}
-                                                            to={`/users/${u.link}`}
-                                                            variant="light"
-                                                            size={28}
-                                                            aria-label={t('details')}
-                                                        >
-                                                            <IconEye size={14} />
-                                                        </ActionIcon>
-                                                    </Tooltip>
-                                                )}
-                                                {canManageParticipant && (
-                                                    <Menu shadow="md" width={160}>
-                                                        <Menu.Target>
-                                                            <Tooltip label={t('changeStatus')} withArrow>
-                                                                <ActionIcon
-                                                                    variant="light"
-                                                                    size={28}
-                                                                    aria-label={t('changeStatus')}
-                                                                >
-                                                                    <IconAdjustments size={14} />
-                                                                </ActionIcon>
-                                                            </Tooltip>
-                                                        </Menu.Target>
-                                                        <Menu.Dropdown>
-                                                            {ElementStatusEnum.getOptions(t).map((opt) => (
-                                                                <Menu.Item
-                                                                    key={opt.value}
-                                                                    disabled={
-                                                                        p.status === opt.value ||
-                                                                        updateParticipantStatusMutation.isPending
-                                                                    }
-                                                                    onClick={() =>
-                                                                        updateParticipantStatusMutation.mutate({
-                                                                            participantId: p.id,
-                                                                            status: opt.value as ElementStatusEnum,
-                                                                        })
-                                                                    }
-                                                                >
-                                                                    {opt.label}
-                                                                </Menu.Item>
-                                                            ))}
-                                                        </Menu.Dropdown>
-                                                    </Menu>
-                                                )}
-                                            </Group>
-                                        </Table.Td>
-                                    </Table.Tr>
-                                );
-                            })}
-                        </Table.Tbody>
-                    </Table>
+                                                    {canManageParticipant && (
+                                                        <Menu shadow="md" width={160}>
+                                                            <Menu.Target>
+                                                                <Tooltip label={t('changeStatus')} withArrow>
+                                                                    <ActionIcon
+                                                                        variant="light"
+                                                                        size={28}
+                                                                        aria-label={t('changeStatus')}
+                                                                    >
+                                                                        <IconAdjustments size={14} />
+                                                                    </ActionIcon>
+                                                                </Tooltip>
+                                                            </Menu.Target>
+                                                            <Menu.Dropdown>
+                                                                {ElementStatusEnum.getOptions(t).map((opt) => (
+                                                                    <Menu.Item
+                                                                        key={opt.value}
+                                                                        disabled={
+                                                                            p.status === opt.value ||
+                                                                            updateParticipantStatusMutation.isPending
+                                                                        }
+                                                                        onClick={() =>
+                                                                            updateParticipantStatusMutation.mutate({
+                                                                                participantId: p.id,
+                                                                                status: opt.value as ElementStatusEnum,
+                                                                            })
+                                                                        }
+                                                                    >
+                                                                        {opt.label}
+                                                                    </Menu.Item>
+                                                                ))}
+                                                            </Menu.Dropdown>
+                                                        </Menu>
+                                                    )}
+                                                </Group>
+                                            </Table.Td>
+                                        </Table.Tr>
+                                    );
+                                })}
+                            </Table.Tbody>
+                        </Table>
+                    )}
 
-                    {/* Nested Results Section */}
                     {goal.participants?.some((p) => p.results && p.results.length > 0) && (
                         <Stack gap="sm" mt="lg">
                             <Title order={4}>{t('results')}</Title>
@@ -493,13 +502,13 @@ export default function GoalDetails() {
                                         <Text fw={600} size="sm" mb="xs">
                                             {u ? `${u.firstName} ${u.lastName}` : p.userId}
                                         </Text>
-                                        <Table striped withTableBorder>
+                                        <Table striped withTableBorder withColumnBorders>
                                             <Table.Thead>
                                                 <Table.Tr>
                                                     <Table.Th>{t('distanceMeters')}</Table.Th>
                                                     <Table.Th>{t('timeSeconds')}</Table.Th>
-                                                    <Table.Th>{t('createdAt')}</Table.Th>
                                                     <Table.Th>{t('status')}</Table.Th>
+                                                    <Table.Th>{t('createdAt')}</Table.Th>
                                                     <Table.Th ta="right">{t('actions')}</Table.Th>
                                                 </Table.Tr>
                                             </Table.Thead>
@@ -520,14 +529,14 @@ export default function GoalDetails() {
                                                             <Table.Td>{res.distance} m</Table.Td>
                                                             <Table.Td>{res.time} s</Table.Td>
                                                             <Table.Td>
-                                                                <Text size="xs" c="dimmed">
-                                                                    {formatDateTime(res.createdAt)}
-                                                                </Text>
-                                                            </Table.Td>
-                                                            <Table.Td>
                                                                 <Badge color={rColor} variant="light">
                                                                     {rOpt?.label ?? res.status}
                                                                 </Badge>
+                                                            </Table.Td>
+                                                            <Table.Td>
+                                                                <Text size="xs" c="dimmed">
+                                                                    {formatDateTime(res.createdAt)}
+                                                                </Text>
                                                             </Table.Td>
                                                             <Table.Td ta="right">
                                                                 {canManageResult && (
@@ -584,7 +593,6 @@ export default function GoalDetails() {
                     )}
                 </Card>
 
-                {/* Edit modal */}
                 <Modal opened={editOpened} onClose={closeEdit} title={t('editGoal')} size="lg">
                     <Stack gap="sm">
                         <TextInput
@@ -680,7 +688,7 @@ export default function GoalDetails() {
                             }
                             onClick={() => updateGoalMutation.mutate()}
                         >
-                            {t('saveChanges')}
+                            {t('save')}
                         </Button>
                     </Stack>
                 </Modal>

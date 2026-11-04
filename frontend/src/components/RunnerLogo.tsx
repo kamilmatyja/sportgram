@@ -27,10 +27,9 @@ export function RunnerLogo({ size = 32 }: RunnerLogoProps) {
                     <stop offset="100%" stopColor="#020617" />
                 </linearGradient>
             </defs>
-            {/* Background rounded squircle */}
+
             <rect width="512" height="512" rx="112" fill="url(#sportgram-bg-g)" />
 
-            {/* Motion speed lines */}
             <path
                 d="M80 195 h 85 M60 256 h 115 M90 317 h 75"
                 stroke="url(#sportgram-motion-g)"
@@ -38,14 +37,10 @@ export function RunnerLogo({ size = 32 }: RunnerLogoProps) {
                 strokeLinecap="round"
             />
 
-            {/* Runner Figure */}
-            {/* Head */}
             <circle cx="330" cy="120" r="34" fill="url(#sportgram-runner-g)" />
 
-            {/* Torso */}
             <path d="M265 245 L310 170" stroke="url(#sportgram-runner-g)" strokeWidth="32" strokeLinecap="round" />
 
-            {/* Front Leg (knee forward and foot down) */}
             <path
                 d="M265 245 L345 265 L375 365"
                 stroke="url(#sportgram-runner-g)"
@@ -55,7 +50,6 @@ export function RunnerLogo({ size = 32 }: RunnerLogoProps) {
                 fill="none"
             />
 
-            {/* Rear Leg (extended backward) */}
             <path
                 d="M265 245 L205 315 L145 335"
                 stroke="url(#sportgram-runner-g)"
@@ -65,7 +59,6 @@ export function RunnerLogo({ size = 32 }: RunnerLogoProps) {
                 fill="none"
             />
 
-            {/* Front Arm (elbow back, forearm forward) */}
             <path
                 d="M305 175 L365 190 L395 155"
                 stroke="url(#sportgram-runner-g)"
@@ -75,7 +68,6 @@ export function RunnerLogo({ size = 32 }: RunnerLogoProps) {
                 fill="none"
             />
 
-            {/* Rear Arm (extended back) */}
             <path
                 d="M300 180 L240 200 L210 165"
                 stroke="url(#sportgram-runner-g)"

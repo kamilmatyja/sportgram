@@ -77,7 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await fetchUser(signId);
     }, [signId, token, fetchUser]);
 
-    // Fetch user on initial load or when signId/token changes (NO infinite loop)
     useEffect(() => {
         if (signId && token) {
             setIsLoading(true);
@@ -88,7 +87,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [signId, token, fetchUser]);
 
-    // Sync language and theme from user profile ONCE when currentUser.id changes
+    useEffect(() => {
+        const handleLogout = () => {
+            logout();
+        };
+        window.addEventListener('auth:logout', handleLogout);
+        return () => {
+            window.removeEventListener('auth:logout', handleLogout);
+        };
+    }, [logout]);
+
     useEffect(() => {
         if (!currentUser) return;
 
@@ -101,7 +109,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setColorScheme(targetTheme);
     }, [currentUser?.id, currentUser?.language, currentUser?.theme, setColorScheme, i18n]);
 
-    // Periodic token refresh every 4 minutes
     useEffect(() => {
         if (!signId) return;
         const interval = setInterval(async () => {

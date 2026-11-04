@@ -185,7 +185,6 @@ export const eventService = {
         return res.data;
     },
 
-    // Convenience helpers
     async getEventByLink(link: string): Promise<EventResource | null> {
         const res = await api.GET('/api/events', {
             params: {

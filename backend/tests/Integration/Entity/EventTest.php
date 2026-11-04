@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Integration\Entity;
 
-use App\Entity\{Event, PageParticipant};
+use App\Entity\{Event, Feed, PageParticipant};
 use App\Enum\ElementStatusEnum;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
@@ -14,6 +14,7 @@ class EventTest extends TestCase
     final public function testEntityCanBeCreatedAndGettersWork(): void
     {
         $pageParticipant = $this->createStub(PageParticipant::class);
+        $feed = $this->createStub(Feed::class);
         $startedAt = new DateTimeImmutable('-1 hour');
         $endedAt = new DateTimeImmutable('+1 hour');
         $title = 'Event title';
@@ -25,6 +26,7 @@ class EventTest extends TestCase
         $status = ElementStatusEnum::Active;
         $entity = new Event(
             $pageParticipant,
+            $feed,
             $startedAt,
             $endedAt,
             $title,
@@ -37,6 +39,7 @@ class EventTest extends TestCase
         );
         $this->assertInstanceOf(Event::class, $entity);
         $this->assertSame($pageParticipant, $entity->pageParticipant);
+        $this->assertSame($feed, $entity->feed);
         $this->assertSame($startedAt, $entity->startedAt);
         $this->assertSame($endedAt, $entity->endedAt);
         $this->assertSame($title, $entity->title);

@@ -17,25 +17,6 @@ export namespace FeedReactionEnum {
             }));
     };
 
-    export const getEmoji = (type: number): string => {
-        switch (type) {
-            case FeedReactionEnum.LIKE:
-                return '👍';
-            case FeedReactionEnum.LOVE:
-                return '❤️';
-            case FeedReactionEnum.HAHA:
-                return '😂';
-            case FeedReactionEnum.WOW:
-                return '😮';
-            case FeedReactionEnum.SAD:
-                return '😢';
-            case FeedReactionEnum.ANGRY:
-                return '😡';
-            default:
-                return '👍';
-        }
-    };
-
     export const ALL_REACTIONS = [
         { type: FeedReactionEnum.LIKE, emoji: '👍', key: 'like' },
         { type: FeedReactionEnum.LOVE, emoji: '❤️', key: 'love' },
@@ -44,23 +25,4 @@ export namespace FeedReactionEnum {
         { type: FeedReactionEnum.SAD, emoji: '😢', key: 'sad' },
         { type: FeedReactionEnum.ANGRY, emoji: '😡', key: 'angry' },
     ];
-
-    export const getClass = (type: number): { name: string; className: string } => {
-        switch (type) {
-            case FeedReactionEnum.LIKE:
-                return { name: 'hand-thumbs-up-fill', className: 'text-profile-primary' };
-            case FeedReactionEnum.LOVE:
-                return { name: 'heart-fill', className: 'text-danger' };
-            case FeedReactionEnum.HAHA:
-                return { name: 'emoji-laughing-fill', className: 'text-warning' };
-            case FeedReactionEnum.WOW:
-                return { name: 'emoji-surprise-fill', className: 'text-warning' };
-            case FeedReactionEnum.SAD:
-                return { name: 'emoji-frown-fill', className: 'text-warning' };
-            case FeedReactionEnum.ANGRY:
-                return { name: 'emoji-angry-fill', className: 'text-danger' };
-            default:
-                return { name: 'hand-thumbs-up', className: '' };
-        }
-    };
 }

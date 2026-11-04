@@ -169,7 +169,7 @@ class StoryRepositoryTest extends RepositoryTestCase
         $this->story($user, 'RUNNING uppercase');
         $this->clear();
 
-        $window = $this->storyRepository->findStories(self::id($user), $this->indexDto(text: 'run', sort: 'createdAt:asc'));
+        $window = $this->storyRepository->findStories(self::id($user), $this->indexDto($user, text: 'run', sort: 'createdAt:asc'));
 
         $this->assertSame(self::ids([$prefix, $middle, $suffix]), self::ids($window->getItems()));
     }
@@ -268,7 +268,7 @@ class StoryRepositoryTest extends RepositoryTestCase
         ];
         $this->clear();
 
-        $window = $this->storyRepository->findStories(self::id($user), $this->indexDto(sort: $sort));
+        $window = $this->storyRepository->findStories(self::id($user), $this->indexDto($user, sort: $sort));
 
         $this->assertSame(
             self::ids(array_map(static fn (string $key): Story => $stories[$key], $expectedOrder)),
@@ -295,13 +295,13 @@ class StoryRepositoryTest extends RepositoryTestCase
         $stories = [];
 
         for ($i = 0; $i < 5; ++$i) {
-            $stories[] = $this->story($i % 2 ? $friend : $user, createdAt: sprintf('2026-01-01 10:00:%02d', $i));
+            $stories[] = $this->story($friend, createdAt: sprintf('2026-01-01 10:00:%02d', $i));
         }
 
         $this->story($this->user());
         $this->clear();
 
-        $dto = $this->indexDto(sort: 'createdAt:asc');
+        $dto = $this->indexDto($friend, sort: 'createdAt:asc');
         $dto->page = $page;
         $dto->limit = $limit;
 
@@ -314,6 +314,35 @@ class StoryRepositoryTest extends RepositoryTestCase
         $this->assertSame(5, $window->getTotalCount());
         $this->assertSame($page, $window->getPageNumber());
         $this->assertSame($hasNextPage, $window->hasNextPage());
+    }
+
+    final public function testFindStoriesWithoutUserFilterReturnsLatestStoryPerUser(): void
+    {
+        $user = $this->user();
+        $f1 = $this->user();
+        $f2 = $this->user();
+
+        $this->friend($user, $f1, FriendStatusEnum::Accepted);
+        $this->friend($user, $f2, FriendStatusEnum::Accepted);
+
+        $this->story($f1, createdAt: '2026-01-01 10:00:00');
+        $s1 = $this->story($f1, createdAt: '2026-01-01 10:05:00');
+
+        $this->story($f2, createdAt: '2026-01-01 11:00:00');
+        $s2 = $this->story($f2, createdAt: '2026-01-01 11:05:00');
+
+        $this->story($user, createdAt: '2026-01-01 12:00:00');
+        $own = $this->story($user, createdAt: '2026-01-01 12:05:00');
+
+        $this->clear();
+
+        $dto = new StoryIndexDto();
+        $dto->sort = 'createdAt:asc';
+
+        $window = $this->storyRepository->findStories(self::id($user), $dto);
+
+        $this->assertSame(self::ids([$s1, $s2, $own]), self::ids($window->getItems()));
+        $this->assertSame(3, $window->getTotalCount());
     }
 
     public static function paginationProvider(): iterable

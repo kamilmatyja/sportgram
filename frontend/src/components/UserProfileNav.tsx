@@ -105,6 +105,7 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                                 </Text>
                             </Center>
                             <Image
+                                className="header-bg-image"
                                 src={bgSrc}
                                 h={160}
                                 w="100%"

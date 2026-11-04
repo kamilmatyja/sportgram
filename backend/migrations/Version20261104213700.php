@@ -7,10 +7,7 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
-final class Version20260629211104 extends AbstractMigration
+final class Version20261104213700 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -19,7 +16,6 @@ final class Version20260629211104 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE conversation_activity (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, sender_user_id UUID NOT NULL, receiver_user_id UUID NOT NULL, PRIMARY KEY (id))');
         $this->addSql('CREATE INDEX IDX_4C3AB64A2A98155E ON conversation_activity (sender_user_id)');
         $this->addSql('CREATE INDEX IDX_4C3AB64ADA57E237 ON conversation_activity (receiver_user_id)');
@@ -31,12 +27,12 @@ final class Version20260629211104 extends AbstractMigration
         $this->addSql('CREATE TABLE event_discipline_distances (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, distance INT NOT NULL, event_discipline_id UUID NOT NULL, PRIMARY KEY (id))');
         $this->addSql('CREATE INDEX IDX_5A83C853810B97AD ON event_discipline_distances (event_discipline_id)');
         $this->addSql('CREATE TABLE event_discipline_lists (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, status INT NOT NULL, event_discipline_distance_id UUID NOT NULL, feed_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
-        $this->addSql('CREATE INDEX IDX_6951CF258A47C642 ON event_discipline_lists (event_discipline_distance_id)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_6951CF2551A5BC03 ON event_discipline_lists (feed_id)');
+        $this->addSql('CREATE INDEX IDX_6951CF258A47C642 ON event_discipline_lists (event_discipline_distance_id)');
         $this->addSql('CREATE INDEX IDX_6951CF25A76ED395 ON event_discipline_lists (user_id)');
         $this->addSql('CREATE TABLE event_discipline_results (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, time INT NOT NULL, event_discipline_list_id UUID NOT NULL, feed_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
-        $this->addSql('CREATE INDEX IDX_CF4B4CDC6D46BE43 ON event_discipline_results (event_discipline_list_id)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_CF4B4CDC51A5BC03 ON event_discipline_results (feed_id)');
+        $this->addSql('CREATE INDEX IDX_CF4B4CDC6D46BE43 ON event_discipline_results (event_discipline_list_id)');
         $this->addSql('CREATE INDEX IDX_CF4B4CDCA76ED395 ON event_discipline_results (user_id)');
         $this->addSql('CREATE TABLE event_discipline_sub_distances (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, sub_distance INT NOT NULL, event_discipline_distance_id UUID NOT NULL, PRIMARY KEY (id))');
         $this->addSql('CREATE INDEX IDX_513BA7708A47C642 ON event_discipline_sub_distances (event_discipline_distance_id)');
@@ -46,8 +42,9 @@ final class Version20260629211104 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_79255AC1A76ED395 ON event_discipline_sub_results (user_id)');
         $this->addSql('CREATE TABLE event_disciplines (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, discipline INT NOT NULL, event_id UUID NOT NULL, PRIMARY KEY (id))');
         $this->addSql('CREATE INDEX IDX_6948F5871F7E88B ON event_disciplines (event_id)');
-        $this->addSql('CREATE TABLE events (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, started_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, ended_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, link TEXT NOT NULL, rules TEXT NOT NULL, photo BYTEA NOT NULL, location TEXT NOT NULL, status INT NOT NULL, page_participant_id UUID NOT NULL, PRIMARY KEY (id))');
+        $this->addSql('CREATE TABLE events (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, started_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, ended_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, link TEXT NOT NULL, rules TEXT NOT NULL, photo BYTEA NOT NULL, location TEXT NOT NULL, status INT NOT NULL, page_participant_id UUID NOT NULL, feed_id UUID NOT NULL, PRIMARY KEY (id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_5387574A36AC99F1 ON events (link)');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_5387574A51A5BC03 ON events (feed_id)');
         $this->addSql('CREATE INDEX IDX_5387574A2C86034D ON events (page_participant_id)');
         $this->addSql('CREATE TABLE feed_comments (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, text TEXT NOT NULL, status INT NOT NULL, feed_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
         $this->addSql('CREATE INDEX IDX_7F4B018D51A5BC03 ON feed_comments (feed_id)');
@@ -61,8 +58,8 @@ final class Version20260629211104 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_21EE70692A98155E ON friends (sender_user_id)');
         $this->addSql('CREATE INDEX IDX_21EE7069DA57E237 ON friends (receiver_user_id)');
         $this->addSql('CREATE TABLE goal_participant_results (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, distance INT NOT NULL, time INT NOT NULL, status INT NOT NULL, goal_participant_id UUID NOT NULL, feed_id UUID NOT NULL, PRIMARY KEY (id))');
-        $this->addSql('CREATE INDEX IDX_4C201EF916981853 ON goal_participant_results (goal_participant_id)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_4C201EF951A5BC03 ON goal_participant_results (feed_id)');
+        $this->addSql('CREATE INDEX IDX_4C201EF916981853 ON goal_participant_results (goal_participant_id)');
         $this->addSql('CREATE TABLE goal_participants (id UUID NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, status INT NOT NULL, goal_id UUID NOT NULL, user_id UUID NOT NULL, PRIMARY KEY (id))');
         $this->addSql('CREATE INDEX IDX_5498E4F3667D1AFE ON goal_participants (goal_id)');
         $this->addSql('CREATE INDEX IDX_5498E4F3A76ED395 ON goal_participants (user_id)');
@@ -129,6 +126,7 @@ final class Version20260629211104 extends AbstractMigration
         $this->addSql('ALTER TABLE event_discipline_sub_results ADD CONSTRAINT FK_79255AC1A76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
         $this->addSql('ALTER TABLE event_disciplines ADD CONSTRAINT FK_6948F5871F7E88B FOREIGN KEY (event_id) REFERENCES events (id) ON DELETE CASCADE NOT DEFERRABLE');
         $this->addSql('ALTER TABLE events ADD CONSTRAINT FK_5387574A2C86034D FOREIGN KEY (page_participant_id) REFERENCES page_participants (id) ON DELETE CASCADE NOT DEFERRABLE');
+        $this->addSql('ALTER TABLE events ADD CONSTRAINT FK_5387574A51A5BC03 FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE NOT DEFERRABLE');
         $this->addSql('ALTER TABLE feed_comments ADD CONSTRAINT FK_7F4B018D51A5BC03 FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE NOT DEFERRABLE');
         $this->addSql('ALTER TABLE feed_comments ADD CONSTRAINT FK_7F4B018DA76ED395 FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE NOT DEFERRABLE');
         $this->addSql('ALTER TABLE feed_reactions ADD CONSTRAINT FK_70E19C6F51A5BC03 FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE NOT DEFERRABLE');
@@ -166,7 +164,6 @@ final class Version20260629211104 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE conversation_activity DROP CONSTRAINT FK_4C3AB64A2A98155E');
         $this->addSql('ALTER TABLE conversation_activity DROP CONSTRAINT FK_4C3AB64ADA57E237');
         $this->addSql('ALTER TABLE conversations DROP CONSTRAINT FK_C2521BF12A98155E');
@@ -185,6 +182,7 @@ final class Version20260629211104 extends AbstractMigration
         $this->addSql('ALTER TABLE event_discipline_sub_results DROP CONSTRAINT FK_79255AC1A76ED395');
         $this->addSql('ALTER TABLE event_disciplines DROP CONSTRAINT FK_6948F5871F7E88B');
         $this->addSql('ALTER TABLE events DROP CONSTRAINT FK_5387574A2C86034D');
+        $this->addSql('ALTER TABLE events DROP CONSTRAINT FK_5387574A51A5BC03');
         $this->addSql('ALTER TABLE feed_comments DROP CONSTRAINT FK_7F4B018D51A5BC03');
         $this->addSql('ALTER TABLE feed_comments DROP CONSTRAINT FK_7F4B018DA76ED395');
         $this->addSql('ALTER TABLE feed_reactions DROP CONSTRAINT FK_70E19C6F51A5BC03');

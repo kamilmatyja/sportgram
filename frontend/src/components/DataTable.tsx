@@ -90,7 +90,6 @@ export function DataTable<T extends Record<string, unknown>>({
     return (
         <Paper withBorder radius="md" p="md" shadow="xs">
             <Stack gap="md">
-                {/* Header toolbar */}
                 {hasToolbar && (
                     <Flex justify="space-between" align="center" wrap="wrap" gap="sm">
                         <Group gap="sm" flex={1} wrap="wrap">
@@ -160,7 +159,6 @@ export function DataTable<T extends Record<string, unknown>>({
                     </Flex>
                 )}
 
-                {/* Collapsible Filter Panel */}
                 {filtersNode && (
                     <Collapse expanded={filtersOpened}>
                         <Paper withBorder p="md" radius="md">
@@ -169,7 +167,6 @@ export function DataTable<T extends Record<string, unknown>>({
                     </Collapse>
                 )}
 
-                {/* Table */}
                 <Table.ScrollContainer minWidth={600}>
                     <Table striped highlightOnHover verticalSpacing="sm">
                         <Table.Thead>
@@ -227,7 +224,6 @@ export function DataTable<T extends Record<string, unknown>>({
                     </Table>
                 </Table.ScrollContainer>
 
-                {/* Footer pagination */}
                 {onPageChange && (
                     <Flex justify="space-between" align="center" wrap="wrap" gap="sm">
                         <Group gap="xs">

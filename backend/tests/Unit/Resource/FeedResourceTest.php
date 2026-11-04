@@ -6,20 +6,17 @@ namespace Tests\Unit\Resource;
 
 use App\Dto\FeedDetailsQueryDto;
 use App\Entity\Feed;
-use App\Resource\{EventDisciplineDistanceListResource, EventDisciplineDistanceResultResource, FeedCommentResource, FeedReactionResource, FeedResource, GoalParticipantResultResource, GoalResource, TrainingResource};
+use App\Enum\DisciplineEnum;
+use App\Resource\{FeedCommentResource, FeedReactionResource, FeedResource};
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineListFactory, EventDisciplineResultFactory, FeedCommentFactory, FeedFactory, FeedReactionFactory, GoalFactory, GoalParticipantFactory, GoalParticipantResultFactory, TrainingFactory, UserFactory};
+use Tests\Factory\{EventDisciplineDistanceFactory, EventDisciplineFactory, EventDisciplineListFactory, EventDisciplineResultFactory, EventFactory, FeedCommentFactory, FeedFactory, FeedReactionFactory, GoalFactory, GoalParticipantFactory, GoalParticipantResultFactory, TrainingDisciplineDistanceFactory, TrainingDisciplineFactory, TrainingFactory, UserFactory};
 
 class FeedResourceTest extends ResourceTestCase
 {
     private const array RELATIONS = [
         FeedDetailsQueryDto::FEED_COMMENTS => 'comments',
         FeedDetailsQueryDto::FEED_REACTIONS => 'reactions',
-        FeedDetailsQueryDto::EVENT_DISCIPLINE_LIST => 'eventDisciplineList',
-        FeedDetailsQueryDto::EVENT_DISCIPLINE_RESULT => 'eventDisciplineResult',
-        FeedDetailsQueryDto::GOAL => 'goal',
-        FeedDetailsQueryDto::GOAL_PARTICIPANT_RESULT => 'goalParticipantResult',
-        FeedDetailsQueryDto::TRAINING => 'training',
+        FeedDetailsQueryDto::FEED_ORIGIN => 'feedOrigin',
     ];
 
     final public function testMapsAllFields(): void
@@ -74,11 +71,12 @@ class FeedResourceTest extends ResourceTestCase
         $expected = [
             'comments' => array_map(FeedCommentResource::fromEntity(...), $feed->comments->toArray()),
             'reactions' => array_map(FeedReactionResource::fromEntity(...), $feed->reactions->toArray()),
-            'eventDisciplineList' => EventDisciplineDistanceListResource::fromEntity($feed->eventDisciplineList),
-            'eventDisciplineResult' => EventDisciplineDistanceResultResource::fromEntity($feed->eventDisciplineResult),
-            'goal' => GoalResource::fromEntity($feed->goal),
-            'goalParticipantResult' => GoalParticipantResultResource::fromEntity($feed->goalParticipantResult),
-            'training' => TrainingResource::fromEntity($feed->training),
+            'feedOrigin' => sprintf(
+                '%s, {%s}, %d m',
+                $feed->eventDisciplineList->eventDisciplineDistance->eventDiscipline->event->title,
+                $feed->eventDisciplineList->eventDisciplineDistance->eventDiscipline->discipline->name,
+                $feed->eventDisciplineList->eventDisciplineDistance->distance,
+            ),
         ];
 
         foreach (self::RELATIONS as $option => $key) {
@@ -110,12 +108,189 @@ class FeedResourceTest extends ResourceTestCase
 
         $this->assertSame([], $data['comments']);
         $this->assertSame([], $data['reactions']);
-        $this->assertNull($data['eventDisciplineList']);
-        $this->assertNull($data['eventDisciplineResult']);
-        $this->assertNull($data['goal']);
-        $this->assertNull($data['goalParticipantResult']);
-        $this->assertNull($data['training']);
+        $this->assertNull($data['feedOrigin']);
         $this->assertMatchesSchema(FeedResource::class, $data);
+    }
+
+    final public function testFeedOriginWithEvent(): void
+    {
+        $feed = $this->feed();
+        $event = self::persisted(EventFactory::make([
+            'feed' => $feed,
+            'title' => 'Bieg Niepodległości',
+        ]));
+        $ed1 = self::persisted(EventDisciplineFactory::make([
+            'event' => $event,
+            'discipline' => DisciplineEnum::Running,
+        ]));
+        $edd1 = self::persisted(EventDisciplineDistanceFactory::make([
+            'eventDiscipline' => $ed1,
+            'distance' => 10000,
+        ]));
+        $ed1->distances->add($edd1);
+        $event->disciplines->add($ed1);
+
+        $feed->event = $event;
+
+        $dto = new FeedDetailsQueryDto();
+        $dto->include = [FeedDetailsQueryDto::FEED_ORIGIN];
+
+        $data = FeedResource::fromEntity($feed, $dto);
+
+        $this->assertSame('Bieg Niepodległości, {Running}: 10000 m', $data['feedOrigin']);
+    }
+
+    final public function testFeedOriginWithEventWithoutDisciplines(): void
+    {
+        $feed = $this->feed();
+        $event = self::persisted(EventFactory::make([
+            'feed' => $feed,
+            'title' => 'Bieg Niepodległości',
+        ]));
+        $feed->event = $event;
+
+        $dto = new FeedDetailsQueryDto();
+        $dto->include = [FeedDetailsQueryDto::FEED_ORIGIN];
+
+        $data = FeedResource::fromEntity($feed, $dto);
+
+        $this->assertSame('Bieg Niepodległości', $data['feedOrigin']);
+    }
+
+    final public function testFeedOriginWithEventDisciplineList(): void
+    {
+        $feed = $this->feed();
+        $event = self::persisted(EventFactory::make(['title' => 'Maraton Warszawski']));
+        $eventDiscipline = self::persisted(EventDisciplineFactory::make([
+            'event' => $event,
+            'discipline' => DisciplineEnum::Running,
+        ]));
+        $distance = self::persisted(EventDisciplineDistanceFactory::make([
+            'eventDiscipline' => $eventDiscipline,
+            'distance' => 42195,
+        ]));
+        $feed->eventDisciplineList = self::persisted(EventDisciplineListFactory::make([
+            'feed' => $feed,
+            'eventDisciplineDistance' => $distance,
+        ]));
+
+        $dto = new FeedDetailsQueryDto();
+        $dto->include = [FeedDetailsQueryDto::FEED_ORIGIN];
+
+        $data = FeedResource::fromEntity($feed, $dto);
+
+        $this->assertSame('Maraton Warszawski, {Running}, 42195 m', $data['feedOrigin']);
+    }
+
+    final public function testFeedOriginWithEventDisciplineResult(): void
+    {
+        $feed = $this->feed();
+        $event = self::persisted(EventFactory::make(['title' => 'Półmaraton']));
+        $eventDiscipline = self::persisted(EventDisciplineFactory::make([
+            'event' => $event,
+            'discipline' => DisciplineEnum::Cycling,
+        ]));
+        $distance = self::persisted(EventDisciplineDistanceFactory::make([
+            'eventDiscipline' => $eventDiscipline,
+            'distance' => 21097,
+        ]));
+        $list = self::persisted(EventDisciplineListFactory::make([
+            'eventDisciplineDistance' => $distance,
+        ]));
+        $feed->eventDisciplineResult = self::persisted(EventDisciplineResultFactory::make([
+            'feed' => $feed,
+            'eventDisciplineList' => $list,
+            'time' => 5400,
+        ]));
+
+        $dto = new FeedDetailsQueryDto();
+        $dto->include = [FeedDetailsQueryDto::FEED_ORIGIN];
+
+        $data = FeedResource::fromEntity($feed, $dto);
+
+        $this->assertSame('Półmaraton, {Cycling}, 21097 m, 5400 s', $data['feedOrigin']);
+    }
+
+    final public function testFeedOriginWithGoal(): void
+    {
+        $feed = $this->feed();
+        $feed->goal = self::persisted(GoalFactory::make([
+            'feed' => $feed,
+            'text' => 'Przebiec 100km w miesiąc',
+            'discipline' => DisciplineEnum::Running,
+            'distance' => 100000,
+        ]));
+
+        $dto = new FeedDetailsQueryDto();
+        $dto->include = [FeedDetailsQueryDto::FEED_ORIGIN];
+
+        $data = FeedResource::fromEntity($feed, $dto);
+
+        $this->assertSame('Przebiec 100km w miesiąc, {Running}, 100000 m', $data['feedOrigin']);
+    }
+
+    final public function testFeedOriginWithGoalParticipantResult(): void
+    {
+        $feed = $this->feed();
+        $goal = self::persisted(GoalFactory::make([
+            'text' => 'Rowerowe wyzwanie',
+            'discipline' => DisciplineEnum::Cycling,
+        ]));
+        $participant = self::persisted(GoalParticipantFactory::make(['goal' => $goal]));
+        $feed->goalParticipantResult = self::persisted(GoalParticipantResultFactory::make([
+            'feed' => $feed,
+            'goalParticipant' => $participant,
+            'distance' => 15000,
+            'time' => 3600,
+        ]));
+
+        $dto = new FeedDetailsQueryDto();
+        $dto->include = [FeedDetailsQueryDto::FEED_ORIGIN];
+
+        $data = FeedResource::fromEntity($feed, $dto);
+
+        $this->assertSame('Rowerowe wyzwanie, {Cycling}, 15000 m, 3600 s', $data['feedOrigin']);
+    }
+
+    final public function testFeedOriginWithTraining(): void
+    {
+        $feed = $this->feed();
+        $training = self::persisted(TrainingFactory::make([
+            'feed' => $feed,
+            'title' => 'Trening interwałowy',
+        ]));
+        $td1 = self::persisted(TrainingDisciplineFactory::make([
+            'training' => $training,
+            'discipline' => DisciplineEnum::Running,
+        ]));
+        $tdd1 = self::persisted(TrainingDisciplineDistanceFactory::make([
+            'trainingDiscipline' => $td1,
+            'distance' => 5000,
+            'time' => 1500,
+        ]));
+        $td1->distances->add($tdd1);
+        $training->disciplines->add($td1);
+
+        $td2 = self::persisted(TrainingDisciplineFactory::make([
+            'training' => $training,
+            'discipline' => DisciplineEnum::Swimming,
+        ]));
+        $tdd2 = self::persisted(TrainingDisciplineDistanceFactory::make([
+            'trainingDiscipline' => $td2,
+            'distance' => 1000,
+            'time' => 1200,
+        ]));
+        $td2->distances->add($tdd2);
+        $training->disciplines->add($td2);
+
+        $feed->training = $training;
+
+        $dto = new FeedDetailsQueryDto();
+        $dto->include = [FeedDetailsQueryDto::FEED_ORIGIN];
+
+        $data = FeedResource::fromEntity($feed, $dto);
+
+        $this->assertSame('Trening interwałowy, {Running}: 5000 m (1500 s), {Swimming}: 1000 m (1200 s)', $data['feedOrigin']);
     }
 
     final public function testMapsCollectionInOrder(): void
@@ -131,13 +306,13 @@ class FeedResourceTest extends ResourceTestCase
     final public function testCollectionPassesDtoToEachItem(): void
     {
         $dto = new FeedDetailsQueryDto();
-        $dto->include = [FeedDetailsQueryDto::FEED_COMMENTS, FeedDetailsQueryDto::GOAL];
+        $dto->include = [FeedDetailsQueryDto::FEED_COMMENTS, FeedDetailsQueryDto::FEED_ORIGIN];
         $feeds = [$this->feedWithRelations(), $this->feedWithRelations()];
 
         $data = FeedResource::fromEntityCollection($feeds, $dto);
 
         $this->assertSame([FeedResource::fromEntity($feeds[0], $dto), FeedResource::fromEntity($feeds[1], $dto)], $data);
-        $this->assertArrayHasKey('goal', $data[1]);
+        $this->assertArrayHasKey('feedOrigin', $data[1]);
     }
 
     private function feed(array $overrides = []): Feed

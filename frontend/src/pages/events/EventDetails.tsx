@@ -1,5 +1,5 @@
 import { brown } from '../../theme';
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Card,
     Title,
@@ -27,6 +27,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import NotFound from '../../components/NotFound';
+import { EmptyState } from '../../components/EmptyState';
 import { notifications } from '@mantine/notifications';
 import {
     IconMapPin,
@@ -37,6 +38,8 @@ import {
     IconAdjustments,
     IconPlus,
     IconEye,
+    IconChevronDown,
+    IconChevronRight,
 } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -56,6 +59,8 @@ import { useAuth } from '../../auth/AuthContext';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
+import { EntityViewCounter } from '../../components/EntityViewCounter';
 import { formatImageSrc, fileToBase64 } from '../../utils/imageUtils';
 import { PageNav } from '../../components/PageNav';
 import { formatDateTime } from '../../utils/date';
@@ -86,27 +91,31 @@ interface DistanceParticipantsProps {
     currentUserId?: string;
     onSignUp: (distId: string) => void;
     isSigningUp: boolean;
+    primaryColor?: string;
 }
 
 function DistanceParticipantsSection({
     distance,
     isOwner,
-    isAdmin = false,
     isParticipant,
     currentUserId,
     onSignUp,
     isSigningUp,
+    primaryColor,
 }: DistanceParticipantsProps) {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    // Add result modal
+    const [expandedResultIds, setExpandedResultIds] = useState<string[]>([]);
+    const toggleExpandResult = (id: string) => {
+        setExpandedResultIds((prev) => (prev.includes(id) ? prev.filter((rId) => rId !== id) : [...prev, id]));
+    };
+
     const [addResultOpened, { open: openAddResult, close: closeAddResult }] = useDisclosure(false);
     const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
     const [resultTime, setResultTime] = useState('');
     const [subResultsTimes, setSubResultsTimes] = useState<string[]>([]);
 
-    // Edit result modal
     const [editResultOpened, { open: openEditResult, close: closeEditResult }] = useDisclosure(false);
     const [editingResultId, setEditingResultId] = useState<string | null>(null);
     const [editResultTime, setEditResultTime] = useState('');
@@ -255,9 +264,9 @@ function DistanceParticipantsSection({
     return (
         <Paper p="sm" radius="sm" withBorder mb="sm">
             <Group justify="space-between" mb="xs">
-                <Text fw={600} size="sm">
+                <Badge color={primaryColor} variant="outline">
                     {distance.distance} m
-                </Text>
+                </Badge>
                 {isParticipant && !isSignedUp && (
                     <Button
                         size="xs"
@@ -277,9 +286,7 @@ function DistanceParticipantsSection({
                     <Loader size="xs" />
                 </Center>
             ) : participants.length === 0 ? (
-                <Text size="xs" c="dimmed">
-                    {t('noData')}
-                </Text>
+                <EmptyState title={t('noData')} />
             ) : (
                 <Stack gap="sm">
                     <Table striped withTableBorder withColumnBorders>
@@ -396,7 +403,6 @@ function DistanceParticipantsSection({
                         </Table.Tbody>
                     </Table>
 
-                    {/* Sub-results / Results Section */}
                     {participants.some((p) => p.results && p.results.length > 0) && (
                         <Stack gap="xs" pl="sm">
                             <Text size="xs" fw={700} c="dimmed">
@@ -411,60 +417,123 @@ function DistanceParticipantsSection({
                                         <Text size="xs" fw={600} mb={4}>
                                             {u ? `${u.firstName} ${u.lastName}` : p.userId}
                                         </Text>
-                                        <Table striped withTableBorder>
+                                        <Table striped withTableBorder withColumnBorders>
                                             <Table.Thead>
                                                 <Table.Tr>
+                                                    <Table.Th style={{ width: 40 }} />
+                                                    <Table.Th>{t('distanceMeters')}</Table.Th>
                                                     <Table.Th>{t('timeSeconds')}</Table.Th>
-                                                    <Table.Th>{t('subDistances')}</Table.Th>
                                                     <Table.Th ta="right">{t('actions')}</Table.Th>
                                                 </Table.Tr>
                                             </Table.Thead>
                                             <Table.Tbody>
-                                                {p.results.map((res: EventDisciplineDistanceResultResource) => (
-                                                    <Table.Tr key={res.id}>
-                                                        <Table.Td>{res.time} s</Table.Td>
-                                                        <Table.Td>
-                                                            {res.subResults && res.subResults.length > 0 ? (
-                                                                <Group gap={4}>
-                                                                    {res.subResults.map((sr, idx) => (
-                                                                        <Badge key={sr.id} variant="light">
-                                                                            #{idx + 1}: {sr.time}s
-                                                                        </Badge>
-                                                                    ))}
-                                                                </Group>
-                                                            ) : (
-                                                                '-'
-                                                            )}
-                                                        </Table.Td>
-                                                        <Table.Td ta="right">
-                                                            {isOwner && (
-                                                                <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                                    <Tooltip label={t('editResult')} withArrow>
+                                                {p.results.map((res: EventDisciplineDistanceResultResource) => {
+                                                    const hasSubResults = res.subResults && res.subResults.length > 0;
+                                                    const isExpanded = expandedResultIds.includes(res.id);
+                                                    return (
+                                                        <React.Fragment key={res.id}>
+                                                            <Table.Tr>
+                                                                <Table.Td>
+                                                                    {hasSubResults ? (
                                                                         <ActionIcon
-                                                                            variant="light"
-                                                                            size={24}
-                                                                            onClick={() => handleOpenEditResult(res)}
-                                                                            aria-label={t('editResult')}
+                                                                            size="xs"
+                                                                            variant="subtle"
+                                                                            onClick={() => toggleExpandResult(res.id)}
+                                                                            aria-label={t('details')}
                                                                         >
-                                                                            <IconEdit size={14} />
+                                                                            {isExpanded ? (
+                                                                                <IconChevronDown size={14} />
+                                                                            ) : (
+                                                                                <IconChevronRight size={14} />
+                                                                            )}
                                                                         </ActionIcon>
-                                                                    </Tooltip>
-                                                                    <Tooltip label={t('delete')} withArrow>
-                                                                        <ActionIcon
-                                                                            variant="light"
-                                                                            color="red"
-                                                                            size={24}
-                                                                            onClick={() => handleDeleteResult(res.id)}
-                                                                            aria-label={t('delete')}
+                                                                    ) : null}
+                                                                </Table.Td>
+                                                                <Table.Td>{distance.distance} m</Table.Td>
+                                                                <Table.Td>{res.time} s</Table.Td>
+                                                                <Table.Td ta="right">
+                                                                    {isOwner && (
+                                                                        <Group
+                                                                            gap="xs"
+                                                                            justify="flex-end"
+                                                                            wrap="nowrap"
                                                                         >
-                                                                            <IconTrash size={14} />
-                                                                        </ActionIcon>
-                                                                    </Tooltip>
-                                                                </Group>
+                                                                            <Tooltip label={t('editResult')} withArrow>
+                                                                                <ActionIcon
+                                                                                    variant="light"
+                                                                                    size={24}
+                                                                                    onClick={() =>
+                                                                                        handleOpenEditResult(res)
+                                                                                    }
+                                                                                    aria-label={t('editResult')}
+                                                                                >
+                                                                                    <IconEdit size={14} />
+                                                                                </ActionIcon>
+                                                                            </Tooltip>
+                                                                            <Tooltip label={t('delete')} withArrow>
+                                                                                <ActionIcon
+                                                                                    variant="light"
+                                                                                    color="red"
+                                                                                    size={24}
+                                                                                    onClick={() =>
+                                                                                        handleDeleteResult(res.id)
+                                                                                    }
+                                                                                    aria-label={t('delete')}
+                                                                                >
+                                                                                    <IconTrash size={14} />
+                                                                                </ActionIcon>
+                                                                            </Tooltip>
+                                                                        </Group>
+                                                                    )}
+                                                                </Table.Td>
+                                                            </Table.Tr>
+                                                            {hasSubResults && isExpanded && (
+                                                                <Table.Tr>
+                                                                    <Table.Td colSpan={4} p={0}>
+                                                                        <Table
+                                                                            striped
+                                                                            withTableBorder
+                                                                            withColumnBorders
+                                                                        >
+                                                                            <Table.Thead>
+                                                                                <Table.Tr>
+                                                                                    <Table.Th>
+                                                                                        {t('subDistanceMeters')}
+                                                                                    </Table.Th>
+                                                                                    <Table.Th>
+                                                                                        {t('timeSeconds')}
+                                                                                    </Table.Th>
+                                                                                </Table.Tr>
+                                                                            </Table.Thead>
+                                                                            <Table.Tbody>
+                                                                                {res.subResults.map((sr, idx) => {
+                                                                                    const sd =
+                                                                                        distance.subDistances?.find(
+                                                                                            (d) =>
+                                                                                                d.id ===
+                                                                                                sr.eventDisciplineSubDistanceId,
+                                                                                        );
+                                                                                    return (
+                                                                                        <Table.Tr key={sr.id}>
+                                                                                            <Table.Td>
+                                                                                                {sd
+                                                                                                    ? `${sd.subDistance} m`
+                                                                                                    : `#${idx + 1}`}
+                                                                                            </Table.Td>
+                                                                                            <Table.Td>
+                                                                                                {sr.time} s
+                                                                                            </Table.Td>
+                                                                                        </Table.Tr>
+                                                                                    );
+                                                                                })}
+                                                                            </Table.Tbody>
+                                                                        </Table>
+                                                                    </Table.Td>
+                                                                </Table.Tr>
                                                             )}
-                                                        </Table.Td>
-                                                    </Table.Tr>
-                                                ))}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
                                             </Table.Tbody>
                                         </Table>
                                     </Paper>
@@ -475,7 +544,6 @@ function DistanceParticipantsSection({
                 </Stack>
             )}
 
-            {/* Add Result Modal */}
             <Modal opened={addResultOpened} onClose={closeAddResult} title={t('addResult')} size="lg">
                 <Stack gap="sm">
                     <TextInput
@@ -519,7 +587,6 @@ function DistanceParticipantsSection({
                 </Stack>
             </Modal>
 
-            {/* Edit Result Modal */}
             <Modal opened={editResultOpened} onClose={closeEditResult} title={t('editResult')} size="lg">
                 <Stack gap="sm">
                     <TextInput
@@ -558,7 +625,7 @@ function DistanceParticipantsSection({
                         disabled={updateResultMutation.isPending || !editResultTime.trim()}
                         onClick={() => updateResultMutation.mutate()}
                     >
-                        {t('saveChanges')}
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>
@@ -573,7 +640,6 @@ export default function EventDetails() {
     const queryClient = useQueryClient();
     const { currentUser, isParticipant, isAdmin } = useAuth();
 
-    // Edit modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editPhotoFile, setEditPhotoFile] = useState<File | null>(null);
     const [editFormData, setEditFormData] = useState({
@@ -609,7 +675,6 @@ export default function EventDetails() {
         page?.participants?.some((p) => p.id === event?.pageParticipantId && p.userId === currentUser?.id) ?? false;
     const canManageStatus = isOwner || isAdmin;
 
-    // Sign up for distance mutation
     const signUpMutation = useMutation({
         mutationFn: (distanceId: string) => eventService.signUpForDistance(distanceId),
         onSuccess: () => {
@@ -621,7 +686,6 @@ export default function EventDetails() {
         },
     });
 
-    // Discipline helper handlers for edit modal
     const handleAddEditDiscipline = () => {
         setEditDisciplines((prev) => [
             ...prev,
@@ -892,7 +956,7 @@ export default function EventDetails() {
     return (
         <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
             <Stack gap="lg">
-                {page && <PageNav page={page} />}
+                {page && <PageNav page={page} simplifiedHeader={true} />}
 
                 <Card withBorder radius="md" p="lg" shadow="xs">
                     {eventPhotoSrc && (
@@ -902,6 +966,15 @@ export default function EventDetails() {
                     <Group justify="space-between" align="flex-start" mb="md" wrap="nowrap">
                         <div>
                             <Title order={2}>{event.title}</Title>
+                            <Group gap="xs" align="center" mt={2}>
+                                <Text size="sm" c="dimmed">
+                                    @{event.link}
+                                </Text>
+                                <Text size="sm" c="dimmed">
+                                    •
+                                </Text>
+                                <EntityViewCounter entityId={event.id} type={EntryTypeEnum.EVENT} track={true} />
+                            </Group>
                             <Group gap="xs" mt="xs">
                                 <IconMapPin size={16} />
                                 <Text size="sm" c="dimmed">
@@ -995,41 +1068,55 @@ export default function EventDetails() {
                         </Paper>
                     )}
 
-                    {/* Disciplines Hierarchy with Distances, Participants & Results */}
                     <Title order={4} mb="sm">
                         {t('disciplinesAndDistances')}
                     </Title>
 
-                    <Stack gap="md">
-                        {event.disciplines?.map((disc) => (
-                            <Paper key={disc.id} withBorder p="md" radius="md">
-                                <Badge variant="light" mb="sm">
-                                    {DisciplineEnum.getOptions(t).find((o) => o.value === disc.discipline)?.label ??
-                                        disc.discipline}
-                                </Badge>
+                    {!event.disciplines || event.disciplines.length === 0 ? (
+                        <EmptyState title={t('noData')} />
+                    ) : (
+                        <Stack gap="md">
+                            {event.disciplines.map((disc) => (
+                                <Paper key={disc.id} withBorder p="md" radius="md">
+                                    <Badge variant="light" mb="sm">
+                                        {DisciplineEnum.getOptions(t).find((o) => o.value === disc.discipline)?.label ??
+                                            disc.discipline}
+                                    </Badge>
 
-                                <Stack gap="xs">
-                                    {disc.distances?.map((dist) => (
-                                        <DistanceParticipantsSection
-                                            key={dist.id}
-                                            distance={dist}
-                                            isOwner={isOwner}
-                                            isAdmin={isAdmin}
-                                            isParticipant={isParticipant}
-                                            currentUserId={currentUser?.id}
-                                            onSignUp={(dId) => signUpMutation.mutate(dId)}
-                                            isSigningUp={signUpMutation.isPending}
-                                        />
-                                    ))}
-                                </Stack>
-                            </Paper>
-                        ))}
-                    </Stack>
+                                    <Stack gap="xs">
+                                        {disc.distances?.map((dist) => (
+                                            <DistanceParticipantsSection
+                                                key={dist.id}
+                                                distance={dist}
+                                                isOwner={isOwner}
+                                                isAdmin={isAdmin}
+                                                isParticipant={isParticipant}
+                                                currentUserId={currentUser?.id}
+                                                onSignUp={(dId) => signUpMutation.mutate(dId)}
+                                                isSigningUp={signUpMutation.isPending}
+                                                primaryColor={primaryColor}
+                                            />
+                                        ))}
+                                    </Stack>
+                                </Paper>
+                            ))}
+                        </Stack>
+                    )}
                 </Card>
 
-                {/* Edit modal */}
                 <Modal opened={editOpened} onClose={closeEdit} title={t('editEvent')} size="lg">
                     <Stack gap="sm">
+                        <Select
+                            label={t('selectPage')}
+                            placeholder={t('selectPage')}
+                            disabled
+                            data={
+                                pagesData?.data?.map((p) => ({ value: p.id, label: p.title })) ??
+                                (page ? [{ value: page.id, label: page.title }] : [])
+                            }
+                            value={page?.id ?? null}
+                        />
+
                         <TextInput
                             label={t('title')}
                             required
@@ -1261,7 +1348,7 @@ export default function EventDetails() {
                             disabled={updateEventMutation.isPending || !canSubmitEdit}
                             onClick={() => updateEventMutation.mutate()}
                         >
-                            {t('saveChanges')}
+                            {t('save')}
                         </Button>
                     </Stack>
                 </Modal>

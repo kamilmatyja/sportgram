@@ -132,7 +132,6 @@ export const conversationService = {
         return res.data;
     },
 
-    // Convenience helpers used across views
     async getMessages(targetUserId: string): Promise<ConversationResource[]> {
         const res = await api.GET('/api/conversations', {
             params: {

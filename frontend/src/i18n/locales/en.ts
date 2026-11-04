@@ -9,7 +9,6 @@ export const en = {
     resendSuccess: 'Sent again!',
     cancel: 'Cancel',
     back: 'Back',
-    backToStep1: 'Back',
     sending: 'Sending...',
     gender: 'Gender',
     genders: {
@@ -100,6 +99,7 @@ export const en = {
     createdAt: 'Created at',
     profile: 'Profile',
     prev: 'Previous',
+    previous: 'Previous',
     next: 'Next',
     page: 'Page',
     addUser: 'Add user',
@@ -135,6 +135,7 @@ export const en = {
     removeFriend: 'Remove friend',
     cancelFriendRequest: 'Cancel friend request',
     discipline: 'Discipline',
+    disciplinesLabel: 'Disciplines',
     addDiscipline: 'Add discipline',
     addDistance: 'Add distance',
     disciplines: {
@@ -201,7 +202,9 @@ export const en = {
     conversations: 'Conversations',
     age: 'Age',
     unauthorizedEdit: 'You are not authorized to edit.',
-    saveChanges: 'Save changes',
+    saveChanges: 'Save',
+    device: 'Device',
+    required: 'is required',
     passwordOptional: "Leave blank if you don't want to change the password",
     photoOptional: "Leave blank if you don't want to change the photo",
     leaveEmptyToKeep: "Leave blank if you don't want to change",
@@ -211,9 +214,11 @@ export const en = {
     edit: 'Edit',
     delete: 'Delete',
     error: 'An error occurred',
+    validationError: 'Validation error',
     userNotFound: 'User not found',
     accessDenied: 'Access Denied',
     type: 'Type',
+    feedOrigin: 'Post origin',
     feedTypes: {
         eventDisciplineList: 'Event registration',
         eventDisciplineResult: 'Event result',
@@ -289,27 +294,23 @@ export const en = {
     save: 'Save',
     guestHomeTitle: 'Welcome to Sportgram!',
     guestHomeSubtitle: 'Log in or create an account to continue.',
-    guestHomeLogin: 'Login',
-    guestHomeRegister: 'Register',
     auth: { loading: 'Checking session...' },
     notFound: { title: '404 - Not found', message: 'The page you are looking for does not exist.' },
     unknownError: 'An unexpected error occurred. Please try again.',
     brand: { sportgram: 'Sportgram' },
     logout: 'Logout',
     navHome: 'Dashboard',
-    navUsers: 'Users',
-    navPages: 'Pages',
-    navEvents: 'Events',
-    navStatistics: 'Statistics',
     navProfile: 'My profile',
     lists: 'Lists',
     results: 'Results',
     details: 'Details',
+    followers: 'Followers',
+    views: 'Views',
     followPage: 'Follow page',
     unfollowPage: 'Unfollow page',
     saveUp: 'Save up',
     mustBeFriendsToChat: 'You must be friends to send messages.',
-    // Auth & Accounts
+
     loginSuccess: 'Signed in successfully!',
     registerSuccess: 'Account registered! Enter verification code to sign in.',
     passwordResetSuccess: 'Password changed! You can now sign in.',
@@ -325,7 +326,6 @@ export const en = {
     newPassword: 'New password',
     newPasswordOptional: 'New password (optional)',
 
-    // Common / Layout / Navigation
     toggleTheme: 'Toggle theme',
     total: 'Total',
     unknown: 'Unknown',
@@ -336,7 +336,6 @@ export const en = {
     deactivate: 'Deactivate',
     noLocation: 'No location',
 
-    // Feeds & Stories & Comments
     feedAdded: 'Feed post added!',
     feedDeleted: 'Feed post deleted',
     commentAdded: 'Comment added',
@@ -346,7 +345,6 @@ export const en = {
     loadingFeeds: 'Loading feeds...',
     loadingStories: 'Loading stories...',
 
-    // Users & Friends & Chat & Notifications & Push
     searchUserPlaceholder: 'Search users...',
     profileUpdated: 'Profile updated!',
     friendRequestSent: 'Friend request sent!',
@@ -361,7 +359,6 @@ export const en = {
     unknownDevice: 'Unknown device',
     missingVapidKey: 'Missing VAPID key in configuration.',
 
-    // Pages
     pageCreated: 'Page created!',
     pageDeleted: 'Page deleted',
     pageFollowed: 'Page followed!',
@@ -370,7 +367,6 @@ export const en = {
     loadingPage: 'Loading page...',
     pageNotFound: 'Page not found',
 
-    // Events
     eventCreated: 'Event created!',
     eventDeleted: 'Event deleted',
     signedUpForStartList: 'Signed up for start list!',
@@ -379,14 +375,12 @@ export const en = {
     loadingEvent: 'Loading event...',
     eventNotFound: 'Event not found',
 
-    // Goals
     goalCreated: 'Goal created!',
     goalDeleted: 'Goal deleted',
     searchGoalPlaceholder: 'Search goal...',
     loadingGoal: 'Loading goal...',
     goalNotFound: 'Goal not found',
 
-    // Trainings
     trainingAdded: 'Training added!',
     trainingDeleted: 'Training deleted',
     searchTrainingPlaceholder: 'Search training...',
@@ -396,7 +390,7 @@ export const en = {
     geolocationUnavailable: 'Geolocation unavailable',
     geolocationFetched: 'Location fetched',
     fetchFromGps: 'Fetch from GPS',
-    // Filters & Sorting
+
     filters: 'Filters',
     filter: 'Filter',
     clearFilters: 'Clear filters',
@@ -414,7 +408,6 @@ export const en = {
     authKey: 'Auth key',
     activeFiltersCount: 'Active filters: {{count}}',
 
-    // Sort options
     sort_createdAt_desc: 'Created date: newest first',
     sort_createdAt_asc: 'Created date: oldest first',
     sort_updatedAt_desc: 'Updated date: newest first',
@@ -460,8 +453,8 @@ export const en = {
     registerVerification: 'Registration verification',
     passwordResetVerification: 'Reset password verification',
     markAsRead: 'Mark as read',
-    collaborators: 'Participants',
-    selectCollaborators: 'Select collaborators',
+    collaborators: 'Co-participants',
+    selectCollaborators: 'Select co-participants',
     userCreated: 'User created!',
     addSubDistance: 'Add sub-distance',
     lat: 'Latitude',
@@ -492,7 +485,6 @@ export const en = {
     editPage: 'Edit page',
     editEvent: 'Edit event',
     editBrowser: 'Edit browser',
-    addBrowser: 'Add browser',
     feedUpdated: 'Post updated',
     storyUpdated: 'Story updated',
     goalUpdated: 'Goal updated',

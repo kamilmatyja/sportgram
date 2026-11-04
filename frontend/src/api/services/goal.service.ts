@@ -108,7 +108,6 @@ export const goalService = {
         return res.data;
     },
 
-    // Convenience helpers
     async getGoalByLink(link: string): Promise<GoalResource | null> {
         const res = await api.GET('/api/goals', {
             params: {

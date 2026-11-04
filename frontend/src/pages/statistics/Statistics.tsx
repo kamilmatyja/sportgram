@@ -37,7 +37,6 @@ export default function Statistics() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>(activeTab === 'records' ? 'time:asc' : 'createdAt:desc');
 
-    // Filters
     const [disciplineFilter, setDisciplineFilter] = useState<string | null>(null);
     const [distanceFilter, setDistanceFilter] = useState('');
 

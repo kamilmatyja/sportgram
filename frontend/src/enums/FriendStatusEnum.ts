@@ -14,13 +14,4 @@ export namespace FriendStatusEnum {
                 label: t(`friends.${key.toLowerCase()}`),
             }));
     };
-
-    export const getNanoOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return Object.entries(FriendStatusEnum)
-            .filter(([key, value]) => typeof value === 'number' && key !== 'PENDING')
-            .map(([key, value]) => ({
-                value: value as number,
-                label: t(`friends.${key.toLowerCase()}`),
-            }));
-    };
 }

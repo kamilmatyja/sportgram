@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import {
     Card,
     Title,
@@ -22,8 +22,9 @@ import {
     Container,
     Center,
     Loader,
+    Badge,
 } from '@mantine/core';
-import { useDisclosure, useInViewport } from '@mantine/hooks';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconPlus, IconMessageCircle, IconTrash, IconPhoto, IconEdit, IconCheck, IconX } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
@@ -43,56 +44,52 @@ import { useAuth } from '../auth/AuthContext';
 import { StoryViewerModal, type UserStoriesGroup } from '../components/StoryViewerModal';
 import { RunnerLogo } from '../components/RunnerLogo';
 import { EmptyState } from '../components/EmptyState';
+import { EntityViewCounter } from '../components/EntityViewCounter';
+import { EntryTypeEnum } from '../enums/EntryTypeEnum';
 import { openConfirmActionModal } from '../utils/confirmModal';
 import { FeedReactionEnum } from '../enums/FeedReactionEnum';
 import { fileToBase64, formatImageSrc } from '../utils/imageUtils';
 import { formatDateTime } from '../utils/date';
+import { formatFeedOrigin } from '../utils/text';
 
 export default function Home() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const { isAuthenticated, currentUser, isAdmin } = useAuth();
+    const { isAuthenticated, currentUser } = useAuth();
 
-    // Story creation modal
     const [storyOpened, { open: openStoryModal, close: closeStoryModal }] = useDisclosure(false);
     const [storyText, setStoryText] = useState('');
     const [storyPhoto, setStoryPhoto] = useState<File | null>(null);
 
-    // Active story viewer
     const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
     const [storyViewerOpened, setStoryViewerOpened] = useState(false);
 
-    // Story edit modal
     const [editingStory, setEditingStory] = useState<StoryResource | null>(null);
+    const [updatedStoryForModal, setUpdatedStoryForModal] = useState<StoryResource | null>(null);
     const [editStoryOpened, { open: openEditStoryModal, close: closeEditStoryModal }] = useDisclosure(false);
     const [editStoryText, setEditStoryText] = useState('');
     const [editStoryPhoto, setEditStoryPhoto] = useState<File | null>(null);
     const [editStoryFieldErrors, setEditStoryFieldErrors] = useState<Record<string, string>>({});
 
-    // Feed creation modal
     const [feedOpened, { open: openFeedModal, close: closeFeedModal }] = useDisclosure(false);
     const [feedText, setFeedText] = useState('');
     const [feedPhoto, setFeedPhoto] = useState<File | null>(null);
     const [feedFieldErrors, setFeedFieldErrors] = useState<Record<string, string>>({});
     const [storyFieldErrors, setStoryFieldErrors] = useState<Record<string, string>>({});
 
-    // Feed edit modal
     const [editingFeed, setEditingFeed] = useState<FeedResource | null>(null);
     const [editFeedOpened, { open: openEditFeedModal, close: closeEditFeedModal }] = useDisclosure(false);
     const [editFeedText, setEditFeedText] = useState('');
     const [editFeedPhoto, setEditFeedPhoto] = useState<File | null>(null);
     const [editFeedFieldErrors, setEditFeedFieldErrors] = useState<Record<string, string>>({});
 
-    // Active comments collapse for feeds
     const [openCommentsFeedId, setOpenCommentsFeedId] = useState<string | null>(null);
     const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
 
-    // Comment editing state
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editingCommentText, setEditingCommentText] = useState('');
 
-    // Fetch feeds with comments and reactions included
     const {
         data: feedsInfiniteData,
         isLoading: feedsLoading,
@@ -104,15 +101,15 @@ export default function Home() {
         queryFn: async ({ pageParam = 1 }) => {
             return await feedService.getFeeds({
                 page: pageParam,
-                limit: 20,
+                limit: 10,
                 sort: 'createdAt:desc',
-                'include[]': ['feedComments', 'feedReactions'],
+                'include[]': ['feedComments', 'feedReactions', 'feedOrigin'],
             });
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) => {
             const p = lastPage.pagination;
-            if (p?.page && p?.pages && p.page < p.pages) {
+            if (p?.hasNextPage && p?.page) {
                 return p.page + 1;
             }
             return undefined;
@@ -124,15 +121,22 @@ export default function Home() {
         return feedsInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
     }, [feedsInfiniteData]);
 
-    const { ref: feedsBottomRef, inViewport: feedsBottomInViewport } = useInViewport();
+    const feedObserver = useRef<IntersectionObserver | null>(null);
+    const lastFeedElementRef = useCallback(
+        (node: HTMLElement | null) => {
+            if (isFetchingMoreFeeds) return;
+            if (feedObserver.current) feedObserver.current.disconnect();
+            if (!node) return;
+            feedObserver.current = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && hasMoreFeeds) {
+                    fetchNextFeedsPage();
+                }
+            });
+            feedObserver.current.observe(node);
+        },
+        [isFetchingMoreFeeds, hasMoreFeeds, fetchNextFeedsPage],
+    );
 
-    useEffect(() => {
-        if (feedsBottomInViewport && hasMoreFeeds && !isFetchingMoreFeeds) {
-            fetchNextFeedsPage();
-        }
-    }, [feedsBottomInViewport, hasMoreFeeds, isFetchingMoreFeeds, fetchNextFeedsPage]);
-
-    // Fetch stories
     const {
         data: storiesInfiniteData,
         fetchNextPage: fetchNextStoriesPage,
@@ -143,14 +147,14 @@ export default function Home() {
         queryFn: async ({ pageParam = 1 }) => {
             return await storyService.getStories({
                 page: pageParam,
-                limit: 20,
+                limit: 10,
                 sort: 'createdAt:desc',
             });
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) => {
             const p = lastPage.pagination;
-            if (p?.page && p?.pages && p.page < p.pages) {
+            if (p?.hasNextPage && p?.page) {
                 return p.page + 1;
             }
             return undefined;
@@ -162,15 +166,38 @@ export default function Home() {
         return storiesInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
     }, [storiesInfiniteData]);
 
-    const { ref: storiesEndRef, inViewport: storiesEndInViewport } = useInViewport();
+    const storiesViewportRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (storiesEndInViewport && hasMoreStories && !isFetchingMoreStories) {
-            fetchNextStoriesPage();
-        }
-    }, [storiesEndInViewport, hasMoreStories, isFetchingMoreStories, fetchNextStoriesPage]);
+    const handleStoriesScroll = useCallback(
+        ({ x }: { x: number }) => {
+            if (!storiesViewportRef.current || !hasMoreStories || isFetchingMoreStories) return;
+            const { scrollWidth, clientWidth } = storiesViewportRef.current;
+            if (x + clientWidth >= scrollWidth - 60) {
+                fetchNextStoriesPage();
+            }
+        },
+        [hasMoreStories, isFetchingMoreStories, fetchNextStoriesPage],
+    );
 
-    // Collect user IDs from feeds, comments, reactions and stories
+    const storyObserver = useRef<IntersectionObserver | null>(null);
+    const lastStoryElementRef = useCallback(
+        (node: HTMLElement | null) => {
+            if (isFetchingMoreStories) return;
+            if (storyObserver.current) storyObserver.current.disconnect();
+            if (!node) return;
+            storyObserver.current = new IntersectionObserver(
+                (entries) => {
+                    if (entries[0].isIntersecting && hasMoreStories) {
+                        fetchNextStoriesPage();
+                    }
+                },
+                { root: storiesViewportRef.current },
+            );
+            storyObserver.current.observe(node);
+        },
+        [isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
+    );
+
     const relatedUserIds = useMemo(() => {
         const ids: string[] = [];
         feedsData?.forEach((f) => {
@@ -188,7 +215,6 @@ export default function Home() {
         return Array.from(new Set(ids));
     }, [feedsData, storiesData]);
 
-    // Fetch related users
     const { data: usersMapData } = useQuery({
         queryKey: ['feed-users', relatedUserIds],
         queryFn: async (): Promise<Record<string, UserResource>> => {
@@ -240,7 +266,6 @@ export default function Home() {
         return groups;
     }, [storiesData, usersMap, currentUser]);
 
-    // Add feed mutation
     const createFeedMutation = useMutation({
         mutationFn: async () => {
             if (!feedPhoto) throw new Error(t('selectPhoto'));
@@ -262,7 +287,6 @@ export default function Home() {
         },
     });
 
-    // Edit feed mutation
     const updateFeedMutation = useMutation({
         mutationFn: async () => {
             if (!editingFeed) return;
@@ -298,7 +322,6 @@ export default function Home() {
         openEditFeedModal();
     };
 
-    // Add story mutation
     const createStoryMutation = useMutation({
         mutationFn: async () => {
             if (!storyPhoto) throw new Error(t('selectPhoto'));
@@ -320,10 +343,9 @@ export default function Home() {
         },
     });
 
-    // Edit story mutation
     const updateStoryMutation = useMutation({
         mutationFn: async () => {
-            if (!editingStory) return;
+            if (!editingStory) return null;
             let photoStr = editingStory.photo;
             if (editStoryPhoto) {
                 photoStr = await fileToBase64(editStoryPhoto);
@@ -332,12 +354,17 @@ export default function Home() {
                 text: editStoryText,
                 photo: photoStr ?? '',
             });
+            const res = await storyService.getStory(editingStory.id);
+            return res.data ?? null;
         },
-        onSuccess: () => {
+        onSuccess: (freshStory) => {
             closeEditStoryModal();
             setEditingStory(null);
             setEditStoryPhoto(null);
             setEditStoryFieldErrors({});
+            if (freshStory) {
+                setUpdatedStoryForModal(freshStory);
+            }
             queryClient.invalidateQueries({ queryKey: ['stories'] });
             notifications.show({ title: t('stories'), message: t('storyUpdated'), color: 'green' });
         },
@@ -356,7 +383,6 @@ export default function Home() {
         openEditStoryModal();
     };
 
-    // Delete story mutation
     const deleteStoryMutation = useMutation({
         mutationFn: async (id: string) => {
             await storyService.deleteStory(id);
@@ -381,7 +407,6 @@ export default function Home() {
         });
     };
 
-    // Delete feed mutation
     const deleteFeedMutation = useMutation({
         mutationFn: async (id: string) => {
             await feedService.deleteFeed(id);
@@ -415,7 +440,6 @@ export default function Home() {
         });
     };
 
-    // Add reaction mutation
     const addReactionMutation = useMutation({
         mutationFn: async ({ feedId, type }: { feedId: string; type: number }) => {
             await feedService.addReaction(feedId, type);
@@ -429,7 +453,6 @@ export default function Home() {
         },
     });
 
-    // Update reaction mutation
     const updateReactionMutation = useMutation({
         mutationFn: async ({ reactionId, type }: { reactionId: string; type: number }) => {
             await feedService.updateReaction(reactionId, type);
@@ -443,7 +466,6 @@ export default function Home() {
         },
     });
 
-    // Delete reaction mutation
     const deleteReactionMutation = useMutation({
         mutationFn: async (reactionId: string) => {
             await feedService.deleteReaction(reactionId);
@@ -457,7 +479,6 @@ export default function Home() {
         },
     });
 
-    // Handle reaction click (create / update / delete)
     const handleReaction = (feedId: string, type: number, myReaction?: FeedReactionResource) => {
         if (!myReaction) {
             addReactionMutation.mutate({ feedId, type });
@@ -468,7 +489,6 @@ export default function Home() {
         }
     };
 
-    // Add comment
     const addCommentMutation = useMutation({
         mutationFn: async ({ feedId, text }: { feedId: string; text: string }) => {
             await feedService.addComment(feedId, text);
@@ -483,7 +503,6 @@ export default function Home() {
         },
     });
 
-    // Update comment
     const updateCommentMutation = useMutation({
         mutationFn: async ({ id, text }: { id: string; text: string }) => {
             await feedService.updateComment(id, { text });
@@ -499,7 +518,6 @@ export default function Home() {
         },
     });
 
-    // Delete comment
     const deleteCommentMutation = useMutation({
         mutationFn: async (id: string) => {
             await feedService.deleteComment(id);
@@ -513,7 +531,6 @@ export default function Home() {
         },
     });
 
-    // Guest view
     if (!isAuthenticated) {
         return (
             <Container size="xs" py="xl">
@@ -542,11 +559,14 @@ export default function Home() {
 
     return (
         <Stack gap="xl">
-            {/* Stories horizontal carousel */}
             <Card withBorder radius="md" p="md" shadow="xs">
-                <ScrollArea type="never" offsetScrollbars>
+                <ScrollArea
+                    type="never"
+                    offsetScrollbars
+                    viewportRef={storiesViewportRef}
+                    onScrollPositionChange={handleStoriesScroll}
+                >
                     <Group gap="md" wrap="nowrap">
-                        {/* Add Story Button */}
                         <Stack align="center" gap={4} className="pointer" onClick={openStoryModal} miw={64}>
                             <Avatar radius="xl" size="lg" variant="light">
                                 <IconPlus size={24} />
@@ -556,7 +576,6 @@ export default function Home() {
                             </Text>
                         </Stack>
 
-                        {/* Add Feed Button */}
                         <Stack align="center" gap={4} className="pointer" onClick={openFeedModal} miw={64}>
                             <Avatar radius="xl" size="lg" variant="light">
                                 <IconPlus size={24} />
@@ -566,7 +585,6 @@ export default function Home() {
                             </Text>
                         </Stack>
 
-                        {/* List of active stories grouped per person */}
                         {userStoryGroups.map((group, gIdx) => {
                             const storyAuthor = group.author;
                             const storyImg =
@@ -574,6 +592,7 @@ export default function Home() {
                             return (
                                 <Stack
                                     key={group.userId}
+                                    ref={gIdx === userStoryGroups.length - 1 ? lastStoryElementRef : undefined}
                                     align="center"
                                     gap={4}
                                     className="pointer"
@@ -601,12 +620,10 @@ export default function Home() {
                                 <Loader size="sm" />
                             </Center>
                         )}
-                        <div ref={storiesEndRef} style={{ width: 1, minWidth: 1, flexShrink: 0 }} />
                     </Group>
                 </ScrollArea>
             </Card>
 
-            {/* Feeds stream */}
             <Stack gap="md">
                 {feedsLoading ? (
                     Array.from({ length: 3 }).map((_, i) => (
@@ -625,13 +642,11 @@ export default function Home() {
                 ) : feedsData?.length === 0 ? (
                     <EmptyState title={t('noData')} />
                 ) : (
-                    feedsData?.map((feed) => {
+                    feedsData?.map((feed, idx) => {
                         const author =
                             usersMap[feed.userId] ?? (currentUser?.id === feed.userId ? currentUser : undefined);
                         const isFeedOwner = currentUser?.id === feed.userId;
                         const commentsOpen = openCommentsFeedId === feed.id;
-
-                        // Reaction counts
                         const reactionCounts: Record<number, number> = {};
                         feed.reactions?.forEach((r) => {
                             reactionCounts[r.reaction] = (reactionCounts[r.reaction] ?? 0) + 1;
@@ -640,8 +655,14 @@ export default function Home() {
                         const myReaction = feed.reactions?.find((r) => r.userId === currentUser?.id);
 
                         return (
-                            <Card key={feed.id} withBorder radius="md" shadow="xs" p="md">
-                                {/* Header */}
+                            <Card
+                                key={feed.id}
+                                withBorder
+                                radius="md"
+                                shadow="xs"
+                                p="md"
+                                ref={idx === feedsData.length - 1 ? lastFeedElementRef : undefined}
+                            >
                                 <Group justify="space-between" mb="xs">
                                     <Group gap="sm">
                                         <Avatar
@@ -697,10 +718,17 @@ export default function Home() {
                                     )}
                                 </Group>
 
-                                {/* Content */}
-                                <Text size="sm" mb="sm" className="pre-wrap">
-                                    {feed.text}
-                                </Text>
+                                {feed.feedOrigin && (
+                                    <Badge variant="light" color="blue" size="sm" mb="xs">
+                                        {formatFeedOrigin(feed.feedOrigin, t)}
+                                    </Badge>
+                                )}
+
+                                {feed.text && (
+                                    <Text size="sm" mb="sm" className="pre-wrap">
+                                        {feed.text}
+                                    </Text>
+                                )}
 
                                 {feed.photo && (
                                     <Image
@@ -713,7 +741,6 @@ export default function Home() {
                                     />
                                 )}
 
-                                {/* Actions & stats */}
                                 <Group justify="space-between" mt="xs">
                                     <Group gap="xs">
                                         <Group gap={4} wrap="wrap">
@@ -752,9 +779,16 @@ export default function Home() {
                                             {feed.comments?.length ?? 0}
                                         </Button>
                                     </Group>
+
+                                    <EntityViewCounter
+                                        entityId={feed.id}
+                                        type={EntryTypeEnum.FEED}
+                                        size={16}
+                                        textSize="xs"
+                                        track={true}
+                                    />
                                 </Group>
 
-                                {/* Comments section */}
                                 <Collapse expanded={commentsOpen}>
                                     <Stack gap="xs" mt="sm">
                                         {feed.comments?.map((c) => {
@@ -919,7 +953,6 @@ export default function Home() {
                     })
                 )}
 
-                {/* Infinite scroll sentinel and Load More button */}
                 {hasMoreFeeds && (
                     <Center my="md">
                         <Button variant="light" onClick={() => fetchNextFeedsPage()} loading={isFetchingMoreFeeds}>
@@ -927,10 +960,8 @@ export default function Home() {
                         </Button>
                     </Center>
                 )}
-                <div ref={feedsBottomRef} style={{ height: 1 }} />
             </Stack>
 
-            {/* Story Viewer Modal */}
             <StoryViewerModal
                 opened={storyViewerOpened}
                 onClose={() => setStoryViewerOpened(false)}
@@ -938,9 +969,9 @@ export default function Home() {
                 initialGroupIndex={selectedGroupIndex}
                 onEdit={handleOpenEditStory}
                 onDelete={handleDeleteStory}
+                updatedStory={updatedStoryForModal}
             />
 
-            {/* Story Creation Modal */}
             <Modal opened={storyOpened} onClose={closeStoryModal} title={t('addStory')} size="lg">
                 <Stack gap="sm">
                     <Textarea
@@ -971,7 +1002,6 @@ export default function Home() {
                 </Stack>
             </Modal>
 
-            {/* Story Edit Modal */}
             <Modal
                 opened={editStoryOpened}
                 onClose={closeEditStoryModal}
@@ -1009,7 +1039,6 @@ export default function Home() {
                 </Stack>
             </Modal>
 
-            {/* Feed Creation Modal */}
             <Modal opened={feedOpened} onClose={closeFeedModal} title={t('addFeed')} size="lg">
                 <Stack gap="sm">
                     <Textarea
@@ -1048,7 +1077,6 @@ export default function Home() {
                 </Stack>
             </Modal>
 
-            {/* Feed Edit Modal */}
             <Modal opened={editFeedOpened} onClose={closeEditFeedModal} title={t('editFeed')} size="lg">
                 <Stack gap="sm">
                     <Textarea

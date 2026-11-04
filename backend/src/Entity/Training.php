@@ -5,7 +5,8 @@ namespace App\Entity;
 use App\Enum\ElementStatusEnum;
 use App\Repository\TrainingRepository;
 use DateTimeImmutable;
-use Doctrine\Common\Collections\{ArrayCollection, Collection};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -131,6 +132,7 @@ class Training
         $this->link = $link;
         $this->location = $location;
         $this->status = $status;
+        $this->disciplines = new ArrayCollection();
         $this->participants = new ArrayCollection();
     }
 

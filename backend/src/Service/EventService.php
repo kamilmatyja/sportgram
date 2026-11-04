@@ -72,6 +72,7 @@ readonly class EventService
 
         $event = new Event(
             $pageParticipant,
+            $feed,
             $dto->startedAt,
             $dto->endedAt,
             $dto->title,

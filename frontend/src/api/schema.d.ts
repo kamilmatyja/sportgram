@@ -329,7 +329,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update event discipline distance list status - endpoint for owner, user with participant role or user with administrator role */
+        /** Update event discipline distance list status - endpoint for owner or distance participant */
         patch: operations['patch_event_discipline_distance_list_update_status'];
         trace?: never;
     };
@@ -1692,17 +1692,7 @@ export interface components {
              *       "feedComments"
              *     ]
              */
-            include:
-                | (
-                      | 'feedComments'
-                      | 'feedReactions'
-                      | 'eventDisciplineList'
-                      | 'eventDisciplineResult'
-                      | 'goal'
-                      | 'goalParticipantResult'
-                      | 'training'
-                  )[]
-                | null;
+            include: ('feedComments' | 'feedReactions' | 'feedOrigin')[] | null;
         };
         FeedCommentDto: {
             /** @example Nice post */
@@ -3131,6 +3121,67 @@ export interface components {
             /** @example 1 */
             status: number;
         };
+        FeedResource: {
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            userId: string;
+            /**
+             * Format: date-time
+             * @example 2000-01-01T21:37:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2000-01-01T21:37:00
+             */
+            updatedAt: string;
+            /** @example New post */
+            text?: string | null;
+            /** @example base64string */
+            photo?: string | null;
+            /** @example 1 */
+            status: number;
+            comments: components['schemas']['FeedCommentResource'][];
+            reactions: components['schemas']['FeedReactionResource'][];
+            /** @example Event title, {Running}, 10000m */
+            feedOrigin?: string | null;
+        };
+        FriendResource: {
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            senderUserId: string;
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            receiverUserId: string;
+            /**
+             * Format: date-time
+             * @example 2000-01-01T21:37:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2000-01-01T21:37:00
+             */
+            updatedAt: string;
+            /** @example 1 */
+            status: number;
+        };
         GoalParticipantResultResource: {
             /**
              * Format: uuid
@@ -3243,225 +3294,6 @@ export interface components {
             /** @example 1 */
             status: number;
             participants: components['schemas']['GoalParticipantResource'][];
-        };
-        TrainingDisciplineSubDistanceResource: {
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            id: string;
-            /** @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc */
-            trainingDisciplineDistanceId: string;
-            /**
-             * Format: date-time
-             * @example 2026-04-22T10:00:00
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-04-22T12:00:00
-             */
-            updatedAt: string;
-            /** @example 100 */
-            subDistance: number;
-            /** @example 60 */
-            time: number;
-            /** @example 52 */
-            lat: number;
-            /** @example 21 */
-            lng: number;
-            /** @example 5 */
-            accuracy: number;
-            /** @example 12 */
-            speed: number;
-        };
-        TrainingDisciplineDistanceResource: {
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            id: string;
-            /** @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc */
-            trainingDisciplineId: string;
-            /**
-             * Format: date-time
-             * @example 2026-04-22T10:00:00
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-04-22T12:00:00
-             */
-            updatedAt: string;
-            /** @example 100 */
-            distance: number;
-            /** @example 60 */
-            time: number;
-            subDistances: components['schemas']['TrainingDisciplineSubDistanceResource'][];
-        };
-        TrainingDisciplineResource: {
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            id: string;
-            /** @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc */
-            trainingId: string;
-            /**
-             * Format: date-time
-             * @example 2026-04-22T10:00:00
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-04-22T12:00:00
-             */
-            updatedAt: string;
-            /** @example 1 */
-            discipline: number;
-            distances: components['schemas']['TrainingDisciplineDistanceResource'][];
-        };
-        TrainingParticipantResource: {
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            trainingId: string;
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            userId: string;
-            /**
-             * Format: date-time
-             * @example 2000-01-01T21:37:00
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2000-01-01T21:37:00
-             */
-            updatedAt: string;
-            /** @example 1 */
-            status: number;
-        };
-        TrainingResource: {
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            feedId: string;
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            userId: string;
-            /**
-             * Format: date-time
-             * @example 2026-04-22T10:00:00
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-04-22T12:00:00
-             */
-            updatedAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-04-22T10:00:00
-             */
-            startedAt: string;
-            /**
-             * Format: date-time
-             * @example 2026-04-22T12:00:00
-             */
-            endedAt: string;
-            /** @example Training title */
-            title: string;
-            /** @example Training description */
-            description: string;
-            /** @example my-link */
-            link: string;
-            /** @example Training location */
-            location: string;
-            /** @example 1 */
-            status: number;
-            disciplines: components['schemas']['TrainingDisciplineResource'][];
-            participants: components['schemas']['TrainingParticipantResource'][];
-        };
-        FeedResource: {
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            userId: string;
-            /**
-             * Format: date-time
-             * @example 2000-01-01T21:37:00
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2000-01-01T21:37:00
-             */
-            updatedAt: string;
-            /** @example New post */
-            text?: string | null;
-            /** @example base64string */
-            photo?: string | null;
-            /** @example 1 */
-            status: number;
-            comments: components['schemas']['FeedCommentResource'][];
-            reactions: components['schemas']['FeedReactionResource'][];
-            eventDisciplineList?: components['schemas']['EventDisciplineDistanceListResource'] | null;
-            eventDisciplineResult?: components['schemas']['EventDisciplineDistanceResultResource'] | null;
-            goal?: components['schemas']['GoalResource'] | null;
-            goalParticipantResult?: components['schemas']['GoalParticipantResultResource'] | null;
-            training?: components['schemas']['TrainingResource'] | null;
-        };
-        FriendResource: {
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            id: string;
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            senderUserId: string;
-            /**
-             * Format: uuid
-             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
-             */
-            receiverUserId: string;
-            /**
-             * Format: date-time
-             * @example 2000-01-01T21:37:00
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @example 2000-01-01T21:37:00
-             */
-            updatedAt: string;
-            /** @example 1 */
-            status: number;
         };
         NotificationResource: {
             /**
@@ -3664,6 +3496,161 @@ export interface components {
             photo: string;
             /** @example 1 */
             status: number;
+        };
+        TrainingDisciplineSubDistanceResource: {
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            id: string;
+            /** @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc */
+            trainingDisciplineDistanceId: string;
+            /**
+             * Format: date-time
+             * @example 2026-04-22T10:00:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-04-22T12:00:00
+             */
+            updatedAt: string;
+            /** @example 100 */
+            subDistance: number;
+            /** @example 60 */
+            time: number;
+            /** @example 52 */
+            lat: number;
+            /** @example 21 */
+            lng: number;
+            /** @example 5 */
+            accuracy: number;
+            /** @example 12 */
+            speed: number;
+        };
+        TrainingDisciplineDistanceResource: {
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            id: string;
+            /** @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc */
+            trainingDisciplineId: string;
+            /**
+             * Format: date-time
+             * @example 2026-04-22T10:00:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-04-22T12:00:00
+             */
+            updatedAt: string;
+            /** @example 100 */
+            distance: number;
+            /** @example 60 */
+            time: number;
+            subDistances: components['schemas']['TrainingDisciplineSubDistanceResource'][];
+        };
+        TrainingDisciplineResource: {
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            id: string;
+            /** @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc */
+            trainingId: string;
+            /**
+             * Format: date-time
+             * @example 2026-04-22T10:00:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-04-22T12:00:00
+             */
+            updatedAt: string;
+            /** @example 1 */
+            discipline: number;
+            distances: components['schemas']['TrainingDisciplineDistanceResource'][];
+        };
+        TrainingParticipantResource: {
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            trainingId: string;
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            userId: string;
+            /**
+             * Format: date-time
+             * @example 2000-01-01T21:37:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2000-01-01T21:37:00
+             */
+            updatedAt: string;
+            /** @example 1 */
+            status: number;
+        };
+        TrainingResource: {
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            feedId: string;
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            userId: string;
+            /**
+             * Format: date-time
+             * @example 2026-04-22T10:00:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-04-22T12:00:00
+             */
+            updatedAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-04-22T10:00:00
+             */
+            startedAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-04-22T12:00:00
+             */
+            endedAt: string;
+            /** @example Training title */
+            title: string;
+            /** @example Training description */
+            description: string;
+            /** @example my-link */
+            link: string;
+            /** @example Training location */
+            location: string;
+            /** @example 1 */
+            status: number;
+            disciplines: components['schemas']['TrainingDisciplineResource'][];
+            participants: components['schemas']['TrainingParticipantResource'][];
         };
         UserDisciplineResource: {
             /**
@@ -6631,17 +6618,7 @@ export interface operations {
                  *       "feedComments"
                  *     ]
                  */
-                'include[]'?:
-                    | (
-                          | 'feedComments'
-                          | 'feedReactions'
-                          | 'eventDisciplineList'
-                          | 'eventDisciplineResult'
-                          | 'goal'
-                          | 'goalParticipantResult'
-                          | 'training'
-                      )[]
-                    | null;
+                'include[]'?: ('feedComments' | 'feedReactions' | 'feedOrigin')[] | null;
             };
             header?: never;
             path?: never;
@@ -6813,17 +6790,7 @@ export interface operations {
                  *       "feedComments"
                  *     ]
                  */
-                'include[]'?:
-                    | (
-                          | 'feedComments'
-                          | 'feedReactions'
-                          | 'eventDisciplineList'
-                          | 'eventDisciplineResult'
-                          | 'goal'
-                          | 'goalParticipantResult'
-                          | 'training'
-                      )[]
-                    | null;
+                'include[]'?: ('feedComments' | 'feedReactions' | 'feedOrigin')[] | null;
             };
             header?: never;
             path: {

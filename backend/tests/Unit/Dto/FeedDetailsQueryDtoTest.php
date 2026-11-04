@@ -30,12 +30,8 @@ class FeedDetailsQueryDtoTest extends DtoTestCase
     {
         yield 'FEED_COMMENTS' => [[FeedDetailsQueryDto::FEED_COMMENTS]];
         yield 'FEED_REACTIONS' => [[FeedDetailsQueryDto::FEED_REACTIONS]];
-        yield 'EVENT_DISCIPLINE_LIST' => [[FeedDetailsQueryDto::EVENT_DISCIPLINE_LIST]];
-        yield 'EVENT_DISCIPLINE_RESULT' => [[FeedDetailsQueryDto::EVENT_DISCIPLINE_RESULT]];
-        yield 'GOAL' => [[FeedDetailsQueryDto::GOAL]];
-        yield 'GOAL_PARTICIPANT_RESULT' => [[FeedDetailsQueryDto::GOAL_PARTICIPANT_RESULT]];
-        yield 'TRAINING' => [[FeedDetailsQueryDto::TRAINING]];
-        yield 'all' => [[FeedDetailsQueryDto::FEED_COMMENTS, FeedDetailsQueryDto::FEED_REACTIONS, FeedDetailsQueryDto::EVENT_DISCIPLINE_LIST, FeedDetailsQueryDto::EVENT_DISCIPLINE_RESULT, FeedDetailsQueryDto::GOAL, FeedDetailsQueryDto::GOAL_PARTICIPANT_RESULT, FeedDetailsQueryDto::TRAINING]];
+        yield 'FEED_ORIGIN' => [[FeedDetailsQueryDto::FEED_ORIGIN]];
+        yield 'all' => [[FeedDetailsQueryDto::FEED_COMMENTS, FeedDetailsQueryDto::FEED_REACTIONS, FeedDetailsQueryDto::FEED_ORIGIN]];
     }
 
     #[DataProvider('invalidIncludeProvider')]

@@ -59,12 +59,10 @@ export default function UserPushSubscriptions() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('createdAt:desc');
 
-    // Filters
     const [endpointFilter, setEndpointFilter] = useState('');
     const [p256dhFilter, setP256dhFilter] = useState('');
     const [authFilter, setAuthFilter] = useState('');
 
-    // Create modal
     const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
     const [createForm, setCreateForm] = useState({
         endpoint: '',
@@ -74,7 +72,6 @@ export default function UserPushSubscriptions() {
     });
     const [createFieldErrors, setCreateFieldErrors] = useState<Record<string, string>>({});
 
-    // Edit modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editingSub, setEditingSub] = useState<PushSubscriptionResource | null>(null);
     const [editForm, setEditForm] = useState({
@@ -450,7 +447,7 @@ export default function UserPushSubscriptions() {
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
                 onAdd={isOwner ? openCreate : undefined}
-                addLabel={t('addBrowser')}
+                addLabel={t('addSubscription')}
                 actions={(s) => (
                     <Group gap="xs" justify="flex-end" wrap="nowrap">
                         {canManage && (
@@ -513,8 +510,7 @@ export default function UserPushSubscriptions() {
                 )}
             />
 
-            {/* Create modal */}
-            <Modal opened={createOpened} onClose={closeCreate} title={t('addBrowser')} size="lg">
+            <Modal opened={createOpened} onClose={closeCreate} title={t('addSubscription')} size="lg">
                 <Stack gap="md">
                     <Paper withBorder p="md" radius="md">
                         <Stack gap="xs">
@@ -588,7 +584,6 @@ export default function UserPushSubscriptions() {
                 </Stack>
             </Modal>
 
-            {/* Edit modal */}
             <Modal opened={editOpened} onClose={closeEdit} title={t('editBrowser')} size="lg">
                 <Stack gap="sm">
                     <TextInput
@@ -630,7 +625,7 @@ export default function UserPushSubscriptions() {
                         }
                         onClick={() => updateMutation.mutate()}
                     >
-                        {t('saveChanges')}
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>

@@ -171,13 +171,13 @@ export default function UsersList() {
         });
     };
 
-    // Edit user modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editingUser, setEditingUser] = useState<UserResource | null>(null);
     const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
     const [editFormData, setEditFormData] = useState({
         firstName: '',
         lastName: '',
+        email: '',
         bio: '',
         phone: '',
         country: null as string | null,
@@ -199,6 +199,7 @@ export default function UsersList() {
         setEditFormData({
             firstName: u.firstName ?? '',
             lastName: u.lastName ?? '',
+            email: u.email ?? '',
             bio: u.bio ?? '',
             phone: u.phone != null ? String(u.phone) : '',
             country: u.country != null ? String(u.country) : null,
@@ -245,7 +246,7 @@ export default function UsersList() {
                 color: Number(editFormData.color) as ColorEnum,
                 link: editFormData.link,
                 password: editFormData.password || null,
-                email: editingUser.email,
+                email: editFormData.email,
                 profilePhoto: profPhoto,
                 backgroundPhoto: bgPhoto,
                 disciplines: editFormData.disciplines.map(Number),
@@ -269,7 +270,6 @@ export default function UsersList() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('createdAt:desc');
 
-    // Individual filters (no UUID fields in UI)
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -737,8 +737,8 @@ export default function UsersList() {
                             onChange={(val) => setFormData({ ...formData, roles: val })}
                         />
                         <MultiSelect
-                            label={t('discipline')}
-                            placeholder={t('discipline')}
+                            label={t('disciplinesLabel')}
+                            placeholder={t('disciplinesLabel')}
                             clearable
                             data={DisciplineEnum.getOptions(t).map((d) => ({ value: String(d.value), label: d.label }))}
                             value={formData.disciplines}
@@ -792,7 +792,6 @@ export default function UsersList() {
                 </Stack>
             </Modal>
 
-            {/* Edit User Modal */}
             <Modal opened={editOpened} onClose={closeEdit} title={t('editUser')} size="lg">
                 <Stack gap="sm">
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
@@ -816,9 +815,11 @@ export default function UsersList() {
                         <TextInput
                             label={t('email')}
                             placeholder={t('emailPlaceholder')}
-                            disabled
+                            required
                             type="email"
-                            value={editingUser?.email || ''}
+                            value={editFormData.email}
+                            error={editFieldErrors.email}
+                            onChange={(e) => setEditFormData({ ...editFormData, email: e.currentTarget.value })}
                         />
                         <TextInput
                             label={t('password')}
@@ -914,35 +915,36 @@ export default function UsersList() {
                         />
                     </SimpleGrid>
 
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                        <MultiSelect
+                            label={t('role')}
+                            placeholder={t('selectOption')}
+                            required
+                            clearable
+                            data={RoleEnum.getOptions(t).map((r) => ({ value: String(r.value), label: r.label }))}
+                            value={editFormData.roles}
+                            error={editFieldErrors.roles}
+                            onChange={(vals) => setEditFormData({ ...editFormData, roles: vals })}
+                        />
+
+                        <MultiSelect
+                            label={t('disciplinesLabel')}
+                            placeholder={t('selectOption')}
+                            clearable
+                            data={DisciplineEnum.getOptions(t).map((d) => ({ value: String(d.value), label: d.label }))}
+                            value={editFormData.disciplines}
+                            error={editFieldErrors.disciplines}
+                            onChange={(vals) => setEditFormData({ ...editFormData, disciplines: vals })}
+                        />
+                    </SimpleGrid>
+
                     <Textarea
                         label={t('bio')}
-                        placeholder={t('bioPlaceholder')}
                         required
                         rows={3}
                         value={editFormData.bio}
                         error={editFieldErrors.bio}
                         onChange={(e) => setEditFormData({ ...editFormData, bio: e.currentTarget.value })}
-                    />
-
-                    <MultiSelect
-                        label={t('rolesHeader')}
-                        placeholder={t('selectOption')}
-                        required
-                        clearable
-                        data={RoleEnum.getOptions(t).map((r) => ({ value: String(r.value), label: r.label }))}
-                        value={editFormData.roles}
-                        error={editFieldErrors.roles}
-                        onChange={(vals) => setEditFormData({ ...editFormData, roles: vals })}
-                    />
-
-                    <MultiSelect
-                        label={t('disciplinesHeader')}
-                        placeholder={t('selectOption')}
-                        clearable
-                        data={DisciplineEnum.getOptions(t).map((d) => ({ value: String(d.value), label: d.label }))}
-                        value={editFormData.disciplines}
-                        error={editFieldErrors.disciplines}
-                        onChange={(vals) => setEditFormData({ ...editFormData, disciplines: vals })}
                     />
 
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
@@ -976,7 +978,7 @@ export default function UsersList() {
                         disabled={updateMutation.isPending}
                         onClick={() => updateMutation.mutate()}
                     >
-                        {t('saveChanges')}
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>

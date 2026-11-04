@@ -27,8 +27,17 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import NotFound from '../../components/NotFound';
+import { EmptyState } from '../../components/EmptyState';
 import { notifications } from '@mantine/notifications';
-import { IconBookmark, IconTrash, IconEdit, IconAdjustments, IconPlus, IconEye } from '@tabler/icons-react';
+import {
+    IconBookmark,
+    IconBookmarkOff,
+    IconTrash,
+    IconEdit,
+    IconAdjustments,
+    IconPlus,
+    IconEye,
+} from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Link } from 'react-router-dom';
@@ -78,7 +87,6 @@ export default function PageDetails() {
     const queryClient = useQueryClient();
     const { currentUser, isOrganizer, isAdmin } = useAuth();
 
-    // Edit page modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editFormData, setEditFormData] = useState({
         title: '',
@@ -91,7 +99,6 @@ export default function PageDetails() {
     const [editCollaboratorIds, setEditCollaboratorIds] = useState<string[]>([]);
     const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
 
-    // Create event modal
     const [createEventOpened, { open: openCreateEvent, close: closeCreateEvent }] = useDisclosure(false);
     const [eventPhotoFile, setEventPhotoFile] = useState<File | null>(null);
     const [eventFormData, setEventFormData] = useState({
@@ -144,7 +151,6 @@ export default function PageDetails() {
         (page?.participants?.some((p) => p.userId === currentUser?.id && p.status === ElementStatusEnum.ACTIVE) ??
             false);
 
-    // Check if following
     const { data: followData } = useQuery({
         queryKey: ['page-follows', page?.id, currentUser?.id],
         queryFn: async () => {
@@ -155,7 +161,6 @@ export default function PageDetails() {
         enabled: !!page?.id && !!currentUser?.id,
     });
 
-    // Fetch related events
     const { data: pageEventsData, isLoading: eventsLoading } = useQuery({
         queryKey: ['page-events', page?.id],
         queryFn: async () => {
@@ -171,7 +176,6 @@ export default function PageDetails() {
 
     const pageEvents = pageEventsData ?? [];
 
-    // Fetch participant user info
     const participantUserIds = useMemo(() => {
         if (!page?.participants) return [];
         return Array.from(new Set(page.participants.map((p) => p.userId)));
@@ -200,6 +204,7 @@ export default function PageDetails() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['page-follows'] });
+            queryClient.invalidateQueries({ queryKey: ['page', link] });
             notifications.show({ title: t('pageFollows'), message: t('pageFollowed'), color: 'green' });
         },
         onError: (err) => {
@@ -213,6 +218,7 @@ export default function PageDetails() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['page-follows'] });
+            queryClient.invalidateQueries({ queryKey: ['page', link] });
             notifications.show({ title: t('pageFollows'), message: t('pageUnfollowed'), color: 'green' });
         },
         onError: (err) => {
@@ -320,7 +326,6 @@ export default function PageDetails() {
         },
     });
 
-    // Add event discipline handlers
     const handleAddDiscipline = () => {
         setEventDisciplines((prev) => [
             ...prev,
@@ -534,6 +539,7 @@ export default function PageDetails() {
                 <Button
                     variant="default"
                     size="xs"
+                    leftSection={<IconBookmarkOff size={16} />}
                     onClick={() => unfollowMutation.mutate(followData.id)}
                     loading={unfollowMutation.isPending}
                     disabled={unfollowMutation.isPending}
@@ -614,115 +620,117 @@ export default function PageDetails() {
                     </Card>
                 )}
 
-                {/* Participants table */}
                 <Card withBorder radius="md" p="md" shadow="xs">
                     <Title order={4} mb="xs">
                         {t('participants')}
                     </Title>
-                    <Table striped withTableBorder withColumnBorders>
-                        <Table.Thead>
-                            <Table.Tr>
-                                <Table.Th>{t('user')}</Table.Th>
-                                <Table.Th>{t('status')}</Table.Th>
-                                <Table.Th ta="right">{t('actions')}</Table.Th>
-                            </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                            {page.participants?.map((p: PageParticipantResource) => {
-                                const u = participantUsers[p.userId];
-                                const isSelf = p.userId === currentUser?.id;
-                                const canManageParticipant = isSelf || isOwner;
-                                const pOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === p.status);
-                                const pColor =
-                                    p.status === ElementStatusEnum.ACTIVE
-                                        ? 'green'
-                                        : p.status === ElementStatusEnum.REJECTED
-                                          ? 'red'
-                                          : 'gray';
+                    {!page.participants || page.participants.length === 0 ? (
+                        <EmptyState title={t('noData')} />
+                    ) : (
+                        <Table striped withTableBorder withColumnBorders>
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>{t('user')}</Table.Th>
+                                    <Table.Th>{t('status')}</Table.Th>
+                                    <Table.Th ta="right">{t('actions')}</Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>
+                                {page.participants?.map((p: PageParticipantResource) => {
+                                    const u = participantUsers[p.userId];
+                                    const isSelf = p.userId === currentUser?.id;
+                                    const canManageParticipant = isSelf || isOwner;
+                                    const pOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === p.status);
+                                    const pColor =
+                                        p.status === ElementStatusEnum.ACTIVE
+                                            ? 'green'
+                                            : p.status === ElementStatusEnum.REJECTED
+                                              ? 'red'
+                                              : 'gray';
 
-                                return (
-                                    <Table.Tr key={p.id}>
-                                        <Table.Td>
-                                            <Group gap="sm">
-                                                <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
-                                                    ?
-                                                </Avatar>
-                                                <div>
-                                                    <Text size="sm" fw={600}>
-                                                        {u ? `${u.firstName} ${u.lastName}` : p.userId}
-                                                    </Text>
-                                                    {u?.link && (
-                                                        <Text size="xs" c="dimmed">
-                                                            @{u.link}
+                                    return (
+                                        <Table.Tr key={p.id}>
+                                            <Table.Td>
+                                                <Group gap="sm">
+                                                    <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
+                                                        ?
+                                                    </Avatar>
+                                                    <div>
+                                                        <Text size="sm" fw={600}>
+                                                            {u ? `${u.firstName} ${u.lastName}` : p.userId}
                                                         </Text>
+                                                        {u?.link && (
+                                                            <Text size="xs" c="dimmed">
+                                                                @{u.link}
+                                                            </Text>
+                                                        )}
+                                                    </div>
+                                                </Group>
+                                            </Table.Td>
+                                            <Table.Td>
+                                                <Badge color={pColor} variant="light">
+                                                    {pOpt?.label ?? p.status}
+                                                </Badge>
+                                            </Table.Td>
+                                            <Table.Td ta="right">
+                                                <Group gap="xs" justify="flex-end" wrap="nowrap">
+                                                    {u?.link && (
+                                                        <Tooltip label={t('details')} withArrow>
+                                                            <ActionIcon
+                                                                component={Link}
+                                                                to={`/users/${u.link}`}
+                                                                variant="light"
+                                                                size={28}
+                                                                aria-label={t('details')}
+                                                            >
+                                                                <IconEye size={14} />
+                                                            </ActionIcon>
+                                                        </Tooltip>
                                                     )}
-                                                </div>
-                                            </Group>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <Badge color={pColor} variant="light">
-                                                {pOpt?.label ?? p.status}
-                                            </Badge>
-                                        </Table.Td>
-                                        <Table.Td ta="right">
-                                            <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                {u?.link && (
-                                                    <Tooltip label={t('details')} withArrow>
-                                                        <ActionIcon
-                                                            component={Link}
-                                                            to={`/users/${u.link}`}
-                                                            variant="light"
-                                                            size={28}
-                                                            aria-label={t('details')}
-                                                        >
-                                                            <IconEye size={14} />
-                                                        </ActionIcon>
-                                                    </Tooltip>
-                                                )}
-                                                {canManageParticipant && (
-                                                    <Menu shadow="md" width={160}>
-                                                        <Menu.Target>
-                                                            <Tooltip label={t('changeStatus')} withArrow>
-                                                                <ActionIcon
-                                                                    variant="light"
-                                                                    size={28}
-                                                                    aria-label={t('changeStatus')}
-                                                                >
-                                                                    <IconAdjustments size={14} />
-                                                                </ActionIcon>
-                                                            </Tooltip>
-                                                        </Menu.Target>
-                                                        <Menu.Dropdown>
-                                                            {ElementStatusEnum.getOptions(t).map((opt) => (
-                                                                <Menu.Item
-                                                                    key={opt.value}
-                                                                    disabled={
-                                                                        p.status === opt.value ||
-                                                                        updateParticipantStatusMutation.isPending
-                                                                    }
-                                                                    onClick={() =>
-                                                                        updateParticipantStatusMutation.mutate({
-                                                                            participantId: p.id,
-                                                                            status: opt.value as ElementStatusEnum,
-                                                                        })
-                                                                    }
-                                                                >
-                                                                    {opt.label}
-                                                                </Menu.Item>
-                                                            ))}
-                                                        </Menu.Dropdown>
-                                                    </Menu>
-                                                )}
-                                            </Group>
-                                        </Table.Td>
-                                    </Table.Tr>
-                                );
-                            })}
-                        </Table.Tbody>
-                    </Table>
+                                                    {canManageParticipant && (
+                                                        <Menu shadow="md" width={160}>
+                                                            <Menu.Target>
+                                                                <Tooltip label={t('changeStatus')} withArrow>
+                                                                    <ActionIcon
+                                                                        variant="light"
+                                                                        size={28}
+                                                                        aria-label={t('changeStatus')}
+                                                                    >
+                                                                        <IconAdjustments size={14} />
+                                                                    </ActionIcon>
+                                                                </Tooltip>
+                                                            </Menu.Target>
+                                                            <Menu.Dropdown>
+                                                                {ElementStatusEnum.getOptions(t).map((opt) => (
+                                                                    <Menu.Item
+                                                                        key={opt.value}
+                                                                        disabled={
+                                                                            p.status === opt.value ||
+                                                                            updateParticipantStatusMutation.isPending
+                                                                        }
+                                                                        onClick={() =>
+                                                                            updateParticipantStatusMutation.mutate({
+                                                                                participantId: p.id,
+                                                                                status: opt.value as ElementStatusEnum,
+                                                                            })
+                                                                        }
+                                                                    >
+                                                                        {opt.label}
+                                                                    </Menu.Item>
+                                                                ))}
+                                                            </Menu.Dropdown>
+                                                        </Menu>
+                                                    )}
+                                                </Group>
+                                            </Table.Td>
+                                        </Table.Tr>
+                                    );
+                                })}
+                            </Table.Tbody>
+                        </Table>
+                    )}
                 </Card>
 
-                {/* Related Events Table */}
                 <Card withBorder radius="md" p="md" shadow="xs">
                     <Group justify="space-between" align="center" mb="xs">
                         <Title order={4}>{t('events')}</Title>
@@ -743,9 +751,7 @@ export default function PageDetails() {
                             <Loader size="sm" />
                         </Center>
                     ) : pageEvents.length === 0 ? (
-                        <Text size="sm" c="dimmed">
-                            {t('noData')}
-                        </Text>
+                        <EmptyState title={t('noData')} />
                     ) : (
                         <Table striped withTableBorder withColumnBorders>
                             <Table.Thead>
@@ -820,7 +826,6 @@ export default function PageDetails() {
                     )}
                 </Card>
 
-                {/* Edit Page Modal */}
                 <Modal opened={editOpened} onClose={closeEdit} title={t('editPage')} size="lg">
                     <Stack gap="sm">
                         <TextInput
@@ -902,12 +907,11 @@ export default function PageDetails() {
                             disabled={updatePageMutation.isPending || !canSubmitEdit}
                             onClick={() => updatePageMutation.mutate()}
                         >
-                            {t('saveChanges')}
+                            {t('save')}
                         </Button>
                     </Stack>
                 </Modal>
 
-                {/* Create Event Modal for this Page */}
                 <Modal opened={createEventOpened} onClose={closeCreateEvent} title={t('addEvent')} size="lg">
                     <Stack gap="sm">
                         <TextInput

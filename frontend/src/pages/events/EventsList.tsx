@@ -59,12 +59,10 @@ export default function EventsList() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('startedAt:desc');
 
-    // Filters
     const [titleFilter, setTitleFilter] = useState('');
     const [linkFilter, setLinkFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    // Create modal
     const [opened, { open, close }] = useDisclosure(false);
     const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
     const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -80,7 +78,6 @@ export default function EventsList() {
     const [disciplines, setDisciplines] = useState<FormEventDiscipline[]>([]);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    // Edit modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editingEvent, setEditingEvent] = useState<EventResource | null>(null);
     const [editPhotoFile, setEditPhotoFile] = useState<File | null>(null);
@@ -172,7 +169,6 @@ export default function EventsList() {
     const events = data?.data ?? [];
     const pagination = data?.pagination;
 
-    // Create discipline handlers
     const handleAddDiscipline = () => {
         setDisciplines((prev) => [
             ...prev,
@@ -284,7 +280,6 @@ export default function EventsList() {
         );
     };
 
-    // Edit discipline handlers
     const handleAddEditDiscipline = () => {
         setEditDisciplines((prev) => [
             ...prev,
@@ -776,7 +771,6 @@ export default function EventsList() {
                 }}
             />
 
-            {/* Add Event Modal */}
             <Modal opened={opened} onClose={close} title={t('addEvent')} size="lg">
                 <Stack gap="sm">
                     <Select
@@ -1019,7 +1013,6 @@ export default function EventsList() {
                 </Stack>
             </Modal>
 
-            {/* Edit Event Modal */}
             <Modal opened={editOpened} onClose={closeEdit} title={t('editEvent')} size="lg">
                 <Stack gap="sm">
                     <Select
@@ -1255,7 +1248,7 @@ export default function EventsList() {
                         disabled={updateMutation.isPending || !canSubmitEdit}
                         onClick={() => updateMutation.mutate()}
                     >
-                        {t('saveChanges')}
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>

@@ -89,7 +89,7 @@ export default function PasswordReset() {
                         signSession.start(signRes.id);
                     }
                 } catch {
-                    // Fallthrough to sign navigation
+                    void 0;
                 }
             }
 
@@ -213,7 +213,7 @@ export default function PasswordReset() {
                                 loading={loading}
                                 disabled={loading || code.length < 6 || !password}
                             >
-                                {t('saveChanges')}
+                                {t('save')}
                             </Button>
 
                             <Group justify="space-between" w="100%" mt="xs">

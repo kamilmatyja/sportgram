@@ -14,8 +14,6 @@ export const formatImageSrc = (src?: string | null): string | undefined => {
         return trimmed;
     }
 
-    // Check if it is a relative web path (e.g. /assets/..., /favicon.ico) and NOT a base64 string
-    // Base64 strings for images do not contain file extensions or slashes like /assets/
     if (
         trimmed.startsWith('/') &&
         !trimmed.startsWith('/9j') &&
@@ -30,7 +28,6 @@ export const formatImageSrc = (src?: string | null): string | undefined => {
         return trimmed;
     }
 
-    // Pure base64 string from backend - detect MIME type from magic base64 prefix
     let mime = 'image/jpeg';
     if (trimmed.startsWith('iVBORw0KGgo')) {
         mime = 'image/png';

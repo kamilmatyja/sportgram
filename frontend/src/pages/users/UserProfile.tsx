@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useRef, useCallback } from 'react';
 import {
     Stack,
     Card,
@@ -26,7 +26,7 @@ import {
     Center,
     Loader,
 } from '@mantine/core';
-import { useDisclosure, useInViewport } from '@mantine/hooks';
+import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
     IconEdit,
@@ -38,6 +38,7 @@ import {
     IconTrash,
     IconUserMinus,
     IconUserCheck,
+    IconUserX,
     IconCheck,
     IconX,
 } from '@tabler/icons-react';
@@ -46,6 +47,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import NotFound from '../../components/NotFound';
+import { EmptyState } from '../../components/EmptyState';
 import { StoryViewerModal, type UserStoriesGroup } from '../../components/StoryViewerModal';
 import {
     userService,
@@ -69,8 +71,11 @@ import { RoleEnum } from '../../enums/RoleEnum';
 import { ThemeEnum } from '../../enums/ThemeEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
 import { UserProfileNav } from '../../components/UserProfileNav';
+import { EntityViewCounter } from '../../components/EntityViewCounter';
+import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 import { formatDateTime } from '../../utils/date';
+import { formatFeedOrigin } from '../../utils/text';
 import { openConfirmActionModal } from '../../utils/confirmModal.tsx';
 
 export default function UserProfile() {
@@ -82,7 +87,6 @@ export default function UserProfile() {
 
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
 
-    // Stories modal
     const [storyOpened, { open: openStoryModal, close: closeStoryModal }] = useDisclosure(false);
     const [storyText, setStoryText] = useState('');
     const [storyPhoto, setStoryPhoto] = useState<File | null>(null);
@@ -91,32 +95,27 @@ export default function UserProfile() {
     const [feedFieldErrors, setFeedFieldErrors] = useState<Record<string, string>>({});
     const [storyFieldErrors, setStoryFieldErrors] = useState<Record<string, string>>({});
 
-    // Story edit modal
     const [editingStory, setEditingStory] = useState<StoryResource | null>(null);
     const [editStoryOpened, { open: openEditStoryModal, close: closeEditStoryModal }] = useDisclosure(false);
     const [editStoryText, setEditStoryText] = useState('');
     const [editStoryPhoto, setEditStoryPhoto] = useState<File | null>(null);
     const [editStoryFieldErrors, setEditStoryFieldErrors] = useState<Record<string, string>>({});
 
-    // Feed creation modal
     const [feedOpened, { open: openFeedModal, close: closeFeedModal }] = useDisclosure(false);
     const [feedText, setFeedText] = useState('');
     const [feedPhoto, setFeedPhoto] = useState<File | null>(null);
 
-    // Feed edit modal
     const [editingFeed, setEditingFeed] = useState<FeedResource | null>(null);
     const [editFeedOpened, { open: openEditFeedModal, close: closeEditFeedModal }] = useDisclosure(false);
     const [editFeedText, setEditFeedText] = useState('');
     const [editFeedPhoto, setEditFeedPhoto] = useState<File | null>(null);
     const [editFeedFieldErrors, setEditFeedFieldErrors] = useState<Record<string, string>>({});
 
-    // Active comments collapse for feeds
     const [openCommentsFeedId, setOpenCommentsFeedId] = useState<string | null>(null);
     const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editingCommentText, setEditingCommentText] = useState('');
 
-    // Fetch user details
     const {
         data: user,
         isLoading: userLoading,
@@ -133,7 +132,6 @@ export default function UserProfile() {
     const isOwner = currentUser?.id === user?.id;
     const primaryColor = ColorEnum.getMantineColor(user?.color);
 
-    // Check friendship status
     const { data: friendship, refetch: refetchFriendship } = useQuery({
         queryKey: ['friendship', user?.id, currentUser?.id],
         queryFn: async () => {
@@ -155,7 +153,6 @@ export default function UserProfile() {
     const isAcceptedFriend = friendship?.status === FriendStatusEnum.ACCEPTED;
     const canViewPrivateContent = isOwner || isAdmin || isAcceptedFriend;
 
-    // Fetch user feeds
     const {
         data: userFeedsInfiniteData,
         isLoading: feedsLoading,
@@ -169,15 +166,15 @@ export default function UserProfile() {
             return await feedService.getFeeds({
                 filter: { userId: user.id },
                 page: pageParam,
-                limit: 20,
+                limit: 10,
                 sort: 'createdAt:desc',
-                'include[]': ['feedComments', 'feedReactions'],
+                'include[]': ['feedComments', 'feedReactions', 'feedOrigin'],
             });
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) => {
             const p = lastPage.pagination;
-            if (p?.page && p?.pages && p.page < p.pages) {
+            if (p?.hasNextPage && p?.page) {
                 return p.page + 1;
             }
             return undefined;
@@ -189,15 +186,22 @@ export default function UserProfile() {
         return userFeedsInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
     }, [userFeedsInfiniteData]);
 
-    const { ref: feedsBottomRef, inViewport: feedsBottomInViewport } = useInViewport();
+    const feedObserver = useRef<IntersectionObserver | null>(null);
+    const lastFeedElementRef = useCallback(
+        (node: HTMLElement | null) => {
+            if (isFetchingMoreFeeds) return;
+            if (feedObserver.current) feedObserver.current.disconnect();
+            if (!node) return;
+            feedObserver.current = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && hasMoreFeeds) {
+                    fetchNextFeedsPage();
+                }
+            });
+            feedObserver.current.observe(node);
+        },
+        [isFetchingMoreFeeds, hasMoreFeeds, fetchNextFeedsPage],
+    );
 
-    useEffect(() => {
-        if (feedsBottomInViewport && hasMoreFeeds && !isFetchingMoreFeeds) {
-            fetchNextFeedsPage();
-        }
-    }, [feedsBottomInViewport, hasMoreFeeds, isFetchingMoreFeeds, fetchNextFeedsPage]);
-
-    // Fetch user stories
     const {
         data: userStoriesInfiniteData,
         fetchNextPage: fetchNextStoriesPage,
@@ -210,14 +214,14 @@ export default function UserProfile() {
             return await storyService.getStories({
                 filter: { userId: user.id },
                 page: pageParam,
-                limit: 20,
+                limit: 10,
                 sort: 'createdAt:desc',
             });
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) => {
             const p = lastPage.pagination;
-            if (p?.page && p?.pages && p.page < p.pages) {
+            if (p?.hasNextPage && p?.page) {
                 return p.page + 1;
             }
             return undefined;
@@ -229,13 +233,37 @@ export default function UserProfile() {
         return userStoriesInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
     }, [userStoriesInfiniteData]);
 
-    const { ref: storiesEndRef, inViewport: storiesEndInViewport } = useInViewport();
+    const storiesViewportRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (storiesEndInViewport && hasMoreStories && !isFetchingMoreStories) {
-            fetchNextStoriesPage();
-        }
-    }, [storiesEndInViewport, hasMoreStories, isFetchingMoreStories, fetchNextStoriesPage]);
+    const handleStoriesScroll = useCallback(
+        ({ x }: { x: number }) => {
+            if (!storiesViewportRef.current || !hasMoreStories || isFetchingMoreStories) return;
+            const { scrollWidth, clientWidth } = storiesViewportRef.current;
+            if (x + clientWidth >= scrollWidth - 60) {
+                fetchNextStoriesPage();
+            }
+        },
+        [hasMoreStories, isFetchingMoreStories, fetchNextStoriesPage],
+    );
+
+    const storyObserver = useRef<IntersectionObserver | null>(null);
+    const lastStoryElementRef = useCallback(
+        (node: HTMLElement | null) => {
+            if (isFetchingMoreStories) return;
+            if (storyObserver.current) storyObserver.current.disconnect();
+            if (!node) return;
+            storyObserver.current = new IntersectionObserver(
+                (entries) => {
+                    if (entries[0].isIntersecting && hasMoreStories) {
+                        fetchNextStoriesPage();
+                    }
+                },
+                { root: storiesViewportRef.current },
+            );
+            storyObserver.current.observe(node);
+        },
+        [isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
+    );
 
     const userStoryGroups = useMemo<UserStoriesGroup[]>(() => {
         if (!userStoriesData || userStoriesData.length === 0 || !user) return [];
@@ -252,7 +280,6 @@ export default function UserProfile() {
         ];
     }, [userStoriesData, user]);
 
-    // Collect user IDs from feeds comments
     const commentUserIds = useMemo(() => {
         const ids: string[] = [];
         userFeedsData?.forEach((f) => {
@@ -277,10 +304,10 @@ export default function UserProfile() {
 
     const commentUsersMap = commentUsersMapData ?? {};
 
-    // Form data for editing profile
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
+        email: '',
         bio: '',
         phone: '',
         country: null as string | null,
@@ -295,6 +322,7 @@ export default function UserProfile() {
         roles: [] as string[],
     });
 
+    const [updatedStoryForModal, setUpdatedStoryForModal] = useState<StoryResource | null>(null);
     const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
     const [backgroundPhotoFile, setBackgroundPhotoFile] = useState<File | null>(null);
 
@@ -303,6 +331,7 @@ export default function UserProfile() {
         setFormData({
             firstName: user.firstName ?? '',
             lastName: user.lastName ?? '',
+            email: user.email ?? '',
             bio: user.bio ?? '',
             phone: user.phone != null ? String(user.phone) : '',
             country: user.country != null ? String(user.country) : null,
@@ -321,7 +350,6 @@ export default function UserProfile() {
         openEdit();
     };
 
-    // Update profile mutation (PUT /api/users/{id})
     const updateMutation = useMutation({
         mutationFn: async () => {
             if (!user) return;
@@ -365,7 +393,7 @@ export default function UserProfile() {
                 color: Number(formData.color) as ColorEnum,
                 link: formData.link,
                 password: formData.password || null,
-                email: user.email,
+                email: formData.email,
                 profilePhoto: profPhoto,
                 backgroundPhoto: bgPhoto,
                 disciplines: formData.disciplines.map(Number),
@@ -387,7 +415,6 @@ export default function UserProfile() {
         },
     });
 
-    // Friend request mutations
     const deleteFriendMutation = useMutation({
         mutationFn: async (friendId: string) => {
             await friendService.deleteFriend(friendId);
@@ -494,7 +521,6 @@ export default function UserProfile() {
         });
     };
 
-    // Add feed mutation
     const createFeedMutation = useMutation({
         mutationFn: async () => {
             if (!feedPhoto) throw new Error(t('selectPhoto'));
@@ -517,7 +543,6 @@ export default function UserProfile() {
         },
     });
 
-    // Edit feed mutation
     const updateFeedMutation = useMutation({
         mutationFn: async () => {
             if (!editingFeed) return;
@@ -554,7 +579,6 @@ export default function UserProfile() {
         openEditFeedModal();
     };
 
-    // Add story mutation
     const createStoryMutation = useMutation({
         mutationFn: async () => {
             if (!storyPhoto) throw new Error(t('selectPhoto'));
@@ -577,10 +601,9 @@ export default function UserProfile() {
         },
     });
 
-    // Edit story mutation
     const updateStoryMutation = useMutation({
         mutationFn: async () => {
-            if (!editingStory) return;
+            if (!editingStory) return null;
             let photoStr = editingStory.photo;
             if (editStoryPhoto) {
                 photoStr = await fileToBase64(editStoryPhoto);
@@ -589,12 +612,17 @@ export default function UserProfile() {
                 text: editStoryText,
                 photo: photoStr ?? '',
             });
+            const res = await storyService.getStory(editingStory.id);
+            return res.data ?? null;
         },
-        onSuccess: () => {
+        onSuccess: (freshStory) => {
             closeEditStoryModal();
             setEditingStory(null);
             setEditStoryPhoto(null);
             setEditStoryFieldErrors({});
+            if (freshStory) {
+                setUpdatedStoryForModal(freshStory);
+            }
             queryClient.invalidateQueries({ queryKey: ['user-profile-stories', user?.id] });
             queryClient.invalidateQueries({ queryKey: ['stories'] });
             notifications.show({ title: t('stories'), message: t('storyUpdated'), color: 'green' });
@@ -614,7 +642,6 @@ export default function UserProfile() {
         openEditStoryModal();
     };
 
-    // Delete story mutation
     const deleteStoryMutation = useMutation({
         mutationFn: async (id: string) => {
             await storyService.deleteStory(id);
@@ -640,7 +667,6 @@ export default function UserProfile() {
         });
     };
 
-    // Delete feed mutation
     const deleteFeedMutation = useMutation({
         mutationFn: async (id: string) => {
             await feedService.deleteFeed(id);
@@ -655,7 +681,6 @@ export default function UserProfile() {
         },
     });
 
-    // Add reaction
     const addReactionMutation = useMutation({
         mutationFn: async ({ feedId, type }: { feedId: string; type: number }) => {
             await feedService.addReaction(feedId, type);
@@ -670,7 +695,6 @@ export default function UserProfile() {
         },
     });
 
-    // Update reaction
     const updateReactionMutation = useMutation({
         mutationFn: async ({ reactionId, type }: { reactionId: string; type: number }) => {
             await feedService.updateReaction(reactionId, type);
@@ -685,7 +709,6 @@ export default function UserProfile() {
         },
     });
 
-    // Delete reaction
     const deleteReactionMutation = useMutation({
         mutationFn: async (reactionId: string) => {
             await feedService.deleteReaction(reactionId);
@@ -700,7 +723,6 @@ export default function UserProfile() {
         },
     });
 
-    // Handle reaction click dispatcher
     const handleReaction = (feedId: string, type: number, myReaction?: FeedReactionResource) => {
         if (!myReaction) {
             addReactionMutation.mutate({ feedId, type });
@@ -711,7 +733,6 @@ export default function UserProfile() {
         }
     };
 
-    // Add comment
     const addCommentMutation = useMutation({
         mutationFn: async ({ feedId, text }: { feedId: string; text: string }) => {
             await feedService.addComment(feedId, text);
@@ -726,7 +747,6 @@ export default function UserProfile() {
         },
     });
 
-    // Update comment
     const updateCommentMutation = useMutation({
         mutationFn: async ({ id, text }: { id: string; text: string }) => {
             await feedService.updateComment(id, { text });
@@ -743,7 +763,6 @@ export default function UserProfile() {
         },
     });
 
-    // Delete comment
     const deleteCommentMutation = useMutation({
         mutationFn: async (id: string) => {
             await feedService.deleteComment(id);
@@ -778,7 +797,6 @@ export default function UserProfile() {
 
     return (
         <Stack gap="lg">
-            {/* Full Profile Header Card */}
             <Card withBorder radius="md" p={0} shadow="xs" className="overflow-hidden">
                 {userBgPhotoSrc ? (
                     <Box h={160} pos="relative" bg="var(--mantine-primary-color-filled)">
@@ -788,6 +806,7 @@ export default function UserProfile() {
                             </Text>
                         </Center>
                         <Image
+                            className="header-bg-image"
                             src={userBgPhotoSrc}
                             h={160}
                             w="100%"
@@ -827,9 +846,15 @@ export default function UserProfile() {
                             <Title order={2}>
                                 {user.firstName} {user.lastName}
                             </Title>
-                            <Text size="sm" c="dimmed">
-                                @{user.link}
-                            </Text>
+                            <Group gap="xs" align="center" mt={2}>
+                                <Text size="sm" c="dimmed">
+                                    @{user.link}
+                                </Text>
+                                <Text size="sm" c="dimmed">
+                                    •
+                                </Text>
+                                <EntityViewCounter entityId={user.id} type={EntryTypeEnum.USER} track={true} />
+                            </Group>
                         </div>
 
                         <Group gap="xs">
@@ -911,6 +936,7 @@ export default function UserProfile() {
                                         <Button
                                             variant="default"
                                             size="xs"
+                                            leftSection={<IconUserX size={16} />}
                                             onClick={() => deleteFriendMutation.mutate(friendship.id)}
                                             loading={deleteFriendMutation.isPending}
                                             disabled={deleteFriendMutation.isPending}
@@ -946,6 +972,7 @@ export default function UserProfile() {
                                             <Button
                                                 variant="default"
                                                 size="xs"
+                                                leftSection={<IconUserX size={16} />}
                                                 onClick={() => deleteFriendMutation.mutate(friendship.id)}
                                                 loading={deleteFriendMutation.isPending}
                                                 disabled={deleteFriendMutation.isPending}
@@ -972,6 +999,7 @@ export default function UserProfile() {
                                                 <Button
                                                     size="xs"
                                                     variant="default"
+                                                    leftSection={<IconUserX size={16} />}
                                                     onClick={() =>
                                                         updateFriendStatusMutation.mutate({
                                                             id: friendship.id,
@@ -1016,90 +1044,87 @@ export default function UserProfile() {
                 </Box>
             </Card>
 
-            {/* Profile subpages navigation tabs */}
             <UserProfileNav user={user} isOwner={isOwner} simplifiedHeader={false} />
 
-            {/* Reels / Stories and Feeds - only visible to owner, admin, or accepted friends */}
             {canViewPrivateContent && (
                 <>
-                    {/* Reels / Stories horizontal carousel */}
-                    <Card withBorder radius="md" p="sm" shadow="xs">
-                        <ScrollArea type="never">
-                            <Group gap="md" wrap="nowrap">
-                                {/* Add Story Button (only owner) */}
-                                {isOwner && (
-                                    <Stack align="center" gap={4} className="pointer" onClick={openStoryModal}>
-                                        <Avatar radius={5} size="lg">
-                                            <IconPlus size={24} />
-                                        </Avatar>
-                                        <Text size="xs" fw={500}>
-                                            {t('addStory')}
-                                        </Text>
-                                    </Stack>
-                                )}
-
-                                {/* Add Feed Button (only owner) */}
-                                {isOwner && (
-                                    <Stack align="center" gap={4} className="pointer" onClick={openFeedModal}>
-                                        <Avatar radius={5} size="lg">
-                                            <IconPlus size={24} />
-                                        </Avatar>
-                                        <Text size="xs" fw={500}>
-                                            {t('addFeed')}
-                                        </Text>
-                                    </Stack>
-                                )}
-
-                                {/* Stories of this user grouped */}
-                                {userStoryGroups.map((group) => {
-                                    const storyImg = formatImageSrc(group.newestStory?.photo) || userProfilePhotoSrc;
-                                    return (
-                                        <Stack
-                                            key={group.userId}
-                                            align="center"
-                                            gap={4}
-                                            className="pointer"
-                                            miw={64}
-                                            onClick={() => setStoryViewerOpened(true)}
-                                        >
-                                            <Avatar src={storyImg} radius={5} size="lg" className="story-avatar-border">
-                                                ?
+                    {(isOwner || userStoriesData?.length > 0) && (
+                        <Card withBorder radius="md" p="sm" shadow="xs">
+                            <ScrollArea
+                                type="never"
+                                viewportRef={storiesViewportRef}
+                                onScrollPositionChange={handleStoriesScroll}
+                            >
+                                <Group gap="md" wrap="nowrap">
+                                    {isOwner && (
+                                        <Stack align="center" gap={4} className="pointer" onClick={openStoryModal}>
+                                            <Avatar radius={5} size="lg">
+                                                <IconPlus size={24} />
                                             </Avatar>
-                                            <Text size="xs" lineClamp={1}>
-                                                {user.firstName}
+                                            <Text size="xs" fw={500}>
+                                                {t('addStory')}
                                             </Text>
                                         </Stack>
-                                    );
-                                })}
+                                    )}
 
-                                {!isOwner && userStoriesData?.length === 0 && (
-                                    <Text size="xs" c="dimmed" py="xs">
-                                        {t('noData')}
-                                    </Text>
-                                )}
+                                    {isOwner && (
+                                        <Stack align="center" gap={4} className="pointer" onClick={openFeedModal}>
+                                            <Avatar radius={5} size="lg">
+                                                <IconPlus size={24} />
+                                            </Avatar>
+                                            <Text size="xs" fw={500}>
+                                                {t('addFeed')}
+                                            </Text>
+                                        </Stack>
+                                    )}
 
-                                {isFetchingMoreStories && (
-                                    <Center px="md">
-                                        <Loader size="sm" />
-                                    </Center>
-                                )}
-                                <div ref={storiesEndRef} style={{ width: 1, minWidth: 1, flexShrink: 0 }} />
-                            </Group>
-                        </ScrollArea>
-                    </Card>
+                                    {userStoryGroups.map((group) => {
+                                        const storyImg =
+                                            formatImageSrc(group.newestStory?.photo) || userProfilePhotoSrc;
+                                        return (
+                                            <Stack
+                                                key={group.userId}
+                                                ref={lastStoryElementRef}
+                                                align="center"
+                                                gap={4}
+                                                className="pointer"
+                                                miw={64}
+                                                onClick={() => setStoryViewerOpened(true)}
+                                            >
+                                                <Avatar
+                                                    src={storyImg}
+                                                    radius={5}
+                                                    size="lg"
+                                                    className="story-avatar-border"
+                                                >
+                                                    ?
+                                                </Avatar>
+                                                <Text size="xs" lineClamp={1}>
+                                                    {user.firstName}
+                                                </Text>
+                                            </Stack>
+                                        );
+                                    })}
 
-                    {/* Feeds stream */}
+                                    {isFetchingMoreStories && (
+                                        <Center px="md">
+                                            <Loader size="sm" />
+                                        </Center>
+                                    )}
+                                </Group>
+                            </ScrollArea>
+                        </Card>
+                    )}
+
                     <Stack gap="md">
                         {feedsLoading ? (
                             <Text ta="center" c="dimmed">
                                 {t('loadingFeeds')}
                             </Text>
                         ) : userFeedsData?.length === 0 ? (
-                            <Paper withBorder p="xl" radius="md" ta="center">
-                                <Text c="dimmed">{t('noData')}</Text>
-                            </Paper>
+                            <EmptyState title={t('noData')} />
                         ) : (
-                            userFeedsData?.map((feed) => {
+                            userFeedsData?.map((feed, idx) => {
                                 const commentsOpen = openCommentsFeedId === feed.id;
                                 const reactionCounts: Record<number, number> = {};
                                 feed.reactions?.forEach((r) => {
@@ -1108,8 +1133,14 @@ export default function UserProfile() {
                                 const myReaction = feed.reactions?.find((r) => r.userId === currentUser?.id);
 
                                 return (
-                                    <Card key={feed.id} withBorder radius="md" shadow="xs" p="md">
-                                        {/* Header */}
+                                    <Card
+                                        key={feed.id}
+                                        withBorder
+                                        radius="md"
+                                        shadow="xs"
+                                        p="md"
+                                        ref={idx === userFeedsData.length - 1 ? lastFeedElementRef : undefined}
+                                    >
                                         <Group justify="space-between" mb="xs">
                                             <Group gap="sm">
                                                 <Avatar src={userProfilePhotoSrc} radius={5}>
@@ -1154,10 +1185,17 @@ export default function UserProfile() {
                                             )}
                                         </Group>
 
-                                        {/* Content */}
-                                        <Text size="sm" mb="sm" className="pre-wrap">
-                                            {feed.text}
-                                        </Text>
+                                        {feed.feedOrigin && (
+                                            <Badge variant="light" color={primaryColor} size="sm" mb="xs">
+                                                {formatFeedOrigin(feed.feedOrigin, t)}
+                                            </Badge>
+                                        )}
+
+                                        {feed.text && (
+                                            <Text size="sm" mb="sm" className="pre-wrap">
+                                                {feed.text}
+                                            </Text>
+                                        )}
 
                                         {feed.photo && (
                                             <Image
@@ -1170,7 +1208,6 @@ export default function UserProfile() {
                                             />
                                         )}
 
-                                        {/* Actions & stats */}
                                         <Group justify="space-between" mt="xs">
                                             <Group gap="xs">
                                                 <Group gap={4} wrap="wrap">
@@ -1212,9 +1249,16 @@ export default function UserProfile() {
                                                     {feed.comments?.length ?? 0}
                                                 </Button>
                                             </Group>
+
+                                            <EntityViewCounter
+                                                entityId={feed.id}
+                                                type={EntryTypeEnum.FEED}
+                                                size={16}
+                                                textSize="xs"
+                                                track={true}
+                                            />
                                         </Group>
 
-                                        {/* Comments section */}
                                         <Collapse expanded={commentsOpen}>
                                             <Stack gap="xs" mt="sm">
                                                 {feed.comments?.map((c) => {
@@ -1390,7 +1434,6 @@ export default function UserProfile() {
                             })
                         )}
 
-                        {/* Infinite scroll sentinel and Load More button */}
                         {hasMoreFeeds && (
                             <Center my="md">
                                 <Button
@@ -1402,12 +1445,10 @@ export default function UserProfile() {
                                 </Button>
                             </Center>
                         )}
-                        <div ref={feedsBottomRef} style={{ height: 1 }} />
                     </Stack>
                 </>
             )}
 
-            {/* Story Creation Modal */}
             <Modal opened={storyOpened} onClose={closeStoryModal} title={t('addStory')} size="lg">
                 <Stack gap="sm">
                     <Textarea
@@ -1438,7 +1479,6 @@ export default function UserProfile() {
                 </Stack>
             </Modal>
 
-            {/* Edit User Modal - matches create user modal in size, fields, grid layout and order */}
             <Modal opened={editOpened} onClose={closeEdit} title={t('edit')} size="lg">
                 <Stack gap="sm">
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
@@ -1462,9 +1502,11 @@ export default function UserProfile() {
                         <TextInput
                             label={t('email')}
                             placeholder={t('emailPlaceholder')}
-                            disabled
+                            required
                             type="email"
-                            value={user?.email || ''}
+                            value={formData.email}
+                            error={editFieldErrors.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.currentTarget.value })}
                         />
                         <TextInput
                             label={t('password')}
@@ -1572,8 +1614,8 @@ export default function UserProfile() {
                             onChange={(val) => setFormData({ ...formData, roles: val })}
                         />
                         <MultiSelect
-                            label={t('discipline')}
-                            placeholder={t('discipline')}
+                            label={t('disciplinesLabel')}
+                            placeholder={t('disciplinesLabel')}
                             clearable
                             data={DisciplineEnum.getOptions(t).map((d) => ({ value: String(d.value), label: d.label }))}
                             value={formData.disciplines}
@@ -1637,12 +1679,11 @@ export default function UserProfile() {
                         }
                         onClick={() => updateMutation.mutate()}
                     >
-                        {t('saveChanges')}
+                        {t('save')}
                     </Button>
                 </Stack>
             </Modal>
 
-            {/* Story Edit Modal */}
             <Modal
                 opened={editStoryOpened}
                 onClose={closeEditStoryModal}
@@ -1680,7 +1721,6 @@ export default function UserProfile() {
                 </Stack>
             </Modal>
 
-            {/* Feed Creation Modal */}
             <Modal opened={feedOpened} onClose={closeFeedModal} title={t('addFeed')} size="lg">
                 <Stack gap="sm">
                     <Textarea
@@ -1719,7 +1759,6 @@ export default function UserProfile() {
                 </Stack>
             </Modal>
 
-            {/* Feed Edit Modal */}
             <Modal opened={editFeedOpened} onClose={closeEditFeedModal} title={t('editFeed')} size="lg">
                 <Stack gap="sm">
                     <Textarea
@@ -1758,13 +1797,13 @@ export default function UserProfile() {
                 </Stack>
             </Modal>
 
-            {/* Story Viewer Modal */}
             <StoryViewerModal
                 opened={storyViewerOpened}
                 onClose={() => setStoryViewerOpened(false)}
                 groups={userStoryGroups}
                 onEdit={handleOpenEditStory}
                 onDelete={handleDeleteStory}
+                updatedStory={updatedStoryForModal}
             />
         </Stack>
     );

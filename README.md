@@ -364,9 +364,3 @@ npm run fix
 
 - kamera na froncie
 - gps na froncie przy dodawaniu treningu
-- tryb ciemny do poprawy style
-- zapisywanie wyświetleń encji po wejściu na jakiś profil
-- informacje o typie feeda do wyświetlenia
-- informacje o wyświetleniach przy encjach
-- informacje o ilości follow na profilach
-- informacje o ilości znajomych na profilach

@@ -1,17 +1,21 @@
 import React from 'react';
-import { Card, Box, Avatar, Text, Title, Image, Group, Button, Center } from '@mantine/core';
-import { IconArrowLeft } from '@tabler/icons-react';
+import { Card, Box, Avatar, Text, Title, Image, Group, Button, Center, Tooltip } from '@mantine/core';
+import { IconArrowLeft, IconBookmark } from '@tabler/icons-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { type PageResource } from '../api/services';
+import { PageFollowStatusEnum } from '../enums/PageFollowStatusEnum';
+import { EntryTypeEnum } from '../enums/EntryTypeEnum';
+import { EntityViewCounter } from './EntityViewCounter';
 import { formatImageSrc } from '../utils/imageUtils';
 
 export interface PageNavProps {
     page?: PageResource | null;
     extraActions?: React.ReactNode;
+    simplifiedHeader?: boolean;
 }
 
-export function PageNav({ page, extraActions }: PageNavProps) {
+export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNavProps) {
     const { t } = useTranslation();
     const location = useLocation();
 
@@ -32,6 +36,7 @@ export function PageNav({ page, extraActions }: PageNavProps) {
                             </Text>
                         </Center>
                         <Image
+                            className="header-bg-image"
                             src={bgSrc}
                             h={160}
                             w="100%"
@@ -73,9 +78,38 @@ export function PageNav({ page, extraActions }: PageNavProps) {
                             <Link to={`/pages/${page.link}`} className="no-decoration">
                                 <Title order={2}>{page.title}</Title>
                             </Link>
-                            <Text size="sm" c="dimmed">
-                                @{page.link}
-                            </Text>
+                            <Group gap="xs" align="center" mt={2}>
+                                <Text size="sm" c="dimmed">
+                                    @{page.link}
+                                </Text>
+                                {!simplifiedHeader && (
+                                    <>
+                                        <Text size="sm" c="dimmed">
+                                            •
+                                        </Text>
+                                        <EntityViewCounter
+                                            entityId={page.id}
+                                            type={EntryTypeEnum.PAGE}
+                                            track={isSamePage}
+                                        />
+                                        <Text size="sm" c="dimmed">
+                                            •
+                                        </Text>
+                                        <Tooltip label={t('followers')} withArrow>
+                                            <Group gap={4} align="center" c="dimmed">
+                                                <IconBookmark size={16} />
+                                                <Text size="sm" c="dimmed">
+                                                    {
+                                                        (page.follows ?? []).filter(
+                                                            (f) => f.status === PageFollowStatusEnum.ACCEPTED,
+                                                        ).length
+                                                    }
+                                                </Text>
+                                            </Group>
+                                        </Tooltip>
+                                    </>
+                                )}
+                            </Group>
                         </div>
 
                         <Group gap="xs">

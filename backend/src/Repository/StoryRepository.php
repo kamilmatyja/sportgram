@@ -46,6 +46,18 @@ class StoryRepository extends BaseRepository
             $qb->andWhere('s.user = :userId')
                 ->setParameter('userId', $dto->filter->userId);
         } else {
+            $subDql = $this->createQueryBuilder('s2')
+                ->select('1')
+                ->where('s2.user = s.user')
+                ->andWhere('s2.createdAt > s.createdAt OR (s2.createdAt = s.createdAt AND s2.id > s.id)');
+
+            if ($dto->filter->text) {
+                $subDql->andWhere('s2.text LIKE :text');
+            }
+            if ($dto->filter->status) {
+                $subDql->andWhere('s2.status = :status');
+            }
+
             $qb->leftJoin(
                 'App\\Entity\\Friend',
                 'fr',
@@ -53,6 +65,7 @@ class StoryRepository extends BaseRepository
                 '((fr.senderUser = s.user AND fr.receiverUser = :userId) OR (fr.senderUser = :userId AND fr.receiverUser = s.user))',
             );
             $qb->andWhere('(s.user = :userId OR (fr.id IS NOT NULL AND fr.status = :acceptedStatus))')
+                ->andWhere("NOT EXISTS ({$subDql->getDQL()})")
                 ->setParameter('userId', $userId)
                 ->setParameter('acceptedStatus', FriendStatusEnum::Accepted);
         }

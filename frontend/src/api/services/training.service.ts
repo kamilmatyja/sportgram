@@ -96,7 +96,6 @@ export const trainingService = {
         return res.data;
     },
 
-    // Convenience helpers
     async getTrainingByLink(link: string): Promise<TrainingResource | null> {
         const res = await api.GET('/api/trainings', {
             params: {

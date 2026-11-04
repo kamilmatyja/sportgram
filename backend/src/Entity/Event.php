@@ -32,6 +32,14 @@ class Event
         }
     }
 
+    #[ORM\OneToOne(targetEntity: Feed::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'feed_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    public Feed $feed {
+        get {
+            return $this->feed;
+        }
+    }
+
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     public DateTimeImmutable $createdAt {
         get {
@@ -118,6 +126,7 @@ class Event
 
     public function __construct(
         PageParticipant $pageParticipant,
+        Feed $feed,
         DateTimeImmutable $startedAt,
         DateTimeImmutable $endedAt,
         string $title,
@@ -129,6 +138,7 @@ class Event
         ElementStatusEnum $status,
     ) {
         $this->pageParticipant = $pageParticipant;
+        $this->feed = $feed;
         $this->startedAt = $startedAt;
         $this->endedAt = $endedAt;
         $this->title = $title;

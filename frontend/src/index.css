@@ -91,7 +91,6 @@
     border: 3px solid var(--mantine-color-body);
 }
 
-/* Enforce uniform ActionIcon, CloseButton, and Modal close button sizes */
 .mantine-ActionIcon-root,
 .mantine-CloseButton-root,
 .mantine-Modal-close {
@@ -112,7 +111,6 @@
     max-height: 16px !important;
 }
 
-/* Global 5px border-radius for all avatars, images, and image placeholders */
 .mantine-Avatar-root,
 .mantine-Avatar-image,
 .mantine-Avatar-placeholder,
@@ -121,7 +119,12 @@
     border-radius: 5px !important;
 }
 
-/* Reaction dropdown menu styles */
+.header-bg-image,
+.header-bg-image.mantine-Image-root,
+.header-bg-image .mantine-Image-image {
+    border-radius: 0 !important;
+}
+
 .reaction-menu-dropdown {
     width: max-content !important;
     min-width: 230px !important;
@@ -158,12 +161,10 @@
     display: inline-block;
 }
 
-/* Sub-distances left border */
 .subdistances-container {
     border-left: 2px solid var(--mantine-primary-color-filled);
 }
 
-/* Story Viewer Styles */
 .story-header-stack {
     width: 100%;
 }

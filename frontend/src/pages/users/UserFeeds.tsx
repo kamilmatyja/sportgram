@@ -31,10 +31,11 @@ import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import UserProfileNav from '../../components/UserProfileNav';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { ColorEnum } from '../../enums/ColorEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 import { formatDateTime } from '../../utils/date';
-import { truncate } from '../../utils/text';
+import { truncate, formatFeedOrigin } from '../../utils/text';
 
 export default function UserFeeds() {
     const { link } = useParams<{ link: string }>();
@@ -45,17 +46,14 @@ export default function UserFeeds() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('createdAt:desc');
 
-    // Filters
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    // Create modal
     const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
     const [text, setText] = useState('');
     const [photo, setPhoto] = useState<File | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    // Edit modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editingFeed, setEditingFeed] = useState<FeedResource | null>(null);
     const [editText, setEditText] = useState('');
@@ -76,6 +74,8 @@ export default function UserFeeds() {
     } = useUserSubpageAccess({
         targetUser,
     });
+
+    const primaryColor = ColorEnum.getMantineColor(targetUser?.color);
 
     const sortOptions: SortOption[] = [
         { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
@@ -116,6 +116,7 @@ export default function UserFeeds() {
                 limit,
                 filter: queryFilter,
                 sort: (sort as NonNullable<GetFeedsQuery>['sort']) ?? 'createdAt:desc',
+                'include[]': ['feedOrigin'],
             });
         },
         enabled: !!targetUser?.id && canAccessSubpage,
@@ -239,9 +240,18 @@ export default function UserFeeds() {
             key: 'text',
             header: t('text'),
             render: (f) => (
-                <Text size="sm" fw={500} title={f.text}>
-                    {truncate(f.text, 50)}
-                </Text>
+                <Stack gap={4}>
+                    {f.feedOrigin && (
+                        <Badge variant="light" color={primaryColor} size="xs">
+                            {formatFeedOrigin(f.feedOrigin, t)}
+                        </Badge>
+                    )}
+                    {f.text && (
+                        <Text size="sm" fw={500} title={f.text ?? undefined}>
+                            {truncate(f.text, 50)}
+                        </Text>
+                    )}
+                </Stack>
             ),
         },
         {
@@ -418,7 +428,6 @@ export default function UserFeeds() {
                 )}
             />
 
-            {/* Create modal */}
             <Modal opened={createOpened} onClose={closeCreate} title={t('addFeed')} size="lg">
                 <Stack gap="sm">
                     <Textarea
@@ -449,7 +458,6 @@ export default function UserFeeds() {
                 </Stack>
             </Modal>
 
-            {/* Edit modal */}
             <Modal opened={editOpened} onClose={closeEdit} title={t('editFeed')} size="lg">
                 <Stack gap="sm">
                     <Textarea

@@ -183,7 +183,6 @@ export const feedService = {
         return res.data;
     },
 
-    // Convenience helpers
     async addComment(feedId: string, textOrBody: string | FeedCommentDto): Promise<CreateFeedCommentResponse> {
         const body: FeedCommentDto = typeof textOrBody === 'string' ? { text: textOrBody } : textOrBody;
         return await feedService.createComment(feedId, body);
@@ -205,6 +204,7 @@ export const feedService = {
                     filter: { userId },
                     limit: 50,
                     sort: 'createdAt:desc',
+                    'include[]': ['feedComments', 'feedReactions', 'feedOrigin'],
                 },
             },
         });

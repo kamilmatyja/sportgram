@@ -43,16 +43,14 @@ export default function UserFriends() {
     const { link } = useParams<{ link: string }>();
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const { currentUser, isAdmin } = useAuth();
+    const { currentUser } = useAuth();
 
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('createdAt:desc');
 
-    // Filters
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    // Add friend modal
     const [addOpened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -113,7 +111,6 @@ export default function UserFriends() {
     const friends = data?.data ?? [];
     const pagination = data?.pagination;
 
-    // Extract other user IDs to fetch their details
     const otherUserIds = useMemo(() => {
         if (!targetUser) return [];
         return Array.from(
@@ -137,7 +134,6 @@ export default function UserFriends() {
 
     const relatedUsers = relatedUsersData ?? {};
 
-    // Candidates for adding as friend (excluding current user and existing friends)
     const { data: allUsersData } = useQuery({
         queryKey: ['potential-friends', targetUser?.id],
         queryFn: async () => {
@@ -340,7 +336,7 @@ export default function UserFriends() {
                 addLabel={t('addFriend')}
                 actions={(f) => {
                     const isParticipant = f.senderUserId === currentUser?.id || f.receiverUserId === currentUser?.id;
-                    const canEditStatus = isOwner || isParticipant || isAdmin;
+                    const canEditStatus = isParticipant;
                     const canDelete = isOwner;
                     const otherId = f.senderUserId === targetUser?.id ? f.receiverUserId : f.senderUserId;
                     const otherUser = relatedUsers[otherId];
@@ -414,7 +410,6 @@ export default function UserFriends() {
                 }}
             />
 
-            {/* Add friend modal */}
             <Modal opened={addOpened} onClose={closeAdd} title={t('addFriend')} size="lg">
                 <Stack gap="sm">
                     <Select

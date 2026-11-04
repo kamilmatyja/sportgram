@@ -46,17 +46,14 @@ export default function UserStories() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('createdAt:desc');
 
-    // Filters
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    // Create modal
     const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
     const [text, setText] = useState('');
     const [photo, setPhoto] = useState<File | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    // Edit modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editingStory, setEditingStory] = useState<StoryResource | null>(null);
     const [editText, setEditText] = useState('');
@@ -64,8 +61,8 @@ export default function UserStories() {
     const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
 
     const [viewingStory, setViewingStory] = useState<StoryResource | null>(null);
+    const [updatedStoryForModal, setUpdatedStoryForModal] = useState<StoryResource | null>(null);
 
-    // Fetch target user
     const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: async () => {
@@ -114,7 +111,6 @@ export default function UserStories() {
         };
     }, [targetUser?.id, textFilter, statusFilter]);
 
-    // Fetch user stories
     const { data, isLoading } = useQuery({
         queryKey: ['user-stories', targetUser?.id, page, limit, sort, queryFilter],
         queryFn: async () => {
@@ -157,7 +153,7 @@ export default function UserStories() {
 
     const updateMutation = useMutation({
         mutationFn: async () => {
-            if (!editingStory) return;
+            if (!editingStory) return null;
             let photoStr = editingStory.photo;
             if (editPhoto) {
                 photoStr = await fileToBase64(editPhoto);
@@ -166,13 +162,21 @@ export default function UserStories() {
                 text: editText,
                 photo: photoStr,
             });
+            const res = await storyService.getStory(editingStory.id);
+            return res.data ?? null;
         },
-        onSuccess: () => {
+        onSuccess: (freshStory) => {
             closeEdit();
             setEditingStory(null);
             setEditText('');
             setEditPhoto(null);
             setEditFieldErrors({});
+            if (freshStory) {
+                setUpdatedStoryForModal(freshStory);
+                if (viewingStory?.id === freshStory.id) {
+                    setViewingStory(freshStory);
+                }
+            }
             queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
             queryClient.invalidateQueries({ queryKey: ['stories'] });
@@ -429,7 +433,6 @@ export default function UserStories() {
                 )}
             />
 
-            {/* Create modal */}
             <Modal opened={createOpened} onClose={closeCreate} title={t('addStory')} size="lg">
                 <Stack gap="sm">
                     <Textarea
@@ -461,7 +464,6 @@ export default function UserStories() {
                 </Stack>
             </Modal>
 
-            {/* Edit modal */}
             <Modal opened={editOpened} onClose={closeEdit} title={t('editStory')} size="lg" zIndex={1000}>
                 <Stack gap="sm">
                     <Textarea
@@ -513,6 +515,7 @@ export default function UserStories() {
                 author={targetUser}
                 onEdit={handleOpenEdit}
                 onDelete={handleDelete}
+                updatedStory={updatedStoryForModal}
             />
         </Stack>
     );

@@ -6,8 +6,10 @@ import { IconChevronLeft, IconChevronRight, IconEdit, IconTrash } from '@tabler/
 import { formatImageSrc } from '../utils/imageUtils';
 import { formatDateTime } from '../utils/date';
 import { useAuth } from '../auth/AuthContext';
-import type { StoryResource } from '../api/services/story.service';
+import { storyService, type StoryResource } from '../api/services/story.service';
 import type { UserResource } from '../api/services/user.service';
+import { EntryTypeEnum } from '../enums/EntryTypeEnum';
+import { EntityViewCounter } from './EntityViewCounter';
 
 export interface UserStoriesGroup {
     userId: string;
@@ -26,6 +28,8 @@ interface StoryViewerModalProps {
     author?: UserResource | null;
     onEdit?: (story: StoryResource) => void;
     onDelete?: (storyId: string) => void;
+    paginateUserStories?: boolean;
+    updatedStory?: StoryResource | null;
 }
 
 export function StoryViewerModal({
@@ -38,9 +42,11 @@ export function StoryViewerModal({
     author,
     onEdit,
     onDelete,
+    paginateUserStories = true,
+    updatedStory,
 }: StoryViewerModalProps) {
     const { t } = useTranslation();
-    const { currentUser, isAdmin } = useAuth();
+    const { currentUser } = useAuth();
 
     const effectiveGroups: UserStoriesGroup[] =
         groups && groups.length > 0 ? groups : story ? [{ userId: story.userId, author, stories: [story] }] : [];
@@ -49,44 +55,150 @@ export function StoryViewerModal({
     const [currentStoryIdx, setCurrentStoryIdx] = useState(initialStoryIndex);
     const prevOpenedRef = useRef(false);
 
+    const [storyOverrides, setStoryOverrides] = useState<Record<string, StoryResource>>({});
+    const [userStoriesMap, setUserStoriesMap] = useState<
+        Record<
+            string,
+            {
+                stories: StoryResource[];
+                page: number;
+                hasNextPage: boolean;
+                isLoading: boolean;
+            }
+        >
+    >({});
+
     useEffect(() => {
         if (opened && !prevOpenedRef.current) {
             setCurrentGroupIdx(initialGroupIndex);
             setCurrentStoryIdx(initialStoryIndex);
+            setUserStoriesMap({});
+            setStoryOverrides({});
         }
         prevOpenedRef.current = opened;
     }, [opened, initialGroupIndex, initialStoryIndex]);
 
+    useEffect(() => {
+        if (!updatedStory) return;
+        setStoryOverrides((prev) => ({
+            ...prev,
+            [updatedStory.id]: updatedStory,
+        }));
+        setUserStoriesMap((prev) => {
+            const userId = updatedStory.userId;
+            const current = prev[userId];
+            if (!current) return prev;
+            return {
+                ...prev,
+                [userId]: {
+                    ...current,
+                    stories: current.stories.map((s) => (s.id === updatedStory.id ? updatedStory : s)),
+                },
+            };
+        });
+    }, [updatedStory]);
+
     const currentGroup = effectiveGroups[currentGroupIdx];
-    const currentStories = currentGroup?.stories ?? [];
-    const currentStory = currentStories[currentStoryIdx];
+    const currentUserId = currentGroup?.userId;
+    const userState = paginateUserStories && currentUserId ? userStoriesMap[currentUserId] : undefined;
+    const currentStories =
+        userState?.stories && userState.stories.length > 0 ? userState.stories : (currentGroup?.stories ?? []);
+    const rawStory = currentStories[currentStoryIdx] ?? currentStories[0];
+    const currentStory = rawStory ? (storyOverrides[rawStory.id] ?? rawStory) : rawStory;
     const currentAuthor = currentGroup?.author ?? author;
+
+    const fetchUserStoriesPage = useCallback(async (userId: string, pageToFetch: number) => {
+        setUserStoriesMap((prev) => ({
+            ...prev,
+            [userId]: {
+                stories: prev[userId]?.stories ?? [],
+                page: pageToFetch,
+                hasNextPage: prev[userId]?.hasNextPage ?? false,
+                isLoading: true,
+            },
+        }));
+
+        try {
+            const res = await storyService.getStories({
+                filter: { userId },
+                page: pageToFetch,
+                limit: 10,
+                sort: 'createdAt:desc',
+            });
+            const fetched = res.data ?? [];
+            const hasNextPage = !!res.pagination?.hasNextPage;
+
+            setUserStoriesMap((prev) => {
+                const currentList = prev[userId]?.stories ?? [];
+                const existingIds = new Set(currentList.map((s) => s.id));
+                const newItems = fetched.filter((s) => !existingIds.has(s.id));
+                return {
+                    ...prev,
+                    [userId]: {
+                        stories: [...currentList, ...newItems],
+                        page: pageToFetch,
+                        hasNextPage,
+                        isLoading: false,
+                    },
+                };
+            });
+        } catch {
+            setUserStoriesMap((prev) => ({
+                ...prev,
+                [userId]: {
+                    ...(prev[userId] ?? { stories: [], page: 1, hasNextPage: false }),
+                    isLoading: false,
+                },
+            }));
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!opened || !paginateUserStories || !currentUserId) return;
+        if (!userStoriesMap[currentUserId]) {
+            fetchUserStoriesPage(currentUserId, 1);
+        }
+    }, [opened, paginateUserStories, currentUserId, userStoriesMap, fetchUserStoriesPage]);
+
+    useEffect(() => {
+        if (!opened || !paginateUserStories || !currentUserId) return;
+        const state = userStoriesMap[currentUserId];
+        if (!state || state.isLoading) return;
+        if (currentStoryIdx >= state.stories.length - 1 && state.hasNextPage) {
+            fetchUserStoriesPage(currentUserId, state.page + 1);
+        }
+    }, [opened, paginateUserStories, currentUserId, currentStoryIdx, userStoriesMap, fetchUserStoriesPage]);
 
     const hasPrevStory = currentStoryIdx > 0;
     const hasNextStory = currentStoryIdx < currentStories.length - 1;
     const hasPrevGroup = currentGroupIdx > 0;
     const hasNextGroup = currentGroupIdx < effectiveGroups.length - 1;
+    const isFetchingMoreCurrentStories = !!(userState?.isLoading && !hasNextStory);
 
     const handlePrevStory = useCallback(() => {
         if (hasPrevStory) {
             setCurrentStoryIdx((prev) => prev - 1);
         } else if (hasPrevGroup) {
-            const prevGroupStories = effectiveGroups[currentGroupIdx - 1]?.stories ?? [];
+            const prevGroup = effectiveGroups[currentGroupIdx - 1];
+            const prevUserState = prevGroup?.userId ? userStoriesMap[prevGroup.userId] : undefined;
+            const prevStories = prevUserState?.stories?.length ? prevUserState.stories : (prevGroup?.stories ?? []);
             setCurrentGroupIdx((prev) => prev - 1);
-            setCurrentStoryIdx(Math.max(0, prevGroupStories.length - 1));
+            setCurrentStoryIdx(Math.max(0, prevStories.length - 1));
         }
-    }, [hasPrevStory, hasPrevGroup, effectiveGroups, currentGroupIdx]);
+    }, [hasPrevStory, hasPrevGroup, effectiveGroups, currentGroupIdx, userStoriesMap]);
 
     const handleNextStory = useCallback(() => {
         if (hasNextStory) {
             setCurrentStoryIdx((prev) => prev + 1);
+        } else if (isFetchingMoreCurrentStories) {
+            return;
         } else if (hasNextGroup) {
             setCurrentGroupIdx((prev) => prev + 1);
             setCurrentStoryIdx(0);
         } else {
             onClose();
         }
-    }, [hasNextStory, hasNextGroup, onClose]);
+    }, [hasNextStory, isFetchingMoreCurrentStories, hasNextGroup, onClose]);
 
     useEffect(() => {
         if (!opened) return;
@@ -174,6 +286,18 @@ export function StoryViewerModal({
                             <Badge variant="light" size="sm" className="story-counter-badge">
                                 {currentStoryIdx + 1} / {currentStories.length}
                             </Badge>
+                            {currentStory && (
+                                <Badge variant="light" size="sm">
+                                    <EntityViewCounter
+                                        entityId={currentStory.id}
+                                        type={EntryTypeEnum.STORY}
+                                        size={14}
+                                        textSize="xs"
+                                        track={opened}
+                                        showTooltip={false}
+                                    />
+                                </Badge>
+                            )}
                             {isStoryOwner && (
                                 <>
                                     {onEdit && (
@@ -199,6 +323,27 @@ export function StoryViewerModal({
                                                 size={30}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
+                                                    if (currentUserId) {
+                                                        setUserStoriesMap((prev) => {
+                                                            const current = prev[currentUserId];
+                                                            if (!current) return prev;
+                                                            return {
+                                                                ...prev,
+                                                                [currentUserId]: {
+                                                                    ...current,
+                                                                    stories: current.stories.filter(
+                                                                        (s) => s.id !== currentStory.id,
+                                                                    ),
+                                                                },
+                                                            };
+                                                        });
+                                                    }
+                                                    if (
+                                                        currentStoryIdx >= currentStories.length - 1 &&
+                                                        currentStoryIdx > 0
+                                                    ) {
+                                                        setCurrentStoryIdx((prev) => prev - 1);
+                                                    }
                                                     onDelete(currentStory.id);
                                                 }}
                                                 aria-label={t('delete')}
@@ -216,7 +361,6 @@ export function StoryViewerModal({
         >
             <Stack gap="md" align="center" pos="relative">
                 <Box className="story-viewer-viewport">
-                    {/* Previous Button - statically pinned */}
                     <ActionIcon
                         variant="filled"
                         size={32}
@@ -236,7 +380,6 @@ export function StoryViewerModal({
                         <IconChevronLeft size={18} />
                     </ActionIcon>
 
-                    {/* Story photo */}
                     {storyPhotoSrc ? (
                         <Image
                             src={storyPhotoSrc}
@@ -247,11 +390,11 @@ export function StoryViewerModal({
                         <Box className="story-empty-box" />
                     )}
 
-                    {/* Next Button - statically pinned */}
                     <ActionIcon
                         variant="filled"
                         size={32}
                         className="story-nav-btn story-nav-btn-next"
+                        loading={isFetchingMoreCurrentStories}
                         onClick={(e) => {
                             e.stopPropagation();
                             handleNextStory();

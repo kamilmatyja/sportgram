@@ -41,8 +41,8 @@ class StoryIndexTest extends ApiTestCase
         $result = $this->get('/api/stories', $user);
 
         $this->assertEquals(200, $result['status']);
-        $this->assertCount(3, $result['json']['data']);
-        $this->assertEquals(3, $result['json']['pagination']['total']);
+        $this->assertCount(2, $result['json']['data']);
+        $this->assertEquals(2, $result['json']['pagination']['total']);
     }
 
     final public function testFiltersAndSorting(): void

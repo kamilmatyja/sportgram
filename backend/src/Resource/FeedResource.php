@@ -3,7 +3,9 @@
 namespace App\Resource;
 
 use App\Dto\FeedDetailsQueryDto;
-use App\Entity\{Feed, FeedComment, FeedReaction};
+use App\Entity\Feed;
+use App\Entity\FeedComment;
+use App\Entity\FeedReaction;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
@@ -44,28 +46,9 @@ use OpenApi\Attributes as OA;
             items: new OA\Items(ref: new Model(type: FeedReactionResource::class)),
         ),
         new OA\Property(
-            property: 'eventDisciplineList',
-            ref: new Model(type: EventDisciplineDistanceListResource::class),
-            nullable: true,
-        ),
-        new OA\Property(
-            property: 'eventDisciplineResult',
-            ref: new Model(type: EventDisciplineDistanceResultResource::class),
-            nullable: true,
-        ),
-        new OA\Property(
-            property: 'goal',
-            ref: new Model(type: GoalResource::class),
-            nullable: true,
-        ),
-        new OA\Property(
-            property: 'goalParticipantResult',
-            ref: new Model(type: GoalParticipantResultResource::class),
-            nullable: true,
-        ),
-        new OA\Property(
-            property: 'training',
-            ref: new Model(type: TrainingResource::class),
+            property: 'feedOrigin',
+            type: 'string',
+            example: 'Event title, {Running}, 10000 m',
             nullable: true,
         ),
     ],
@@ -99,30 +82,8 @@ class FeedResource
             );
         }
 
-        if ($dto && in_array($dto::EVENT_DISCIPLINE_LIST, $dto->include)) {
-            $data['eventDisciplineList'] = $feed->eventDisciplineList ? EventDisciplineDistanceListResource::fromEntity(
-                $feed->eventDisciplineList,
-            ) : null;
-        }
-
-        if ($dto && in_array($dto::EVENT_DISCIPLINE_RESULT, $dto->include)) {
-            $data['eventDisciplineResult'] = $feed->eventDisciplineResult ? EventDisciplineDistanceResultResource::fromEntity(
-                $feed->eventDisciplineResult,
-            ) : null;
-        }
-
-        if ($dto && in_array($dto::GOAL, $dto->include)) {
-            $data['goal'] = $feed->goal ? GoalResource::fromEntity($feed->goal) : null;
-        }
-
-        if ($dto && in_array($dto::GOAL_PARTICIPANT_RESULT, $dto->include)) {
-            $data['goalParticipantResult'] = $feed->goalParticipantResult ? GoalParticipantResultResource::fromEntity(
-                $feed->goalParticipantResult,
-            ) : null;
-        }
-
-        if ($dto && in_array($dto::TRAINING, $dto->include)) {
-            $data['training'] = $feed->training ? TrainingResource::fromEntity($feed->training) : null;
+        if ($dto && in_array($dto::FEED_ORIGIN, $dto->include)) {
+            $data['feedOrigin'] = self::resolveFeedOrigin($feed);
         }
 
         return $data;
@@ -132,5 +93,86 @@ class FeedResource
     public static function fromEntityCollection(array $feeds, ?FeedDetailsQueryDto $dto = null): array
     {
         return array_map(fn (Feed $feed) => self::fromEntity($feed, $dto), $feeds);
+    }
+
+    private static function resolveFeedOrigin(Feed $feed): ?string
+    {
+        if (null !== $feed->event) {
+            $parts = [];
+            foreach ($feed->event->disciplines as $eventDiscipline) {
+                $disciplineName = $eventDiscipline->discipline->name;
+                foreach ($eventDiscipline->distances as $distance) {
+                    $parts[] = sprintf('{%s}: %d m', $disciplineName, $distance->distance);
+                }
+            }
+
+            if (!empty($parts)) {
+                return sprintf('%s, %s', $feed->event->title, implode(', ', $parts));
+            }
+
+            return $feed->event->title;
+        }
+
+        if (null !== $feed->eventDisciplineList) {
+            $distance = $feed->eventDisciplineList->eventDisciplineDistance;
+            $eventDiscipline = $distance->eventDiscipline;
+
+            return sprintf(
+                '%s, {%s}, %d m',
+                $eventDiscipline->event->title,
+                $eventDiscipline->discipline->name,
+                $distance->distance,
+            );
+        }
+
+        if (null !== $feed->eventDisciplineResult) {
+            $distance = $feed->eventDisciplineResult->eventDisciplineList->eventDisciplineDistance;
+            $eventDiscipline = $distance->eventDiscipline;
+
+            return sprintf(
+                '%s, {%s}, %d m, %d s',
+                $eventDiscipline->event->title,
+                $eventDiscipline->discipline->name,
+                $distance->distance,
+                $feed->eventDisciplineResult->time,
+            );
+        }
+
+        if (null !== $feed->goal) {
+            return sprintf(
+                '%s, {%s}, %d m',
+                $feed->goal->text,
+                $feed->goal->discipline->name,
+                $feed->goal->distance,
+            );
+        }
+
+        if (null !== $feed->goalParticipantResult) {
+            return sprintf(
+                '%s, {%s}, %d m, %d s',
+                $feed->goalParticipantResult->goalParticipant->goal->text,
+                $feed->goalParticipantResult->goalParticipant->goal->discipline->name,
+                $feed->goalParticipantResult->distance,
+                $feed->goalParticipantResult->time,
+            );
+        }
+
+        if (null !== $feed->training) {
+            $parts = [];
+            foreach ($feed->training->disciplines as $trainingDiscipline) {
+                $disciplineName = $trainingDiscipline->discipline->name;
+                foreach ($trainingDiscipline->distances as $distance) {
+                    $parts[] = sprintf('{%s}: %d m (%d s)', $disciplineName, $distance->distance, $distance->time);
+                }
+            }
+
+            if (!empty($parts)) {
+                return sprintf('%s, %s', $feed->training->title, implode(', ', $parts));
+            }
+
+            return $feed->training->title;
+        }
+
+        return null;
     }
 }

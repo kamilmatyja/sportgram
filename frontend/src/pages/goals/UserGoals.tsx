@@ -47,7 +47,6 @@ export default function UserGoals() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('createdAt:desc');
 
-    // Filters
     const [textFilter, setTextFilter] = useState('');
     const [linkFilter, setLinkFilter] = useState('');
     const [disciplineFilter, setDisciplineFilter] = useState<string | null>(null);
@@ -55,7 +54,6 @@ export default function UserGoals() {
     const [timeFilter, setTimeFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    // Create modal
     const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
@@ -69,7 +67,6 @@ export default function UserGoals() {
         endedAt: '',
     });
 
-    // Edit modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editingGoal, setEditingGoal] = useState<GoalResource | null>(null);
     const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
@@ -84,7 +81,6 @@ export default function UserGoals() {
     });
     const [editCollaboratorIds, setEditCollaboratorIds] = useState<string[]>([]);
 
-    // Fetch target user by link
     const { data: targetUser, isLoading: userLoading } = useQuery({
         queryKey: ['user', link],
         queryFn: () => userService.getUserByLink(link || ''),
@@ -110,15 +106,44 @@ export default function UserGoals() {
                 limit: 100,
                 filter: { userIds: [currentUser.id], status: FriendStatusEnum.ACCEPTED },
             });
-            const friendsList = res.data ?? [];
-            const otherIds = friendsList.map((f) =>
-                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId,
-            );
-            if (otherIds.length === 0) return [];
-            return await userService.getUsersByIds(otherIds);
+            return res.data ?? [];
         },
         enabled: !!currentUser?.id,
     });
+
+    const friendUserIds = useMemo(() => {
+        if (!myFriendsData || !currentUser) return [];
+        return myFriendsData.map((f) => (f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId));
+    }, [myFriendsData, currentUser]);
+
+    const relevantUserIds = useMemo(() => {
+        const ids = new Set<string>(friendUserIds);
+        if (editingGoal?.participants) {
+            for (const part of editingGoal.participants) {
+                if (part.userId !== currentUser?.id) {
+                    ids.add(part.userId);
+                }
+            }
+        }
+        return Array.from(ids);
+    }, [friendUserIds, editingGoal, currentUser?.id]);
+
+    const { data: collaboratorUsers } = useQuery({
+        queryKey: ['user-goals-collaborator-users-details', relevantUserIds],
+        queryFn: async () => {
+            if (relevantUserIds.length === 0) return [];
+            return await userService.getUsersByIds(relevantUserIds);
+        },
+        enabled: relevantUserIds.length > 0,
+    });
+
+    const collaboratorOptions = useMemo(() => {
+        if (!collaboratorUsers) return [];
+        return collaboratorUsers.map((u) => ({
+            value: u.id,
+            label: `${u.firstName} ${u.lastName} (@${u.link})`,
+        }));
+    }, [collaboratorUsers]);
 
     const sortOptions: SortOption[] = [
         { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
@@ -166,7 +191,6 @@ export default function UserGoals() {
         };
     }, [targetUser?.id, textFilter, linkFilter, disciplineFilter, distanceFilter, timeFilter, statusFilter]);
 
-    // Fetch goals
     const { data, isLoading } = useQuery({
         queryKey: ['goals', targetUser?.id, page, limit, sort, queryFilter],
         queryFn: () => {
@@ -176,6 +200,7 @@ export default function UserGoals() {
                 limit,
                 filter: queryFilter,
                 sort: (sort as NonNullable<GetGoalsQuery>['sort']) ?? 'createdAt:desc',
+                'include[]': ['goalParticipants'],
             });
         },
         enabled: !!targetUser?.id && canAccessSubpage && hasRequiredRole,
@@ -551,7 +576,6 @@ export default function UserGoals() {
                 )}
             />
 
-            {/* Create modal */}
             <Modal opened={createOpened} onClose={closeCreate} title={t('addGoal')} size="lg">
                 <Stack gap="sm">
                     <TextInput
@@ -588,12 +612,7 @@ export default function UserGoals() {
                     <MultiSelect
                         label={t('collaborators')}
                         placeholder={t('selectCollaborators')}
-                        data={
-                            myFriendsData?.map((u) => ({
-                                value: u.id,
-                                label: `${u.firstName} ${u.lastName} (@${u.link})`,
-                            })) ?? []
-                        }
+                        data={collaboratorOptions}
                         value={collaboratorIds}
                         onChange={setCollaboratorIds}
                         searchable
@@ -641,7 +660,6 @@ export default function UserGoals() {
                 </Stack>
             </Modal>
 
-            {/* Edit modal */}
             <Modal opened={editOpened} onClose={closeEdit} title={t('editGoal')} size="lg">
                 <Stack gap="sm">
                     <TextInput
@@ -671,12 +689,7 @@ export default function UserGoals() {
                     <MultiSelect
                         label={t('collaborators')}
                         placeholder={t('selectCollaborators')}
-                        data={
-                            myFriendsData?.map((u) => ({
-                                value: u.id,
-                                label: `${u.firstName} ${u.lastName} (@${u.link})`,
-                            })) ?? []
-                        }
+                        data={collaboratorOptions}
                         value={editCollaboratorIds}
                         onChange={setEditCollaboratorIds}
                         searchable

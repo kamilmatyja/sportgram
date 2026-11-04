@@ -50,12 +50,10 @@ export default function UserPages() {
     const [limit, setLimit] = useState(10);
     const [sort, setSort] = useState<string | null>('createdAt:desc');
 
-    // Filters
     const [title, setTitle] = useState('');
     const [linkFilter, setLinkFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    // Create modal
     const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
     const [formData, setFormData] = useState({
         title: '',
@@ -68,7 +66,6 @@ export default function UserPages() {
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    // Edit modal
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editingPage, setEditingPage] = useState<PageResource | null>(null);
     const [editFormData, setEditFormData] = useState({
@@ -107,15 +104,44 @@ export default function UserPages() {
                 limit: 100,
                 filter: { userIds: [currentUser.id], status: FriendStatusEnum.ACCEPTED },
             });
-            const friendsList = res.data ?? [];
-            const otherIds = friendsList.map((f) =>
-                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId,
-            );
-            if (otherIds.length === 0) return [];
-            return await userService.getUsersByIds(otherIds);
+            return res.data ?? [];
         },
         enabled: !!currentUser?.id,
     });
+
+    const friendUserIds = useMemo(() => {
+        if (!myFriendsData || !currentUser) return [];
+        return myFriendsData.map((f) => (f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId));
+    }, [myFriendsData, currentUser]);
+
+    const relevantUserIds = useMemo(() => {
+        const ids = new Set<string>(friendUserIds);
+        if (editingPage?.participants) {
+            for (const part of editingPage.participants) {
+                if (part.userId !== editingPage.userId) {
+                    ids.add(part.userId);
+                }
+            }
+        }
+        return Array.from(ids);
+    }, [friendUserIds, editingPage]);
+
+    const { data: collaboratorUsers } = useQuery({
+        queryKey: ['user-pages-collaborator-users-details', relevantUserIds],
+        queryFn: async () => {
+            if (relevantUserIds.length === 0) return [];
+            return await userService.getUsersByIds(relevantUserIds);
+        },
+        enabled: relevantUserIds.length > 0,
+    });
+
+    const collaboratorOptions = useMemo(() => {
+        if (!collaboratorUsers) return [];
+        return collaboratorUsers.map((u) => ({
+            value: u.id,
+            label: `${u.firstName} ${u.lastName} (@${u.link})`,
+        }));
+    }, [collaboratorUsers]);
 
     const sortOptions: SortOption[] = [
         { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
@@ -159,6 +185,7 @@ export default function UserPages() {
                 limit,
                 filter: queryFilter,
                 sort: (sort as NonNullable<GetPagesQuery>['sort']) ?? 'createdAt:desc',
+                'include[]': ['pageParticipants'],
             });
         },
         enabled: !!targetUser?.id && canAccessSubpage && hasRequiredRole,
@@ -224,8 +251,8 @@ export default function UserPages() {
                 color: Number(editFormData.color) as ColorEnum,
                 profilePhoto,
                 backgroundPhoto,
-                userIds: currentUser?.id
-                    ? Array.from(new Set([currentUser.id, ...editCollaboratorIds]))
+                userIds: editingPage?.userId
+                    ? Array.from(new Set([editingPage.userId, ...editCollaboratorIds]))
                     : editCollaboratorIds,
             });
         },
@@ -275,9 +302,7 @@ export default function UserPages() {
             link: p.link,
             color: String(p.color),
         });
-        const otherParticipantIds = (p.participants ?? [])
-            .map((part) => part.userId)
-            .filter((uid) => uid !== currentUser?.id);
+        const otherParticipantIds = (p.participants ?? []).map((part) => part.userId).filter((uid) => uid !== p.userId);
         setEditCollaboratorIds(otherParticipantIds);
         setEditProfilePhotoFile(null);
         setEditBgPhotoFile(null);
@@ -509,7 +534,6 @@ export default function UserPages() {
                 )}
             />
 
-            {/* Create modal */}
             <Modal opened={createOpened} onClose={closeCreate} title={t('addPage')} size="lg">
                 <Stack gap="sm">
                     <TextInput
@@ -553,12 +577,7 @@ export default function UserPages() {
                     <MultiSelect
                         label={t('collaborators')}
                         placeholder={t('selectCollaborators')}
-                        data={
-                            myFriendsData?.map((u) => ({
-                                value: u.id,
-                                label: `${u.firstName} ${u.lastName} (@${u.link})`,
-                            })) ?? []
-                        }
+                        data={collaboratorOptions}
                         value={collaboratorIds}
                         onChange={setCollaboratorIds}
                         searchable
@@ -595,7 +614,6 @@ export default function UserPages() {
                 </Stack>
             </Modal>
 
-            {/* Edit modal */}
             <Modal opened={editOpened} onClose={closeEdit} title={t('editPage')} size="lg">
                 <Stack gap="sm">
                     <TextInput
@@ -632,12 +650,7 @@ export default function UserPages() {
                     <MultiSelect
                         label={t('collaborators')}
                         placeholder={t('selectCollaborators')}
-                        data={
-                            myFriendsData?.map((u) => ({
-                                value: u.id,
-                                label: `${u.firstName} ${u.lastName} (@${u.link})`,
-                            })) ?? []
-                        }
+                        data={collaboratorOptions}
                         value={editCollaboratorIds}
                         onChange={setEditCollaboratorIds}
                         searchable

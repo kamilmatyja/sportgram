@@ -84,7 +84,6 @@ export const userService = {
         return res.data;
     },
 
-    // Convenience helpers
     async getUserBySignId(signId: string): Promise<UserResource | null> {
         const res = await api.GET('/api/users', {
             params: {

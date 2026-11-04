@@ -143,7 +143,7 @@ export default function Register() {
                         signSession.start(signRes.id);
                     }
                 } catch {
-                    // Fallthrough to sign navigation
+                    void 0;
                 }
             }
 

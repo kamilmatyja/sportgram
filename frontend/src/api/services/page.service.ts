@@ -156,7 +156,6 @@ export const pageService = {
         return res.data;
     },
 
-    // Convenience helpers
     async getPageByLink(link: string): Promise<PageResource | null> {
         const res = await api.GET('/api/pages', {
             params: {
