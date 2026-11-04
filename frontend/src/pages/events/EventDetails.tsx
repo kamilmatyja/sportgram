@@ -106,6 +106,11 @@ function DistanceParticipantsSection({
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
+    const [expandedParticipantIds, setExpandedParticipantIds] = useState<string[]>([]);
+    const toggleExpandParticipant = (id: string) => {
+        setExpandedParticipantIds((prev) => (prev.includes(id) ? prev.filter((pId) => pId !== id) : [...prev, id]));
+    };
+
     const [expandedResultIds, setExpandedResultIds] = useState<string[]>([]);
     const toggleExpandResult = (id: string) => {
         setExpandedResultIds((prev) => (prev.includes(id) ? prev.filter((rId) => rId !== id) : [...prev, id]));
@@ -184,6 +189,11 @@ function DistanceParticipantsSection({
             });
         },
         onSuccess: () => {
+            if (selectedParticipantId) {
+                setExpandedParticipantIds((prev) =>
+                    prev.includes(selectedParticipantId) ? prev : [...prev, selectedParticipantId],
+                );
+            }
             closeAddResult();
             setSelectedParticipantId(null);
             setResultTime('');
@@ -292,6 +302,7 @@ function DistanceParticipantsSection({
                     <Table striped withTableBorder withColumnBorders>
                         <Table.Thead>
                             <Table.Tr>
+                                <Table.Th w={40} />
                                 <Table.Th>{t('user')}</Table.Th>
                                 <Table.Th>{t('status')}</Table.Th>
                                 <Table.Th ta="right">{t('actions')}</Table.Th>
@@ -309,238 +320,300 @@ function DistanceParticipantsSection({
                                         : p.status === ElementStatusEnum.REJECTED
                                           ? 'red'
                                           : 'gray';
+                                const hasResults = p.results && p.results.length > 0;
+                                const isParticipantExpanded = expandedParticipantIds.includes(p.id);
 
                                 return (
-                                    <Table.Tr key={p.id}>
-                                        <Table.Td>
-                                            <Group gap="sm">
-                                                <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5} size="sm">
-                                                    ?
-                                                </Avatar>
-                                                <div>
-                                                    <Text size="xs" fw={600}>
-                                                        {u ? `${u.firstName} ${u.lastName}` : p.userId}
-                                                    </Text>
-                                                    {u?.link && (
-                                                        <Text size="10px" c="dimmed">
-                                                            @{u.link}
-                                                        </Text>
-                                                    )}
-                                                </div>
-                                            </Group>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <Badge color={pColor} variant="light">
-                                                {pOpt?.label ?? p.status}
-                                            </Badge>
-                                        </Table.Td>
-                                        <Table.Td ta="right">
-                                            <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                {u?.link && (
-                                                    <Tooltip label={t('details')} withArrow>
+                                    <React.Fragment key={p.id}>
+                                        <Table.Tr>
+                                            <Table.Td>
+                                                {hasResults ? (
+                                                    <Tooltip label={t('results')} withArrow>
                                                         <ActionIcon
-                                                            component={Link}
-                                                            to={`/users/${u.link}`}
-                                                            variant="light"
-                                                            size={26}
-                                                            aria-label={t('details')}
+                                                            size="xs"
+                                                            variant="subtle"
+                                                            onClick={() => toggleExpandParticipant(p.id)}
+                                                            aria-label={t('results')}
                                                         >
-                                                            <IconEye size={14} />
+                                                            {isParticipantExpanded ? (
+                                                                <IconChevronDown size={14} />
+                                                            ) : (
+                                                                <IconChevronRight size={14} />
+                                                            )}
                                                         </ActionIcon>
                                                     </Tooltip>
-                                                )}
-                                                {canManageParticipant && (
-                                                    <Menu shadow="md" width={160}>
-                                                        <Menu.Target>
-                                                            <Tooltip label={t('changeStatus')} withArrow>
-                                                                <ActionIcon
-                                                                    variant="light"
-                                                                    size={26}
-                                                                    aria-label={t('changeStatus')}
-                                                                >
-                                                                    <IconAdjustments size={14} />
-                                                                </ActionIcon>
-                                                            </Tooltip>
-                                                        </Menu.Target>
-                                                        <Menu.Dropdown>
-                                                            {ElementStatusEnum.getOptions(t).map((opt) => (
-                                                                <Menu.Item
-                                                                    key={opt.value}
-                                                                    disabled={
-                                                                        p.status === opt.value ||
-                                                                        updateParticipantStatusMutation.isPending
-                                                                    }
-                                                                    onClick={() =>
-                                                                        updateParticipantStatusMutation.mutate({
-                                                                            participantId: p.id,
-                                                                            status: opt.value as ElementStatusEnum,
-                                                                        })
-                                                                    }
-                                                                >
-                                                                    {opt.label}
-                                                                </Menu.Item>
-                                                            ))}
-                                                        </Menu.Dropdown>
-                                                    </Menu>
-                                                )}
-                                                {isOwner &&
-                                                    p.status === ElementStatusEnum.ACTIVE &&
-                                                    (!p.results || p.results.length === 0) && (
-                                                        <Button
-                                                            size="compact-xs"
-                                                            variant="subtle"
-                                                            leftSection={<IconPlus size={14} />}
-                                                            onClick={() => handleOpenAddResult(p.id)}
-                                                        >
-                                                            {t('addResult')}
-                                                        </Button>
+                                                ) : null}
+                                            </Table.Td>
+                                            <Table.Td>
+                                                <Group gap="sm">
+                                                    <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
+                                                        ?
+                                                    </Avatar>
+                                                    <div>
+                                                        <Text size="sm" fw={600}>
+                                                            {u ? `${u.firstName} ${u.lastName}` : p.userId}
+                                                        </Text>
+                                                        {u?.link && (
+                                                            <Text size="xs" c="dimmed">
+                                                                @{u.link}
+                                                            </Text>
+                                                        )}
+                                                    </div>
+                                                </Group>
+                                            </Table.Td>
+                                            <Table.Td>
+                                                <Badge color={pColor} variant="light">
+                                                    {pOpt?.label ?? p.status}
+                                                </Badge>
+                                            </Table.Td>
+                                            <Table.Td ta="right">
+                                                <Group gap="xs" justify="flex-end" wrap="nowrap">
+                                                    {u?.link && (
+                                                        <Tooltip label={t('details')} withArrow>
+                                                            <ActionIcon
+                                                                component={Link}
+                                                                to={`/users/${u.link}`}
+                                                                variant="light"
+                                                                size={28}
+                                                                aria-label={t('details')}
+                                                            >
+                                                                <IconEye size={14} />
+                                                            </ActionIcon>
+                                                        </Tooltip>
                                                     )}
-                                            </Group>
-                                        </Table.Td>
-                                    </Table.Tr>
+                                                    {canManageParticipant && (
+                                                        <Menu shadow="md" width={160}>
+                                                            <Menu.Target>
+                                                                <Tooltip label={t('changeStatus')} withArrow>
+                                                                    <ActionIcon
+                                                                        variant="light"
+                                                                        size={28}
+                                                                        aria-label={t('changeStatus')}
+                                                                    >
+                                                                        <IconAdjustments size={14} />
+                                                                    </ActionIcon>
+                                                                </Tooltip>
+                                                            </Menu.Target>
+                                                            <Menu.Dropdown>
+                                                                {ElementStatusEnum.getOptions(t).map((opt) => (
+                                                                    <Menu.Item
+                                                                        key={opt.value}
+                                                                        disabled={
+                                                                            p.status === opt.value ||
+                                                                            updateParticipantStatusMutation.isPending
+                                                                        }
+                                                                        onClick={() =>
+                                                                            updateParticipantStatusMutation.mutate({
+                                                                                participantId: p.id,
+                                                                                status: opt.value as ElementStatusEnum,
+                                                                            })
+                                                                        }
+                                                                    >
+                                                                        {opt.label}
+                                                                    </Menu.Item>
+                                                                ))}
+                                                            </Menu.Dropdown>
+                                                        </Menu>
+                                                    )}
+                                                    {isOwner &&
+                                                        p.status === ElementStatusEnum.ACTIVE &&
+                                                        (!p.results || p.results.length === 0) && (
+                                                            <Button
+                                                                size="compact-xs"
+                                                                variant="subtle"
+                                                                leftSection={<IconPlus size={14} />}
+                                                                onClick={() => handleOpenAddResult(p.id)}
+                                                            >
+                                                                {t('addResult')}
+                                                            </Button>
+                                                        )}
+                                                </Group>
+                                            </Table.Td>
+                                        </Table.Tr>
+                                        {hasResults && isParticipantExpanded && (
+                                            <Table.Tr>
+                                                <Table.Td colSpan={4} p={0}>
+                                                    <Table striped withTableBorder withColumnBorders>
+                                                        <Table.Thead>
+                                                            <Table.Tr>
+                                                                <Table.Th w={40} />
+                                                                <Table.Th>{t('distanceMeters')}</Table.Th>
+                                                                <Table.Th>{t('timeSeconds')}</Table.Th>
+                                                                <Table.Th ta="right">{t('actions')}</Table.Th>
+                                                            </Table.Tr>
+                                                        </Table.Thead>
+                                                        <Table.Tbody>
+                                                            {p.results.map(
+                                                                (res: EventDisciplineDistanceResultResource) => {
+                                                                    const hasSubResults =
+                                                                        res.subResults && res.subResults.length > 0;
+                                                                    const isSubExpanded = expandedResultIds.includes(
+                                                                        res.id,
+                                                                    );
+
+                                                                    return (
+                                                                        <React.Fragment key={res.id}>
+                                                                            <Table.Tr>
+                                                                                <Table.Td>
+                                                                                    {hasSubResults ? (
+                                                                                        <Tooltip
+                                                                                            label={t('details')}
+                                                                                            withArrow
+                                                                                        >
+                                                                                            <ActionIcon
+                                                                                                size="xs"
+                                                                                                variant="subtle"
+                                                                                                onClick={() =>
+                                                                                                    toggleExpandResult(
+                                                                                                        res.id,
+                                                                                                    )
+                                                                                                }
+                                                                                                aria-label={t(
+                                                                                                    'details',
+                                                                                                )}
+                                                                                            >
+                                                                                                {isSubExpanded ? (
+                                                                                                    <IconChevronDown
+                                                                                                        size={14}
+                                                                                                    />
+                                                                                                ) : (
+                                                                                                    <IconChevronRight
+                                                                                                        size={14}
+                                                                                                    />
+                                                                                                )}
+                                                                                            </ActionIcon>
+                                                                                        </Tooltip>
+                                                                                    ) : null}
+                                                                                </Table.Td>
+                                                                                <Table.Td>
+                                                                                    {distance.distance} m
+                                                                                </Table.Td>
+                                                                                <Table.Td>{res.time} s</Table.Td>
+                                                                                <Table.Td ta="right">
+                                                                                    {isOwner && (
+                                                                                        <Group
+                                                                                            gap="xs"
+                                                                                            justify="flex-end"
+                                                                                            wrap="nowrap"
+                                                                                        >
+                                                                                            <Tooltip
+                                                                                                label={t('editResult')}
+                                                                                                withArrow
+                                                                                            >
+                                                                                                <ActionIcon
+                                                                                                    variant="light"
+                                                                                                    size={24}
+                                                                                                    onClick={() =>
+                                                                                                        handleOpenEditResult(
+                                                                                                            res,
+                                                                                                        )
+                                                                                                    }
+                                                                                                    aria-label={t(
+                                                                                                        'editResult',
+                                                                                                    )}
+                                                                                                >
+                                                                                                    <IconEdit
+                                                                                                        size={14}
+                                                                                                    />
+                                                                                                </ActionIcon>
+                                                                                            </Tooltip>
+                                                                                            <Tooltip
+                                                                                                label={t('delete')}
+                                                                                                withArrow
+                                                                                            >
+                                                                                                <ActionIcon
+                                                                                                    variant="light"
+                                                                                                    color="red"
+                                                                                                    size={24}
+                                                                                                    onClick={() =>
+                                                                                                        handleDeleteResult(
+                                                                                                            res.id,
+                                                                                                        )
+                                                                                                    }
+                                                                                                    aria-label={t(
+                                                                                                        'delete',
+                                                                                                    )}
+                                                                                                >
+                                                                                                    <IconTrash
+                                                                                                        size={14}
+                                                                                                    />
+                                                                                                </ActionIcon>
+                                                                                            </Tooltip>
+                                                                                        </Group>
+                                                                                    )}
+                                                                                </Table.Td>
+                                                                            </Table.Tr>
+                                                                            {hasSubResults && isSubExpanded && (
+                                                                                <Table.Tr>
+                                                                                    <Table.Td colSpan={4} p={0}>
+                                                                                        <Table
+                                                                                            striped
+                                                                                            withTableBorder
+                                                                                            withColumnBorders
+                                                                                        >
+                                                                                            <Table.Thead>
+                                                                                                <Table.Tr>
+                                                                                                    <Table.Th>
+                                                                                                        {t(
+                                                                                                            'subDistanceMeters',
+                                                                                                        )}
+                                                                                                    </Table.Th>
+                                                                                                    <Table.Th>
+                                                                                                        {t(
+                                                                                                            'timeSeconds',
+                                                                                                        )}
+                                                                                                    </Table.Th>
+                                                                                                </Table.Tr>
+                                                                                            </Table.Thead>
+                                                                                            <Table.Tbody>
+                                                                                                {res.subResults.map(
+                                                                                                    (sr, idx) => {
+                                                                                                        const sd =
+                                                                                                            distance.subDistances?.find(
+                                                                                                                (d) =>
+                                                                                                                    d.id ===
+                                                                                                                    sr.eventDisciplineSubDistanceId,
+                                                                                                            );
+                                                                                                        return (
+                                                                                                            <Table.Tr
+                                                                                                                key={
+                                                                                                                    sr.id
+                                                                                                                }
+                                                                                                            >
+                                                                                                                <Table.Td>
+                                                                                                                    {sd
+                                                                                                                        ? `${sd.subDistance} m`
+                                                                                                                        : `#${idx + 1}`}
+                                                                                                                </Table.Td>
+                                                                                                                <Table.Td>
+                                                                                                                    {
+                                                                                                                        sr.time
+                                                                                                                    }{' '}
+                                                                                                                    s
+                                                                                                                </Table.Td>
+                                                                                                            </Table.Tr>
+                                                                                                        );
+                                                                                                    },
+                                                                                                )}
+                                                                                            </Table.Tbody>
+                                                                                        </Table>
+                                                                                    </Table.Td>
+                                                                                </Table.Tr>
+                                                                            )}
+                                                                        </React.Fragment>
+                                                                    );
+                                                                },
+                                                            )}
+                                                        </Table.Tbody>
+                                                    </Table>
+                                                </Table.Td>
+                                            </Table.Tr>
+                                        )}
+                                    </React.Fragment>
                                 );
                             })}
                         </Table.Tbody>
                     </Table>
-
-                    {participants.some((p) => p.results && p.results.length > 0) && (
-                        <Stack gap="xs" pl="sm">
-                            <Text size="xs" fw={700} c="dimmed">
-                                {t('results')}
-                            </Text>
-                            {participants.map((p) => {
-                                if (!p.results || p.results.length === 0) return null;
-                                const u = users[p.userId];
-
-                                return (
-                                    <Paper key={p.id} p="xs" radius="xs" withBorder>
-                                        <Text size="xs" fw={600} mb={4}>
-                                            {u ? `${u.firstName} ${u.lastName}` : p.userId}
-                                        </Text>
-                                        <Table striped withTableBorder withColumnBorders>
-                                            <Table.Thead>
-                                                <Table.Tr>
-                                                    <Table.Th style={{ width: 40 }} />
-                                                    <Table.Th>{t('distanceMeters')}</Table.Th>
-                                                    <Table.Th>{t('timeSeconds')}</Table.Th>
-                                                    <Table.Th ta="right">{t('actions')}</Table.Th>
-                                                </Table.Tr>
-                                            </Table.Thead>
-                                            <Table.Tbody>
-                                                {p.results.map((res: EventDisciplineDistanceResultResource) => {
-                                                    const hasSubResults = res.subResults && res.subResults.length > 0;
-                                                    const isExpanded = expandedResultIds.includes(res.id);
-                                                    return (
-                                                        <React.Fragment key={res.id}>
-                                                            <Table.Tr>
-                                                                <Table.Td>
-                                                                    {hasSubResults ? (
-                                                                        <ActionIcon
-                                                                            size="xs"
-                                                                            variant="subtle"
-                                                                            onClick={() => toggleExpandResult(res.id)}
-                                                                            aria-label={t('details')}
-                                                                        >
-                                                                            {isExpanded ? (
-                                                                                <IconChevronDown size={14} />
-                                                                            ) : (
-                                                                                <IconChevronRight size={14} />
-                                                                            )}
-                                                                        </ActionIcon>
-                                                                    ) : null}
-                                                                </Table.Td>
-                                                                <Table.Td>{distance.distance} m</Table.Td>
-                                                                <Table.Td>{res.time} s</Table.Td>
-                                                                <Table.Td ta="right">
-                                                                    {isOwner && (
-                                                                        <Group
-                                                                            gap="xs"
-                                                                            justify="flex-end"
-                                                                            wrap="nowrap"
-                                                                        >
-                                                                            <Tooltip label={t('editResult')} withArrow>
-                                                                                <ActionIcon
-                                                                                    variant="light"
-                                                                                    size={24}
-                                                                                    onClick={() =>
-                                                                                        handleOpenEditResult(res)
-                                                                                    }
-                                                                                    aria-label={t('editResult')}
-                                                                                >
-                                                                                    <IconEdit size={14} />
-                                                                                </ActionIcon>
-                                                                            </Tooltip>
-                                                                            <Tooltip label={t('delete')} withArrow>
-                                                                                <ActionIcon
-                                                                                    variant="light"
-                                                                                    color="red"
-                                                                                    size={24}
-                                                                                    onClick={() =>
-                                                                                        handleDeleteResult(res.id)
-                                                                                    }
-                                                                                    aria-label={t('delete')}
-                                                                                >
-                                                                                    <IconTrash size={14} />
-                                                                                </ActionIcon>
-                                                                            </Tooltip>
-                                                                        </Group>
-                                                                    )}
-                                                                </Table.Td>
-                                                            </Table.Tr>
-                                                            {hasSubResults && isExpanded && (
-                                                                <Table.Tr>
-                                                                    <Table.Td colSpan={4} p={0}>
-                                                                        <Table
-                                                                            striped
-                                                                            withTableBorder
-                                                                            withColumnBorders
-                                                                        >
-                                                                            <Table.Thead>
-                                                                                <Table.Tr>
-                                                                                    <Table.Th>
-                                                                                        {t('subDistanceMeters')}
-                                                                                    </Table.Th>
-                                                                                    <Table.Th>
-                                                                                        {t('timeSeconds')}
-                                                                                    </Table.Th>
-                                                                                </Table.Tr>
-                                                                            </Table.Thead>
-                                                                            <Table.Tbody>
-                                                                                {res.subResults.map((sr, idx) => {
-                                                                                    const sd =
-                                                                                        distance.subDistances?.find(
-                                                                                            (d) =>
-                                                                                                d.id ===
-                                                                                                sr.eventDisciplineSubDistanceId,
-                                                                                        );
-                                                                                    return (
-                                                                                        <Table.Tr key={sr.id}>
-                                                                                            <Table.Td>
-                                                                                                {sd
-                                                                                                    ? `${sd.subDistance} m`
-                                                                                                    : `#${idx + 1}`}
-                                                                                            </Table.Td>
-                                                                                            <Table.Td>
-                                                                                                {sr.time} s
-                                                                                            </Table.Td>
-                                                                                        </Table.Tr>
-                                                                                    );
-                                                                                })}
-                                                                            </Table.Tbody>
-                                                                        </Table>
-                                                                    </Table.Td>
-                                                                </Table.Tr>
-                                                            )}
-                                                        </React.Fragment>
-                                                    );
-                                                })}
-                                            </Table.Tbody>
-                                        </Table>
-                                    </Paper>
-                                );
-                            })}
-                        </Stack>
-                    )}
                 </Stack>
             )}
 

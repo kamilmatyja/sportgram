@@ -777,7 +777,7 @@ export default function PageDetails() {
                                         <Table.Tr key={ev.id}>
                                             <Table.Td>
                                                 <Group gap="sm">
-                                                    <Avatar src={formatImageSrc(ev.photo)} radius={5} size="sm">
+                                                    <Avatar src={formatImageSrc(ev.photo)} radius={5}>
                                                         ?
                                                     </Avatar>
                                                     <div>

@@ -3,9 +3,7 @@
 namespace App\Resource;
 
 use App\Dto\FeedDetailsQueryDto;
-use App\Entity\Feed;
-use App\Entity\FeedComment;
-use App\Entity\FeedReaction;
+use App\Entity\{Feed, FeedComment, FeedReaction};
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 
@@ -106,7 +104,7 @@ class FeedResource
                 }
             }
 
-            if (!empty($parts)) {
+            if (! empty($parts)) {
                 return sprintf('%s, %s', $feed->event->title, implode(', ', $parts));
             }
 
@@ -166,7 +164,7 @@ class FeedResource
                 }
             }
 
-            if (!empty($parts)) {
+            if (! empty($parts)) {
                 return sprintf('%s, %s', $feed->training->title, implode(', ', $parts));
             }
 
