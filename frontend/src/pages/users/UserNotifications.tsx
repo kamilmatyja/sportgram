@@ -168,7 +168,7 @@ export default function UserNotifications() {
             key: 'createdAt',
             header: t('createdAt'),
             render: (n) => (
-                <Text size="xs" c="dimmed">
+                <Text size="sm" c="dimmed">
                     {formatDateTime(n.createdAt)}
                 </Text>
             ),

@@ -44,7 +44,7 @@ import {
 } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import NotFound from '../../components/NotFound';
 import { EmptyState } from '../../components/EmptyState';
@@ -800,8 +800,8 @@ export default function UserProfile() {
             <Card withBorder radius="md" p={0} shadow="xs" className="overflow-hidden">
                 {userBgPhotoSrc ? (
                     <Box h={160} pos="relative" bg="var(--mantine-primary-color-filled)">
-                        <Center pos="absolute" inset={0} style={{ zIndex: 0 }}>
-                            <Text fz={48} fw={700} c="white" style={{ opacity: 0.8, userSelect: 'none' }}>
+                        <Center pos="absolute" inset={0} className="header-bg-placeholder-center">
+                            <Text fz={48} fw={700} c="white" className="header-bg-placeholder-text">
                                 ?
                             </Text>
                         </Center>
@@ -813,21 +813,20 @@ export default function UserProfile() {
                             fit="cover"
                             alt={user.firstName}
                             pos="relative"
-                            style={{ zIndex: 1 }}
                             onError={(e) => {
-                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.classList.add('d-none');
                             }}
                         />
                     </Box>
                 ) : (
                     <Center h={160} bg="var(--mantine-primary-color-filled)">
-                        <Text fz={48} fw={700} c="white" style={{ opacity: 0.8, userSelect: 'none' }}>
+                        <Text fz={48} fw={700} c="white" className="header-bg-placeholder-text">
                             ?
                         </Text>
                     </Center>
                 )}
 
-                <Box p="md" pos="relative" style={{ zIndex: 2 }}>
+                <Box p="md" pos="relative" className="header-content-box">
                     <Avatar
                         src={userProfilePhotoSrc}
                         size={100}
@@ -836,7 +835,6 @@ export default function UserProfile() {
                         top={-50}
                         left={24}
                         className="profile-avatar-border"
-                        style={{ zIndex: 3 }}
                     >
                         ?
                     </Avatar>
@@ -1143,14 +1141,34 @@ export default function UserProfile() {
                                     >
                                         <Group justify="space-between" mb="xs">
                                             <Group gap="sm">
-                                                <Avatar src={userProfilePhotoSrc} radius={5}>
-                                                    ?
-                                                </Avatar>
+                                                {user?.link || link ? (
+                                                    <Link to={`/users/${user?.link || link}`} className="no-decoration">
+                                                        <Avatar src={userProfilePhotoSrc} radius={5}>
+                                                            ?
+                                                        </Avatar>
+                                                    </Link>
+                                                ) : (
+                                                    <Avatar src={userProfilePhotoSrc} radius={5}>
+                                                        ?
+                                                    </Avatar>
+                                                )}
                                                 <Box>
-                                                    <Text size="sm" fw={600}>
-                                                        {user.firstName} {user.lastName}
-                                                    </Text>
-                                                    <Text size="xs" c="dimmed">
+                                                    {user?.link || link ? (
+                                                        <Text
+                                                            size="sm"
+                                                            fw={600}
+                                                            component={Link}
+                                                            to={`/users/${user?.link || link}`}
+                                                            className="no-decoration"
+                                                        >
+                                                            {user.firstName} {user.lastName}
+                                                        </Text>
+                                                    ) : (
+                                                        <Text size="sm" fw={600}>
+                                                            {user.firstName} {user.lastName}
+                                                        </Text>
+                                                    )}
+                                                    <Text size="sm" c="dimmed">
                                                         {formatDateTime(feed.createdAt)}
                                                     </Text>
                                                 </Box>
@@ -1262,62 +1280,98 @@ export default function UserProfile() {
                                         <Collapse expanded={commentsOpen}>
                                             <Stack gap="xs" mt="sm">
                                                 {feed.comments?.map((c) => {
-                                                    const cAuthor = commentUsersMap[c.userId];
+                                                    const cAuthor =
+                                                        commentUsersMap[c.userId] ??
+                                                        (currentUser?.id === c.userId ? currentUser : undefined);
+                                                    const cAuthorName = cAuthor
+                                                        ? `${cAuthor.firstName ?? ''} ${cAuthor.lastName ?? ''}`.trim() ||
+                                                          cAuthor.link ||
+                                                          c.userId
+                                                        : c.userId;
+                                                    const cAuthorPhoto = formatImageSrc(cAuthor?.profilePhoto);
                                                     const canManageComment = currentUser?.id === c.userId;
                                                     const isEditing = editingCommentId === c.id;
 
                                                     return (
                                                         <Paper key={c.id} p="xs" withBorder radius="sm">
-                                                            <Group justify="space-between" mb={2}>
-                                                                <Text size="xs" fw={600}>
-                                                                    {cAuthor
-                                                                        ? `${cAuthor.firstName ?? ''} ${cAuthor.lastName ?? ''}`.trim() ||
-                                                                          c.userId
-                                                                        : c.userId}
-                                                                </Text>
-                                                                <Group gap={6}>
-                                                                    <Text size="xs" c="dimmed">
-                                                                        {formatDateTime(c.createdAt)}
-                                                                    </Text>
-                                                                    {canManageComment && !isEditing && (
-                                                                        <Group gap={4}>
-                                                                            <Tooltip label={t('editComment')} withArrow>
-                                                                                <ActionIcon
-                                                                                    size={30}
-                                                                                    variant="light"
-                                                                                    onClick={() => {
-                                                                                        setEditingCommentId(c.id);
-                                                                                        setEditingCommentText(c.text);
-                                                                                    }}
-                                                                                >
-                                                                                    <IconEdit size={16} />
-                                                                                </ActionIcon>
-                                                                            </Tooltip>
-                                                                            <Tooltip
-                                                                                label={t('deleteComment')}
-                                                                                withArrow
-                                                                            >
-                                                                                <ActionIcon
-                                                                                    size={30}
-                                                                                    variant="light"
-                                                                                    color="red"
-                                                                                    onClick={() =>
-                                                                                        handleDeleteComment(c.id)
-                                                                                    }
-                                                                                    loading={
-                                                                                        deleteCommentMutation.isPending
-                                                                                    }
-                                                                                    disabled={
-                                                                                        deleteCommentMutation.isPending
-                                                                                    }
-                                                                                    aria-label={t('deleteComment')}
-                                                                                >
-                                                                                    <IconTrash size={16} />
-                                                                                </ActionIcon>
-                                                                            </Tooltip>
-                                                                        </Group>
+                                                            <Group
+                                                                justify="space-between"
+                                                                align="center"
+                                                                wrap="nowrap"
+                                                                mb="xs"
+                                                            >
+                                                                <Group gap="sm" wrap="nowrap">
+                                                                    {cAuthor?.link ? (
+                                                                        <Link
+                                                                            to={`/users/${cAuthor.link}`}
+                                                                            className="no-decoration"
+                                                                        >
+                                                                            <Avatar src={cAuthorPhoto} radius={5}>
+                                                                                ?
+                                                                            </Avatar>
+                                                                        </Link>
+                                                                    ) : (
+                                                                        <Avatar src={cAuthorPhoto} radius={5}>
+                                                                            ?
+                                                                        </Avatar>
                                                                     )}
+                                                                    <Box>
+                                                                        {cAuthor?.link ? (
+                                                                            <Text
+                                                                                size="sm"
+                                                                                fw={600}
+                                                                                component={Link}
+                                                                                to={`/users/${cAuthor.link}`}
+                                                                                className="no-decoration"
+                                                                            >
+                                                                                {cAuthorName}
+                                                                            </Text>
+                                                                        ) : (
+                                                                            <Text size="sm" fw={600}>
+                                                                                {cAuthorName}
+                                                                            </Text>
+                                                                        )}
+                                                                        <Text size="sm" c="dimmed">
+                                                                            {formatDateTime(c.createdAt)}
+                                                                        </Text>
+                                                                    </Box>
                                                                 </Group>
+
+                                                                {canManageComment && !isEditing && (
+                                                                    <Group gap={4} wrap="nowrap">
+                                                                        <Tooltip label={t('editComment')} withArrow>
+                                                                            <ActionIcon
+                                                                                size={30}
+                                                                                variant="light"
+                                                                                onClick={() => {
+                                                                                    setEditingCommentId(c.id);
+                                                                                    setEditingCommentText(c.text);
+                                                                                }}
+                                                                            >
+                                                                                <IconEdit size={16} />
+                                                                            </ActionIcon>
+                                                                        </Tooltip>
+                                                                        <Tooltip label={t('deleteComment')} withArrow>
+                                                                            <ActionIcon
+                                                                                size={30}
+                                                                                variant="light"
+                                                                                color="red"
+                                                                                onClick={() =>
+                                                                                    handleDeleteComment(c.id)
+                                                                                }
+                                                                                loading={
+                                                                                    deleteCommentMutation.isPending
+                                                                                }
+                                                                                disabled={
+                                                                                    deleteCommentMutation.isPending
+                                                                                }
+                                                                                aria-label={t('deleteComment')}
+                                                                            >
+                                                                                <IconTrash size={16} />
+                                                                            </ActionIcon>
+                                                                        </Tooltip>
+                                                                    </Group>
+                                                                )}
                                                             </Group>
 
                                                             {isEditing ? (

@@ -174,502 +174,527 @@ npm run fix
 
 ## Podstrony
 
-### 1. Autentykacja i strona główna
-
-#### `/` – Strona główna
-- **Dostęp:** Wszyscy (niezalogowani i zalogowani).
-- **Widok dla niezalogowanych:**
-  - Komunikat powitalny oraz kafelki/przyciski zachęcające do logowania (`/sign`) i rejestracji (`/register`).
-- **Widok dla zalogowanych:**
-  - **Pasek relacji (Stories bar):**
-    - Kafelek `Dodaj relację` z przyciskiem `+` (otwiera modal dodawania story z wyborem pliku zdjęcia lub wideo).
-    - Lista aktywnych kółek relacji dodanych przez znajomych:
-      - Wskaźnik statusu przeczytania/obejrzenia relacji.
-      - Kliknięcie w kafelek otwiera pełnoekranowy modal odtwarzacza relacji (`StoryViewerModal`).
-      - W odtwarzaczu: avatar i nazwa autora, czas publikacji, pasek postępu czasu wyświetlania relacji, przyciski przejścia do poprzedniej/następnej relacji, przycisk zamknięcia oraz przycisk `Usuń relację` (dostępny tylko dla autora danej relacji lub Administratora).
-  - **Blok publikacji wpisu (Feed creator):**
-    - Przycisk / pole tekstowe otwierające modal tworzenia wpisu (`Dodaj wpis`):
-      - Pole tekstowe treści wpisu (`description`).
-      - Pole wyboru pliku multimedialnego (`photo` – zdjęcie lub wideo).
-      - Przycisk `Opublikuj` oraz `Anuluj`.
-  - **Strumień wpisów (Feeds stream):**
-    - Nieskończone przewijanie (infinite scroll) wpisów własnych oraz znajomych.
-    - W każdej karcie wpisu:
-      - Nagłówek: Avatar autora, imię i nazwisko (link do profilu `/users/:link`), data publikacji, licznik wyświetleń (`EntityViewCounter`).
-      - Menu opcji wpisu (ikona trzech kropek):
-        - `Edytuj wpis` – otwiera modal edycji treści i zdjęcia wpisu (widoczne tylko dla autora wpisu lub Administratora).
-        - `Usuń wpis` – modal potwierdzenia usunięcia wpisu (widoczne tylko dla autora wpisu lub Administratora).
-      - Treść tekstowa wpisu oraz załączone zdjęcie / wideo.
-      - Pasek interakcji:
-        - Przycisk dodawania/zmiany reakcji (polubienia) z licznikiem reakcji; kliknięcie własnej reakcji cofa polubienie.
-        - Przycisk komentarzy z licznikiem komentarzy (rozwija / zwija sekcję komentarzy).
-      - Sekcja komentarzy (pod wpisem):
-        - Lista komentarzy: avatar i autor (link do profilu), treść komentarza, data utworzenia.
-        - Akcje na komentarzu: `Edytuj` (inline edycja treści z przyciskami Zapisz / Anuluj) oraz `Usuń` (dostępne wyłącznie dla autora danego komentarza lub Administratora).
-        - Formularz dodawania nowego komentarza: pole tekstowe oraz przycisk dodania komentarza.
-
-#### `/sign` – Logowanie
-- **Dostęp:** Tylko dla niezalogowanych (użytkownik zalogowany jest automatycznie przekierowywany na stronę główną `/`).
-- **Krok 1 (Formularz logowania):**
-  - Pole tekstowe `Login` (adres e-mail lub `@link` użytkownika).
-  - Pole hasła `Hasło`.
-  - Przycisk `Zaloguj się`.
-  - Linki pomocnicze: `Nie masz konta? Zarejestruj się` (`/register`) oraz `Zapomniałeś hasła?` (`/password-reset`).
-- **Krok 2 (Weryfikacja dwuetapowa PIN):**
-  - Wyświetlany po poprawnym wprowadzeniu hasła, gdy wymagane jest potwierdzenie e-mail.
-  - Pole wprowadzenia 6-cyfrowego kodu `PIN` przesłanego na adres e-mail.
-  - Przycisk `Zweryfikuj PIN`.
-  - Przycisk `Wyślij kod ponownie` (z licznikiem czasu oczekiwania).
-  - Przycisk `Wróć do logowania` (powrót do kroku 1).
-
-#### `/register` – Rejestracja
-- **Dostęp:** Tylko dla niezalogowanych (zalogowani przekierowywani na `/`).
-- **Krok 1 (Dane konta):**
-  - Pola tekstowe: `Imię`, `Nazwisko`, `Adres e-mail`, `Hasło`, `Unikalny link` (`link` profilu).
-  - Wybór ról w systemie (MultiSelect): `Uczestnik`, `Organizator` (przynajmniej jedna rola wymagana).
-  - Wybór płci (Select): `Mężczyzna`, `Kobieta`.
-  - Wybór koloru przewodniego profilu (`color`).
-  - Pola wyboru plików: `Zdjęcie profilowe`, `Zdjęcie w tle` (banner).
-  - Przycisk `Dalej` (walidacja i wysłanie kodu PIN na e-mail).
-  - Link `Masz już konto? Zaloguj się` (`/sign`).
-- **Krok 2 (Weryfikacja adresu e-mail):**
-  - Pole `Kod PIN` z wiadomości e-mail.
-  - Przycisk `Potwierdź rejestrację`.
-  - Przycisk `Wyślij kod ponownie`.
-  - Przycisk `Wróć` (powrót do edycji danych w kroku 1).
-
-#### `/password-reset` – Resetowanie hasła
-- **Dostęp:** Tylko dla niezalogowanych.
-- **Krok 1 (Wysłanie kodu):**
-  - Pole tekstowe `Adres e-mail`.
-  - Przycisk `Wyślij kod resetujący`.
-  - Link powrotu do logowania (`/sign`).
-- **Krok 2 (Ustawienie nowego hasła):**
-  - Pole `Kod PIN` z wiadomości e-mail.
-  - Pole `Nowe hasło`.
-  - Pole `Powtórz nowe hasło`.
-  - Przycisk `Zmień hasło`.
-  - Przycisk `Wyślij kod ponownie`.
-  - Przycisk `Wróć` (powrót do kroku 1).
+Poniżej znajduje się szczegółowy przegląd wszystkich 27 podstron aplikacji frontendowej. Dla każdej podstrony określono, kto ma do niej dostęp, a w tabeli wyszczególniono wszystkie dostępne funkcjonalności wraz z informacją, kto może z nich korzystać.
 
 ---
 
-### 2. Użytkownicy i profil
+### 1. Podstrona: Strona główna (`/`)
+**Dla kogo:** Dla gości i dla autoryzowanych.
 
-#### `/users` – Lista użytkowników
-- **Dostęp:** Wszyscy zalogowani użytkownicy.
-- **Pasek filtrów:**
-  - Wyszukiwarka tekstowa po `Imieniu i nazwisku`.
-  - Wyszukiwarka tekstowa po `Adresie e-mail`.
-  - Wyszukiwarka tekstowa po `Linku` profilu.
-  - Filtr wyboru `Roli` (Uczestnik, Organizator, Administrator).
-  - Filtr wyboru `Płci` (Mężczyzna, Kobieta).
-  - Filtr wyboru `Statusu konta` (np. Aktywny, Oczekujący, Zablokowany).
-  - Przycisk `Resetuj filtry` (wyświetla liczbę aktywnych filtrów).
-- **Sortowanie i paginacja:**
-  - Opcje sortowania: Data utworzenia, Imię i nazwisko, Adres e-mail, Status konta (rosnąco/malejąco).
-  - Wybór limitu wierszy na stronę (10, 20, 50, 100) oraz paginacja stron.
-- **Przycisk główny tabeli:**
-  - Przycisk `Dodaj użytkownika` – widoczny **wyłącznie dla Administratora**.
-    - Modal dodawania użytkownika: imię, nazwisko, email, hasło, unikalny link, role, płeć, kolor profilu, zdjęcie profilowe, banner.
-- **Kolumny tabeli:**
-  - `Użytkownik`: Avatar, imię i nazwisko, identyfikator `@link`.
-  - `E-mail`: Adres e-mail użytkownika.
-  - `Role`: Odznaki (Badges) przypisanych ról użytkownika.
-  - `Płeć`: Płeć użytkownika.
-  - `Status`: Kolorowa odznaka statusu konta.
-- **Akcje w wierszu tabeli:**
-  - Przycisk `Szczegóły` (ikona oka) – przejście do profilu `/users/:link` (dostępny dla każdego zalogowanego).
-  - Menu `Zmień status` (ikona suwaków) – widoczne **wyłącznie dla Administratora** (zmiana statusu konta na: Aktywny, Oczekujący, Zablokowany itp.).
-  - Przycisk `Edytuj użytkownika` (ikona ołówka) – widoczny tylko dla **Właściciela danego konta** lub **Administratora** (modal edycji danych profilu).
-  - Przycisk `Usuń użytkownika` (ikona kosza) – widoczny tylko dla **Właściciela danego konta** lub **Administratora** (modal potwierdzenia usunięcia konta).
-
-#### `/users/:link` – Profil użytkownika
-- **Dostęp:** Zalogowani użytkownicy.
-- **Nagłówek profilu:**
-  - Zdjęcie w tle (banner), avatar użytkownika, imię i nazwisko, `@link`, płeć, odznaki ról, licznik wyświetleń profilu (`EntityViewCounter`).
-  - **Akcje relacji i zarządzania w nagłówku:**
-    - **Dla Właściciela profilu:**
-      - Przycisk `Edytuj profil` (otwiera modal: imię, nazwisko, link, płeć, kolor motywu, zmiana zdjęć profilowych i bannera).
-      - Przycisk `Usuń konto` (modal potwierdzenia usunięcia konta).
-    - **Dla Administratora:**
-      - Dodatkowo menu wyboru i zmiany statusu konta użytkownika.
-    - **Dla innego zalogowanego użytkownika:**
-      - Gdy brak relacji znajomości: Przycisk `Dodaj do znajomych` (wysyła zaproszenie).
-      - Gdy wysłano zaproszenie (status oczekujący): Przycisk `Anuluj zaproszenie`.
-      - Gdy otrzymano zaproszenie od tego użytkownika: Przyciski `Zaakceptuj` oraz `Odrzuć`.
-      - Gdy relacja jest zaakceptowana: Przycisk `Usuń ze znajomych` (modal potwierdzenia usunięcia z listy znajomych).
-- **Pasek nawigacji profilu (`UserProfileNav`):** Przejścia do odpowiednich podstron powiązanych z użytkownikiem (widoczność przycisków zależna od ról profilowanego użytkownika oraz uprawnień odwiedzającego).
-- **Główna zawartość profilu:**
-  - *Dla Właściciela, Administratora lub Zaakceptowanego znajomego:*
-    - **Sekcja Relacji (Stories):** Karuzela miniatur relacji dodanych przez tego użytkownika.
-      - Dla Właściciela: Przycisk dodania nowego story (`+`).
-      - Kliknięcie w relację: Otwiera odtwarzacz `StoryViewerModal` z możliwością usunięcia relacji przez Właściciela lub Administratora.
-    - **Sekcja Wpisów (Feeds):** Strumień wszystkich wpisów użytkownika z pełną obsługą polubień, komentarzy, a także edycji i usuwania własnych wpisów przez Właściciela lub Administratora.
-  - *Dla pozostałych użytkowników (brak zaakceptowanej znajomości):*
-    - Wyświetla się komunikat informujący o prywatnym profilu dostępnym wyłącznie dla znajomych.
-
-#### `/users/:link/feeds` – Wpisy użytkownika (Tabela)
-- **Dostęp:** Właściciel profilu, Administrator lub Zaakceptowany znajomy (dla pozostałych: brak dostępu / 404).
-- **Pasek filtrów i sortowanie:**
-  - Filtr wyszukiwania tekstowego po `Treści wpisu`.
-  - Filtr wyboru `Statusu wpisu`.
-  - Sortowanie: Data utworzenia, Status.
-  - Przycisk resetowania filtrów, paginacja.
-- **Przycisk główny tabeli:**
-  - Przycisk `Dodaj wpis` – widoczny dla **Właściciela profilu** lub **Administratora** (modal: treść, załącznik pliku zdjęcia/wideo).
-- **Kolumny tabeli:**
-  - `Treść`: Miniatura załącznika multimedialnego, fragment treści tekstowej wpisu.
-  - `Data publikacji`: Data i godzina dodania.
-  - `Status`: Kolorowa odznaka statusu.
-- **Akcje w wierszu tabeli:**
-  - Przycisk `Podgląd wpisu` (ikona oka) – otwiera modal pełnego podglądu wpisu ze zdjęciem i komentarzami.
-  - Menu `Zmień status` – widoczne dla **Właściciela** lub **Administratora** (zmiana statusu wpisu).
-  - Przycisk `Edytuj wpis` – widoczny dla **Właściciela** lub **Administratora** (modal edycji).
-  - Przycisk `Usuń wpis` – widoczny dla **Właściciela** lub **Administratora** (modal potwierdzenia).
-
-#### `/users/:link/stories` – Relacje użytkownika (Tabela)
-- **Dostęp:** Właściciel profilu, Administrator lub Zaakceptowany znajomy.
-- **Pasek filtrów i sortowanie:**
-  - Filtr wyboru `Statusu relacji`.
-  - Sortowanie: Data utworzenia, Data wygaśnięcia, Status.
-  - Przycisk resetowania filtrów, paginacja.
-- **Przycisk główny tabeli:**
-  - Przycisk `Dodaj relację` – widoczny wyłącznie dla **Właściciela profilu** (modal wyboru pliku zdjęcia/wideo).
-- **Kolumny tabeli:**
-  - `Podgląd`: Miniatura zdjęcia/filmu relacji.
-  - `Data utworzenia`: Czas dodania relacji.
-  - `Status`: Odznaka statusu relacji.
-- **Akcje w wierszu tabeli:**
-  - Przycisk `Odtwórz relację` (ikona oka) – otwiera pełnoekranowy modal odtwarzacza relacji.
-  - Menu `Zmień status` – widoczne dla **Właściciela** lub **Administratora**.
-  - Przycisk `Usuń relację` – widoczne dla **Właściciela** lub **Administratora**.
-
-#### `/users/:link/friends` – Znajomi użytkownika
-- **Dostęp:** Właściciel profilu, Administrator lub Zaakceptowany znajomy.
-- **Pasek filtrów i sortowanie:**
-  - Wyszukiwarka użytkownika po imieniu, nazwisku lub identyfikatorze `@link`.
-  - Filtr `Statusu relacji` (Oczekujące, Zaakceptowane, Odrzucone, Zablokowane).
-  - Sortowanie po dacie aktualizacji/utworzenia relacji oraz statusie. Paginacja.
-- **Przycisk główny tabeli:**
-  - Przycisk `Dodaj znajomego` – widoczny dla **Właściciela profilu** (otwiera modal wyszukiwarki innych użytkowników w systemie i wysłania zaproszenia).
-- **Kolumny tabeli:**
-  - `Użytkownik`: Avatar, imię i nazwisko, `@link` (odnośnik do profilu).
-  - `Status relacji`: Kolorowa odznaka statusu znajomości.
-- **Akcje w wierszu tabeli:**
-  - Przycisk `Profil` (ikona oka) – przejście do profilu danego znajomego.
-  - Menu `Zmień status relacji`:
-    - Dla odbiorcy zaproszenia: Akceptuj, Odrzuć, Zablokuj.
-    - Dla nadawcy zaproszenia: Anuluj zaproszenie.
-  - Przycisk `Usuń znajomego` – widoczny dla **Właściciela profilu** (modal potwierdzenia usunięcia relacji).
-
-#### `/users/:link/conversations` – Wiadomości i konwersacje
-- **Dostęp:** Właściciel profilu, Administrator lub Zaakceptowany znajomy.
-- **Dwa odrębne tryby widoku:**
-  - **Tryb 1: Widok Właściciela profilu (Lista wszystkich konwersacji):**
-    - Przycisk `Nowa wiadomość` – otwiera modal rozpoczęcia czatu (wybór rozmówcy z listy zaakceptowanych znajomych, pole treści wiadomości i przycisk Wyślij).
-    - Tabela prowadzonych konwersacji:
-      - Kolumny: Rozmówca (avatar, imię i nazwisko, `@link`), Ostatnia wiadomość, Czas ostatniej aktywności, Status.
-      - Akcje w wierszu: Przejście do widoku bezpośredniego czatu z danym użytkownikiem.
-  - **Tryb 2: Widok Zaakceptowanego Znajomego lub Administratora (Bezpośredni czat):**
-    - Okno aktywnej rozmowy 1-na-1 z właścicielem profilu:
-      - Nagłówek czatu z danymi rozmówcy i statusem.
-      - Pasek historii wiadomości: automatyczne przewijanie, doładowywanie starszych wiadomości przy przewijaniu w górę.
-      - Wskaźnik pisania na żywo (`Użytkownik pisze...`).
-      - Dymki wiadomości z podziałem na wysłane (po prawej) i odebrane (po lewej), ze znacznikami czasu oraz statusem dostarczenia/odczytania.
-      - Akcje na własnych wiadomościach: Przycisk edycji wiadomości (inline edycja treści) oraz Przycisk usunięcia wiadomości.
-      - Pasek formularza na dole: Pole wprowadzania nowej wiadomości (obsługa klawisza Enter do wysłania) oraz przycisk `Wyślij`.
-
-#### `/users/:link/notifications` – Powiadomienia użytkownika
-- **Dostęp:** Dostępne **wyłącznie dla Właściciela konta lub Administratora** (pozostali użytkownicy: brak dostępu / 404).
-- **Pasek filtrów i sortowanie:**
-  - Filtr wyboru statusu: `Wszystkie`, `Nieprzeczytane`, `Przeczytane`.
-  - Sortowanie: Data utworzenia (najnowsze/najstarsze), Status. Paginacja.
-- **Kolumny tabeli:**
-  - `Tytuł i treść`: Nagłówek powiadomienia oraz pełna treść powiadomienia.
-  - `Data`: Data i godzina doręczenia.
-  - `Status`: Odznaka (Przeczytane / Nieprzeczytane).
-- **Akcje w wierszu tabeli:**
-  - Przycisk `Oznacz jako przeczytane / nieprzeczytane` (przełączanie statusu).
-  - Przycisk przejścia do zasobu powiązanego z powiadomieniem (jeśli dotyczy np. feeda, komentarza, treningu itp.).
-  - Przycisk `Usuń powiadomienie` – widoczny dla Właściciela (modal potwierdzenia).
-
-#### `/users/:link/push-subscriptions` – Subskrypcje powiadomień Web Push
-- **Dostęp:** Dostępne **wyłącznie dla Właściciela konta lub Administratora** (pozostali użytkownicy: brak dostępu / 404).
-- **Główny pasek narzędziowy:**
-  - Przycisk `Zasubskrybuj to urządzenie` – uruchamia rejestrację Service Workera w przeglądarce i generuje klucze Push przez mechanizm VAPID.
-  - Przycisk `Dodaj subskrypcję ręcznie` – modal wprowadzania parametrów: endpoint, klucz p256dh, klucz auth.
-- **Kolumny tabeli urządzeń:**
-  - `Endpoint`: Skrócony adres serwera powiadomień przeglądarki.
-  - `Klucze`: Wartości kluczy kryptograficznych subskrypcji.
-  - `Data rejestracji`: Data utworzenia subskrypcji.
-  - `Status`: Odznaka statusu subskrypcji (np. Aktywna).
-- **Akcje w wierszu tabeli:**
-  - Menu `Zmień status` – zmiana statusu subskrypcji.
-  - Przycisk `Usuń subskrypcję` – usunięcie zarejestrowanego urządzenia.
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji (wariant w zależności od autoryzacji) | Dla wszystkich |
+| Sekcja powitalna z przyciskami przejścia do logowania i rejestracji | Dla gości |
+| Lista relacji | Dla autoryzowanych |
+| Przycisk wyświetlania relacji w modalu z licznikiem wyświetleń | Dla autoryzowanych |
+| Przycisk edycji relacji w modalu | Dla właściciela relacji |
+| Przycisk usuwania relacji w modalu | Dla właściciela relacji |
+| Przycisk dodawania nowej relacji w modalu | Dla autoryzowanych |
+| Przycisk dodawania nowego posta w modalu | Dla autoryzowanych |
+| Lista postów z licznikiem wyświetleń | Dla autoryzowanych |
+| Przycisk edycji posta w modalu | Dla właściciela posta |
+| Przycisk usunięcia posta w modalu | Dla właściciela posta |
+| Przycisk dodawania reakcji pod postem | Dla autoryzowanych |
+| Przycisk edycji reakcji pod postem | Dla właściciela reakcji |
+| Przycisk usuwania reakcji pod postem | Dla właściciela reakcji |
+| Lista komentarzy pod postem | Dla autoryzowanych |
+| Przycisk edycji komentarza pod postem | Dla autora komentarza |
+| Przycisk usunięcia komentarza pod postem | Dla autora komentarza |
 
 ---
 
-### 3. Cele sportowe
+### 2. Podstrona: Logowanie (`/sign`)
+**Dla kogo:** Dla gości.
 
-#### `/users/:link/goals` – Cele użytkownika (Tabela)
-- **Wymóg roli użytkownika:** Profilowany użytkownik **musi posiadać rolę `Uczestnik`**.
-- **Dostęp do podstrony:** Właściciel profilu, Administrator lub Zaakceptowany znajomy.
-- **Pasek filtrów i sortowanie:**
-  - Filtr tekstowy po `Tytule celu`.
-  - Filtr tekstowy po `Linku` celu.
-  - Filtr wyboru `Statusu celu`.
-  - Sortowanie: Data rozpoczęcia, Data zakończenia, Tytuł, Data utworzenia, Status. Paginacja.
-- **Przycisk główny tabeli:**
-  - Przycisk `Dodaj cel` – widoczny dla **Właściciela profilu** (z rolą Uczestnik) lub **Administratora**.
-    - Modal tworzenia celu:
-      - Pola tekstowe: `Tytuł` (automatycznie generujący unikalny `Link`), `Link`, `Lokalizacja`.
-      - Pola dat: `Data rozpoczęcia`, `Data zakończenia`.
-      - Pole wielowierszowe: `Opis celu`.
-      - Wybór `Dyscypliny` sportowej (Select z listy dyscyplin).
-      - Pole liczbowe: `Dystans docelowy` (w metrach).
-      - MultiSelect `Współuczestnicy / Współpracownicy` – wybór użytkowników z listy zaakceptowanych znajomych.
-- **Kolumny tabeli:**
-  - `Tytuł`: Tytuł celu, lokalizacja.
-  - `Dyscyplina i dystans`: Odznaka dyscypliny sportowej, dystans w metrach.
-  - `Okres realizacji`: Data rozpoczęcia i data zakończenia.
-  - `Status`: Odznaka statusu celu.
-- **Akcje w wierszu tabeli:**
-  - Przycisk `Szczegóły` (ikona oka) – przejście do strony celu `/goals/:link`.
-  - Menu `Zmień status` – widoczne dla **Właściciela celu** lub **Administratora**.
-  - Przycisk `Edytuj cel` – widoczny dla **Właściciela celu** (modal edycji z analogicznymi polami formularza).
-  - Przycisk `Usuń cel` – widoczny dla **Właściciela celu** (modal potwierdzenia).
-
-#### `/goals/:link` – Szczegóły celu sportowego
-- **Dostęp:** Zalogowani użytkownicy (z dostępem do profilu właściciela). Motyw kolorystyczny dziedziczony z profilu właściciela celu.
-- **Pasek nawigacyjny `UserProfileNav`:** Skrócone informacje o twórcy celu oraz przycisk powrotu do profilu.
-- **Karta główna celu:**
-  - Tytuł celu, `@link`, licznik wyświetleń celu (`EntityViewCounter`), lokalizacja, przedział czasowy, odznaka statusu, pełny opis.
-  - **Akcje w nagłówku karty celu:**
-    - Menu `Zmień status celu` – widoczne dla **Właściciela** lub **Administratora**.
-    - Przycisk `Edytuj cel` – widoczny dla **Właściciela**.
-    - Przycisk `Usuń cel` – widoczny dla **Właściciela** (po usunięciu przekierowuje do listy celów).
-- **Sekcja "Uczestnicy celu" (Współpracownicy):**
-  - Tabela uczestników celu:
-    - Kolumny: Użytkownik (avatar, imię i nazwisko, `@link` z odnośnikiem do profilu), Status uczestnictwa.
-    - Akcje w wierszu: Menu `Zmień status uczestnictwa` (dostępne dla danego uczestnika – akceptacja/odrzucenie, oraz dla Właściciela celu).
-- **Sekcja "Dyscyplina i wyniki":**
-  - Informacja o dyscyplinie oraz docelowym dystansie w metrach.
-  - Przycisk `Dodaj wynik` – widoczny dla danego aktywnego uczestnika lub Właściciela celu:
-    - Modal dodawania wyniku: pole liczbowe `Dystans` (w metrach), pole liczbowe `Czas` (w sekundach).
-  - Tabela wyników per uczestnik:
-    - Kolumny: Użytkownik, Dystans, Czas, Data dodania, Status wyniku.
-    - Akcje na wyniku:
-      - Menu `Zmień status wyniku` (dostępne dla Właściciela celu lub Administratora).
-      - Przycisk `Edytuj wynik` (modal edycji czasu i dystansu) – dostępny dla autora wyniku lub Właściciela celu.
-      - Przycisk `Usuń wynik` (modal potwierdzenia) – dostępny dla autora wyniku lub Właściciela celu.
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | Dla gości |
+| Formularz logowania (krok 1) | Dla gości |
+| Przycisk przejścia do ekranu resetowania hasła | Dla gości |
+| Przycisk przejścia do ekranu rejestracji | Dla gości |
+| Formularz weryfikacji dwuetapowej kodem (krok 2) | Dla gości |
+| Przycisk powrotu do kroku 1 | Dla gości |
+| Przycisk ponownego wysłania kodu weryfikacyjnego | Dla gości |
 
 ---
 
-### 4. Strony organizacji i klubów
+### 3. Podstrona: Rejestracja konta (`/register`)
+**Dla kogo:** Dla gości.
 
-#### `/pages` – Lista wszystkich stron
-- **Dostęp:** Wszyscy zalogowani użytkownicy.
-- **Pasek filtrów i sortowanie:**
-  - Filtr tekstowy po `Tytule strony`.
-  - Filtr tekstowy po `Linku` strony.
-  - Filtr wyboru `Statusu strony`.
-  - Sortowanie: Tytuł, Data utworzenia, Status. Paginacja.
-- **Przycisk główny tabeli:**
-  - Przycisk `Dodaj stronę` – widoczny dla użytkowników posiadających rolę **`Organizator`** lub **`Administrator`**.
-    - Modal tworzenia strony:
-      - Pole `Tytuł` (automatycznie generujący unikalny `Link`), `Link`.
-      - Pole wielowierszowe `Opis strony`.
-      - Wybór `Koloru motywu strony` (`ColorEnum`).
-      - Wybór pliku `Logo / Zdjęcie strony` (`photo`).
-      - MultiSelect `Współpracownicy / Członkowie strony` (wybór spośród znajomych).
-- **Kolumny tabeli:**
-  - `Strona`: Logo strony, nazwa strony, identyfikator `@link`.
-  - `Status`: Odznaka statusu strony.
-- **Akcje w wierszu tabeli:**
-  - Przycisk `Szczegóły` (ikona oka) – przejście do profilu strony `/pages/:link`.
-  - Menu `Zmień status` – widoczne dla **Właściciela/współtwórcy strony** lub **Administratora**.
-  - Przycisk `Edytuj stronę` – widoczny dla **Właściciela strony**.
-  - Przycisk `Usuń stronę` – widoczny dla **Właściciela strony** (modal potwierdzenia).
-
-#### `/users/:link/pages` – Strony danego organizatora
-- **Wymóg roli użytkownika:** Profilowany użytkownik **musi posiadać rolę `Organizator`**.
-- **Dostęp do podstrony:** Właściciel profilu, Administrator lub Zaakceptowany znajomy.
-- **Widok:**
-  - Pasek nawigacyjny `UserProfileNav`.
-  - Tabela stron zarządzanych przez profilowanego organizatora.
-  - Przycisk `Dodaj stronę` – widoczny wyłącznie dla **Właściciela profilu** (jeśli posiada rolę Organizator).
-  - Identyczne kolumny, filtry, sortowanie i akcje wiersza jak na ogólnej liście stron.
-
-#### `/pages/:link` – Profil strony
-- **Dostęp:** Wszyscy zalogowani użytkownicy.
-- **Dynamiczny motyw strony:** Interfejs przyjmuje kolor wybrany w ustawieniach strony (`page.color`).
-- **Nagłówek profilu strony (`PageNav`):**
-  - Logo strony, nazwa, `@link`, licznik wyświetleń strony (`EntityViewCounter`), odznaka statusu, pełny opis strony.
-  - **Akcje w nagłówku:**
-    - Przycisk `Obserwuj / Przestań obserwować stronę` – dostępny dla wszystkich zalogowanych użytkowników (zapisuje/wypisuje z obserwacji strony).
-    - Menu `Zmień status strony` – widoczne dla **Właściciela** lub **Administratora**.
-    - Przycisk `Edytuj stronę` – widoczny dla **Właściciela** (modal edycji danych, opisu, logo, koloru i współpracowników).
-    - Przycisk `Usuń stronę` – widoczny dla **Właściciela** (modal potwierdzenia usunięcia).
-- **Sekcja "Członkowie strony" (Uczestnicy organizacji):**
-  - Tabela współpracowników/członków strony:
-    - Kolumny: Avatar, imię i nazwisko, `@link` (odnośnik do profilu), Status członkostwa.
-    - Akcje w wierszu: Menu `Zmień status członkostwa` (dostępne dla danego członka oraz dla Właściciela strony).
-- **Sekcja "Wydarzenia strony":**
-  - Przycisk `Dodaj wydarzenie` – widoczny dla **Właściciela/członka strony** lub **Administratora** (otwiera zaawansowany konfigurator nowego wydarzenia powiązanego z tą stroną).
-  - Tabela wydarzeń powiązanych z tą stroną:
-    - Kolumny: Zdjęcie wydarzenia, Tytuł, Lokalizacja, Data rozpoczęcia, Data zakończenia, Status.
-    - Akcje w wierszu: Przejście do szczegółów `/events/:link`, Zmiana statusu, Edycja wydarzenia, Usunięcie wydarzenia.
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | Dla gości |
+| Formularz rejestracji (krok 1) | Dla gości |
+| Przycisk przejścia do ekranu logowania | Dla gości |
+| Formularz weryfikacji dwuetapowej kodem (krok 2) | Dla gości |
+| Przycisk powrotu do kroku 1 | Dla gości |
+| Przycisk ponownego wysłania kodu weryfikacyjnego | Dla gości |
 
 ---
 
-### 5. Wydarzenia sportowe
+### 4. Podstrona: Reset hasła (`/password-reset`)
+**Dla kogo:** Dla gości.
 
-#### `/events` – Lista wszystkich wydarzeń
-- **Dostęp:** Wszyscy zalogowani użytkownicy.
-- **Pasek filtrów i sortowanie:**
-  - Filtr tekstowy po `Tytule wydarzenia`.
-  - Filtr tekstowy po `Linku` wydarzenia.
-  - Filtr wyboru `Statusu wydarzenia`.
-  - Sortowanie: Data rozpoczęcia, Data zakończenia, Tytuł, Lokalizacja, Status, Data utworzenia. Paginacja.
-- **Przycisk główny tabeli:**
-  - Przycisk `Dodaj wydarzenie` – widoczny dla użytkowników z rolą **`Organizator`** lub **`Administrator`**.
-    - Zaawansowany modal tworzenia wydarzenia:
-      - Wybór `Strony organizującej` (Select ze stron, do których należy użytkownik).
-      - Pola tekstowe: `Tytuł` (automatycznie generujący unikalny `Link`), `Link`, `Lokalizacja`.
-      - Pola dat: `Data rozpoczęcia`, `Data zakończenia`.
-      - Pola wielowierszowe: `Opis wydarzenia`, `Regulamin wydarzenia` (`rules`).
-      - Pole wyboru pliku: `Zdjęcie wydarzenia` (`photo`).
-      - **Hierarchiczny konfigurator dyscyplin, dystansów i subdystansów:**
-        - Przycisk `Dodaj dyscyplinę` (wybór z listy `DisciplineEnum`).
-        - Dla każdej dyscypliny: Przycisk `Dodaj dystans` (wartość w metrach).
-        - Dla każdego dystansu: Przycisk `Dodaj subdystans` (wartość w metrach) z możliwością usuwania poszczególnych elementów.
-- **Kolumny tabeli:**
-  - `Tytuł`: Miniatura zdjęcia, tytuł wydarzenia, lokalizacja.
-  - `Data rozpoczęcia`: Czas startu wydarzenia.
-  - `Data zakończenia`: Czas zakończenia wydarzenia.
-  - `Status`: Odznaka statusu wydarzenia.
-- **Akcje w wierszu tabeli:**
-  - Przycisk `Szczegóły` (ikona oka) – przejście do `/events/:link`.
-  - Menu `Zmień status` – widoczne dla **Właściciela wydarzenia** lub **Administratora**.
-  - Przycisk `Edytuj wydarzenie` – widoczne dla **Właściciela wydarzenia**.
-  - Przycisk `Usuń wydarzenie` – widoczne dla **Właściciela wydarzenia** (modal potwierdzenia).
-
-#### `/users/:link/events` – Wydarzenia danego organizatora
-- **Wymóg roli użytkownika:** Profilowany użytkownik **musi posiadać rolę `Organizator`**.
-- **Dostęp do podstrony:** Właściciel profilu, Administrator lub Zaakceptowany znajomy.
-- **Widok:**
-  - Pasek nawigacyjny `UserProfileNav`.
-  - Tabela wydarzeń powiązanych z profilowanym organizatorem.
-  - Przycisk `Dodaj wydarzenie` – widoczny dla **Właściciela profilu** (jeśli posiada rolę Organizator).
-  - Identyczne kolumny, filtry, sortowanie i akcje wiersza jak na ogólnej liście wydarzeń.
-
-#### `/events/:link` – Szczegóły wydarzenia sportowego
-- **Dostęp:** Wszyscy zalogowani użytkownicy. Motyw kolorystyczny dziedziczony ze strony organizatora (`page.color`).
-- **Pasek nadrzędny strony (`PageNav`):** Podstawowe informacje o stronie organizującej oraz przycisk powrotu do strony.
-- **Karta główna wydarzenia:**
-  - Zdjęcie główne wydarzenia, tytuł, `@link`, licznik wyświetleń (`EntityViewCounter`), lokalizacja, przedział czasowy, odznaka statusu.
-  - Pełny opis wydarzenia.
-  - Osobny blok `Regulamin wydarzenia` (z formatowaniem tekstu).
-  - **Akcje w nagłówku karty:**
-    - Menu `Zmień status wydarzenia` – widoczne dla **Właściciela** lub **Administratora**.
-    - Przycisk `Edytuj wydarzenie` – widoczny dla **Właściciela** (modal pełnej edycji danych, regulaminu, zdjęcia oraz struktury dyscyplin/dystansów).
-    - Przycisk `Usuń wydarzenie` – widoczny dla **Właściciela** (modal potwierdzenia, po usunięciu powrót do `/events`).
-- **Sekcja "Dyscypliny, dystanse i lista startowa":**
-  - Podział na bloki poszczególnych dyscyplin (odznaki).
-  - Dla każdego dystansu w ramach dyscypliny:
-    - Nagłówek z wartością dystansu w metrach.
-    - Przycisk `Zapisz się` (`saveUp`) – widoczny dla zalogowanego użytkownika posiadającego rolę **`Uczestnik`**, o ile nie jest jeszcze zapisany na ten dystans.
-    - **Tabela zapisanych uczestników na dany dystans:**
-      - Kolumny: Użytkownik (avatar, imię i nazwisko, `@link` z odnośnikiem do profilu), Status uczestnictwa (Aktywny, Odrzucony itp.), Akcje.
-      - Akcje wiersza uczestnika:
-        - Menu `Zmień status uczestnika` – dostępne dla samego uczestnika oraz dla Właściciela wydarzenia.
-        - Przycisk `Dodaj wynik` – widoczny dla **Właściciela wydarzenia**, gdy uczestnik ma aktywny status i nie posiada jeszcze wprowadzonego wyniku na tym dystansie (modal: całkowity czas w sekundach oraz opcjonalne czasy dla poszczególnych subdystansów).
-    - **Lista wprowadzonych wyników dla dystansu:**
-      - Prezentacja czasu całkowitego (w sekundach).
-      - Przycisk rozwijania wiersza (strzałka akordeonu) – po rozwinięciu wyświetla tabelę cząstkowych czasów dla poszczególnych subdystansów.
-      - Akcje na wyniku (dostępne dla **Właściciela wydarzenia**):
-        - Przycisk `Edytuj wynik` – otwiera modal edycji czasu całkowitego oraz czasów cząstkowych.
-        - Przycisk `Usuń wynik` – modal potwierdzenia usunięcia wyniku.
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | Dla gości |
+| Formularz resetowania hasła (krok 1) | Dla gości |
+| Przycisk przejścia do ekranu logowania | Dla gości |
+| Formularz weryfikacji dwuetapowej kodem (krok 2) | Dla gości |
+| Przycisk powrotu do kroku 1 | Dla gości |
+| Przycisk ponownego wysłania kodu weryfikacyjnego | Dla gości |
 
 ---
 
-### 6. Treningi
+### 5. Podstrona: Lista użytkowników (`/users`)
+**Dla kogo:** Dla autoryzowanych użytkowników.
 
-#### `/users/:link/trainings` – Treningi użytkownika (Tabela)
-- **Wymóg roli użytkownika:** Profilowany użytkownik **musi posiadać rolę `Uczestnik`**.
-- **Dostęp do podstrony:** Właściciel profilu, Administrator lub Zaakceptowany znajomy.
-- **Pasek filtrów i sortowanie:**
-  - Filtr tekstowy po `Tytule treningu`.
-  - Filtr tekstowy po `Linku` treningu.
-  - Filtr wyboru `Statusu treningu`.
-  - Sortowanie: Data rozpoczęcia, Data zakończenia, Tytuł, Lokalizacja, Status, Data utworzenia. Paginacja.
-- **Przycisk główny tabeli:**
-  - Przycisk `Dodaj trening` – widoczny dla **Właściciela profilu** (z rolą Uczestnik) lub **Administratora**.
-    - Modal tworzenia treningu:
-      - Pola tekstowe: `Tytuł` (generujący unikalny `Link`), `Link`, `Lokalizacja`.
-      - Pola dat: `Data rozpoczęcia`, `Data zakończenia`.
-      - Pole wielowierszowe: `Opis treningu`.
-      - MultiSelect `Współuczestnicy treningu` (wybór spośród zaakceptowanych znajomych).
-      - **Konfigurator dyscyplin, dystansów i danych telemetrycznych/GPS:**
-        - Przycisk `Dodaj dyscyplinę` (wybór z listy `DisciplineEnum`).
-        - Dla każdej dyscypliny: Dystans (metry) oraz Czas trwania (sekundy).
-        - Opcjonalne dodawanie subdystansów: Subdystans (metry), Czas (sekundy), Szerokość geograficzna (`lat`), Długość geograficzna (`lng`), Dokładność (`accuracy`), Prędkość (`speed`).
-- **Kolumny tabeli:**
-  - `Tytuł`: Tytuł treningu, lokalizacja.
-  - `Data rozpoczęcia`: Czas startu treningu.
-  - `Data zakończenia`: Czas zakończenia treningu.
-  - `Status`: Odznaka statusu treningu.
-- **Akcje w wierszu tabeli:**
-  - Przycisk `Szczegóły` (ikona oka) – przejście do `/trainings/:link`.
-  - Menu `Zmień status` – widoczne dla **Właściciela treningu** lub **Administratora**.
-  - Przycisk `Edytuj trening` – widoczny dla **Właściciela treningu** (modal edycji z analogicznymi polami).
-  - Przycisk `Usuń trening` – widoczny dla **Właściciela treningu** (modal potwierdzenia).
-
-#### `/trainings/:link` – Szczegóły treningu
-- **Dostęp:** Zalogowani użytkownicy (z prawem dostępu do profilu właściciela). Motyw kolorystyczny dziedziczony z profilu właściciela treningu.
-- **Pasek nawigacyjny `UserProfileNav`:** Podstawowe dane właściciela treningu oraz przycisk powrotu do profilu.
-- **Karta główna treningu:**
-  - Tytuł treningu, `@link`, licznik wyświetleń (`EntityViewCounter`), lokalizacja, przedział czasowy, odznaka statusu, pełny opis.
-  - **Akcje w nagłówku karty:**
-    - Menu `Zmień status treningu` – widoczne dla **Właściciela** lub **Administratora**.
-    - Przycisk `Edytuj trening` – widoczny dla **Właściciela**.
-    - Przycisk `Usuń trening` – widoczny dla **Właściciela** (po usunięciu powrót do `/users/:link/trainings`).
-- **Sekcja "Uczestnicy treningu" (Współuczestnicy):**
-  - Tabela uczestników:
-    - Kolumny: Użytkownik (avatar, imię i nazwisko, `@link` z odnośnikiem do profilu), Status uczestnictwa.
-    - Akcje w wierszu: Menu `Zmień status uczestnictwa` (dostępne dla danego uczestnika oraz dla Właściciela treningu).
-- **Sekcja "Dyscypliny, dystanse i telemetria":**
-  - Podział na bloki dyscyplin sportowych.
-  - Tabela dystansów:
-    - Kolumny: Przycisk rozwijania subdystansów, Dystans (metry), Czas (sekundy).
-    - Tabela subdystansów (po rozwinięciu wiersza):
-      - Kolumny: Subdystans (metry), Czas (sekundy), Szerokość geograficzna (Lat), Długość geograficzna (Lng), Dokładność (Accuracy), Prędkość (Speed).
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Filtry wyszukiwania użytkowników | dla autoryzowanych |
+| Sortowanie tabeli użytkowników | dla autoryzowanych |
+| Przycisk dodawania nowego użytkownika w modalu | Dla administratora |
+| Tabela użytkowników z paginacją | dla autoryzowanych |
+| Przycisk przejścia do profilu użytkownika w wierszu tabeli | dla autoryzowanych |
+| Przycisk zmiany statusu użytkownika w wierszu tabeli | Dla administratora |
 
 ---
 
-### 7. Statystyki
+### 6. Podstrona: Profil użytkownika (`/users/:link`)
+**Dla kogo:** Dla autoryzowanych.
 
-#### `/statistics` – Statystyki rekordów i progresu
-- **Dostęp:** Wszyscy zalogowani użytkownicy.
-- **Główny pasek narzędziowy (SegmentedControl):**
-  - Przełącznik trybu widoku:
-    - `Rekordy` (`records`) – prezentuje najlepsze uzyskane rezultaty (domyślne sortowanie po czasie rosnąco `time:asc`).
-    - `Progres` (`progress`) – prezentuje postępy wyników w ujęciu historycznym (domyślne sortowanie po dacie utworzenia malejąco `createdAt:desc`).
-- **Pasek filtrów:**
-  - Filtr wyboru `Dyscypliny` (Select ze wszystkimi dyscyplinami).
-  - Filtr tekstowy `Dystans w metrach` (filtrowanie po konkretnym dystansie).
-  - Przycisk resetowania filtrów.
-- **Sortowanie i paginacja:**
-  - Opcje sortowania: Czas (rosnąco / malejąco), Data utworzenia, Dystans, Dyscyplina. Paginacja i limit wierszy na stronę.
-- **Kolumny tabeli statystyk:**
-  - `Użytkownik`: Avatar, imię i nazwisko, identyfikator `@link`.
-  - `Dyscyplina`: Odznaka z nazwą dyscypliny sportowej.
-  - `Dystans`: Dystans w metrach.
-  - `Czas`: Osiągnięty czas w sekundach.
-  - `Data`: Data zarejestrowania wyniku.
-- **Akcje w wierszu tabeli:**
-  - Przycisk `Profil użytkownika` (ikona oka) – przejście do profilu `/users/:link` danego sportowca.
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Rozszerzony header użytkownika | dla właściela / administratora / znajomego |
+| Podstawowy header użytkownika | dla obcego |
+| Przyciski innych encji użytkownika | dla właściela / administratora / znajomego |
+| Przycisk wysłania zaproszenia do znajomych | Dla nie właściciela |
+| Przycisk edycji statusu znajomości | Dla niewłaściciela |
+| Przycisk edycji użytkownika w modalu | Dla właściciela |
+| Przycisk zmiany statusu użytkownika | Dla administratora |
+| Przycisk usunięcia użytkownika w modalu | Dla właściciela |
+
+---
+
+### 7. Podstrona: Relacje użytkownika (`/users/:link/stories`)
+**Dla kogo:** Dla właściela / administratora / znajomego.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Podstawowy header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Przycisk otwarcia modalu dodawania relacji | Dla właściciela profilu |
+| Formularz dodawania relacji w modalu | Dla właściciela profilu |
+| Filtry wyszukiwania relacji | dla autoryzowanych |
+| Sortowanie tabeli relacji | dla autoryzowanych |
+| Tabela relacji z paginacją | dla autoryzowanych |
+| Przycisk wyświetlenia relacji w modalu w wierszu tabeli | dla autoryzowanych |
+| Przycisk edycji relacji w modalu w wierszu tabeli | Dla właściciela profilu |
+| Przycisk zmiany statusu relacji w wierszu tabeli | Dla właściciela profilu lub administratora |
+| Przycisk usunięcia relacji w modalu w wierszu tabeli | Dla właściciela profilu lub administratora |
+
+---
+
+### 8. Podstrona: Posty użytkownika (`/users/:link/feeds`)
+**Dla kogo:** Dla zalogowanego użytkownika: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Przycisk otwarcia modalu dodawania posta | Dla właściciela profilu |
+| Formularz dodawania posta w modalu | Dla właściciela profilu |
+| Filtry wyszukiwania postów | dla autoryzowanych |
+| Sortowanie tabeli postów | dla autoryzowanych |
+| Tabela postów z paginacją i licznikiem wyświetleń | dla autoryzowanych |
+| Przycisk podglądu posta w modalu w wierszu tabeli | dla autoryzowanych |
+| Przycisk edycji posta w modalu w wierszu tabeli | Dla właściciela profilu |
+| Przycisk zmiany statusu posta w wierszu tabeli | Dla właściciela profilu lub administratora |
+| Przycisk usunięcia posta w modalu w wierszu tabeli | Dla właściciela profilu lub administratora |
+
+---
+
+### 9. Podstrona: Polubienia postów użytkownika (`/users/:link/feed-reactions`)
+**Dla kogo:** Dla zalogowanego użytkownika: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Filtry wyszukiwania reakcji | dla autoryzowanych |
+| Sortowanie tabeli reakcji | dla autoryzowanych |
+| Tabela reakcji z paginacją | dla autoryzowanych |
+| Przycisk podglądu powiązanego posta w modalu w wierszu tabeli | dla autoryzowanych |
+| Przycisk usunięcia reakcji w wierszu tabeli | Dla właściciela profilu (autora reakcji) |
+
+---
+
+### 10. Podstrona: Komentarze do postów użytkownika (`/users/:link/feed-comments`)
+**Dla kogo:** Dla zalogowanego użytkownika: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Filtry wyszukiwania komentarzy | dla autoryzowanych |
+| Sortowanie tabeli komentarzy | dla autoryzowanych |
+| Tabela komentarzy z paginacją | dla autoryzowanych |
+| Przycisk podglądu powiązanego posta w modalu w wierszu tabeli | dla autoryzowanych |
+| Przycisk edycji komentarza w modalu w wierszu tabeli | Dla właściciela profilu (autora komentarza) |
+| Przycisk zmiany statusu komentarza w wierszu tabeli | Dla właściciela profilu lub administratora |
+| Przycisk usunięcia komentarza w modalu w wierszu tabeli | Dla właściciela profilu lub administratora |
+
+---
+
+### 11. Podstrona: Znajomi użytkownika (`/users/:link/friends`)
+**Dla kogo:** Dla zalogowanego użytkownika: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Przycisk dodania nowego znajomego (otwiera modal) | Dla właściciela profilu |
+| Formularz wyszukiwania użytkowników i wysyłania zaproszeń w modalu | Dla właściciela profilu |
+| Filtry wyszukiwania znajomych | dla autoryzowanych |
+| Sortowanie tabeli znajomych | dla autoryzowanych |
+| Tabela znajomych z paginacją | dla autoryzowanych |
+| Przycisk przejścia do profilu znajomego w wierszu tabeli | dla autoryzowanych |
+| Przycisk akceptacji zaproszenia do znajomych w wierszu tabeli | Dla właściciela profilu (odbiorcy zaproszenia) |
+| Przycisk odrzucenia zaproszenia do znajomych w wierszu tabeli | Dla właściciela profilu (odbiorcy zaproszenia) |
+| Przycisk usunięcia ze znajomych lub anulowania zaproszenia w wierszu tabeli | Dla uczestnika relacji lub administratora |
+
+---
+
+### 12. Podstrona: Strony użytkownika (`/users/:link/pages`)
+**Dla kogo:** Dla zalogowanego użytkownika z rolą Organizator: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Przycisk utworzenia nowej strony (otwiera modal) | Dla właściciela profilu lub administratora |
+| Formularz tworzenia nowej strony w modalu | Dla właściciela profilu lub administratora |
+| Filtry wyszukiwania stron | dla autoryzowanych |
+| Sortowanie tabeli stron | dla autoryzowanych |
+| Tabela stron z paginacją | dla autoryzowanych |
+| Przycisk przejścia do profilu strony w wierszu tabeli | dla autoryzowanych |
+| Przycisk edycji strony w modalu w wierszu tabeli | Dla właściciela danej strony lub administratora |
+| Przycisk zmiany statusu strony w wierszu tabeli | Dla właściciela danej strony lub administratora |
+| Przycisk usunięcia strony w modalu w wierszu tabeli | Dla właściciela danej strony lub administratora |
+
+---
+
+### 13. Podstrona: Obserwowane strony użytkownika (`/users/:link/page-follows`)
+**Dla kogo:** Dla zalogowanego użytkownika: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Filtry wyszukiwania obserwowanych stron | dla autoryzowanych |
+| Sortowanie tabeli obserwacji | dla autoryzowanych |
+| Tabela obserwowanych stron z paginacją | dla autoryzowanych |
+| Przycisk przejścia do profilu obserwowanej strony w wierszu tabeli | dla autoryzowanych |
+| Przycisk zaprzestania obserwowania strony w wierszu tabeli | Dla właściciela profilu |
+
+---
+
+### 14. Podstrona: Wydarzenia użytkownika (`/users/:link/events`)
+**Dla kogo:** Dla zalogowanego użytkownika z rolą Organizator: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Przycisk utworzenia nowego wydarzenia (otwiera modal) | Dla właściciela profilu lub administratora |
+| Formularz tworzenia wydarzenia w modalu | Dla właściciela profilu lub administratora |
+| Filtry wyszukiwania wydarzeń | dla autoryzowanych |
+| Sortowanie tabeli wydarzeń | dla autoryzowanych |
+| Tabela wydarzeń z paginacją | dla autoryzowanych |
+| Przycisk przejścia do szczegółów wydarzenia w wierszu tabeli | dla autoryzowanych |
+| Przycisk edycji wydarzenia w modalu w wierszu tabeli | Dla organizatora wydarzenia lub administratora |
+| Przycisk zmiany statusu wydarzenia w wierszu tabeli | Dla organizatora wydarzenia lub administratora |
+| Przycisk usunięcia wydarzenia w modalu w wierszu tabeli | Dla organizatora wydarzenia lub administratora |
+
+---
+
+### 15. Podstrona: Zapisy na wydarzenia użytkownika (`/users/:link/event-signups`)
+**Dla kogo:** Dla zalogowanego użytkownika z rolą Uczestnik: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Filtry wyszukiwania zapisów na wydarzenia | dla autoryzowanych |
+| Sortowanie tabeli zapisów | dla autoryzowanych |
+| Tabela zapisów na wydarzenia z paginacją | dla autoryzowanych |
+| Przycisk przejścia do szczegółów wydarzenia w wierszu tabeli | dla autoryzowanych |
+| Przycisk rezygnacji z zapisu na wydarzenie w wierszu tabeli | Dla właściciela profilu (uczestnika zapisanego na wydarzenie) |
+
+---
+
+### 16. Podstrona: Treningi użytkownika (`/users/:link/trainings`)
+**Dla kogo:** Dla zalogowanego użytkownika z rolą Uczestnik: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Przycisk dodania nowego treningu (otwiera modal) | Dla właściciela profilu lub administratora |
+| Formularz tworzenia treningu w modalu | Dla właściciela profilu lub administratora |
+| Filtry wyszukiwania treningów | dla autoryzowanych |
+| Sortowanie tabeli treningów | dla autoryzowanych |
+| Tabela treningów z paginacją | dla autoryzowanych |
+| Przycisk przejścia do profilu treningu w wierszu tabeli | dla autoryzowanych |
+| Przycisk edycji treningu w modalu w wierszu tabeli | Dla właściciela treningu |
+| Przycisk zmiany statusu treningu w wierszu tabeli | Dla właściciela treningu lub administratora |
+| Przycisk usunięcia treningu w modalu w wierszu tabeli | Dla właściciela treningu |
+
+---
+
+### 17. Podstrona: Cele użytkownika (`/users/:link/goals`)
+**Dla kogo:** Dla zalogowanego użytkownika z rolą Uczestnik: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Przycisk dodania nowego celu (otwiera modal) | Dla właściciela profilu lub administratora |
+| Formularz tworzenia celu w modalu | Dla właściciela profilu lub administratora |
+| Filtry wyszukiwania celów | dla autoryzowanych |
+| Sortowanie tabeli celów | dla autoryzowanych |
+| Tabela celów z paginacją | dla autoryzowanych |
+| Przycisk przejścia do profilu celu w wierszu tabeli | dla autoryzowanych |
+| Przycisk edycji celu w modalu w wierszu tabeli | Dla właściciela celu |
+| Przycisk zmiany statusu celu w wierszu tabeli | Dla właściciela celu lub administratora |
+| Przycisk usunięcia celu w modalu w wierszu tabeli | Dla właściciela celu |
+
+---
+
+### 18. Podstrona: Wiadomości użytkownika (`/users/:link/conversations`)
+**Dla kogo:** Dla zalogowanego użytkownika: który jest właścicielem profilu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Widok centrum konwersacji (tabela wątków i wiadomości) | Dla właściciela profilu |
+| Przycisk otwarcia modalu nowej wiadomości | Dla właściciela profilu |
+| Formularz wysłania nowej wiadomości do znajomego w modalu | Dla właściciela profilu |
+| Filtry wyszukiwania w tabeli konwersacji | Dla właściciela profilu |
+| Sortowanie tabeli konwersacji | Dla właściciela profilu |
+| Tabela konwersacji z paginacją | Dla właściciela profilu |
+| Przycisk edycji wiadomości w modalu w wierszu tabeli | Dla właściciela profilu (autora wiadomości) |
+| Przycisk zmiany statusu konwersacji w wierszu tabeli | Dla właściciela profilu lub administratora |
+| Przycisk usunięcia wiadomości w modalu w wierszu tabeli | Dla właściciela profilu lub administratora |
+| Widok bezpośredniego okna czatu z użytkownikiem | Dla zaakceptowanego znajomego odwiedzającego profil |
+| Lista wiadomości w oknie czatu z dymkami i datami | Dla zaakceptowanego znajomego w oknie czatu |
+| Wskaźnik pisania na żywo ("użytkownik pisze...") w oknie czatu | Dla zaakceptowanego znajomego w oknie czatu |
+| Pole tekstowe i przycisk wysyłki wiadomości w oknie czatu | Dla zaakceptowanego znajomego w oknie czatu |
+
+---
+
+### 19. Podstrona: Powiadomienia użytkownika (`/users/:link/notifications`)
+**Dla kogo:** Dla zalogowanego użytkownika: który jest właścicielem profilu lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Filtry wyszukiwania powiadomień | dla autoryzowanych |
+| Sortowanie tabeli powiadomień | dla autoryzowanych |
+| Tabela powiadomień z paginacją | dla autoryzowanych |
+| Przycisk zmiany statusu powiadomienia (przeczytane / nieprzeczytane) w wierszu tabeli | dla autoryzowanych |
+| Przycisk przejścia do powiązanego obiektu w wierszu tabeli | dla autoryzowanych |
+| Przycisk usunięcia powiadomienia w wierszu tabeli | dla autoryzowanych |
+
+---
+
+### 20. Podstrona: Subskrypcje powiadomień Push (`/users/:link/push-subscriptions`)
+**Dla kogo:** Dla zalogowanego użytkownika: który jest właścicielem profilu lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Przycisk rejestracji subskrypcji Push w bieżącej przeglądarce | Dla właściciela profilu |
+| Filtry wyszukiwania subskrypcji urządzeń | dla autoryzowanych |
+| Sortowanie tabeli subskrypcji | dla autoryzowanych |
+| Tabela subskrypcji urządzeń z paginacją | dla autoryzowanych |
+| Przycisk zmiany statusu subskrypcji urządzenia w wierszu tabeli | dla autoryzowanych |
+| Przycisk usunięcia subskrypcji urządzenia w wierszu tabeli | dla autoryzowanych |
+
+---
+
+### 21. Podstrona: Profil celu (`/goals/:link`)
+**Dla kogo:** Dla zalogowanego użytkownika: który jest właścicielem celu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Blok z informacjami o celu | dla autoryzowanych |
+| Przycisk zmiany statusu celu w bloku celu | Dla właściciela lub administratora |
+| Przycisk edycji celu w bloku celu | Dla właściciela |
+| Przycisk usunięcia celu w bloku celu | Dla właściciela |
+| Lista uczestników w bloku celu | dla autoryzowanych |
+| Przycisk kierujący na profil uczestnika w wierszu listy uczestników | dla autoryzowanych |
+| Przycisk zmiany statusu uczestnika w wierszu listy uczestników | Dla uczestnika, którego to dotyczy |
+| Lista wyników w bloku celu | dla autoryzowanych |
+| Przycisk kierujący na profil uczestnika w wierszu listy wyników | dla autoryzowanych |
+| Przycisk zmiany statusu uczestnika w wierszu listy wyników | Dla uczestnika, którego to dotyczy |
+
+---
+
+### 22. Podstrona: Profil treningu (`/trainings/:link`)
+**Dla kogo:** Dla zalogowanego użytkownika: który jest właścicielem treningu lub znajomym właściciela lub administratorem.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Uproszczony header użytkownika | dla autoryzowanych |
+| Przycisk powrotu do profilu w headerze użytkownika | dla autoryzowanych |
+| Przyciski innych encji użytkownika | dla autoryzowanych |
+| Blok z informacjami o treningu | dla autoryzowanych |
+| Przycisk zmiany statusu treningu w bloku treningu | Dla właściciela lub administratora |
+| Przycisk edycji treningu w bloku treningu | Dla właściciela |
+| Przycisk usunięcia treningu w bloku treningu | Dla właściciela |
+| Lista uczestników w bloku treningu | dla autoryzowanych |
+| Przycisk kierujący na profil uczestnika w wierszu listy uczestników | dla autoryzowanych |
+| Przycisk zmiany statusu uczestnika w wierszu listy uczestników | Dla uczestnika, którego to dotyczy |
+| Lista dyscyplin i dystansów w bloku treningu | dla autoryzowanych |
+| Przycisk rozwijania pod-dystansów w wierszu listy dystansów | dla autoryzowanych |
+| Lista pod-dystansów (międzyczasów i danych GPS) | dla autoryzowanych |
+
+---
+
+### 23. Podstrona: Lista stron (`/pages`)
+**Dla kogo:** Dla autoryzowanych użytkowników.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Przycisk utworzenia nowej strony (otwiera modal) | Dla użytkowników z rolą Organizator lub administratora |
+| Formularz tworzenia strony w modalu | Dla użytkowników z rolą Organizator lub administratora |
+| Filtry wyszukiwania stron | dla autoryzowanych |
+| Sortowanie tabeli stron | dla autoryzowanych |
+| Tabela stron z paginacją | dla autoryzowanych |
+| Przycisk przejścia do profilu strony w wierszu tabeli | dla autoryzowanych |
+| Przycisk edycji strony w modalu w wierszu tabeli | Dla właściciela danej strony lub administratora |
+| Przycisk zmiany statusu strony w wierszu tabeli | Dla właściciela danej strony lub administratora |
+| Przycisk usunięcia strony w modalu w wierszu tabeli | Dla właściciela danej strony lub administratora |
+
+---
+
+### 24. Podstrona: Profil strony (`/pages/:link`)
+**Dla kogo:** Dla autoryzowanych użytkowników.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Header profilu strony (zdjęcie w tle, awatar, nazwa, licznik obserwujących) | dla autoryzowanych |
+| Przycisk obserwowania lub rezygnacji z obserwowania strony | dla autoryzowanych |
+| Przycisk utworzenia wydarzenia powiązanego ze stroną (otwiera modal) | Dla współtwórców strony, właściciela lub administratora (z rolą Organizator) |
+| Formularz dodania wydarzenia w modalu | Dla współtwórców strony, właściciela lub administratora (z rolą Organizator) |
+| Przycisk edycji profilu strony w modalu | Dla właściciela strony lub administratora |
+| Przycisk zmiany statusu strony | Dla właściciela strony lub administratora |
+| Przycisk usunięcia strony w modalu | Dla właściciela strony lub administratora |
+| Blok z informacjami o stronie | dla autoryzowanych |
+| Lista współtwórców strony | dla autoryzowanych |
+| Przycisk zmiany statusu współtwórcy w wierszu listy | Dla współtwórcy, którego to dotyczy, lub właściciela strony |
+| Lista wydarzeń powiązanych ze stroną | dla autoryzowanych |
+| Przycisk przejścia do szczegółów wydarzenia w wierszu listy | dla autoryzowanych |
+
+---
+
+### 25. Podstrona: Lista wydarzeń (`/events`)
+**Dla kogo:** Dla autoryzowanych użytkowników.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Przycisk utworzenia nowego wydarzenia (otwiera modal) | Dla użytkowników z rolą Organizator lub administratora |
+| Formularz rejestracji wydarzenia w modalu | Dla użytkowników z rolą Organizator lub administratora |
+| Filtry wyszukiwania wydarzeń | dla autoryzowanych |
+| Sortowanie tabeli wydarzeń | dla autoryzowanych |
+| Tabela wydarzeń z paginacją | dla autoryzowanych |
+| Przycisk przejścia do szczegółów wydarzenia w wierszu tabeli | dla autoryzowanych |
+| Przycisk edycji wydarzenia w modalu w wierszu tabeli | Dla organizatora wydarzenia lub administratora |
+| Przycisk zmiany statusu wydarzenia w wierszu tabeli | Dla organizatora wydarzenia lub administratora |
+| Przycisk usunięcia wydarzenia w modalu w wierszu tabeli | Dla organizatora wydarzenia lub administratora |
+
+---
+
+### 26. Podstrona: Profil wydarzenia (`/events/:link`)
+**Dla kogo:** Dla autoryzowanych użytkowników.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Header strony organizatora wydarzenia | dla autoryzowanych |
+| Przycisk powrotu do strony organizatora w headerze | dla autoryzowanych |
+| Blok z informacjami o wydarzeniu (zdjęcie, nazwa, link @, licznik wyświetleń, terminy, lokalizacja, status, opis) | dla autoryzowanych |
+| Blok z regulaminem wydarzenia | dla autoryzowanych |
+| Przycisk zmiany statusu wydarzenia w bloku wydarzenia | Dla organizatora wydarzenia lub administratora |
+| Przycisk edycji wydarzenia w bloku wydarzenia | Dla organizatora wydarzenia lub administratora |
+| Przycisk usunięcia wydarzenia w bloku wydarzenia | Dla organizatora wydarzenia lub administratora |
+| Lista dyscyplin i dystansów wydarzenia | dla autoryzowanych |
+| Przycisk zapisu na dany dystans | Dla zalogowanego użytkownika z rolą Uczestnik (który jeszcze nie jest zapisany) |
+| Wskaźnik statusu zapisu ("Zapisany") | Dla użytkownika zapisanego na dany dystans |
+| Lista uczestników danego dystansu | dla autoryzowanych |
+| Przycisk zmiany statusu uczestnika dystansu w wierszu listy | Dla organizatora wydarzenia lub administratora |
+| Przycisk dodania wyniku uczestnika (otwiera modal) | Dla organizatora wydarzenia lub administratora |
+| Formularz wprowadzenia wyniku uczestnika w modalu | Dla organizatora wydarzenia lub administratora |
+| Przycisk rozwijania listy wyników uczestnika w wierszu listy | dla autoryzowanych |
+| Lista wyników uczestnika (czas główny i czasy pod-dystansów) | dla autoryzowanych |
+| Przycisk edycji wyniku uczestnika w modalu | Dla organizatora wydarzenia lub administratora |
+| Przycisk usunięcia wyniku uczestnika w modalu | Dla organizatora wydarzenia lub administratora |
+
+---
+
+### 27. Podstrona: Statystyki i rekordy (`/statistics`)
+**Dla kogo:** Dla autoryzowanych użytkowników.
+
+| Funkcjonalność | Dla kogo dostępna |
+| :--- | :--- |
+| Główny pasek nawigacyjny aplikacji | dla autoryzowanych |
+| Przełącznik zakładek ("Rekordy" / "Postępy") | dla autoryzowanych |
+| Filtry wyszukiwania statystyk | dla autoryzowanych |
+| Sortowanie tabeli statystyk | dla autoryzowanych |
+| Tabela statystyk z paginacją | dla autoryzowanych |
+| Przycisk przejścia do profilu użytkownika w wierszu tabeli | dla autoryzowanych |
 
 ---
 

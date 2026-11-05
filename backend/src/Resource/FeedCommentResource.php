@@ -55,4 +55,10 @@ class FeedCommentResource
             'status' => $feedComment->status,
         ];
     }
+
+    /** @param FeedComment[] $comments */
+    public static function fromEntityCollection(array $comments): array
+    {
+        return array_map(fn (FeedComment $comment) => self::fromEntity($comment), $comments);
+    }
 }

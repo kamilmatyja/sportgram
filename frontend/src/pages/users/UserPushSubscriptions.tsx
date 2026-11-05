@@ -35,7 +35,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import NotFound from '../../components/NotFound';
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDate } from '../../utils/date';
+import { formatDateTime } from '../../utils/date';
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -369,8 +369,8 @@ export default function UserPushSubscriptions() {
             key: 'createdAt',
             header: t('createdAt'),
             render: (s) => (
-                <Text size="xs" c="dimmed">
-                    {formatDate(s.createdAt)}
+                <Text size="sm" c="dimmed">
+                    {formatDateTime(s.createdAt)}
                 </Text>
             ),
         },

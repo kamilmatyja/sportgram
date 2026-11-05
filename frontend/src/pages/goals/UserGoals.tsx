@@ -358,7 +358,7 @@ export default function UserGoals() {
             key: 'startedAt',
             header: t('startedAt'),
             render: (g) => (
-                <Text size="xs" c="dimmed">
+                <Text size="sm" c="dimmed">
                     {formatDateTime(g.startedAt)}
                 </Text>
             ),
@@ -367,7 +367,7 @@ export default function UserGoals() {
             key: 'endedAt',
             header: t('endedAt'),
             render: (g) => (
-                <Text size="xs" c="dimmed">
+                <Text size="sm" c="dimmed">
                     {formatDateTime(g.endedAt)}
                 </Text>
             ),
@@ -537,7 +537,7 @@ export default function UserGoals() {
                                                     status: opt.value as GoalStatusEnum,
                                                 })
                                             }
-                                            disabled={g.status === opt.value}
+                                            disabled={g.status === opt.value || statusMutation.isPending}
                                         >
                                             {opt.label}
                                         </Menu.Item>

@@ -1,6 +1,5 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import type { ElementStatusDto } from './common.types';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
 
@@ -82,10 +81,12 @@ export const goalService = {
 
     async updateGoalParticipantStatus(
         id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+        bodyOrStatus: components['schemas']['SaveStatusDto'] | ElementStatusEnum | number,
     ): Promise<UpdateGoalParticipantStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
+        const body: components['schemas']['SaveStatusDto'] =
+            typeof bodyOrStatus === 'number'
+                ? { status: bodyOrStatus as components['schemas']['SaveStatusDto']['status'] }
+                : bodyOrStatus;
         const res = await api.PATCH('/api/goal-participants/{id}/status', {
             params: { path: { id } },
             body,
@@ -96,10 +97,12 @@ export const goalService = {
 
     async updateGoalParticipantResultStatus(
         id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+        bodyOrStatus: components['schemas']['SaveStatusDto'] | ElementStatusEnum | number,
     ): Promise<UpdateGoalParticipantResultStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
+        const body: components['schemas']['SaveStatusDto'] =
+            typeof bodyOrStatus === 'number'
+                ? { status: bodyOrStatus as components['schemas']['SaveStatusDto']['status'] }
+                : bodyOrStatus;
         const res = await api.PATCH('/api/goal-participant-results/{id}/status', {
             params: { path: { id } },
             body,

@@ -55,4 +55,10 @@ class FeedReactionResource
             'status' => $feedReaction->status,
         ];
     }
+
+    /** @param FeedReaction[] $reactions */
+    public static function fromEntityCollection(array $reactions): array
+    {
+        return array_map(fn (FeedReaction $reaction) => self::fromEntity($reaction), $reactions);
+    }
 }

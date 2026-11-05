@@ -38,7 +38,7 @@ import { RoleEnum } from '../../enums/RoleEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
 import { formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDate } from '../../utils/date';
+import { formatDateTime } from '../../utils/date';
 
 export default function UsersList() {
     const { t } = useTranslation();
@@ -359,7 +359,7 @@ export default function UsersList() {
                         <Text size="sm" fw={500}>
                             {u.firstName} {u.lastName}
                         </Text>
-                        <Text size="xs" c="dimmed">
+                        <Text size="sm" c="dimmed">
                             @{u.link}
                         </Text>
                     </div>
@@ -369,7 +369,7 @@ export default function UsersList() {
         {
             key: 'email',
             header: t('email'),
-            render: (u) => <Text size="xs">{u.email}</Text>,
+            render: (u) => <Text size="sm">{u.email}</Text>,
         },
         {
             key: 'status',
@@ -391,8 +391,8 @@ export default function UsersList() {
             key: 'createdAt',
             header: t('createdAt'),
             render: (u) => (
-                <Text size="xs" c="dimmed">
-                    {formatDate(u.createdAt)}
+                <Text size="sm" c="dimmed">
+                    {formatDateTime(u.createdAt)}
                 </Text>
             ),
         },

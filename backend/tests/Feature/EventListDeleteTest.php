@@ -37,7 +37,24 @@ class EventListDeleteTest extends ApiTestCase
         $this->assertEquals(401, $result['status']);
     }
 
-    final public function testForbiddenForListOwnerOnly(): void
+    final public function testForbiddenForOtherUser(): void
+    {
+        $listOwner = self::createUser(RoleEnum::Participant);
+        $eventCreator = self::createUser(RoleEnum::Participant);
+        $otherUser = self::createUser(RoleEnum::Participant);
+
+        $page = PageFactory::make(['user' => $eventCreator], $this->em);
+        $participant = PageParticipantFactory::make(['page' => $page, 'user' => $eventCreator], $this->em);
+        $event = EventFactory::make(['pageParticipant' => $participant], $this->em);
+        $discipline = EventDisciplineFactory::make(['event' => $event], $this->em);
+        $distance = EventDisciplineDistanceFactory::make(['eventDiscipline' => $discipline], $this->em);
+        $list = EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $listOwner], $this->em);
+
+        $result = $this->delete("/api/event-discipline-distance-lists/{$list->id->toString()}", $otherUser);
+        $this->assertEquals(403, $result['status']);
+    }
+
+    final public function testSuccessForListOwner(): void
     {
         $listOwner = self::createUser(RoleEnum::Participant);
         $eventCreator = self::createUser(RoleEnum::Participant);
@@ -50,10 +67,10 @@ class EventListDeleteTest extends ApiTestCase
         $list = EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $listOwner], $this->em);
 
         $result = $this->delete("/api/event-discipline-distance-lists/{$list->id->toString()}", $listOwner);
-        $this->assertEquals(403, $result['status']);
+        $this->assertEquals(200, $result['status']);
     }
 
-    final public function testSuccess(): void
+    final public function testSuccessForEventCreator(): void
     {
         $listOwner = self::createUser(RoleEnum::Participant);
         $eventCreator = self::createUser(RoleEnum::Participant);

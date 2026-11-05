@@ -17,14 +17,18 @@ import PasswordReset from './pages/auth/PasswordReset';
 import UsersList from './pages/users/UsersList';
 import UserProfile from './pages/users/UserProfile';
 import UserFeeds from './pages/users/UserFeeds';
+import UserFeedReactions from './pages/users/UserFeedReactions';
+import UserFeedComments from './pages/users/UserFeedComments';
 import UserStories from './pages/users/UserStories';
 import UserFriends from './pages/users/UserFriends';
 import UserGoals from './pages/goals/UserGoals';
 import GoalDetails from './pages/goals/GoalDetails';
 import UserPages from './pages/pages/UserPages';
+import UserPageFollows from './pages/users/UserPageFollows';
 import PageDetails from './pages/pages/PageDetails';
 import PagesList from './pages/pages/PagesList';
 import UserEvents from './pages/events/UserEvents';
+import UserEventSignups from './pages/users/UserEventSignups';
 import EventDetails from './pages/events/EventDetails';
 import EventsList from './pages/events/EventsList';
 import UserTrainings from './pages/trainings/UserTrainings';
@@ -145,16 +149,20 @@ export default function App() {
                     <Route path="/users" element={<UsersList />} />
                     <Route path="/users/:link" element={<UserProfileThemeLayout />}>
                         <Route index element={<UserProfile />} />
-                        <Route path="feeds" element={<UserFeeds />} />
                         <Route path="stories" element={<UserStories />} />
+                        <Route path="feeds" element={<UserFeeds />} />
+                        <Route path="feed-reactions" element={<UserFeedReactions />} />
+                        <Route path="feed-comments" element={<UserFeedComments />} />
                         <Route path="friends" element={<UserFriends />} />
-                        <Route path="goals" element={<UserGoals />} />
                         <Route path="pages" element={<UserPages />} />
+                        <Route path="page-follows" element={<UserPageFollows />} />
                         <Route path="events" element={<UserEvents />} />
+                        <Route path="event-signups" element={<UserEventSignups />} />
                         <Route path="trainings" element={<UserTrainings />} />
+                        <Route path="goals" element={<UserGoals />} />
+                        <Route path="conversations" element={<UserConversations />} />
                         <Route path="notifications" element={<UserNotifications />} />
                         <Route path="push-subscriptions" element={<UserPushSubscriptions />} />
-                        <Route path="conversations" element={<UserConversations />} />
                     </Route>
 
                     <Route path="/goals/:link" element={<GoalDetails />} />

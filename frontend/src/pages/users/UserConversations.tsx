@@ -438,7 +438,7 @@ export default function UserConversations() {
                                 {other ? `${other.firstName} ${other.lastName}` : otherId}
                             </Text>
                             {other?.link && (
-                                <Text size="xs" c="dimmed">
+                                <Text size="sm" c="dimmed">
                                     @{other.link}
                                 </Text>
                             )}
@@ -472,7 +472,7 @@ export default function UserConversations() {
             key: 'createdAt',
             header: t('createdAt'),
             render: (c) => (
-                <Text size="xs" c="dimmed">
+                <Text size="sm" c="dimmed">
                     {formatDateTime(c.createdAt)}
                 </Text>
             ),

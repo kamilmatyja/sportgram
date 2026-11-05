@@ -32,7 +32,7 @@ import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDate } from '../../utils/date';
+import { formatDateTime } from '../../utils/date';
 
 export default function PagesList() {
     const { t } = useTranslation();
@@ -306,7 +306,7 @@ export default function PagesList() {
                         <Text size="sm" fw={600}>
                             {p.title}
                         </Text>
-                        <Text size="xs" c="dimmed">
+                        <Text size="sm" c="dimmed">
                             @{p.link}
                         </Text>
                     </div>
@@ -335,8 +335,8 @@ export default function PagesList() {
             key: 'createdAt',
             header: t('createdAt'),
             render: (p) => (
-                <Text size="xs" c="dimmed">
-                    {formatDate(p.createdAt)}
+                <Text size="sm" c="dimmed">
+                    {formatDateTime(p.createdAt)}
                 </Text>
             ),
         },

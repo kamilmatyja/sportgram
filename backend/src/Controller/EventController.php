@@ -181,7 +181,7 @@ class EventController extends AbstractController
     }
 
     #[Route('/api/event-discipline-distance-lists/{id}', name: 'event_discipline_distance_list_delete', methods: ['DELETE'])]
-    #[IsGranted(EventListCreatorVoter::EVENT_LIST_CREATOR, subject: 'id')]
+    #[IsGranted(EventListVoter::EVENT_LIST, subject: 'id')]
     #[OA\Delete(
         summary: 'Delete event discipline distance list - endpoint for owner',
         tags: ['events'],
@@ -196,7 +196,7 @@ class EventController extends AbstractController
         return ApiResponse::ok($eventDisciplineListId);
     }
 
-    #[Route('/api/event-discipline-distances/{id}', name: 'event_discipline_distance_list_index', methods: ['GET'])]
+    #[Route('/api/event-discipline-distance-lists', name: 'event_discipline_distance_list_index', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
         summary: 'Index of event discipline distance lists - endpoint for authenticated user',
@@ -204,14 +204,13 @@ class EventController extends AbstractController
         responses: [new Collection(EventDisciplineDistanceListResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function indexList(
-        Uuid $id,
         #[MapQueryString(validationFailedStatusCode: 400)]
         EventListIndexDto $dto,
         #[MapQueryString(validationFailedStatusCode: 400)]
         EventListDetailsQueryDto $include,
         EventService $service,
     ): JsonResponse {
-        $window = $service->indexList($id, $dto);
+        $window = $service->indexList($dto);
 
         $data = EventDisciplineDistanceListResource::fromEntityCollection($window->getItems(), $include);
 

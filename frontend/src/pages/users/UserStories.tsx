@@ -242,13 +242,7 @@ export default function UserStories() {
             key: 'photo',
             header: t('photo'),
             render: (s) => (
-                <Avatar
-                    src={formatImageSrc(s.photo)}
-                    radius={5}
-                    size="md"
-                    className="pointer"
-                    onClick={() => setViewingStory(s)}
-                >
+                <Avatar src={formatImageSrc(s.photo)} radius={5} size="md">
                     ?
                 </Avatar>
             ),
@@ -284,7 +278,7 @@ export default function UserStories() {
             key: 'createdAt',
             header: t('createdAt'),
             render: (s) => (
-                <Text size="xs" c="dimmed">
+                <Text size="sm" c="dimmed">
                     {formatDateTime(s.createdAt)}
                 </Text>
             ),
@@ -394,7 +388,7 @@ export default function UserStories() {
                                                     status: opt.value as ElementStatusEnum,
                                                 })
                                             }
-                                            disabled={s.status === opt.value}
+                                            disabled={s.status === opt.value || statusMutation.isPending}
                                         >
                                             {opt.label}
                                         </Menu.Item>

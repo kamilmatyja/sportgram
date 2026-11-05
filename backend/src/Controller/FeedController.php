@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
-use App\Dto\{ElementStatusDto, FeedCommentDto, FeedDetailsQueryDto, FeedDto, FeedIndexDto, FeedReactionDto};
+use App\Dto\{ElementStatusDto, FeedCommentDto, FeedCommentIndexDto, FeedDetailsQueryDto, FeedDto, FeedIndexDto, FeedReactionDto, FeedReactionIndexDto};
 use App\Http\ApiResponse;
 use App\OpenApi\{BadRequest, Body, Collection, Conflict, Created, Forbidden, Item, NotFound, Ok, Unauthorized};
-use App\Resource\FeedResource;
+use App\Resource\{FeedCommentResource, FeedReactionResource, FeedResource};
 use App\Security\Voter\{FeedCommentCreatorVoter,
     FeedCommentVoter,
     FeedCreatorVoter,
@@ -209,6 +209,25 @@ class FeedController extends AbstractController
         return ApiResponse::ok($feedCommentId);
     }
 
+    #[Route('/api/feed-comments', name: 'feed_comment_index', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[OA\Get(
+        summary: 'Index of feed comments - endpoint for authenticated user',
+        tags: ['feeds'],
+        responses: [new Collection(FeedCommentResource::class), new BadRequest(), new Unauthorized()],
+    )]
+    final public function indexComments(
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        FeedCommentIndexDto $dto,
+        FeedService $service,
+    ): JsonResponse {
+        $window = $service->indexComments($dto);
+
+        $data = FeedCommentResource::fromEntityCollection($window->getItems());
+
+        return ApiResponse::elements($data, $window);
+    }
+
     #[Route('/api/feeds/{id}/reactions', name: 'feed_reaction_create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Post(
@@ -280,5 +299,24 @@ class FeedController extends AbstractController
         $feedReactionId = $service->deleteReaction($id);
 
         return ApiResponse::ok($feedReactionId);
+    }
+
+    #[Route('/api/feed-reactions', name: 'feed_reaction_index', methods: ['GET'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[OA\Get(
+        summary: 'Index of feed reactions - endpoint for authenticated user',
+        tags: ['feeds'],
+        responses: [new Collection(FeedReactionResource::class), new BadRequest(), new Unauthorized()],
+    )]
+    final public function indexReactions(
+        #[MapQueryString(validationFailedStatusCode: 400)]
+        FeedReactionIndexDto $dto,
+        FeedService $service,
+    ): JsonResponse {
+        $window = $service->indexReactions($dto);
+
+        $data = FeedReactionResource::fromEntityCollection($window->getItems());
+
+        return ApiResponse::elements($data, $window);
     }
 }

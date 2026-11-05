@@ -37,16 +37,18 @@ class EventDisciplineListRepository extends BaseRepository
         return $eventDisciplineList;
     }
 
-    final public function findLists(Uuid $eventDisciplineDistanceId, EventListIndexDto $dto): WindowPage
+    final public function findLists(EventListIndexDto $dto): WindowPage
     {
         $qb = $this->createQueryBuilder('e');
-
-        $qb->andWhere('e.eventDisciplineDistance = :eventDisciplineDistanceId')
-            ->setParameter('eventDisciplineDistanceId', $eventDisciplineDistanceId);
 
         if ($dto->filter->userId) {
             $qb->andWhere('e.user = :userId')
                 ->setParameter('userId', $dto->filter->userId);
+        }
+
+        if ($dto->filter->eventDisciplineDistanceId) {
+            $qb->andWhere('e.eventDisciplineDistance = :eventDisciplineDistanceId')
+                ->setParameter('eventDisciplineDistanceId', $dto->filter->eventDisciplineDistanceId);
         }
 
         if ($dto->filter->status) {

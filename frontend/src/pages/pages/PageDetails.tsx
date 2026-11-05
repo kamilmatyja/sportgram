@@ -612,127 +612,132 @@ export default function PageDetails() {
             <Stack gap="lg">
                 <PageNav page={page} extraActions={extraActions} />
 
-                {page.description && (
-                    <Card withBorder radius="md" p="md" shadow="xs">
-                        <Text size="sm" className="pre-wrap">
+                <Card withBorder radius="md" p="lg" shadow="xs">
+                    {page.description && (
+                        <Text size="sm" mb="md" className="pre-wrap">
                             {page.description}
                         </Text>
-                    </Card>
-                )}
+                    )}
 
-                <Card withBorder radius="md" p="md" shadow="xs">
                     <Title order={4} mb="xs">
                         {t('participants')}
                     </Title>
                     {!page.participants || page.participants.length === 0 ? (
                         <EmptyState title={t('noData')} />
                     ) : (
-                        <Table striped withTableBorder withColumnBorders>
-                            <Table.Thead>
-                                <Table.Tr>
-                                    <Table.Th>{t('user')}</Table.Th>
-                                    <Table.Th>{t('status')}</Table.Th>
-                                    <Table.Th ta="right">{t('actions')}</Table.Th>
-                                </Table.Tr>
-                            </Table.Thead>
-                            <Table.Tbody>
-                                {page.participants?.map((p: PageParticipantResource) => {
-                                    const u = participantUsers[p.userId];
-                                    const isSelf = p.userId === currentUser?.id;
-                                    const canManageParticipant = isSelf || isOwner;
-                                    const pOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === p.status);
-                                    const pColor =
-                                        p.status === ElementStatusEnum.ACTIVE
-                                            ? 'green'
-                                            : p.status === ElementStatusEnum.REJECTED
-                                              ? 'red'
-                                              : 'gray';
+                        <Table.ScrollContainer minWidth={600}>
+                            <Table
+                                striped
+                                highlightOnHover
+                                withTableBorder
+                                withColumnBorders
+                                withRowBorders
+                                verticalSpacing="sm"
+                            >
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>{t('user')}</Table.Th>
+                                        <Table.Th>{t('status')}</Table.Th>
+                                        <Table.Th w={120} ta="right">
+                                            {t('actions')}
+                                        </Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>
+                                    {page.participants?.map((p: PageParticipantResource) => {
+                                        const u = participantUsers[p.userId];
+                                        const isSelf = p.userId === currentUser?.id;
+                                        const canManageParticipant = isSelf;
+                                        const pOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === p.status);
+                                        const pColor =
+                                            p.status === ElementStatusEnum.ACTIVE
+                                                ? 'green'
+                                                : p.status === ElementStatusEnum.REJECTED
+                                                  ? 'red'
+                                                  : 'gray';
 
-                                    return (
-                                        <Table.Tr key={p.id}>
-                                            <Table.Td>
-                                                <Group gap="sm">
-                                                    <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
-                                                        ?
-                                                    </Avatar>
-                                                    <div>
-                                                        <Text size="sm" fw={600}>
-                                                            {u ? `${u.firstName} ${u.lastName}` : p.userId}
-                                                        </Text>
-                                                        {u?.link && (
-                                                            <Text size="xs" c="dimmed">
-                                                                @{u.link}
+                                        return (
+                                            <Table.Tr key={p.id}>
+                                                <Table.Td>
+                                                    <Group gap="sm">
+                                                        <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
+                                                            ?
+                                                        </Avatar>
+                                                        <div>
+                                                            <Text size="sm" fw={600}>
+                                                                {u ? `${u.firstName} ${u.lastName}` : p.userId}
                                                             </Text>
+                                                            {u?.link && (
+                                                                <Text size="sm" c="dimmed">
+                                                                    @{u.link}
+                                                                </Text>
+                                                            )}
+                                                        </div>
+                                                    </Group>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Badge color={pColor} variant="light">
+                                                        {pOpt?.label ?? p.status}
+                                                    </Badge>
+                                                </Table.Td>
+                                                <Table.Td ta="right">
+                                                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                                                        {u?.link && (
+                                                            <Tooltip label={t('details')} withArrow>
+                                                                <ActionIcon
+                                                                    component={Link}
+                                                                    to={`/users/${u.link}`}
+                                                                    variant="light"
+                                                                    aria-label={t('details')}
+                                                                >
+                                                                    <IconEye size={16} />
+                                                                </ActionIcon>
+                                                            </Tooltip>
                                                         )}
-                                                    </div>
-                                                </Group>
-                                            </Table.Td>
-                                            <Table.Td>
-                                                <Badge color={pColor} variant="light">
-                                                    {pOpt?.label ?? p.status}
-                                                </Badge>
-                                            </Table.Td>
-                                            <Table.Td ta="right">
-                                                <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                    {u?.link && (
-                                                        <Tooltip label={t('details')} withArrow>
-                                                            <ActionIcon
-                                                                component={Link}
-                                                                to={`/users/${u.link}`}
-                                                                variant="light"
-                                                                size={28}
-                                                                aria-label={t('details')}
-                                                            >
-                                                                <IconEye size={14} />
-                                                            </ActionIcon>
-                                                        </Tooltip>
-                                                    )}
-                                                    {canManageParticipant && (
-                                                        <Menu shadow="md" width={160}>
-                                                            <Menu.Target>
-                                                                <Tooltip label={t('changeStatus')} withArrow>
-                                                                    <ActionIcon
-                                                                        variant="light"
-                                                                        size={28}
-                                                                        aria-label={t('changeStatus')}
-                                                                    >
-                                                                        <IconAdjustments size={14} />
-                                                                    </ActionIcon>
-                                                                </Tooltip>
-                                                            </Menu.Target>
-                                                            <Menu.Dropdown>
-                                                                {ElementStatusEnum.getOptions(t).map((opt) => (
-                                                                    <Menu.Item
-                                                                        key={opt.value}
-                                                                        disabled={
-                                                                            p.status === opt.value ||
-                                                                            updateParticipantStatusMutation.isPending
-                                                                        }
-                                                                        onClick={() =>
-                                                                            updateParticipantStatusMutation.mutate({
-                                                                                participantId: p.id,
-                                                                                status: opt.value as ElementStatusEnum,
-                                                                            })
-                                                                        }
-                                                                    >
-                                                                        {opt.label}
-                                                                    </Menu.Item>
-                                                                ))}
-                                                            </Menu.Dropdown>
-                                                        </Menu>
-                                                    )}
-                                                </Group>
-                                            </Table.Td>
-                                        </Table.Tr>
-                                    );
-                                })}
-                            </Table.Tbody>
-                        </Table>
+                                                        {canManageParticipant && (
+                                                            <Menu shadow="md" width={160}>
+                                                                <Menu.Target>
+                                                                    <Tooltip label={t('changeStatus')} withArrow>
+                                                                        <ActionIcon
+                                                                            variant="light"
+                                                                            aria-label={t('changeStatus')}
+                                                                        >
+                                                                            <IconAdjustments size={16} />
+                                                                        </ActionIcon>
+                                                                    </Tooltip>
+                                                                </Menu.Target>
+                                                                <Menu.Dropdown>
+                                                                    {ElementStatusEnum.getOptions(t).map((opt) => (
+                                                                        <Menu.Item
+                                                                            key={opt.value}
+                                                                            disabled={
+                                                                                p.status === opt.value ||
+                                                                                updateParticipantStatusMutation.isPending
+                                                                            }
+                                                                            onClick={() =>
+                                                                                updateParticipantStatusMutation.mutate({
+                                                                                    participantId: p.id,
+                                                                                    status: opt.value as ElementStatusEnum,
+                                                                                })
+                                                                            }
+                                                                        >
+                                                                            {opt.label}
+                                                                        </Menu.Item>
+                                                                    ))}
+                                                                </Menu.Dropdown>
+                                                            </Menu>
+                                                        )}
+                                                    </Group>
+                                                </Table.Td>
+                                            </Table.Tr>
+                                        );
+                                    })}
+                                </Table.Tbody>
+                            </Table>
+                        </Table.ScrollContainer>
                     )}
-                </Card>
 
-                <Card withBorder radius="md" p="md" shadow="xs">
-                    <Group justify="space-between" align="center" mb="xs">
+                    <Group justify="space-between" align="center" mt="lg" mb="xs">
                         <Title order={4}>{t('events')}</Title>
                         {isOrganizer && isParticipant && (
                             <Button
@@ -753,76 +758,88 @@ export default function PageDetails() {
                     ) : pageEvents.length === 0 ? (
                         <EmptyState title={t('noData')} />
                     ) : (
-                        <Table striped withTableBorder withColumnBorders>
-                            <Table.Thead>
-                                <Table.Tr>
-                                    <Table.Th>{t('title')}</Table.Th>
-                                    <Table.Th>{t('startedAt')}</Table.Th>
-                                    <Table.Th>{t('endedAt')}</Table.Th>
-                                    <Table.Th>{t('status')}</Table.Th>
-                                    <Table.Th ta="right">{t('actions')}</Table.Th>
-                                </Table.Tr>
-                            </Table.Thead>
-                            <Table.Tbody>
-                                {pageEvents.map((ev: EventResource) => {
-                                    const evOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === ev.status);
-                                    const evColor =
-                                        ev.status === ElementStatusEnum.ACTIVE
-                                            ? 'green'
-                                            : ev.status === ElementStatusEnum.REJECTED
-                                              ? 'red'
-                                              : 'gray';
+                        <Table.ScrollContainer minWidth={600}>
+                            <Table
+                                striped
+                                highlightOnHover
+                                withTableBorder
+                                withColumnBorders
+                                withRowBorders
+                                verticalSpacing="sm"
+                            >
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>{t('title')}</Table.Th>
+                                        <Table.Th>{t('startedAt')}</Table.Th>
+                                        <Table.Th>{t('endedAt')}</Table.Th>
+                                        <Table.Th>{t('status')}</Table.Th>
+                                        <Table.Th w={120} ta="right">
+                                            {t('actions')}
+                                        </Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>
+                                    {pageEvents.map((ev: EventResource) => {
+                                        const evOpt = ElementStatusEnum.getOptions(t).find(
+                                            (o) => o.value === ev.status,
+                                        );
+                                        const evColor =
+                                            ev.status === ElementStatusEnum.ACTIVE
+                                                ? 'green'
+                                                : ev.status === ElementStatusEnum.REJECTED
+                                                  ? 'red'
+                                                  : 'gray';
 
-                                    return (
-                                        <Table.Tr key={ev.id}>
-                                            <Table.Td>
-                                                <Group gap="sm">
-                                                    <Avatar src={formatImageSrc(ev.photo)} radius={5}>
-                                                        ?
-                                                    </Avatar>
-                                                    <div>
-                                                        <Text size="sm" fw={600}>
-                                                            {ev.title}
-                                                        </Text>
-                                                        <Text size="xs" c="dimmed">
-                                                            {ev.location || '-'}
-                                                        </Text>
-                                                    </div>
-                                                </Group>
-                                            </Table.Td>
-                                            <Table.Td>
-                                                <Text size="xs" c="dimmed">
-                                                    {formatDateTime(ev.startedAt)}
-                                                </Text>
-                                            </Table.Td>
-                                            <Table.Td>
-                                                <Text size="xs" c="dimmed">
-                                                    {formatDateTime(ev.endedAt)}
-                                                </Text>
-                                            </Table.Td>
-                                            <Table.Td>
-                                                <Badge color={evColor} variant="light">
-                                                    {evOpt?.label ?? ev.status}
-                                                </Badge>
-                                            </Table.Td>
-                                            <Table.Td ta="right">
-                                                <Tooltip label={t('details')} withArrow>
-                                                    <ActionIcon
-                                                        component={Link}
-                                                        to={`/events/${ev.link}`}
-                                                        variant="light"
-                                                        size={28}
-                                                        aria-label={t('details')}
-                                                    >
-                                                        <IconEye size={14} />
-                                                    </ActionIcon>
-                                                </Tooltip>
-                                            </Table.Td>
-                                        </Table.Tr>
-                                    );
-                                })}
-                            </Table.Tbody>
-                        </Table>
+                                        return (
+                                            <Table.Tr key={ev.id}>
+                                                <Table.Td>
+                                                    <Group gap="sm">
+                                                        <Avatar src={formatImageSrc(ev.photo)} radius={5}>
+                                                            ?
+                                                        </Avatar>
+                                                        <div>
+                                                            <Text size="sm" fw={600}>
+                                                                {ev.title}
+                                                            </Text>
+                                                            <Text size="sm" c="dimmed">
+                                                                {ev.location || '-'}
+                                                            </Text>
+                                                        </div>
+                                                    </Group>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Text size="sm" c="dimmed">
+                                                        {formatDateTime(ev.startedAt)}
+                                                    </Text>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Text size="sm" c="dimmed">
+                                                        {formatDateTime(ev.endedAt)}
+                                                    </Text>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Badge color={evColor} variant="light">
+                                                        {evOpt?.label ?? ev.status}
+                                                    </Badge>
+                                                </Table.Td>
+                                                <Table.Td ta="right">
+                                                    <Tooltip label={t('details')} withArrow>
+                                                        <ActionIcon
+                                                            component={Link}
+                                                            to={`/events/${ev.link}`}
+                                                            variant="light"
+                                                            aria-label={t('details')}
+                                                        >
+                                                            <IconEye size={16} />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                </Table.Td>
+                                            </Table.Tr>
+                                        );
+                                    })}
+                                </Table.Tbody>
+                            </Table>
+                        </Table.ScrollContainer>
                     )}
                 </Card>
 

@@ -30,8 +30,8 @@ export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNa
             <Card withBorder radius={5} p={0} mb="sm" shadow="xs" className="overflow-hidden">
                 {bgSrc ? (
                     <Box h={160} pos="relative" bg="var(--mantine-primary-color-filled)">
-                        <Center pos="absolute" inset={0} style={{ zIndex: 0 }}>
-                            <Text fz={48} fw={700} c="white" style={{ opacity: 0.8, userSelect: 'none' }}>
+                        <Center pos="absolute" inset={0} className="header-bg-placeholder-center">
+                            <Text fz={48} fw={700} c="white" className="header-bg-placeholder-text">
                                 ?
                             </Text>
                         </Center>
@@ -43,21 +43,20 @@ export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNa
                             fit="cover"
                             alt={page.title}
                             pos="relative"
-                            style={{ zIndex: 1 }}
                             onError={(e) => {
-                                e.currentTarget.style.display = 'none';
+                                e.currentTarget.classList.add('d-none');
                             }}
                         />
                     </Box>
                 ) : (
                     <Center h={160} bg="var(--mantine-primary-color-filled)">
-                        <Text fz={48} fw={700} c="white" style={{ opacity: 0.8, userSelect: 'none' }}>
+                        <Text fz={48} fw={700} c="white" className="header-bg-placeholder-text">
                             ?
                         </Text>
                     </Center>
                 )}
 
-                <Box p="md" pos="relative" style={{ zIndex: 2 }}>
+                <Box p="md" pos="relative" className="header-content-box">
                     <Avatar
                         src={profileSrc}
                         size={100}
@@ -66,7 +65,6 @@ export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNa
                         top={-50}
                         left={24}
                         className="profile-avatar-border"
-                        style={{ zIndex: 3 }}
                         component={Link}
                         to={`/pages/${page.link}`}
                     >

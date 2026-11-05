@@ -44,11 +44,11 @@ class EventListIndexTest extends ApiTestCase
         EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $targetUser, 'status' => SaveStatusEnum::Pending], $this->em);
         EventDisciplineListFactory::make(['eventDisciplineDistance' => $distance, 'user' => $targetUser, 'status' => SaveStatusEnum::Accepted], $this->em);
 
-        $result = $this->get("/api/event-discipline-distances/{$distance->id->toString()}?filter[userId]={$targetUser->id->toString()}", $user);
+        $result = $this->get("/api/event-discipline-distance-lists?filter[eventDisciplineDistanceId]={$distance->id->toString()}&filter[userId]={$targetUser->id->toString()}", $user);
         $this->assertEquals(200, $result['status']);
         $this->assertCount(2, $result['json']['data']);
 
-        $resultStatus = $this->get("/api/event-discipline-distances/{$distance->id->toString()}?filter[userId]={$targetUser->id->toString()}&filter[status]=2", $user);
+        $resultStatus = $this->get("/api/event-discipline-distance-lists?filter[eventDisciplineDistanceId]={$distance->id->toString()}&filter[userId]={$targetUser->id->toString()}&filter[status]=2", $user);
         $this->assertEquals(200, $resultStatus['status']);
         $this->assertCount(1, $resultStatus['json']['data']);
         $this->assertEquals(SaveStatusEnum::Accepted->value, $resultStatus['json']['data'][0]['status']);

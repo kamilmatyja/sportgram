@@ -614,107 +614,116 @@ export default function TrainingDetails() {
                     {!training.participants || training.participants.length === 0 ? (
                         <EmptyState title={t('noData')} />
                     ) : (
-                        <Table striped withTableBorder withColumnBorders mb="lg">
-                            <Table.Thead>
-                                <Table.Tr>
-                                    <Table.Th>{t('user')}</Table.Th>
-                                    <Table.Th>{t('status')}</Table.Th>
-                                    <Table.Th ta="right">{t('actions')}</Table.Th>
-                                </Table.Tr>
-                            </Table.Thead>
-                            <Table.Tbody>
-                                {training.participants?.map((p: TrainingParticipantResource) => {
-                                    const u = participantUsers[p.userId];
-                                    const isSelf = p.userId === currentUser?.id;
-                                    const canManageParticipant = isSelf || isOwner;
-                                    const pOpt = SaveStatusEnum.getOptions(t).find((o) => o.value === p.status);
-                                    const pColor =
-                                        p.status === SaveStatusEnum.ACCEPTED
-                                            ? 'green'
-                                            : p.status === SaveStatusEnum.REJECTED
-                                              ? 'red'
-                                              : 'yellow';
+                        <Table.ScrollContainer minWidth={600} mb="lg">
+                            <Table
+                                striped
+                                highlightOnHover
+                                withTableBorder
+                                withColumnBorders
+                                withRowBorders
+                                verticalSpacing="sm"
+                            >
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>{t('user')}</Table.Th>
+                                        <Table.Th>{t('status')}</Table.Th>
+                                        <Table.Th w={120} ta="right">
+                                            {t('actions')}
+                                        </Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>
+                                    {training.participants?.map((p: TrainingParticipantResource) => {
+                                        const u = participantUsers[p.userId];
+                                        const isSelf = p.userId === currentUser?.id;
+                                        const canManageParticipant = isSelf;
+                                        const pOpt = SaveStatusEnum.getOptions(t).find((o) => o.value === p.status);
+                                        const pColor =
+                                            p.status === SaveStatusEnum.ACCEPTED
+                                                ? 'green'
+                                                : p.status === SaveStatusEnum.REJECTED
+                                                  ? 'red'
+                                                  : 'yellow';
 
-                                    return (
-                                        <Table.Tr key={p.id}>
-                                            <Table.Td>
-                                                <Group gap="sm">
-                                                    <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
-                                                        ?
-                                                    </Avatar>
-                                                    <div>
-                                                        <Text size="sm" fw={600}>
-                                                            {u ? `${u.firstName} ${u.lastName}` : p.userId}
-                                                        </Text>
-                                                        {u?.link && (
-                                                            <Text size="xs" c="dimmed">
-                                                                @{u.link}
+                                        return (
+                                            <Table.Tr key={p.id}>
+                                                <Table.Td>
+                                                    <Group gap="sm">
+                                                        <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
+                                                            ?
+                                                        </Avatar>
+                                                        <div>
+                                                            <Text size="sm" fw={600}>
+                                                                {u ? `${u.firstName} ${u.lastName}` : p.userId}
                                                             </Text>
+                                                            {u?.link && (
+                                                                <Text size="sm" c="dimmed">
+                                                                    @{u.link}
+                                                                </Text>
+                                                            )}
+                                                        </div>
+                                                    </Group>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Badge color={pColor} variant="light">
+                                                        {pOpt?.label ?? p.status}
+                                                    </Badge>
+                                                </Table.Td>
+                                                <Table.Td ta="right">
+                                                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                                                        {u?.link && (
+                                                            <Tooltip label={t('details')} withArrow>
+                                                                <ActionIcon
+                                                                    component={Link}
+                                                                    to={`/users/${u.link}`}
+                                                                    variant="light"
+                                                                    aria-label={t('details')}
+                                                                >
+                                                                    <IconEye size={16} />
+                                                                </ActionIcon>
+                                                            </Tooltip>
                                                         )}
-                                                    </div>
-                                                </Group>
-                                            </Table.Td>
-                                            <Table.Td>
-                                                <Badge color={pColor} variant="light">
-                                                    {pOpt?.label ?? p.status}
-                                                </Badge>
-                                            </Table.Td>
-                                            <Table.Td ta="right">
-                                                <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                    {u?.link && (
-                                                        <Tooltip label={t('details')} withArrow>
-                                                            <ActionIcon
-                                                                component={Link}
-                                                                to={`/users/${u.link}`}
-                                                                variant="light"
-                                                                size={28}
-                                                                aria-label={t('details')}
-                                                            >
-                                                                <IconEye size={14} />
-                                                            </ActionIcon>
-                                                        </Tooltip>
-                                                    )}
-                                                    {canManageParticipant && (
-                                                        <Menu shadow="md" width={160}>
-                                                            <Menu.Target>
-                                                                <Tooltip label={t('changeStatus')} withArrow>
-                                                                    <ActionIcon
-                                                                        variant="light"
-                                                                        size={28}
-                                                                        aria-label={t('changeStatus')}
-                                                                    >
-                                                                        <IconAdjustments size={14} />
-                                                                    </ActionIcon>
-                                                                </Tooltip>
-                                                            </Menu.Target>
-                                                            <Menu.Dropdown>
-                                                                {SaveStatusEnum.getOptions(t).map((opt) => (
-                                                                    <Menu.Item
-                                                                        key={opt.value}
-                                                                        disabled={
-                                                                            p.status === opt.value ||
-                                                                            updateParticipantStatusMutation.isPending
-                                                                        }
-                                                                        onClick={() =>
-                                                                            updateParticipantStatusMutation.mutate({
-                                                                                participantId: p.id,
-                                                                                status: opt.value as SaveStatusEnum,
-                                                                            })
-                                                                        }
-                                                                    >
-                                                                        {opt.label}
-                                                                    </Menu.Item>
-                                                                ))}
-                                                            </Menu.Dropdown>
-                                                        </Menu>
-                                                    )}
-                                                </Group>
-                                            </Table.Td>
-                                        </Table.Tr>
-                                    );
-                                })}
-                            </Table.Tbody>
-                        </Table>
+                                                        {canManageParticipant && (
+                                                            <Menu shadow="md" width={160}>
+                                                                <Menu.Target>
+                                                                    <Tooltip label={t('changeStatus')} withArrow>
+                                                                        <ActionIcon
+                                                                            variant="light"
+                                                                            aria-label={t('changeStatus')}
+                                                                        >
+                                                                            <IconAdjustments size={16} />
+                                                                        </ActionIcon>
+                                                                    </Tooltip>
+                                                                </Menu.Target>
+                                                                <Menu.Dropdown>
+                                                                    {SaveStatusEnum.getOptions(t).map((opt) => (
+                                                                        <Menu.Item
+                                                                            key={opt.value}
+                                                                            disabled={
+                                                                                p.status === opt.value ||
+                                                                                updateParticipantStatusMutation.isPending
+                                                                            }
+                                                                            onClick={() =>
+                                                                                updateParticipantStatusMutation.mutate({
+                                                                                    participantId: p.id,
+                                                                                    status: opt.value as SaveStatusEnum,
+                                                                                })
+                                                                            }
+                                                                        >
+                                                                            {opt.label}
+                                                                        </Menu.Item>
+                                                                    ))}
+                                                                </Menu.Dropdown>
+                                                            </Menu>
+                                                        )}
+                                                    </Group>
+                                                </Table.Td>
+                                            </Table.Tr>
+                                        );
+                                    })}
+                                </Table.Tbody>
+                            </Table>
+                        </Table.ScrollContainer>
                     )}
 
                     <Title order={4} mb="xs">
@@ -734,105 +743,165 @@ export default function TrainingDetails() {
                                     {!disc.distances || disc.distances.length === 0 ? (
                                         <EmptyState title={t('noData')} />
                                     ) : (
-                                        <Table striped withTableBorder withColumnBorders>
-                                            <Table.Thead>
-                                                <Table.Tr>
-                                                    <Table.Th style={{ width: 40 }} />
-                                                    <Table.Th>{t('distanceMeters')}</Table.Th>
-                                                    <Table.Th>{t('timeSeconds')}</Table.Th>
-                                                </Table.Tr>
-                                            </Table.Thead>
-                                            <Table.Tbody>
-                                                {disc.distances.map((dist: TrainingDisciplineDistanceResource) => {
-                                                    const hasSub = dist.subDistances && dist.subDistances.length > 0;
-                                                    const isExpanded = expandedDistanceIds.includes(dist.id);
-                                                    return (
-                                                        <React.Fragment key={dist.id}>
-                                                            <Table.Tr>
-                                                                <Table.Td>
-                                                                    {hasSub ? (
-                                                                        <ActionIcon
-                                                                            size="xs"
-                                                                            variant="subtle"
-                                                                            onClick={() =>
-                                                                                toggleExpandDistance(dist.id)
-                                                                            }
-                                                                            aria-label={t('details')}
-                                                                        >
-                                                                            {isExpanded ? (
-                                                                                <IconChevronDown size={14} />
-                                                                            ) : (
-                                                                                <IconChevronRight size={14} />
-                                                                            )}
-                                                                        </ActionIcon>
-                                                                    ) : null}
-                                                                </Table.Td>
-                                                                <Table.Td>
-                                                                    <Text size="sm">{dist.distance} m</Text>
-                                                                </Table.Td>
-                                                                <Table.Td>
-                                                                    <Text size="sm">{dist.time} s</Text>
-                                                                </Table.Td>
-                                                            </Table.Tr>
-                                                            {hasSub && isExpanded && (
-                                                                <Table.Tr>
-                                                                    <Table.Td colSpan={3} p={0}>
-                                                                        <Table
-                                                                            striped
-                                                                            withTableBorder
-                                                                            withColumnBorders
-                                                                        >
-                                                                            <Table.Thead>
-                                                                                <Table.Tr>
-                                                                                    <Table.Th>
-                                                                                        {t('subDistanceMeters')}
-                                                                                    </Table.Th>
-                                                                                    <Table.Th>
-                                                                                        {t('timeSeconds')}
-                                                                                    </Table.Th>
-                                                                                    <Table.Th>{t('lat')}</Table.Th>
-                                                                                    <Table.Th>{t('lng')}</Table.Th>
-                                                                                    <Table.Th>{t('accuracy')}</Table.Th>
-                                                                                    <Table.Th>{t('speed')}</Table.Th>
-                                                                                </Table.Tr>
-                                                                            </Table.Thead>
-                                                                            <Table.Tbody>
-                                                                                {dist.subDistances.map(
-                                                                                    (
-                                                                                        sd: TrainingDisciplineSubDistanceResource,
-                                                                                    ) => (
-                                                                                        <Table.Tr key={sd.id}>
-                                                                                            <Table.Td>
-                                                                                                {sd.subDistance} m
-                                                                                            </Table.Td>
-                                                                                            <Table.Td>
-                                                                                                {sd.time} s
-                                                                                            </Table.Td>
-                                                                                            <Table.Td>
-                                                                                                {sd.lat ?? '-'}
-                                                                                            </Table.Td>
-                                                                                            <Table.Td>
-                                                                                                {sd.lng ?? '-'}
-                                                                                            </Table.Td>
-                                                                                            <Table.Td>
-                                                                                                {sd.accuracy ?? '-'}
-                                                                                            </Table.Td>
-                                                                                            <Table.Td>
-                                                                                                {sd.speed ?? '-'}
-                                                                                            </Table.Td>
+                                        <Table.ScrollContainer minWidth={600}>
+                                            <Table
+                                                striped
+                                                highlightOnHover
+                                                withTableBorder
+                                                withColumnBorders
+                                                withRowBorders
+                                                verticalSpacing="sm"
+                                            >
+                                                <Table.Thead>
+                                                    <Table.Tr>
+                                                        <Table.Th className="table-expand-col" />
+                                                        <Table.Th>{t('distanceMeters')}</Table.Th>
+                                                        <Table.Th>{t('timeSeconds')}</Table.Th>
+                                                    </Table.Tr>
+                                                </Table.Thead>
+                                                <Table.Tbody>
+                                                    {disc.distances.map(
+                                                        (dist: TrainingDisciplineDistanceResource, dIdx) => {
+                                                            const hasSub =
+                                                                dist.subDistances && dist.subDistances.length > 0;
+                                                            const isExpanded = expandedDistanceIds.includes(dist.id);
+                                                            return (
+                                                                <React.Fragment key={dist.id}>
+                                                                    <Table.Tr
+                                                                        className={
+                                                                            dIdx % 2 === 0
+                                                                                ? 'table-row-odd'
+                                                                                : 'table-row-even'
+                                                                        }
+                                                                    >
+                                                                        <Table.Td>
+                                                                            {hasSub ? (
+                                                                                <ActionIcon
+                                                                                    size="xs"
+                                                                                    variant="subtle"
+                                                                                    onClick={() =>
+                                                                                        toggleExpandDistance(dist.id)
+                                                                                    }
+                                                                                    aria-label={t('details')}
+                                                                                >
+                                                                                    {isExpanded ? (
+                                                                                        <IconChevronDown size={16} />
+                                                                                    ) : (
+                                                                                        <IconChevronRight size={16} />
+                                                                                    )}
+                                                                                </ActionIcon>
+                                                                            ) : null}
+                                                                        </Table.Td>
+                                                                        <Table.Td>
+                                                                            <Text size="sm">{dist.distance} m</Text>
+                                                                        </Table.Td>
+                                                                        <Table.Td>
+                                                                            <Text size="sm">{dist.time} s</Text>
+                                                                        </Table.Td>
+                                                                    </Table.Tr>
+                                                                    {hasSub && isExpanded && (
+                                                                        <Table.Tr className="table-expansion-row">
+                                                                            <Table.Td
+                                                                                colSpan={3}
+                                                                                p={0}
+                                                                                className="table-nested-container"
+                                                                            >
+                                                                                <Table
+                                                                                    striped
+                                                                                    highlightOnHover
+                                                                                    withTableBorder
+                                                                                    withColumnBorders
+                                                                                    withRowBorders
+                                                                                    verticalSpacing="sm"
+                                                                                >
+                                                                                    <Table.Thead>
+                                                                                        <Table.Tr>
+                                                                                            <Table.Th>
+                                                                                                {t('subDistanceMeters')}
+                                                                                            </Table.Th>
+                                                                                            <Table.Th>
+                                                                                                {t('timeSeconds')}
+                                                                                            </Table.Th>
+                                                                                            <Table.Th>
+                                                                                                {t('lat')}
+                                                                                            </Table.Th>
+                                                                                            <Table.Th>
+                                                                                                {t('lng')}
+                                                                                            </Table.Th>
+                                                                                            <Table.Th>
+                                                                                                {t('accuracy')}
+                                                                                            </Table.Th>
+                                                                                            <Table.Th>
+                                                                                                {t('speed')}
+                                                                                            </Table.Th>
                                                                                         </Table.Tr>
-                                                                                    ),
-                                                                                )}
-                                                                            </Table.Tbody>
-                                                                        </Table>
-                                                                    </Table.Td>
-                                                                </Table.Tr>
-                                                            )}
-                                                        </React.Fragment>
-                                                    );
-                                                })}
-                                            </Table.Tbody>
-                                        </Table>
+                                                                                    </Table.Thead>
+                                                                                    <Table.Tbody>
+                                                                                        {dist.subDistances.map(
+                                                                                            (
+                                                                                                sd: TrainingDisciplineSubDistanceResource,
+                                                                                                sdIdx,
+                                                                                            ) => (
+                                                                                                <Table.Tr
+                                                                                                    key={sd.id}
+                                                                                                    className={
+                                                                                                        sdIdx % 2 === 0
+                                                                                                            ? 'table-row-odd'
+                                                                                                            : 'table-row-even'
+                                                                                                    }
+                                                                                                >
+                                                                                                    <Table.Td>
+                                                                                                        <Text size="sm">
+                                                                                                            {
+                                                                                                                sd.subDistance
+                                                                                                            }{' '}
+                                                                                                            m
+                                                                                                        </Text>
+                                                                                                    </Table.Td>
+                                                                                                    <Table.Td>
+                                                                                                        <Text size="sm">
+                                                                                                            {sd.time} s
+                                                                                                        </Text>
+                                                                                                    </Table.Td>
+                                                                                                    <Table.Td>
+                                                                                                        <Text size="sm">
+                                                                                                            {sd.lat ??
+                                                                                                                '-'}
+                                                                                                        </Text>
+                                                                                                    </Table.Td>
+                                                                                                    <Table.Td>
+                                                                                                        <Text size="sm">
+                                                                                                            {sd.lng ??
+                                                                                                                '-'}
+                                                                                                        </Text>
+                                                                                                    </Table.Td>
+                                                                                                    <Table.Td>
+                                                                                                        <Text size="sm">
+                                                                                                            {sd.accuracy ??
+                                                                                                                '-'}
+                                                                                                        </Text>
+                                                                                                    </Table.Td>
+                                                                                                    <Table.Td>
+                                                                                                        <Text size="sm">
+                                                                                                            {sd.speed ??
+                                                                                                                '-'}
+                                                                                                        </Text>
+                                                                                                    </Table.Td>
+                                                                                                </Table.Tr>
+                                                                                            ),
+                                                                                        )}
+                                                                                    </Table.Tbody>
+                                                                                </Table>
+                                                                            </Table.Td>
+                                                                        </Table.Tr>
+                                                                    )}
+                                                                </React.Fragment>
+                                                            );
+                                                        },
+                                                    )}
+                                                </Table.Tbody>
+                                            </Table>
+                                        </Table.ScrollContainer>
                                     )}
                                 </Paper>
                             ))}

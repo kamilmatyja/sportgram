@@ -37,7 +37,7 @@ import UserProfileNav from '../../components/UserProfileNav';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatImageSrc } from '../../utils/imageUtils';
-import { formatDate } from '../../utils/date';
+import { formatDateTime } from '../../utils/date';
 
 export default function UserFriends() {
     const { link } = useParams<{ link: string }>();
@@ -245,17 +245,11 @@ export default function UserFriends() {
                             ?
                         </Avatar>
                         <div>
-                            <Text
-                                size="sm"
-                                fw={600}
-                                component={Link}
-                                to={`/users/${otherUser?.link ?? otherId}`}
-                                className="no-decoration"
-                            >
+                            <Text size="sm" fw={600}>
                                 {otherUser ? `${otherUser.firstName} ${otherUser.lastName}` : otherId}
                             </Text>
                             {otherUser?.link && (
-                                <Text size="xs" c="dimmed">
+                                <Text size="sm" c="dimmed">
                                     @{otherUser.link}
                                 </Text>
                             )}
@@ -299,8 +293,8 @@ export default function UserFriends() {
             key: 'createdAt',
             header: t('createdAt'),
             render: (f) => (
-                <Text size="xs" c="dimmed">
-                    {formatDate(f.createdAt)}
+                <Text size="sm" c="dimmed">
+                    {formatDateTime(f.createdAt)}
                 </Text>
             ),
         },

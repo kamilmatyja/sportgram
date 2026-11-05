@@ -46,10 +46,14 @@ export function EntityViewCounter({
         entryService
             .createEntry({ entityId, type })
             .then(() => {
+                queryClient.setQueryData(['entry-views', type, entityId], (old: number | undefined) => (old ?? 0) + 1);
                 queryClient.invalidateQueries({ queryKey: ['entry-views', type, entityId] });
             })
             .catch(() => {
-                void 0;
+                sessionTrackedEntities.delete(trackingKey);
+                if (lastTrackedIdRef.current === entityId) {
+                    lastTrackedIdRef.current = null;
+                }
             });
     }, [track, entityId, type, currentUser, queryClient]);
 
@@ -72,7 +76,12 @@ export function EntityViewCounter({
     const content = (
         <Group gap={4} align="center" wrap="nowrap" c={c} className={className}>
             <IconEye size={size} />
-            <Text size={textSize} c={c} span style={textSize === '10px' ? { fontSize: '10px' } : undefined}>
+            <Text
+                size={textSize === '10px' ? undefined : textSize}
+                c={c}
+                span
+                className={textSize === '10px' ? 'text-size-10' : undefined}
+            >
                 {viewsCount}
             </Text>
         </Group>

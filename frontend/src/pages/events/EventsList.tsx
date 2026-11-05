@@ -561,7 +561,7 @@ export default function EventsList() {
                         <Text size="sm" fw={600}>
                             {ev.title}
                         </Text>
-                        <Text size="xs" c="dimmed">
+                        <Text size="sm" c="dimmed">
                             {ev.location || '-'}
                         </Text>
                     </div>
@@ -572,7 +572,7 @@ export default function EventsList() {
             key: 'startedAt',
             header: t('startedAt'),
             render: (ev) => (
-                <Text size="xs" c="dimmed">
+                <Text size="sm" c="dimmed">
                     {formatDateTime(ev.startedAt)}
                 </Text>
             ),
@@ -581,7 +581,7 @@ export default function EventsList() {
             key: 'endedAt',
             header: t('endedAt'),
             render: (ev) => (
-                <Text size="xs" c="dimmed">
+                <Text size="sm" c="dimmed">
                     {formatDateTime(ev.endedAt)}
                 </Text>
             ),

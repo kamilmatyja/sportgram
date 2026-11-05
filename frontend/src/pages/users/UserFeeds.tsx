@@ -242,7 +242,7 @@ export default function UserFeeds() {
             render: (f) => (
                 <Stack gap={4}>
                     {f.feedOrigin && (
-                        <Badge variant="light" color={primaryColor} size="xs">
+                        <Badge variant="light" color={primaryColor} size="sm">
                             {formatFeedOrigin(f.feedOrigin, t)}
                         </Badge>
                     )}
@@ -276,7 +276,7 @@ export default function UserFeeds() {
             key: 'createdAt',
             header: t('createdAt'),
             render: (f) => (
-                <Text size="xs" c="dimmed">
+                <Text size="sm" c="dimmed">
                     {formatDateTime(f.createdAt)}
                 </Text>
             ),
@@ -389,7 +389,7 @@ export default function UserFeeds() {
                                                     status: opt.value as ElementStatusEnum,
                                                 })
                                             }
-                                            disabled={f.status === opt.value}
+                                            disabled={f.status === opt.value || statusMutation.isPending}
                                         >
                                             {opt.label}
                                         </Menu.Item>

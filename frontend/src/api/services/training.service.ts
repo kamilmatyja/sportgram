@@ -1,6 +1,5 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import type { ElementStatusDto } from './common.types';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
 
@@ -70,10 +69,12 @@ export const trainingService = {
 
     async updateTrainingStatus(
         id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+        bodyOrStatus: components['schemas']['ElementStatusDto'] | ElementStatusEnum,
     ): Promise<UpdateTrainingStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
+        const body: components['schemas']['ElementStatusDto'] =
+            typeof bodyOrStatus === 'number'
+                ? { status: bodyOrStatus as components['schemas']['ElementStatusDto']['status'] }
+                : bodyOrStatus;
         const res = await api.PATCH('/api/trainings/{id}/status', {
             params: { path: { id } },
             body,

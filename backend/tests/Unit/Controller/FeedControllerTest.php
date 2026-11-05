@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Controller;
 
 use App\Controller\FeedController;
-use App\Dto\{ElementStatusDto, FeedCommentDto, FeedDetailsQueryDto, FeedDto, FeedIndexDto, FeedReactionDto};
+use App\Dto\{ElementStatusDto, FeedCommentDto, FeedCommentIndexDto, FeedDetailsQueryDto, FeedDto, FeedIndexDto, FeedReactionDto, FeedReactionIndexDto};
 use App\Entity\Feed;
 use App\Enum\ElementStatusEnum;
-use App\Resource\FeedResource;
+use App\Resource\{FeedCommentResource, FeedReactionResource, FeedResource};
 use App\Security\Voter\{FeedCommentCreatorVoter,
     FeedCommentVoter,
     FeedCreatorVoter,
@@ -56,6 +56,8 @@ class FeedControllerTest extends ControllerTestCase
         yield 'updateReaction' => ['updateReaction', '/api/feed-reactions/{id}', 'PUT', 'feed_reaction_update', FeedReactionCreatorVoter::FEED_REACTION_CREATOR, 'id'];
         yield 'updateReactionStatus' => ['updateReactionStatus', '/api/feed-reactions/{id}/status', 'PATCH', 'feed_reaction_update_status', FeedReactionVoter::FEED_REACTION, 'id'];
         yield 'deleteReaction' => ['deleteReaction', '/api/feed-reactions/{id}', 'DELETE', 'feed_reaction_delete', FeedReactionCreatorVoter::FEED_REACTION_CREATOR, 'id'];
+        yield 'indexComments' => ['indexComments', '/api/feed-comments', 'GET', 'feed_comment_index', 'IS_AUTHENTICATED_FULLY', null];
+        yield 'indexReactions' => ['indexReactions', '/api/feed-reactions', 'GET', 'feed_reaction_index', 'IS_AUTHENTICATED_FULLY', null];
     }
 
     final public function testRoutesAreAllCovered(): void
@@ -77,6 +79,8 @@ class FeedControllerTest extends ControllerTestCase
         $this->assertMapsRequestPayload([FeedController::class, 'createReaction'], 'dto');
         $this->assertMapsRequestPayload([FeedController::class, 'updateReaction'], 'dto');
         $this->assertMapsRequestPayload([FeedController::class, 'updateReactionStatus'], 'dto');
+        $this->assertMapsQueryString([FeedController::class, 'indexComments'], 'dto');
+        $this->assertMapsQueryString([FeedController::class, 'indexReactions'], 'dto');
     }
 
     final public function testCreate(): void
@@ -264,6 +268,44 @@ class FeedControllerTest extends ControllerTestCase
         $response = $this->controller->deleteReaction($id, $this->service());
 
         $this->assertJsonResponse(Response::HTTP_OK, ['id' => (string) $id], $response);
+    }
+
+    final public function testIndexComments(): void
+    {
+        $dto = new FeedCommentIndexDto();
+        $feed = $this->feed();
+        $comment = FeedCommentFactory::make(['feed' => $feed]);
+        $comment->id = Uuid::v4();
+        $comment->onPrePersist();
+        $window = self::window([$comment]);
+        $this->service()->expects($this->once())->method('indexComments')->with($dto)->willReturn($window);
+
+        $response = $this->controller->indexComments($dto, $this->service());
+
+        $expected = FeedCommentResource::fromEntityCollection([$comment]);
+        $this->assertJsonResponse(Response::HTTP_OK, [
+            'data' => $expected,
+            'pagination' => self::pagination($window),
+        ], $response);
+    }
+
+    final public function testIndexReactions(): void
+    {
+        $dto = new FeedReactionIndexDto();
+        $feed = $this->feed();
+        $reaction = FeedReactionFactory::make(['feed' => $feed]);
+        $reaction->id = Uuid::v4();
+        $reaction->onPrePersist();
+        $window = self::window([$reaction]);
+        $this->service()->expects($this->once())->method('indexReactions')->with($dto)->willReturn($window);
+
+        $response = $this->controller->indexReactions($dto, $this->service());
+
+        $expected = FeedReactionResource::fromEntityCollection([$reaction]);
+        $this->assertJsonResponse(Response::HTTP_OK, [
+            'data' => $expected,
+            'pagination' => self::pagination($window),
+        ], $response);
     }
 
     private function service(): FeedService&MockObject

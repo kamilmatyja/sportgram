@@ -11,6 +11,10 @@ import {
     IconBell,
     IconDevices,
     IconArrowLeft,
+    IconHeart,
+    IconMessageCircle,
+    IconBookmark,
+    IconClipboardCheck,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
@@ -61,17 +65,29 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
     const hasOrganizer = userRoles.length > 0 ? userRoles.includes(RoleEnum.ORGANIZER) : true;
 
     const navItems = [
-        { to: `/users/${link}/feeds`, icon: <IconArticle size={16} />, label: t('feeds') },
         { to: `/users/${link}/stories`, icon: <IconPlayerPlay size={16} />, label: t('stories') },
+        { to: `/users/${link}/feeds`, icon: <IconArticle size={16} />, label: t('feeds') },
+        { to: `/users/${link}/feed-reactions`, icon: <IconHeart size={16} />, label: t('reactions') },
+        { to: `/users/${link}/feed-comments`, icon: <IconMessageCircle size={16} />, label: t('comments') },
         { to: `/users/${link}/friends`, icon: <IconUsers size={16} />, label: t('friend') },
     ];
 
     if (hasOrganizer) {
         navItems.push({ to: `/users/${link}/pages`, icon: <IconBuildingStore size={16} />, label: t('pages') });
+    }
+
+    navItems.push({ to: `/users/${link}/page-follows`, icon: <IconBookmark size={16} />, label: t('pageFollows') });
+
+    if (hasOrganizer) {
         navItems.push({ to: `/users/${link}/events`, icon: <IconCalendarEvent size={16} />, label: t('events') });
     }
 
     if (hasParticipant) {
+        navItems.push({
+            to: `/users/${link}/event-signups`,
+            icon: <IconClipboardCheck size={16} />,
+            label: t('eventSignups'),
+        });
         navItems.push({ to: `/users/${link}/trainings`, icon: <IconRun size={16} />, label: t('trainings') });
         navItems.push({ to: `/users/${link}/goals`, icon: <IconTarget size={16} />, label: t('goals') });
     }
@@ -99,8 +115,8 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                 <Card withBorder radius="md" p={0} mb="sm" shadow="xs" className="overflow-hidden">
                     {bgSrc ? (
                         <Box h={160} pos="relative" bg="var(--mantine-primary-color-filled)">
-                            <Center pos="absolute" inset={0} style={{ zIndex: 0 }}>
-                                <Text fz={48} fw={700} c="white" style={{ opacity: 0.8, userSelect: 'none' }}>
+                            <Center pos="absolute" inset={0} className="header-bg-placeholder-center">
+                                <Text fz={48} fw={700} c="white" className="header-bg-placeholder-text">
                                     ?
                                 </Text>
                             </Center>
@@ -112,21 +128,20 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                                 fit="cover"
                                 alt={user.firstName ?? 'Background'}
                                 pos="relative"
-                                style={{ zIndex: 1 }}
                                 onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.classList.add('d-none');
                                 }}
                             />
                         </Box>
                     ) : (
                         <Center h={160} bg="var(--mantine-primary-color-filled)">
-                            <Text fz={48} fw={700} c="white" style={{ opacity: 0.8, userSelect: 'none' }}>
+                            <Text fz={48} fw={700} c="white" className="header-bg-placeholder-text">
                                 ?
                             </Text>
                         </Center>
                     )}
 
-                    <Box p="md" pos="relative" style={{ zIndex: 2 }}>
+                    <Box p="md" pos="relative" className="header-content-box">
                         <Avatar
                             src={profileSrc}
                             size={100}
@@ -135,7 +150,6 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                             top={-50}
                             left={24}
                             className="profile-avatar-border"
-                            style={{ zIndex: 3 }}
                             component={Link}
                             to={`/users/${link}`}
                         >

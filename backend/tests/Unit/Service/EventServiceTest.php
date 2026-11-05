@@ -546,15 +546,14 @@ class EventServiceTest extends ServiceTestCase
 
     final public function testIndexListDelegatesToRepository(): void
     {
-        $distanceId = self::user()->id;
         $dto = new EventListIndexDto();
         $window = self::window([self::entity(EventDisciplineListFactory::make())]);
         $this->eventDisciplineListRepository->expects($this->once())
             ->method('findLists')
-            ->with($distanceId, $dto)
+            ->with($dto)
             ->willReturn($window);
 
-        $this->assertSame($window, $this->service->indexList($distanceId, $dto));
+        $this->assertSame($window, $this->service->indexList($dto));
     }
 
     final public function testDetailsList(): void

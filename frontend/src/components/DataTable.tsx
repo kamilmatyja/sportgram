@@ -168,7 +168,14 @@ export function DataTable<T extends Record<string, unknown>>({
                 )}
 
                 <Table.ScrollContainer minWidth={600}>
-                    <Table striped highlightOnHover verticalSpacing="sm">
+                    <Table
+                        striped
+                        highlightOnHover
+                        withTableBorder
+                        withColumnBorders
+                        withRowBorders
+                        verticalSpacing="sm"
+                    >
                         <Table.Thead>
                             <Table.Tr>
                                 {columns.map((col) => (
@@ -238,7 +245,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                 />
                             )}
                             {totalItems !== undefined && (
-                                <Text size="xs" c="dimmed">
+                                <Text size="sm" c="dimmed">
                                     {t('total')}: {totalItems}
                                 </Text>
                             )}

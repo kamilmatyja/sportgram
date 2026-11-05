@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\{ElementStatusDto, FeedCommentDto, FeedDto, FeedIndexDto, FeedReactionDto};
+use App\Dto\{ElementStatusDto, FeedCommentDto, FeedCommentIndexDto, FeedDto, FeedIndexDto, FeedReactionDto, FeedReactionIndexDto};
 use App\Entity\{Feed, FeedComment, FeedReaction, User};
 use App\Enum\{ElementStatusEnum, NotificationTypeEnum};
 use App\Event\NotificationEvent;
@@ -156,6 +156,11 @@ readonly class FeedService
         return $feedCommentId;
     }
 
+    final public function indexComments(FeedCommentIndexDto $dto): WindowPage
+    {
+        return $this->feedCommentRepository->findComments($dto);
+    }
+
     final public function createReaction(Uuid $feedId, FeedReactionDto $dto): Uuid
     {
         /** @var User $user */
@@ -224,5 +229,10 @@ readonly class FeedService
         $this->feedReactionRepository->delete($feedReaction);
 
         return $feedReactionId;
+    }
+
+    final public function indexReactions(FeedReactionIndexDto $dto): WindowPage
+    {
+        return $this->feedReactionRepository->findReactions($dto);
     }
 }

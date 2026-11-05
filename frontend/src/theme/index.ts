@@ -1,4 +1,4 @@
-import { createTheme, type MantineColorsTuple } from '@mantine/core';
+import { createTheme, Table, type MantineColorsTuple } from '@mantine/core';
 
 export const brown: MantineColorsTuple = [
     '#f7f3f0',
@@ -21,4 +21,13 @@ export const theme = createTheme({
     defaultRadius: 'md',
     fontFamily:
         '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+    components: {
+        Table: Table.extend({
+            defaultProps: {
+                withTableBorder: true,
+                withColumnBorders: true,
+                withRowBorders: true,
+            },
+        }),
+    },
 });

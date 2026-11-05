@@ -216,7 +216,7 @@ class PageController extends AbstractController
     #[OA\Get(
         summary: 'Index of page follows - endpoint for authenticated user',
         tags: ['pages'],
-        responses: [new Collection(PageResource::class), new BadRequest(), new Unauthorized()],
+        responses: [new Collection(PageFollowResource::class), new BadRequest(), new Unauthorized()],
     )]
     final public function indexFollows(
         #[MapQueryString(validationFailedStatusCode: 400)]
@@ -235,7 +235,7 @@ class PageController extends AbstractController
     #[OA\Get(
         summary: 'Details of page follow - endpoint for authenticated user',
         tags: ['pages'],
-        responses: [new Item(PageResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
+        responses: [new Item(PageFollowResource::class), new BadRequest(), new Conflict(), new NotFound(), new Unauthorized()],
     )]
     final public function detailsFollow(
         Uuid $id,

@@ -287,9 +287,9 @@ readonly class EventService
         return $eventDisciplineListId;
     }
 
-    final public function indexList(Uuid $eventDisciplineDistanceId, EventListIndexDto $dto): WindowPage
+    final public function indexList(EventListIndexDto $dto): WindowPage
     {
-        return $this->eventDisciplineListRepository->findLists($eventDisciplineDistanceId, $dto);
+        return $this->eventDisciplineListRepository->findLists($dto);
     }
 
     final public function detailsList(Uuid $eventDisciplineListId): EventDisciplineList

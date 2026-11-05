@@ -305,8 +305,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Index of event discipline distance lists - endpoint for authenticated user */
-        get: operations['get_event_discipline_distance_list_index'];
+        get?: never;
         put?: never;
         /** Create event discipline distance list - endpoint for user with participant role */
         post: operations['post_event_discipline_distance_list_create'];
@@ -347,6 +346,23 @@ export interface paths {
         post: operations['post_event_discipline_distance_result_create'];
         /** Delete event discipline distance list - endpoint for owner */
         delete: operations['delete_event_discipline_distance_list_delete'];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/api/event-discipline-distance-lists': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Index of event discipline distance lists - endpoint for authenticated user */
+        get: operations['get_event_discipline_distance_list_index'];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -476,6 +492,23 @@ export interface paths {
         patch: operations['patch_feed_comment_update_status'];
         trace?: never;
     };
+    '/api/feed-comments': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Index of feed comments - endpoint for authenticated user */
+        get: operations['get_feed_comment_index'];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/api/feeds/{id}/reactions': {
         parameters: {
             query?: never;
@@ -526,6 +559,23 @@ export interface paths {
         head?: never;
         /** Update feed reaction status - endpoint for owner or user with administrator role */
         patch: operations['patch_feed_reaction_update_status'];
+        trace?: never;
+    };
+    '/api/feed-reactions': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Index of feed reactions - endpoint for authenticated user */
+        get: operations['get_feed_reaction_index'];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     '/api/friends': {
@@ -1598,6 +1648,11 @@ export interface components {
              */
             userId?: string | null;
             /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            eventDisciplineDistanceId?: string | null;
+            /**
              * @example 1
              * @enum {integer|null}
              */
@@ -1698,12 +1753,91 @@ export interface components {
             /** @example Nice post */
             text: string;
         };
+        FeedCommentFilterDto: {
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            userId?: string | null;
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            feedId?: string | null;
+            /** @example Comment text */
+            text?: string | null;
+            /**
+             * @example 1
+             * @enum {integer|null}
+             */
+            status?: 1 | 2 | 3 | null;
+        };
+        FeedCommentIndexDto: {
+            /**
+             * @default 1
+             * @example 1
+             */
+            page: number | null;
+            /**
+             * @default 10
+             * @example 10
+             */
+            limit: number | null;
+            /**
+             * @default createdAt:desc
+             * @example createdAt:desc
+             * @enum {string|null}
+             */
+            sort: 'status:asc' | 'status:desc' | 'createdAt:asc' | 'createdAt:desc' | null;
+            filter?: components['schemas']['FeedCommentFilterDto'] | null;
+        };
         FeedReactionDto: {
             /**
              * @example 1
              * @enum {integer}
              */
             type: 1 | 2 | 3 | 4 | 5 | 6;
+        };
+        FeedReactionFilterDto: {
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            userId?: string | null;
+            /**
+             * Format: uuid
+             * @example b1a7c8e2-1d2f-4e3a-9b2c-123456789abc
+             */
+            feedId?: string | null;
+            /**
+             * @example 1
+             * @enum {integer|null}
+             */
+            reaction?: 1 | 2 | 3 | 4 | 5 | 6 | null;
+            /**
+             * @example 1
+             * @enum {integer|null}
+             */
+            status?: 1 | 2 | 3 | null;
+        };
+        FeedReactionIndexDto: {
+            /**
+             * @default 1
+             * @example 1
+             */
+            page: number | null;
+            /**
+             * @default 10
+             * @example 10
+             */
+            limit: number | null;
+            /**
+             * @default createdAt:desc
+             * @example createdAt:desc
+             * @enum {string|null}
+             */
+            sort: 'status:asc' | 'status:desc' | 'createdAt:asc' | 'createdAt:desc' | null;
+            filter?: components['schemas']['FeedReactionFilterDto'] | null;
         };
         FriendDto: {
             /**
@@ -3150,7 +3284,7 @@ export interface components {
             status: number;
             comments: components['schemas']['FeedCommentResource'][];
             reactions: components['schemas']['FeedReactionResource'][];
-            /** @example Event title, {Running}, 10000m */
+            /** @example Event title, {Running}, 10000 m */
             feedOrigin?: string | null;
         };
         FriendResource: {
@@ -5713,123 +5847,6 @@ export interface operations {
             };
         };
     };
-    get_event_discipline_distance_list_index: {
-        parameters: {
-            query?: {
-                /** @example 1 */
-                page?: number | null;
-                /** @example 10 */
-                limit?: number | null;
-                /** @example createdAt:desc */
-                sort?: 'status:asc' | 'status:desc' | 'createdAt:asc' | 'createdAt:desc' | null;
-                filter?: components['schemas']['EventListFilterDto'] | null;
-                /**
-                 * @example [
-                 *       "eventListResults"
-                 *     ]
-                 */
-                'include[]'?: ('eventListResults' | 'eventListSubResults')[] | null;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    'application/json': {
-                        data?: components['schemas']['EventDisciplineDistanceListResource'][];
-                        pagination?: {
-                            /** @example 125 */
-                            total?: number;
-                            /** @example 2 */
-                            page?: number;
-                            /** @example 20 */
-                            perPage?: number;
-                            /** @example true */
-                            hasNextPage?: boolean;
-                        } | null;
-                    };
-                };
-            };
-            /** @description Bad request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    'application/json': {
-                        /**
-                         * @example {
-                         *       "email": [
-                         *         "This value is already used."
-                         *       ],
-                         *       "password": [
-                         *         "This value is too short."
-                         *       ]
-                         *     }
-                         */
-                        errors?: Record<string, never>;
-                    };
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    'application/json': {
-                        /**
-                         * @example [
-                         *       "Authentication required."
-                         *     ]
-                         */
-                        error?: Record<string, never>;
-                    };
-                };
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    'application/json': {
-                        /**
-                         * @example [
-                         *       "Element not found."
-                         *     ]
-                         */
-                        error?: Record<string, never>;
-                    };
-                };
-            };
-            /** @description Conflict */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    'application/json': {
-                        /**
-                         * @example [
-                         *       "User is banned."
-                         *     ]
-                         */
-                        error?: Record<string, never>;
-                    };
-                };
-            };
-        };
-    };
     post_event_discipline_distance_list_create: {
         parameters: {
             query?: never;
@@ -6338,6 +6355,121 @@ export interface operations {
                         /**
                          * @example [
                          *       "Access Denied."
+                         *     ]
+                         */
+                        error?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example [
+                         *       "Element not found."
+                         *     ]
+                         */
+                        error?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example [
+                         *       "User is banned."
+                         *     ]
+                         */
+                        error?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    get_event_discipline_distance_list_index: {
+        parameters: {
+            query?: {
+                /** @example 1 */
+                page?: number | null;
+                /** @example 10 */
+                limit?: number | null;
+                /** @example createdAt:desc */
+                sort?: 'status:asc' | 'status:desc' | 'createdAt:asc' | 'createdAt:desc' | null;
+                filter?: components['schemas']['EventListFilterDto'] | null;
+                /**
+                 * @example [
+                 *       "eventListResults"
+                 *     ]
+                 */
+                'include[]'?: ('eventListResults' | 'eventListSubResults')[] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        data?: components['schemas']['EventDisciplineDistanceListResource'][];
+                        pagination?: {
+                            /** @example 125 */
+                            total?: number;
+                            /** @example 2 */
+                            page?: number;
+                            /** @example 20 */
+                            perPage?: number;
+                            /** @example true */
+                            hasNextPage?: boolean;
+                        } | null;
+                    };
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example {
+                         *       "email": [
+                         *         "This value is already used."
+                         *       ],
+                         *       "password": [
+                         *         "This value is too short."
+                         *       ]
+                         *     }
+                         */
+                        errors?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example [
+                         *       "Authentication required."
                          *     ]
                          */
                         error?: Record<string, never>;
@@ -7672,6 +7804,83 @@ export interface operations {
             };
         };
     };
+    get_feed_comment_index: {
+        parameters: {
+            query?: {
+                /** @example 1 */
+                page?: number | null;
+                /** @example 10 */
+                limit?: number | null;
+                /** @example createdAt:desc */
+                sort?: 'status:asc' | 'status:desc' | 'createdAt:asc' | 'createdAt:desc' | null;
+                filter?: components['schemas']['FeedCommentFilterDto'] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        data?: components['schemas']['FeedCommentResource'][];
+                        pagination?: {
+                            /** @example 125 */
+                            total?: number;
+                            /** @example 2 */
+                            page?: number;
+                            /** @example 20 */
+                            perPage?: number;
+                            /** @example true */
+                            hasNextPage?: boolean;
+                        } | null;
+                    };
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example {
+                         *       "email": [
+                         *         "This value is already used."
+                         *       ],
+                         *       "password": [
+                         *         "This value is too short."
+                         *       ]
+                         *     }
+                         */
+                        errors?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example [
+                         *       "Authentication required."
+                         *     ]
+                         */
+                        error?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
     post_feed_reaction_create: {
         parameters: {
             query?: never;
@@ -8116,6 +8325,83 @@ export interface operations {
                         /**
                          * @example [
                          *       "User is banned."
+                         *     ]
+                         */
+                        error?: Record<string, never>;
+                    };
+                };
+            };
+        };
+    };
+    get_feed_reaction_index: {
+        parameters: {
+            query?: {
+                /** @example 1 */
+                page?: number | null;
+                /** @example 10 */
+                limit?: number | null;
+                /** @example createdAt:desc */
+                sort?: 'status:asc' | 'status:desc' | 'createdAt:asc' | 'createdAt:desc' | null;
+                filter?: components['schemas']['FeedReactionFilterDto'] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        data?: components['schemas']['FeedReactionResource'][];
+                        pagination?: {
+                            /** @example 125 */
+                            total?: number;
+                            /** @example 2 */
+                            page?: number;
+                            /** @example 20 */
+                            perPage?: number;
+                            /** @example true */
+                            hasNextPage?: boolean;
+                        } | null;
+                    };
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example {
+                         *       "email": [
+                         *         "This value is already used."
+                         *       ],
+                         *       "password": [
+                         *         "This value is too short."
+                         *       ]
+                         *     }
+                         */
+                        errors?: Record<string, never>;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        /**
+                         * @example [
+                         *       "Authentication required."
                          *     ]
                          */
                         error?: Record<string, never>;
@@ -10855,7 +11141,7 @@ export interface operations {
                 };
                 content: {
                     'application/json': {
-                        data?: components['schemas']['PageResource'];
+                        data?: components['schemas']['PageFollowResource'];
                     };
                 };
             };
@@ -11064,7 +11350,7 @@ export interface operations {
                 };
                 content: {
                     'application/json': {
-                        data?: components['schemas']['PageResource'][];
+                        data?: components['schemas']['PageFollowResource'][];
                         pagination?: {
                             /** @example 125 */
                             total?: number;

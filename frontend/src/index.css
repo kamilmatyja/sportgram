@@ -9,6 +9,11 @@
 .no-decoration {
     text-decoration: none;
     color: inherit;
+    cursor: pointer;
+}
+
+a.no-decoration:hover {
+    text-decoration: underline;
 }
 
 .chat-bubble-mine {
@@ -38,6 +43,7 @@
 
 .profile-avatar-border {
     border: 3px solid var(--mantine-color-body);
+    z-index: 3;
 }
 
 .overflow-hidden {
@@ -123,6 +129,7 @@
 .header-bg-image.mantine-Image-root,
 .header-bg-image .mantine-Image-image {
     border-radius: 0 !important;
+    z-index: 1;
 }
 
 .reaction-menu-dropdown {
@@ -163,6 +170,15 @@
 
 .subdistances-container {
     border-left: 2px solid var(--mantine-primary-color-filled);
+}
+
+.story-modal-header {
+    display: block;
+    width: 100%;
+}
+
+.story-modal-header .mantine-Modal-close {
+    margin: 0;
 }
 
 .story-header-stack {
@@ -228,6 +244,13 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
+.story-nav-btn:disabled,
+.story-nav-btn[data-disabled] {
+    opacity: 0.3 !important;
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
 .story-nav-btn-prev {
     left: 12px;
 }
@@ -256,4 +279,63 @@
     text-align: center;
     padding-left: var(--mantine-spacing-xs);
     padding-right: var(--mantine-spacing-xs);
+}
+
+.d-none {
+    display: none !important;
+}
+
+.header-bg-placeholder-center {
+    z-index: 0;
+}
+
+.header-bg-placeholder-text {
+    opacity: 0.8;
+    user-select: none;
+}
+
+.header-content-box {
+    z-index: 2;
+}
+
+.table-expand-col {
+    width: 40px;
+}
+
+.text-size-10 {
+    font-size: 10px;
+}
+
+.table-expansion-row,
+.table-expansion-row > td,
+.table-nested-container {
+    background-color: var(--mantine-color-body) !important;
+}
+
+.table-nested-container > .mantine-Table-table {
+    background-color: var(--mantine-color-body);
+}
+
+.mantine-Table-tbody > tr.table-row-odd {
+    background-color: var(--table-striped-color, var(--mantine-color-gray-0));
+}
+
+.mantine-Table-tbody > tr.table-row-even {
+    background-color: var(--mantine-color-body);
+}
+
+@media (hover: hover) {
+    .mantine-Table-tbody > tr.table-row-odd:hover,
+    .mantine-Table-tbody > tr.table-row-even:hover {
+        background-color: var(--table-hover-color, var(--mantine-color-gray-1));
+    }
+}
+
+.mantine-Table-table {
+    border-collapse: collapse;
+}
+
+.mantine-Table-table th,
+.mantine-Table-table td {
+    border: 1px solid var(--table-border-color, var(--mantine-color-default-border));
 }

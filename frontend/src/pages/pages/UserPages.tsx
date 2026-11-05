@@ -38,7 +38,7 @@ import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { fileToBase64, formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDate } from '../../utils/date';
+import { formatDateTime } from '../../utils/date';
 
 export default function UserPages() {
     const { link } = useParams<{ link: string }>();
@@ -333,7 +333,7 @@ export default function UserPages() {
                         <Text size="sm" fw={600}>
                             {p.title}
                         </Text>
-                        <Text size="xs" c="dimmed">
+                        <Text size="sm" c="dimmed">
                             @{p.link}
                         </Text>
                     </div>
@@ -362,8 +362,8 @@ export default function UserPages() {
             key: 'createdAt',
             header: t('createdAt'),
             render: (p) => (
-                <Text size="xs" c="dimmed">
-                    {formatDate(p.createdAt)}
+                <Text size="sm" c="dimmed">
+                    {formatDateTime(p.createdAt)}
                 </Text>
             ),
         },
@@ -495,7 +495,7 @@ export default function UserPages() {
                                                     status: opt.value as ElementStatusEnum,
                                                 })
                                             }
-                                            disabled={p.status === opt.value}
+                                            disabled={p.status === opt.value || statusMutation.isPending}
                                         >
                                             {opt.label}
                                         </Menu.Item>

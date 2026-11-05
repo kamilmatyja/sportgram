@@ -1,6 +1,5 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import type { ElementStatusDto } from './common.types';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
 
@@ -11,6 +10,7 @@ export type FeedCommentResource = components['schemas']['FeedCommentResource'];
 export type FeedCommentDto = components['schemas']['FeedCommentDto'];
 export type FeedReactionResource = components['schemas']['FeedReactionResource'];
 export type FeedReactionDto = components['schemas']['FeedReactionDto'];
+export type ElementStatusDto = components['schemas']['ElementStatusDto'];
 
 export type GetFeedsQuery = operations['get_feed_index']['parameters']['query'];
 export type GetFeedDetailsQuery = operations['get_feed_details']['parameters']['query'];
@@ -38,6 +38,12 @@ export type DeleteFeedReactionResponse =
     operations['delete_feed_reaction_delete']['responses'][200]['content']['application/json'];
 export type UpdateFeedReactionStatusResponse =
     operations['patch_feed_reaction_update_status']['responses'][200]['content']['application/json'];
+export type GetFeedCommentsQuery = operations['get_feed_comment_index']['parameters']['query'];
+export type GetFeedCommentsResponse =
+    operations['get_feed_comment_index']['responses'][200]['content']['application/json'];
+export type GetFeedReactionsQuery = operations['get_feed_reaction_index']['parameters']['query'];
+export type GetFeedReactionsResponse =
+    operations['get_feed_reaction_index']['responses'][200]['content']['application/json'];
 
 export const feedService = {
     async getFeeds(query?: GetFeedsQuery): Promise<GetFeedsResponse> {
@@ -133,6 +139,13 @@ export const feedService = {
         return res.data;
     },
 
+    async updateFeedCommentStatus(
+        id: string,
+        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+    ): Promise<UpdateFeedCommentStatusResponse> {
+        return await feedService.updateCommentStatus(id, bodyOrStatus);
+    },
+
     async createReaction(
         feedId: string,
         bodyOrType: FeedReactionDto | FeedReactionEnum,
@@ -210,5 +223,21 @@ export const feedService = {
         });
         if (res.error) throw res.error;
         return res.data?.data ?? [];
+    },
+
+    async getComments(query?: GetFeedCommentsQuery): Promise<GetFeedCommentsResponse> {
+        const res = await api.GET('/api/feed-comments', {
+            params: { query },
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async getReactions(query?: GetFeedReactionsQuery): Promise<GetFeedReactionsResponse> {
+        const res = await api.GET('/api/feed-reactions', {
+            params: { query },
+        });
+        if (res.error) throw res.error;
+        return res.data;
     },
 };

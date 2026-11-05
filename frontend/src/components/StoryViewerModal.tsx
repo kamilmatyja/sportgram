@@ -123,19 +123,24 @@ export function StoryViewerModal({
                 filter: { userId },
                 page: pageToFetch,
                 limit: 10,
-                sort: 'createdAt:desc',
+                sort: 'createdAt:asc',
             });
             const fetched = res.data ?? [];
             const hasNextPage = !!res.pagination?.hasNextPage;
 
             setUserStoriesMap((prev) => {
                 const currentList = prev[userId]?.stories ?? [];
-                const existingIds = new Set(currentList.map((s) => s.id));
-                const newItems = fetched.filter((s) => !existingIds.has(s.id));
+                const existingMap = new Map<string, StoryResource>();
+                currentList.forEach((s) => existingMap.set(s.id, s));
+                fetched.forEach((s) => existingMap.set(s.id, s));
+                const parseTime = (dateStr?: string) => (dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0);
+                const combined = Array.from(existingMap.values()).sort(
+                    (a, b) => parseTime(a.createdAt) - parseTime(b.createdAt),
+                );
                 return {
                     ...prev,
                     [userId]: {
-                        stories: [...currentList, ...newItems],
+                        stories: combined,
                         page: pageToFetch,
                         hasNextPage,
                         isLoading: false,
@@ -224,196 +229,192 @@ export function StoryViewerModal({
     const isStoryOwner = !!(currentUser && currentStory && currentUser.id === currentStory.userId);
 
     return (
-        <Modal
-            opened={opened}
-            onClose={onClose}
-            size="lg"
-            centered
-            closeButtonProps={{ size: 30 }}
-            title={
-                <Stack gap={6} className="story-header-stack">
-                    <Box className="story-progress-bar-container">
-                        {currentStories.map((s, idx) => (
-                            <Box
-                                key={s.id}
-                                className={`story-progress-segment ${
-                                    idx === currentStoryIdx
-                                        ? 'story-progress-segment-active'
-                                        : idx < currentStoryIdx
-                                          ? 'story-progress-segment-viewed'
-                                          : 'story-progress-segment-unviewed'
-                                }`}
-                            />
-                        ))}
-                    </Box>
+        <Modal.Root opened={opened} onClose={onClose} size="lg" centered>
+            <Modal.Overlay />
+            <Modal.Content>
+                <Modal.Header className="story-modal-header">
+                    <Stack gap={6} className="story-header-stack">
+                        <Box className="story-progress-bar-container">
+                            {currentStories.map((s, idx) => (
+                                <Box
+                                    key={s.id}
+                                    className={`story-progress-segment ${
+                                        idx === currentStoryIdx
+                                            ? 'story-progress-segment-active'
+                                            : idx < currentStoryIdx
+                                              ? 'story-progress-segment-viewed'
+                                              : 'story-progress-segment-unviewed'
+                                    }`}
+                                />
+                            ))}
+                        </Box>
 
-                    <Group justify="space-between" align="center" wrap="nowrap" w="100%">
-                        <Group gap="sm" wrap="nowrap">
-                            {currentAuthor?.link ? (
-                                <Link to={`/users/${currentAuthor.link}`} className="no-decoration">
+                        <Group justify="space-between" align="center" wrap="nowrap" w="100%">
+                            <Group gap="sm" wrap="nowrap">
+                                {currentAuthor?.link ? (
+                                    <Link to={`/users/${currentAuthor.link}`} className="no-decoration">
+                                        <Avatar src={authorPhoto} radius={5} size="md">
+                                            ?
+                                        </Avatar>
+                                    </Link>
+                                ) : (
                                     <Avatar src={authorPhoto} radius={5} size="md">
                                         ?
                                     </Avatar>
-                                </Link>
-                            ) : (
-                                <Avatar src={authorPhoto} radius={5} size="md">
-                                    ?
-                                </Avatar>
-                            )}
-                            <Box>
-                                {currentAuthor?.link ? (
-                                    <Text
-                                        size="sm"
-                                        fw={600}
-                                        component={Link}
-                                        to={`/users/${currentAuthor.link}`}
-                                        className="no-decoration"
-                                    >
-                                        {authorName}
-                                    </Text>
-                                ) : (
-                                    <Text size="sm" fw={600}>
-                                        {authorName}
-                                    </Text>
                                 )}
-                                <Text size="xs" c="dimmed">
-                                    {formatDateTime(currentStory.createdAt)}
-                                </Text>
-                            </Box>
-                        </Group>
+                                <Box>
+                                    {currentAuthor?.link ? (
+                                        <Text
+                                            size="sm"
+                                            fw={600}
+                                            component={Link}
+                                            to={`/users/${currentAuthor.link}`}
+                                            className="no-decoration"
+                                        >
+                                            {authorName}
+                                        </Text>
+                                    ) : (
+                                        <Text size="sm" fw={600}>
+                                            {authorName}
+                                        </Text>
+                                    )}
+                                    <Text size="xs" c="dimmed">
+                                        {formatDateTime(currentStory.createdAt)}
+                                    </Text>
+                                </Box>
+                            </Group>
 
-                        <Group gap="xs" align="center" wrap="nowrap">
-                            <Badge variant="light" size="sm" className="story-counter-badge">
-                                {currentStoryIdx + 1} / {currentStories.length}
-                            </Badge>
-                            {currentStory && (
-                                <Badge variant="light" size="sm">
-                                    <EntityViewCounter
-                                        entityId={currentStory.id}
-                                        type={EntryTypeEnum.STORY}
-                                        size={14}
-                                        textSize="xs"
-                                        track={opened}
-                                        showTooltip={false}
-                                    />
+                            <Group gap="xs" align="center" wrap="nowrap">
+                                <Badge variant="light" size="sm" className="story-counter-badge">
+                                    {currentStoryIdx + 1} / {currentStories.length}
                                 </Badge>
-                            )}
-                            {isStoryOwner && (
-                                <>
-                                    {onEdit && (
-                                        <Tooltip label={t('editStory')} withArrow>
-                                            <ActionIcon
-                                                variant="light"
-                                                size={30}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onEdit(currentStory);
-                                                }}
-                                                aria-label={t('editStory')}
-                                            >
-                                                <IconEdit size={16} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    )}
-                                    {onDelete && (
-                                        <Tooltip label={t('delete')} withArrow>
-                                            <ActionIcon
-                                                variant="light"
-                                                color="red"
-                                                size={30}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (currentUserId) {
-                                                        setUserStoriesMap((prev) => {
-                                                            const current = prev[currentUserId];
-                                                            if (!current) return prev;
-                                                            return {
-                                                                ...prev,
-                                                                [currentUserId]: {
-                                                                    ...current,
-                                                                    stories: current.stories.filter(
-                                                                        (s) => s.id !== currentStory.id,
-                                                                    ),
-                                                                },
-                                                            };
-                                                        });
-                                                    }
-                                                    if (
-                                                        currentStoryIdx >= currentStories.length - 1 &&
-                                                        currentStoryIdx > 0
-                                                    ) {
-                                                        setCurrentStoryIdx((prev) => prev - 1);
-                                                    }
-                                                    onDelete(currentStory.id);
-                                                }}
-                                                aria-label={t('delete')}
-                                            >
-                                                <IconTrash size={16} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    )}
-                                </>
-                            )}
+                                {currentStory && (
+                                    <Badge variant="light" size="sm">
+                                        <EntityViewCounter
+                                            key={currentStory.id}
+                                            entityId={currentStory.id}
+                                            type={EntryTypeEnum.STORY}
+                                            size={14}
+                                            textSize="xs"
+                                            track={opened}
+                                            showTooltip={false}
+                                        />
+                                    </Badge>
+                                )}
+                                {isStoryOwner && (
+                                    <>
+                                        {onEdit && (
+                                            <Tooltip label={t('editStory')} withArrow>
+                                                <ActionIcon
+                                                    variant="light"
+                                                    size={30}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onEdit(currentStory);
+                                                    }}
+                                                    aria-label={t('editStory')}
+                                                >
+                                                    <IconEdit size={16} />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        )}
+                                        {onDelete && (
+                                            <Tooltip label={t('delete')} withArrow>
+                                                <ActionIcon
+                                                    variant="light"
+                                                    color="red"
+                                                    size={30}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (currentUserId) {
+                                                            setUserStoriesMap((prev) => {
+                                                                const current = prev[currentUserId];
+                                                                if (!current) return prev;
+                                                                return {
+                                                                    ...prev,
+                                                                    [currentUserId]: {
+                                                                        ...current,
+                                                                        stories: current.stories.filter(
+                                                                            (s) => s.id !== currentStory.id,
+                                                                        ),
+                                                                    },
+                                                                };
+                                                            });
+                                                        }
+                                                        if (
+                                                            currentStoryIdx >= currentStories.length - 1 &&
+                                                            currentStoryIdx > 0
+                                                        ) {
+                                                            setCurrentStoryIdx((prev) => prev - 1);
+                                                        }
+                                                        onDelete(currentStory.id);
+                                                    }}
+                                                    aria-label={t('delete')}
+                                                >
+                                                    <IconTrash size={16} />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        )}
+                                    </>
+                                )}
+                                <Modal.CloseButton size={30} />
+                            </Group>
                         </Group>
-                    </Group>
-                </Stack>
-            }
-        >
-            <Stack gap="md" align="center" pos="relative">
-                <Box className="story-viewer-viewport">
-                    <ActionIcon
-                        variant="filled"
-                        size={32}
-                        className="story-nav-btn story-nav-btn-prev"
-                        disabled={!hasPrevStory && !hasPrevGroup}
-                        style={{
-                            opacity: hasPrevStory || hasPrevGroup ? 1 : 0.3,
-                            cursor: hasPrevStory || hasPrevGroup ? 'pointer' : 'default',
-                            pointerEvents: hasPrevStory || hasPrevGroup ? 'auto' : 'none',
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handlePrevStory();
-                        }}
-                        aria-label={t('previous', 'Poprzedni')}
-                    >
-                        <IconChevronLeft size={18} />
-                    </ActionIcon>
+                    </Stack>
+                </Modal.Header>
+                <Modal.Body>
+                    <Stack gap="md" align="center" pos="relative">
+                        <Box className="story-viewer-viewport">
+                            <ActionIcon
+                                variant="filled"
+                                size={32}
+                                className="story-nav-btn story-nav-btn-prev"
+                                disabled={!hasPrevStory && !hasPrevGroup}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePrevStory();
+                                }}
+                                aria-label={t('previous', 'Poprzedni')}
+                            >
+                                <IconChevronLeft size={18} />
+                            </ActionIcon>
 
-                    {storyPhotoSrc ? (
-                        <Image
-                            src={storyPhotoSrc}
-                            alt={currentStory.text || t('stories')}
-                            className="story-viewer-image"
-                        />
-                    ) : (
-                        <Box className="story-empty-box" />
-                    )}
+                            {storyPhotoSrc ? (
+                                <Image
+                                    src={storyPhotoSrc}
+                                    alt={currentStory.text || t('stories')}
+                                    className="story-viewer-image"
+                                />
+                            ) : (
+                                <Box className="story-empty-box" />
+                            )}
 
-                    <ActionIcon
-                        variant="filled"
-                        size={32}
-                        className="story-nav-btn story-nav-btn-next"
-                        loading={isFetchingMoreCurrentStories}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleNextStory();
-                        }}
-                        aria-label={t('next', 'Następny')}
-                    >
-                        <IconChevronRight size={18} />
-                    </ActionIcon>
-                </Box>
+                            <ActionIcon
+                                variant="filled"
+                                size={32}
+                                className="story-nav-btn story-nav-btn-next"
+                                loading={isFetchingMoreCurrentStories}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleNextStory();
+                                }}
+                                aria-label={t('next', 'Następny')}
+                            >
+                                <IconChevronRight size={18} />
+                            </ActionIcon>
+                        </Box>
 
-                <Box className="story-text-caption">
-                    {currentStory.text ? (
-                        <Text size="sm" ta="center" className="pre-wrap">
-                            {currentStory.text}
-                        </Text>
-                    ) : null}
-                </Box>
-            </Stack>
-        </Modal>
+                        <Box className="story-text-caption">
+                            {currentStory.text ? (
+                                <Text size="sm" ta="center" className="pre-wrap">
+                                    {currentStory.text}
+                                </Text>
+                            ) : null}
+                        </Box>
+                    </Stack>
+                </Modal.Body>
+            </Modal.Content>
+        </Modal.Root>
     );
 }
 

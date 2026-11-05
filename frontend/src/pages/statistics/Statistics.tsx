@@ -25,7 +25,7 @@ import {
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { formatDate } from '../../utils/date';
+import { formatDateTime } from '../../utils/date';
 import { formatImageSrc } from '../../utils/imageUtils';
 
 export default function Statistics() {
@@ -131,7 +131,7 @@ export default function Statistics() {
                                 {u ? `${u.firstName} ${u.lastName}` : s.userId}
                             </Text>
                             {u?.link && (
-                                <Text size="xs" c="dimmed">
+                                <Text size="sm" c="dimmed">
                                     @{u.link}
                                 </Text>
                             )}
@@ -152,11 +152,7 @@ export default function Statistics() {
         {
             key: 'distance',
             header: t('distance'),
-            render: (s) => (
-                <Text size="sm" fw={500}>
-                    {s.distance} m
-                </Text>
-            ),
+            render: (s) => <Badge variant="outline">{s.distance} m</Badge>,
         },
         {
             key: 'time',
@@ -167,8 +163,8 @@ export default function Statistics() {
             key: 'createdAt',
             header: t('createdAt'),
             render: (s) => (
-                <Text size="xs" c="dimmed">
-                    {formatDate(s.createdAt)}
+                <Text size="sm" c="dimmed">
+                    {formatDateTime(s.createdAt)}
                 </Text>
             ),
         },

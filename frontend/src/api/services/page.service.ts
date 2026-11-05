@@ -1,6 +1,5 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import type { ElementStatusDto } from './common.types';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
 
@@ -78,10 +77,12 @@ export const pageService = {
 
     async updatePageStatus(
         id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+        bodyOrStatus: components['schemas']['ElementStatusDto'] | ElementStatusEnum,
     ): Promise<UpdatePageStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
+        const body: components['schemas']['ElementStatusDto'] =
+            typeof bodyOrStatus === 'number'
+                ? { status: bodyOrStatus as components['schemas']['ElementStatusDto']['status'] }
+                : bodyOrStatus;
         const res = await api.PATCH('/api/pages/{id}/status', {
             params: { path: { id } },
             body,
@@ -92,10 +93,12 @@ export const pageService = {
 
     async updatePageParticipantStatus(
         id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+        bodyOrStatus: components['schemas']['SaveStatusDto'] | ElementStatusEnum | number,
     ): Promise<UpdatePageParticipantStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
+        const body: components['schemas']['SaveStatusDto'] =
+            typeof bodyOrStatus === 'number'
+                ? { status: bodyOrStatus as components['schemas']['SaveStatusDto']['status'] }
+                : bodyOrStatus;
         const res = await api.PATCH('/api/page-participants/{id}/status', {
             params: { path: { id } },
             body,
@@ -197,5 +200,29 @@ export const pageService = {
         });
         if (res.error) throw res.error;
         return res.data;
+    },
+
+    async listPageFollows(query?: GetPageFollowsQuery): Promise<GetPageFollowsResponse> {
+        const res = await api.GET('/api/page-follows', {
+            params: { query },
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    },
+
+    async getPagesByIds(pageIds: string[]): Promise<PageResource[]> {
+        if (pageIds.length === 0) return [];
+        const unique = Array.from(new Set(pageIds));
+        const results = await Promise.all(
+            unique.map(async (id) => {
+                try {
+                    const res = await this.getPage(id);
+                    return res.data ?? null;
+                } catch {
+                    return null;
+                }
+            }),
+        );
+        return results.filter((p): p is PageResource => p !== null);
     },
 };

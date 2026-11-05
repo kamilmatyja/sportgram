@@ -85,7 +85,9 @@ class EventDisciplineListRepositoryTest extends RepositoryTestCase
         $lists = [$this->list($distance), $this->list($distance)];
         $this->list($this->distance());
 
-        $window = $this->eventDisciplineListRepository->findLists(self::id($distance), $this->indexDto());
+        $dto = $this->indexDto();
+        $dto->filter->eventDisciplineDistanceId = self::id($distance);
+        $window = $this->eventDisciplineListRepository->findLists($dto);
 
         $this->assertEqualsCanonicalizing(self::ids($lists), self::ids($window->getItems()));
         $this->assertSame(2, $window->getTotalCount());
@@ -95,7 +97,9 @@ class EventDisciplineListRepositoryTest extends RepositoryTestCase
     {
         $this->list($this->distance());
 
-        $window = $this->eventDisciplineListRepository->findLists(self::id($this->distance()), $this->indexDto());
+        $dto = $this->indexDto();
+        $dto->filter->eventDisciplineDistanceId = self::id($this->distance());
+        $window = $this->eventDisciplineListRepository->findLists($dto);
 
         $this->assertSame([], $window->getItems());
         $this->assertSame(0, $window->getTotalCount());
@@ -110,9 +114,10 @@ class EventDisciplineListRepositoryTest extends RepositoryTestCase
         $this->list($this->distance(), $user);
 
         $dto = $this->indexDto();
+        $dto->filter->eventDisciplineDistanceId = self::id($distance);
         $dto->filter->userId = self::id($user);
 
-        $window = $this->eventDisciplineListRepository->findLists(self::id($distance), $dto);
+        $window = $this->eventDisciplineListRepository->findLists($dto);
 
         $this->assertSame(self::ids([$matching]), self::ids($window->getItems()));
     }
@@ -126,9 +131,10 @@ class EventDisciplineListRepositoryTest extends RepositoryTestCase
         $this->list($this->distance(), status: SaveStatusEnum::Accepted);
 
         $dto = $this->indexDto();
+        $dto->filter->eventDisciplineDistanceId = self::id($distance);
         $dto->filter->status = SaveStatusEnum::Accepted;
 
-        $window = $this->eventDisciplineListRepository->findLists(self::id($distance), $dto);
+        $window = $this->eventDisciplineListRepository->findLists($dto);
 
         $this->assertSame(self::ids([$matching]), self::ids($window->getItems()));
     }
@@ -142,10 +148,11 @@ class EventDisciplineListRepositoryTest extends RepositoryTestCase
         $this->list($distance, $this->user(), SaveStatusEnum::Accepted);
 
         $dto = $this->indexDto();
+        $dto->filter->eventDisciplineDistanceId = self::id($distance);
         $dto->filter->userId = self::id($user);
         $dto->filter->status = SaveStatusEnum::Accepted;
 
-        $window = $this->eventDisciplineListRepository->findLists(self::id($distance), $dto);
+        $window = $this->eventDisciplineListRepository->findLists($dto);
 
         $this->assertSame(self::ids([$matching]), self::ids($window->getItems()));
     }
@@ -164,11 +171,12 @@ class EventDisciplineListRepositoryTest extends RepositoryTestCase
         $this->storeCreatedAt($lists['c'], '2026-01-01 00:00:00');
 
         $dto = $this->indexDto();
+        $dto->filter->eventDisciplineDistanceId = self::id($distance);
         $dto->sort = $sort;
 
         $this->assertSame(
             self::ids(array_map(static fn (string $key): EventDisciplineList => $lists[$key], $expectedOrder)),
-            self::ids($this->eventDisciplineListRepository->findLists(self::id($distance), $dto)->getItems()),
+            self::ids($this->eventDisciplineListRepository->findLists($dto)->getItems()),
         );
     }
 
@@ -191,11 +199,12 @@ class EventDisciplineListRepositoryTest extends RepositoryTestCase
         }
 
         $dto = $this->indexDto();
+        $dto->filter->eventDisciplineDistanceId = self::id($distance);
         $dto->sort = 'createdAt:asc';
         $dto->page = 2;
         $dto->limit = 2;
 
-        $window = $this->eventDisciplineListRepository->findLists(self::id($distance), $dto);
+        $window = $this->eventDisciplineListRepository->findLists($dto);
 
         $this->assertSame(self::ids([$lists[2], $lists[3]]), self::ids($window->getItems()));
         $this->assertSame(5, $window->getTotalCount());
@@ -203,7 +212,7 @@ class EventDisciplineListRepositoryTest extends RepositoryTestCase
         $this->assertTrue($window->hasNextPage());
 
         $dto->page = 3;
-        $window = $this->eventDisciplineListRepository->findLists(self::id($distance), $dto);
+        $window = $this->eventDisciplineListRepository->findLists($dto);
 
         $this->assertSame(self::ids([$lists[4]]), self::ids($window->getItems()));
         $this->assertFalse($window->hasNextPage());

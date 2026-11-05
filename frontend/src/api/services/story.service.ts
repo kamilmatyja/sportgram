@@ -1,6 +1,5 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import type { ElementStatusDto } from './common.types';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 
 export type StoryResource = components['schemas']['StoryResource'];
@@ -59,10 +58,12 @@ export const storyService = {
 
     async updateStoryStatus(
         id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+        bodyOrStatus: components['schemas']['ElementStatusDto'] | ElementStatusEnum,
     ): Promise<UpdateStoryStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
+        const body: components['schemas']['ElementStatusDto'] =
+            typeof bodyOrStatus === 'number'
+                ? { status: bodyOrStatus as components['schemas']['ElementStatusDto']['status'] }
+                : bodyOrStatus;
         const res = await api.PATCH('/api/stories/{id}/status', {
             params: { path: { id } },
             body,

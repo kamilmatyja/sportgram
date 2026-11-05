@@ -659,7 +659,7 @@ export default function UserTrainings() {
                     <Text size="sm" fw={600}>
                         {tr.title}
                     </Text>
-                    <Text size="xs" c="dimmed">
+                    <Text size="sm" c="dimmed">
                         {tr.location || '-'}
                     </Text>
                 </div>
@@ -669,7 +669,7 @@ export default function UserTrainings() {
             key: 'startedAt',
             header: t('startedAt'),
             render: (tr) => (
-                <Text size="xs" c="dimmed">
+                <Text size="sm" c="dimmed">
                     {formatDateTime(tr.startedAt)}
                 </Text>
             ),
@@ -678,7 +678,7 @@ export default function UserTrainings() {
             key: 'endedAt',
             header: t('endedAt'),
             render: (tr) => (
-                <Text size="xs" c="dimmed">
+                <Text size="sm" c="dimmed">
                     {formatDateTime(tr.endedAt)}
                 </Text>
             ),

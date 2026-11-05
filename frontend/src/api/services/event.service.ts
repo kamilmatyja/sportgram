@@ -1,6 +1,5 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import type { ElementStatusDto } from './common.types';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 
 export type EventResource = components['schemas']['EventResource'];
@@ -12,6 +11,7 @@ export type EventDisciplineDistanceListResource = components['schemas']['EventDi
 export type EventDisciplineDistanceResultResource = components['schemas']['EventDisciplineDistanceResultResource'];
 export type EventResultDto = components['schemas']['EventResultDto'];
 export type EventSubResultDto = components['schemas']['EventSubResultDto'];
+export type EventListFilterDto = components['schemas']['EventListFilterDto'];
 
 export type GetEventsQuery = operations['get_event_index']['parameters']['query'];
 export type GetEventDetailsQuery = operations['get_event_details']['parameters']['query'];
@@ -21,14 +21,16 @@ export type GetEventDisciplineDistanceListDetailsQuery =
     operations['get_event_discipline_distance_list_details']['parameters']['query'];
 
 export type GetEventsResponse = operations['get_event_index']['responses'][200]['content']['application/json'];
+export type GetEventDisciplineDistancesResponse =
+    operations['get_event_discipline_distance_list_index']['responses'][200]['content']['application/json'];
+export type GetEventDisciplineDistanceListsAllQuery = GetEventDisciplineDistancesQuery;
+export type GetEventDisciplineDistanceListsAllResponse = GetEventDisciplineDistancesResponse;
 export type GetEventResponse = operations['get_event_details']['responses'][200]['content']['application/json'];
 export type UpdateEventResponse = operations['put_event_update']['responses'][200]['content']['application/json'];
 export type DeleteEventResponse = operations['delete_event_delete']['responses'][200]['content']['application/json'];
 export type UpdateEventStatusResponse =
     operations['patch_event_update_status']['responses'][200]['content']['application/json'];
 export type CreateEventResponse = operations['post_event_create']['responses'][201]['content']['application/json'];
-export type GetEventDisciplineDistancesResponse =
-    operations['get_event_discipline_distance_list_index']['responses'][200]['content']['application/json'];
 export type CreateEventDisciplineDistanceResponse =
     operations['post_event_discipline_distance_list_create']['responses'][201]['content']['application/json'];
 export type GetEventDisciplineDistanceListResponse =
@@ -80,10 +82,12 @@ export const eventService = {
 
     async updateEventStatus(
         id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+        bodyOrStatus: components['schemas']['ElementStatusDto'] | ElementStatusEnum,
     ): Promise<UpdateEventStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
+        const body: components['schemas']['ElementStatusDto'] =
+            typeof bodyOrStatus === 'number'
+                ? { status: bodyOrStatus as components['schemas']['ElementStatusDto']['status'] }
+                : bodyOrStatus;
         const res = await api.PATCH('/api/events/{id}/status', {
             params: { path: { id } },
             body,
@@ -102,14 +106,19 @@ export const eventService = {
     },
 
     async getEventDisciplineDistances(
-        eventId: string,
         query?: GetEventDisciplineDistancesQuery,
     ): Promise<GetEventDisciplineDistancesResponse> {
-        const res = await api.GET('/api/event-discipline-distances/{id}', {
-            params: { path: { id: eventId }, query },
+        const res = await api.GET('/api/event-discipline-distance-lists', {
+            params: { query },
         });
         if (res.error) throw res.error;
         return res.data;
+    },
+
+    async getEventDisciplineDistanceLists(
+        query?: GetEventDisciplineDistancesQuery,
+    ): Promise<GetEventDisciplineDistancesResponse> {
+        return this.getEventDisciplineDistances(query);
     },
 
     async createEventDisciplineDistance(eventId: string): Promise<CreateEventDisciplineDistanceResponse> {
@@ -141,10 +150,12 @@ export const eventService = {
 
     async updateEventDisciplineDistanceListStatus(
         distanceId: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
+        bodyOrStatus: components['schemas']['SaveStatusDto'] | ElementStatusEnum | number,
     ): Promise<UpdateEventDisciplineDistanceListStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
+        const body: components['schemas']['SaveStatusDto'] =
+            typeof bodyOrStatus === 'number'
+                ? { status: bodyOrStatus as components['schemas']['SaveStatusDto']['status'] }
+                : bodyOrStatus;
         const res = await api.PATCH('/api/event-discipline-distance-lists/{id}/status', {
             params: { path: { id: distanceId } },
             body,
@@ -205,5 +216,11 @@ export const eventService = {
 
     async signUpForDistance(distanceId: string): Promise<CreateEventDisciplineDistanceResponse> {
         return await eventService.createEventDisciplineDistance(distanceId);
+    },
+
+    async getAllLists(
+        query?: GetEventDisciplineDistanceListsAllQuery,
+    ): Promise<GetEventDisciplineDistanceListsAllResponse> {
+        return this.getEventDisciplineDistances(query);
     },
 };

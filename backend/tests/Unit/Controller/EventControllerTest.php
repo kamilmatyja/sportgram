@@ -57,8 +57,8 @@ class EventControllerTest extends ControllerTestCase
         yield 'details' => ['details', '/api/events/{id}', 'GET', 'event_details', 'IS_AUTHENTICATED_FULLY', null];
         yield 'createList' => ['createList', '/api/event-discipline-distances/{id}', 'POST', 'event_discipline_distance_list_create', RoleEnum::ROLE_PARTICIPANT, null];
         yield 'updateListStatus' => ['updateListStatus', '/api/event-discipline-distance-lists/{id}/status', 'PATCH', 'event_discipline_distance_list_update_status', EventListVoter::EVENT_LIST, 'id'];
-        yield 'deleteList' => ['deleteList', '/api/event-discipline-distance-lists/{id}', 'DELETE', 'event_discipline_distance_list_delete', EventListCreatorVoter::EVENT_LIST_CREATOR, 'id'];
-        yield 'indexList' => ['indexList', '/api/event-discipline-distances/{id}', 'GET', 'event_discipline_distance_list_index', 'IS_AUTHENTICATED_FULLY', null];
+        yield 'deleteList' => ['deleteList', '/api/event-discipline-distance-lists/{id}', 'DELETE', 'event_discipline_distance_list_delete', EventListVoter::EVENT_LIST, 'id'];
+        yield 'indexList' => ['indexList', '/api/event-discipline-distance-lists', 'GET', 'event_discipline_distance_list_index', 'IS_AUTHENTICATED_FULLY', null];
         yield 'detailsList' => ['detailsList', '/api/event-discipline-distance-lists/{id}', 'GET', 'event_discipline_distance_list_details', 'IS_AUTHENTICATED_FULLY', null];
         yield 'createResult' => ['createResult', '/api/event-discipline-distance-lists/{id}', 'POST', 'event_discipline_distance_result_create', EventListCreatorVoter::EVENT_LIST_CREATOR, 'id'];
         yield 'updateResult' => ['updateResult', '/api/event-discipline-distance-results/{id}', 'PUT', 'event_discipline_distance_result_update', EventResultVoter::EVENT_RESULT, 'id'];
@@ -217,15 +217,14 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testIndexList(): void
     {
-        $distanceId = Uuid::v4();
         $dto = new EventListIndexDto();
         $include = new EventListDetailsQueryDto();
         $include->include = [EventListDetailsQueryDto::EVENT_LIST_RESULTS];
         $lists = [$this->listWithResult(), $this->listWithResult()];
         $window = self::window($lists, total: 7, page: 2, limit: 2);
-        $this->service()->expects($this->once())->method('indexList')->with($distanceId, $dto)->willReturn($window);
+        $this->service()->expects($this->once())->method('indexList')->with($dto)->willReturn($window);
 
-        $response = $this->controller->indexList($distanceId, $dto, $include, $this->service());
+        $response = $this->controller->indexList($dto, $include, $this->service());
 
         $data = EventDisciplineDistanceListResource::fromEntityCollection($lists, $include);
         $this->assertArrayHasKey('results', $data[0]);
@@ -234,12 +233,11 @@ class EventControllerTest extends ControllerTestCase
 
     final public function testIndexListWithoutResults(): void
     {
-        $distanceId = Uuid::v4();
         $dto = new EventListIndexDto();
         $window = self::window([]);
-        $this->service()->expects($this->once())->method('indexList')->with($distanceId, $dto)->willReturn($window);
+        $this->service()->expects($this->once())->method('indexList')->with($dto)->willReturn($window);
 
-        $response = $this->controller->indexList($distanceId, $dto, new EventListDetailsQueryDto(), $this->service());
+        $response = $this->controller->indexList($dto, new EventListDetailsQueryDto(), $this->service());
 
         $this->assertJsonResponse(Response::HTTP_OK, ['data' => [], 'pagination' => self::pagination($window)], $response);
     }
