@@ -1,41 +1,26 @@
 import { useState, useMemo } from 'react';
-import {
-    SegmentedControl,
-    Badge,
-    Text,
-    SimpleGrid,
-    TextInput,
-    Select,
-    Group,
-    Avatar,
-    ActionIcon,
-    Tooltip,
-} from '@mantine/core';
-import { IconEye } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
+import { SegmentedControl, Badge, Text, SimpleGrid, TextInput, Select, Group } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import {
-    statisticService,
-    userService,
-    type StatisticResource,
-    type GetStatisticRecordsQuery,
-    type UserResource,
-} from '../../api/services';
+import { statisticService, type StatisticResource, type GetStatisticRecordsQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { formatDateTime } from '../../utils/date';
-import { formatImageSrc } from '../../utils/imageUtils';
+import { ViewActionButton } from '../../components/common/RowActionButtons';
+import { useDataTableState } from '../../hooks/useDataTableState';
+import { useUsersMap } from '../../hooks/useUsersMap';
+import { UserInfoCell } from '../../components/common/UserInfoCell';
 
 export default function Statistics() {
     const { t } = useTranslation();
     const { currentUser } = useAuth();
 
     const [activeTab, setActiveTab] = useState<'records' | 'progress'>('records');
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
-    const [sort, setSort] = useState<string | null>(activeTab === 'records' ? 'time:asc' : 'createdAt:desc');
+
+    const { page, limit, sort, setPage, setSort, onLimitChange, onSortChange, resetPage } = useDataTableState({
+        defaultSort: 'time:asc',
+    });
 
     const [disciplineFilter, setDisciplineFilter] = useState<string | null>(null);
     const [distanceFilter, setDistanceFilter] = useState('');
@@ -61,7 +46,7 @@ export default function Statistics() {
     const handleResetFilters = () => {
         setDisciplineFilter(null);
         setDistanceFilter('');
-        setPage(1);
+        resetPage();
     };
 
     const queryFilter = useMemo(() => {
@@ -84,9 +69,9 @@ export default function Statistics() {
                 filter: queryFilter,
             };
             if (activeTab === 'records') {
-                return statisticService.getRecords(query);
+                return statisticService.getStatisticRecords({ params: { query } });
             }
-            return statisticService.getProgress(query);
+            return statisticService.getStatisticProgress({ params: { query } });
         },
         enabled: !!currentUser,
     });
@@ -94,51 +79,13 @@ export default function Statistics() {
     const stats = data?.data ?? [];
     const pagination = data?.pagination;
 
-    const userIds = useMemo(() => {
-        const ids = stats.map((s) => s.userId).filter(Boolean);
-        return Array.from(new Set(ids));
-    }, [stats]);
-
-    const { data: usersMapData } = useQuery({
-        queryKey: ['stats-users', userIds],
-        queryFn: async () => {
-            if (userIds.length === 0) return {};
-            const users = await userService.getUsersByIds(userIds);
-            const map: Record<string, UserResource> = {};
-            users.forEach((u) => {
-                map[u.id] = u;
-            });
-            return map;
-        },
-        enabled: userIds.length > 0,
-    });
-
-    const usersMap = usersMapData ?? {};
+    const { getUser } = useUsersMap(stats.map((s) => s.userId));
 
     const columns: Column<StatisticResource>[] = [
         {
             key: 'user',
             header: t('user'),
-            render: (s) => {
-                const u = usersMap[s.userId];
-                return (
-                    <Group gap="sm">
-                        <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
-                            ?
-                        </Avatar>
-                        <div>
-                            <Text size="sm" fw={600}>
-                                {u ? `${u.firstName} ${u.lastName}` : s.userId}
-                            </Text>
-                            {u?.link && (
-                                <Text size="sm" c="dimmed">
-                                    @{u.link}
-                                </Text>
-                            )}
-                        </div>
-                    </Group>
-                );
-            },
+            render: (s) => <UserInfoCell user={getUser(s.userId)} userId={s.userId} />,
         },
         {
             key: 'discipline',
@@ -179,7 +126,7 @@ export default function Statistics() {
                 value={disciplineFilter}
                 onChange={(v) => {
                     setDisciplineFilter(v);
-                    setPage(1);
+                    resetPage();
                 }}
                 clearable
             />
@@ -188,7 +135,7 @@ export default function Statistics() {
                 value={distanceFilter}
                 onChange={(e) => {
                     setDistanceFilter(e.currentTarget.value);
-                    setPage(1);
+                    resetPage();
                 }}
             />
         </SimpleGrid>
@@ -203,37 +150,19 @@ export default function Statistics() {
             totalItems={pagination?.total}
             onPageChange={setPage}
             limit={limit}
-            onLimitChange={(l) => {
-                setLimit(l);
-                setPage(1);
-            }}
+            onLimitChange={onLimitChange}
             sort={sort}
-            onSortChange={(s) => {
-                setSort(s);
-                setPage(1);
-            }}
+            onSortChange={onSortChange}
             sortOptions={sortOptions}
             filtersNode={filtersNode}
             hasActiveFilters={activeFiltersCount > 0}
             activeFiltersCount={activeFiltersCount}
             onResetFilters={handleResetFilters}
             actions={(s) => {
-                const u = usersMap[s.userId];
+                const u = getUser(s.userId);
                 return (
                     <Group gap="xs" justify="flex-end" wrap="nowrap">
-                        {u?.link && (
-                            <Tooltip label={t('details')} withArrow>
-                                <ActionIcon
-                                    component={Link}
-                                    to={`/users/${u.link}`}
-                                    variant="light"
-                                    size={30}
-                                    aria-label={t('details')}
-                                >
-                                    <IconEye size={16} />
-                                </ActionIcon>
-                            </Tooltip>
-                        )}
+                        {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
                     </Group>
                 );
             }}
@@ -244,7 +173,7 @@ export default function Statistics() {
                         const tab = val as 'records' | 'progress';
                         setActiveTab(tab);
                         setSort(tab === 'records' ? 'time:asc' : 'createdAt:desc');
-                        setPage(1);
+                        resetPage();
                     }}
                     data={[
                         { label: t('records'), value: 'records' },

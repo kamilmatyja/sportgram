@@ -1,3 +1,5 @@
+import { getEnumOptions } from '../utils/enumUtils';
+
 export enum FriendStatusEnum {
     PENDING = 1,
     ACCEPTED = 2,
@@ -6,12 +8,5 @@ export enum FriendStatusEnum {
 }
 
 export namespace FriendStatusEnum {
-    export const getOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return Object.entries(FriendStatusEnum)
-            .filter(([_, value]) => typeof value === 'number')
-            .map(([key, value]) => ({
-                value: value as number,
-                label: t(`friends.${key.toLowerCase()}`),
-            }));
-    };
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(FriendStatusEnum, 'friends', t);
 }

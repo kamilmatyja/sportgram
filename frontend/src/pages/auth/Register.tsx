@@ -9,8 +9,6 @@ import {
     Button,
     Stack,
     Anchor,
-    Group,
-    PinInput,
     Text,
     SimpleGrid,
     Container,
@@ -19,11 +17,12 @@ import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
-import { authService } from '../../api/services';
+import { authService, userService } from '../../api/services';
 import { CountryEnum } from '../../enums/CountryEnum';
 import { GenderEnum } from '../../enums/GenderEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { registerSession, signSession } from '../../utils/authSession';
+import { AuthVerificationStep } from './AuthVerificationStep';
 
 export default function Register() {
     const { t } = useTranslation();
@@ -83,19 +82,21 @@ export default function Register() {
         setFieldErrors({});
 
         try {
-            await authService.registerNano({
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                password: formData.password,
-                birthAt: formData.birthAt,
-                gender: Number(formData.gender) as GenderEnum,
-                phone: Number(formData.phone) || 0,
-                country: Number(formData.country) as CountryEnum,
-                roles: formData.roles.map(Number) as RoleEnum[],
+            await userService.createUserNano({
+                body: {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    email: formData.email,
+                    password: formData.password,
+                    birthAt: formData.birthAt,
+                    gender: Number(formData.gender) as GenderEnum,
+                    phone: Number(formData.phone) || 0,
+                    country: Number(formData.country) as CountryEnum,
+                    roles: formData.roles.map(Number) as RoleEnum[],
+                },
             });
 
-            const regData = await authService.register(formData.email);
+            const regData = await authService.register({ body: { email: formData.email } });
             if (!regData?.id) {
                 notifications.show({ title: t('error'), message: t('error'), color: 'red' });
                 return;
@@ -130,7 +131,10 @@ export default function Register() {
         setFieldErrors({});
 
         try {
-            await authService.confirmRegister(registerId, Number(code));
+            await authService.confirmRegister({
+                params: { path: { id: registerId } },
+                body: { code: Number(code) },
+            });
 
             const email = registerSession.get('email');
             const password = registerSession.get('password');
@@ -138,7 +142,7 @@ export default function Register() {
 
             if (email && password) {
                 try {
-                    const signRes = await authService.sign({ email, password });
+                    const signRes = await authService.sign({ body: { email, password } });
                     if (signRes?.id) {
                         signSession.start(signRes.id);
                     }
@@ -168,7 +172,9 @@ export default function Register() {
         if (!registerId) return;
         setLoading(true);
         try {
-            await authService.resendRegister(registerId);
+            await authService.resendRegister({
+                params: { path: { id: registerId } },
+            });
             notifications.show({
                 title: t('resend'),
                 message: t('resendSuccess'),
@@ -214,31 +220,33 @@ export default function Register() {
                                 />
                             </SimpleGrid>
 
-                            <TextInput
-                                label={t('email')}
-                                required
-                                type="email"
-                                placeholder={t('emailPlaceholder')}
-                                value={formData.email}
-                                error={fieldErrors.email}
-                                onChange={(e) => {
-                                    setFormData({ ...formData, email: e.currentTarget.value });
-                                    if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
-                                }}
-                            />
+                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                                <TextInput
+                                    label={t('email')}
+                                    required
+                                    type="email"
+                                    placeholder={t('emailPlaceholder')}
+                                    value={formData.email}
+                                    error={fieldErrors.email}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, email: e.currentTarget.value });
+                                        if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                                    }}
+                                />
 
-                            <PasswordInput
-                                label={t('password')}
-                                placeholder={t('passwordPlaceholder')}
-                                required
-                                value={password}
-                                error={fieldErrors.password}
-                                onChange={(e) => {
-                                    setPassword(e.currentTarget.value);
-                                    setFormData({ ...formData, password: e.currentTarget.value });
-                                    if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
-                                }}
-                            />
+                                <PasswordInput
+                                    label={t('password')}
+                                    placeholder={t('passwordPlaceholder')}
+                                    required
+                                    value={password}
+                                    error={fieldErrors.password}
+                                    onChange={(e) => {
+                                        setPassword(e.currentTarget.value);
+                                        setFormData({ ...formData, password: e.currentTarget.value });
+                                        if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                                    }}
+                                />
+                            </SimpleGrid>
 
                             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                                 <TextInput
@@ -322,66 +330,23 @@ export default function Register() {
                         </Stack>
                     </form>
                 ) : (
-                    <form onSubmit={handleCodeSubmit}>
-                        <Stack align="center" gap="md">
-                            <Text size="sm" c="dimmed" ta="center">
-                                {t('enterRegisterCodePrompt')}
-                            </Text>
-
-                            <PinInput
-                                length={6}
-                                type="number"
-                                value={code}
-                                onChange={(val) => {
-                                    setCode(val);
-                                    if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
-                                }}
-                                error={!!fieldErrors.code}
-                                size="md"
-                                autoFocus
-                            />
-
-                            {fieldErrors.code && (
-                                <Text size="xs" c="red" ta="center">
-                                    {fieldErrors.code}
-                                </Text>
-                            )}
-
-                            <Button
-                                type="submit"
-                                fullWidth
-                                mt="md"
-                                loading={loading}
-                                disabled={loading || code.length < 6}
-                            >
-                                {t('verify')}
-                            </Button>
-
-                            <Group justify="space-between" w="100%" mt="xs">
-                                <Button
-                                    variant="subtle"
-                                    size="xs"
-                                    disabled={loading}
-                                    onClick={() => {
-                                        registerSession.clear();
-                                        setStep(1);
-                                        setFieldErrors({});
-                                    }}
-                                >
-                                    {t('back')}
-                                </Button>
-                                <Button
-                                    variant="subtle"
-                                    size="xs"
-                                    onClick={handleResend}
-                                    loading={loading}
-                                    disabled={loading}
-                                >
-                                    {t('resend')}
-                                </Button>
-                            </Group>
-                        </Stack>
-                    </form>
+                    <AuthVerificationStep
+                        promptText={t('enterRegisterCodePrompt')}
+                        code={code}
+                        onCodeChange={(val) => {
+                            setCode(val);
+                            if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
+                        }}
+                        onSubmit={handleCodeSubmit}
+                        onBack={() => {
+                            registerSession.clear();
+                            setStep(1);
+                            setFieldErrors({});
+                        }}
+                        onResend={handleResend}
+                        loading={loading}
+                        error={fieldErrors.code}
+                    />
                 )}
             </Paper>
         </Container>

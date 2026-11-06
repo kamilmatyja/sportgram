@@ -23,8 +23,12 @@ export function useUserSubpageAccess({
         queryFn: async () => {
             if (!targetUser?.id || !currentUser?.id || isOwner) return null;
             const res = await friendService.getFriends({
-                filter: { userIds: [targetUser.id] },
-                limit: 10,
+                params: {
+                    query: {
+                        filter: { userIds: [targetUser.id] },
+                        limit: 10,
+                    },
+                },
             });
             const match = res.data?.find(
                 (f) =>

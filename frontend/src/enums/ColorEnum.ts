@@ -1,3 +1,5 @@
+import { getEnumOptions, getEnumLabel } from '../utils/enumUtils';
+
 export enum ColorEnum {
     RED = 1,
     GREEN = 2,
@@ -11,14 +13,8 @@ export enum ColorEnum {
 }
 
 export namespace ColorEnum {
-    export const getOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return Object.entries(ColorEnum)
-            .filter(([_, value]) => typeof value === 'number')
-            .map(([key, value]) => ({
-                value: value as number,
-                label: t(`colors.${key.toLowerCase()}`),
-            }));
-    };
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(ColorEnum, 'colors', t);
+    export const getLabel = (value: number, t: (key: string) => string) => getEnumLabel(ColorEnum, 'colors', value, t);
 
     export const getMantineColor = (color?: number | string | null): string => {
         const num = color !== undefined && color !== null ? Number(color) : null;

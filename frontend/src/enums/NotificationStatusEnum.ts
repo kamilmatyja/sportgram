@@ -1,3 +1,5 @@
+import { getEnumOptions } from '../utils/enumUtils';
+
 export enum NotificationStatusEnum {
     NOT_SENT = 1,
     SENT = 2,
@@ -5,12 +7,6 @@ export enum NotificationStatusEnum {
 }
 
 export namespace NotificationStatusEnum {
-    export const getOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return Object.entries(NotificationStatusEnum)
-            .filter(([_, value]) => typeof value === 'number')
-            .map(([key, value]) => ({
-                value: value as number,
-                label: t(`notificationStatuses.${key.toLowerCase()}`),
-            }));
-    };
+    export const getOptions = (t: (key: string) => string) =>
+        getEnumOptions(NotificationStatusEnum, 'notificationStatuses', t);
 }

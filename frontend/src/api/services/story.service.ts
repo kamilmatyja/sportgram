@@ -1,74 +1,45 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import type { ApiRequest, ApiResponse } from '../types';
 
 export type StoryResource = components['schemas']['StoryResource'];
 export type StoryDto = components['schemas']['StoryDto'];
 export type StoryFilterDto = components['schemas']['StoryFilterDto'];
 
 export type GetStoriesQuery = operations['get_story_index']['parameters']['query'];
-
-export type GetStoriesResponse = operations['get_story_index']['responses'][200]['content']['application/json'];
-export type CreateStoryResponse = operations['post_story_create']['responses'][201]['content']['application/json'];
-export type GetStoryResponse = operations['get_story_details']['responses'][200]['content']['application/json'];
-export type UpdateStoryResponse = operations['put_story_update']['responses'][200]['content']['application/json'];
-export type DeleteStoryResponse = operations['delete_story_delete']['responses'][200]['content']['application/json'];
-export type UpdateStoryStatusResponse =
-    operations['patch_story_update_status']['responses'][200]['content']['application/json'];
+export type GetStoryDetailsQuery = operations['get_story_details']['parameters']['query'];
 
 export const storyService = {
-    async getStories(query?: GetStoriesQuery): Promise<GetStoriesResponse> {
-        const res = await api.GET('/api/stories', {
-            params: { query },
-        });
+    async getStories(req?: ApiRequest<'get_story_index'>): Promise<ApiResponse<'get_story_index'>> {
+        const res = await api.GET('/api/stories', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_story_index'>;
     },
-
-    async createStory(body: StoryDto): Promise<CreateStoryResponse> {
-        const res = await api.POST('/api/stories', { body });
+    async createStory(req?: ApiRequest<'post_story_create'>): Promise<ApiResponse<'post_story_create'>> {
+        const res = await api.POST('/api/stories', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_story_create'>;
     },
-
-    async getStory(id: string): Promise<GetStoryResponse> {
-        const res = await api.GET('/api/stories/{id}', {
-            params: { path: { id } },
-        });
+    async getStory(req?: ApiRequest<'get_story_details'>): Promise<ApiResponse<'get_story_details'>> {
+        const res = await api.GET('/api/stories/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_story_details'>;
     },
-
-    async updateStory(id: string, body: StoryDto): Promise<UpdateStoryResponse> {
-        const res = await api.PUT('/api/stories/{id}', {
-            params: { path: { id } },
-            body,
-        });
+    async updateStory(req?: ApiRequest<'put_story_update'>): Promise<ApiResponse<'put_story_update'>> {
+        const res = await api.PUT('/api/stories/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'put_story_update'>;
     },
-
-    async deleteStory(id: string): Promise<DeleteStoryResponse> {
-        const res = await api.DELETE('/api/stories/{id}', {
-            params: { path: { id } },
-        });
+    async deleteStory(req?: ApiRequest<'delete_story_delete'>): Promise<ApiResponse<'delete_story_delete'>> {
+        const res = await api.DELETE('/api/stories/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'delete_story_delete'>;
     },
-
     async updateStoryStatus(
-        id: string,
-        bodyOrStatus: components['schemas']['ElementStatusDto'] | ElementStatusEnum,
-    ): Promise<UpdateStoryStatusResponse> {
-        const body: components['schemas']['ElementStatusDto'] =
-            typeof bodyOrStatus === 'number'
-                ? { status: bodyOrStatus as components['schemas']['ElementStatusDto']['status'] }
-                : bodyOrStatus;
-        const res = await api.PATCH('/api/stories/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+        req?: ApiRequest<'patch_story_update_status'>,
+    ): Promise<ApiResponse<'patch_story_update_status'>> {
+        const res = await api.PATCH('/api/stories/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'patch_story_update_status'>;
     },
 };

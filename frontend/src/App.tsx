@@ -80,8 +80,19 @@ function UserProfileThemeLayout() {
     const { link } = useParams<{ link: string }>();
     const { data: user } = useQuery({
         queryKey: ['user', link],
-        queryFn: () => (link ? userService.getUserByLink(link) : null),
-        enabled: !!link,
+        queryFn: async () => {
+            if (!link) return null;
+            const res = await userService.getUsers({
+                params: {
+                    query: {
+                        filter: { link, userIds: null },
+                        'include[]': ['userDisciplines', 'userRoles'],
+                        limit: 1,
+                    },
+                },
+            });
+            return res.data?.[0] ?? null;
+        },
     });
 
     const primaryColor = ColorEnum.getMantineColor(user?.color);

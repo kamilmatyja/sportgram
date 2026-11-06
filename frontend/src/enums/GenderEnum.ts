@@ -1,15 +1,12 @@
+import { getEnumOptions, getEnumLabel } from '../utils/enumUtils';
+
 export enum GenderEnum {
     MALE = 1,
     FEMALE = 2,
 }
 
 export namespace GenderEnum {
-    export const getOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return Object.entries(GenderEnum)
-            .filter(([_, value]) => typeof value === 'number')
-            .map(([key, value]) => ({
-                value: value as number,
-                label: t(`genders.${key.toLowerCase()}`),
-            }));
-    };
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(GenderEnum, 'genders', t);
+    export const getLabel = (value: number, t: (key: string) => string) =>
+        getEnumLabel(GenderEnum, 'genders', value, t);
 }

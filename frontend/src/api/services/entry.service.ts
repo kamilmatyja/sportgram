@@ -1,5 +1,6 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
+import type { ApiRequest, ApiResponse } from '../types';
 
 export type EntryResource = components['schemas']['EntryResource'];
 export type EntryDto = components['schemas']['EntryDto'];
@@ -10,40 +11,25 @@ export type EntryCountFilterDto = components['schemas']['EntryCountFilterDto'];
 export type GetEntriesQuery = operations['get_entry_index']['parameters']['query'];
 export type GetEntryCountsQuery = operations['get_entry_count_index']['parameters']['query'];
 
-export type GetEntriesResponse = operations['get_entry_index']['responses'][200]['content']['application/json'];
-export type CreateEntryResponse = operations['post_entry_create']['responses'][201]['content']['application/json'];
-export type GetEntryResponse = operations['get_entry_details']['responses'][200]['content']['application/json'];
-export type GetEntryCountsResponse =
-    operations['get_entry_count_index']['responses'][200]['content']['application/json'];
-
 export const entryService = {
-    async getEntries(query?: GetEntriesQuery): Promise<GetEntriesResponse> {
-        const res = await api.GET('/api/entries', {
-            params: { query },
-        });
+    async getEntries(req?: ApiRequest<'get_entry_index'>): Promise<ApiResponse<'get_entry_index'>> {
+        const res = await api.GET('/api/entries', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_entry_index'>;
     },
-
-    async createEntry(body: EntryDto): Promise<CreateEntryResponse> {
-        const res = await api.POST('/api/entries', { body });
+    async createEntry(req?: ApiRequest<'post_entry_create'>): Promise<ApiResponse<'post_entry_create'>> {
+        const res = await api.POST('/api/entries', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_entry_create'>;
     },
-
-    async getEntry(id: string): Promise<GetEntryResponse> {
-        const res = await api.GET('/api/entries/{id}', {
-            params: { path: { id } },
-        });
+    async getEntry(req?: ApiRequest<'get_entry_details'>): Promise<ApiResponse<'get_entry_details'>> {
+        const res = await api.GET('/api/entries/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_entry_details'>;
     },
-
-    async getEntryCounts(query?: GetEntryCountsQuery): Promise<GetEntryCountsResponse> {
-        const res = await api.GET('/api/entry-counts', {
-            params: { query },
-        });
+    async getEntryCounts(req?: ApiRequest<'get_entry_count_index'>): Promise<ApiResponse<'get_entry_count_index'>> {
+        const res = await api.GET('/api/entry-counts', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_entry_count_index'>;
     },
 };

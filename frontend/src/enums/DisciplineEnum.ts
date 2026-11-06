@@ -1,3 +1,5 @@
+import { getEnumOptions } from '../utils/enumUtils';
+
 export enum DisciplineEnum {
     RUNNING = 1,
     CYCLING = 2,
@@ -12,12 +14,7 @@ export enum DisciplineEnum {
 }
 
 export namespace DisciplineEnum {
-    export const getOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return Object.entries(DisciplineEnum)
-            .filter(([_, value]) => typeof value === 'number')
-            .map(([key, value]) => ({
-                value: value as number,
-                label: t(`disciplines.${key.toLowerCase()}`),
-            }));
-    };
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(DisciplineEnum, 'disciplines', t);
+    export const getStringOptions = (t: (key: string) => string) =>
+        getOptions(t).map((opt) => ({ value: String(opt.value), label: opt.label }));
 }

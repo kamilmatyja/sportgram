@@ -1,7 +1,6 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
+import type { ApiRequest, ApiResponse } from '../types';
 
 export type FeedResource = components['schemas']['FeedResource'];
 export type FeedDto = components['schemas']['FeedDto'];
@@ -14,230 +13,108 @@ export type ElementStatusDto = components['schemas']['ElementStatusDto'];
 
 export type GetFeedsQuery = operations['get_feed_index']['parameters']['query'];
 export type GetFeedDetailsQuery = operations['get_feed_details']['parameters']['query'];
-
-export type GetFeedsResponse = operations['get_feed_index']['responses'][200]['content']['application/json'];
-export type CreateFeedResponse = operations['post_feed_create']['responses'][201]['content']['application/json'];
-export type GetFeedResponse = operations['get_feed_details']['responses'][200]['content']['application/json'];
-export type UpdateFeedResponse = operations['put_feed_update']['responses'][200]['content']['application/json'];
-export type DeleteFeedResponse = operations['delete_feed_delete']['responses'][200]['content']['application/json'];
-export type UpdateFeedStatusResponse =
-    operations['patch_feed_update_status']['responses'][200]['content']['application/json'];
-export type CreateFeedCommentResponse =
-    operations['post_feed_comment_create']['responses'][201]['content']['application/json'];
-export type UpdateFeedCommentResponse =
-    operations['put_feed_comment_update']['responses'][200]['content']['application/json'];
-export type DeleteFeedCommentResponse =
-    operations['delete_feed_comment_delete']['responses'][200]['content']['application/json'];
-export type UpdateFeedCommentStatusResponse =
-    operations['patch_feed_comment_update_status']['responses'][200]['content']['application/json'];
-export type CreateFeedReactionResponse =
-    operations['post_feed_reaction_create']['responses'][201]['content']['application/json'];
-export type UpdateFeedReactionResponse =
-    operations['put_feed_reaction_update']['responses'][200]['content']['application/json'];
-export type DeleteFeedReactionResponse =
-    operations['delete_feed_reaction_delete']['responses'][200]['content']['application/json'];
-export type UpdateFeedReactionStatusResponse =
-    operations['patch_feed_reaction_update_status']['responses'][200]['content']['application/json'];
 export type GetFeedCommentsQuery = operations['get_feed_comment_index']['parameters']['query'];
-export type GetFeedCommentsResponse =
-    operations['get_feed_comment_index']['responses'][200]['content']['application/json'];
 export type GetFeedReactionsQuery = operations['get_feed_reaction_index']['parameters']['query'];
-export type GetFeedReactionsResponse =
-    operations['get_feed_reaction_index']['responses'][200]['content']['application/json'];
 
 export const feedService = {
-    async getFeeds(query?: GetFeedsQuery): Promise<GetFeedsResponse> {
-        const res = await api.GET('/api/feeds', {
-            params: { query },
-        });
+    async getFeeds(req?: ApiRequest<'get_feed_index'>): Promise<ApiResponse<'get_feed_index'>> {
+        const res = await api.GET('/api/feeds', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_feed_index'>;
     },
-
-    async createFeed(body: FeedDto): Promise<CreateFeedResponse> {
-        const res = await api.POST('/api/feeds', { body });
+    async createFeed(req?: ApiRequest<'post_feed_create'>): Promise<ApiResponse<'post_feed_create'>> {
+        const res = await api.POST('/api/feeds', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_feed_create'>;
     },
-
-    async getFeed(id: string, query?: GetFeedDetailsQuery): Promise<GetFeedResponse> {
-        const res = await api.GET('/api/feeds/{id}', {
-            params: { path: { id }, query },
-        });
+    async getFeed(req?: ApiRequest<'get_feed_details'>): Promise<ApiResponse<'get_feed_details'>> {
+        const res = await api.GET('/api/feeds/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_feed_details'>;
     },
-
-    async updateFeed(id: string, body: FeedDto): Promise<UpdateFeedResponse> {
-        const res = await api.PUT('/api/feeds/{id}', {
-            params: { path: { id } },
-            body,
-        });
+    async updateFeed(req?: ApiRequest<'put_feed_update'>): Promise<ApiResponse<'put_feed_update'>> {
+        const res = await api.PUT('/api/feeds/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'put_feed_update'>;
     },
-
-    async deleteFeed(id: string): Promise<DeleteFeedResponse> {
-        const res = await api.DELETE('/api/feeds/{id}', {
-            params: { path: { id } },
-        });
+    async deleteFeed(req?: ApiRequest<'delete_feed_delete'>): Promise<ApiResponse<'delete_feed_delete'>> {
+        const res = await api.DELETE('/api/feeds/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'delete_feed_delete'>;
     },
-
     async updateFeedStatus(
-        id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
-    ): Promise<UpdateFeedStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
-        const res = await api.PATCH('/api/feeds/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+        req?: ApiRequest<'patch_feed_update_status'>,
+    ): Promise<ApiResponse<'patch_feed_update_status'>> {
+        const res = await api.PATCH('/api/feeds/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'patch_feed_update_status'>;
     },
-
-    async createComment(feedId: string, body: FeedCommentDto): Promise<CreateFeedCommentResponse> {
-        const res = await api.POST('/api/feeds/{id}/comments', {
-            params: { path: { id: feedId } },
-            body,
-        });
+    async createFeedComment(
+        req?: ApiRequest<'post_feed_comment_create'>,
+    ): Promise<ApiResponse<'post_feed_comment_create'>> {
+        const res = await api.POST('/api/feeds/{id}/comments', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_feed_comment_create'>;
     },
-
-    async updateComment(id: string, body: FeedCommentDto): Promise<UpdateFeedCommentResponse> {
-        const res = await api.PUT('/api/feed-comments/{id}', {
-            params: { path: { id } },
-            body,
-        });
+    async updateFeedComment(
+        req?: ApiRequest<'put_feed_comment_update'>,
+    ): Promise<ApiResponse<'put_feed_comment_update'>> {
+        const res = await api.PUT('/api/feed-comments/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'put_feed_comment_update'>;
     },
-
-    async deleteComment(id: string): Promise<DeleteFeedCommentResponse> {
-        const res = await api.DELETE('/api/feed-comments/{id}', {
-            params: { path: { id } },
-        });
+    async deleteFeedComment(
+        req?: ApiRequest<'delete_feed_comment_delete'>,
+    ): Promise<ApiResponse<'delete_feed_comment_delete'>> {
+        const res = await api.DELETE('/api/feed-comments/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'delete_feed_comment_delete'>;
     },
-
-    async updateCommentStatus(
-        id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
-    ): Promise<UpdateFeedCommentStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
-        const res = await api.PATCH('/api/feed-comments/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
-        if (res.error) throw res.error;
-        return res.data;
-    },
-
     async updateFeedCommentStatus(
-        id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
-    ): Promise<UpdateFeedCommentStatusResponse> {
-        return await feedService.updateCommentStatus(id, bodyOrStatus);
-    },
-
-    async createReaction(
-        feedId: string,
-        bodyOrType: FeedReactionDto | FeedReactionEnum,
-    ): Promise<CreateFeedReactionResponse> {
-        const body: FeedReactionDto =
-            typeof bodyOrType === 'number' ? { type: bodyOrType as FeedReactionDto['type'] } : bodyOrType;
-        const res = await api.POST('/api/feeds/{id}/reactions', {
-            params: { path: { id: feedId } },
-            body,
-        });
+        req?: ApiRequest<'patch_feed_comment_update_status'>,
+    ): Promise<ApiResponse<'patch_feed_comment_update_status'>> {
+        const res = await api.PATCH('/api/feed-comments/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'patch_feed_comment_update_status'>;
     },
-
-    async updateReaction(
-        id: string,
-        bodyOrType: FeedReactionDto | FeedReactionEnum,
-    ): Promise<UpdateFeedReactionResponse> {
-        const body: FeedReactionDto =
-            typeof bodyOrType === 'number' ? { type: bodyOrType as FeedReactionDto['type'] } : bodyOrType;
-        const res = await api.PUT('/api/feed-reactions/{id}', {
-            params: { path: { id } },
-            body,
-        });
+    async getFeedComments(req?: ApiRequest<'get_feed_comment_index'>): Promise<ApiResponse<'get_feed_comment_index'>> {
+        const res = await api.GET('/api/feed-comments', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_feed_comment_index'>;
     },
-
-    async deleteReaction(id: string): Promise<DeleteFeedReactionResponse> {
-        const res = await api.DELETE('/api/feed-reactions/{id}', {
-            params: { path: { id } },
-        });
+    async createFeedReaction(
+        req?: ApiRequest<'post_feed_reaction_create'>,
+    ): Promise<ApiResponse<'post_feed_reaction_create'>> {
+        const res = await api.POST('/api/feeds/{id}/reactions', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_feed_reaction_create'>;
     },
-
-    async updateReactionStatus(
-        id: string,
-        bodyOrStatus: ElementStatusDto | ElementStatusEnum,
-    ): Promise<UpdateFeedReactionStatusResponse> {
-        const body: ElementStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as ElementStatusDto['status'] } : bodyOrStatus;
-        const res = await api.PATCH('/api/feed-reactions/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+    async updateFeedReaction(
+        req?: ApiRequest<'put_feed_reaction_update'>,
+    ): Promise<ApiResponse<'put_feed_reaction_update'>> {
+        const res = await api.PUT('/api/feed-reactions/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'put_feed_reaction_update'>;
     },
-
-    async addComment(feedId: string, textOrBody: string | FeedCommentDto): Promise<CreateFeedCommentResponse> {
-        const body: FeedCommentDto = typeof textOrBody === 'string' ? { text: textOrBody } : textOrBody;
-        return await feedService.createComment(feedId, body);
-    },
-
-    async addReaction(
-        feedId: string,
-        reactionOrType: FeedReactionEnum | FeedReactionDto['type'] | FeedReactionDto,
-    ): Promise<CreateFeedReactionResponse> {
-        const body: FeedReactionDto =
-            typeof reactionOrType === 'number' ? { type: reactionOrType as FeedReactionDto['type'] } : reactionOrType;
-        return await feedService.createReaction(feedId, body);
-    },
-
-    async getUserFeeds(userId: string): Promise<FeedResource[]> {
-        const res = await api.GET('/api/feeds', {
-            params: {
-                query: {
-                    filter: { userId },
-                    limit: 50,
-                    sort: 'createdAt:desc',
-                    'include[]': ['feedComments', 'feedReactions', 'feedOrigin'],
-                },
-            },
-        });
+    async deleteFeedReaction(
+        req?: ApiRequest<'delete_feed_reaction_delete'>,
+    ): Promise<ApiResponse<'delete_feed_reaction_delete'>> {
+        const res = await api.DELETE('/api/feed-reactions/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data?.data ?? [];
+        return res.data as ApiResponse<'delete_feed_reaction_delete'>;
     },
-
-    async getComments(query?: GetFeedCommentsQuery): Promise<GetFeedCommentsResponse> {
-        const res = await api.GET('/api/feed-comments', {
-            params: { query },
-        });
+    async updateFeedReactionStatus(
+        req?: ApiRequest<'patch_feed_reaction_update_status'>,
+    ): Promise<ApiResponse<'patch_feed_reaction_update_status'>> {
+        const res = await api.PATCH('/api/feed-reactions/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'patch_feed_reaction_update_status'>;
     },
-
-    async getReactions(query?: GetFeedReactionsQuery): Promise<GetFeedReactionsResponse> {
-        const res = await api.GET('/api/feed-reactions', {
-            params: { query },
-        });
+    async getFeedReactions(
+        req?: ApiRequest<'get_feed_reaction_index'>,
+    ): Promise<ApiResponse<'get_feed_reaction_index'>> {
+        const res = await api.GET('/api/feed-reactions', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_feed_reaction_index'>;
     },
 };

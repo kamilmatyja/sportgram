@@ -244,6 +244,10 @@ export const en = {
     comments: 'Comments',
     reactions: 'Reactions',
     reaction: 'Reaction',
+    allReactions: 'All reactions',
+    comment: 'Comment',
+    origin: 'Origin',
+    content: 'Content',
     addPage: 'Add page',
     pageFollows: 'Follows',
     eventSignups: 'Signups',
@@ -348,6 +352,7 @@ export const en = {
     selectPhoto: 'Select photo',
     loadingFeeds: 'Loading feeds...',
     loadingStories: 'Loading stories...',
+    loadingMore: 'Loading more...',
 
     searchUserPlaceholder: 'Search users...',
     profileUpdated: 'Profile updated!',

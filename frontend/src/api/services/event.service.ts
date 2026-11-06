@@ -1,226 +1,108 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import type { ApiRequest, ApiResponse } from '../types';
 
 export type EventResource = components['schemas']['EventResource'];
 export type EventDto = components['schemas']['EventDto'];
 export type EventFilterDto = components['schemas']['EventFilterDto'];
-export type EventDisciplineDistanceDto = components['schemas']['EventDisciplineDistanceDto'];
+export type EventDisciplineResource = components['schemas']['EventDisciplineResource'];
 export type EventDisciplineDistanceResource = components['schemas']['EventDisciplineDistanceResource'];
+export type EventDisciplineSubDistanceResource = components['schemas']['EventDisciplineSubDistanceResource'];
 export type EventDisciplineDistanceListResource = components['schemas']['EventDisciplineDistanceListResource'];
 export type EventDisciplineDistanceResultResource = components['schemas']['EventDisciplineDistanceResultResource'];
-export type EventResultDto = components['schemas']['EventResultDto'];
-export type EventSubResultDto = components['schemas']['EventSubResultDto'];
-export type EventListFilterDto = components['schemas']['EventListFilterDto'];
 
 export type GetEventsQuery = operations['get_event_index']['parameters']['query'];
 export type GetEventDetailsQuery = operations['get_event_details']['parameters']['query'];
 export type GetEventDisciplineDistancesQuery =
     operations['get_event_discipline_distance_list_index']['parameters']['query'];
-export type GetEventDisciplineDistanceListDetailsQuery =
-    operations['get_event_discipline_distance_list_details']['parameters']['query'];
-
-export type GetEventsResponse = operations['get_event_index']['responses'][200]['content']['application/json'];
-export type GetEventDisciplineDistancesResponse =
-    operations['get_event_discipline_distance_list_index']['responses'][200]['content']['application/json'];
-export type GetEventDisciplineDistanceListsAllQuery = GetEventDisciplineDistancesQuery;
-export type GetEventDisciplineDistanceListsAllResponse = GetEventDisciplineDistancesResponse;
-export type GetEventResponse = operations['get_event_details']['responses'][200]['content']['application/json'];
-export type UpdateEventResponse = operations['put_event_update']['responses'][200]['content']['application/json'];
-export type DeleteEventResponse = operations['delete_event_delete']['responses'][200]['content']['application/json'];
-export type UpdateEventStatusResponse =
-    operations['patch_event_update_status']['responses'][200]['content']['application/json'];
-export type CreateEventResponse = operations['post_event_create']['responses'][201]['content']['application/json'];
-export type CreateEventDisciplineDistanceResponse =
-    operations['post_event_discipline_distance_list_create']['responses'][201]['content']['application/json'];
-export type GetEventDisciplineDistanceListResponse =
-    operations['get_event_discipline_distance_list_details']['responses'][200]['content']['application/json'];
-export type DeleteEventDisciplineDistanceListResponse =
-    operations['delete_event_discipline_distance_list_delete']['responses'][200]['content']['application/json'];
-export type UpdateEventDisciplineDistanceListStatusResponse =
-    operations['patch_event_discipline_distance_list_update_status']['responses'][200]['content']['application/json'];
-export type CreateEventDisciplineDistanceResultResponse =
-    operations['post_event_discipline_distance_result_create']['responses'][201]['content']['application/json'];
-export type UpdateEventDisciplineDistanceResultResponse =
-    operations['put_event_discipline_distance_result_update']['responses'][200]['content']['application/json'];
-export type DeleteEventDisciplineDistanceResultResponse =
-    operations['delete_event_discipline_distance_result_delete']['responses'][200]['content']['application/json'];
 
 export const eventService = {
-    async getEvents(query?: GetEventsQuery): Promise<GetEventsResponse> {
-        const res = await api.GET('/api/events', {
-            params: { query },
-        });
+    async createEvent(req?: ApiRequest<'post_event_create'>): Promise<ApiResponse<'post_event_create'>> {
+        const res = await api.POST('/api/event-pages/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_event_create'>;
     },
-
-    async getEvent(id: string, query?: GetEventDetailsQuery): Promise<GetEventResponse> {
-        const res = await api.GET('/api/events/{id}', {
-            params: { path: { id }, query },
-        });
+    async getEvent(req?: ApiRequest<'get_event_details'>): Promise<ApiResponse<'get_event_details'>> {
+        const res = await api.GET('/api/events/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_event_details'>;
     },
-
-    async updateEvent(id: string, body: EventDto): Promise<UpdateEventResponse> {
-        const res = await api.PUT('/api/events/{id}', {
-            params: { path: { id } },
-            body,
-        });
+    async updateEvent(req?: ApiRequest<'put_event_update'>): Promise<ApiResponse<'put_event_update'>> {
+        const res = await api.PUT('/api/events/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'put_event_update'>;
     },
-
-    async deleteEvent(id: string): Promise<DeleteEventResponse> {
-        const res = await api.DELETE('/api/events/{id}', {
-            params: { path: { id } },
-        });
+    async deleteEvent(req?: ApiRequest<'delete_event_delete'>): Promise<ApiResponse<'delete_event_delete'>> {
+        const res = await api.DELETE('/api/events/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'delete_event_delete'>;
     },
-
     async updateEventStatus(
-        id: string,
-        bodyOrStatus: components['schemas']['ElementStatusDto'] | ElementStatusEnum,
-    ): Promise<UpdateEventStatusResponse> {
-        const body: components['schemas']['ElementStatusDto'] =
-            typeof bodyOrStatus === 'number'
-                ? { status: bodyOrStatus as components['schemas']['ElementStatusDto']['status'] }
-                : bodyOrStatus;
-        const res = await api.PATCH('/api/events/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+        req?: ApiRequest<'patch_event_update_status'>,
+    ): Promise<ApiResponse<'patch_event_update_status'>> {
+        const res = await api.PATCH('/api/events/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'patch_event_update_status'>;
     },
-
-    async createEvent(pageId: string, body: EventDto): Promise<CreateEventResponse> {
-        const res = await api.POST('/api/event-pages/{id}', {
-            params: { path: { id: pageId } },
-            body,
-        });
+    async getEvents(req?: ApiRequest<'get_event_index'>): Promise<ApiResponse<'get_event_index'>> {
+        const res = await api.GET('/api/events', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_event_index'>;
     },
-
-    async getEventDisciplineDistances(
-        query?: GetEventDisciplineDistancesQuery,
-    ): Promise<GetEventDisciplineDistancesResponse> {
-        const res = await api.GET('/api/event-discipline-distance-lists', {
-            params: { query },
-        });
+    async createEventDisciplineDistanceList(
+        req?: ApiRequest<'post_event_discipline_distance_list_create'>,
+    ): Promise<ApiResponse<'post_event_discipline_distance_list_create'>> {
+        const res = await api.POST('/api/event-discipline-distances/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_event_discipline_distance_list_create'>;
     },
-
-    async getEventDisciplineDistanceLists(
-        query?: GetEventDisciplineDistancesQuery,
-    ): Promise<GetEventDisciplineDistancesResponse> {
-        return this.getEventDisciplineDistances(query);
-    },
-
-    async createEventDisciplineDistance(eventId: string): Promise<CreateEventDisciplineDistanceResponse> {
-        const res = await api.POST('/api/event-discipline-distances/{id}', {
-            params: { path: { id: eventId } },
-        });
-        if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async getEventDisciplineDistanceList(
-        distanceId: string,
-        query?: GetEventDisciplineDistanceListDetailsQuery,
-    ): Promise<GetEventDisciplineDistanceListResponse> {
-        const res = await api.GET('/api/event-discipline-distance-lists/{id}', {
-            params: { path: { id: distanceId }, query },
-        });
-        if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async deleteEventDisciplineDistanceList(distanceId: string): Promise<DeleteEventDisciplineDistanceListResponse> {
-        const res = await api.DELETE('/api/event-discipline-distance-lists/{id}', {
-            params: { path: { id: distanceId } },
-        });
-        if (res.error) throw res.error;
-        return res.data;
-    },
-
     async updateEventDisciplineDistanceListStatus(
-        distanceId: string,
-        bodyOrStatus: components['schemas']['SaveStatusDto'] | ElementStatusEnum | number,
-    ): Promise<UpdateEventDisciplineDistanceListStatusResponse> {
-        const body: components['schemas']['SaveStatusDto'] =
-            typeof bodyOrStatus === 'number'
-                ? { status: bodyOrStatus as components['schemas']['SaveStatusDto']['status'] }
-                : bodyOrStatus;
-        const res = await api.PATCH('/api/event-discipline-distance-lists/{id}/status', {
-            params: { path: { id: distanceId } },
-            body,
-        });
+        req?: ApiRequest<'patch_event_discipline_distance_list_update_status'>,
+    ): Promise<ApiResponse<'patch_event_discipline_distance_list_update_status'>> {
+        const res = await api.PATCH('/api/event-discipline-distance-lists/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'patch_event_discipline_distance_list_update_status'>;
     },
-
+    async getEventDisciplineDistanceList(
+        req?: ApiRequest<'get_event_discipline_distance_list_details'>,
+    ): Promise<ApiResponse<'get_event_discipline_distance_list_details'>> {
+        const res = await api.GET('/api/event-discipline-distance-lists/{id}', req as any);
+        if (res.error) throw res.error;
+        return res.data as ApiResponse<'get_event_discipline_distance_list_details'>;
+    },
     async createEventDisciplineDistanceResult(
-        distanceId: string,
-        body: EventResultDto,
-    ): Promise<CreateEventDisciplineDistanceResultResponse> {
-        const res = await api.POST('/api/event-discipline-distance-lists/{id}', {
-            params: { path: { id: distanceId } },
-            body,
-        });
+        req?: ApiRequest<'post_event_discipline_distance_result_create'>,
+    ): Promise<ApiResponse<'post_event_discipline_distance_result_create'>> {
+        const res = await api.POST('/api/event-discipline-distance-lists/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_event_discipline_distance_result_create'>;
     },
-
+    async deleteEventDisciplineDistanceList(
+        req?: ApiRequest<'delete_event_discipline_distance_list_delete'>,
+    ): Promise<ApiResponse<'delete_event_discipline_distance_list_delete'>> {
+        const res = await api.DELETE('/api/event-discipline-distance-lists/{id}', req as any);
+        if (res.error) throw res.error;
+        return res.data as ApiResponse<'delete_event_discipline_distance_list_delete'>;
+    },
+    async getEventDisciplineDistanceLists(
+        req?: ApiRequest<'get_event_discipline_distance_list_index'>,
+    ): Promise<ApiResponse<'get_event_discipline_distance_list_index'>> {
+        const res = await api.GET('/api/event-discipline-distance-lists', req as any);
+        if (res.error) throw res.error;
+        return res.data as ApiResponse<'get_event_discipline_distance_list_index'>;
+    },
     async updateEventDisciplineDistanceResult(
-        resultId: string,
-        body: EventResultDto,
-    ): Promise<UpdateEventDisciplineDistanceResultResponse> {
-        const res = await api.PUT('/api/event-discipline-distance-results/{id}', {
-            params: { path: { id: resultId } },
-            body,
-        });
+        req?: ApiRequest<'put_event_discipline_distance_result_update'>,
+    ): Promise<ApiResponse<'put_event_discipline_distance_result_update'>> {
+        const res = await api.PUT('/api/event-discipline-distance-results/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'put_event_discipline_distance_result_update'>;
     },
-
-    async deleteEventDisciplineDistanceResult(resultId: string): Promise<DeleteEventDisciplineDistanceResultResponse> {
-        const res = await api.DELETE('/api/event-discipline-distance-results/{id}', {
-            params: { path: { id: resultId } },
-        });
+    async deleteEventDisciplineDistanceResult(
+        req?: ApiRequest<'delete_event_discipline_distance_result_delete'>,
+    ): Promise<ApiResponse<'delete_event_discipline_distance_result_delete'>> {
+        const res = await api.DELETE('/api/event-discipline-distance-results/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async getEventByLink(link: string): Promise<EventResource | null> {
-        const res = await api.GET('/api/events', {
-            params: {
-                query: {
-                    filter: { link, title: null, userId: null },
-                    limit: 1,
-                },
-            },
-        });
-        if (res.error) throw res.error;
-        const item = res.data?.data?.[0];
-        if (!item) return null;
-        const detail = await this.getEvent(item.id, {
-            'include[]': ['eventDisciplines', 'eventDisciplineDistances', 'eventDisciplineSubDistances'],
-        });
-        return detail.data ?? null;
-    },
-
-    async signUpForDistance(distanceId: string): Promise<CreateEventDisciplineDistanceResponse> {
-        return await eventService.createEventDisciplineDistance(distanceId);
-    },
-
-    async getAllLists(
-        query?: GetEventDisciplineDistanceListsAllQuery,
-    ): Promise<GetEventDisciplineDistanceListsAllResponse> {
-        return this.getEventDisciplineDistances(query);
+        return res.data as ApiResponse<'delete_event_discipline_distance_result_delete'>;
     },
 };

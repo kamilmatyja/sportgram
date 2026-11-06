@@ -1,41 +1,18 @@
-import { useState, useMemo, useEffect } from 'react';
-import {
-    Card,
-    Title,
-    Text,
-    Group,
-    Stack,
-    Badge,
-    Table,
-    ActionIcon,
-    Tooltip,
-    MantineThemeProvider,
-    Center,
-    Loader,
-    Button,
-    Menu,
-    Modal,
-    TextInput,
-    Select,
-    MultiSelect,
-    SimpleGrid,
-    Avatar,
-} from '@mantine/core';
+import { useMemo, useEffect } from 'react';
+import { Card, Title, Text, Group, Stack, Badge, Table, MantineThemeProvider, Center, Loader } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconTrash, IconEdit, IconAdjustments, IconEye, IconClock } from '@tabler/icons-react';
+import { IconClock } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { applyThemeColor } from '../../utils/themeUtils';
 import NotFound from '../../components/NotFound';
 import { EmptyState } from '../../components/EmptyState';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
+import { getErrorMessage } from '../../api/client';
 import {
     goalService,
     userService,
-    friendService,
-    type UserResource,
     type GoalParticipantResource,
     type GoalParticipantResultResource,
 } from '../../api/services';
@@ -45,14 +22,19 @@ import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { EntityViewCounter } from '../../components/EntityViewCounter';
 import UserProfileNav from '../../components/UserProfileNav';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { brown } from '../../theme';
-import { formatImageSrc } from '../../utils/imageUtils';
 import { formatDateTime } from '../../utils/date';
+import { StatusBadge } from '../../components/common/StatusBadge';
+import { StatusActionMenu } from '../../components/common/StatusActionMenu';
+import { EditActionButton, DeleteActionButton, ViewActionButton } from '../../components/common/RowActionButtons';
+import { GoalFormModal } from '../../components/goals/GoalFormModal';
+import { useUsersMap } from '../../hooks/useUsersMap';
+import { useMyFriends } from '../../hooks/useMyFriends';
+import { UserInfoCell } from '../../components/common/UserInfoCell';
 
 export default function GoalDetails() {
     const { link } = useParams<{ link: string }>();
@@ -62,31 +44,41 @@ export default function GoalDetails() {
     const { currentUser } = useAuth();
 
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
-    const [editFormData, setEditFormData] = useState({
-        text: '',
-        link: '',
-        discipline: null as string | null,
-        distance: '',
-        time: '',
-        startedAt: '',
-        endedAt: '',
-    });
-    const [editCollaboratorIds, setEditCollaboratorIds] = useState<string[]>([]);
-    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
 
     const { data: goal, isLoading: goalLoading } = useQuery({
         queryKey: ['goal', link],
-        queryFn: () => goalService.getGoalByLink(link || ''),
+        queryFn: async () => {
+            if (!link) return null;
+            const res = await goalService.getGoals({
+                params: {
+                    query: {
+                        filter: { link },
+                        limit: 1,
+                        'include[]': ['goalParticipants'],
+                    },
+                },
+            });
+            return res.data?.[0] ?? null;
+        },
         enabled: !!link,
     });
 
     const { data: ownerUserData, isLoading: userLoading } = useQuery({
         queryKey: ['user', goal?.userId],
-        queryFn: () => (goal?.userId ? userService.getUser(goal.userId) : null),
+        queryFn: async () => {
+            if (!goal?.userId) return null;
+            const res = await userService.getUser({
+                params: {
+                    path: { id: goal.userId },
+                    query: { 'include[]': ['userDisciplines', 'userRoles'] },
+                },
+            });
+            return res.data ?? null;
+        },
         enabled: !!goal?.userId,
     });
 
-    const ownerUser = ownerUserData?.data ?? null;
+    const ownerUser = ownerUserData ?? null;
 
     const {
         isAdmin,
@@ -99,91 +91,22 @@ export default function GoalDetails() {
     const isOwner = !!(currentUser?.id && goal?.userId && currentUser.id === goal.userId);
     const canManage = isOwner || isAdmin;
 
-    const { data: myFriendsData } = useQuery({
-        queryKey: ['my-friends-accepted-goal-details', currentUser?.id],
-        queryFn: async () => {
-            if (!currentUser) return [];
-            const res = await friendService.getFriends({
-                filter: { userIds: [currentUser.id], status: FriendStatusEnum.ACCEPTED },
-                limit: 100,
-            });
-            const partnerIds = (res.data ?? []).map((f) =>
-                f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId,
-            );
-            if (partnerIds.length === 0) return [];
-            return await userService.getUsersByIds(partnerIds);
-        },
-        enabled: !!currentUser,
-    });
+    const { collaboratorOptions } = useMyFriends();
 
     const participantUserIds = useMemo(() => {
         if (!goal?.participants) return [];
-        return Array.from(new Set(goal.participants.map((p) => p.userId)));
+        return goal.participants.map((p) => p.userId);
     }, [goal?.participants]);
 
-    const { data: participantUsersData } = useQuery({
-        queryKey: ['goal-participant-users', participantUserIds],
-        queryFn: async () => {
-            if (participantUserIds.length === 0) return {};
-            const users = await userService.getUsersByIds(participantUserIds);
-            const map: Record<string, UserResource> = {};
-            users.forEach((u) => {
-                map[u.id] = u;
-            });
-            return map;
-        },
-        enabled: participantUserIds.length > 0,
-    });
-
-    const participantUsers = participantUsersData ?? {};
-
-    const handleOpenEdit = () => {
-        if (!goal) return;
-        setEditFormData({
-            text: goal.text || '',
-            link: goal.link || '',
-            discipline: goal.discipline !== undefined ? String(goal.discipline) : null,
-            distance: goal.distance !== undefined ? String(goal.distance) : '',
-            time: goal.time !== undefined && goal.time !== null ? String(goal.time) : '',
-            startedAt: goal.startedAt ? goal.startedAt.slice(0, 16) : '',
-            endedAt: goal.endedAt ? goal.endedAt.slice(0, 16) : '',
-        });
-        setEditCollaboratorIds(goal.participants?.map((p) => p.userId).filter((id) => id !== goal.userId) || []);
-        setEditFieldErrors({});
-        openEdit();
-    };
-
-    const updateGoalMutation = useMutation({
-        mutationFn: async () => {
-            if (!goal || !editFormData.discipline) return;
-            await goalService.updateGoal(goal.id, {
-                text: editFormData.text,
-                link: editFormData.link,
-                discipline: Number(editFormData.discipline) as DisciplineEnum,
-                distance: Number(editFormData.distance) || 0,
-                time: editFormData.time ? Number(editFormData.time) : null,
-                startedAt: editFormData.startedAt || null,
-                endedAt: editFormData.endedAt || null,
-                userIds: editCollaboratorIds.length > 0 ? editCollaboratorIds : null,
-            });
-        },
-        onSuccess: () => {
-            closeEdit();
-            setEditFieldErrors({});
-            queryClient.invalidateQueries({ queryKey: ['goal', link] });
-            notifications.show({ title: t('goals'), message: t('goalUpdated'), color: 'green' });
-        },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setEditFieldErrors(fe);
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
-    });
+    const { getUser } = useUsersMap(participantUserIds);
 
     const updateStatusMutation = useMutation({
         mutationFn: (status: GoalStatusEnum) => {
             if (!goal?.id) throw new Error('No goal');
-            return goalService.updateGoalStatus(goal.id, status);
+            return goalService.updateGoalStatus({
+                params: { path: { id: goal.id } },
+                body: { status },
+            });
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['goal', link] });
@@ -196,7 +119,10 @@ export default function GoalDetails() {
 
     const updateParticipantStatusMutation = useMutation({
         mutationFn: ({ participantId, status }: { participantId: string; status: ElementStatusEnum }) =>
-            goalService.updateGoalParticipantStatus(participantId, status),
+            goalService.updateGoalParticipantStatus({
+                params: { path: { id: participantId } },
+                body: { status },
+            }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['goal', link] });
             notifications.show({ title: t('participants'), message: t('statusUpdated'), color: 'green' });
@@ -208,7 +134,10 @@ export default function GoalDetails() {
 
     const updateResultStatusMutation = useMutation({
         mutationFn: ({ resultId, status }: { resultId: string; status: ElementStatusEnum }) =>
-            goalService.updateGoalParticipantResultStatus(resultId, status),
+            goalService.updateGoalParticipantResultStatus({
+                params: { path: { id: resultId } },
+                body: { status },
+            }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['goal', link] });
             notifications.show({ title: t('goals'), message: t('statusUpdated'), color: 'green' });
@@ -221,7 +150,9 @@ export default function GoalDetails() {
     const deleteMutation = useMutation({
         mutationFn: async () => {
             if (!goal?.id) return;
-            await goalService.deleteGoal(goal.id);
+            await goalService.deleteGoal({
+                params: { path: { id: goal.id } },
+            });
         },
         onSuccess: () => {
             notifications.show({ title: t('goals'), message: t('goalDeleted'), color: 'green' });
@@ -268,14 +199,6 @@ export default function GoalDetails() {
         return <NotFound title={t('accessDenied')} />;
     }
 
-    const goalStatusOpt = GoalStatusEnum.getOptions(t).find((o) => o.value === goal.status);
-    const goalStatusColor =
-        goal.status === GoalStatusEnum.ACTIVE || goal.status === GoalStatusEnum.COMPLETED
-            ? 'green'
-            : goal.status === GoalStatusEnum.REJECTED
-              ? 'red'
-              : 'gray';
-
     return (
         <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
             <Stack gap="lg">
@@ -307,54 +230,22 @@ export default function GoalDetails() {
 
                         <Group gap="xs" wrap="nowrap">
                             {canManage && (
-                                <Menu shadow="md" width={160}>
-                                    <Menu.Target>
-                                        <Tooltip label={t('changeStatus')} withArrow>
-                                            <ActionIcon variant="light" size={32} aria-label={t('changeStatus')}>
-                                                <IconAdjustments size={18} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    </Menu.Target>
-                                    <Menu.Dropdown>
-                                        {GoalStatusEnum.getOptions(t).map((opt) => (
-                                            <Menu.Item
-                                                key={opt.value}
-                                                disabled={goal.status === opt.value || updateStatusMutation.isPending}
-                                                onClick={() => updateStatusMutation.mutate(opt.value)}
-                                            >
-                                                {opt.label}
-                                            </Menu.Item>
-                                        ))}
-                                    </Menu.Dropdown>
-                                </Menu>
+                                <StatusActionMenu
+                                    status={goal.status}
+                                    options={GoalStatusEnum.getOptions(t)}
+                                    onStatusChange={(status) => updateStatusMutation.mutate(status as GoalStatusEnum)}
+                                    isPending={updateStatusMutation.isPending}
+                                />
                             )}
 
                             {isOwner && (
                                 <>
-                                    <Tooltip label={t('editGoal')} withArrow>
-                                        <ActionIcon
-                                            variant="light"
-                                            size={32}
-                                            onClick={handleOpenEdit}
-                                            aria-label={t('editGoal')}
-                                        >
-                                            <IconEdit size={18} />
-                                        </ActionIcon>
-                                    </Tooltip>
-
-                                    <Tooltip label={t('delete')} withArrow>
-                                        <ActionIcon
-                                            variant="light"
-                                            color="red"
-                                            size={32}
-                                            onClick={handleDelete}
-                                            loading={deleteMutation.isPending}
-                                            disabled={deleteMutation.isPending}
-                                            aria-label={t('delete')}
-                                        >
-                                            <IconTrash size={18} />
-                                        </ActionIcon>
-                                    </Tooltip>
+                                    <EditActionButton onClick={openEdit} tooltip={t('editGoal')} />
+                                    <DeleteActionButton
+                                        onClick={handleDelete}
+                                        loading={deleteMutation.isPending}
+                                        disabled={deleteMutation.isPending}
+                                    />
                                 </>
                             )}
                         </Group>
@@ -373,9 +264,7 @@ export default function GoalDetails() {
                                 {goal.time} s
                             </Badge>
                         )}
-                        <Badge color={goalStatusColor} variant="light">
-                            {goalStatusOpt?.label ?? goal.status}
-                        </Badge>
+                        <StatusBadge status={goal.status} enumType={GoalStatusEnum} />
                     </Group>
 
                     <Title order={4} mb="xs">
@@ -404,87 +293,32 @@ export default function GoalDetails() {
                                 </Table.Thead>
                                 <Table.Tbody>
                                     {goal.participants?.map((p: GoalParticipantResource) => {
-                                        const u = participantUsers[p.userId];
+                                        const u = getUser(p.userId);
                                         const isSelf = p.userId === currentUser?.id;
                                         const canManageParticipant = isSelf;
-                                        const pOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === p.status);
-                                        const pColor =
-                                            p.status === ElementStatusEnum.ACTIVE
-                                                ? 'green'
-                                                : p.status === ElementStatusEnum.REJECTED
-                                                  ? 'red'
-                                                  : 'gray';
 
                                         return (
                                             <Table.Tr key={p.id}>
                                                 <Table.Td>
-                                                    <Group gap="sm">
-                                                        <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
-                                                            ?
-                                                        </Avatar>
-                                                        <div>
-                                                            <Text size="sm" fw={600}>
-                                                                {u ? `${u.firstName} ${u.lastName}` : p.userId}
-                                                            </Text>
-                                                            {u?.link && (
-                                                                <Text size="sm" c="dimmed">
-                                                                    @{u.link}
-                                                                </Text>
-                                                            )}
-                                                        </div>
-                                                    </Group>
+                                                    <UserInfoCell user={u} userId={p.userId} />
                                                 </Table.Td>
                                                 <Table.Td>
-                                                    <Badge color={pColor} variant="light">
-                                                        {pOpt?.label ?? p.status}
-                                                    </Badge>
+                                                    <StatusBadge status={p.status} enumType={ElementStatusEnum} />
                                                 </Table.Td>
                                                 <Table.Td ta="right">
                                                     <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                        {u?.link && (
-                                                            <Tooltip label={t('details')} withArrow>
-                                                                <ActionIcon
-                                                                    component={Link}
-                                                                    to={`/users/${u.link}`}
-                                                                    variant="light"
-                                                                    aria-label={t('details')}
-                                                                >
-                                                                    <IconEye size={16} />
-                                                                </ActionIcon>
-                                                            </Tooltip>
-                                                        )}
+                                                        {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
                                                         {canManageParticipant && (
-                                                            <Menu shadow="md" width={160}>
-                                                                <Menu.Target>
-                                                                    <Tooltip label={t('changeStatus')} withArrow>
-                                                                        <ActionIcon
-                                                                            variant="light"
-                                                                            aria-label={t('changeStatus')}
-                                                                        >
-                                                                            <IconAdjustments size={16} />
-                                                                        </ActionIcon>
-                                                                    </Tooltip>
-                                                                </Menu.Target>
-                                                                <Menu.Dropdown>
-                                                                    {ElementStatusEnum.getOptions(t).map((opt) => (
-                                                                        <Menu.Item
-                                                                            key={opt.value}
-                                                                            disabled={
-                                                                                p.status === opt.value ||
-                                                                                updateParticipantStatusMutation.isPending
-                                                                            }
-                                                                            onClick={() =>
-                                                                                updateParticipantStatusMutation.mutate({
-                                                                                    participantId: p.id,
-                                                                                    status: opt.value as ElementStatusEnum,
-                                                                                })
-                                                                            }
-                                                                        >
-                                                                            {opt.label}
-                                                                        </Menu.Item>
-                                                                    ))}
-                                                                </Menu.Dropdown>
-                                                            </Menu>
+                                                            <StatusActionMenu
+                                                                status={p.status}
+                                                                onStatusChange={(status) =>
+                                                                    updateParticipantStatusMutation.mutate({
+                                                                        participantId: p.id,
+                                                                        status: status as ElementStatusEnum,
+                                                                    })
+                                                                }
+                                                                isPending={updateParticipantStatusMutation.isPending}
+                                                            />
                                                         )}
                                                     </Group>
                                                 </Table.Td>
@@ -523,42 +357,15 @@ export default function GoalDetails() {
                                     <Table.Tbody>
                                         {goal.participants.flatMap((p) => {
                                             if (!p.results || p.results.length === 0) return [];
-                                            const u = participantUsers[p.userId];
+                                            const u = getUser(p.userId);
                                             const isSelf = p.userId === currentUser?.id;
                                             const canManageResult = isSelf;
 
                                             return p.results.map((res: GoalParticipantResultResource) => {
-                                                const rOpt = ElementStatusEnum.getOptions(t).find(
-                                                    (o) => o.value === res.status,
-                                                );
-                                                const rColor =
-                                                    res.status === ElementStatusEnum.ACTIVE
-                                                        ? 'green'
-                                                        : res.status === ElementStatusEnum.REJECTED
-                                                          ? 'red'
-                                                          : 'gray';
-
                                                 return (
                                                     <Table.Tr key={res.id}>
                                                         <Table.Td>
-                                                            <Group gap="sm">
-                                                                <Avatar
-                                                                    src={formatImageSrc(u?.profilePhoto)}
-                                                                    radius={5}
-                                                                >
-                                                                    ?
-                                                                </Avatar>
-                                                                <div>
-                                                                    <Text size="sm" fw={600}>
-                                                                        {u ? `${u.firstName} ${u.lastName}` : p.userId}
-                                                                    </Text>
-                                                                    {u?.link && (
-                                                                        <Text size="sm" c="dimmed">
-                                                                            @{u.link}
-                                                                        </Text>
-                                                                    )}
-                                                                </div>
-                                                            </Group>
+                                                            <UserInfoCell user={u} userId={p.userId} />
                                                         </Table.Td>
                                                         <Table.Td>
                                                             <Text size="sm">{res.distance} m</Text>
@@ -567,9 +374,10 @@ export default function GoalDetails() {
                                                             <Text size="sm">{res.time} s</Text>
                                                         </Table.Td>
                                                         <Table.Td>
-                                                            <Badge color={rColor} variant="light">
-                                                                {rOpt?.label ?? res.status}
-                                                            </Badge>
+                                                            <StatusBadge
+                                                                status={res.status}
+                                                                enumType={ElementStatusEnum}
+                                                            />
                                                         </Table.Td>
                                                         <Table.Td>
                                                             <Text size="sm" c="dimmed">
@@ -579,56 +387,19 @@ export default function GoalDetails() {
                                                         <Table.Td ta="right">
                                                             <Group gap="xs" justify="flex-end" wrap="nowrap">
                                                                 {u?.link && (
-                                                                    <Tooltip label={t('details')} withArrow>
-                                                                        <ActionIcon
-                                                                            component={Link}
-                                                                            to={`/users/${u.link}`}
-                                                                            variant="light"
-                                                                            aria-label={t('details')}
-                                                                        >
-                                                                            <IconEye size={16} />
-                                                                        </ActionIcon>
-                                                                    </Tooltip>
+                                                                    <ViewActionButton to={`/users/${u.link}`} />
                                                                 )}
                                                                 {canManageResult && (
-                                                                    <Menu shadow="md" width={160}>
-                                                                        <Menu.Target>
-                                                                            <Tooltip
-                                                                                label={t('changeStatus')}
-                                                                                withArrow
-                                                                            >
-                                                                                <ActionIcon
-                                                                                    variant="light"
-                                                                                    aria-label={t('changeStatus')}
-                                                                                >
-                                                                                    <IconAdjustments size={16} />
-                                                                                </ActionIcon>
-                                                                            </Tooltip>
-                                                                        </Menu.Target>
-                                                                        <Menu.Dropdown>
-                                                                            {ElementStatusEnum.getOptions(t).map(
-                                                                                (opt) => (
-                                                                                    <Menu.Item
-                                                                                        key={opt.value}
-                                                                                        disabled={
-                                                                                            res.status === opt.value ||
-                                                                                            updateResultStatusMutation.isPending
-                                                                                        }
-                                                                                        onClick={() =>
-                                                                                            updateResultStatusMutation.mutate(
-                                                                                                {
-                                                                                                    resultId: res.id,
-                                                                                                    status: opt.value as ElementStatusEnum,
-                                                                                                },
-                                                                                            )
-                                                                                        }
-                                                                                    >
-                                                                                        {opt.label}
-                                                                                    </Menu.Item>
-                                                                                ),
-                                                                            )}
-                                                                        </Menu.Dropdown>
-                                                                    </Menu>
+                                                                    <StatusActionMenu
+                                                                        status={res.status}
+                                                                        onStatusChange={(status) =>
+                                                                            updateResultStatusMutation.mutate({
+                                                                                resultId: res.id,
+                                                                                status: status as ElementStatusEnum,
+                                                                            })
+                                                                        }
+                                                                        isPending={updateResultStatusMutation.isPending}
+                                                                    />
                                                                 )}
                                                             </Group>
                                                         </Table.Td>
@@ -643,105 +414,13 @@ export default function GoalDetails() {
                     )}
                 </Card>
 
-                <Modal opened={editOpened} onClose={closeEdit} title={t('editGoal')} size="lg">
-                    <Stack gap="sm">
-                        <TextInput
-                            label={t('title')}
-                            required
-                            value={editFormData.text}
-                            error={editFieldErrors.text}
-                            onChange={(e) => {
-                                const val = e.currentTarget.value;
-                                const linkVal = val
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9]+/g, '-')
-                                    .replace(/(^-|-$)/g, '');
-                                setEditFormData({ ...editFormData, text: val, link: linkVal });
-                            }}
-                        />
-                        <TextInput
-                            label={t('link')}
-                            required
-                            value={editFormData.link}
-                            error={editFieldErrors.link}
-                            onChange={(e) => setEditFormData({ ...editFormData, link: e.currentTarget.value })}
-                        />
-                        <Select
-                            label={t('discipline')}
-                            required
-                            clearable
-                            data={DisciplineEnum.getOptions(t).map((opt) => ({
-                                value: String(opt.value),
-                                label: opt.label,
-                            }))}
-                            value={editFormData.discipline}
-                            error={editFieldErrors.discipline}
-                            onChange={(val) => setEditFormData({ ...editFormData, discipline: val })}
-                        />
-                        <MultiSelect
-                            label={t('collaborators')}
-                            placeholder={t('selectCollaborators')}
-                            data={
-                                myFriendsData?.map((u) => ({
-                                    value: u.id,
-                                    label: `${u.firstName} ${u.lastName} (@${u.link})`,
-                                })) ?? []
-                            }
-                            value={editCollaboratorIds}
-                            onChange={setEditCollaboratorIds}
-                            searchable
-                            clearable
-                        />
-                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                            <TextInput
-                                label={t('distanceMeters')}
-                                type="number"
-                                required
-                                value={editFormData.distance}
-                                error={editFieldErrors.distance}
-                                onChange={(e) => setEditFormData({ ...editFormData, distance: e.currentTarget.value })}
-                            />
-                            <TextInput
-                                label={t('timeSeconds')}
-                                type="number"
-                                value={editFormData.time}
-                                error={editFieldErrors.time}
-                                onChange={(e) => setEditFormData({ ...editFormData, time: e.currentTarget.value })}
-                            />
-                        </SimpleGrid>
-                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                            <TextInput
-                                label={t('startedAt')}
-                                type="datetime-local"
-                                value={editFormData.startedAt}
-                                error={editFieldErrors.startedAt}
-                                onChange={(e) => setEditFormData({ ...editFormData, startedAt: e.currentTarget.value })}
-                            />
-                            <TextInput
-                                label={t('endedAt')}
-                                type="datetime-local"
-                                value={editFormData.endedAt}
-                                error={editFieldErrors.endedAt}
-                                onChange={(e) => setEditFormData({ ...editFormData, endedAt: e.currentTarget.value })}
-                            />
-                        </SimpleGrid>
-
-                        <Button
-                            mt="md"
-                            loading={updateGoalMutation.isPending}
-                            disabled={
-                                updateGoalMutation.isPending ||
-                                !editFormData.text.trim() ||
-                                !editFormData.link.trim() ||
-                                !editFormData.discipline ||
-                                !editFormData.distance.trim()
-                            }
-                            onClick={() => updateGoalMutation.mutate()}
-                        >
-                            {t('save')}
-                        </Button>
-                    </Stack>
-                </Modal>
+                <GoalFormModal
+                    opened={editOpened}
+                    onClose={closeEdit}
+                    goal={goal}
+                    collaboratorOptions={collaboratorOptions}
+                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ['goal', link] })}
+                />
             </Stack>
         </MantineThemeProvider>
     );

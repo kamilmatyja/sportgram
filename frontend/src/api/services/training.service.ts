@@ -1,122 +1,56 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
+import type { ApiRequest, ApiResponse } from '../types';
 
 export type TrainingResource = components['schemas']['TrainingResource'];
 export type TrainingDto = components['schemas']['TrainingDto'];
 export type TrainingFilterDto = components['schemas']['TrainingFilterDto'];
+export type TrainingParticipantResource = components['schemas']['TrainingParticipantResource'];
 export type TrainingDisciplineResource = components['schemas']['TrainingDisciplineResource'];
 export type TrainingDisciplineDistanceResource = components['schemas']['TrainingDisciplineDistanceResource'];
 export type TrainingDisciplineSubDistanceResource = components['schemas']['TrainingDisciplineSubDistanceResource'];
-export type TrainingParticipantResource = components['schemas']['TrainingParticipantResource'];
-export type SaveStatusDto = components['schemas']['SaveStatusDto'];
 
 export type GetTrainingsQuery = operations['get_training_index']['parameters']['query'];
 export type GetTrainingDetailsQuery = operations['get_training_details']['parameters']['query'];
 
-export type GetTrainingsResponse = operations['get_training_index']['responses'][200]['content']['application/json'];
-export type CreateTrainingResponse =
-    operations['post_training_create']['responses'][201]['content']['application/json'];
-export type GetTrainingResponse = operations['get_training_details']['responses'][200]['content']['application/json'];
-export type UpdateTrainingResponse = operations['put_training_update']['responses'][200]['content']['application/json'];
-export type DeleteTrainingResponse =
-    operations['delete_training_delete']['responses'][200]['content']['application/json'];
-export type UpdateTrainingStatusResponse =
-    operations['patch_training_update_status']['responses'][200]['content']['application/json'];
-export type UpdateTrainingParticipantStatusResponse =
-    operations['patch_training_participant_update_status']['responses'][200]['content']['application/json'];
-
 export const trainingService = {
-    async getTrainings(query?: GetTrainingsQuery): Promise<GetTrainingsResponse> {
-        const res = await api.GET('/api/trainings', {
-            params: { query },
-        });
+    async getTrainings(req?: ApiRequest<'get_training_index'>): Promise<ApiResponse<'get_training_index'>> {
+        const res = await api.GET('/api/trainings', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_training_index'>;
     },
-
-    async createTraining(body: TrainingDto): Promise<CreateTrainingResponse> {
-        const res = await api.POST('/api/trainings', { body });
+    async createTraining(req?: ApiRequest<'post_training_create'>): Promise<ApiResponse<'post_training_create'>> {
+        const res = await api.POST('/api/trainings', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_training_create'>;
     },
-
-    async getTraining(id: string, query?: GetTrainingDetailsQuery): Promise<GetTrainingResponse> {
-        const res = await api.GET('/api/trainings/{id}', {
-            params: { path: { id }, query },
-        });
+    async getTraining(req?: ApiRequest<'get_training_details'>): Promise<ApiResponse<'get_training_details'>> {
+        const res = await api.GET('/api/trainings/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_training_details'>;
     },
-
-    async updateTraining(id: string, body: TrainingDto): Promise<UpdateTrainingResponse> {
-        const res = await api.PUT('/api/trainings/{id}', {
-            params: { path: { id } },
-            body,
-        });
+    async updateTraining(req?: ApiRequest<'put_training_update'>): Promise<ApiResponse<'put_training_update'>> {
+        const res = await api.PUT('/api/trainings/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'put_training_update'>;
     },
-
-    async deleteTraining(id: string): Promise<DeleteTrainingResponse> {
-        const res = await api.DELETE('/api/trainings/{id}', {
-            params: { path: { id } },
-        });
+    async deleteTraining(req?: ApiRequest<'delete_training_delete'>): Promise<ApiResponse<'delete_training_delete'>> {
+        const res = await api.DELETE('/api/trainings/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'delete_training_delete'>;
     },
-
     async updateTrainingStatus(
-        id: string,
-        bodyOrStatus: components['schemas']['ElementStatusDto'] | ElementStatusEnum,
-    ): Promise<UpdateTrainingStatusResponse> {
-        const body: components['schemas']['ElementStatusDto'] =
-            typeof bodyOrStatus === 'number'
-                ? { status: bodyOrStatus as components['schemas']['ElementStatusDto']['status'] }
-                : bodyOrStatus;
-        const res = await api.PATCH('/api/trainings/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+        req?: ApiRequest<'patch_training_update_status'>,
+    ): Promise<ApiResponse<'patch_training_update_status'>> {
+        const res = await api.PATCH('/api/trainings/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'patch_training_update_status'>;
     },
-
     async updateTrainingParticipantStatus(
-        id: string,
-        bodyOrStatus: SaveStatusDto | SaveStatusEnum,
-    ): Promise<UpdateTrainingParticipantStatusResponse> {
-        const body: SaveStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as SaveStatusDto['status'] } : bodyOrStatus;
-        const res = await api.PATCH('/api/training-participants/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+        req?: ApiRequest<'patch_training_participant_update_status'>,
+    ): Promise<ApiResponse<'patch_training_participant_update_status'>> {
+        const res = await api.PATCH('/api/training-participants/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async getTrainingByLink(link: string): Promise<TrainingResource | null> {
-        const res = await api.GET('/api/trainings', {
-            params: {
-                query: {
-                    filter: { link, title: null, userId: null },
-                    limit: 1,
-                },
-            },
-        });
-        if (res.error) throw res.error;
-        const item = res.data?.data?.[0];
-        if (!item) return null;
-        const detail = await this.getTraining(item.id, {
-            'include[]': [
-                'trainingDisciplines',
-                'trainingDisciplineDistances',
-                'trainingDisciplineSubDistances',
-                'trainingParticipants',
-            ],
-        });
-        return detail.data ?? null;
+        return res.data as ApiResponse<'patch_training_participant_update_status'>;
     },
 };

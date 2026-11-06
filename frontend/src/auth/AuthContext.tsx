@@ -53,7 +53,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const fetchUser = useCallback(
         async (currentSignId: string) => {
             try {
-                const user = await userService.getUserBySignId(currentSignId);
+                const res = await userService.getUsers({
+                    params: {
+                        query: {
+                            filter: { signId: currentSignId, userIds: null },
+                            'include[]': ['userRoles', 'userDisciplines'],
+                            limit: 1,
+                        },
+                    },
+                });
+                const user = res.data?.[0];
                 if (!user) {
                     logout();
                     return;
@@ -113,7 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!signId) return;
         const interval = setInterval(async () => {
             try {
-                const data = await authService.refreshSign(signId);
+                const data = await authService.refreshSign({
+                    params: {
+                        path: { id: signId },
+                    },
+                });
                 if (data?.token) {
                     authStorage.setToken(data.token);
                     setToken(data.token);

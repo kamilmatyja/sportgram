@@ -1,6 +1,6 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import { UserStatusEnum } from '../../enums/UserStatusEnum';
+import type { ApiRequest, ApiResponse } from '../types';
 
 export type UserResource = components['schemas']['UserResource'];
 export type UserCreateDto = components['schemas']['UserCreateDto'];
@@ -14,115 +14,42 @@ export type UserDisciplineResource = components['schemas']['UserDisciplineResour
 export type GetUsersQuery = operations['get_user_index']['parameters']['query'];
 export type GetUserDetailsQuery = operations['get_user_details']['parameters']['query'];
 
-export type GetUsersResponse = operations['get_user_index']['responses'][200]['content']['application/json'];
-export type CreateUserResponse = operations['post_user_create']['responses'][201]['content']['application/json'];
-export type CreateUserNanoResponse =
-    operations['post_user_create_nano']['responses'][201]['content']['application/json'];
-export type GetUserResponse = operations['get_user_details']['responses'][200]['content']['application/json'];
-export type UpdateUserResponse = operations['put_user_update']['responses'][200]['content']['application/json'];
-export type DeleteUserResponse = operations['delete_user_delete']['responses'][200]['content']['application/json'];
-export type UpdateUserStatusResponse =
-    operations['patch_user_update_status']['responses'][200]['content']['application/json'];
-
 export const userService = {
-    async getUsers(query?: GetUsersQuery): Promise<GetUsersResponse> {
-        const res = await api.GET('/api/users', {
-            params: { query },
-        });
+    async getUsers(req?: ApiRequest<'get_user_index'>): Promise<ApiResponse<'get_user_index'>> {
+        const res = await api.GET('/api/users', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_user_index'>;
     },
-
-    async createUser(body: UserCreateDto): Promise<CreateUserResponse> {
-        const res = await api.POST('/api/users', { body });
+    async createUser(req?: ApiRequest<'post_user_create'>): Promise<ApiResponse<'post_user_create'>> {
+        const res = await api.POST('/api/users', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_user_create'>;
     },
-
-    async createUserNano(body: UserCreateNanoDto): Promise<CreateUserNanoResponse> {
-        const res = await api.POST('/api/user-nano', { body });
+    async createUserNano(req?: ApiRequest<'post_user_create_nano'>): Promise<ApiResponse<'post_user_create_nano'>> {
+        const res = await api.POST('/api/user-nano', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_user_create_nano'>;
     },
-
-    async getUser(id: string, query?: GetUserDetailsQuery): Promise<GetUserResponse> {
-        const res = await api.GET('/api/users/{id}', {
-            params: { path: { id }, query },
-        });
+    async getUser(req?: ApiRequest<'get_user_details'>): Promise<ApiResponse<'get_user_details'>> {
+        const res = await api.GET('/api/users/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_user_details'>;
     },
-
-    async updateUser(id: string, body: UserUpdateDto): Promise<UpdateUserResponse> {
-        const res = await api.PUT('/api/users/{id}', {
-            params: { path: { id } },
-            body,
-        });
+    async updateUser(req?: ApiRequest<'put_user_update'>): Promise<ApiResponse<'put_user_update'>> {
+        const res = await api.PUT('/api/users/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'put_user_update'>;
     },
-
-    async deleteUser(id: string): Promise<DeleteUserResponse> {
-        const res = await api.DELETE('/api/users/{id}', {
-            params: { path: { id } },
-        });
+    async deleteUser(req?: ApiRequest<'delete_user_delete'>): Promise<ApiResponse<'delete_user_delete'>> {
+        const res = await api.DELETE('/api/users/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'delete_user_delete'>;
     },
-
     async updateUserStatus(
-        id: string,
-        bodyOrStatus: UserStatusDto | UserStatusEnum,
-    ): Promise<UpdateUserStatusResponse> {
-        const body: UserStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as UserStatusDto['status'] } : bodyOrStatus;
-        const res = await api.PATCH('/api/users/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+        req?: ApiRequest<'patch_user_update_status'>,
+    ): Promise<ApiResponse<'patch_user_update_status'>> {
+        const res = await api.PATCH('/api/users/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async getUserBySignId(signId: string): Promise<UserResource | null> {
-        const res = await api.GET('/api/users', {
-            params: {
-                query: {
-                    filter: { signId, userIds: null },
-                    'include[]': ['userRoles', 'userDisciplines'],
-                    limit: 1,
-                },
-            },
-        });
-        if (res.error) throw res.error;
-        return res.data?.data?.[0] ?? null;
-    },
-
-    async getUserByLink(link: string): Promise<UserResource | null> {
-        const res = await api.GET('/api/users', {
-            params: {
-                query: {
-                    filter: { link, userIds: null },
-                    'include[]': ['userRoles', 'userDisciplines'],
-                    limit: 1,
-                },
-            },
-        });
-        if (res.error) throw res.error;
-        return res.data?.data?.[0] ?? null;
-    },
-
-    async getUsersByIds(userIds: string[]): Promise<UserResource[]> {
-        if (userIds.length === 0) return [];
-        const res = await api.GET('/api/users', {
-            params: {
-                query: {
-                    filter: { userIds },
-                    limit: Math.min(Math.max(userIds.length, 10), 100),
-                },
-            },
-        });
-        if (res.error) throw res.error;
-        return res.data?.data ?? [];
+        return res.data as ApiResponse<'patch_user_update_status'>;
     },
 };

@@ -1,41 +1,25 @@
 import { useState, useMemo } from 'react';
-import {
-    Button,
-    SimpleGrid,
-    TextInput,
-    Modal,
-    Stack,
-    Group,
-    ActionIcon,
-    Tooltip,
-    Center,
-    Loader,
-    Text,
-    Menu,
-    Divider,
-    Paper,
-} from '@mantine/core';
+import { Button, SimpleGrid, TextInput, Modal, Stack, Group, Text, Divider, Paper } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconTrash, IconEdit, IconAdjustments, IconDeviceMobile } from '@tabler/icons-react';
+import { IconDeviceMobile } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import {
     pushSubscriptionService,
-    userService,
     type PushSubscriptionResource,
     type GetPushSubscriptionsQuery,
 } from '../../api/services';
-import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
 import { DataTable, type Column, type SortOption } from '../../components/DataTable';
-import { StatusBadge } from '../../components/StatusBadge';
-import UserProfileNav from '../../components/UserProfileNav';
-import NotFound from '../../components/NotFound';
+import { StatusBadge } from '../../components/common/StatusBadge';
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
+import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
+import { useDataTableState } from '../../hooks/useDataTableState';
+import { StatusActionMenu } from '../../components/common/StatusActionMenu';
+import { EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -49,15 +33,14 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 export default function UserPushSubscriptions() {
-    const { link } = useParams<{ link: string }>();
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
     const [subscribing, setSubscribing] = useState(false);
 
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
-    const [sort, setSort] = useState<string | null>('createdAt:desc');
+    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
+        defaultSort: 'createdAt:desc',
+    });
 
     const [endpointFilter, setEndpointFilter] = useState('');
     const [p256dhFilter, setP256dhFilter] = useState('');
@@ -68,7 +51,7 @@ export default function UserPushSubscriptions() {
         endpoint: '',
         p256dh: '',
         auth: '',
-        userAgent: navigator.userAgent || '',
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
     });
     const [createFieldErrors, setCreateFieldErrors] = useState<Record<string, string>>({});
 
@@ -82,24 +65,6 @@ export default function UserPushSubscriptions() {
     });
     const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
 
-    const { data: targetUser, isLoading: userLoading } = useQuery({
-        queryKey: ['user', link],
-        queryFn: () => userService.getUserByLink(link || ''),
-        enabled: !!link,
-    });
-
-    const {
-        isOwner,
-        isAdmin,
-        canAccessSubpage,
-        isLoading: accessLoading,
-    } = useUserSubpageAccess({
-        targetUser,
-        ownerOrAdminOnly: true,
-    });
-
-    const canManage = isOwner || isAdmin;
-
     const activeFiltersCount = useMemo(() => {
         let count = 0;
         if (endpointFilter.trim()) count++;
@@ -112,7 +77,7 @@ export default function UserPushSubscriptions() {
         setEndpointFilter('');
         setP256dhFilter('');
         setAuthFilter('');
-        setPage(1);
+        resetPage();
     };
 
     const sortOptions: SortOption[] = [
@@ -124,511 +89,489 @@ export default function UserPushSubscriptions() {
         { value: 'status:desc', label: t('sort_status_desc') },
     ];
 
-    const queryFilter = useMemo(() => {
-        return {
-            userId: targetUser?.id ? targetUser.id : null,
-            endpoint: endpointFilter.trim() || null,
-            p256dh: p256dhFilter.trim() || null,
-            auth: authFilter.trim() || null,
-        };
-    }, [targetUser?.id, endpointFilter, p256dhFilter, authFilter]);
-
-    const { data, isLoading } = useQuery({
-        queryKey: ['push-subscriptions', targetUser?.id, page, limit, sort, queryFilter],
-        queryFn: () =>
-            pushSubscriptionService.getSubscriptions({
-                page,
-                limit,
-                sort: (sort as NonNullable<GetPushSubscriptionsQuery>['sort']) ?? 'createdAt:desc',
-                filter: queryFilter,
-            }),
-        enabled: !!targetUser?.id && canAccessSubpage,
-    });
-
-    const subs = data?.data ?? [];
-    const pagination = data?.pagination;
-
-    const handleSubscribeDevice = async () => {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            notifications.show({
-                title: t('error'),
-                message: t('pushNotificationsNotSupported'),
-                color: 'red',
-            });
-            return;
-        }
-
-        const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-        if (!vapidPublicKey) {
-            notifications.show({
-                title: t('error'),
-                message: t('missingVapidKey'),
-                color: 'red',
-            });
-            return;
-        }
-
-        setSubscribing(true);
-
-        try {
-            if ('Notification' in window && Notification.permission !== 'granted') {
-                const permission = await Notification.requestPermission();
-                if (permission !== 'granted') {
-                    throw new Error(t('pushNotificationsNotSupported'));
-                }
-            }
-            await navigator.serviceWorker.register('/sw.js');
-            const reg = await navigator.serviceWorker.ready;
-            const subscription = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-            });
-
-            const keys = subscription.toJSON().keys ?? {};
-
-            await pushSubscriptionService.createSubscription({
-                endpoint: subscription.endpoint,
-                p256dh: keys.p256dh || '',
-                auth: keys.auth || '',
-                userAgent: navigator.userAgent,
-            });
-
-            closeCreate();
-            queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-            notifications.show({
-                title: t('pushSubscriptions'),
-                message: t('browserSubscriptionSaved'),
-                color: 'green',
-            });
-        } catch (err) {
-            notifications.show({
-                title: t('error'),
-                message: getErrorMessage(err),
-                color: 'red',
-            });
-        } finally {
-            setSubscribing(false);
-        }
-    };
-
-    const createManualMutation = useMutation({
-        mutationFn: async () => {
-            await pushSubscriptionService.createPushSubscription({
-                endpoint: createForm.endpoint,
-                p256dh: createForm.p256dh,
-                auth: createForm.auth,
-                userAgent: createForm.userAgent,
-            });
-        },
-        onSuccess: () => {
-            closeCreate();
-            setCreateForm({
-                endpoint: '',
-                p256dh: '',
-                auth: '',
-                userAgent: navigator.userAgent || '',
-            });
-            setCreateFieldErrors({});
-            queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-            notifications.show({
-                title: t('pushSubscriptions'),
-                message: t('browserAdded'),
-                color: 'green',
-            });
-        },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setCreateFieldErrors(fe);
-            notifications.show({
-                title: t('error'),
-                message: getErrorMessage(err),
-                color: 'red',
-            });
-        },
-    });
-
-    const handleOpenEdit = (sub: PushSubscriptionResource) => {
-        setEditingSub(sub);
-        setEditForm({
-            endpoint: sub.endpoint || '',
-            p256dh: sub.p256dh || '',
-            auth: sub.auth || '',
-            userAgent: sub.userAgent || '',
-        });
-        setEditFieldErrors({});
-        openEdit();
-    };
-
-    const updateMutation = useMutation({
-        mutationFn: async () => {
-            if (!editingSub) return;
-            await pushSubscriptionService.updatePushSubscription(editingSub.id, {
-                endpoint: editForm.endpoint,
-                p256dh: editForm.p256dh,
-                auth: editForm.auth,
-                userAgent: editForm.userAgent,
-            });
-        },
-        onSuccess: () => {
-            closeEdit();
-            setEditingSub(null);
-            setEditFieldErrors({});
-            queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-            notifications.show({
-                title: t('pushSubscriptions'),
-                message: t('browserUpdated'),
-                color: 'green',
-            });
-        },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setEditFieldErrors(fe);
-            notifications.show({
-                title: t('error'),
-                message: getErrorMessage(err),
-                color: 'red',
-            });
-        },
-    });
-
-    const updateStatusMutation = useMutation({
-        mutationFn: ({ id, status }: { id: string; status: PushSubscriptionStatusEnum }) =>
-            pushSubscriptionService.updateSubscriptionStatus(id, status),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-            notifications.show({
-                title: t('pushSubscriptions'),
-                message: t('statusUpdated'),
-                color: 'green',
-            });
-        },
-        onError: (err) => {
-            notifications.show({
-                title: t('error'),
-                message: getErrorMessage(err),
-                color: 'red',
-            });
-        },
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: (id: string) => pushSubscriptionService.deleteSubscription(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-            notifications.show({
-                title: t('pushSubscriptions'),
-                message: t('browserSubscriptionDeleted'),
-                color: 'green',
-            });
-        },
-        onError: (err) => {
-            notifications.show({
-                title: t('error'),
-                message: getErrorMessage(err),
-                color: 'red',
-            });
-        },
-    });
-
-    const handleDelete = (id: string) => {
-        openConfirmActionModal({
-            title: t('confirmDeleteTitle'),
-            message: t('confirmDeleteMessage'),
-            confirmLabel: t('delete'),
-            cancelLabel: t('cancel'),
-            onConfirm: () => deleteMutation.mutate(id),
-        });
-    };
-
-    const columns: Column<PushSubscriptionResource>[] = [
-        {
-            key: 'device',
-            header: t('device'),
-            render: (s) => (
-                <Text size="sm" lineClamp={2} title={s.userAgent ?? ''}>
-                    {s.userAgent ? s.userAgent.slice(0, 60) + '...' : t('unknownDevice')}
-                </Text>
-            ),
-        },
-        {
-            key: 'status',
-            header: t('status'),
-            render: (s) => (
-                <StatusBadge
-                    status={s.status}
-                    color={s.status === PushSubscriptionStatusEnum.ACTIVE ? 'green' : 'red'}
-                    label={
-                        s.status === PushSubscriptionStatusEnum.ACTIVE
-                            ? t('pushSubscriptionStatuses.active')
-                            : t('pushSubscriptionStatuses.rejected')
-                    }
-                />
-            ),
-        },
-        {
-            key: 'createdAt',
-            header: t('createdAt'),
-            render: (s) => (
-                <Text size="sm" c="dimmed">
-                    {formatDateTime(s.createdAt)}
-                </Text>
-            ),
-        },
-    ];
-
-    const filtersNode = (
-        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
-            <TextInput
-                label={t('endpoint')}
-                value={endpointFilter}
-                onChange={(e) => {
-                    setEndpointFilter(e.currentTarget.value);
-                    setPage(1);
-                }}
-            />
-            <TextInput
-                label={t('p256dh')}
-                value={p256dhFilter}
-                onChange={(e) => {
-                    setP256dhFilter(e.currentTarget.value);
-                    setPage(1);
-                }}
-            />
-            <TextInput
-                label={t('authKey')}
-                value={authFilter}
-                onChange={(e) => {
-                    setAuthFilter(e.currentTarget.value);
-                    setPage(1);
-                }}
-            />
-        </SimpleGrid>
-    );
-
-    if (userLoading || accessLoading) {
-        return (
-            <Center h={200}>
-                <Loader />
-            </Center>
-        );
-    }
-
-    if (!targetUser) {
-        return <NotFound title={t('userNotFound')} />;
-    }
-
-    if (!canAccessSubpage) {
-        return <NotFound title={t('accessDenied')} />;
-    }
-
     return (
-        <Stack gap="md">
-            <UserProfileNav user={targetUser} isOwner={isOwner} />
-            <DataTable
-                columns={columns}
-                data={subs}
-                isLoading={isLoading}
-                page={page}
-                totalItems={pagination?.total}
-                onPageChange={setPage}
-                limit={limit}
-                onLimitChange={(l) => {
-                    setLimit(l);
-                    setPage(1);
-                }}
-                sort={sort}
-                onSortChange={(s) => {
-                    setSort(s);
-                    setPage(1);
-                }}
-                sortOptions={sortOptions}
-                filtersNode={filtersNode}
-                hasActiveFilters={activeFiltersCount > 0}
-                activeFiltersCount={activeFiltersCount}
-                onResetFilters={handleResetFilters}
-                onAdd={isOwner ? openCreate : undefined}
-                addLabel={t('addSubscription')}
-                actions={(s) => (
-                    <Group gap="xs" justify="flex-end" wrap="nowrap">
-                        {canManage && (
-                            <Menu shadow="md" width={160}>
-                                <Menu.Target>
-                                    <Tooltip label={t('changeStatus')} withArrow>
-                                        <ActionIcon variant="light" size={30} aria-label={t('changeStatus')}>
-                                            <IconAdjustments size={16} />
-                                        </ActionIcon>
-                                    </Tooltip>
-                                </Menu.Target>
-                                <Menu.Dropdown>
-                                    {PushSubscriptionStatusEnum.getOptions(t).map((opt) => (
-                                        <Menu.Item
-                                            key={opt.value}
-                                            disabled={s.status === opt.value || updateStatusMutation.isPending}
-                                            onClick={() =>
-                                                updateStatusMutation.mutate({
-                                                    id: s.id,
-                                                    status: opt.value as PushSubscriptionStatusEnum,
-                                                })
-                                            }
-                                        >
-                                            {opt.label}
-                                        </Menu.Item>
-                                    ))}
-                                </Menu.Dropdown>
-                            </Menu>
-                        )}
+        <UserSubpageContainer ownerOrAdminOnly={true}>
+            {({ targetUser, isOwner, isAdmin }) => {
+                const canManage = isOwner || isAdmin;
 
-                        {isOwner && (
-                            <>
-                                <Tooltip label={t('editBrowser')} withArrow>
-                                    <ActionIcon
-                                        variant="light"
-                                        size={30}
-                                        onClick={() => handleOpenEdit(s)}
-                                        aria-label={t('editBrowser')}
-                                    >
-                                        <IconEdit size={16} />
-                                    </ActionIcon>
-                                </Tooltip>
+                const queryFilter = {
+                    userId: targetUser.id,
+                    endpoint: endpointFilter.trim() || null,
+                    p256dh: p256dhFilter.trim() || null,
+                    auth: authFilter.trim() || null,
+                };
 
-                                <Tooltip label={t('delete')} withArrow>
-                                    <ActionIcon
-                                        size={30}
-                                        color="red"
-                                        variant="light"
-                                        onClick={() => handleDelete(s.id)}
-                                        loading={deleteMutation.isPending}
-                                        disabled={deleteMutation.isPending}
-                                        aria-label={t('delete')}
-                                    >
-                                        <IconTrash size={16} />
-                                    </ActionIcon>
-                                </Tooltip>
-                            </>
-                        )}
-                    </Group>
-                )}
-            />
+                const { data, isLoading } = useQuery({
+                    queryKey: ['push-subscriptions', targetUser.id, page, limit, sort, queryFilter],
+                    queryFn: () =>
+                        pushSubscriptionService.getPushSubscriptions({
+                            params: {
+                                query: {
+                                    page,
+                                    limit,
+                                    sort: (sort as NonNullable<GetPushSubscriptionsQuery>['sort']) ?? 'createdAt:desc',
+                                    filter: queryFilter,
+                                },
+                            },
+                        }),
+                });
 
-            <Modal opened={createOpened} onClose={closeCreate} title={t('addSubscription')} size="lg">
-                <Stack gap="md">
-                    <Paper withBorder p="md" radius="md">
-                        <Stack gap="xs">
-                            <Text fw={600} size="sm">
-                                {t('subscribeThisDevice')}
+                const subs = data?.data ?? [];
+                const pagination = data?.pagination;
+
+                const handleSubscribeDevice = async () => {
+                    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                        notifications.show({
+                            title: t('error'),
+                            message: t('pushNotificationsNotSupported'),
+                            color: 'red',
+                        });
+                        return;
+                    }
+
+                    const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+                    if (!vapidPublicKey) {
+                        notifications.show({
+                            title: t('error'),
+                            message: t('missingVapidKey'),
+                            color: 'red',
+                        });
+                        return;
+                    }
+
+                    setSubscribing(true);
+
+                    try {
+                        if ('Notification' in window && Notification.permission !== 'granted') {
+                            const permission = await Notification.requestPermission();
+                            if (permission !== 'granted') {
+                                throw new Error(t('pushNotificationsNotSupported'));
+                            }
+                        }
+                        await navigator.serviceWorker.register('/sw.js');
+                        const reg = await navigator.serviceWorker.ready;
+                        const subscription = await reg.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+                        });
+
+                        const keys = subscription.toJSON().keys ?? {};
+
+                        await pushSubscriptionService.createPushSubscription({
+                            body: {
+                                endpoint: subscription.endpoint,
+                                p256dh: keys.p256dh || '',
+                                auth: keys.auth || '',
+                                userAgent: navigator.userAgent,
+                            },
+                        });
+
+                        closeCreate();
+                        queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifications.show({
+                            title: t('pushSubscriptions'),
+                            message: t('browserSubscriptionSaved'),
+                            color: 'green',
+                        });
+                    } catch (err) {
+                        notifications.show({
+                            title: t('error'),
+                            message: getErrorMessage(err),
+                            color: 'red',
+                        });
+                    } finally {
+                        setSubscribing(false);
+                    }
+                };
+
+                const createManualMutation = useMutation({
+                    mutationFn: async () => {
+                        await pushSubscriptionService.createPushSubscription({
+                            body: {
+                                endpoint: createForm.endpoint,
+                                p256dh: createForm.p256dh,
+                                auth: createForm.auth,
+                                userAgent: createForm.userAgent,
+                            },
+                        });
+                    },
+                    onSuccess: () => {
+                        closeCreate();
+                        setCreateForm({
+                            endpoint: '',
+                            p256dh: '',
+                            auth: '',
+                            userAgent: navigator.userAgent || '',
+                        });
+                        setCreateFieldErrors({});
+                        queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifications.show({
+                            title: t('pushSubscriptions'),
+                            message: t('browserAdded'),
+                            color: 'green',
+                        });
+                    },
+                    onError: (err) => {
+                        const fe = extractFieldErrors(err);
+                        setCreateFieldErrors(fe);
+                        notifications.show({
+                            title: t('error'),
+                            message: getErrorMessage(err),
+                            color: 'red',
+                        });
+                    },
+                });
+
+                const handleOpenEdit = (sub: PushSubscriptionResource) => {
+                    setEditingSub(sub);
+                    setEditForm({
+                        endpoint: sub.endpoint || '',
+                        p256dh: sub.p256dh || '',
+                        auth: sub.auth || '',
+                        userAgent: sub.userAgent || '',
+                    });
+                    setEditFieldErrors({});
+                    openEdit();
+                };
+
+                const updateMutation = useMutation({
+                    mutationFn: async () => {
+                        if (!editingSub) return;
+                        await pushSubscriptionService.updatePushSubscription({
+                            params: { path: { id: editingSub.id } },
+                            body: {
+                                endpoint: editForm.endpoint,
+                                p256dh: editForm.p256dh,
+                                auth: editForm.auth,
+                                userAgent: editForm.userAgent,
+                            },
+                        });
+                    },
+                    onSuccess: () => {
+                        closeEdit();
+                        setEditingSub(null);
+                        setEditFieldErrors({});
+                        queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifications.show({
+                            title: t('pushSubscriptions'),
+                            message: t('browserUpdated'),
+                            color: 'green',
+                        });
+                    },
+                    onError: (err) => {
+                        const fe = extractFieldErrors(err);
+                        setEditFieldErrors(fe);
+                        notifications.show({
+                            title: t('error'),
+                            message: getErrorMessage(err),
+                            color: 'red',
+                        });
+                    },
+                });
+
+                const updateStatusMutation = useMutation({
+                    mutationFn: ({ id, status }: { id: string; status: PushSubscriptionStatusEnum }) =>
+                        pushSubscriptionService.updatePushSubscriptionStatus({
+                            params: { path: { id } },
+                            body: { status },
+                        }),
+                    onSuccess: () => {
+                        queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifications.show({
+                            title: t('pushSubscriptions'),
+                            message: t('statusUpdated'),
+                            color: 'green',
+                        });
+                    },
+                    onError: (err) => {
+                        notifications.show({
+                            title: t('error'),
+                            message: getErrorMessage(err),
+                            color: 'red',
+                        });
+                    },
+                });
+
+                const deleteMutation = useMutation({
+                    mutationFn: (id: string) =>
+                        pushSubscriptionService.deletePushSubscription({
+                            params: { path: { id } },
+                        }),
+                    onSuccess: () => {
+                        queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifications.show({
+                            title: t('pushSubscriptions'),
+                            message: t('browserSubscriptionDeleted'),
+                            color: 'green',
+                        });
+                    },
+                    onError: (err) => {
+                        notifications.show({
+                            title: t('error'),
+                            message: getErrorMessage(err),
+                            color: 'red',
+                        });
+                    },
+                });
+
+                const handleDelete = (id: string) => {
+                    openConfirmActionModal({
+                        title: t('confirmDeleteTitle'),
+                        message: t('confirmDeleteMessage'),
+                        confirmLabel: t('delete'),
+                        cancelLabel: t('cancel'),
+                        onConfirm: () => deleteMutation.mutate(id),
+                    });
+                };
+
+                const columns: Column<PushSubscriptionResource>[] = [
+                    {
+                        key: 'device',
+                        header: t('device'),
+                        render: (s) => (
+                            <Text size="sm" lineClamp={2} title={s.userAgent ?? ''}>
+                                {s.userAgent ? s.userAgent.slice(0, 60) + '...' : t('unknownDevice')}
                             </Text>
-                            <Text size="xs" c="dimmed">
-                                {t('pushPermissionWillBeAsked')}
+                        ),
+                    },
+                    {
+                        key: 'status',
+                        header: t('status'),
+                        render: (s) => <StatusBadge status={s.status} enumType={PushSubscriptionStatusEnum} />,
+                    },
+                    {
+                        key: 'createdAt',
+                        header: t('createdAt'),
+                        render: (s) => (
+                            <Text size="sm" c="dimmed">
+                                {formatDateTime(s.createdAt)}
                             </Text>
-                            <Button
-                                mt="xs"
-                                loading={subscribing}
-                                disabled={subscribing}
-                                leftSection={<IconDeviceMobile size={16} />}
-                                onClick={handleSubscribeDevice}
-                            >
-                                {t('subscribeThisDevice')}
-                            </Button>
-                        </Stack>
-                    </Paper>
+                        ),
+                    },
+                ];
 
-                    <Divider label={t('orManualEntry')} labelPosition="center" />
-
-                    <Stack gap="sm">
+                const filtersNode = (
+                    <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
                         <TextInput
                             label={t('endpoint')}
-                            placeholder="https://..."
-                            required
-                            value={createForm.endpoint}
-                            error={createFieldErrors.endpoint}
-                            onChange={(e) => setCreateForm({ ...createForm, endpoint: e.currentTarget.value })}
+                            value={endpointFilter}
+                            onChange={(e) => {
+                                setEndpointFilter(e.currentTarget.value);
+                                resetPage();
+                            }}
                         />
                         <TextInput
                             label={t('p256dh')}
-                            placeholder="p256dh..."
-                            required
-                            value={createForm.p256dh}
-                            error={createFieldErrors.p256dh}
-                            onChange={(e) => setCreateForm({ ...createForm, p256dh: e.currentTarget.value })}
+                            value={p256dhFilter}
+                            onChange={(e) => {
+                                setP256dhFilter(e.currentTarget.value);
+                                resetPage();
+                            }}
                         />
                         <TextInput
                             label={t('authKey')}
-                            placeholder="auth..."
-                            required
-                            value={createForm.auth}
-                            error={createFieldErrors.auth}
-                            onChange={(e) => setCreateForm({ ...createForm, auth: e.currentTarget.value })}
+                            value={authFilter}
+                            onChange={(e) => {
+                                setAuthFilter(e.currentTarget.value);
+                                resetPage();
+                            }}
                         />
-                        <TextInput
-                            label={t('device')}
-                            placeholder="User-Agent..."
-                            required
-                            value={createForm.userAgent}
-                            error={createFieldErrors.userAgent}
-                            onChange={(e) => setCreateForm({ ...createForm, userAgent: e.currentTarget.value })}
-                        />
-                        <Button
-                            mt="sm"
-                            loading={createManualMutation.isPending}
-                            disabled={
-                                createManualMutation.isPending ||
-                                !createForm.endpoint.trim() ||
-                                !createForm.p256dh.trim() ||
-                                !createForm.auth.trim()
-                            }
-                            onClick={() => createManualMutation.mutate()}
-                        >
-                            {t('add')}
-                        </Button>
-                    </Stack>
-                </Stack>
-            </Modal>
+                    </SimpleGrid>
+                );
 
-            <Modal opened={editOpened} onClose={closeEdit} title={t('editBrowser')} size="lg">
-                <Stack gap="sm">
-                    <TextInput
-                        label={t('endpoint')}
-                        required
-                        value={editForm.endpoint}
-                        error={editFieldErrors.endpoint}
-                        onChange={(e) => setEditForm({ ...editForm, endpoint: e.currentTarget.value })}
-                    />
-                    <TextInput
-                        label={t('p256dh')}
-                        required
-                        value={editForm.p256dh}
-                        error={editFieldErrors.p256dh}
-                        onChange={(e) => setEditForm({ ...editForm, p256dh: e.currentTarget.value })}
-                    />
-                    <TextInput
-                        label={t('authKey')}
-                        required
-                        value={editForm.auth}
-                        error={editFieldErrors.auth}
-                        onChange={(e) => setEditForm({ ...editForm, auth: e.currentTarget.value })}
-                    />
-                    <TextInput
-                        label={t('device')}
-                        required
-                        value={editForm.userAgent}
-                        error={editFieldErrors.userAgent}
-                        onChange={(e) => setEditForm({ ...editForm, userAgent: e.currentTarget.value })}
-                    />
-                    <Button
-                        mt="md"
-                        loading={updateMutation.isPending}
-                        disabled={
-                            updateMutation.isPending ||
-                            !editForm.endpoint.trim() ||
-                            !editForm.p256dh.trim() ||
-                            !editForm.auth.trim()
-                        }
-                        onClick={() => updateMutation.mutate()}
-                    >
-                        {t('save')}
-                    </Button>
-                </Stack>
-            </Modal>
-        </Stack>
+                return (
+                    <>
+                        <DataTable
+                            columns={columns}
+                            data={subs}
+                            isLoading={isLoading}
+                            page={page}
+                            totalItems={pagination?.total}
+                            onPageChange={setPage}
+                            limit={limit}
+                            onLimitChange={onLimitChange}
+                            sort={sort}
+                            onSortChange={onSortChange}
+                            sortOptions={sortOptions}
+                            filtersNode={filtersNode}
+                            hasActiveFilters={activeFiltersCount > 0}
+                            activeFiltersCount={activeFiltersCount}
+                            onResetFilters={handleResetFilters}
+                            onAdd={isOwner ? openCreate : undefined}
+                            addLabel={t('addSubscription')}
+                            actions={(s) => (
+                                <Group gap="xs" justify="flex-end" wrap="nowrap">
+                                    {canManage && (
+                                        <StatusActionMenu
+                                            currentStatus={s.status}
+                                            options={PushSubscriptionStatusEnum.getOptions(t)}
+                                            onStatusChange={(status) =>
+                                                updateStatusMutation.mutate({
+                                                    id: s.id,
+                                                    status: status as PushSubscriptionStatusEnum,
+                                                })
+                                            }
+                                            isPending={updateStatusMutation.isPending}
+                                        />
+                                    )}
+                                    {isOwner && <EditActionButton onClick={() => handleOpenEdit(s)} />}
+                                    {isOwner && (
+                                        <DeleteActionButton
+                                            onClick={() => handleDelete(s.id)}
+                                            isPending={deleteMutation.isPending}
+                                        />
+                                    )}
+                                </Group>
+                            )}
+                        />
+
+                        <Modal opened={createOpened} onClose={closeCreate} title={t('addSubscription')} size="lg">
+                            <Stack gap="md">
+                                <Paper withBorder p="md" radius="md">
+                                    <Stack gap="xs">
+                                        <Text fw={600} size="sm">
+                                            {t('subscribeThisDevice')}
+                                        </Text>
+                                        <Text size="xs" c="dimmed">
+                                            {t('pushPermissionWillBeAsked')}
+                                        </Text>
+                                        <Button
+                                            mt="xs"
+                                            loading={subscribing}
+                                            disabled={subscribing}
+                                            leftSection={<IconDeviceMobile size={16} />}
+                                            onClick={handleSubscribeDevice}
+                                        >
+                                            {t('subscribeThisDevice')}
+                                        </Button>
+                                    </Stack>
+                                </Paper>
+
+                                <Divider label={t('orManualEntry')} labelPosition="center" />
+
+                                <Stack gap="sm">
+                                    <TextInput
+                                        label={t('endpoint')}
+                                        placeholder="https://..."
+                                        required
+                                        value={createForm.endpoint}
+                                        error={createFieldErrors.endpoint}
+                                        onChange={(e) =>
+                                            setCreateForm({
+                                                ...createForm,
+                                                endpoint: e.currentTarget.value,
+                                            })
+                                        }
+                                    />
+                                    <TextInput
+                                        label={t('p256dh')}
+                                        placeholder="p256dh..."
+                                        required
+                                        value={createForm.p256dh}
+                                        error={createFieldErrors.p256dh}
+                                        onChange={(e) =>
+                                            setCreateForm({
+                                                ...createForm,
+                                                p256dh: e.currentTarget.value,
+                                            })
+                                        }
+                                    />
+                                    <TextInput
+                                        label={t('authKey')}
+                                        placeholder="auth..."
+                                        required
+                                        value={createForm.auth}
+                                        error={createFieldErrors.auth}
+                                        onChange={(e) =>
+                                            setCreateForm({
+                                                ...createForm,
+                                                auth: e.currentTarget.value,
+                                            })
+                                        }
+                                    />
+                                    <TextInput
+                                        label={t('device')}
+                                        placeholder="User-Agent..."
+                                        required
+                                        value={createForm.userAgent}
+                                        error={createFieldErrors.userAgent}
+                                        onChange={(e) =>
+                                            setCreateForm({
+                                                ...createForm,
+                                                userAgent: e.currentTarget.value,
+                                            })
+                                        }
+                                    />
+                                    <Button
+                                        mt="sm"
+                                        loading={createManualMutation.isPending}
+                                        disabled={
+                                            createManualMutation.isPending ||
+                                            !createForm.endpoint.trim() ||
+                                            !createForm.p256dh.trim() ||
+                                            !createForm.auth.trim()
+                                        }
+                                        onClick={() => createManualMutation.mutate()}
+                                    >
+                                        {t('add')}
+                                    </Button>
+                                </Stack>
+                            </Stack>
+                        </Modal>
+
+                        <Modal opened={editOpened} onClose={closeEdit} title={t('editBrowser')} size="lg">
+                            <Stack gap="sm">
+                                <TextInput
+                                    label={t('endpoint')}
+                                    required
+                                    value={editForm.endpoint}
+                                    error={editFieldErrors.endpoint}
+                                    onChange={(e) => setEditForm({ ...editForm, endpoint: e.currentTarget.value })}
+                                />
+                                <TextInput
+                                    label={t('p256dh')}
+                                    required
+                                    value={editForm.p256dh}
+                                    error={editFieldErrors.p256dh}
+                                    onChange={(e) => setEditForm({ ...editForm, p256dh: e.currentTarget.value })}
+                                />
+                                <TextInput
+                                    label={t('authKey')}
+                                    required
+                                    value={editForm.auth}
+                                    error={editFieldErrors.auth}
+                                    onChange={(e) => setEditForm({ ...editForm, auth: e.currentTarget.value })}
+                                />
+                                <TextInput
+                                    label={t('device')}
+                                    required
+                                    value={editForm.userAgent}
+                                    error={editFieldErrors.userAgent}
+                                    onChange={(e) =>
+                                        setEditForm({
+                                            ...editForm,
+                                            userAgent: e.currentTarget.value,
+                                        })
+                                    }
+                                />
+                                <Button
+                                    mt="md"
+                                    loading={updateMutation.isPending}
+                                    disabled={
+                                        updateMutation.isPending ||
+                                        !editForm.endpoint.trim() ||
+                                        !editForm.p256dh.trim() ||
+                                        !editForm.auth.trim()
+                                    }
+                                    onClick={() => updateMutation.mutate()}
+                                >
+                                    {t('save')}
+                                </Button>
+                            </Stack>
+                        </Modal>
+                    </>
+                );
+            }}
+        </UserSubpageContainer>
     );
 }

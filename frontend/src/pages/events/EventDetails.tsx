@@ -16,45 +16,26 @@ import {
     MantineThemeProvider,
     Center,
     Loader,
-    Menu,
     Modal,
     TextInput,
-    Textarea,
-    FileInput,
-    Select,
-    SimpleGrid,
-    Avatar,
     Box,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import NotFound from '../../components/NotFound';
 import { EmptyState } from '../../components/EmptyState';
 import { notifications } from '@mantine/notifications';
-import {
-    IconMapPin,
-    IconClock,
-    IconTrash,
-    IconCheck,
-    IconEdit,
-    IconAdjustments,
-    IconPlus,
-    IconEye,
-    IconChevronDown,
-    IconChevronRight,
-} from '@tabler/icons-react';
+import { IconMapPin, IconClock, IconCheck, IconPlus, IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { applyThemeColor } from '../../utils/themeUtils';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
+import { getErrorMessage } from '../../api/client';
 import {
     eventService,
     pageService,
-    userService,
     type EventDisciplineDistanceResource,
     type EventDisciplineDistanceListResource,
     type EventDisciplineDistanceResultResource,
-    type UserResource,
 } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
@@ -62,27 +43,16 @@ import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { EntityViewCounter } from '../../components/EntityViewCounter';
-import { formatImageSrc, fileToBase64 } from '../../utils/imageUtils';
 import { PageNav } from '../../components/PageNav';
 import { formatDateTime } from '../../utils/date';
 import { openConfirmActionModal } from '../../utils/confirmModal';
-
-interface FormEventSubDistance {
-    id: string;
-    subDistance: string;
-}
-
-interface FormEventDistance {
-    id: string;
-    distance: string;
-    subDistances: FormEventSubDistance[];
-}
-
-interface FormEventDiscipline {
-    id: string;
-    discipline: string | null;
-    distances: FormEventDistance[];
-}
+import { StatusBadge } from '../../components/common/StatusBadge';
+import { StatusActionMenu } from '../../components/common/StatusActionMenu';
+import { formatImageSrc } from '../../utils/imageUtils';
+import { EditActionButton, DeleteActionButton, ViewActionButton } from '../../components/common/RowActionButtons';
+import { EventFormModal } from '../../components/events/EventFormModal';
+import { useUsersMap } from '../../hooks/useUsersMap';
+import { UserInfoCell } from '../../components/common/UserInfoCell';
 
 interface DistanceParticipantsProps {
     distance: EventDisciplineDistanceResource;
@@ -130,42 +100,30 @@ function DistanceParticipantsSection({
     const { data: listData, isLoading } = useQuery({
         queryKey: ['distance-participants', distance.id],
         queryFn: async () => {
-            return await eventService.getEventDisciplineDistances({
-                filter: {
-                    eventDisciplineDistanceId: distance.id,
+            return await eventService.getEventDisciplineDistanceLists({
+                params: {
+                    query: {
+                        filter: {
+                            eventDisciplineDistanceId: distance.id,
+                        },
+                        'include[]': ['eventListResults', 'eventListSubResults'],
+                    },
                 },
-                'include[]': ['eventListResults', 'eventListSubResults'],
             });
         },
     });
 
     const participants = listData?.data ?? [];
-
-    const participantUserIds = useMemo(() => {
-        return Array.from(new Set(participants.map((p) => p.userId)));
-    }, [participants]);
-
-    const { data: usersData } = useQuery({
-        queryKey: ['distance-users', participantUserIds],
-        queryFn: async () => {
-            if (participantUserIds.length === 0) return {};
-            const users = await userService.getUsersByIds(participantUserIds);
-            const map: Record<string, UserResource> = {};
-            users.forEach((u) => {
-                map[u.id] = u;
-            });
-            return map;
-        },
-        enabled: participantUserIds.length > 0,
-    });
-
-    const users = usersData ?? {};
+    const { getUser } = useUsersMap(participants.map((p) => p.userId));
 
     const isSignedUp = participants.some((p) => p.userId === currentUserId);
 
     const updateParticipantStatusMutation = useMutation({
         mutationFn: ({ participantId, status }: { participantId: string; status: ElementStatusEnum }) =>
-            eventService.updateEventDisciplineDistanceListStatus(participantId, status),
+            eventService.updateEventDisciplineDistanceListStatus({
+                params: { path: { id: participantId } },
+                body: { status: status as 1 | 2 | 3 },
+            }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['distance-participants', distance.id] });
             notifications.show({ title: t('participants'), message: t('statusUpdated'), color: 'green' });
@@ -178,18 +136,21 @@ function DistanceParticipantsSection({
     const createResultMutation = useMutation({
         mutationFn: async () => {
             if (!selectedParticipantId) return;
-            await eventService.createEventDisciplineDistanceResult(selectedParticipantId, {
-                time: Math.round(Number(resultTime)) || 0,
-                subResults: (distance.subDistances || [])
-                    .map((sd, idx) => {
-                        const val = subResultsTimes[idx];
-                        if (!val || !val.trim()) return null;
-                        return {
-                            eventDisciplineSubDistanceId: sd.id,
-                            time: Math.round(Number(val)) || 0,
-                        };
-                    })
-                    .filter((sr): sr is { eventDisciplineSubDistanceId: string; time: number } => sr !== null),
+            await eventService.createEventDisciplineDistanceResult({
+                params: { path: { id: selectedParticipantId } },
+                body: {
+                    time: Math.round(Number(resultTime)) || 0,
+                    subResults: (distance.subDistances || [])
+                        .map((sd, idx) => {
+                            const val = subResultsTimes[idx];
+                            if (!val || !val.trim()) return null;
+                            return {
+                                eventDisciplineSubDistanceId: sd.id,
+                                time: Math.round(Number(val)) || 0,
+                            };
+                        })
+                        .filter((sr): sr is { eventDisciplineSubDistanceId: string; time: number } => sr !== null),
+                },
             });
         },
         onSuccess: () => {
@@ -213,18 +174,21 @@ function DistanceParticipantsSection({
     const updateResultMutation = useMutation({
         mutationFn: async () => {
             if (!editingResultId) return;
-            await eventService.updateEventDisciplineDistanceResult(editingResultId, {
-                time: Math.round(Number(editResultTime)) || 0,
-                subResults: (distance.subDistances || [])
-                    .map((sd, idx) => {
-                        const val = editSubResultsTimes[idx];
-                        if (!val || !val.trim()) return null;
-                        return {
-                            eventDisciplineSubDistanceId: sd.id,
-                            time: Math.round(Number(val)) || 0,
-                        };
-                    })
-                    .filter((sr): sr is { eventDisciplineSubDistanceId: string; time: number } => sr !== null),
+            await eventService.updateEventDisciplineDistanceResult({
+                params: { path: { id: editingResultId } },
+                body: {
+                    time: Math.round(Number(editResultTime)) || 0,
+                    subResults: (distance.subDistances || [])
+                        .map((sd, idx) => {
+                            const val = editSubResultsTimes[idx];
+                            if (!val || !val.trim()) return null;
+                            return {
+                                eventDisciplineSubDistanceId: sd.id,
+                                time: Math.round(Number(val)) || 0,
+                            };
+                        })
+                        .filter((sr): sr is { eventDisciplineSubDistanceId: string; time: number } => sr !== null),
+                },
             });
         },
         onSuccess: () => {
@@ -241,7 +205,10 @@ function DistanceParticipantsSection({
     });
 
     const deleteResultMutation = useMutation({
-        mutationFn: (resultId: string) => eventService.deleteEventDisciplineDistanceResult(resultId),
+        mutationFn: (resultId: string) =>
+            eventService.deleteEventDisciplineDistanceResult({
+                params: { path: { id: resultId } },
+            }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['distance-participants', distance.id] });
             notifications.show({ title: t('events'), message: t('deleted'), color: 'green' });
@@ -324,16 +291,9 @@ function DistanceParticipantsSection({
                             </Table.Thead>
                             <Table.Tbody>
                                 {participants.map((p: EventDisciplineDistanceListResource, pIdx) => {
-                                    const u = users[p.userId];
+                                    const u = getUser(p.userId);
                                     const isSelf = p.userId === currentUserId;
                                     const canManageParticipant = isSelf || isOwner;
-                                    const pOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === p.status);
-                                    const pColor =
-                                        p.status === ElementStatusEnum.ACTIVE
-                                            ? 'green'
-                                            : p.status === ElementStatusEnum.REJECTED
-                                              ? 'red'
-                                              : 'gray';
                                     const hasResults = p.results && p.results.length > 0;
                                     const isParticipantExpanded = expandedParticipantIds.includes(p.id);
 
@@ -359,73 +319,25 @@ function DistanceParticipantsSection({
                                                     ) : null}
                                                 </Table.Td>
                                                 <Table.Td>
-                                                    <Group gap="sm">
-                                                        <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
-                                                            ?
-                                                        </Avatar>
-                                                        <div>
-                                                            <Text size="sm" fw={600}>
-                                                                {u ? `${u.firstName} ${u.lastName}` : p.userId}
-                                                            </Text>
-                                                            {u?.link && (
-                                                                <Text size="sm" c="dimmed">
-                                                                    @{u.link}
-                                                                </Text>
-                                                            )}
-                                                        </div>
-                                                    </Group>
+                                                    <UserInfoCell user={u} userId={p.userId} />
                                                 </Table.Td>
                                                 <Table.Td>
-                                                    <Badge color={pColor} variant="light">
-                                                        {pOpt?.label ?? p.status}
-                                                    </Badge>
+                                                    <StatusBadge status={p.status} enumType={ElementStatusEnum} />
                                                 </Table.Td>
                                                 <Table.Td ta="right">
                                                     <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                        {u?.link && (
-                                                            <Tooltip label={t('details')} withArrow>
-                                                                <ActionIcon
-                                                                    component={Link}
-                                                                    to={`/users/${u.link}`}
-                                                                    variant="light"
-                                                                    aria-label={t('details')}
-                                                                >
-                                                                    <IconEye size={16} />
-                                                                </ActionIcon>
-                                                            </Tooltip>
-                                                        )}
+                                                        {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
                                                         {canManageParticipant && (
-                                                            <Menu shadow="md" width={160}>
-                                                                <Menu.Target>
-                                                                    <Tooltip label={t('changeStatus')} withArrow>
-                                                                        <ActionIcon
-                                                                            variant="light"
-                                                                            aria-label={t('changeStatus')}
-                                                                        >
-                                                                            <IconAdjustments size={16} />
-                                                                        </ActionIcon>
-                                                                    </Tooltip>
-                                                                </Menu.Target>
-                                                                <Menu.Dropdown>
-                                                                    {ElementStatusEnum.getOptions(t).map((opt) => (
-                                                                        <Menu.Item
-                                                                            key={opt.value}
-                                                                            disabled={
-                                                                                p.status === opt.value ||
-                                                                                updateParticipantStatusMutation.isPending
-                                                                            }
-                                                                            onClick={() =>
-                                                                                updateParticipantStatusMutation.mutate({
-                                                                                    participantId: p.id,
-                                                                                    status: opt.value as ElementStatusEnum,
-                                                                                })
-                                                                            }
-                                                                        >
-                                                                            {opt.label}
-                                                                        </Menu.Item>
-                                                                    ))}
-                                                                </Menu.Dropdown>
-                                                            </Menu>
+                                                            <StatusActionMenu
+                                                                status={p.status}
+                                                                onStatusChange={(status) =>
+                                                                    updateParticipantStatusMutation.mutate({
+                                                                        participantId: p.id,
+                                                                        status: status as ElementStatusEnum,
+                                                                    })
+                                                                }
+                                                                isPending={updateParticipantStatusMutation.isPending}
+                                                            />
                                                         )}
                                                         {isOwner &&
                                                             p.status === ElementStatusEnum.ACTIVE &&
@@ -531,49 +443,23 @@ function DistanceParticipantsSection({
                                                                                                 justify="flex-end"
                                                                                                 wrap="nowrap"
                                                                                             >
-                                                                                                <Tooltip
-                                                                                                    label={t(
+                                                                                                <EditActionButton
+                                                                                                    onClick={() =>
+                                                                                                        handleOpenEditResult(
+                                                                                                            res,
+                                                                                                        )
+                                                                                                    }
+                                                                                                    tooltip={t(
                                                                                                         'editResult',
                                                                                                     )}
-                                                                                                    withArrow
-                                                                                                >
-                                                                                                    <ActionIcon
-                                                                                                        variant="light"
-                                                                                                        onClick={() =>
-                                                                                                            handleOpenEditResult(
-                                                                                                                res,
-                                                                                                            )
-                                                                                                        }
-                                                                                                        aria-label={t(
-                                                                                                            'editResult',
-                                                                                                        )}
-                                                                                                    >
-                                                                                                        <IconEdit
-                                                                                                            size={16}
-                                                                                                        />
-                                                                                                    </ActionIcon>
-                                                                                                </Tooltip>
-                                                                                                <Tooltip
-                                                                                                    label={t('delete')}
-                                                                                                    withArrow
-                                                                                                >
-                                                                                                    <ActionIcon
-                                                                                                        variant="light"
-                                                                                                        color="red"
-                                                                                                        onClick={() =>
-                                                                                                            handleDeleteResult(
-                                                                                                                res.id,
-                                                                                                            )
-                                                                                                        }
-                                                                                                        aria-label={t(
-                                                                                                            'delete',
-                                                                                                        )}
-                                                                                                    >
-                                                                                                        <IconTrash
-                                                                                                            size={16}
-                                                                                                        />
-                                                                                                    </ActionIcon>
-                                                                                                </Tooltip>
+                                                                                                />
+                                                                                                <DeleteActionButton
+                                                                                                    onClick={() =>
+                                                                                                        handleDeleteResult(
+                                                                                                            res.id,
+                                                                                                        )
+                                                                                                    }
+                                                                                                />
                                                                                             </Group>
                                                                                         )}
                                                                                     </Table.Td>
@@ -770,28 +656,36 @@ export default function EventDetails() {
     const { currentUser, isParticipant, isAdmin } = useAuth();
 
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
-    const [editPhotoFile, setEditPhotoFile] = useState<File | null>(null);
-    const [editFormData, setEditFormData] = useState({
-        title: '',
-        description: '',
-        link: '',
-        location: '',
-        rules: '',
-        startedAt: '',
-        endedAt: '',
-    });
-    const [editDisciplines, setEditDisciplines] = useState<FormEventDiscipline[]>([]);
-    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
 
     const { data: event, isLoading: eventLoading } = useQuery({
         queryKey: ['event', link],
-        queryFn: () => eventService.getEventByLink(link || ''),
+        queryFn: async () => {
+            if (!link) return null;
+            const res = await eventService.getEvents({
+                params: {
+                    query: {
+                        filter: { link },
+                        limit: 1,
+                        'include[]': ['eventDisciplines', 'eventDisciplineDistances', 'eventDisciplineSubDistances'],
+                    },
+                },
+            });
+            return res.data?.[0] ?? null;
+        },
         enabled: !!link,
     });
 
     const { data: pagesData } = useQuery({
         queryKey: ['pages-with-participants'],
-        queryFn: () => pageService.getPages({ limit: 100, 'include[]': ['pageParticipants'] }),
+        queryFn: () =>
+            pageService.getPages({
+                params: {
+                    query: {
+                        limit: 100,
+                        'include[]': ['pageParticipants'],
+                    },
+                },
+            }),
         enabled: !!event?.pageParticipantId,
     });
 
@@ -805,7 +699,10 @@ export default function EventDetails() {
     const canManageStatus = isOwner || isAdmin;
 
     const signUpMutation = useMutation({
-        mutationFn: (distanceId: string) => eventService.signUpForDistance(distanceId),
+        mutationFn: (distanceId: string) =>
+            eventService.createEventDisciplineDistanceList({
+                params: { path: { id: distanceId } },
+            }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['distance-participants'] });
             notifications.show({ title: t('events'), message: t('signedUpForStartList'), color: 'green' });
@@ -815,191 +712,13 @@ export default function EventDetails() {
         },
     });
 
-    const handleAddEditDiscipline = () => {
-        setEditDisciplines((prev) => [
-            ...prev,
-            {
-                id: crypto.randomUUID(),
-                discipline: null,
-                distances: [{ id: crypto.randomUUID(), distance: '', subDistances: [] }],
-            },
-        ]);
-    };
-
-    const handleRemoveEditDiscipline = (id: string) => {
-        setEditDisciplines((prev) => prev.filter((d) => d.id !== id));
-    };
-
-    const handleEditDisciplineChange = (id: string, value: string | null) => {
-        setEditDisciplines((prev) => prev.map((d) => (d.id === id ? { ...d, discipline: value } : d)));
-    };
-
-    const handleAddEditDistance = (discId: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: [...d.distances, { id: crypto.randomUUID(), distance: '', subDistances: [] }],
-                };
-            }),
-        );
-    };
-
-    const handleRemoveEditDistance = (discId: string, distId: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: d.distances.filter((dist) => dist.id !== distId),
-                };
-            }),
-        );
-    };
-
-    const handleEditDistanceChange = (discId: string, distId: string, value: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: d.distances.map((dist) => (dist.id === distId ? { ...dist, distance: value } : dist)),
-                };
-            }),
-        );
-    };
-
-    const handleAddEditSubDistance = (discId: string, distId: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: d.distances.map((dist) => {
-                        if (dist.id !== distId) return dist;
-                        return {
-                            ...dist,
-                            subDistances: [...(dist.subDistances || []), { id: crypto.randomUUID(), subDistance: '' }],
-                        };
-                    }),
-                };
-            }),
-        );
-    };
-
-    const handleRemoveEditSubDistance = (discId: string, distId: string, subDistId: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: d.distances.map((dist) => {
-                        if (dist.id !== distId) return dist;
-                        return {
-                            ...dist,
-                            subDistances: (dist.subDistances || []).filter((sd) => sd.id !== subDistId),
-                        };
-                    }),
-                };
-            }),
-        );
-    };
-
-    const handleEditSubDistanceChange = (discId: string, distId: string, subDistId: string, value: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: d.distances.map((dist) => {
-                        if (dist.id !== distId) return dist;
-                        return {
-                            ...dist,
-                            subDistances: (dist.subDistances || []).map((sd) =>
-                                sd.id === subDistId ? { ...sd, subDistance: value } : sd,
-                            ),
-                        };
-                    }),
-                };
-            }),
-        );
-    };
-
-    const handleOpenEdit = () => {
-        if (!event) return;
-        setEditPhotoFile(null);
-        setEditFormData({
-            title: event.title || '',
-            description: event.description || '',
-            link: event.link || '',
-            location: event.location || '',
-            rules: event.rules || '',
-            startedAt: event.startedAt ? event.startedAt.slice(0, 16) : '',
-            endedAt: event.endedAt ? event.endedAt.slice(0, 16) : '',
-        });
-        setEditDisciplines(
-            (event.disciplines || []).map((d) => ({
-                id: d.id || crypto.randomUUID(),
-                discipline: d.discipline !== undefined ? String(d.discipline) : null,
-                distances: (d.distances || []).map((dist) => ({
-                    id: dist.id || crypto.randomUUID(),
-                    distance: String(dist.distance ?? ''),
-                    subDistances: (dist.subDistances || []).map((sd) => ({
-                        id: sd.id || crypto.randomUUID(),
-                        subDistance: String(sd.subDistance ?? ''),
-                    })),
-                })),
-            })),
-        );
-        setEditFieldErrors({});
-        openEdit();
-    };
-
-    const updateEventMutation = useMutation({
-        mutationFn: async () => {
-            if (!event) return;
-            let photoStr = event.photo;
-            if (editPhotoFile) {
-                photoStr = await fileToBase64(editPhotoFile);
-            }
-            await eventService.updateEvent(event.id, {
-                title: editFormData.title,
-                description: editFormData.description,
-                link: editFormData.link,
-                location: editFormData.location,
-                rules: editFormData.rules,
-                startedAt: editFormData.startedAt,
-                endedAt: editFormData.endedAt,
-                photo: photoStr,
-                disciplines: editDisciplines.map((d) => ({
-                    discipline: Number(d.discipline) as DisciplineEnum,
-                    distances: d.distances.map((dist) => ({
-                        distance: Math.round(Number(dist.distance)) || 0,
-                        subDistances: (dist.subDistances || []).map((sd) => ({
-                            subDistance: Math.round(Number(sd.subDistance)) || 0,
-                        })),
-                    })),
-                })),
-            });
-        },
-        onSuccess: () => {
-            closeEdit();
-            setEditFieldErrors({});
-            queryClient.invalidateQueries({ queryKey: ['event', link] });
-            notifications.show({ title: t('events'), message: t('eventUpdated'), color: 'green' });
-        },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setEditFieldErrors(fe);
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
-    });
-
     const statusMutation = useMutation({
         mutationFn: (status: ElementStatusEnum) => {
             if (!event?.id) throw new Error('No event');
-            return eventService.updateEventStatus(event.id, status);
+            return eventService.updateEventStatus({
+                params: { path: { id: event.id } },
+                body: { status },
+            });
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['event', link] });
@@ -1013,7 +732,9 @@ export default function EventDetails() {
     const deleteMutation = useMutation({
         mutationFn: async () => {
             if (!event?.id) return;
-            await eventService.deleteEvent(event.id);
+            await eventService.deleteEvent({
+                params: { path: { id: event.id } },
+            });
         },
         onSuccess: () => {
             notifications.show({ title: t('events'), message: t('eventDeleted'), color: 'green' });
@@ -1058,30 +779,6 @@ export default function EventDetails() {
 
     const eventPhotoSrc = formatImageSrc(event.photo);
 
-    const eventStatusOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === event.status);
-    const eventStatusColor =
-        event.status === ElementStatusEnum.ACTIVE
-            ? 'green'
-            : event.status === ElementStatusEnum.REJECTED
-              ? 'red'
-              : 'gray';
-
-    const canSubmitEdit =
-        editFormData.title.trim().length > 0 &&
-        editFormData.link.trim().length > 0 &&
-        editFormData.location.trim().length > 0 &&
-        editFormData.startedAt.length > 0 &&
-        editFormData.endedAt.length > 0 &&
-        editFormData.description.trim().length > 0 &&
-        editFormData.rules.trim().length > 0 &&
-        editDisciplines.length > 0 &&
-        editDisciplines.every(
-            (d) =>
-                d.discipline !== null &&
-                d.distances.length > 0 &&
-                d.distances.every((dist) => dist.distance.trim().length > 0),
-        );
-
     return (
         <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
             <Stack gap="lg">
@@ -1121,63 +818,28 @@ export default function EventDetails() {
 
                         <Group gap="xs" wrap="nowrap">
                             {canManageStatus && (
-                                <Menu shadow="md" width={160}>
-                                    <Menu.Target>
-                                        <Tooltip label={t('changeStatus')} withArrow>
-                                            <ActionIcon variant="light" size={32} aria-label={t('changeStatus')}>
-                                                <IconAdjustments size={18} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    </Menu.Target>
-                                    <Menu.Dropdown>
-                                        {ElementStatusEnum.getOptions(t).map((opt) => (
-                                            <Menu.Item
-                                                key={opt.value}
-                                                disabled={event.status === opt.value || statusMutation.isPending}
-                                                onClick={() => statusMutation.mutate(opt.value)}
-                                            >
-                                                {opt.label}
-                                            </Menu.Item>
-                                        ))}
-                                    </Menu.Dropdown>
-                                </Menu>
+                                <StatusActionMenu
+                                    status={event.status}
+                                    onStatusChange={(status) => statusMutation.mutate(status)}
+                                    isPending={statusMutation.isPending}
+                                />
                             )}
 
                             {isOwner && (
                                 <>
-                                    <Tooltip label={t('editEvent')} withArrow>
-                                        <ActionIcon
-                                            variant="light"
-                                            size={32}
-                                            onClick={handleOpenEdit}
-                                            aria-label={t('editEvent')}
-                                        >
-                                            <IconEdit size={18} />
-                                        </ActionIcon>
-                                    </Tooltip>
-
-                                    <Tooltip label={t('delete')} withArrow>
-                                        <ActionIcon
-                                            variant="light"
-                                            color="red"
-                                            size={32}
-                                            onClick={handleDelete}
-                                            loading={deleteMutation.isPending}
-                                            disabled={deleteMutation.isPending}
-                                            aria-label={t('delete')}
-                                        >
-                                            <IconTrash size={18} />
-                                        </ActionIcon>
-                                    </Tooltip>
+                                    <EditActionButton onClick={openEdit} tooltip={t('editEvent')} />
+                                    <DeleteActionButton
+                                        onClick={handleDelete}
+                                        loading={deleteMutation.isPending}
+                                        disabled={deleteMutation.isPending}
+                                    />
                                 </>
                             )}
                         </Group>
                     </Group>
 
                     <Group gap="sm" mb="md">
-                        <Badge color={eventStatusColor} variant="light">
-                            {eventStatusOpt?.label ?? event.status}
-                        </Badge>
+                        <StatusBadge status={event.status} enumType={ElementStatusEnum} />
                     </Group>
 
                     {event.description && (
@@ -1233,254 +895,12 @@ export default function EventDetails() {
                     )}
                 </Card>
 
-                <Modal opened={editOpened} onClose={closeEdit} title={t('editEvent')} size="lg">
-                    <Stack gap="sm">
-                        <Select
-                            label={t('selectPage')}
-                            placeholder={t('selectPage')}
-                            disabled
-                            data={
-                                pagesData?.data?.map((p) => ({ value: p.id, label: p.title })) ??
-                                (page ? [{ value: page.id, label: page.title }] : [])
-                            }
-                            value={page?.id ?? null}
-                        />
-
-                        <TextInput
-                            label={t('title')}
-                            required
-                            value={editFormData.title}
-                            error={editFieldErrors.title}
-                            onChange={(e) => {
-                                const titleVal = e.currentTarget.value;
-                                const linkVal = titleVal
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9]+/g, '-')
-                                    .replace(/(^-|-$)/g, '');
-                                setEditFormData({ ...editFormData, title: titleVal, link: linkVal });
-                            }}
-                        />
-
-                        <TextInput
-                            label={t('link')}
-                            required
-                            value={editFormData.link}
-                            error={editFieldErrors.link}
-                            onChange={(e) => setEditFormData({ ...editFormData, link: e.currentTarget.value })}
-                        />
-
-                        <TextInput
-                            label={t('location')}
-                            required
-                            value={editFormData.location}
-                            error={editFieldErrors.location}
-                            onChange={(e) => setEditFormData({ ...editFormData, location: e.currentTarget.value })}
-                        />
-
-                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                            <TextInput
-                                label={t('startedAt')}
-                                type="datetime-local"
-                                required
-                                value={editFormData.startedAt}
-                                error={editFieldErrors.startedAt}
-                                onChange={(e) => setEditFormData({ ...editFormData, startedAt: e.currentTarget.value })}
-                            />
-                            <TextInput
-                                label={t('endedAt')}
-                                type="datetime-local"
-                                required
-                                value={editFormData.endedAt}
-                                error={editFieldErrors.endedAt}
-                                onChange={(e) => setEditFormData({ ...editFormData, endedAt: e.currentTarget.value })}
-                            />
-                        </SimpleGrid>
-
-                        <FileInput
-                            label={t('photo')}
-                            placeholder={t('selectPhoto')}
-                            description={t('leaveEmptyToKeep')}
-                            accept="image/*"
-                            value={editPhotoFile}
-                            error={editFieldErrors.photo}
-                            onChange={setEditPhotoFile}
-                            clearable
-                        />
-
-                        <Group justify="space-between" align="center" mt="xs">
-                            <Text fw={500} size="sm">
-                                {t('disciplinesAndDistances')}
-                            </Text>
-                            <Button
-                                size="xs"
-                                variant="light"
-                                leftSection={<IconPlus size={16} />}
-                                onClick={handleAddEditDiscipline}
-                            >
-                                {t('addDiscipline')}
-                            </Button>
-                        </Group>
-
-                        <Stack gap="sm">
-                            {editDisciplines.map((d) => (
-                                <Paper key={d.id} withBorder p="sm" radius="md">
-                                    <Group justify="space-between" align="flex-end" mb="xs">
-                                        <Select
-                                            label={t('discipline')}
-                                            placeholder={t('discipline')}
-                                            required
-                                            clearable
-                                            data={DisciplineEnum.getOptions(t).map((opt) => ({
-                                                value: String(opt.value),
-                                                label: opt.label,
-                                            }))}
-                                            value={d.discipline}
-                                            onChange={(val) => handleEditDisciplineChange(d.id, val)}
-                                            flex={1}
-                                        />
-                                        <Tooltip label={t('delete')} withArrow>
-                                            <ActionIcon
-                                                color="red"
-                                                variant="light"
-                                                size={30}
-                                                onClick={() => handleRemoveEditDiscipline(d.id)}
-                                                aria-label={t('delete')}
-                                            >
-                                                <IconTrash size={16} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    </Group>
-
-                                    <Stack gap="sm" mt="xs">
-                                        {d.distances.map((dist) => (
-                                            <Paper
-                                                key={dist.id}
-                                                p="xs"
-                                                radius="sm"
-                                                withBorder
-                                                bg="var(--mantine-color-gray-light)"
-                                            >
-                                                <Group gap="xs" align="flex-end">
-                                                    <TextInput
-                                                        label={t('distanceMeters')}
-                                                        required
-                                                        flex={1}
-                                                        value={dist.distance}
-                                                        onChange={(e) =>
-                                                            handleEditDistanceChange(
-                                                                d.id,
-                                                                dist.id,
-                                                                e.currentTarget.value,
-                                                            )
-                                                        }
-                                                    />
-                                                    <ActionIcon
-                                                        color="red"
-                                                        variant="light"
-                                                        size={30}
-                                                        onClick={() => handleRemoveEditDistance(d.id, dist.id)}
-                                                        title={t('delete')}
-                                                    >
-                                                        <IconTrash size={16} />
-                                                    </ActionIcon>
-                                                </Group>
-
-                                                <Stack gap="xs" mt="xs" pl="sm" className="subdistances-container">
-                                                    <Group justify="space-between" align="center">
-                                                        <Text size="xs" fw={600} c="dimmed">
-                                                            {t('subDistances')}
-                                                        </Text>
-                                                        <Button
-                                                            size="compact-xs"
-                                                            variant="subtle"
-                                                            leftSection={<IconPlus size={16} />}
-                                                            onClick={() => handleAddEditSubDistance(d.id, dist.id)}
-                                                        >
-                                                            {t('addSubDistance')}
-                                                        </Button>
-                                                    </Group>
-
-                                                    {dist.subDistances?.map((sd) => (
-                                                        <Group key={sd.id} gap="xs" align="flex-end">
-                                                            <TextInput
-                                                                size="xs"
-                                                                label={t('subDistanceMeters')}
-                                                                required
-                                                                flex={1}
-                                                                value={sd.subDistance}
-                                                                onChange={(e) =>
-                                                                    handleEditSubDistanceChange(
-                                                                        d.id,
-                                                                        dist.id,
-                                                                        sd.id,
-                                                                        e.currentTarget.value,
-                                                                    )
-                                                                }
-                                                            />
-                                                            <Tooltip label={t('delete')} withArrow>
-                                                                <ActionIcon
-                                                                    color="red"
-                                                                    variant="light"
-                                                                    size={30}
-                                                                    onClick={() =>
-                                                                        handleRemoveEditSubDistance(
-                                                                            d.id,
-                                                                            dist.id,
-                                                                            sd.id,
-                                                                        )
-                                                                    }
-                                                                    aria-label={t('delete')}
-                                                                >
-                                                                    <IconTrash size={16} />
-                                                                </ActionIcon>
-                                                            </Tooltip>
-                                                        </Group>
-                                                    ))}
-                                                </Stack>
-                                            </Paper>
-                                        ))}
-
-                                        <Button
-                                            size="xs"
-                                            variant="subtle"
-                                            leftSection={<IconPlus size={16} />}
-                                            onClick={() => handleAddEditDistance(d.id)}
-                                        >
-                                            {t('addDistance')}
-                                        </Button>
-                                    </Stack>
-                                </Paper>
-                            ))}
-                        </Stack>
-
-                        <Textarea
-                            label={t('description')}
-                            required
-                            rows={2}
-                            value={editFormData.description}
-                            error={editFieldErrors.description}
-                            onChange={(e) => setEditFormData({ ...editFormData, description: e.currentTarget.value })}
-                        />
-
-                        <Textarea
-                            label={t('rules')}
-                            required
-                            rows={2}
-                            value={editFormData.rules}
-                            error={editFieldErrors.rules}
-                            onChange={(e) => setEditFormData({ ...editFormData, rules: e.currentTarget.value })}
-                        />
-
-                        <Button
-                            mt="md"
-                            loading={updateEventMutation.isPending}
-                            disabled={updateEventMutation.isPending || !canSubmitEdit}
-                            onClick={() => updateEventMutation.mutate()}
-                        >
-                            {t('save')}
-                        </Button>
-                    </Stack>
-                </Modal>
+                <EventFormModal
+                    opened={editOpened}
+                    onClose={closeEdit}
+                    event={event}
+                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ['event', link] })}
+                />
             </Stack>
         </MantineThemeProvider>
     );

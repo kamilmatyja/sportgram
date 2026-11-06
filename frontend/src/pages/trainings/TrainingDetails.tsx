@@ -9,45 +9,23 @@ import {
     Table,
     Paper,
     ActionIcon,
-    Tooltip,
     MantineThemeProvider,
     Center,
     Loader,
-    Button,
-    Menu,
-    Modal,
-    TextInput,
-    Textarea,
-    Select,
-    MultiSelect,
-    SimpleGrid,
-    Avatar,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import {
-    IconTrash,
-    IconMapPin,
-    IconClock,
-    IconEdit,
-    IconAdjustments,
-    IconPlus,
-    IconEye,
-    IconChevronDown,
-    IconChevronRight,
-} from '@tabler/icons-react';
+import { IconMapPin, IconClock, IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { applyThemeColor } from '../../utils/themeUtils';
 import NotFound from '../../components/NotFound';
 import { EmptyState } from '../../components/EmptyState';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
+import { getErrorMessage } from '../../api/client';
 import {
     trainingService,
     userService,
-    friendService,
-    type UserResource,
     type TrainingParticipantResource,
     type TrainingDisciplineResource,
     type TrainingDisciplineDistanceResource,
@@ -59,37 +37,19 @@ import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { EntityViewCounter } from '../../components/EntityViewCounter';
 import UserProfileNav from '../../components/UserProfileNav';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { brown } from '../../theme';
-import { formatImageSrc } from '../../utils/imageUtils';
 import { formatDateTime } from '../../utils/date';
-
-interface FormTrainingSubDistance {
-    id: string;
-    subDistance: string;
-    time: string;
-    lat: string;
-    lng: string;
-    accuracy: string;
-    speed: string;
-}
-
-interface FormTrainingDistance {
-    id: string;
-    distance: string;
-    time: string;
-    subDistances: FormTrainingSubDistance[];
-}
-
-interface FormTrainingDiscipline {
-    id: string;
-    discipline: string | null;
-    distances: FormTrainingDistance[];
-}
+import { StatusBadge } from '../../components/common/StatusBadge';
+import { StatusActionMenu } from '../../components/common/StatusActionMenu';
+import { EditActionButton, DeleteActionButton, ViewActionButton } from '../../components/common/RowActionButtons';
+import { TrainingFormModal } from '../../components/trainings/TrainingFormModal';
+import { useUsersMap } from '../../hooks/useUsersMap';
+import { useMyFriends } from '../../hooks/useMyFriends';
+import { UserInfoCell } from '../../components/common/UserInfoCell';
 
 export default function TrainingDetails() {
     const { link } = useParams<{ link: string }>();
@@ -99,17 +59,6 @@ export default function TrainingDetails() {
     const { currentUser } = useAuth();
 
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
-    const [editCollaboratorIds, setEditCollaboratorIds] = useState<string[]>([]);
-    const [editFormData, setEditFormData] = useState({
-        title: '',
-        description: '',
-        link: '',
-        location: '',
-        startedAt: '',
-        endedAt: '',
-    });
-    const [editDisciplines, setEditDisciplines] = useState<FormTrainingDiscipline[]>([]);
-    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
 
     const [expandedDistanceIds, setExpandedDistanceIds] = useState<string[]>([]);
     const toggleExpandDistance = (id: string) => {
@@ -118,17 +67,43 @@ export default function TrainingDetails() {
 
     const { data: training, isLoading: trainingLoading } = useQuery({
         queryKey: ['training', link],
-        queryFn: () => trainingService.getTrainingByLink(link || ''),
+        queryFn: async () => {
+            if (!link) return null;
+            const res = await trainingService.getTrainings({
+                params: {
+                    query: {
+                        filter: { link },
+                        limit: 1,
+                        'include[]': [
+                            'trainingDisciplines',
+                            'trainingDisciplineDistances',
+                            'trainingDisciplineSubDistances',
+                            'trainingParticipants',
+                        ],
+                    },
+                },
+            });
+            return res.data?.[0] ?? null;
+        },
         enabled: !!link,
     });
 
     const { data: ownerUserData, isLoading: userLoading } = useQuery({
         queryKey: ['user', training?.userId],
-        queryFn: () => (training?.userId ? userService.getUser(training.userId) : null),
+        queryFn: async () => {
+            if (!training?.userId) return null;
+            const res = await userService.getUser({
+                params: {
+                    path: { id: training.userId },
+                    query: { 'include[]': ['userDisciplines', 'userRoles'] },
+                },
+            });
+            return res.data ?? null;
+        },
         enabled: !!training?.userId,
     });
 
-    const ownerUser = ownerUserData?.data ?? null;
+    const ownerUser = ownerUserData ?? null;
 
     const {
         isAdmin,
@@ -141,276 +116,20 @@ export default function TrainingDetails() {
     const isOwner = !!(currentUser?.id && training?.userId && currentUser.id === training.userId);
     const canManage = isOwner || isAdmin;
 
-    const participantUserIds = useMemo(() => {
-        if (!training?.participants) return [];
-        return Array.from(new Set(training.participants.map((p) => p.userId)));
-    }, [training?.participants]);
-
-    const { data: participantUsersData } = useQuery({
-        queryKey: ['training-participant-users', participantUserIds],
-        queryFn: async () => {
-            if (participantUserIds.length === 0) return {};
-            const users = await userService.getUsersByIds(participantUserIds);
-            const map: Record<string, UserResource> = {};
-            users.forEach((u) => {
-                map[u.id] = u;
-            });
-            return map;
-        },
-        enabled: participantUserIds.length > 0,
-    });
-
-    const participantUsers = participantUsersData ?? {};
-
-    const { data: myFriendsData } = useQuery({
-        queryKey: ['my-accepted-friends', currentUser?.id],
-        queryFn: async () => {
-            if (!currentUser?.id) return [];
-            const res = await friendService.getFriends({
-                limit: 100,
-                filter: { userIds: [currentUser.id], status: FriendStatusEnum.ACCEPTED },
-            });
-            return res.data ?? [];
-        },
-        enabled: !!currentUser?.id && canManage,
-    });
-
-    const friendUserIds = useMemo(() => {
-        if (!myFriendsData || !currentUser) return [];
-        return myFriendsData.map((f) => (f.senderUserId === currentUser.id ? f.receiverUserId : f.senderUserId));
-    }, [myFriendsData, currentUser]);
-
-    const { data: friendUsers } = useQuery({
-        queryKey: ['friend-users-details', friendUserIds],
-        queryFn: async () => {
-            if (friendUserIds.length === 0) return [];
-            return await userService.getUsersByIds(friendUserIds);
-        },
-        enabled: friendUserIds.length > 0 && canManage,
-    });
-
-    const collaboratorOptions = useMemo(() => {
-        if (!friendUsers) return [];
-        return friendUsers.map((u) => ({
-            value: u.id,
-            label: `${u.firstName} ${u.lastName} (@${u.link})`,
-        }));
-    }, [friendUsers]);
-
-    const handleAddEditDiscipline = () => {
-        setEditDisciplines((prev) => [
-            ...prev,
-            {
-                id: crypto.randomUUID(),
-                discipline: null,
-                distances: [{ id: crypto.randomUUID(), distance: '', time: '', subDistances: [] }],
-            },
-        ]);
-    };
-
-    const handleRemoveEditDiscipline = (id: string) => {
-        setEditDisciplines((prev) => prev.filter((d) => d.id !== id));
-    };
-
-    const handleEditDisciplineChange = (id: string, value: string | null) => {
-        setEditDisciplines((prev) => prev.map((d) => (d.id === id ? { ...d, discipline: value } : d)));
-    };
-
-    const handleAddEditDistance = (discId: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: [...d.distances, { id: crypto.randomUUID(), distance: '', time: '', subDistances: [] }],
-                };
-            }),
-        );
-    };
-
-    const handleRemoveEditDistance = (discId: string, distId: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: d.distances.filter((dist) => dist.id !== distId),
-                };
-            }),
-        );
-    };
-
-    const handleEditDistanceChange = (discId: string, distId: string, field: 'distance' | 'time', value: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: d.distances.map((dist) => (dist.id === distId ? { ...dist, [field]: value } : dist)),
-                };
-            }),
-        );
-    };
-
-    const handleAddEditSubDistance = (discId: string, distId: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: d.distances.map((dist) => {
-                        if (dist.id !== distId) return dist;
-                        return {
-                            ...dist,
-                            subDistances: [
-                                ...(dist.subDistances || []),
-                                {
-                                    id: crypto.randomUUID(),
-                                    subDistance: '',
-                                    time: '',
-                                    lat: '',
-                                    lng: '',
-                                    accuracy: '',
-                                    speed: '',
-                                },
-                            ],
-                        };
-                    }),
-                };
-            }),
-        );
-    };
-
-    const handleRemoveEditSubDistance = (discId: string, distId: string, subDistId: string) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: d.distances.map((dist) => {
-                        if (dist.id !== distId) return dist;
-                        return {
-                            ...dist,
-                            subDistances: (dist.subDistances || []).filter((sd) => sd.id !== subDistId),
-                        };
-                    }),
-                };
-            }),
-        );
-    };
-
-    const handleEditSubDistanceChange = (
-        discId: string,
-        distId: string,
-        subDistId: string,
-        field: keyof FormTrainingSubDistance,
-        value: string,
-    ) => {
-        setEditDisciplines((prev) =>
-            prev.map((d) => {
-                if (d.id !== discId) return d;
-                return {
-                    ...d,
-                    distances: d.distances.map((dist) => {
-                        if (dist.id !== distId) return dist;
-                        return {
-                            ...dist,
-                            subDistances: (dist.subDistances || []).map((sd) =>
-                                sd.id === subDistId ? { ...sd, [field]: value } : sd,
-                            ),
-                        };
-                    }),
-                };
-            }),
-        );
-    };
-
-    const handleOpenEdit = () => {
-        if (!training) return;
-        setEditCollaboratorIds(
-            training.participants?.map((p) => p.userId).filter((id) => id !== currentUser?.id) ?? [],
-        );
-        setEditFormData({
-            title: training.title || '',
-            description: training.description || '',
-            link: training.link || '',
-            location: training.location || '',
-            startedAt: training.startedAt ? training.startedAt.slice(0, 16) : '',
-            endedAt: training.endedAt ? training.endedAt.slice(0, 16) : '',
-        });
-        setEditDisciplines(
-            (training.disciplines || []).map((d) => ({
-                id: d.id || crypto.randomUUID(),
-                discipline: d.discipline !== undefined ? String(d.discipline) : null,
-                distances: (d.distances || []).map((dist) => ({
-                    id: dist.id || crypto.randomUUID(),
-                    distance: String(dist.distance ?? ''),
-                    time: String(dist.time ?? ''),
-                    subDistances: (dist.subDistances || []).map((sd) => ({
-                        id: sd.id || crypto.randomUUID(),
-                        subDistance: String(sd.subDistance ?? ''),
-                        time: String(sd.time ?? ''),
-                        lat: sd.lat != null ? String(sd.lat) : '',
-                        lng: sd.lng != null ? String(sd.lng) : '',
-                        accuracy: sd.accuracy != null ? String(sd.accuracy) : '',
-                        speed: sd.speed != null ? String(sd.speed) : '',
-                    })),
-                })),
-            })),
-        );
-        setEditFieldErrors({});
-        openEdit();
-    };
-
-    const updateTrainingMutation = useMutation({
-        mutationFn: async () => {
-            if (!training) return;
-            if (editDisciplines.length === 0) throw new Error(t('discipline') + ' ' + t('required'));
-            await trainingService.updateTraining(training.id, {
-                title: editFormData.title,
-                description: editFormData.description,
-                link: editFormData.link,
-                location: editFormData.location,
-                startedAt: editFormData.startedAt,
-                endedAt: editFormData.endedAt,
-                userIds: Array.from(new Set([currentUser?.id ?? '', ...editCollaboratorIds])).filter(Boolean),
-                disciplines: editDisciplines.map((d) => ({
-                    discipline: Number(d.discipline) as DisciplineEnum,
-                    distances: d.distances.map((dist) => ({
-                        distance: Math.round(Number(dist.distance)) || 0,
-                        time: Math.round(Number(dist.time)) || 0,
-                        subDistances: (dist.subDistances || []).map((sd) => ({
-                            subDistance: Math.round(Number(sd.subDistance)) || 0,
-                            time: Math.round(Number(sd.time)) || 0,
-                            lat: sd.lat !== '' && !isNaN(Number(sd.lat)) ? Math.round(Number(sd.lat)) : null,
-                            lng: sd.lng !== '' && !isNaN(Number(sd.lng)) ? Math.round(Number(sd.lng)) : null,
-                            accuracy:
-                                sd.accuracy !== '' && !isNaN(Number(sd.accuracy))
-                                    ? Math.round(Number(sd.accuracy))
-                                    : null,
-                            speed: sd.speed !== '' && !isNaN(Number(sd.speed)) ? Math.round(Number(sd.speed)) : null,
-                        })),
-                    })),
-                })),
-            });
-        },
-        onSuccess: () => {
-            closeEdit();
-            setEditFieldErrors({});
-            queryClient.invalidateQueries({ queryKey: ['training', link] });
-            notifications.show({ title: t('trainings'), message: t('trainingUpdated'), color: 'green' });
-        },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setEditFieldErrors(fe);
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
-    });
+    const participantUserIds = useMemo(
+        () => training?.participants?.map((p) => p.userId) ?? [],
+        [training?.participants],
+    );
+    const { getUser } = useUsersMap(participantUserIds);
+    const { collaboratorOptions } = useMyFriends();
 
     const updateStatusMutation = useMutation({
         mutationFn: (status: ElementStatusEnum) => {
             if (!training?.id) throw new Error('No training');
-            return trainingService.updateTrainingStatus(training.id, status);
+            return trainingService.updateTrainingStatus({
+                params: { path: { id: training.id } },
+                body: { status },
+            });
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['training', link] });
@@ -423,7 +142,10 @@ export default function TrainingDetails() {
 
     const updateParticipantStatusMutation = useMutation({
         mutationFn: ({ participantId, status }: { participantId: string; status: SaveStatusEnum }) =>
-            trainingService.updateTrainingParticipantStatus(participantId, status),
+            trainingService.updateTrainingParticipantStatus({
+                params: { path: { id: participantId } },
+                body: { status },
+            }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['training', link] });
             notifications.show({ title: t('participants'), message: t('statusUpdated'), color: 'green' });
@@ -436,7 +158,9 @@ export default function TrainingDetails() {
     const deleteMutation = useMutation({
         mutationFn: async () => {
             if (!training?.id) return;
-            await trainingService.deleteTraining(training.id);
+            await trainingService.deleteTraining({
+                params: { path: { id: training.id } },
+            });
         },
         onSuccess: () => {
             notifications.show({ title: t('trainings'), message: t('trainingDeleted'), color: 'green' });
@@ -483,29 +207,6 @@ export default function TrainingDetails() {
         return <NotFound title={t('accessDenied')} />;
     }
 
-    const trainingStatusOpt = ElementStatusEnum.getOptions(t).find((o) => o.value === training.status);
-    const trainingStatusColor =
-        training.status === ElementStatusEnum.ACTIVE
-            ? 'green'
-            : training.status === ElementStatusEnum.REJECTED
-              ? 'red'
-              : 'gray';
-
-    const canSubmitEdit =
-        editFormData.title.trim().length > 0 &&
-        editFormData.link.trim().length > 0 &&
-        editFormData.location.trim().length > 0 &&
-        editFormData.startedAt.length > 0 &&
-        editFormData.endedAt.length > 0 &&
-        editFormData.description.trim().length > 0 &&
-        editDisciplines.length > 0 &&
-        editDisciplines.every(
-            (d) =>
-                d.discipline !== null &&
-                d.distances.length > 0 &&
-                d.distances.every((dist) => dist.distance.trim().length > 0 && dist.time.trim().length > 0),
-        );
-
     return (
         <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
             <Stack gap="lg">
@@ -541,65 +242,30 @@ export default function TrainingDetails() {
 
                         <Group gap="xs" wrap="nowrap">
                             {canManage && (
-                                <Menu shadow="md" width={160}>
-                                    <Menu.Target>
-                                        <Tooltip label={t('changeStatus')} withArrow>
-                                            <ActionIcon variant="light" size={32} aria-label={t('changeStatus')}>
-                                                <IconAdjustments size={18} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    </Menu.Target>
-                                    <Menu.Dropdown>
-                                        {ElementStatusEnum.getOptions(t).map((opt) => (
-                                            <Menu.Item
-                                                key={opt.value}
-                                                disabled={
-                                                    training.status === opt.value || updateStatusMutation.isPending
-                                                }
-                                                onClick={() => updateStatusMutation.mutate(opt.value)}
-                                            >
-                                                {opt.label}
-                                            </Menu.Item>
-                                        ))}
-                                    </Menu.Dropdown>
-                                </Menu>
+                                <StatusActionMenu
+                                    status={training.status}
+                                    onStatusChange={(status) =>
+                                        updateStatusMutation.mutate(status as ElementStatusEnum)
+                                    }
+                                    isPending={updateStatusMutation.isPending}
+                                />
                             )}
 
                             {isOwner && (
                                 <>
-                                    <Tooltip label={t('editTraining')} withArrow>
-                                        <ActionIcon
-                                            variant="light"
-                                            size={32}
-                                            onClick={handleOpenEdit}
-                                            aria-label={t('editTraining')}
-                                        >
-                                            <IconEdit size={18} />
-                                        </ActionIcon>
-                                    </Tooltip>
-
-                                    <Tooltip label={t('delete')} withArrow>
-                                        <ActionIcon
-                                            variant="light"
-                                            color="red"
-                                            size={32}
-                                            onClick={handleDelete}
-                                            loading={deleteMutation.isPending}
-                                            disabled={deleteMutation.isPending}
-                                            aria-label={t('delete')}
-                                        >
-                                            <IconTrash size={18} />
-                                        </ActionIcon>
-                                    </Tooltip>
+                                    <EditActionButton onClick={openEdit} tooltip={t('editTraining')} />
+                                    <DeleteActionButton
+                                        onClick={handleDelete}
+                                        loading={deleteMutation.isPending}
+                                        disabled={deleteMutation.isPending}
+                                    />
                                 </>
                             )}
                         </Group>
                     </Group>
 
                     <Group gap="sm" mb="md">
-                        <Badge color={trainingStatusColor} variant="light">
-                            {trainingStatusOpt?.label ?? training.status}
-                        </Badge>
+                        <StatusBadge status={training.status} enumType={ElementStatusEnum} />
                     </Group>
 
                     {training.description && (
@@ -634,87 +300,32 @@ export default function TrainingDetails() {
                                 </Table.Thead>
                                 <Table.Tbody>
                                     {training.participants?.map((p: TrainingParticipantResource) => {
-                                        const u = participantUsers[p.userId];
+                                        const u = getUser(p.userId);
                                         const isSelf = p.userId === currentUser?.id;
                                         const canManageParticipant = isSelf;
-                                        const pOpt = SaveStatusEnum.getOptions(t).find((o) => o.value === p.status);
-                                        const pColor =
-                                            p.status === SaveStatusEnum.ACCEPTED
-                                                ? 'green'
-                                                : p.status === SaveStatusEnum.REJECTED
-                                                  ? 'red'
-                                                  : 'yellow';
-
                                         return (
                                             <Table.Tr key={p.id}>
                                                 <Table.Td>
-                                                    <Group gap="sm">
-                                                        <Avatar src={formatImageSrc(u?.profilePhoto)} radius={5}>
-                                                            ?
-                                                        </Avatar>
-                                                        <div>
-                                                            <Text size="sm" fw={600}>
-                                                                {u ? `${u.firstName} ${u.lastName}` : p.userId}
-                                                            </Text>
-                                                            {u?.link && (
-                                                                <Text size="sm" c="dimmed">
-                                                                    @{u.link}
-                                                                </Text>
-                                                            )}
-                                                        </div>
-                                                    </Group>
+                                                    <UserInfoCell user={u} userId={p.userId} />
                                                 </Table.Td>
                                                 <Table.Td>
-                                                    <Badge color={pColor} variant="light">
-                                                        {pOpt?.label ?? p.status}
-                                                    </Badge>
+                                                    <StatusBadge status={p.status} enumType={SaveStatusEnum} />
                                                 </Table.Td>
                                                 <Table.Td ta="right">
                                                     <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                        {u?.link && (
-                                                            <Tooltip label={t('details')} withArrow>
-                                                                <ActionIcon
-                                                                    component={Link}
-                                                                    to={`/users/${u.link}`}
-                                                                    variant="light"
-                                                                    aria-label={t('details')}
-                                                                >
-                                                                    <IconEye size={16} />
-                                                                </ActionIcon>
-                                                            </Tooltip>
-                                                        )}
+                                                        {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
                                                         {canManageParticipant && (
-                                                            <Menu shadow="md" width={160}>
-                                                                <Menu.Target>
-                                                                    <Tooltip label={t('changeStatus')} withArrow>
-                                                                        <ActionIcon
-                                                                            variant="light"
-                                                                            aria-label={t('changeStatus')}
-                                                                        >
-                                                                            <IconAdjustments size={16} />
-                                                                        </ActionIcon>
-                                                                    </Tooltip>
-                                                                </Menu.Target>
-                                                                <Menu.Dropdown>
-                                                                    {SaveStatusEnum.getOptions(t).map((opt) => (
-                                                                        <Menu.Item
-                                                                            key={opt.value}
-                                                                            disabled={
-                                                                                p.status === opt.value ||
-                                                                                updateParticipantStatusMutation.isPending
-                                                                            }
-                                                                            onClick={() =>
-                                                                                updateParticipantStatusMutation.mutate({
-                                                                                    participantId: p.id,
-                                                                                    status: opt.value as SaveStatusEnum,
-                                                                                })
-                                                                            }
-                                                                        >
-                                                                            {opt.label}
-                                                                        </Menu.Item>
-                                                                    ))}
-                                                                </Menu.Dropdown>
-                                                            </Menu>
+                                                            <StatusActionMenu
+                                                                status={p.status}
+                                                                options={SaveStatusEnum.getOptions(t)}
+                                                                onStatusChange={(status) =>
+                                                                    updateParticipantStatusMutation.mutate({
+                                                                        participantId: p.id,
+                                                                        status: status as SaveStatusEnum,
+                                                                    })
+                                                                }
+                                                                isPending={updateParticipantStatusMutation.isPending}
+                                                            />
                                                         )}
                                                     </Group>
                                                 </Table.Td>
@@ -909,321 +520,13 @@ export default function TrainingDetails() {
                     )}
                 </Card>
 
-                <Modal opened={editOpened} onClose={closeEdit} title={t('editTraining')} size="lg">
-                    <Stack gap="sm">
-                        <TextInput
-                            label={t('title')}
-                            required
-                            value={editFormData.title}
-                            error={editFieldErrors.title}
-                            onChange={(e) => {
-                                const title = e.currentTarget.value;
-                                const linkVal = title
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9]+/g, '-')
-                                    .replace(/(^-|-$)/g, '');
-                                setEditFormData({ ...editFormData, title, link: linkVal });
-                            }}
-                        />
-                        <TextInput
-                            label={t('link')}
-                            required
-                            value={editFormData.link}
-                            error={editFieldErrors.link}
-                            onChange={(e) => setEditFormData({ ...editFormData, link: e.currentTarget.value })}
-                        />
-                        <TextInput
-                            label={t('location')}
-                            required
-                            value={editFormData.location}
-                            error={editFieldErrors.location}
-                            onChange={(e) => setEditFormData({ ...editFormData, location: e.currentTarget.value })}
-                        />
-                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                            <TextInput
-                                label={t('startedAt')}
-                                type="datetime-local"
-                                required
-                                value={editFormData.startedAt}
-                                error={editFieldErrors.startedAt}
-                                onChange={(e) => setEditFormData({ ...editFormData, startedAt: e.currentTarget.value })}
-                            />
-                            <TextInput
-                                label={t('endedAt')}
-                                type="datetime-local"
-                                required
-                                value={editFormData.endedAt}
-                                error={editFieldErrors.endedAt}
-                                onChange={(e) => setEditFormData({ ...editFormData, endedAt: e.currentTarget.value })}
-                            />
-                        </SimpleGrid>
-
-                        <MultiSelect
-                            label={t('collaborators')}
-                            placeholder={t('selectCollaborators')}
-                            data={collaboratorOptions}
-                            value={editCollaboratorIds}
-                            onChange={setEditCollaboratorIds}
-                            searchable
-                            clearable
-                        />
-
-                        <Group justify="space-between" align="center" mt="xs">
-                            <Text fw={500} size="sm">
-                                {t('disciplinesAndDistances')}
-                            </Text>
-                            <Button
-                                size="xs"
-                                variant="light"
-                                leftSection={<IconPlus size={16} />}
-                                onClick={handleAddEditDiscipline}
-                            >
-                                {t('addDiscipline')}
-                            </Button>
-                        </Group>
-
-                        <Stack gap="sm">
-                            {editDisciplines.map((d) => (
-                                <Paper key={d.id} withBorder p="sm" radius="md">
-                                    <Group justify="space-between" align="flex-end" mb="xs">
-                                        <Select
-                                            label={t('discipline')}
-                                            placeholder={t('discipline')}
-                                            required
-                                            clearable
-                                            data={DisciplineEnum.getOptions(t).map((opt) => ({
-                                                value: String(opt.value),
-                                                label: opt.label,
-                                            }))}
-                                            value={d.discipline}
-                                            onChange={(val) => handleEditDisciplineChange(d.id, val)}
-                                            flex={1}
-                                        />
-                                        <Tooltip label={t('delete')} withArrow>
-                                            <ActionIcon
-                                                color="red"
-                                                variant="light"
-                                                size={30}
-                                                onClick={() => handleRemoveEditDiscipline(d.id)}
-                                                aria-label={t('delete')}
-                                            >
-                                                <IconTrash size={16} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                    </Group>
-
-                                    <Stack gap="sm" mt="xs">
-                                        {d.distances.map((dist) => (
-                                            <Paper
-                                                key={dist.id}
-                                                p="xs"
-                                                radius="sm"
-                                                withBorder
-                                                bg="var(--mantine-color-gray-light)"
-                                            >
-                                                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
-                                                    <TextInput
-                                                        label={t('distanceMeters')}
-                                                        required
-                                                        value={dist.distance}
-                                                        onChange={(e) =>
-                                                            handleEditDistanceChange(
-                                                                d.id,
-                                                                dist.id,
-                                                                'distance',
-                                                                e.currentTarget.value,
-                                                            )
-                                                        }
-                                                    />
-                                                    <TextInput
-                                                        label={t('timeSeconds')}
-                                                        required
-                                                        value={dist.time}
-                                                        onChange={(e) =>
-                                                            handleEditDistanceChange(
-                                                                d.id,
-                                                                dist.id,
-                                                                'time',
-                                                                e.currentTarget.value,
-                                                            )
-                                                        }
-                                                    />
-                                                </SimpleGrid>
-
-                                                <Group justify="flex-end" mt="xs">
-                                                    <ActionIcon
-                                                        color="red"
-                                                        variant="light"
-                                                        size={30}
-                                                        onClick={() => handleRemoveEditDistance(d.id, dist.id)}
-                                                        title={t('delete')}
-                                                    >
-                                                        <IconTrash size={16} />
-                                                    </ActionIcon>
-                                                </Group>
-
-                                                <Stack gap="xs" mt="xs" pl="sm">
-                                                    <Group justify="space-between" align="center">
-                                                        <Text size="xs" fw={600} c="dimmed">
-                                                            {t('subDistances')}
-                                                        </Text>
-                                                        <Button
-                                                            size="compact-xs"
-                                                            variant="subtle"
-                                                            leftSection={<IconPlus size={16} />}
-                                                            onClick={() => handleAddEditSubDistance(d.id, dist.id)}
-                                                        >
-                                                            {t('addSubDistance')}
-                                                        </Button>
-                                                    </Group>
-
-                                                    {dist.subDistances?.map((sd) => (
-                                                        <Paper key={sd.id} p="xs" radius="xs" withBorder>
-                                                            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="xs">
-                                                                <TextInput
-                                                                    size="xs"
-                                                                    label={t('subDistanceMeters')}
-                                                                    required
-                                                                    value={sd.subDistance}
-                                                                    onChange={(e) =>
-                                                                        handleEditSubDistanceChange(
-                                                                            d.id,
-                                                                            dist.id,
-                                                                            sd.id,
-                                                                            'subDistance',
-                                                                            e.currentTarget.value,
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <TextInput
-                                                                    size="xs"
-                                                                    label={t('timeSeconds')}
-                                                                    required
-                                                                    value={sd.time}
-                                                                    onChange={(e) =>
-                                                                        handleEditSubDistanceChange(
-                                                                            d.id,
-                                                                            dist.id,
-                                                                            sd.id,
-                                                                            'time',
-                                                                            e.currentTarget.value,
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <TextInput
-                                                                    size="xs"
-                                                                    label={t('lat')}
-                                                                    value={sd.lat}
-                                                                    onChange={(e) =>
-                                                                        handleEditSubDistanceChange(
-                                                                            d.id,
-                                                                            dist.id,
-                                                                            sd.id,
-                                                                            'lat',
-                                                                            e.currentTarget.value,
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <TextInput
-                                                                    size="xs"
-                                                                    label={t('lng')}
-                                                                    value={sd.lng}
-                                                                    onChange={(e) =>
-                                                                        handleEditSubDistanceChange(
-                                                                            d.id,
-                                                                            dist.id,
-                                                                            sd.id,
-                                                                            'lng',
-                                                                            e.currentTarget.value,
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <TextInput
-                                                                    size="xs"
-                                                                    label={t('accuracy')}
-                                                                    value={sd.accuracy}
-                                                                    onChange={(e) =>
-                                                                        handleEditSubDistanceChange(
-                                                                            d.id,
-                                                                            dist.id,
-                                                                            sd.id,
-                                                                            'accuracy',
-                                                                            e.currentTarget.value,
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <TextInput
-                                                                    size="xs"
-                                                                    label={t('speed')}
-                                                                    value={sd.speed}
-                                                                    onChange={(e) =>
-                                                                        handleEditSubDistanceChange(
-                                                                            d.id,
-                                                                            dist.id,
-                                                                            sd.id,
-                                                                            'speed',
-                                                                            e.currentTarget.value,
-                                                                        )
-                                                                    }
-                                                                />
-                                                            </SimpleGrid>
-                                                            <Group justify="flex-end" mt={4}>
-                                                                <Tooltip label={t('delete')} withArrow>
-                                                                    <ActionIcon
-                                                                        color="red"
-                                                                        variant="light"
-                                                                        size={30}
-                                                                        onClick={() =>
-                                                                            handleRemoveEditSubDistance(
-                                                                                d.id,
-                                                                                dist.id,
-                                                                                sd.id,
-                                                                            )
-                                                                        }
-                                                                        aria-label={t('delete')}
-                                                                    >
-                                                                        <IconTrash size={16} />
-                                                                    </ActionIcon>
-                                                                </Tooltip>
-                                                            </Group>
-                                                        </Paper>
-                                                    ))}
-                                                </Stack>
-                                            </Paper>
-                                        ))}
-
-                                        <Button
-                                            size="xs"
-                                            variant="subtle"
-                                            leftSection={<IconPlus size={16} />}
-                                            onClick={() => handleAddEditDistance(d.id)}
-                                        >
-                                            {t('addDistance')}
-                                        </Button>
-                                    </Stack>
-                                </Paper>
-                            ))}
-                        </Stack>
-
-                        <Textarea
-                            label={t('description')}
-                            required
-                            rows={2}
-                            value={editFormData.description}
-                            error={editFieldErrors.description}
-                            onChange={(e) => setEditFormData({ ...editFormData, description: e.currentTarget.value })}
-                        />
-
-                        <Button
-                            mt="md"
-                            loading={updateTrainingMutation.isPending}
-                            disabled={updateTrainingMutation.isPending || !canSubmitEdit}
-                            onClick={() => updateTrainingMutation.mutate()}
-                        >
-                            {t('save')}
-                        </Button>
-                    </Stack>
-                </Modal>
+                <TrainingFormModal
+                    opened={editOpened}
+                    onClose={closeEdit}
+                    training={training}
+                    collaboratorOptions={collaboratorOptions}
+                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ['training', link] })}
+                />
             </Stack>
         </MantineThemeProvider>
     );

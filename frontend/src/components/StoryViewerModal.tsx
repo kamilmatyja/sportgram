@@ -10,6 +10,7 @@ import { storyService, type StoryResource } from '../api/services/story.service'
 import type { UserResource } from '../api/services/user.service';
 import { EntryTypeEnum } from '../enums/EntryTypeEnum';
 import { EntityViewCounter } from './EntityViewCounter';
+import { openConfirmActionModal } from '../utils/confirmModal';
 
 export interface UserStoriesGroup {
     userId: string;
@@ -120,10 +121,14 @@ export function StoryViewerModal({
 
         try {
             const res = await storyService.getStories({
-                filter: { userId },
-                page: pageToFetch,
-                limit: 10,
-                sort: 'createdAt:asc',
+                params: {
+                    query: {
+                        filter: { userId },
+                        page: pageToFetch,
+                        limit: 10,
+                        sort: 'createdAt:asc',
+                    },
+                },
             });
             const fetched = res.data ?? [];
             const hasNextPage = !!res.pagination?.hasNextPage;
@@ -326,28 +331,51 @@ export function StoryViewerModal({
                                                     size={30}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        if (currentUserId) {
-                                                            setUserStoriesMap((prev) => {
-                                                                const current = prev[currentUserId];
-                                                                if (!current) return prev;
-                                                                return {
-                                                                    ...prev,
-                                                                    [currentUserId]: {
-                                                                        ...current,
-                                                                        stories: current.stories.filter(
-                                                                            (s) => s.id !== currentStory.id,
-                                                                        ),
-                                                                    },
-                                                                };
-                                                            });
-                                                        }
-                                                        if (
-                                                            currentStoryIdx >= currentStories.length - 1 &&
-                                                            currentStoryIdx > 0
-                                                        ) {
-                                                            setCurrentStoryIdx((prev) => prev - 1);
-                                                        }
-                                                        onDelete(currentStory.id);
+                                                        const storyIdToDelete = currentStory.id;
+                                                        openConfirmActionModal({
+                                                            title: t('confirmDeleteTitle'),
+                                                            message: t('confirmDeleteMessage'),
+                                                            confirmLabel: t('delete'),
+                                                            cancelLabel: t('cancel'),
+                                                            onConfirm: () => {
+                                                                const remainingStories = currentStories.filter(
+                                                                    (s) => s.id !== storyIdToDelete,
+                                                                );
+
+                                                                if (currentUserId) {
+                                                                    setUserStoriesMap((prev) => {
+                                                                        const current = prev[currentUserId];
+                                                                        if (!current) return prev;
+                                                                        return {
+                                                                            ...prev,
+                                                                            [currentUserId]: {
+                                                                                ...current,
+                                                                                stories: remainingStories,
+                                                                            },
+                                                                        };
+                                                                    });
+                                                                }
+
+                                                                if (remainingStories.length === 0) {
+                                                                    if (hasNextGroup) {
+                                                                        setCurrentGroupIdx((prev) => prev + 1);
+                                                                        setCurrentStoryIdx(0);
+                                                                    } else if (hasPrevGroup) {
+                                                                        setCurrentGroupIdx((prev) => prev - 1);
+                                                                        setCurrentStoryIdx(0);
+                                                                    } else {
+                                                                        onClose();
+                                                                    }
+                                                                } else {
+                                                                    if (currentStoryIdx >= remainingStories.length) {
+                                                                        setCurrentStoryIdx(
+                                                                            Math.max(0, remainingStories.length - 1),
+                                                                        );
+                                                                    }
+                                                                }
+                                                                onDelete(storyIdToDelete);
+                                                            },
+                                                        });
                                                     }}
                                                     aria-label={t('delete')}
                                                 >

@@ -1,4 +1,4 @@
-import { Group, Button, Card, Box, Avatar, Text, Title, Image, Center } from '@mantine/core';
+import { Group, Button, Box, Text, Title } from '@mantine/core';
 import {
     IconArticle,
     IconPlayerPlay,
@@ -23,6 +23,7 @@ import { useAuth } from '../auth/AuthContext';
 import { RoleEnum } from '../enums/RoleEnum';
 import { useUserSubpageAccess } from '../hooks/useUserSubpageAccess';
 import { formatImageSrc } from '../utils/imageUtils';
+import { HeaderBannerWithAvatar } from './common/HeaderBannerWithAvatar';
 
 export interface UserProfileNavProps {
     user?:
@@ -112,76 +113,34 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
     return (
         <Box mb="md">
             {simplifiedHeader && user && (
-                <Card withBorder radius="md" p={0} mb="sm" shadow="xs" className="overflow-hidden">
-                    {bgSrc ? (
-                        <Box h={160} pos="relative" bg="var(--mantine-primary-color-filled)">
-                            <Center pos="absolute" inset={0} className="header-bg-placeholder-center">
-                                <Text fz={48} fw={700} c="white" className="header-bg-placeholder-text">
-                                    ?
-                                </Text>
-                            </Center>
-                            <Image
-                                className="header-bg-image"
-                                src={bgSrc}
-                                h={160}
-                                w="100%"
-                                fit="cover"
-                                alt={user.firstName ?? 'Background'}
-                                pos="relative"
-                                onError={(e) => {
-                                    e.currentTarget.classList.add('d-none');
-                                }}
-                            />
-                        </Box>
-                    ) : (
-                        <Center h={160} bg="var(--mantine-primary-color-filled)">
-                            <Text fz={48} fw={700} c="white" className="header-bg-placeholder-text">
-                                ?
+                <HeaderBannerWithAvatar
+                    backgroundPhotoSrc={bgSrc}
+                    profilePhotoSrc={profileSrc}
+                    altText={user.firstName ?? 'Background'}
+                >
+                    <Group justify="space-between" align="flex-start" mt={55}>
+                        <div>
+                            <Title order={2}>
+                                {user.firstName} {user.lastName}
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                                @{user.link}
                             </Text>
-                        </Center>
-                    )}
+                        </div>
 
-                    <Box p="md" pos="relative" className="header-content-box">
-                        <Avatar
-                            src={profileSrc}
-                            size={100}
-                            radius={5}
-                            pos="absolute"
-                            top={-50}
-                            left={24}
-                            className="profile-avatar-border"
-                            component={Link}
-                            to={`/users/${link}`}
-                        >
-                            ?
-                        </Avatar>
-
-                        <Group justify="space-between" align="flex-start" mt={55}>
-                            <div>
-                                <Link to={`/users/${link}`} className="no-decoration">
-                                    <Title order={2}>
-                                        {user.firstName} {user.lastName}
-                                    </Title>
-                                </Link>
-                                <Text size="sm" c="dimmed">
-                                    @{user.link}
-                                </Text>
-                            </div>
-
-                            {!isProfileRoot && (
-                                <Button
-                                    component={Link}
-                                    to={`/users/${link}`}
-                                    variant="light"
-                                    size="xs"
-                                    leftSection={<IconArrowLeft size={16} />}
-                                >
-                                    {t('backToProfile')}
-                                </Button>
-                            )}
-                        </Group>
-                    </Box>
-                </Card>
+                        {!isProfileRoot && (
+                            <Button
+                                component={Link}
+                                to={`/users/${link}`}
+                                variant="light"
+                                size="xs"
+                                leftSection={<IconArrowLeft size={16} />}
+                            >
+                                {t('backToProfile')}
+                            </Button>
+                        )}
+                    </Group>
+                </HeaderBannerWithAvatar>
             )}
 
             {hasAccess && (

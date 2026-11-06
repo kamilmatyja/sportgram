@@ -1,99 +1,55 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
+import type { ApiRequest, ApiResponse } from '../types';
 
 export type PushSubscriptionResource = components['schemas']['PushSubscriptionResource'];
 export type PushSubscriptionDto = components['schemas']['PushSubscriptionDto'];
-export type PushSubscriptionStatusDto = components['schemas']['PushSubscriptionStatusDto'];
 export type PushSubscriptionFilterDto = components['schemas']['PushSubscriptionFilterDto'];
 
 export type GetPushSubscriptionsQuery = operations['get_push_subscription_index']['parameters']['query'];
-
-export type GetPushSubscriptionsResponse =
-    operations['get_push_subscription_index']['responses'][200]['content']['application/json'];
-export type CreatePushSubscriptionResponse =
-    operations['post_push_subscription_create']['responses'][201]['content']['application/json'];
-export type GetPushSubscriptionResponse =
-    operations['get_push_subscription_details']['responses'][200]['content']['application/json'];
-export type UpdatePushSubscriptionResponse =
-    operations['put_push_subscription_update']['responses'][200]['content']['application/json'];
-export type UpdatePushSubscriptionStatusResponse =
-    operations['patch_push_subscription_update_status']['responses'][200]['content']['application/json'];
-export type DeletePushSubscriptionResponse =
-    operations['delete_push_subscription_delete']['responses'][200]['content']['application/json'];
+export type GetPushSubscriptionDetailsQuery = operations['get_push_subscription_details']['parameters']['query'];
 
 export const pushSubscriptionService = {
-    async getPushSubscriptions(query?: GetPushSubscriptionsQuery): Promise<GetPushSubscriptionsResponse> {
-        const res = await api.GET('/api/push-subscriptions', {
-            params: { query },
-        });
+    async getPushSubscriptions(
+        req?: ApiRequest<'get_push_subscription_index'>,
+    ): Promise<ApiResponse<'get_push_subscription_index'>> {
+        const res = await api.GET('/api/push-subscriptions', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_push_subscription_index'>;
     },
-
-    async createPushSubscription(body: PushSubscriptionDto): Promise<CreatePushSubscriptionResponse> {
-        const res = await api.POST('/api/push-subscriptions', { body });
+    async createPushSubscription(
+        req?: ApiRequest<'post_push_subscription_create'>,
+    ): Promise<ApiResponse<'post_push_subscription_create'>> {
+        const res = await api.POST('/api/push-subscriptions', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_push_subscription_create'>;
     },
-
-    async getPushSubscription(id: string): Promise<GetPushSubscriptionResponse> {
-        const res = await api.GET('/api/push-subscriptions/{id}', {
-            params: { path: { id } },
-        });
+    async getPushSubscription(
+        req?: ApiRequest<'get_push_subscription_details'>,
+    ): Promise<ApiResponse<'get_push_subscription_details'>> {
+        const res = await api.GET('/api/push-subscriptions/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_push_subscription_details'>;
     },
-
-    async updatePushSubscription(id: string, body: PushSubscriptionDto): Promise<UpdatePushSubscriptionResponse> {
-        const res = await api.PUT('/api/push-subscriptions/{id}', {
-            params: { path: { id } },
-            body,
-        });
+    async updatePushSubscription(
+        req?: ApiRequest<'put_push_subscription_update'>,
+    ): Promise<ApiResponse<'put_push_subscription_update'>> {
+        const res = await api.PUT('/api/push-subscriptions/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'put_push_subscription_update'>;
     },
-
+    async deletePushSubscription(
+        req?: ApiRequest<'delete_push_subscription_delete'>,
+    ): Promise<ApiResponse<'delete_push_subscription_delete'>> {
+        const res = await api.DELETE('/api/push-subscriptions/{id}', req as any);
+        if (res.error) throw res.error;
+        return res.data as ApiResponse<'delete_push_subscription_delete'>;
+    },
     async updatePushSubscriptionStatus(
-        id: string,
-        bodyOrStatus: PushSubscriptionStatusDto | PushSubscriptionStatusEnum,
-    ): Promise<UpdatePushSubscriptionStatusResponse> {
-        const body: PushSubscriptionStatusDto =
-            typeof bodyOrStatus === 'number'
-                ? { status: bodyOrStatus as PushSubscriptionStatusDto['status'] }
-                : bodyOrStatus;
-        const res = await api.PATCH('/api/push-subscriptions/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+        req?: ApiRequest<'patch_push_subscription_update_status'>,
+    ): Promise<ApiResponse<'patch_push_subscription_update_status'>> {
+        const res = await api.PATCH('/api/push-subscriptions/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async deletePushSubscription(id: string): Promise<DeletePushSubscriptionResponse> {
-        const res = await api.DELETE('/api/push-subscriptions/{id}', {
-            params: { path: { id } },
-        });
-        if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async getSubscriptions(query?: GetPushSubscriptionsQuery): Promise<GetPushSubscriptionsResponse> {
-        return await pushSubscriptionService.getPushSubscriptions(query);
-    },
-
-    async createSubscription(body: PushSubscriptionDto): Promise<CreatePushSubscriptionResponse> {
-        return await pushSubscriptionService.createPushSubscription(body);
-    },
-
-    async updateSubscriptionStatus(
-        id: string,
-        status: PushSubscriptionStatusEnum,
-    ): Promise<UpdatePushSubscriptionStatusResponse> {
-        return await pushSubscriptionService.updatePushSubscriptionStatus(id, status);
-    },
-
-    async deleteSubscription(id: string): Promise<DeletePushSubscriptionResponse> {
-        return await pushSubscriptionService.deletePushSubscription(id);
+        return res.data as ApiResponse<'patch_push_subscription_update_status'>;
     },
 };

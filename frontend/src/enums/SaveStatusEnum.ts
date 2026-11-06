@@ -1,3 +1,5 @@
+import { getEnumOptions } from '../utils/enumUtils';
+
 export enum SaveStatusEnum {
     PENDING = 1,
     ACCEPTED = 2,
@@ -5,12 +7,5 @@ export enum SaveStatusEnum {
 }
 
 export namespace SaveStatusEnum {
-    export const getOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return Object.entries(SaveStatusEnum)
-            .filter(([_, value]) => typeof value === 'number')
-            .map(([key, value]) => ({
-                value: value as number,
-                label: t(`saveStatuses.${key.toLowerCase()}`),
-            }));
-    };
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(SaveStatusEnum, 'saveStatuses', t);
 }

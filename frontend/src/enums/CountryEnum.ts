@@ -1,3 +1,5 @@
+import { getEnumOptions, getEnumLabel } from '../utils/enumUtils';
+
 export enum CountryEnum {
     ALBANIA = 1,
     ANDORRA = 2,
@@ -51,12 +53,7 @@ export enum CountryEnum {
 }
 
 export namespace CountryEnum {
-    export const getOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return Object.entries(CountryEnum)
-            .filter(([_, value]) => typeof value === 'number')
-            .map(([key, value]) => ({
-                value: value as number,
-                label: t(`countries.${key.toLowerCase()}`),
-            }));
-    };
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(CountryEnum, 'countries', t);
+    export const getLabel = (value: number, t: (key: string) => string) =>
+        getEnumLabel(CountryEnum, 'countries', value, t);
 }

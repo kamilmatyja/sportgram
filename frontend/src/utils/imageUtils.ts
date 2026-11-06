@@ -58,3 +58,20 @@ export const fileToBase64 = (file: File): Promise<string> =>
         reader.onerror = reject;
         reader.readAsDataURL(file);
     });
+
+export const resolveImageBase64 = async (
+    newFile: File | null | undefined,
+    existingValue?: string | null,
+    requiredErrorMessage?: string,
+): Promise<string> => {
+    if (newFile) {
+        return await fileToBase64(newFile);
+    }
+    if (existingValue) {
+        return existingValue;
+    }
+    if (requiredErrorMessage) {
+        throw new Error(requiredErrorMessage);
+    }
+    return '';
+};

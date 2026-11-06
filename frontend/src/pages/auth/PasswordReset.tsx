@@ -1,23 +1,12 @@
 import { useState, type SyntheticEvent } from 'react';
-import {
-    Paper,
-    Title,
-    TextInput,
-    PasswordInput,
-    Button,
-    Stack,
-    Anchor,
-    Group,
-    PinInput,
-    Text,
-    Container,
-} from '@mantine/core';
+import { Paper, Title, TextInput, PasswordInput, Button, Stack, Anchor, Text, Container } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { authService } from '../../api/services';
 import { passwordResetSession, signSession } from '../../utils/authSession';
+import { AuthVerificationStep } from './AuthVerificationStep';
 
 export default function PasswordReset() {
     const { t } = useTranslation();
@@ -39,7 +28,7 @@ export default function PasswordReset() {
         setFieldErrors({});
 
         try {
-            const data = await authService.passwordReset(email);
+            const data = await authService.passwordReset({ body: { email } });
             if (!data?.id) {
                 notifications.show({ title: t('error'), message: t('error'), color: 'red' });
                 return;
@@ -71,9 +60,12 @@ export default function PasswordReset() {
         setFieldErrors({});
 
         try {
-            await authService.confirmPasswordReset(resetId, {
-                password,
-                code: Number(code),
+            await authService.confirmPasswordReset({
+                params: { path: { id: resetId } },
+                body: {
+                    password,
+                    code: Number(code),
+                },
             });
 
             const storedEmail = passwordResetSession.get('email');
@@ -82,8 +74,10 @@ export default function PasswordReset() {
             if (storedEmail) {
                 try {
                     const signRes = await authService.sign({
-                        email: storedEmail,
-                        password,
+                        body: {
+                            email: storedEmail,
+                            password,
+                        },
                     });
                     if (signRes?.id) {
                         signSession.start(signRes.id);
@@ -114,7 +108,9 @@ export default function PasswordReset() {
         if (!resetId) return;
         setLoading(true);
         try {
-            await authService.resendPasswordReset(resetId);
+            await authService.resendPasswordReset({
+                params: { path: { id: resetId } },
+            });
             notifications.show({
                 title: t('resend'),
                 message: t('resendSuccess'),
@@ -163,84 +159,43 @@ export default function PasswordReset() {
                         </Stack>
                     </form>
                 ) : (
-                    <form onSubmit={handleCodeSubmit}>
-                        <Stack align="center" gap="md">
-                            <Text size="sm" c="dimmed" ta="center">
-                                {t('enterResetCodeAndNewPassword')}
-                            </Text>
-
-                            <PinInput
-                                length={6}
-                                type="number"
-                                value={code}
-                                onChange={(val) => {
-                                    setCode(val);
-                                    if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
-                                }}
-                                error={!!fieldErrors.code}
-                                size="md"
-                                autoFocus
-                            />
-
-                            {fieldErrors.code && (
-                                <Text size="xs" c="red" ta="center">
-                                    {fieldErrors.code}
-                                </Text>
-                            )}
-
-                            <PasswordInput
-                                label={t('newPassword')}
-                                required
-                                placeholder={t('passwordPlaceholder')}
-                                value={password}
-                                error={fieldErrors.password || fieldErrors.newPassword}
-                                onChange={(e) => {
-                                    setPassword(e.currentTarget.value);
-                                    if (fieldErrors.password || fieldErrors.newPassword) {
-                                        const next = { ...fieldErrors };
-                                        delete next.password;
-                                        delete next.newPassword;
-                                        setFieldErrors(next);
-                                    }
-                                }}
-                                w="100%"
-                            />
-
-                            <Button
-                                type="submit"
-                                fullWidth
-                                mt="md"
-                                loading={loading}
-                                disabled={loading || code.length < 6 || !password}
-                            >
-                                {t('save')}
-                            </Button>
-
-                            <Group justify="space-between" w="100%" mt="xs">
-                                <Button
-                                    variant="subtle"
-                                    size="xs"
-                                    disabled={loading}
-                                    onClick={() => {
-                                        passwordResetSession.clear();
-                                        setStep(1);
-                                        setFieldErrors({});
-                                    }}
-                                >
-                                    {t('back')}
-                                </Button>
-                                <Button
-                                    variant="subtle"
-                                    size="xs"
-                                    onClick={handleResend}
-                                    loading={loading}
-                                    disabled={loading}
-                                >
-                                    {t('resend')}
-                                </Button>
-                            </Group>
-                        </Stack>
-                    </form>
+                    <AuthVerificationStep
+                        promptText={t('enterResetCodeAndNewPassword')}
+                        code={code}
+                        onCodeChange={(val) => {
+                            setCode(val);
+                            if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
+                        }}
+                        onSubmit={handleCodeSubmit}
+                        onBack={() => {
+                            passwordResetSession.clear();
+                            setStep(1);
+                            setFieldErrors({});
+                        }}
+                        onResend={handleResend}
+                        loading={loading}
+                        error={fieldErrors.code}
+                        submitLabel={t('save')}
+                        isSubmitDisabled={!password}
+                    >
+                        <PasswordInput
+                            label={t('newPassword')}
+                            required
+                            placeholder={t('passwordPlaceholder')}
+                            value={password}
+                            error={fieldErrors.password || fieldErrors.newPassword}
+                            onChange={(e) => {
+                                setPassword(e.currentTarget.value);
+                                if (fieldErrors.password || fieldErrors.newPassword) {
+                                    const next = { ...fieldErrors };
+                                    delete next.password;
+                                    delete next.newPassword;
+                                    setFieldErrors(next);
+                                }
+                            }}
+                            w="100%"
+                        />
+                    </AuthVerificationStep>
                 )}
             </Paper>
         </Container>

@@ -1,3 +1,5 @@
+import { getEnumOptions } from '../utils/enumUtils';
+
 export enum FeedReactionEnum {
     LIKE = 1,
     LOVE = 2,
@@ -8,14 +10,7 @@ export enum FeedReactionEnum {
 }
 
 export namespace FeedReactionEnum {
-    export const getOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return Object.entries(FeedReactionEnum)
-            .filter(([_, value]) => typeof value === 'number')
-            .map(([key, value]) => ({
-                value: value as number,
-                label: t(`feedReactions.${key.toLowerCase()}`),
-            }));
-    };
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(FeedReactionEnum, 'feedReactions', t);
 
     export const ALL_REACTIONS = [
         { type: FeedReactionEnum.LIKE, emoji: '👍', key: 'like' },
@@ -25,4 +20,17 @@ export namespace FeedReactionEnum {
         { type: FeedReactionEnum.SAD, emoji: '😢', key: 'sad' },
         { type: FeedReactionEnum.ANGRY, emoji: '😡', key: 'angry' },
     ];
+
+    export const getEmoji = (reaction: FeedReactionEnum | number): string => {
+        return ALL_REACTIONS.find((r) => r.type === reaction)?.emoji ?? '👍';
+    };
+
+    export const getKey = (reaction: FeedReactionEnum | number): string => {
+        return ALL_REACTIONS.find((r) => r.type === reaction)?.key ?? 'like';
+    };
+
+    export const getLabel = (reaction: FeedReactionEnum | number, t: (key: string) => string): string => {
+        const key = getKey(reaction);
+        return t(`feedReactions.${key}`);
+    };
 }

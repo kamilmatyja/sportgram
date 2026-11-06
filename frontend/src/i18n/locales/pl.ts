@@ -244,6 +244,10 @@ export const pl = {
     comments: 'Komentarze',
     reactions: 'Reakcje',
     reaction: 'Reakcja',
+    allReactions: 'Wszystkie reakcje',
+    comment: 'Komentarz',
+    origin: 'Pochodzenie',
+    content: 'Treść',
     addPage: 'Dodaj stronę',
     pageFollows: 'Obserwacje',
     eventSignups: 'Zapisy',
@@ -348,6 +352,7 @@ export const pl = {
     selectPhoto: 'Wybierz zdjęcie',
     loadingFeeds: 'Ładowanie wpisów...',
     loadingStories: 'Ładowanie relacji...',
+    loadingMore: 'Ładowanie kolejnych...',
 
     searchUserPlaceholder: 'Szukaj użytkownika...',
     profileUpdated: 'Zaktualizowano profil!',

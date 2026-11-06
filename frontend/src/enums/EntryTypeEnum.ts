@@ -1,3 +1,5 @@
+import { getEnumOptions } from '../utils/enumUtils';
+
 export enum EntryTypeEnum {
     USER = 1,
     STORY = 2,
@@ -10,12 +12,5 @@ export enum EntryTypeEnum {
 }
 
 export namespace EntryTypeEnum {
-    export const getOptions = (t: (key: string) => string): { value: number; label: string }[] => {
-        return Object.entries(EntryTypeEnum)
-            .filter(([_, value]) => typeof value === 'number')
-            .map(([key, value]) => ({
-                value: value as number,
-                label: t(`entryTypes.${key.toLowerCase()}`),
-            }));
-    };
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(EntryTypeEnum, 'entryTypes', t);
 }

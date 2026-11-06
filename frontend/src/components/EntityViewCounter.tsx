@@ -44,7 +44,7 @@ export function EntityViewCounter({
         sessionTrackedEntities.add(trackingKey);
 
         entryService
-            .createEntry({ entityId, type })
+            .createEntry({ body: { entityId, type } })
             .then(() => {
                 queryClient.setQueryData(['entry-views', type, entityId], (old: number | undefined) => (old ?? 0) + 1);
                 queryClient.invalidateQueries({ queryKey: ['entry-views', type, entityId] });
@@ -62,8 +62,12 @@ export function EntityViewCounter({
         queryFn: async () => {
             if (!entityId || !currentUser) return 0;
             const res = await entryService.getEntries({
-                filter: { entityIds: [entityId], type },
-                limit: 1,
+                params: {
+                    query: {
+                        filter: { entityIds: [entityId], type },
+                        limit: 1,
+                    },
+                },
             });
             return res.pagination?.total ?? 0;
         },

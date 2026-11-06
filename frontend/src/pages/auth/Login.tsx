@@ -9,7 +9,6 @@ import {
     Stack,
     Anchor,
     Group,
-    PinInput,
     Text,
     Container,
 } from '@mantine/core';
@@ -20,6 +19,8 @@ import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { authService } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { signSession, registerSession, UNCONFIRMED_ACCOUNT_ERROR } from '../../utils/authSession';
+
+import { AuthVerificationStep } from './AuthVerificationStep';
 
 export default function Login() {
     const { t } = useTranslation();
@@ -43,7 +44,7 @@ export default function Login() {
         setFieldErrors({});
 
         try {
-            const data = await authService.sign({ email, password });
+            const data = await authService.sign({ body: { email, password } });
             if (!data?.id) {
                 notifications.show({ title: t('error'), message: t('error'), color: 'red' });
                 return;
@@ -62,7 +63,7 @@ export default function Login() {
             const msg = getErrorMessage(apiErr);
             if (msg === UNCONFIRMED_ACCOUNT_ERROR) {
                 try {
-                    const res = await authService.register(email);
+                    const res = await authService.register({ body: { email } });
                     if (res?.id) {
                         registerSession.start(res.id, { email, password });
                         signSession.clear();
@@ -89,7 +90,10 @@ export default function Login() {
         setFieldErrors({});
 
         try {
-            const data = await authService.confirmSign(signId, Number(code));
+            const data = await authService.confirmSign({
+                params: { path: { id: signId } },
+                body: { code: Number(code) },
+            });
             if (!data?.token) {
                 notifications.show({ title: t('error'), message: t('error'), color: 'red' });
                 return;
@@ -119,7 +123,9 @@ export default function Login() {
         if (!signId) return;
         setLoading(true);
         try {
-            await authService.resendSign(signId);
+            await authService.resendSign({
+                params: { path: { id: signId } },
+            });
             notifications.show({
                 title: t('resend'),
                 message: t('resendSuccess'),
@@ -197,57 +203,18 @@ export default function Login() {
                         </Stack>
                     </form>
                 ) : (
-                    <form onSubmit={handleCodeSubmit}>
-                        <Stack align="center" gap="md">
-                            <Text size="sm" c="dimmed" ta="center">
-                                {t('enterVerificationCodePrompt')}
-                            </Text>
-
-                            <PinInput
-                                length={6}
-                                type="number"
-                                value={code}
-                                onChange={(val) => {
-                                    setCode(val);
-                                    if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
-                                }}
-                                error={!!fieldErrors.code}
-                                size="md"
-                                autoFocus
-                            />
-
-                            {fieldErrors.code && (
-                                <Text size="xs" c="red" ta="center">
-                                    {fieldErrors.code}
-                                </Text>
-                            )}
-
-                            <Button
-                                type="submit"
-                                fullWidth
-                                mt="md"
-                                loading={loading}
-                                disabled={loading || code.length < 6}
-                            >
-                                {t('verify')}
-                            </Button>
-
-                            <Group justify="space-between" w="100%" mt="xs">
-                                <Button variant="subtle" size="xs" onClick={handleBackToStep1} disabled={loading}>
-                                    {t('back')}
-                                </Button>
-                                <Button
-                                    variant="subtle"
-                                    size="xs"
-                                    onClick={handleResend}
-                                    loading={loading}
-                                    disabled={loading}
-                                >
-                                    {t('resend')}
-                                </Button>
-                            </Group>
-                        </Stack>
-                    </form>
+                    <AuthVerificationStep
+                        code={code}
+                        onCodeChange={(val) => {
+                            setCode(val);
+                            if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
+                        }}
+                        onSubmit={handleCodeSubmit}
+                        onBack={handleBackToStep1}
+                        onResend={handleResend}
+                        loading={loading}
+                        error={fieldErrors.code}
+                    />
                 )}
             </Paper>
         </Container>

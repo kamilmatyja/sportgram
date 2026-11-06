@@ -1,131 +1,61 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
+import type { ApiRequest, ApiResponse } from '../types';
 
 export type GoalResource = components['schemas']['GoalResource'];
 export type GoalDto = components['schemas']['GoalDto'];
 export type GoalFilterDto = components['schemas']['GoalFilterDto'];
-export type GoalStatusDto = components['schemas']['GoalStatusDto'];
 export type GoalParticipantResource = components['schemas']['GoalParticipantResource'];
 export type GoalParticipantResultResource = components['schemas']['GoalParticipantResultResource'];
 
 export type GetGoalsQuery = operations['get_goal_index']['parameters']['query'];
 export type GetGoalDetailsQuery = operations['get_goal_details']['parameters']['query'];
 
-export type GetGoalsResponse = operations['get_goal_index']['responses'][200]['content']['application/json'];
-export type CreateGoalResponse = operations['post_goal_create']['responses'][201]['content']['application/json'];
-export type GetGoalResponse = operations['get_goal_details']['responses'][200]['content']['application/json'];
-export type UpdateGoalResponse = operations['put_goal_update']['responses'][200]['content']['application/json'];
-export type DeleteGoalResponse = operations['delete_goal_delete']['responses'][200]['content']['application/json'];
-export type UpdateGoalStatusResponse =
-    operations['patch_goal_update_status']['responses'][200]['content']['application/json'];
-export type UpdateGoalParticipantStatusResponse =
-    operations['patch_goal_participant_update_status']['responses'][200]['content']['application/json'];
-export type UpdateGoalParticipantResultStatusResponse =
-    operations['patch_goal_participant_result_update_status']['responses'][200]['content']['application/json'];
-
 export const goalService = {
-    async getGoals(query?: GetGoalsQuery): Promise<GetGoalsResponse> {
-        const res = await api.GET('/api/goals', {
-            params: { query },
-        });
+    async getGoals(req?: ApiRequest<'get_goal_index'>): Promise<ApiResponse<'get_goal_index'>> {
+        const res = await api.GET('/api/goals', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_goal_index'>;
     },
-
-    async createGoal(body: GoalDto): Promise<CreateGoalResponse> {
-        const res = await api.POST('/api/goals', { body });
+    async createGoal(req?: ApiRequest<'post_goal_create'>): Promise<ApiResponse<'post_goal_create'>> {
+        const res = await api.POST('/api/goals', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'post_goal_create'>;
     },
-
-    async getGoal(id: string, query?: GetGoalDetailsQuery): Promise<GetGoalResponse> {
-        const res = await api.GET('/api/goals/{id}', {
-            params: { path: { id }, query },
-        });
+    async getGoal(req?: ApiRequest<'get_goal_details'>): Promise<ApiResponse<'get_goal_details'>> {
+        const res = await api.GET('/api/goals/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'get_goal_details'>;
     },
-
-    async updateGoal(id: string, body: GoalDto): Promise<UpdateGoalResponse> {
-        const res = await api.PUT('/api/goals/{id}', {
-            params: { path: { id } },
-            body,
-        });
+    async updateGoal(req?: ApiRequest<'put_goal_update'>): Promise<ApiResponse<'put_goal_update'>> {
+        const res = await api.PUT('/api/goals/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'put_goal_update'>;
     },
-
-    async deleteGoal(id: string): Promise<DeleteGoalResponse> {
-        const res = await api.DELETE('/api/goals/{id}', {
-            params: { path: { id } },
-        });
+    async deleteGoal(req?: ApiRequest<'delete_goal_delete'>): Promise<ApiResponse<'delete_goal_delete'>> {
+        const res = await api.DELETE('/api/goals/{id}', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'delete_goal_delete'>;
     },
-
     async updateGoalStatus(
-        id: string,
-        bodyOrStatus: GoalStatusDto | GoalStatusEnum,
-    ): Promise<UpdateGoalStatusResponse> {
-        const body: GoalStatusDto =
-            typeof bodyOrStatus === 'number' ? { status: bodyOrStatus as GoalStatusDto['status'] } : bodyOrStatus;
-        const res = await api.PATCH('/api/goals/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+        req?: ApiRequest<'patch_goal_update_status'>,
+    ): Promise<ApiResponse<'patch_goal_update_status'>> {
+        const res = await api.PATCH('/api/goals/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'patch_goal_update_status'>;
     },
-
     async updateGoalParticipantStatus(
-        id: string,
-        bodyOrStatus: components['schemas']['SaveStatusDto'] | ElementStatusEnum | number,
-    ): Promise<UpdateGoalParticipantStatusResponse> {
-        const body: components['schemas']['SaveStatusDto'] =
-            typeof bodyOrStatus === 'number'
-                ? { status: bodyOrStatus as components['schemas']['SaveStatusDto']['status'] }
-                : bodyOrStatus;
-        const res = await api.PATCH('/api/goal-participants/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+        req?: ApiRequest<'patch_goal_participant_update_status'>,
+    ): Promise<ApiResponse<'patch_goal_participant_update_status'>> {
+        const res = await api.PATCH('/api/goal-participants/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
+        return res.data as ApiResponse<'patch_goal_participant_update_status'>;
     },
-
     async updateGoalParticipantResultStatus(
-        id: string,
-        bodyOrStatus: components['schemas']['SaveStatusDto'] | ElementStatusEnum | number,
-    ): Promise<UpdateGoalParticipantResultStatusResponse> {
-        const body: components['schemas']['SaveStatusDto'] =
-            typeof bodyOrStatus === 'number'
-                ? { status: bodyOrStatus as components['schemas']['SaveStatusDto']['status'] }
-                : bodyOrStatus;
-        const res = await api.PATCH('/api/goal-participant-results/{id}/status', {
-            params: { path: { id } },
-            body,
-        });
+        req?: ApiRequest<'patch_goal_participant_result_update_status'>,
+    ): Promise<ApiResponse<'patch_goal_participant_result_update_status'>> {
+        const res = await api.PATCH('/api/goal-participant-results/{id}/status', req as any);
         if (res.error) throw res.error;
-        return res.data;
-    },
-
-    async getGoalByLink(link: string): Promise<GoalResource | null> {
-        const res = await api.GET('/api/goals', {
-            params: {
-                query: {
-                    filter: { link, text: null, userId: null },
-                    limit: 1,
-                },
-            },
-        });
-        if (res.error) throw res.error;
-        const item = res.data?.data?.[0];
-        if (!item) return null;
-        const detail = await this.getGoal(item.id, {
-            'include[]': ['goalParticipants', 'goalParticipantResults'],
-        });
-        return detail.data ?? null;
+        return res.data as ApiResponse<'patch_goal_participant_result_update_status'>;
     },
 };

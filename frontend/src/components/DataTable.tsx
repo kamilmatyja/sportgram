@@ -16,6 +16,7 @@ import {
 } from '@mantine/core';
 import { IconSearch, IconPlus, IconFilter, IconX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { getDefaultSortOptions, type SortOption } from '../utils/tableUtils';
 import { EmptyState } from './EmptyState';
 
 export interface Column<T> {
@@ -24,10 +25,7 @@ export interface Column<T> {
     render?: (item: T) => React.ReactNode;
 }
 
-export interface SortOption {
-    value: string;
-    label: string;
-}
+export type { SortOption };
 
 interface DataTableProps<T> {
     columns: Column<T>[];
@@ -85,7 +83,8 @@ export function DataTable<T extends Record<string, unknown>>({
 
     const computedTotalPages = totalPages ?? (totalItems && limit ? Math.max(1, Math.ceil(totalItems / limit)) : 1);
 
-    const hasToolbar = onSearchChange || sortOptions || filtersNode || onAdd || toolbarExtra;
+    const effectiveSortOptions = sortOptions ?? (onSortChange ? getDefaultSortOptions(t) : undefined);
+    const hasToolbar = onSearchChange || effectiveSortOptions || filtersNode || onAdd || toolbarExtra;
 
     return (
         <Paper withBorder radius="md" p="md" shadow="xs">
@@ -105,11 +104,11 @@ export function DataTable<T extends Record<string, unknown>>({
                                 />
                             )}
 
-                            {sortOptions && onSortChange && (
+                            {effectiveSortOptions && onSortChange && (
                                 <Select
                                     placeholder={t('sortBy')}
                                     aria-label={t('sortBy')}
-                                    data={sortOptions}
+                                    data={effectiveSortOptions}
                                     value={sort ?? null}
                                     onChange={onSortChange}
                                     clearable
