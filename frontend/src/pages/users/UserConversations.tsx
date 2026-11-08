@@ -1,6 +1,5 @@
 import { useState, useMemo, useRef, useEffect, useCallback, type SyntheticEvent } from 'react';
 import {
-    Title,
     Text,
     Group,
     TextInput,
@@ -9,7 +8,6 @@ import {
     Avatar,
     Badge,
     ActionIcon,
-    Tooltip,
     Center,
     Loader,
     Select,
@@ -19,10 +17,9 @@ import {
     ScrollArea,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconSend, IconTrash, IconEdit, IconMessage } from '@tabler/icons-react';
+import { IconSend, IconTrash, IconEdit } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { EmptyState } from '../../components/EmptyState';
 import { getErrorMessage } from '../../api/client';
 import { conversationService, friendService, type ConversationResource } from '../../api/services';
@@ -40,7 +37,7 @@ import { UserSubpageContainer } from '../../components/common/UserSubpageContain
 import { useDataTableState } from '../../hooks/useDataTableState';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
+import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
 import { useUsersMap } from '../../hooks/useUsersMap';
 import { useMyFriends } from '../../hooks/useMyFriends';
 import { UserInfoCell } from '../../components/common/UserInfoCell';
@@ -51,7 +48,7 @@ export default function UserConversations() {
     const { currentUser } = useAuth();
     const chatEndRef = useRef<HTMLDivElement>(null);
 
-    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
+    const tableState = useDataTableState({
         defaultSort: 'createdAt:desc',
     });
 
@@ -97,15 +94,23 @@ export default function UserConversations() {
                 const { collaboratorOptions } = useMyFriends();
 
                 const { data: conversationsResponse, isLoading: conversationsLoading } = useQuery({
-                    queryKey: ['conversations-data', currentUser?.id, targetUser.id, page, limit, sort, statusFilter],
+                    queryKey: [
+                        'conversations-data',
+                        currentUser?.id,
+                        targetUser.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        statusFilter,
+                    ],
                     queryFn: async () => {
                         if (!currentUser || !isOwner) return { data: [], pagination: null };
                         return await conversationService.getConversations({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
-                                    sort: sort as any,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
+                                    sort: tableState.sort as any,
                                     filter: {
                                         ...(statusFilter ? { status: statusFilter as any } : {}),
                                     },
@@ -460,12 +465,7 @@ export default function UserConversations() {
                 ];
 
                 const editModalNode = (
-                    <Modal
-                        opened={editModalOpened}
-                        onClose={() => setEditModalOpened(false)}
-                        title={t('editMessage')}
-                        size="lg"
-                    >
+                    <Modal opened={editModalOpened} onClose={() => setEditModalOpened(false)} title={t('edit')}>
                         <Stack gap="sm">
                             <TextInput
                                 label={t('text')}
@@ -494,19 +494,12 @@ export default function UserConversations() {
                 if (isOwner) {
                     return (
                         <Stack gap="md">
-                            <Title order={3}>{t('conversations')}</Title>
-
                             <DataTable
                                 columns={conversationColumns}
                                 data={messages}
                                 isLoading={conversationsLoading}
-                                page={page}
                                 totalItems={conversationsResponse?.pagination?.total ?? messages.length}
-                                onPageChange={setPage}
-                                limit={limit}
-                                onLimitChange={onLimitChange}
-                                sort={sort}
-                                onSortChange={onSortChange}
+                                state={tableState}
                                 filtersNode={
                                     <Group gap="sm">
                                         <Select
@@ -515,18 +508,17 @@ export default function UserConversations() {
                                             value={statusFilter ? String(statusFilter) : ''}
                                             onChange={(val) => {
                                                 setStatusFilter(val ? Number(val) : null);
-                                                resetPage();
+                                                tableState.resetPage();
                                             }}
                                             clearable
                                             w={180}
                                         />
                                     </Group>
                                 }
-                                hasActiveFilters={statusFilter !== null}
                                 activeFiltersCount={statusFilter !== null ? 1 : 0}
                                 onResetFilters={() => {
                                     setStatusFilter(null);
-                                    resetPage();
+                                    tableState.resetPage();
                                 }}
                                 onAdd={() => {
                                     setSendModalRecipientId(collaboratorOptions[0]?.value || null);
@@ -542,17 +534,7 @@ export default function UserConversations() {
 
                                     return (
                                         <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                            <Tooltip label={t('chat')} withArrow>
-                                                <ActionIcon
-                                                    component={Link}
-                                                    to={`/users/${other?.link ?? otherId}/conversations`}
-                                                    variant="light"
-                                                    size={30}
-                                                    aria-label={t('chat')}
-                                                >
-                                                    <IconMessage size={16} />
-                                                </ActionIcon>
-                                            </Tooltip>
+                                            <ViewActionButton to={`/users/${other?.link ?? otherId}/conversations`} />
                                             {isSender && (
                                                 <EditActionButton
                                                     onClick={() => {
@@ -565,20 +547,20 @@ export default function UserConversations() {
                                             {isSender && (
                                                 <DeleteActionButton
                                                     onClick={() => handleDeleteMessage(c.id)}
-                                                    isPending={deleteMessageMutation.isPending}
+                                                    loading={deleteMessageMutation.isPending}
                                                 />
                                             )}
                                             {isReceiver && (
                                                 <StatusActionMenu
-                                                    currentStatus={c.status}
-                                                    options={ConversationStatusEnum.getOptions(t)}
-                                                    onStatusChange={(status) =>
+                                                    value={c.status}
+                                                    enumType={ConversationStatusEnum}
+                                                    onChange={(status) =>
                                                         updateStatusMutation.mutate({
                                                             id: c.id,
                                                             status: status as ConversationStatusEnum,
                                                         })
                                                     }
-                                                    isPending={updateStatusMutation.isPending}
+                                                    loading={updateStatusMutation.isPending}
                                                 />
                                             )}
                                         </Group>
@@ -592,7 +574,6 @@ export default function UserConversations() {
                                 opened={sendModalOpened}
                                 onClose={() => setSendModalOpened(false)}
                                 title={t('sendMessage')}
-                                size="lg"
                             >
                                 <Stack gap="sm">
                                     <Select
@@ -636,17 +617,13 @@ export default function UserConversations() {
 
                 return (
                     <Stack gap="md">
-                        <Group justify="space-between" align="center">
-                            <UserInfoCell user={targetUser} avatarRadius="xl" size="md" />
+                        {!canChat && (
+                            <Group justify="flex-end">
+                                <Badge color="red">{t('mustBeFriendsToChat')}</Badge>
+                            </Group>
+                        )}
 
-                            {!canChat && (
-                                <Badge color="red" variant="light">
-                                    {t('mustBeFriendsToChat')}
-                                </Badge>
-                            )}
-                        </Group>
-
-                        <Card withBorder radius={5} p="md" shadow="xs">
+                        <Card>
                             <ScrollArea
                                 h={420}
                                 type="always"
@@ -695,7 +672,6 @@ export default function UserConversations() {
                                                         {!isMine && (
                                                             <Avatar
                                                                 src={formatImageSrc(targetUser.profilePhoto)}
-                                                                radius="xl"
                                                                 size="xs"
                                                             >
                                                                 ?
@@ -703,11 +679,9 @@ export default function UserConversations() {
                                                         )}
                                                         <Paper
                                                             p="xs"
-                                                            radius="md"
                                                             className={
                                                                 isMine ? 'chat-bubble-mine' : 'chat-bubble-other'
                                                             }
-                                                            withBorder={!isMine}
                                                         >
                                                             <Text size="sm">{m.text}</Text>
                                                             <Group justify="flex-end" gap={6} mt={2}>
@@ -715,11 +689,11 @@ export default function UserConversations() {
                                                                     entityId={m.id}
                                                                     type={EntryTypeEnum.CONVERSATION}
                                                                     size={12}
-                                                                    textSize="10px"
+                                                                    textSize="xs"
                                                                     track={true}
-                                                                    className="opacity-70"
+                                                                    opacity={0.7}
                                                                 />
-                                                                <Text size="10px" className="opacity-70">
+                                                                <Text size="xs" opacity={0.7}>
                                                                     {formatTime(m.createdAt)}
                                                                 </Text>
                                                                 {isMine && (
@@ -777,10 +751,10 @@ export default function UserConversations() {
                                     )}
                                     {isPartnerTyping && (
                                         <Group gap="xs" align="center" mt="xs">
-                                            <Avatar src={formatImageSrc(targetUser.profilePhoto)} radius="xl" size="xs">
+                                            <Avatar src={formatImageSrc(targetUser.profilePhoto)} size="xs">
                                                 ?
                                             </Avatar>
-                                            <Paper p="xs" radius="md" className="chat-bubble-other" withBorder>
+                                            <Paper p="xs" className="chat-bubble-other">
                                                 <Group gap={6} align="center">
                                                     <Loader size={12} type="dots" />
                                                     <Text size="xs" c="dimmed" fs="italic">

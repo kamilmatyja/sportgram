@@ -48,7 +48,7 @@ export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNa
                                     <Text size="sm" c="dimmed">
                                         •
                                     </Text>
-                                    <Tooltip label={t('followers')} withArrow>
+                                    <Tooltip label={t('followers')}>
                                         <Group gap={4} align="center" c="dimmed">
                                             <IconBookmark size={16} />
                                             <Text size="sm" c="dimmed">
@@ -74,7 +74,7 @@ export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNa
                                 size="xs"
                                 leftSection={<IconArrowLeft size={16} />}
                             >
-                                {t('backToPage')}
+                                {t('back')}
                             </Button>
                         )}
                         {extraActions}

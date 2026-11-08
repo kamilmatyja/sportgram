@@ -5,11 +5,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../api/client';
 import { feedService, type FeedCommentResource, type GetFeedCommentsQuery } from '../../api/services';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
 import { truncate } from '../../utils/text';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { StatusBadge } from '../../components/StatusBadge';
 import { StatusActionMenu } from '../../components/common/StatusActionMenu';
 import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
@@ -21,9 +22,7 @@ export default function UserFeedComments() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const { page, setPage, limit, sort, onLimitChange, onSortChange } = useDataTableState({
-        initialSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState();
 
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -31,14 +30,7 @@ export default function UserFeedComments() {
     const [editingComment, setEditingComment] = useState<FeedCommentResource | null>(null);
     const [editText, setEditText] = useState('');
 
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'text:asc', label: t('sort_text_asc') },
-        { value: 'text:desc', label: t('sort_text_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['createdAt', 'text', 'status']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -50,7 +42,7 @@ export default function UserFeedComments() {
     const handleResetFilters = () => {
         setTextFilter('');
         setStatusFilter(null);
-        setPage(1);
+        tableState.resetPage();
     };
 
     return (
@@ -63,16 +55,25 @@ export default function UserFeedComments() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['user-feed-comments', targetUser?.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'user-feed-comments',
+                        targetUser?.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () => {
                         if (!targetUser?.id) return null;
                         return feedService.getFeedComments({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetFeedCommentsQuery>['sort']) ?? 'createdAt:desc',
+                                    sort:
+                                        (tableState.sort as NonNullable<GetFeedCommentsQuery>['sort']) ??
+                                        'createdAt:desc',
                                 },
                             },
                         });
@@ -161,7 +162,7 @@ export default function UserFeedComments() {
                     {
                         key: 'status',
                         header: t('status'),
-                        render: (c) => <StatusBadge status={c.status} type="element" />,
+                        render: (c) => <StatusBadge status={c.status} />,
                     },
                     {
                         key: 'createdAt',
@@ -182,7 +183,7 @@ export default function UserFeedComments() {
                             value={textFilter}
                             onChange={(e) => {
                                 setTextFilter(e.currentTarget.value);
-                                setPage(1);
+                                tableState.resetPage();
                             }}
                         />
                         <Select
@@ -195,7 +196,7 @@ export default function UserFeedComments() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                setPage(1);
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -208,16 +209,10 @@ export default function UserFeedComments() {
                             columns={columns}
                             data={comments}
                             isLoading={isLoading}
-                            page={page}
+                            state={tableState}
                             totalItems={pagination?.total}
-                            onPageChange={setPage}
-                            limit={limit}
-                            onLimitChange={onLimitChange}
-                            sort={sort}
-                            onSortChange={onSortChange}
                             sortOptions={sortOptions}
                             filtersNode={filtersNode}
-                            hasActiveFilters={activeFiltersCount > 0}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             actions={(c) => {
@@ -229,7 +224,6 @@ export default function UserFeedComments() {
                                         {(isOwner || isAdmin) && (
                                             <StatusActionMenu
                                                 value={c.status}
-                                                options={ElementStatusEnum.getOptions(t)}
                                                 onChange={(st) =>
                                                     statusMutation.mutate({
                                                         id: c.id,
@@ -258,12 +252,7 @@ export default function UserFeedComments() {
                             }}
                         />
 
-                        <Modal
-                            opened={!!editingComment}
-                            onClose={() => setEditingComment(null)}
-                            title={t('editComment')}
-                            size="lg"
-                        >
+                        <Modal opened={!!editingComment} onClose={() => setEditingComment(null)} title={t('edit')}>
                             <Stack gap="md">
                                 <TextInput
                                     label={t('text')}

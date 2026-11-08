@@ -204,7 +204,7 @@ export default function GoalDetails() {
             <Stack gap="lg">
                 {ownerUser && <UserProfileNav user={ownerUser} isOwner={isOwner} />}
 
-                <Card withBorder radius="md" p="lg" shadow="xs">
+                <Card p="lg">
                     <Group justify="space-between" align="flex-start" mb="md" wrap="nowrap">
                         <div>
                             <Title order={2}>{goal.text}</Title>
@@ -215,7 +215,7 @@ export default function GoalDetails() {
                                 <Text size="sm" c="dimmed">
                                     •
                                 </Text>
-                                <EntityViewCounter entityId={goal.id} type={EntryTypeEnum.GOAL} track={true} />
+                                <EntityViewCounter entityId={goal.id} type={EntryTypeEnum.GOAL} />
                             </Group>
                             {(goal.startedAt || goal.endedAt) && (
                                 <Group gap="xs" mt={4}>
@@ -240,7 +240,7 @@ export default function GoalDetails() {
 
                             {isOwner && (
                                 <>
-                                    <EditActionButton onClick={openEdit} tooltip={t('editGoal')} />
+                                    <EditActionButton onClick={openEdit} />
                                     <DeleteActionButton
                                         onClick={handleDelete}
                                         loading={deleteMutation.isPending}
@@ -252,7 +252,7 @@ export default function GoalDetails() {
                     </Group>
 
                     <Group gap="sm" mb="md" wrap="wrap">
-                        <Badge variant="light">
+                        <Badge>
                             {DisciplineEnum.getOptions(t).find((o) => o.value === goal.discipline)?.label ??
                                 goal.discipline}
                         </Badge>
@@ -274,14 +274,7 @@ export default function GoalDetails() {
                         <EmptyState title={t('noData')} />
                     ) : (
                         <Table.ScrollContainer minWidth={600}>
-                            <Table
-                                striped
-                                highlightOnHover
-                                withTableBorder
-                                withColumnBorders
-                                withRowBorders
-                                verticalSpacing="sm"
-                            >
+                            <Table verticalSpacing="sm">
                                 <Table.Thead>
                                     <Table.Tr>
                                         <Table.Th>{t('user')}</Table.Th>
@@ -303,7 +296,7 @@ export default function GoalDetails() {
                                                     <UserInfoCell user={u} userId={p.userId} />
                                                 </Table.Td>
                                                 <Table.Td>
-                                                    <StatusBadge status={p.status} enumType={ElementStatusEnum} />
+                                                    <StatusBadge status={p.status} />
                                                 </Table.Td>
                                                 <Table.Td ta="right">
                                                     <Group gap="xs" justify="flex-end" wrap="nowrap">
@@ -334,14 +327,7 @@ export default function GoalDetails() {
                         <Stack gap="sm" mt="lg">
                             <Title order={4}>{t('results')}</Title>
                             <Table.ScrollContainer minWidth={600}>
-                                <Table
-                                    striped
-                                    highlightOnHover
-                                    withTableBorder
-                                    withColumnBorders
-                                    withRowBorders
-                                    verticalSpacing="sm"
-                                >
+                                <Table verticalSpacing="sm">
                                     <Table.Thead>
                                         <Table.Tr>
                                             <Table.Th>{t('user')}</Table.Th>
@@ -374,10 +360,7 @@ export default function GoalDetails() {
                                                             <Text size="sm">{res.time} s</Text>
                                                         </Table.Td>
                                                         <Table.Td>
-                                                            <StatusBadge
-                                                                status={res.status}
-                                                                enumType={ElementStatusEnum}
-                                                            />
+                                                            <StatusBadge status={res.status} />
                                                         </Table.Td>
                                                         <Table.Td>
                                                             <Text size="sm" c="dimmed">

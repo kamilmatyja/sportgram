@@ -5,12 +5,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../api/client';
 import { storyService, type StoryResource, type GetStoriesQuery } from '../../api/services';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatImageSrc } from '../../utils/imageUtils';
 import { formatDateTime } from '../../utils/date';
 import { truncate } from '../../utils/text';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { StatusBadge } from '../../components/StatusBadge';
 import { StoryViewerModal } from '../../components/StoryViewerModal';
 import { StoryModal } from '../../components/story/StoryModal';
@@ -23,7 +24,7 @@ export default function UserStories() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const { page, setPage, limit, sort, onLimitChange, onSortChange } = useDataTableState({
+    const tableState = useDataTableState({
         initialSort: 'createdAt:desc',
     });
 
@@ -35,14 +36,7 @@ export default function UserStories() {
     const [viewingStory, setViewingStory] = useState<StoryResource | null>(null);
     const [updatedStoryForModal, setUpdatedStoryForModal] = useState<StoryResource | null>(null);
 
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'text:asc', label: t('sort_text_asc') },
-        { value: 'text:desc', label: t('sort_text_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['createdAt', 'text', 'status']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -54,7 +48,7 @@ export default function UserStories() {
     const handleResetFilters = () => {
         setTextFilter('');
         setStatusFilter(null);
-        setPage(1);
+        tableState.setPage(1);
     };
 
     return (
@@ -67,16 +61,23 @@ export default function UserStories() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['user-stories', targetUser?.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'user-stories',
+                        targetUser?.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: async () => {
                         if (!targetUser?.id) return null;
                         return await storyService.getStories({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetStoriesQuery>['sort']) ?? 'createdAt:desc',
+                                    sort: (tableState.sort as NonNullable<GetStoriesQuery>['sort']) ?? 'createdAt:desc',
                                 },
                             },
                         });
@@ -135,11 +136,7 @@ export default function UserStories() {
                     {
                         key: 'photo',
                         header: t('photo'),
-                        render: (s) => (
-                            <Avatar src={formatImageSrc(s.photo)} radius={5} size="md">
-                                ?
-                            </Avatar>
-                        ),
+                        render: (s) => <Avatar src={formatImageSrc(s.photo)}>?</Avatar>,
                     },
                     {
                         key: 'text',
@@ -158,7 +155,7 @@ export default function UserStories() {
                     {
                         key: 'status',
                         header: t('status'),
-                        render: (s) => <StatusBadge status={s.status} type="element" />,
+                        render: (s) => <StatusBadge status={s.status} />,
                     },
                     {
                         key: 'createdAt',
@@ -179,7 +176,7 @@ export default function UserStories() {
                             value={textFilter}
                             onChange={(e) => {
                                 setTextFilter(e.currentTarget.value);
-                                setPage(1);
+                                tableState.setPage(1);
                             }}
                         />
                         <Select
@@ -192,7 +189,7 @@ export default function UserStories() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                setPage(1);
+                                tableState.setPage(1);
                             }}
                             clearable
                         />
@@ -205,27 +202,19 @@ export default function UserStories() {
                             columns={columns}
                             data={stories}
                             isLoading={isLoading}
-                            page={page}
                             totalItems={pagination?.total}
-                            onPageChange={setPage}
-                            limit={limit}
-                            onLimitChange={onLimitChange}
-                            sort={sort}
-                            onSortChange={onSortChange}
+                            state={tableState}
                             sortOptions={sortOptions}
                             filtersNode={filtersNode}
-                            hasActiveFilters={activeFiltersCount > 0}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? () => setCreateOpened(true) : undefined}
-                            addLabel={t('addStory')}
                             actions={(s) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     <ViewActionButton onClick={() => setViewingStory(s)} />
                                     {(isOwner || isAdmin) && (
                                         <StatusActionMenu
                                             value={s.status}
-                                            options={ElementStatusEnum.getOptions(t)}
                                             onChange={(st) =>
                                                 statusMutation.mutate({
                                                     id: s.id,

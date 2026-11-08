@@ -7,6 +7,7 @@ import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { goalService, type GoalResource } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { slugify } from '../../utils/text';
 
 export interface GoalFormModalProps {
     opened: boolean;
@@ -137,7 +138,7 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
         formData.distance.trim().length > 0;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editGoal') : t('addGoal')} size="lg">
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')}>
             <Stack gap="sm">
                 <TextInput
                     label={t('title')}
@@ -146,13 +147,10 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
                     error={fieldErrors.text}
                     onChange={(e) => {
                         const val = e.currentTarget.value;
-                        if (!isEdit && !formData.link) {
-                            const generatedLink = val
-                                .toLowerCase()
-                                .replace(/[^a-z0-9]+/g, '-')
-                                .replace(/(^-|-$)/g, '')
-                                .slice(0, 30);
-                            setFormData({ ...formData, text: val, link: generatedLink });
+                        const prevGenerated = slugify(formData.text).slice(0, 30);
+                        const nextGenerated = slugify(val).slice(0, 30);
+                        if (!isEdit && (!formData.link || formData.link === prevGenerated)) {
+                            setFormData({ ...formData, text: val, link: nextGenerated });
                         } else {
                             setFormData({ ...formData, text: val });
                         }

@@ -407,17 +407,17 @@ export default function UserProfile() {
                             <Text size="sm" c="dimmed">
                                 •
                             </Text>
-                            <EntityViewCounter entityId={user.id} type={EntryTypeEnum.USER} track={true} />
+                            <EntityViewCounter entityId={user.id} type={EntryTypeEnum.USER} />
                         </Group>
                     </div>
 
                     <Group gap="xs">
                         {isAdmin && (
                             <StatusActionMenu
-                                currentStatus={user.status}
-                                options={UserStatusEnum.getOptions(t)}
-                                onStatusChange={(st) => updateUserStatusMutation.mutate(st as UserStatusEnum)}
-                                isPending={updateUserStatusMutation.isPending}
+                                value={user.status}
+                                enumType={UserStatusEnum}
+                                onChange={(st) => updateUserStatusMutation.mutate(st as UserStatusEnum)}
+                                loading={updateUserStatusMutation.isPending}
                             />
                         )}
 
@@ -438,7 +438,7 @@ export default function UserProfile() {
                                         loading={sendFriendMutation.isPending}
                                         disabled={sendFriendMutation.isPending}
                                     >
-                                        {t('addFriend')}
+                                        {t('add')}
                                     </Button>
                                 )}
 
@@ -472,7 +472,7 @@ export default function UserProfile() {
                                         loading={deleteFriendMutation.isPending}
                                         disabled={deleteFriendMutation.isPending}
                                     >
-                                        {t('removeFriend')}
+                                        {t('delete')}
                                     </Button>
                                 )}
 
@@ -555,11 +555,7 @@ export default function UserProfile() {
                         const label =
                             DisciplineEnum.getOptions(t).find((o) => Number(o.value) === Number(d.discipline))?.label ??
                             d.discipline;
-                        return (
-                            <Badge key={d.id || d.discipline} variant="light">
-                                {label}
-                            </Badge>
-                        );
+                        return <Badge key={d.id || d.discipline}>{label}</Badge>;
                     })}
                 </Group>
             </HeaderBannerWithAvatar>

@@ -1,38 +1,21 @@
-.pointer {
-    cursor: pointer;
-}
-
 .pre-wrap {
     white-space: pre-wrap;
-}
-
-.no-decoration {
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-}
-
-a.no-decoration:hover {
-    text-decoration: underline;
 }
 
 .chat-bubble-mine {
     background-color: var(--mantine-primary-color-filled);
     color: var(--mantine-color-white);
     max-width: 75%;
+    border: none;
 }
 
 .chat-bubble-other {
     max-width: 75%;
 }
 
-.opacity-70 {
-    opacity: 0.7;
-}
-
 .story-avatar-border {
     border: 2px solid var(--mantine-primary-color-filled);
-    border-radius: 5px;
+    border-radius: var(--mantine-radius-default);
     overflow: hidden;
 }
 
@@ -44,57 +27,13 @@ a.no-decoration:hover {
 .profile-avatar-border {
     border: 3px solid var(--mantine-color-body);
     z-index: 3;
-}
-
-.overflow-hidden {
     overflow: hidden;
+    border-radius: var(--mantine-radius-default);
 }
 
-.w-full {
-    width: 100%;
-}
-
-.object-cover {
-    object-fit: cover;
-}
-
-.text-right {
-    text-align: right;
-}
-
-.relative {
-    position: relative;
-}
-
-.flex-1 {
-    flex: 1;
-}
-
-.feed-image-box {
-    max-height: 300px;
-    overflow: hidden;
-    border-radius: 5px;
-}
-
-.feed-image {
-    width: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.page-banner {
-    height: 180px;
-    background-size: cover;
-    background-position: center;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-}
-
-.page-avatar-overlap {
-    position: absolute;
-    top: -40px;
-    left: 24px;
-    border: 3px solid var(--mantine-color-body);
+.profile-avatar-border img,
+.profile-avatar-border .mantine-Avatar-image {
+    border-radius: 0 !important;
 }
 
 .mantine-ActionIcon-root,
@@ -122,50 +61,7 @@ a.no-decoration:hover {
 .mantine-Avatar-placeholder,
 .mantine-Image-root,
 .mantine-Image-image {
-    border-radius: 5px !important;
-}
-
-.header-bg-image,
-.header-bg-image.mantine-Image-root,
-.header-bg-image .mantine-Image-image {
-    border-radius: 0 !important;
-    z-index: 1;
-}
-
-.reaction-menu-dropdown {
-    width: max-content !important;
-    min-width: 230px !important;
-    max-width: none !important;
-    padding: 4px !important;
-}
-
-.reaction-menu-group {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    width: max-content !important;
-    align-items: center !important;
-    gap: 4px !important;
-}
-
-.reaction-action-icon {
-    flex-shrink: 0 !important;
-    width: 30px !important;
-    height: 30px !important;
-    min-width: 30px !important;
-    min-height: 30px !important;
-}
-
-.reaction-target-emoji {
-    font-size: 14px;
-    line-height: 1;
-    display: inline-block;
-}
-
-.reaction-item-emoji {
-    font-size: 16px;
-    line-height: 1;
-    display: inline-block;
+    border-radius: var(--mantine-radius-default) !important;
 }
 
 .subdistances-container {
@@ -179,10 +75,6 @@ a.no-decoration:hover {
 
 .story-modal-header .mantine-Modal-close {
     margin: 0;
-}
-
-.story-header-stack {
-    width: 100%;
 }
 
 .story-progress-bar-container {
@@ -214,12 +106,6 @@ a.no-decoration:hover {
     background-color: rgba(200, 200, 200, 0.3);
 }
 
-.story-counter-badge {
-    font-size: 12px;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
 .story-viewer-viewport {
     position: relative;
     width: 100%;
@@ -227,7 +113,7 @@ a.no-decoration:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 5px;
+    border-radius: var(--mantine-radius-default);
     overflow: hidden;
 }
 
@@ -268,11 +154,6 @@ a.no-decoration:hover {
     -webkit-user-select: none;
 }
 
-.story-empty-box {
-    width: 100%;
-    height: 100%;
-}
-
 .story-text-caption {
     width: 100%;
     min-height: 24px;
@@ -281,29 +162,8 @@ a.no-decoration:hover {
     padding-right: var(--mantine-spacing-xs);
 }
 
-.d-none {
-    display: none !important;
-}
-
-.header-bg-placeholder-center {
-    z-index: 0;
-}
-
-.header-bg-placeholder-text {
-    opacity: 0.8;
-    user-select: none;
-}
-
-.header-content-box {
-    z-index: 2;
-}
-
 .table-expand-col {
     width: 40px;
-}
-
-.text-size-10 {
-    font-size: 10px;
 }
 
 .table-expansion-row,

@@ -8,13 +8,14 @@ import { getErrorMessage } from '../../api/client';
 import { userService, type UserResource, type GetUsersQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/StatusBadge';
 import { CountryEnum } from '../../enums/CountryEnum';
 import { GenderEnum } from '../../enums/GenderEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { UserFormModal } from '../../components/user/UserFormModal';
 import { StatusActionMenu } from '../../components/common/StatusActionMenu';
 import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
@@ -30,7 +31,7 @@ export default function UsersList() {
     const [createOpened, setCreateOpened] = useState(false);
     const [editingUser, setEditingUser] = useState<UserResource | null>(null);
 
-    const { page, setPage, limit, sort, onLimitChange, onSortChange } = useDataTableState({
+    const tableState = useDataTableState({
         initialSort: 'createdAt:desc',
     });
 
@@ -82,22 +83,15 @@ export default function UsersList() {
         });
     };
 
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'firstName:asc', label: t('sort_firstName_asc') },
-        { value: 'firstName:desc', label: t('sort_firstName_desc') },
-        { value: 'lastName:asc', label: t('sort_lastName_asc') },
-        { value: 'lastName:desc', label: t('sort_lastName_desc') },
-        { value: 'gender:asc', label: t('sort_gender_asc') },
-        { value: 'gender:desc', label: t('sort_gender_desc') },
-        { value: 'country:asc', label: t('sort_country_asc') },
-        { value: 'country:desc', label: t('sort_country_desc') },
-        { value: 'birthAt:asc', label: t('sort_birthAt_asc') },
-        { value: 'birthAt:desc', label: t('sort_birthAt_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, [
+        'createdAt',
+        'firstName',
+        'lastName',
+        'gender',
+        'country',
+        'birthAt',
+        'status',
+    ]);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -119,7 +113,7 @@ export default function UsersList() {
         setGender(null);
         setCountry(null);
         setStatus(null);
-        setPage(1);
+        tableState.setPage(1);
     };
 
     const queryFilter = useMemo(() => {
@@ -136,14 +130,14 @@ export default function UsersList() {
     }, [firstName, lastName, email, link, gender, country, status]);
 
     const { data, isLoading } = useQuery({
-        queryKey: ['users', page, limit, sort, queryFilter],
+        queryKey: ['users', tableState.page, tableState.limit, tableState.sort, queryFilter],
         queryFn: () =>
             userService.getUsers({
                 params: {
                     query: {
-                        page,
-                        limit,
-                        sort: (sort as NonNullable<GetUsersQuery>['sort']) ?? 'createdAt:desc',
+                        page: tableState.page,
+                        limit: tableState.limit,
+                        sort: (tableState.sort as NonNullable<GetUsersQuery>['sort']) ?? 'createdAt:desc',
                         filter: queryFilter,
                     },
                 },
@@ -172,7 +166,7 @@ export default function UsersList() {
         {
             key: 'status',
             header: t('status'),
-            render: (u) => <StatusBadge status={u.status} type="user" />,
+            render: (u) => <StatusBadge status={u.status} enumType={UserStatusEnum} />,
         },
         {
             key: 'createdAt',
@@ -193,7 +187,7 @@ export default function UsersList() {
                 value={firstName}
                 onChange={(e) => {
                     setFirstName(e.currentTarget.value);
-                    setPage(1);
+                    tableState.setPage(1);
                 }}
             />
             <TextInput
@@ -202,7 +196,7 @@ export default function UsersList() {
                 value={lastName}
                 onChange={(e) => {
                     setLastName(e.currentTarget.value);
-                    setPage(1);
+                    tableState.setPage(1);
                 }}
             />
             <TextInput
@@ -211,7 +205,7 @@ export default function UsersList() {
                 value={email}
                 onChange={(e) => {
                     setEmail(e.currentTarget.value);
-                    setPage(1);
+                    tableState.setPage(1);
                 }}
             />
             <TextInput
@@ -220,7 +214,7 @@ export default function UsersList() {
                 value={link}
                 onChange={(e) => {
                     setLink(e.currentTarget.value);
-                    setPage(1);
+                    tableState.setPage(1);
                 }}
             />
             <Select
@@ -230,7 +224,7 @@ export default function UsersList() {
                 value={gender}
                 onChange={(v) => {
                     setGender(v);
-                    setPage(1);
+                    tableState.setPage(1);
                 }}
                 clearable
             />
@@ -241,7 +235,7 @@ export default function UsersList() {
                 value={country}
                 onChange={(v) => {
                     setCountry(v);
-                    setPage(1);
+                    tableState.setPage(1);
                 }}
                 clearable
                 searchable
@@ -253,7 +247,7 @@ export default function UsersList() {
                 value={status}
                 onChange={(v) => {
                     setStatus(v);
-                    setPage(1);
+                    tableState.setPage(1);
                 }}
                 clearable
             />
@@ -266,20 +260,13 @@ export default function UsersList() {
                 columns={columns}
                 data={users}
                 isLoading={isLoading}
-                page={page}
                 totalItems={pagination?.total}
-                onPageChange={setPage}
-                limit={limit}
-                onLimitChange={onLimitChange}
-                sort={sort}
-                onSortChange={onSortChange}
+                state={tableState}
                 sortOptions={sortOptions}
                 filtersNode={filtersNode}
-                hasActiveFilters={activeFiltersCount > 0}
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
                 onAdd={isAdmin ? () => setCreateOpened(true) : undefined}
-                addLabel={t('addUser')}
                 actions={(u) => {
                     const isOwner = currentUser?.id === u.id;
                     return (
@@ -288,7 +275,7 @@ export default function UsersList() {
                             {isAdmin && (
                                 <StatusActionMenu
                                     value={u.status}
-                                    options={UserStatusEnum.getOptions(t)}
+                                    enumType={UserStatusEnum}
                                     onChange={(st) =>
                                         statusMutation.mutate({
                                             id: u.id,
@@ -300,7 +287,7 @@ export default function UsersList() {
                             )}
                             {isOwner && (
                                 <>
-                                    <EditActionButton onClick={() => setEditingUser(u)} tooltipLabel={t('editUser')} />
+                                    <EditActionButton onClick={() => setEditingUser(u)} />
                                     <DeleteActionButton
                                         onClick={() => handleDeleteUser(u.id)}
                                         loading={deleteMutation.isPending}

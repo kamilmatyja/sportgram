@@ -16,7 +16,7 @@ import {
 } from '@mantine/core';
 import { IconSearch, IconPlus, IconFilter, IconX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { getDefaultSortOptions, type SortOption } from '../utils/tableUtils';
+import { getDefaultSortOptions, buildSortOptions, type SortOption } from '../utils/tableUtils';
 import { EmptyState } from './EmptyState';
 
 export interface Column<T> {
@@ -25,12 +25,23 @@ export interface Column<T> {
     render?: (item: T) => React.ReactNode;
 }
 
+export { buildSortOptions };
 export type { SortOption };
+
+export interface DataTableStateLike {
+    page: number;
+    limit: number;
+    sort?: string | null;
+    setPage: (page: number) => void;
+    onLimitChange: (limit: number) => void;
+    onSortChange: (sort: string | null) => void;
+}
 
 interface DataTableProps<T> {
     columns: Column<T>[];
     data: T[];
     isLoading?: boolean;
+    state?: DataTableStateLike;
     page?: number;
     totalPages?: number;
     totalItems?: number;
@@ -57,6 +68,7 @@ export function DataTable<T extends Record<string, unknown>>({
     columns,
     data,
     isLoading,
+    state,
     page = 1,
     totalPages,
     totalItems,
@@ -81,13 +93,22 @@ export function DataTable<T extends Record<string, unknown>>({
     const { t } = useTranslation();
     const [filtersOpened, setFiltersOpened] = useState(false);
 
-    const computedTotalPages = totalPages ?? (totalItems && limit ? Math.max(1, Math.ceil(totalItems / limit)) : 1);
+    const activePage = state ? state.page : page;
+    const activeLimit = state ? state.limit : limit;
+    const activeSort = state ? state.sort : sort;
+    const activeOnPageChange = state ? state.setPage : onPageChange;
+    const activeOnLimitChange = state ? state.onLimitChange : onLimitChange;
+    const activeOnSortChange = state ? state.onSortChange : onSortChange;
+    const isFiltersActive = hasActiveFilters ?? (activeFiltersCount ?? 0) > 0;
 
-    const effectiveSortOptions = sortOptions ?? (onSortChange ? getDefaultSortOptions(t) : undefined);
+    const computedTotalPages =
+        totalPages ?? (totalItems && activeLimit ? Math.max(1, Math.ceil(totalItems / activeLimit)) : 1);
+
+    const effectiveSortOptions = sortOptions ?? (activeOnSortChange ? getDefaultSortOptions(t) : undefined);
     const hasToolbar = onSearchChange || effectiveSortOptions || filtersNode || onAdd || toolbarExtra;
 
     return (
-        <Paper withBorder radius="md" p="md" shadow="xs">
+        <Paper p="md">
             <Stack gap="md">
                 {hasToolbar && (
                     <Flex justify="space-between" align="center" wrap="wrap" gap="sm">
@@ -104,13 +125,13 @@ export function DataTable<T extends Record<string, unknown>>({
                                 />
                             )}
 
-                            {effectiveSortOptions && onSortChange && (
+                            {effectiveSortOptions && activeOnSortChange && (
                                 <Select
                                     placeholder={t('sortBy')}
                                     aria-label={t('sortBy')}
                                     data={effectiveSortOptions}
-                                    value={sort ?? null}
-                                    onChange={onSortChange}
+                                    value={activeSort ?? null}
+                                    onChange={activeOnSortChange}
                                     clearable
                                     searchable
                                     maw={260}
@@ -133,7 +154,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                         ) : null}
                                     </Button>
 
-                                    {hasActiveFilters && onResetFilters && (
+                                    {isFiltersActive && onResetFilters && (
                                         <Button
                                             variant="subtle"
                                             color="gray"
@@ -160,21 +181,14 @@ export function DataTable<T extends Record<string, unknown>>({
 
                 {filtersNode && (
                     <Collapse expanded={filtersOpened}>
-                        <Paper withBorder p="md" radius="md">
+                        <Paper p="md">
                             <Stack gap="sm">{filtersNode}</Stack>
                         </Paper>
                     </Collapse>
                 )}
 
                 <Table.ScrollContainer minWidth={600}>
-                    <Table
-                        striped
-                        highlightOnHover
-                        withTableBorder
-                        withColumnBorders
-                        withRowBorders
-                        verticalSpacing="sm"
-                    >
+                    <Table verticalSpacing="sm">
                         <Table.Thead>
                             <Table.Tr>
                                 {columns.map((col) => (
@@ -193,12 +207,12 @@ export function DataTable<T extends Record<string, unknown>>({
                                     <Table.Tr key={i}>
                                         {columns.map((c) => (
                                             <Table.Td key={c.key}>
-                                                <Skeleton height={20} radius="sm" />
+                                                <Skeleton height={20} />
                                             </Table.Td>
                                         ))}
                                         {actions && (
                                             <Table.Td>
-                                                <Skeleton height={20} radius="sm" />
+                                                <Skeleton height={20} />
                                             </Table.Td>
                                         )}
                                     </Table.Tr>
@@ -230,14 +244,14 @@ export function DataTable<T extends Record<string, unknown>>({
                     </Table>
                 </Table.ScrollContainer>
 
-                {onPageChange && (
+                {activeOnPageChange && (
                     <Flex justify="space-between" align="center" wrap="wrap" gap="sm">
                         <Group gap="xs">
-                            {onLimitChange && (
+                            {activeOnLimitChange && (
                                 <Select
                                     aria-label={t('perPage')}
-                                    value={String(limit)}
-                                    onChange={(v) => v && onLimitChange(Number(v))}
+                                    value={String(activeLimit)}
+                                    onChange={(v) => v && activeOnLimitChange(Number(v))}
                                     data={['5', '10', '20', '50']}
                                     size="xs"
                                     w={75}
@@ -251,8 +265,8 @@ export function DataTable<T extends Record<string, unknown>>({
                         </Group>
 
                         <Pagination
-                            value={page}
-                            onChange={onPageChange}
+                            value={activePage}
+                            onChange={activeOnPageChange}
                             total={computedTotalPages}
                             size="sm"
                             withEdges

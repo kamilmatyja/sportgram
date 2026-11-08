@@ -6,8 +6,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { eventService, type EventResource } from '../../api/services';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { resolveImageBase64 } from '../../utils/imageUtils';
+import { slugify } from '../../utils/text';
+import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { EventDisciplinesEditor, type FormEventDiscipline } from './EventDisciplinesEditor';
 
 export interface PageParticipantOption {
@@ -185,7 +186,7 @@ export function EventFormModal({
           !!photoFile;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editEvent') : t('addEvent')} size="lg">
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')}>
             <Stack gap="sm">
                 {!isEdit && !defaultPageParticipantId && pageOptions.length > 0 && (
                     <Select
@@ -206,12 +207,10 @@ export function EventFormModal({
                     error={fieldErrors.title}
                     onChange={(e) => {
                         const val = e.currentTarget.value;
-                        if (!isEdit && !formData.link) {
-                            const generatedLink = val
-                                .toLowerCase()
-                                .replace(/[^a-z0-9]+/g, '-')
-                                .replace(/(^-|-$)/g, '');
-                            setFormData({ ...formData, title: val, link: generatedLink });
+                        const prevGenerated = slugify(formData.title);
+                        const nextGenerated = slugify(val);
+                        if (!isEdit && (!formData.link || formData.link === prevGenerated)) {
+                            setFormData({ ...formData, title: val, link: nextGenerated });
                         } else {
                             setFormData({ ...formData, title: val });
                         }

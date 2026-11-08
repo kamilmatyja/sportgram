@@ -16,7 +16,7 @@ export function EmptyState({
     action,
 }: EmptyStateProps) {
     return (
-        <Paper withBorder radius="md" p="xl" ta="center">
+        <Paper p="xl" ta="center">
             <Stack align="center" gap="xs">
                 <Text c="dimmed">{icon}</Text>
                 <Title order={4}>{title}</Title>

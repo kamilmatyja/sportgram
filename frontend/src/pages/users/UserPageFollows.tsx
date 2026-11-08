@@ -20,7 +20,7 @@ export default function UserPageFollows() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
+    const tableState = useDataTableState({
         defaultSort: 'createdAt:desc',
     });
 
@@ -34,7 +34,7 @@ export default function UserPageFollows() {
 
     const handleResetFilters = () => {
         setStatusFilter(null);
-        resetPage();
+        tableState.resetPage();
     };
 
     return (
@@ -47,15 +47,24 @@ export default function UserPageFollows() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['user-page-follows', targetUser.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'user-page-follows',
+                        targetUser.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () =>
                         pageService.getPageFollows({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetPageFollowsQuery>['sort']) ?? 'createdAt:desc',
+                                    sort:
+                                        (tableState.sort as NonNullable<GetPageFollowsQuery>['sort']) ??
+                                        'createdAt:desc',
                                 },
                             },
                         }),
@@ -157,15 +166,13 @@ export default function UserPageFollows() {
                             const pageItem = pagesMap[f.pageId];
                             return (
                                 <Group gap="sm" wrap="nowrap">
-                                    <Avatar src={formatImageSrc(pageItem?.profilePhoto)} radius={5}>
-                                        ?
-                                    </Avatar>
+                                    <Avatar src={formatImageSrc(pageItem?.profilePhoto)}>?</Avatar>
                                     <div>
-                                        <Text size="sm" fw={600}>
+                                        <Text size="sm" fw={600} lineClamp={1}>
                                             {pageItem?.title ?? f.pageId}
                                         </Text>
                                         {pageItem?.link && (
-                                            <Text size="sm" c="dimmed">
+                                            <Text size="sm" c="dimmed" lineClamp={1}>
                                                 @{pageItem.link}
                                             </Text>
                                         )}
@@ -202,7 +209,7 @@ export default function UserPageFollows() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -214,15 +221,9 @@ export default function UserPageFollows() {
                         columns={columns}
                         data={follows}
                         isLoading={isLoading}
-                        page={page}
                         totalItems={pagination?.total}
-                        onPageChange={setPage}
-                        limit={limit}
-                        onLimitChange={onLimitChange}
-                        sort={sort}
-                        onSortChange={onSortChange}
+                        state={tableState}
                         filtersNode={filtersNode}
-                        hasActiveFilters={activeFiltersCount > 0}
                         activeFiltersCount={activeFiltersCount}
                         onResetFilters={handleResetFilters}
                         actions={(f) => {
@@ -232,21 +233,21 @@ export default function UserPageFollows() {
                                     {pageItem?.link && <ViewActionButton to={`/pages/${pageItem.link}`} />}
                                     {isOwner && (
                                         <StatusActionMenu
-                                            currentStatus={f.status}
-                                            options={PageFollowStatusEnum.getOptions(t)}
-                                            onStatusChange={(status) =>
+                                            value={f.status}
+                                            enumType={PageFollowStatusEnum}
+                                            onChange={(status) =>
                                                 statusMutation.mutate({
                                                     id: f.id,
                                                     status: status as PageFollowStatusEnum,
                                                 })
                                             }
-                                            isPending={statusMutation.isPending}
+                                            loading={statusMutation.isPending}
                                         />
                                     )}
                                     {isOwner && (
                                         <DeleteActionButton
                                             onClick={() => handleDelete(f.id)}
-                                            isPending={deleteMutation.isPending}
+                                            loading={deleteMutation.isPending}
                                             tooltip={t('unfollow')}
                                         />
                                     )}

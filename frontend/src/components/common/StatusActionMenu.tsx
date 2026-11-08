@@ -12,6 +12,7 @@ export interface StatusActionMenuProps<T = number | string> {
     value?: T;
     currentStatus?: T;
     status?: T;
+    enumType?: { getOptions: (t: (key: string) => string) => any[] };
     options?: StatusOption<T>[];
     onChange?: (status: T) => void;
     onStatusChange?: (status: T) => void;
@@ -26,6 +27,7 @@ export function StatusActionMenu<T = number | string>({
     value,
     currentStatus,
     status,
+    enumType,
     options,
     onChange,
     onStatusChange,
@@ -39,20 +41,18 @@ export function StatusActionMenu<T = number | string>({
     const actualValue = value ?? currentStatus ?? status;
     const actualOnChange = onChange ?? onStatusChange ?? (() => {});
     const actualLoading = loading || isPending;
-    const actualOptions = options ?? (ElementStatusEnum.getOptions(t) as unknown as StatusOption<T>[]);
+    const actualOptions =
+        options ??
+        (enumType
+            ? (enumType.getOptions(t) as unknown as StatusOption<T>[])
+            : (ElementStatusEnum.getOptions(t) as unknown as StatusOption<T>[]));
     const label = tooltipLabel ?? t('changeStatus');
 
     return (
-        <Menu shadow="md" width={width} position="bottom-end">
+        <Menu width={width}>
             <Menu.Target>
-                <Tooltip label={label} withArrow>
-                    <ActionIcon
-                        variant="light"
-                        size={30}
-                        aria-label={label}
-                        loading={actualLoading}
-                        disabled={disabled || actualLoading}
-                    >
+                <Tooltip label={label}>
+                    <ActionIcon aria-label={label} loading={actualLoading} disabled={disabled || actualLoading}>
                         <IconAdjustments size={16} />
                     </ActionIcon>
                 </Tooltip>

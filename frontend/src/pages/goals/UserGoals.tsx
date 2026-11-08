@@ -7,13 +7,14 @@ import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../api/client';
 import { goalService, type GoalResource, type GetGoalsQuery } from '../../api/services';
 import { useMyFriends } from '../../hooks/useMyFriends';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
 import { truncate } from '../../utils/text';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
 import { useDataTableState } from '../../hooks/useDataTableState';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -25,9 +26,7 @@ export default function UserGoals() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
-        defaultSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState();
 
     const [textFilter, setTextFilter] = useState('');
     const [linkFilter, setLinkFilter] = useState('');
@@ -45,20 +44,7 @@ export default function UserGoals() {
     );
     const { collaboratorOptions } = useMyFriends(extraUserIds);
 
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'startedAt:desc', label: t('sort_startedAt_desc') },
-        { value: 'startedAt:asc', label: t('sort_startedAt_asc') },
-        { value: 'endedAt:desc', label: t('sort_endedAt_desc') },
-        { value: 'endedAt:asc', label: t('sort_endedAt_asc') },
-        { value: 'text:asc', label: t('sort_text_asc') },
-        { value: 'text:desc', label: t('sort_text_desc') },
-        { value: 'distance:asc', label: t('sort_distance_asc') },
-        { value: 'distance:desc', label: t('sort_distance_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['createdAt', 'startedAt', 'endedAt', 'text', 'distance', 'status']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -78,7 +64,7 @@ export default function UserGoals() {
         setDistanceFilter('');
         setTimeFilter('');
         setStatusFilter(null);
-        resetPage();
+        tableState.resetPage();
     };
 
     return (
@@ -95,15 +81,22 @@ export default function UserGoals() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['user-goals', targetUser.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'user-goals',
+                        targetUser.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () =>
                         goalService.getGoals({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetGoalsQuery>['sort']) ?? 'createdAt:desc',
+                                    sort: (tableState.sort as NonNullable<GetGoalsQuery>['sort']) ?? 'createdAt:desc',
                                     'include[]': ['goalParticipants'],
                                 },
                             },
@@ -184,10 +177,10 @@ export default function UserGoals() {
                         header: t('title'),
                         render: (g) => (
                             <div>
-                                <Text size="sm" fw={600} title={g.text}>
+                                <Text size="sm" fw={600} lineClamp={1} title={g.text}>
                                     {truncate(g.text, 50)}
                                 </Text>
-                                <Text size="xs" c="dimmed">
+                                <Text size="sm" c="dimmed" lineClamp={1}>
                                     @{g.link}
                                 </Text>
                             </div>
@@ -197,7 +190,7 @@ export default function UserGoals() {
                         key: 'discipline',
                         header: t('discipline'),
                         render: (g) => (
-                            <Badge variant="light">
+                            <Badge>
                                 {DisciplineEnum.getOptions(t).find((o) => o.value === g.discipline)?.label ??
                                     g.discipline}
                             </Badge>
@@ -235,7 +228,7 @@ export default function UserGoals() {
                             value={textFilter}
                             onChange={(e) => {
                                 setTextFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <TextInput
@@ -243,7 +236,7 @@ export default function UserGoals() {
                             value={linkFilter}
                             onChange={(e) => {
                                 setLinkFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <Select
@@ -256,7 +249,7 @@ export default function UserGoals() {
                             value={disciplineFilter}
                             onChange={(v) => {
                                 setDisciplineFilter(v);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -265,7 +258,7 @@ export default function UserGoals() {
                             value={distanceFilter}
                             onChange={(e) => {
                                 setDistanceFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <TextInput
@@ -273,7 +266,7 @@ export default function UserGoals() {
                             value={timeFilter}
                             onChange={(e) => {
                                 setTimeFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <Select
@@ -286,7 +279,7 @@ export default function UserGoals() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -299,20 +292,13 @@ export default function UserGoals() {
                             columns={columns}
                             data={goals}
                             isLoading={isLoading}
-                            page={page}
+                            state={tableState}
                             totalItems={pagination?.total}
-                            onPageChange={setPage}
-                            limit={limit}
-                            onLimitChange={onLimitChange}
-                            sort={sort}
-                            onSortChange={onSortChange}
                             sortOptions={sortOptions}
                             filtersNode={filtersNode}
-                            hasActiveFilters={activeFiltersCount > 0}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? handleOpenCreate : undefined}
-                            addLabel={t('addGoal')}
                             actions={(g) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     <ViewActionButton to={`/goals/${g.link}`} />

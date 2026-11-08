@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Text, SimpleGrid, Select, Badge, Group } from '@mantine/core';
+import { Text, SimpleGrid, Select, Badge, Group, Avatar } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +18,7 @@ import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
+import { formatImageSrc } from '../../utils/imageUtils';
 import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
 import { useDataTableState } from '../../hooks/useDataTableState';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -29,7 +30,7 @@ export default function UserEventSignups() {
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
 
-    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
+    const tableState = useDataTableState({
         defaultSort: 'createdAt:desc',
     });
 
@@ -43,7 +44,7 @@ export default function UserEventSignups() {
 
     const handleResetFilters = () => {
         setStatusFilter(null);
-        resetPage();
+        tableState.resetPage();
     };
 
     return (
@@ -57,16 +58,23 @@ export default function UserEventSignups() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['user-event-signups', targetUser.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'user-event-signups',
+                        targetUser.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () =>
                         eventService.getEventDisciplineDistanceLists({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
                                     sort:
-                                        (sort as NonNullable<GetEventDisciplineDistancesQuery>['sort']) ??
+                                        (tableState.sort as NonNullable<GetEventDisciplineDistancesQuery>['sort']) ??
                                         'createdAt:desc',
                                 },
                             },
@@ -127,6 +135,7 @@ export default function UserEventSignups() {
                         {
                             eventTitle: string;
                             eventLink: string;
+                            eventPhoto?: string;
                             pageParticipantId: string;
                             discipline?: number;
                             distance?: number;
@@ -138,6 +147,7 @@ export default function UserEventSignups() {
                                 map[dist.id] = {
                                     eventTitle: event.title,
                                     eventLink: event.link,
+                                    eventPhoto: event.photo,
                                     pageParticipantId: event.pageParticipantId,
                                     discipline: discipline.discipline,
                                     distance: dist.distance,
@@ -216,16 +226,19 @@ export default function UserEventSignups() {
                         render: (s) => {
                             const info = distanceLookup[s.eventDisciplineDistanceId];
                             return (
-                                <div>
-                                    <Text size="sm" fw={600}>
-                                        {info?.eventTitle ?? s.eventDisciplineDistanceId}
-                                    </Text>
-                                    {info?.eventLink && (
-                                        <Text size="sm" c="dimmed">
-                                            @{info.eventLink}
+                                <Group gap="sm" wrap="nowrap">
+                                    <Avatar src={formatImageSrc(info?.eventPhoto)}>?</Avatar>
+                                    <div>
+                                        <Text size="sm" fw={600} lineClamp={1}>
+                                            {info?.eventTitle ?? s.eventDisciplineDistanceId}
                                         </Text>
-                                    )}
-                                </div>
+                                        {info?.eventLink && (
+                                            <Text size="sm" c="dimmed" lineClamp={1}>
+                                                @{info.eventLink}
+                                            </Text>
+                                        )}
+                                    </div>
+                                </Group>
                             );
                         },
                     },
@@ -238,11 +251,7 @@ export default function UserEventSignups() {
                                 ? (DisciplineEnum.getOptions(t).find((o) => o.value === info.discipline)?.label ??
                                   info.discipline)
                                 : null;
-                            return disciplineLabel ? (
-                                <Badge variant="light" color={primaryColor}>
-                                    {disciplineLabel}
-                                </Badge>
-                            ) : null;
+                            return disciplineLabel ? <Badge color={primaryColor}>{disciplineLabel}</Badge> : null;
                         },
                     },
                     {
@@ -285,7 +294,7 @@ export default function UserEventSignups() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -297,15 +306,9 @@ export default function UserEventSignups() {
                         columns={columns}
                         data={signups}
                         isLoading={isLoading}
-                        page={page}
                         totalItems={pagination?.total}
-                        onPageChange={setPage}
-                        limit={limit}
-                        onLimitChange={onLimitChange}
-                        sort={sort}
-                        onSortChange={onSortChange}
+                        state={tableState}
                         filtersNode={filtersNode}
-                        hasActiveFilters={activeFiltersCount > 0}
                         activeFiltersCount={activeFiltersCount}
                         onResetFilters={handleResetFilters}
                         actions={(s) => {
@@ -320,21 +323,21 @@ export default function UserEventSignups() {
                                     {info?.eventLink && <ViewActionButton to={`/events/${info.eventLink}`} />}
                                     {canChangeStatus && (
                                         <StatusActionMenu
-                                            currentStatus={s.status}
-                                            options={SaveStatusEnum.getOptions(t)}
-                                            onStatusChange={(status) =>
+                                            value={s.status}
+                                            enumType={SaveStatusEnum}
+                                            onChange={(status) =>
                                                 statusMutation.mutate({
                                                     id: s.id,
                                                     status: status as number,
                                                 })
                                             }
-                                            isPending={statusMutation.isPending}
+                                            loading={statusMutation.isPending}
                                         />
                                     )}
                                     {isOwner && (
                                         <DeleteActionButton
                                             onClick={() => handleDelete(s.id)}
-                                            isPending={deleteMutation.isPending}
+                                            loading={deleteMutation.isPending}
                                         />
                                     )}
                                 </Group>

@@ -5,12 +5,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../api/client';
 import { feedService, type FeedResource, type GetFeedsQuery } from '../../api/services';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatImageSrc } from '../../utils/imageUtils';
 import { formatDateTime } from '../../utils/date';
 import { truncate, formatFeedOrigin } from '../../utils/text';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { StatusBadge } from '../../components/StatusBadge';
 import { FeedModal } from '../../components/feed/FeedModal';
 import { StatusActionMenu } from '../../components/common/StatusActionMenu';
@@ -22,9 +23,7 @@ export default function UserFeeds() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const { page, setPage, limit, sort, onLimitChange, onSortChange } = useDataTableState({
-        initialSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState();
 
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -32,14 +31,7 @@ export default function UserFeeds() {
     const [createOpened, setCreateOpened] = useState(false);
     const [editingFeed, setEditingFeed] = useState<FeedResource | null>(null);
 
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'text:asc', label: t('sort_text_asc') },
-        { value: 'text:desc', label: t('sort_text_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['createdAt', 'text', 'status']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -51,7 +43,7 @@ export default function UserFeeds() {
     const handleResetFilters = () => {
         setTextFilter('');
         setStatusFilter(null);
-        setPage(1);
+        tableState.resetPage();
     };
 
     return (
@@ -64,16 +56,23 @@ export default function UserFeeds() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['user-feeds', targetUser?.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'user-feeds',
+                        targetUser?.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () => {
                         if (!targetUser?.id) return null;
                         return feedService.getFeeds({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetFeedsQuery>['sort']) ?? 'createdAt:desc',
+                                    sort: (tableState.sort as NonNullable<GetFeedsQuery>['sort']) ?? 'createdAt:desc',
                                     'include[]': ['feedOrigin'],
                                 },
                             },
@@ -133,7 +132,7 @@ export default function UserFeeds() {
                         key: 'photo',
                         header: t('photo'),
                         render: (f) => (
-                            <Avatar src={formatImageSrc(f.photo)} radius={5} size="md">
+                            <Avatar src={formatImageSrc(f.photo)} size="md">
                                 ?
                             </Avatar>
                         ),
@@ -157,9 +156,7 @@ export default function UserFeeds() {
                         header: t('origin'),
                         render: (f) =>
                             f.feedOrigin ? (
-                                <Badge variant="light" size="sm">
-                                    {formatFeedOrigin(f.feedOrigin, t)}
-                                </Badge>
+                                <Badge size="sm">{formatFeedOrigin(f.feedOrigin, t)}</Badge>
                             ) : (
                                 <Text size="sm" c="dimmed">
                                     —
@@ -169,7 +166,7 @@ export default function UserFeeds() {
                     {
                         key: 'status',
                         header: t('status'),
-                        render: (f) => <StatusBadge status={f.status} type="element" />,
+                        render: (f) => <StatusBadge status={f.status} />,
                     },
                     {
                         key: 'createdAt',
@@ -190,7 +187,7 @@ export default function UserFeeds() {
                             value={textFilter}
                             onChange={(e) => {
                                 setTextFilter(e.currentTarget.value);
-                                setPage(1);
+                                tableState.resetPage();
                             }}
                         />
                         <Select
@@ -203,7 +200,7 @@ export default function UserFeeds() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                setPage(1);
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -216,27 +213,19 @@ export default function UserFeeds() {
                             columns={columns}
                             data={feeds}
                             isLoading={isLoading}
-                            page={page}
+                            state={tableState}
                             totalItems={pagination?.total}
-                            onPageChange={setPage}
-                            limit={limit}
-                            onLimitChange={onLimitChange}
-                            sort={sort}
-                            onSortChange={onSortChange}
                             sortOptions={sortOptions}
                             filtersNode={filtersNode}
-                            hasActiveFilters={activeFiltersCount > 0}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? () => setCreateOpened(true) : undefined}
-                            addLabel={t('addFeed')}
                             actions={(f) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     {targetUser?.link && <ViewActionButton to={`/users/${targetUser.link}`} />}
                                     {(isOwner || isAdmin) && (
                                         <StatusActionMenu
                                             value={f.status}
-                                            options={ElementStatusEnum.getOptions(t)}
                                             onChange={(st) =>
                                                 statusMutation.mutate({
                                                     id: f.id,

@@ -630,7 +630,77 @@ npm run fix
 
 ---
 
-## Problemy
+## Problemy i zadania do wdrożenia
 
-- kamera na froncie
-- gps na froncie przy dodawaniu treningu
+### 1. Śledzenie i rejestracja trasy GPS na żywo na frontendzie
+
+- **Stan obecny:** 
+  Backend i model bazy danych w pełni obsługują strukturę telemetryczną GPS (tabela `training_discipline_sub_distances` posiada kolumny `sub_distance`, `time`, `lat`, `lng`, `accuracy`, `speed`), a formularz `TrainingFormModal.tsx` umożliwia ręczną edycję i prezentację tych danych. Na frontendzie brak jest jednak modułu aktywnego rejestratora trasy w czasie rzeczywistym.
+- **Co jest do zrobienia:**
+  - Utworzenie dedykowanego widoku / modalu aktywnego treningu (np. `ActiveTrainingRecorder`).
+  - Bieżący odczyt pozycji z modułu GPS urządzenia i automatyczne przeliczanie dystansu oraz tempa chwilowego.
+  - Generowanie punktów telemetrycznych (sub-dystansów) i agregowanie ich do struktury `TrainingDto` przed wysyłką do API.
+  - Opcjonalna wizualizacja przebytej trasy na podglądzie mapy (np. z użyciem biblioteki Leaflet / MapLibre).
+- **Jak to zaimplementować:**
+  - Użyć standardowego interfejsu przeglądarki `navigator.geolocation.watchPosition` z konfiguracją `{ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }`.
+  - Zaimplementować algorytm obliczania odległości pomiędzy kolejnymi punktami geograficznymi w oparciu o numeryczny wzór **Haversine'a**.
+  - Zintegrować interfejs **Screen Wake Lock API** (`navigator.wakeLock.request('screen')`), aby zabezpieczyć przeglądarkę mobilną przed wygaszeniem ekranu i przerwaniem wątku zbierania pozycji podczas biegu lub jazdy rowerem.
+  - Zapewnić obsługę błędów (odrzucenie uprawnień, brak sygnału satelitarnego GPS) z czytelnym powiadomieniem w `@mantine/notifications`.
+- **Po co:**
+  - Automatyczny tracking GPS stanowi fundamentalną funkcjonalność aplikacji sportowej. Użytkownik nie powinien ręcznie wprowadzać dystansów ani czasów po zakończeniu aktywności, lecz mieć możliwość włączenia przycisku „Start”, wykonania treningu i automatycznego zapisania rzeczywistej trasy. Zbliża to PWA funkcjonalnie do rozwiązań pokroju Strava czy Garmin Connect.
+
+### 2. Bezpośrednia integracja z kamerą na frontendzie (MediaDevices API)
+
+- **Stan obecny:** 
+  Dodawanie zdjęć do relacji (Stories), wpisów (Feeds) oraz profili użytkowników i stron odbywa się za pomocą standardowego komponentu `<FileInput>` biblioteki Mantine, który otwiera selektor plików systemu operacyjnego i konwertuje plik na format Base64. Brak bezpośredniego podglądu kadru z kamery wewnątrz aplikacji.
+- **Co jest do zrobienia:**
+  - Stworzenie komponentu aparatu (np. `CameraCaptureModal`) wbudowanego bezpośrednio w interfejs PWA.
+  - Zapewnienie podglądu wideo na żywo, przycisku wyzwolenia migawki oraz przełącznika wyboru kamery (przednia kamera do selfie vs. tylna kamera do zdjęć otoczenia/trasy).
+- **Jak to zaimplementować:**
+  - Wywołać `navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false })`.
+  - Przypisać strumień `MediaStream` do elementu `<video autoPlay playsInline muted />`.
+  - W momencie wykonania zdjęcia przechwycić klatkę na niewidocznym elemencie `<canvas>`, wywołać `canvas.toDataURL('image/jpeg', 0.85)` lub `canvas.toBlob()`, a uzyskany ciąg Base64 przekazać do istniejącej logiki zapisu (`resolveImageBase64`).
+  - Pamiętać o zwalnianiu zasobów sprzętowych (`stream.getTracks().forEach(track => track.stop())`) po zamknięciu modalu lub wykonaniu ujęcia, aby nie blokować kamery i nie drenować baterii.
+- **Po co:**
+  - W dynamicznym środowisku społecznościowo-sportowym użytkownik publikujący relację (Story) lub zdjęcie z trasy oczekuje natychmiastowego doświadczenia „point-and-shoot” bez konieczności opuszczania aplikacji PWA, uruchamiania zewnętrznej aplikacji aparatu, zapisywania pliku w pamięci telefonu i ręcznego wgrywania go przez okno dialogowe.
+
+### 3. Buforowanie danych offline i mechanizm synchronizacji (Offline-First Data Sync)
+
+- **Stan obecny:** 
+  Service Worker (`frontend/public/sw.js`) buforuje wyłącznie powłokę aplikacji (pliki HTML, ikony SVG, manifest). Wszystkie zapytania pod ścieżkę `/api` są wyłączone z cache'owania (`Network-Only`). W przypadku braku Internetu aplikacja uruchamia się, ale nie pozwala na tworzenie nowych aktywności bez połączenia z serwerem.
+- **Co jest do zrobienia:**
+  - Zaimplementowanie lokalnej bazy danych do kolejkowania nowych treningów, wpisów i relacji tworzonych w warunkach braku zasięgu (Outbox Queue).
+  - Automatyczna synchronizacja zakolejkowanych żądań z bazą PostgreSQL po odzyskaniu połączenia z siecią.
+- **Jak to zaimplementować:**
+  - Wykorzystać przeglądarkową bazę **IndexedDB** (np. za pośrednictwem biblioteki `idb` lub mechanizmu persystencji w TanStack Query).
+  - Podczas tworzenia treningu offline generować identyfikator `UUID v4` bezpośrednio na frontendzie i zapisywać ładunek DTO w tabeli kolejki `offline_trainings`.
+  - Zaimplementować nasłuchiwanie zdarzenia sieciowego `window.addEventListener('online', ...)` lub zintegrować **Background Sync API** w Service Workerze (`self.registration.sync.register('sync-trainings')`), które po wykryciu połączenia asynchronicznie przesyła zakolejkowane treningi metodą `POST /api/trainings`.
+- **Po co:**
+  - Treningi biegowe, kolarstwo czy trekking bardzo często odbywają się na obszarach leśnych, górskich lub pozamiejskich z niestabilnym zasięgiem GSM. Prawdziwa aplikacja PWA o charakterze sportowym musi gwarantować, że dane z ukończonego treningu nie zostaną utracone, a użytkownik otrzyma informację o pomyślnym zapisie lokalnym i oczekującej synchronizacji.
+
+### 4. Zestawy testów automatycznych dla warstwy frontendu (Vitest / React Testing Library)
+
+- **Stan obecny:** 
+  W projekcie frontendu zainstalowano zależności i przygotowano infrastrukturę pod testy (`vitest`, `@testing-library/react`, `frontend/src/test/setup.ts`, `test-utils.tsx`), lecz w katalogu `frontend/src` nie ma jeszcze napisanych plików zestawów testowych (`*.test.tsx`).
+- **Co jest do zrobienia:**
+  - Pokrycie kluczowych komponentów, formularzy i widoków testami jednostkowymi oraz integracyjnymi.
+- **Jak to zaimplementować:**
+  - Napisać testy dla formularzy autoryzacyjnych (`Sign`, `Register`, obsługa weryfikacji dwuetapowej 2FA), sprawdzające poprawność walidacji pól, blokowanie wysyłki błędnych danych oraz reakcję na kody błędów API.
+  - Napisać testy formularza treningowego (`TrainingFormModal.tsx`), weryfikujące poprawność przeliczania dystansów, czasów i dyscyplin.
+  - Napisać testy komponentów subskrypcji powiadomień Push (`UserPushSubscriptions.tsx`) z mockowaniem obiektów `Notification` oraz `navigator.serviceWorker`.
+  - Dodać polecenie uruchamiania testów frontendu do głównego pliku `Makefile` (`make test`).
+- **Po co:**
+  - Automatyczna weryfikacja poprawności działania interfejsu zabezpiecza projekt przed regresją podczas wprowadzania nowych funkcjonalności i refaktoryzacji, podnosząc niezawodność oprogramowania zgodnie ze standardem ISO/IEC 25010.
+
+### 5. Skrypty testów obciążeniowych i wydajnościowych backendu (k6 / Stress Testing)
+
+- **Stan obecny:** 
+  Backend posiada imponujący zestaw ponad 90 klas testowych Feature w PHPUnit (`backend/tests/Feature`), które dokładnie sprawdzają logikę biznesową, uprawnienia i bazę danych. Brak jednak w repozytorium zdefiniowanych skryptów do testów przeciążeniowych symulujących ruch masowy.
+- **Co jest do zrobienia:**
+  - Przygotowanie powtarzalnych skryptów testów wydajnościowych mierzących rzeczywiste czasy odpowiedzi (TTFB, średni czas obsługi, p95, p99) pod obciążeniem setek jednoczesnych użytkowników.
+- **Jak to zaimplementować:**
+  - Utworzyć katalog `tests/load/` ze scenariuszami w narzędziu **k6** (np. `trainings_load_test.js`, `feed_load_test.js`).
+  - Zdefiniować ramp-up wirtualnych użytkowników (od 10 do 200 VU) wykonujących autoryzowane zapytania `GET` i `POST` z ważnym tokenem JWT.
+  - Zintegrować uruchamianie testów z komendą `make load-test` w środowisku Docker.
+- **Po co:**
+  - Dostarcza obiektywnych, empirycznych dowodów na stabilność stosu technologicznego (Nginx + PHP 8.5 FPM + PostgreSQL 18) oraz umożliwia precyzyjne dostrojenie parametrów puli procesów PHP-FPM (`pm.max_children`) i konfiguracji bazy danych pod kątem wysokiego natężenia ruchu.

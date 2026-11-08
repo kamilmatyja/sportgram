@@ -4,9 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { statisticService, type StatisticResource, type GetStatisticRecordsQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { formatDateTime } from '../../utils/date';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { ViewActionButton } from '../../components/common/RowActionButtons';
 import { useDataTableState } from '../../hooks/useDataTableState';
 import { useUsersMap } from '../../hooks/useUsersMap';
@@ -18,23 +19,14 @@ export default function Statistics() {
 
     const [activeTab, setActiveTab] = useState<'records' | 'progress'>('records');
 
-    const { page, limit, sort, setPage, setSort, onLimitChange, onSortChange, resetPage } = useDataTableState({
+    const tableState = useDataTableState({
         defaultSort: 'time:asc',
     });
 
     const [disciplineFilter, setDisciplineFilter] = useState<string | null>(null);
     const [distanceFilter, setDistanceFilter] = useState('');
 
-    const sortOptions: SortOption[] = [
-        { value: 'time:asc', label: t('sort_time_asc') },
-        { value: 'time:desc', label: t('sort_time_desc') },
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'distance:asc', label: t('sort_distance_asc') },
-        { value: 'distance:desc', label: t('sort_distance_desc') },
-        { value: 'discipline:asc', label: t('sort_discipline_asc') },
-        { value: 'discipline:desc', label: t('sort_discipline_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['time', 'createdAt', 'distance', 'discipline']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -46,7 +38,7 @@ export default function Statistics() {
     const handleResetFilters = () => {
         setDisciplineFilter(null);
         setDistanceFilter('');
-        resetPage();
+        tableState.resetPage();
     };
 
     const queryFilter = useMemo(() => {
@@ -58,13 +50,13 @@ export default function Statistics() {
     }, [disciplineFilter, distanceFilter]);
 
     const { data, isLoading } = useQuery({
-        queryKey: ['statistics', activeTab, page, limit, sort, queryFilter],
+        queryKey: ['statistics', activeTab, tableState.page, tableState.limit, tableState.sort, queryFilter],
         queryFn: () => {
             const query = {
-                page,
-                limit,
+                page: tableState.page,
+                limit: tableState.limit,
                 sort:
-                    (sort as NonNullable<GetStatisticRecordsQuery>['sort']) ??
+                    (tableState.sort as NonNullable<GetStatisticRecordsQuery>['sort']) ??
                     (activeTab === 'records' ? 'time:asc' : 'createdAt:desc'),
                 filter: queryFilter,
             };
@@ -91,7 +83,7 @@ export default function Statistics() {
             key: 'discipline',
             header: t('discipline'),
             render: (s) => (
-                <Badge variant="light">
+                <Badge>
                     {DisciplineEnum.getOptions(t).find((o) => o.value === s.discipline)?.label ?? s.discipline}
                 </Badge>
             ),
@@ -126,7 +118,7 @@ export default function Statistics() {
                 value={disciplineFilter}
                 onChange={(v) => {
                     setDisciplineFilter(v);
-                    resetPage();
+                    tableState.resetPage();
                 }}
                 clearable
             />
@@ -135,7 +127,7 @@ export default function Statistics() {
                 value={distanceFilter}
                 onChange={(e) => {
                     setDistanceFilter(e.currentTarget.value);
-                    resetPage();
+                    tableState.resetPage();
                 }}
             />
         </SimpleGrid>
@@ -146,16 +138,10 @@ export default function Statistics() {
             columns={columns}
             data={stats}
             isLoading={isLoading}
-            page={page}
             totalItems={pagination?.total}
-            onPageChange={setPage}
-            limit={limit}
-            onLimitChange={onLimitChange}
-            sort={sort}
-            onSortChange={onSortChange}
+            state={tableState}
             sortOptions={sortOptions}
             filtersNode={filtersNode}
-            hasActiveFilters={activeFiltersCount > 0}
             activeFiltersCount={activeFiltersCount}
             onResetFilters={handleResetFilters}
             actions={(s) => {
@@ -172,8 +158,8 @@ export default function Statistics() {
                     onChange={(val) => {
                         const tab = val as 'records' | 'progress';
                         setActiveTab(tab);
-                        setSort(tab === 'records' ? 'time:asc' : 'createdAt:desc');
-                        resetPage();
+                        tableState.setSort(tab === 'records' ? 'time:asc' : 'createdAt:desc');
+                        tableState.resetPage();
                     }}
                     data={[
                         { label: t('records'), value: 'records' },

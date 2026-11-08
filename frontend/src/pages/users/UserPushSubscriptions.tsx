@@ -11,11 +11,12 @@ import {
     type PushSubscriptionResource,
     type GetPushSubscriptionsQuery,
 } from '../../api/services';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
 import { useDataTableState } from '../../hooks/useDataTableState';
 import { StatusActionMenu } from '../../components/common/StatusActionMenu';
@@ -38,7 +39,7 @@ export default function UserPushSubscriptions() {
 
     const [subscribing, setSubscribing] = useState(false);
 
-    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
+    const tableState = useDataTableState({
         defaultSort: 'createdAt:desc',
     });
 
@@ -77,17 +78,10 @@ export default function UserPushSubscriptions() {
         setEndpointFilter('');
         setP256dhFilter('');
         setAuthFilter('');
-        resetPage();
+        tableState.resetPage();
     };
 
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'endpoint:asc', label: t('sort_endpoint_asc') },
-        { value: 'endpoint:desc', label: t('sort_endpoint_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['createdAt', 'endpoint', 'status']);
 
     return (
         <UserSubpageContainer ownerOrAdminOnly={true}>
@@ -102,14 +96,23 @@ export default function UserPushSubscriptions() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['push-subscriptions', targetUser.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'push-subscriptions',
+                        targetUser.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () =>
                         pushSubscriptionService.getPushSubscriptions({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
-                                    sort: (sort as NonNullable<GetPushSubscriptionsQuery>['sort']) ?? 'createdAt:desc',
+                                    page: tableState.page,
+                                    limit: tableState.limit,
+                                    sort:
+                                        (tableState.sort as NonNullable<GetPushSubscriptionsQuery>['sort']) ??
+                                        'createdAt:desc',
                                     filter: queryFilter,
                                 },
                             },
@@ -357,7 +360,7 @@ export default function UserPushSubscriptions() {
                             value={endpointFilter}
                             onChange={(e) => {
                                 setEndpointFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <TextInput
@@ -365,7 +368,7 @@ export default function UserPushSubscriptions() {
                             value={p256dhFilter}
                             onChange={(e) => {
                                 setP256dhFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <TextInput
@@ -373,7 +376,7 @@ export default function UserPushSubscriptions() {
                             value={authFilter}
                             onChange={(e) => {
                                 setAuthFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                     </SimpleGrid>
@@ -385,49 +388,42 @@ export default function UserPushSubscriptions() {
                             columns={columns}
                             data={subs}
                             isLoading={isLoading}
-                            page={page}
                             totalItems={pagination?.total}
-                            onPageChange={setPage}
-                            limit={limit}
-                            onLimitChange={onLimitChange}
-                            sort={sort}
-                            onSortChange={onSortChange}
+                            state={tableState}
                             sortOptions={sortOptions}
                             filtersNode={filtersNode}
-                            hasActiveFilters={activeFiltersCount > 0}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? openCreate : undefined}
-                            addLabel={t('addSubscription')}
                             actions={(s) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     {canManage && (
                                         <StatusActionMenu
-                                            currentStatus={s.status}
-                                            options={PushSubscriptionStatusEnum.getOptions(t)}
-                                            onStatusChange={(status) =>
+                                            value={s.status}
+                                            enumType={PushSubscriptionStatusEnum}
+                                            onChange={(status) =>
                                                 updateStatusMutation.mutate({
                                                     id: s.id,
                                                     status: status as PushSubscriptionStatusEnum,
                                                 })
                                             }
-                                            isPending={updateStatusMutation.isPending}
+                                            loading={updateStatusMutation.isPending}
                                         />
                                     )}
                                     {isOwner && <EditActionButton onClick={() => handleOpenEdit(s)} />}
                                     {isOwner && (
                                         <DeleteActionButton
                                             onClick={() => handleDelete(s.id)}
-                                            isPending={deleteMutation.isPending}
+                                            loading={deleteMutation.isPending}
                                         />
                                     )}
                                 </Group>
                             )}
                         />
 
-                        <Modal opened={createOpened} onClose={closeCreate} title={t('addSubscription')} size="lg">
+                        <Modal opened={createOpened} onClose={closeCreate} title={t('add')}>
                             <Stack gap="md">
-                                <Paper withBorder p="md" radius="md">
+                                <Paper p="md">
                                     <Stack gap="xs">
                                         <Text fw={600} size="sm">
                                             {t('subscribeThisDevice')}
@@ -519,7 +515,7 @@ export default function UserPushSubscriptions() {
                             </Stack>
                         </Modal>
 
-                        <Modal opened={editOpened} onClose={closeEdit} title={t('editBrowser')} size="lg">
+                        <Modal opened={editOpened} onClose={closeEdit} title={t('edit')}>
                             <Stack gap="sm">
                                 <TextInput
                                     label={t('endpoint')}

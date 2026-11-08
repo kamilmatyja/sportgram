@@ -6,12 +6,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../api/client';
 import { eventService, pageService, type EventResource, type GetEventsQuery } from '../../api/services';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
 import { useDataTableState } from '../../hooks/useDataTableState';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -23,7 +24,7 @@ export default function UserEvents() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
+    const tableState = useDataTableState({
         defaultSort: 'startedAt:desc',
     });
 
@@ -34,20 +35,7 @@ export default function UserEvents() {
     const [formModalOpened, { open: openFormModal, close: closeFormModal }] = useDisclosure(false);
     const [editingEvent, setEditingEvent] = useState<EventResource | null>(null);
 
-    const sortOptions: SortOption[] = [
-        { value: 'startedAt:desc', label: t('sort_startedAt_desc') },
-        { value: 'startedAt:asc', label: t('sort_startedAt_asc') },
-        { value: 'endedAt:desc', label: t('sort_endedAt_desc') },
-        { value: 'endedAt:asc', label: t('sort_endedAt_asc') },
-        { value: 'title:asc', label: t('sort_title_asc') },
-        { value: 'title:desc', label: t('sort_title_desc') },
-        { value: 'location:asc', label: t('sort_location_asc') },
-        { value: 'location:desc', label: t('sort_location_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['startedAt', 'endedAt', 'title', 'location', 'status', 'createdAt']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -61,7 +49,7 @@ export default function UserEvents() {
         setTitleFilter('');
         setLinkFilter('');
         setStatusFilter(null);
-        resetPage();
+        tableState.resetPage();
     };
 
     return (
@@ -101,15 +89,22 @@ export default function UserEvents() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['user-events', targetUser.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'user-events',
+                        targetUser.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () =>
                         eventService.getEvents({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetEventsQuery>['sort']) ?? 'startedAt:desc',
+                                    sort: (tableState.sort as NonNullable<GetEventsQuery>['sort']) ?? 'startedAt:desc',
                                     'include[]': [
                                         'eventDisciplines',
                                         'eventDisciplineDistances',
@@ -193,15 +188,15 @@ export default function UserEvents() {
                         key: 'title',
                         header: t('title'),
                         render: (ev) => (
-                            <Group gap="sm">
-                                <Avatar src={formatImageSrc(ev.photo)} radius={5} size="md">
+                            <Group gap="sm" wrap="nowrap">
+                                <Avatar src={formatImageSrc(ev.photo)} size="md">
                                     ?
                                 </Avatar>
                                 <div>
-                                    <Text size="sm" fw={600}>
+                                    <Text size="sm" fw={600} lineClamp={1}>
                                         {ev.title}
                                     </Text>
-                                    <Text size="sm" c="dimmed">
+                                    <Text size="sm" c="dimmed" lineClamp={1}>
                                         {ev.location || '-'}
                                     </Text>
                                 </div>
@@ -229,7 +224,7 @@ export default function UserEvents() {
                     {
                         key: 'status',
                         header: t('status'),
-                        render: (ev) => <StatusBadge status={ev.status} enumType={ElementStatusEnum} />,
+                        render: (ev) => <StatusBadge status={ev.status} />,
                     },
                 ];
 
@@ -240,7 +235,7 @@ export default function UserEvents() {
                             value={titleFilter}
                             onChange={(e) => {
                                 setTitleFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <TextInput
@@ -248,7 +243,7 @@ export default function UserEvents() {
                             value={linkFilter}
                             onChange={(e) => {
                                 setLinkFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <Select
@@ -261,7 +256,7 @@ export default function UserEvents() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -274,27 +269,19 @@ export default function UserEvents() {
                             columns={columns}
                             data={events}
                             isLoading={isLoading}
-                            page={page}
+                            state={tableState}
                             totalItems={pagination?.total}
-                            onPageChange={setPage}
-                            limit={limit}
-                            onLimitChange={onLimitChange}
-                            sort={sort}
-                            onSortChange={onSortChange}
                             sortOptions={sortOptions}
                             filtersNode={filtersNode}
-                            hasActiveFilters={activeFiltersCount > 0}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? handleOpenCreate : undefined}
-                            addLabel={t('addEvent')}
                             actions={(ev) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     <ViewActionButton to={`/events/${ev.link}`} />
                                     {canManage && (
                                         <StatusActionMenu
                                             currentStatus={ev.status}
-                                            options={ElementStatusEnum.getOptions(t)}
                                             onStatusChange={(status) =>
                                                 statusMutation.mutate({
                                                     id: ev.id,

@@ -9,6 +9,7 @@ import { pageService, type PageResource } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { resolveImageBase64 } from '../../utils/imageUtils';
+import { slugify } from '../../utils/text';
 
 export interface PageFormModalProps {
     opened: boolean;
@@ -132,7 +133,7 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
           !!bgPhotoFile;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editPage') : t('addPage')} size="lg">
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')}>
             <Stack gap="sm">
                 <TextInput
                     label={t('title')}
@@ -141,12 +142,10 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
                     error={fieldErrors.title}
                     onChange={(e) => {
                         const val = e.currentTarget.value;
-                        if (!isEdit && !formData.link) {
-                            const generatedLink = val
-                                .toLowerCase()
-                                .replace(/[^a-z0-9]+/g, '-')
-                                .replace(/(^-|-$)/g, '');
-                            setFormData({ ...formData, title: val, link: generatedLink });
+                        const prevGenerated = slugify(formData.title);
+                        const nextGenerated = slugify(val);
+                        if (!isEdit && (!formData.link || formData.link === prevGenerated)) {
+                            setFormData({ ...formData, title: val, link: nextGenerated });
                         } else {
                             setFormData({ ...formData, title: val });
                         }

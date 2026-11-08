@@ -7,12 +7,13 @@ import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../api/client';
 import { pageService, type PageResource, type GetPagesQuery } from '../../api/services';
 import { useMyFriends } from '../../hooks/useMyFriends';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { StatusActionMenu } from '../../components/common/StatusActionMenu';
 import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
@@ -24,9 +25,7 @@ export default function UserPages() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
-        defaultSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState();
 
     const [title, setTitle] = useState('');
     const [linkFilter, setLinkFilter] = useState('');
@@ -41,14 +40,7 @@ export default function UserPages() {
     );
     const { collaboratorOptions } = useMyFriends(extraUserIds);
 
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'title:asc', label: t('sort_title_asc') },
-        { value: 'title:desc', label: t('sort_title_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['createdAt', 'title', 'status']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -62,7 +54,7 @@ export default function UserPages() {
         setTitle('');
         setLinkFilter('');
         setStatusFilter(null);
-        resetPage();
+        tableState.resetPage();
     };
 
     return (
@@ -76,15 +68,22 @@ export default function UserPages() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['user-pages', targetUser.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'user-pages',
+                        targetUser.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () =>
                         pageService.getPages({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetPagesQuery>['sort']) ?? 'createdAt:desc',
+                                    sort: (tableState.sort as NonNullable<GetPagesQuery>['sort']) ?? 'createdAt:desc',
                                     'include[]': ['pageParticipants'],
                                 },
                             },
@@ -164,15 +163,13 @@ export default function UserPages() {
                         key: 'page',
                         header: t('title'),
                         render: (p) => (
-                            <Group gap="sm">
-                                <Avatar src={formatImageSrc(p.profilePhoto)} radius={5}>
-                                    ?
-                                </Avatar>
+                            <Group gap="sm" wrap="nowrap">
+                                <Avatar src={formatImageSrc(p.profilePhoto)}>?</Avatar>
                                 <div>
-                                    <Text size="sm" fw={600}>
+                                    <Text size="sm" fw={600} lineClamp={1}>
                                         {p.title}
                                     </Text>
-                                    <Text size="sm" c="dimmed">
+                                    <Text size="sm" c="dimmed" lineClamp={1}>
                                         @{p.link}
                                     </Text>
                                 </div>
@@ -182,7 +179,7 @@ export default function UserPages() {
                     {
                         key: 'status',
                         header: t('status'),
-                        render: (p) => <StatusBadge status={p.status} enumType={ElementStatusEnum} />,
+                        render: (p) => <StatusBadge status={p.status} />,
                     },
                     {
                         key: 'createdAt',
@@ -202,7 +199,7 @@ export default function UserPages() {
                             value={title}
                             onChange={(e) => {
                                 setTitle(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <TextInput
@@ -210,7 +207,7 @@ export default function UserPages() {
                             value={linkFilter}
                             onChange={(e) => {
                                 setLinkFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <Select
@@ -223,7 +220,7 @@ export default function UserPages() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -236,27 +233,19 @@ export default function UserPages() {
                             columns={columns}
                             data={pages}
                             isLoading={isLoading}
-                            page={page}
+                            state={tableState}
                             totalItems={pagination?.total}
-                            onPageChange={setPage}
-                            limit={limit}
-                            onLimitChange={onLimitChange}
-                            sort={sort}
-                            onSortChange={onSortChange}
                             sortOptions={sortOptions}
                             filtersNode={filtersNode}
-                            hasActiveFilters={activeFiltersCount > 0}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? handleOpenCreate : undefined}
-                            addLabel={t('addPage')}
                             actions={(p) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     <ViewActionButton to={`/pages/${p.link}`} />
                                     {(isOwner || isAdmin) && (
                                         <StatusActionMenu
                                             currentStatus={p.status}
-                                            options={ElementStatusEnum.getOptions(t)}
                                             onStatusChange={(status) =>
                                                 statusMutation.mutate({
                                                     id: p.id,

@@ -16,8 +16,8 @@ export function ViewActionButton({ to, onClick, tooltipLabel, disabled }: ViewAc
 
     if (to) {
         return (
-            <Tooltip label={label} withArrow>
-                <ActionIcon component={Link} to={to} variant="light" size={30} aria-label={label} disabled={disabled}>
+            <Tooltip label={label}>
+                <ActionIcon component={Link} to={to} aria-label={label} disabled={disabled}>
                     <IconEye size={16} />
                 </ActionIcon>
             </Tooltip>
@@ -25,8 +25,8 @@ export function ViewActionButton({ to, onClick, tooltipLabel, disabled }: ViewAc
     }
 
     return (
-        <Tooltip label={label} withArrow>
-            <ActionIcon variant="light" size={30} onClick={onClick} aria-label={label} disabled={disabled}>
+        <Tooltip label={label}>
+            <ActionIcon onClick={onClick} aria-label={label} disabled={disabled}>
                 <IconEye size={16} />
             </ActionIcon>
         </Tooltip>
@@ -46,15 +46,8 @@ export function EditActionButton({ onClick, tooltipLabel, tooltip, disabled, loa
     const label = tooltipLabel ?? tooltip ?? t('edit');
 
     return (
-        <Tooltip label={label} withArrow>
-            <ActionIcon
-                variant="light"
-                size={30}
-                onClick={onClick}
-                aria-label={label}
-                disabled={disabled}
-                loading={loading}
-            >
+        <Tooltip label={label}>
+            <ActionIcon onClick={onClick} aria-label={label} disabled={disabled} loading={loading}>
                 <IconEdit size={16} />
             </ActionIcon>
         </Tooltip>
@@ -83,11 +76,9 @@ export function DeleteActionButton({
     const isLoading = loading ?? isPending;
 
     return (
-        <Tooltip label={label} withArrow>
+        <Tooltip label={label}>
             <ActionIcon
-                variant="light"
                 color="red"
-                size={30}
                 onClick={onClick}
                 aria-label={label}
                 loading={isLoading}

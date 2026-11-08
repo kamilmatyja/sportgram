@@ -5,12 +5,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { notificationService, type NotificationResource, type GetNotificationsQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { NotificationStatusEnum } from '../../enums/NotificationStatusEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { getErrorMessage } from '../../api/client';
 import { formatDateTime } from '../../utils/date';
 import { truncate } from '../../utils/text';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
 import { useDataTableState } from '../../hooks/useDataTableState';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -22,21 +23,14 @@ export default function UserNotifications() {
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
 
-    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
+    const tableState = useDataTableState({
         defaultSort: 'createdAt:desc',
     });
 
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'text:asc', label: t('sort_text_asc') },
-        { value: 'text:desc', label: t('sort_text_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['createdAt', 'text', 'status']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -48,7 +42,7 @@ export default function UserNotifications() {
     const handleResetFilters = () => {
         setTextFilter('');
         setStatusFilter(null);
-        resetPage();
+        tableState.resetPage();
     };
 
     return (
@@ -60,16 +54,25 @@ export default function UserNotifications() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['notifications', targetUser.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'notifications',
+                        targetUser.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () => {
                         if (!currentUser?.id) return null;
                         return notificationService.getNotifications({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetNotificationsQuery>['sort']) ?? 'createdAt:desc',
+                                    sort:
+                                        (tableState.sort as NonNullable<GetNotificationsQuery>['sort']) ??
+                                        'createdAt:desc',
                                 },
                             },
                         });
@@ -140,7 +143,7 @@ export default function UserNotifications() {
                         key: 'text',
                         header: t('text'),
                         render: (n) => (
-                            <Text size="sm" fw={n.status !== NotificationStatusEnum.READ ? 600 : 400} title={n.text}>
+                            <Text size="sm" title={n.text}>
                                 {truncate(n.text, 50)}
                             </Text>
                         ),
@@ -168,7 +171,7 @@ export default function UserNotifications() {
                             value={textFilter}
                             onChange={(e) => {
                                 setTextFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <Select
@@ -181,7 +184,7 @@ export default function UserNotifications() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -193,36 +196,30 @@ export default function UserNotifications() {
                         columns={columns}
                         data={notifs}
                         isLoading={isLoading}
-                        page={page}
                         totalItems={pagination?.total}
-                        onPageChange={setPage}
-                        limit={limit}
-                        onLimitChange={onLimitChange}
-                        sort={sort}
-                        onSortChange={onSortChange}
+                        state={tableState}
                         sortOptions={sortOptions}
                         filtersNode={filtersNode}
-                        hasActiveFilters={activeFiltersCount > 0}
                         activeFiltersCount={activeFiltersCount}
                         onResetFilters={handleResetFilters}
                         actions={(n) => (
                             <Group gap="xs" justify="flex-end" wrap="nowrap">
                                 {n.link && <ViewActionButton to={n.link} />}
                                 <StatusActionMenu
-                                    currentStatus={n.status}
-                                    options={NotificationStatusEnum.getOptions(t)}
-                                    onStatusChange={(status) =>
+                                    value={n.status}
+                                    enumType={NotificationStatusEnum}
+                                    onChange={(status) =>
                                         updateStatusMutation.mutate({
                                             id: n.id,
                                             status: status as NotificationStatusEnum,
                                         })
                                     }
-                                    isPending={updateStatusMutation.isPending}
+                                    loading={updateStatusMutation.isPending}
                                 />
                                 {isOwner && (
                                     <DeleteActionButton
                                         onClick={() => handleDelete(n.id)}
-                                        isPending={deleteMutation.isPending}
+                                        loading={deleteMutation.isPending}
                                     />
                                 )}
                             </Group>

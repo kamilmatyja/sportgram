@@ -3,33 +3,23 @@ export interface SortOption {
     label: string;
 }
 
-export interface DefaultSortOptionsConfig {
-    withStatus?: boolean;
-    withName?: boolean;
+const DESC_FIRST_FIELDS = new Set(['createdAt', 'updatedAt', 'startedAt', 'endedAt', 'count']);
+
+export function buildSortOptions(
+    t: (key: string) => string,
+    fields: (string | { field: string; labelKey?: string })[] = ['createdAt', 'status'],
+): SortOption[] {
+    return fields.flatMap((item) => {
+        const field = typeof item === 'string' ? item : item.field;
+        const key = typeof item === 'string' ? item : (item.labelKey ?? item.field);
+        const directions = DESC_FIRST_FIELDS.has(field) ? ['desc', 'asc'] : ['asc', 'desc'];
+        return directions.map((dir) => ({
+            value: `${field}:${dir}`,
+            label: t(`sort_${key}_${dir}`),
+        }));
+    });
 }
 
-export function getDefaultSortOptions(
-    t: (key: string) => string,
-    config: DefaultSortOptionsConfig = { withStatus: true },
-): SortOption[] {
-    const options: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-    ];
-
-    if (config.withStatus) {
-        options.push(
-            { value: 'status:desc', label: t('sort_status_desc') },
-            { value: 'status:asc', label: t('sort_status_asc') },
-        );
-    }
-
-    if (config.withName) {
-        options.push(
-            { value: 'name:asc', label: t('sort_name_asc') },
-            { value: 'name:desc', label: t('sort_name_desc') },
-        );
-    }
-
-    return options;
+export function getDefaultSortOptions(t: (key: string) => string): SortOption[] {
+    return buildSortOptions(t, ['createdAt', 'status']);
 }

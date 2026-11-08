@@ -5,11 +5,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../api/client';
 import { feedService, type FeedReactionResource, type GetFeedReactionsQuery } from '../../api/services';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { StatusBadge } from '../../components/StatusBadge';
 import { StatusActionMenu } from '../../components/common/StatusActionMenu';
 import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
@@ -21,9 +22,7 @@ export default function UserFeedReactions() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const { page, setPage, limit, sort, onLimitChange, onSortChange } = useDataTableState({
-        initialSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState();
 
     const [reactionFilter, setReactionFilter] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -31,14 +30,7 @@ export default function UserFeedReactions() {
     const [editingReaction, setEditingReaction] = useState<FeedReactionResource | null>(null);
     const [editReactionType, setEditReactionType] = useState<number | null>(null);
 
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'reaction:asc', label: t('sort_text_asc') },
-        { value: 'reaction:desc', label: t('sort_text_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['createdAt', { field: 'reaction', labelKey: 'text' }, 'status']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -50,7 +42,7 @@ export default function UserFeedReactions() {
     const handleResetFilters = () => {
         setReactionFilter(null);
         setStatusFilter(null);
-        setPage(1);
+        tableState.resetPage();
     };
 
     return (
@@ -63,16 +55,25 @@ export default function UserFeedReactions() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['user-feed-reactions', targetUser?.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'user-feed-reactions',
+                        targetUser?.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () => {
                         if (!targetUser?.id) return null;
                         return feedService.getFeedReactions({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetFeedReactionsQuery>['sort']) ?? 'createdAt:desc',
+                                    sort:
+                                        (tableState.sort as NonNullable<GetFeedReactionsQuery>['sort']) ??
+                                        'createdAt:desc',
                                 },
                             },
                         });
@@ -160,7 +161,7 @@ export default function UserFeedReactions() {
                     {
                         key: 'status',
                         header: t('status'),
-                        render: (r) => <StatusBadge status={r.status} type="element" />,
+                        render: (r) => <StatusBadge status={r.status} />,
                     },
                     {
                         key: 'createdAt',
@@ -185,7 +186,7 @@ export default function UserFeedReactions() {
                             value={reactionFilter}
                             onChange={(v) => {
                                 setReactionFilter(v);
-                                setPage(1);
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -199,7 +200,7 @@ export default function UserFeedReactions() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                setPage(1);
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -212,16 +213,10 @@ export default function UserFeedReactions() {
                             columns={columns}
                             data={reactions}
                             isLoading={isLoading}
-                            page={page}
+                            state={tableState}
                             totalItems={pagination?.total}
-                            onPageChange={setPage}
-                            limit={limit}
-                            onLimitChange={onLimitChange}
-                            sort={sort}
-                            onSortChange={onSortChange}
                             sortOptions={sortOptions}
                             filtersNode={filtersNode}
-                            hasActiveFilters={activeFiltersCount > 0}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             actions={(r) => {
@@ -233,7 +228,6 @@ export default function UserFeedReactions() {
                                         {(isOwner || isAdmin) && (
                                             <StatusActionMenu
                                                 value={r.status}
-                                                options={ElementStatusEnum.getOptions(t)}
                                                 onChange={(st) =>
                                                     statusMutation.mutate({
                                                         id: r.id,
@@ -262,12 +256,7 @@ export default function UserFeedReactions() {
                             }}
                         />
 
-                        <Modal
-                            opened={!!editingReaction}
-                            onClose={() => setEditingReaction(null)}
-                            title={t('editReaction')}
-                            size="lg"
-                        >
+                        <Modal opened={!!editingReaction} onClose={() => setEditingReaction(null)} title={t('edit')}>
                             <Stack gap="md">
                                 <Select
                                     label={t('reaction')}

@@ -13,10 +13,11 @@ export interface EntityViewCounterProps {
     entityId?: string | null;
     type: EntryTypeEnum;
     size?: number;
-    textSize?: 'xs' | 'sm' | 'md' | '10px';
+    textSize?: 'xs' | 'sm' | 'md';
     track?: boolean;
     c?: string;
     showTooltip?: boolean;
+    opacity?: number;
     className?: string;
 }
 
@@ -28,6 +29,7 @@ export function EntityViewCounter({
     track = true,
     c = 'dimmed',
     showTooltip = true,
+    opacity,
     className,
 }: EntityViewCounterProps) {
     const { t } = useTranslation();
@@ -78,14 +80,9 @@ export function EntityViewCounter({
     if (!entityId) return null;
 
     const content = (
-        <Group gap={4} align="center" wrap="nowrap" c={c} className={className}>
+        <Group gap={4} align="center" wrap="nowrap" c={c} opacity={opacity} className={className}>
             <IconEye size={size} />
-            <Text
-                size={textSize === '10px' ? undefined : textSize}
-                c={c}
-                span
-                className={textSize === '10px' ? 'text-size-10' : undefined}
-            >
+            <Text size={textSize} c={c} span>
                 {viewsCount}
             </Text>
         </Group>
@@ -93,9 +90,5 @@ export function EntityViewCounter({
 
     if (!showTooltip) return content;
 
-    return (
-        <Tooltip label={t('views')} withArrow>
-            {content}
-        </Tooltip>
-    );
+    return <Tooltip label={t('views')}>{content}</Tooltip>;
 }

@@ -19,14 +19,7 @@ export interface StatusBadgeProps {
     type?: 'element' | 'friend' | 'role' | 'discipline' | 'user' | string;
 }
 
-export function StatusBadge({
-    status,
-    label,
-    color: explicitColor,
-    variant = 'light',
-    enumType,
-    type,
-}: StatusBadgeProps) {
+export function StatusBadge({ status, label, color: explicitColor, variant, enumType, type }: StatusBadgeProps) {
     const { t } = useTranslation();
 
     let resolvedEnumType = enumType;
@@ -48,6 +41,9 @@ export function StatusBadge({
                 resolvedEnumType = DisciplineEnum;
                 break;
         }
+    }
+    if (!resolvedEnumType) {
+        resolvedEnumType = ElementStatusEnum;
     }
 
     let resolvedLabel = label;

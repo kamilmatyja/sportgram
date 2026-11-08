@@ -7,6 +7,7 @@ import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { trainingService, type TrainingResource } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { slugify } from '../../utils/text';
 import { TrainingDisciplinesEditor, type FormTrainingDiscipline } from './TrainingDisciplinesEditor';
 
 export interface TrainingFormModalProps {
@@ -187,7 +188,7 @@ export function TrainingFormModal({
         !!formData.endedAt;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editTraining') : t('addTraining')} size="lg">
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')}>
             <Stack gap="sm">
                 <TextInput
                     label={t('title')}
@@ -196,12 +197,10 @@ export function TrainingFormModal({
                     error={fieldErrors.title}
                     onChange={(e) => {
                         const val = e.currentTarget.value;
-                        if (!isEdit && !formData.link) {
-                            const generatedLink = val
-                                .toLowerCase()
-                                .replace(/[^a-z0-9]+/g, '-')
-                                .replace(/(^-|-$)/g, '');
-                            setFormData({ ...formData, title: val, link: generatedLink });
+                        const prevGenerated = slugify(formData.title);
+                        const nextGenerated = slugify(val);
+                        if (!isEdit && (!formData.link || formData.link === prevGenerated)) {
+                            setFormData({ ...formData, title: val, link: nextGenerated });
                         } else {
                             setFormData({ ...formData, title: val });
                         }

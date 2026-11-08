@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Modal, Stack, Group, Avatar, Text, Image, Box, ActionIcon, Badge, Tooltip } from '@mantine/core';
+import { Modal, Stack, Group, Avatar, Text, Image, Box, ActionIcon, Badge, Tooltip, Anchor } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IconChevronLeft, IconChevronRight, IconEdit, IconTrash } from '@tabler/icons-react';
@@ -234,11 +234,11 @@ export function StoryViewerModal({
     const isStoryOwner = !!(currentUser && currentStory && currentUser.id === currentStory.userId);
 
     return (
-        <Modal.Root opened={opened} onClose={onClose} size="lg" centered>
+        <Modal.Root opened={opened} onClose={onClose} centered>
             <Modal.Overlay />
             <Modal.Content>
                 <Modal.Header className="story-modal-header">
-                    <Stack gap={6} className="story-header-stack">
+                    <Stack gap={6} w="100%">
                         <Box className="story-progress-bar-container">
                             {currentStories.map((s, idx) => (
                                 <Box
@@ -257,27 +257,24 @@ export function StoryViewerModal({
                         <Group justify="space-between" align="center" wrap="nowrap" w="100%">
                             <Group gap="sm" wrap="nowrap">
                                 {currentAuthor?.link ? (
-                                    <Link to={`/users/${currentAuthor.link}`} className="no-decoration">
-                                        <Avatar src={authorPhoto} radius={5} size="md">
-                                            ?
-                                        </Avatar>
-                                    </Link>
+                                    <Anchor component={Link} to={`/users/${currentAuthor.link}`} underline="never">
+                                        <Avatar src={authorPhoto}>?</Avatar>
+                                    </Anchor>
                                 ) : (
-                                    <Avatar src={authorPhoto} radius={5} size="md">
-                                        ?
-                                    </Avatar>
+                                    <Avatar src={authorPhoto}>?</Avatar>
                                 )}
                                 <Box>
                                     {currentAuthor?.link ? (
-                                        <Text
+                                        <Anchor
                                             size="sm"
                                             fw={600}
                                             component={Link}
                                             to={`/users/${currentAuthor.link}`}
-                                            className="no-decoration"
+                                            c="inherit"
+                                            underline="hover"
                                         >
                                             {authorName}
-                                        </Text>
+                                        </Anchor>
                                     ) : (
                                         <Text size="sm" fw={600}>
                                             {authorName}
@@ -290,11 +287,11 @@ export function StoryViewerModal({
                             </Group>
 
                             <Group gap="xs" align="center" wrap="nowrap">
-                                <Badge variant="light" size="sm" className="story-counter-badge">
+                                <Badge size="sm">
                                     {currentStoryIdx + 1} / {currentStories.length}
                                 </Badge>
                                 {currentStory && (
-                                    <Badge variant="light" size="sm">
+                                    <Badge size="sm">
                                         <EntityViewCounter
                                             key={currentStory.id}
                                             entityId={currentStory.id}
@@ -309,26 +306,22 @@ export function StoryViewerModal({
                                 {isStoryOwner && (
                                     <>
                                         {onEdit && (
-                                            <Tooltip label={t('editStory')} withArrow>
+                                            <Tooltip label={t('edit')}>
                                                 <ActionIcon
-                                                    variant="light"
-                                                    size={30}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         onEdit(currentStory);
                                                     }}
-                                                    aria-label={t('editStory')}
+                                                    aria-label={t('edit')}
                                                 >
                                                     <IconEdit size={16} />
                                                 </ActionIcon>
                                             </Tooltip>
                                         )}
                                         {onDelete && (
-                                            <Tooltip label={t('delete')} withArrow>
+                                            <Tooltip label={t('delete')}>
                                                 <ActionIcon
-                                                    variant="light"
                                                     color="red"
-                                                    size={30}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         const storyIdToDelete = currentStory.id;
@@ -385,7 +378,7 @@ export function StoryViewerModal({
                                         )}
                                     </>
                                 )}
-                                <Modal.CloseButton size={30} />
+                                <Modal.CloseButton />
                             </Group>
                         </Group>
                     </Stack>
@@ -414,7 +407,7 @@ export function StoryViewerModal({
                                     className="story-viewer-image"
                                 />
                             ) : (
-                                <Box className="story-empty-box" />
+                                <Box w="100%" h="100%" />
                             )}
 
                             <ActionIcon

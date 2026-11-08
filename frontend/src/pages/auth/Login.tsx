@@ -146,7 +146,7 @@ export default function Login() {
 
     return (
         <Container size="xs" py="xl">
-            <Paper withBorder shadow="sm" p="xl" radius="md">
+            <Paper p="xl">
                 <Title order={2} ta="center" mb="lg">
                     {step === 1 ? t('sign') : `${t('sign')} – ${t('verify')}`}
                 </Title>

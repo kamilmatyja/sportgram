@@ -23,7 +23,7 @@ export default function UserFriends() {
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
 
-    const { page, setPage, limit, sort, onLimitChange, onSortChange } = useDataTableState({
+    const tableState = useDataTableState({
         initialSort: 'createdAt:desc',
     });
 
@@ -41,7 +41,7 @@ export default function UserFriends() {
 
     const handleResetFilters = () => {
         setStatusFilter(null);
-        setPage(1);
+        tableState.setPage(1);
     };
 
     return (
@@ -53,16 +53,23 @@ export default function UserFriends() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['friends', targetUser?.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'friends',
+                        targetUser?.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () => {
                         if (!targetUser?.id) return null;
                         return friendService.getFriends({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetFriendsQuery>['sort']) ?? 'createdAt:desc',
+                                    sort: (tableState.sort as NonNullable<GetFriendsQuery>['sort']) ?? 'createdAt:desc',
                                 },
                             },
                         });
@@ -200,7 +207,7 @@ export default function UserFriends() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                setPage(1);
+                                tableState.setPage(1);
                             }}
                             clearable
                         />
@@ -213,19 +220,12 @@ export default function UserFriends() {
                             columns={columns}
                             data={friends}
                             isLoading={isLoading}
-                            page={page}
                             totalItems={pagination?.total}
-                            onPageChange={setPage}
-                            limit={limit}
-                            onLimitChange={onLimitChange}
-                            sort={sort}
-                            onSortChange={onSortChange}
+                            state={tableState}
                             filtersNode={filtersNode}
-                            hasActiveFilters={activeFiltersCount > 0}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? () => setAddOpened(true) : undefined}
-                            addLabel={t('addFriend')}
                             actions={(f) => {
                                 const otherId = f.senderUserId === targetUser?.id ? f.receiverUserId : f.senderUserId;
                                 const otherUser = getUser(otherId);
@@ -237,7 +237,7 @@ export default function UserFriends() {
                                             <>
                                                 <StatusActionMenu
                                                     value={f.status}
-                                                    options={FriendStatusEnum.getOptions(t)}
+                                                    enumType={FriendStatusEnum}
                                                     onChange={(st) =>
                                                         updateStatusMutation.mutate({
                                                             id: f.id,
@@ -257,7 +257,7 @@ export default function UserFriends() {
                             }}
                         />
 
-                        <Modal opened={addOpened} onClose={() => setAddOpened(false)} title={t('addFriend')} size="lg">
+                        <Modal opened={addOpened} onClose={() => setAddOpened(false)} title={t('add')}>
                             <Stack gap="md">
                                 <Select
                                     label={t('user')}

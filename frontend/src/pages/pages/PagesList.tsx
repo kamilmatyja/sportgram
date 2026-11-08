@@ -7,11 +7,12 @@ import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../api/client';
 import { pageService, type PageResource, type GetPagesQuery } from '../../api/services';
 import { useAuth } from '../../auth/AuthContext';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { formatImageSrc } from '../../utils/imageUtils';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { useDataTableState } from '../../hooks/useDataTableState';
 import { useMyFriends } from '../../hooks/useMyFriends';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -24,9 +25,7 @@ export default function PagesList() {
     const queryClient = useQueryClient();
     const { currentUser, isOrganizer, isAdmin } = useAuth();
 
-    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
-        defaultSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState();
 
     const [title, setTitle] = useState('');
     const [linkFilter, setLinkFilter] = useState('');
@@ -35,14 +34,7 @@ export default function PagesList() {
     const [formModalOpened, { open: openFormModal, close: closeFormModal }] = useDisclosure(false);
     const [editingPage, setEditingPage] = useState<PageResource | null>(null);
 
-    const sortOptions: SortOption[] = [
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-        { value: 'title:asc', label: t('sort_title_asc') },
-        { value: 'title:desc', label: t('sort_title_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['createdAt', 'title', 'status']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -56,7 +48,7 @@ export default function PagesList() {
         setTitle('');
         setLinkFilter('');
         setStatusFilter(null);
-        resetPage();
+        tableState.resetPage();
     };
 
     const queryFilter = useMemo(() => {
@@ -74,15 +66,15 @@ export default function PagesList() {
     const { collaboratorOptions } = useMyFriends(extraUserIds);
 
     const { data, isLoading } = useQuery({
-        queryKey: ['pages', page, limit, sort, queryFilter],
+        queryKey: ['pages', tableState.page, tableState.limit, tableState.sort, queryFilter],
         queryFn: () =>
             pageService.getPages({
                 params: {
                     query: {
-                        page,
-                        limit,
+                        page: tableState.page,
+                        limit: tableState.limit,
                         filter: queryFilter,
-                        sort: (sort as NonNullable<GetPagesQuery>['sort']) ?? 'createdAt:desc',
+                        sort: (tableState.sort as NonNullable<GetPagesQuery>['sort']) ?? 'createdAt:desc',
                         'include[]': ['pageParticipants'],
                     },
                 },
@@ -146,15 +138,13 @@ export default function PagesList() {
             key: 'page',
             header: t('title'),
             render: (p) => (
-                <Group gap="sm">
-                    <Avatar src={formatImageSrc(p.profilePhoto)} radius={5}>
-                        ?
-                    </Avatar>
+                <Group gap="sm" wrap="nowrap">
+                    <Avatar src={formatImageSrc(p.profilePhoto)}>?</Avatar>
                     <div>
-                        <Text size="sm" fw={600}>
+                        <Text size="sm" fw={600} lineClamp={1}>
                             {p.title}
                         </Text>
-                        <Text size="sm" c="dimmed">
+                        <Text size="sm" c="dimmed" lineClamp={1}>
                             @{p.link}
                         </Text>
                     </div>
@@ -164,7 +154,7 @@ export default function PagesList() {
         {
             key: 'status',
             header: t('status'),
-            render: (p) => <StatusBadge status={p.status} enumType={ElementStatusEnum} />,
+            render: (p) => <StatusBadge status={p.status} />,
         },
         {
             key: 'createdAt',
@@ -184,7 +174,7 @@ export default function PagesList() {
                 value={title}
                 onChange={(e) => {
                     setTitle(e.currentTarget.value);
-                    resetPage();
+                    tableState.resetPage();
                 }}
             />
             <TextInput
@@ -192,7 +182,7 @@ export default function PagesList() {
                 value={linkFilter}
                 onChange={(e) => {
                     setLinkFilter(e.currentTarget.value);
-                    resetPage();
+                    tableState.resetPage();
                 }}
             />
             <Select
@@ -205,7 +195,7 @@ export default function PagesList() {
                 value={statusFilter}
                 onChange={(v) => {
                     setStatusFilter(v);
-                    resetPage();
+                    tableState.resetPage();
                 }}
                 clearable
             />
@@ -218,20 +208,13 @@ export default function PagesList() {
                 columns={columns}
                 data={pages}
                 isLoading={isLoading}
-                page={page}
+                state={tableState}
                 totalItems={pagination?.total}
-                onPageChange={setPage}
-                limit={limit}
-                onLimitChange={onLimitChange}
-                sort={sort}
-                onSortChange={onSortChange}
                 sortOptions={sortOptions}
                 filtersNode={filtersNode}
-                hasActiveFilters={activeFiltersCount > 0}
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
                 onAdd={isOrganizer || isAdmin ? handleOpenCreate : undefined}
-                addLabel={t('addPage')}
                 actions={(p) => {
                     const isPageOwner = currentUser?.id === p.userId;
                     const canManagePage = isPageOwner || isAdmin;
@@ -242,7 +225,6 @@ export default function PagesList() {
                             {canManagePage && (
                                 <StatusActionMenu
                                     currentStatus={p.status}
-                                    options={ElementStatusEnum.getOptions(t)}
                                     onStatusChange={(status) =>
                                         statusMutation.mutate({
                                             id: p.id,

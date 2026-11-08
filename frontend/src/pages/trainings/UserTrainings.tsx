@@ -7,11 +7,12 @@ import { useTranslation } from 'react-i18next';
 import { getErrorMessage } from '../../api/client';
 import { trainingService, type TrainingResource, type GetTrainingsQuery } from '../../api/services';
 import { useMyFriends } from '../../hooks/useMyFriends';
-import { DataTable, type Column, type SortOption } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components/DataTable';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { openConfirmActionModal } from '../../utils/confirmModal';
 import { formatDateTime } from '../../utils/date';
+import { buildSortOptions } from '../../utils/tableUtils';
 import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
 import { useDataTableState } from '../../hooks/useDataTableState';
 import { StatusBadge } from '../../components/common/StatusBadge';
@@ -23,7 +24,7 @@ export default function UserTrainings() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const { page, limit, sort, setPage, onLimitChange, onSortChange, resetPage } = useDataTableState({
+    const tableState = useDataTableState({
         defaultSort: 'startedAt:desc',
     });
 
@@ -40,20 +41,7 @@ export default function UserTrainings() {
     );
     const { collaboratorOptions } = useMyFriends(extraUserIds);
 
-    const sortOptions: SortOption[] = [
-        { value: 'startedAt:desc', label: t('sort_startedAt_desc') },
-        { value: 'startedAt:asc', label: t('sort_startedAt_asc') },
-        { value: 'endedAt:desc', label: t('sort_endedAt_desc') },
-        { value: 'endedAt:asc', label: t('sort_endedAt_asc') },
-        { value: 'title:asc', label: t('sort_title_asc') },
-        { value: 'title:desc', label: t('sort_title_desc') },
-        { value: 'location:asc', label: t('sort_location_asc') },
-        { value: 'location:desc', label: t('sort_location_desc') },
-        { value: 'status:asc', label: t('sort_status_asc') },
-        { value: 'status:desc', label: t('sort_status_desc') },
-        { value: 'createdAt:desc', label: t('sort_createdAt_desc') },
-        { value: 'createdAt:asc', label: t('sort_createdAt_asc') },
-    ];
+    const sortOptions = buildSortOptions(t, ['startedAt', 'endedAt', 'title', 'location', 'status', 'createdAt']);
 
     const activeFiltersCount = useMemo(() => {
         let count = 0;
@@ -67,7 +55,7 @@ export default function UserTrainings() {
         setTitleFilter('');
         setLinkFilter('');
         setStatusFilter(null);
-        resetPage();
+        tableState.resetPage();
     };
 
     return (
@@ -83,15 +71,23 @@ export default function UserTrainings() {
                 };
 
                 const { data, isLoading } = useQuery({
-                    queryKey: ['user-trainings', targetUser.id, page, limit, sort, queryFilter],
+                    queryKey: [
+                        'user-trainings',
+                        targetUser.id,
+                        tableState.page,
+                        tableState.limit,
+                        tableState.sort,
+                        queryFilter,
+                    ],
                     queryFn: () =>
                         trainingService.getTrainings({
                             params: {
                                 query: {
-                                    page,
-                                    limit,
+                                    page: tableState.page,
+                                    limit: tableState.limit,
                                     filter: queryFilter,
-                                    sort: (sort as NonNullable<GetTrainingsQuery>['sort']) ?? 'startedAt:desc',
+                                    sort:
+                                        (tableState.sort as NonNullable<GetTrainingsQuery>['sort']) ?? 'startedAt:desc',
                                     'include[]': [
                                         'trainingDisciplines',
                                         'trainingDisciplineDistances',
@@ -181,10 +177,10 @@ export default function UserTrainings() {
                         header: t('title'),
                         render: (tr) => (
                             <div>
-                                <Text size="sm" fw={600}>
+                                <Text size="sm" fw={600} lineClamp={1}>
                                     {tr.title}
                                 </Text>
-                                <Text size="sm" c="dimmed">
+                                <Text size="sm" c="dimmed" lineClamp={1}>
                                     {tr.location || '-'}
                                 </Text>
                             </div>
@@ -211,7 +207,7 @@ export default function UserTrainings() {
                     {
                         key: 'status',
                         header: t('status'),
-                        render: (tr) => <StatusBadge status={tr.status} enumType={ElementStatusEnum} />,
+                        render: (tr) => <StatusBadge status={tr.status} />,
                     },
                 ];
 
@@ -222,7 +218,7 @@ export default function UserTrainings() {
                             value={titleFilter}
                             onChange={(e) => {
                                 setTitleFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <TextInput
@@ -230,7 +226,7 @@ export default function UserTrainings() {
                             value={linkFilter}
                             onChange={(e) => {
                                 setLinkFilter(e.currentTarget.value);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                         />
                         <Select
@@ -243,7 +239,7 @@ export default function UserTrainings() {
                             value={statusFilter}
                             onChange={(v) => {
                                 setStatusFilter(v);
-                                resetPage();
+                                tableState.resetPage();
                             }}
                             clearable
                         />
@@ -256,27 +252,19 @@ export default function UserTrainings() {
                             columns={columns}
                             data={trainings}
                             isLoading={isLoading}
-                            page={page}
+                            state={tableState}
                             totalItems={pagination?.total}
-                            onPageChange={setPage}
-                            limit={limit}
-                            onLimitChange={onLimitChange}
-                            sort={sort}
-                            onSortChange={onSortChange}
                             sortOptions={sortOptions}
                             filtersNode={filtersNode}
-                            hasActiveFilters={activeFiltersCount > 0}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? handleOpenCreate : undefined}
-                            addLabel={t('addTraining')}
                             actions={(tr) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     <ViewActionButton to={`/trainings/${tr.link}`} />
                                     {canManage && (
                                         <StatusActionMenu
                                             currentStatus={tr.status}
-                                            options={ElementStatusEnum.getOptions(t)}
                                             onStatusChange={(status) =>
                                                 statusMutation.mutate({
                                                     id: tr.id,

@@ -82,13 +82,7 @@ export function StoryModal({ opened, onClose, story, onSuccess }: StoryModalProp
     const canSubmit = isEdit ? !!text.trim() : !!text.trim() && !!photo;
 
     return (
-        <Modal
-            opened={opened}
-            onClose={onClose}
-            title={isEdit ? t('editStory') : t('addStory')}
-            size="lg"
-            zIndex={1000}
-        >
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')} zIndex={1000}>
             <Stack gap="sm">
                 <Textarea
                     label={t('text')}

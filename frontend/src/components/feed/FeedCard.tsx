@@ -14,6 +14,7 @@ import {
     TextInput,
     ActionIcon,
     Tooltip,
+    Anchor,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconMessageCircle, IconEdit, IconTrash, IconCheck, IconX } from '@tabler/icons-react';
@@ -180,16 +181,16 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
     const authorName = author ? `${author.firstName} ${author.lastName}` : feed.userId;
 
     return (
-        <Card withBorder radius="md" shadow="xs" p="md" ref={domRef}>
+        <Card ref={domRef}>
             <Group justify="space-between" mb="xs">
                 <Group gap="sm">
-                    <Avatar src={formatImageSrc(author?.profilePhoto)} radius={5} component={Link} to={authorLink}>
+                    <Avatar src={formatImageSrc(author?.profilePhoto)} component={Link} to={authorLink}>
                         ?
                     </Avatar>
                     <Box>
-                        <Text size="sm" fw={600} component={Link} to={authorLink} className="no-decoration">
+                        <Anchor size="sm" fw={600} component={Link} to={authorLink} c="inherit" underline="hover">
                             {authorName}
-                        </Text>
+                        </Anchor>
                         <Text size="sm" c="dimmed">
                             {formatDateTime(feed.createdAt)}
                         </Text>
@@ -199,26 +200,15 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                 {isFeedOwner && (
                     <Group gap="xs">
                         {onEditFeed && (
-                            <Tooltip label={t('editFeed')} withArrow>
-                                <ActionIcon
-                                    variant="light"
-                                    size={30}
-                                    onClick={() => onEditFeed(feed)}
-                                    aria-label={t('editFeed')}
-                                >
+                            <Tooltip label={t('edit')}>
+                                <ActionIcon onClick={() => onEditFeed(feed)} aria-label={t('edit')}>
                                     <IconEdit size={16} />
                                 </ActionIcon>
                             </Tooltip>
                         )}
                         {onDeleteFeed && (
-                            <Tooltip label={t('delete')} withArrow>
-                                <ActionIcon
-                                    variant="light"
-                                    color="red"
-                                    size={30}
-                                    onClick={() => onDeleteFeed(feed.id)}
-                                    aria-label={t('delete')}
-                                >
+                            <Tooltip label={t('delete')}>
+                                <ActionIcon color="red" onClick={() => onDeleteFeed(feed.id)} aria-label={t('delete')}>
                                     <IconTrash size={16} />
                                 </ActionIcon>
                             </Tooltip>
@@ -228,7 +218,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
             </Group>
 
             {feed.feedOrigin && (
-                <Badge variant="light" color="blue" size="sm" mb="xs">
+                <Badge color="blue" size="sm" mb="xs">
                     {formatFeedOrigin(feed.feedOrigin, t)}
                 </Badge>
             )}
@@ -239,9 +229,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                 </Text>
             )}
 
-            {feed.photo && (
-                <Image src={formatImageSrc(feed.photo)} alt={t('photo')} mah={400} fit="cover" radius={5} mb="sm" />
-            )}
+            {feed.photo && <Image src={formatImageSrc(feed.photo)} alt={t('photo')} mah={400} fit="cover" mb="sm" />}
 
             <Group justify="space-between" mt="xs">
                 <Group gap="xs">
@@ -259,9 +247,11 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                                     onClick={() => handleReaction(r.type, myReaction)}
                                     aria-label={t(`feedReactions.${r.key}`)}
                                 >
-                                    <span className="reaction-item-emoji">{r.emoji}</span>
+                                    <Text span fz={16} lh={1}>
+                                        {r.emoji}
+                                    </Text>
                                     {count > 0 && (
-                                        <Text span size="xs" ml={4} fw={isMy ? 600 : 400}>
+                                        <Text span size="xs" ml={4} fw={600}>
                                             {count}
                                         </Text>
                                     )}
@@ -281,7 +271,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                     </Button>
                 </Group>
 
-                <EntityViewCounter entityId={feed.id} type={EntryTypeEnum.FEED} size={16} textSize="xs" track={true} />
+                <EntityViewCounter entityId={feed.id} type={EntryTypeEnum.FEED} textSize="xs" />
             </Group>
 
             <Collapse expanded={commentsOpen}>
@@ -296,34 +286,28 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                         const isEditing = editingCommentId === c.id;
 
                         return (
-                            <Paper key={c.id} p="xs" withBorder radius="sm">
+                            <Paper key={c.id} p="xs">
                                 <Group justify="space-between" align="center" wrap="nowrap" mb="xs">
                                     <Group gap="sm" wrap="nowrap">
                                         {cAuthor?.link ? (
-                                            <Avatar
-                                                src={cAuthorPhoto}
-                                                radius={5}
-                                                component={Link}
-                                                to={`/users/${cAuthor.link}`}
-                                            >
+                                            <Avatar src={cAuthorPhoto} component={Link} to={`/users/${cAuthor.link}`}>
                                                 ?
                                             </Avatar>
                                         ) : (
-                                            <Avatar src={cAuthorPhoto} radius={5}>
-                                                ?
-                                            </Avatar>
+                                            <Avatar src={cAuthorPhoto}>?</Avatar>
                                         )}
                                         <Box>
                                             {cAuthor?.link ? (
-                                                <Text
+                                                <Anchor
                                                     size="sm"
                                                     fw={600}
                                                     component={Link}
                                                     to={`/users/${cAuthor.link}`}
-                                                    className="no-decoration"
+                                                    c="inherit"
+                                                    underline="hover"
                                                 >
                                                     {cAuthorName}
-                                                </Text>
+                                                </Anchor>
                                             ) : (
                                                 <Text size="sm" fw={600}>
                                                     {cAuthorName}
@@ -337,28 +321,24 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
 
                                     {canManageComment && !isEditing && (
                                         <Group gap={4} wrap="nowrap">
-                                            <Tooltip label={t('editComment')} withArrow>
+                                            <Tooltip label={t('edit')}>
                                                 <ActionIcon
-                                                    size={30}
-                                                    variant="light"
                                                     onClick={() => {
                                                         setEditingCommentId(c.id);
                                                         setEditingCommentText(c.text);
                                                     }}
-                                                    aria-label={t('editComment')}
+                                                    aria-label={t('edit')}
                                                 >
                                                     <IconEdit size={16} />
                                                 </ActionIcon>
                                             </Tooltip>
-                                            <Tooltip label={t('deleteComment')} withArrow>
+                                            <Tooltip label={t('delete')}>
                                                 <ActionIcon
-                                                    size={30}
-                                                    variant="light"
                                                     color="red"
                                                     onClick={() => handleDeleteComment(c.id)}
                                                     loading={deleteCommentMutation.isPending}
                                                     disabled={deleteCommentMutation.isPending}
-                                                    aria-label={t('deleteComment')}
+                                                    aria-label={t('delete')}
                                                 >
                                                     <IconTrash size={16} />
                                                 </ActionIcon>
@@ -386,11 +366,9 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                                             }}
                                             autoFocus
                                         />
-                                        <Tooltip label={t('save')} withArrow>
+                                        <Tooltip label={t('save')}>
                                             <ActionIcon
-                                                size={30}
                                                 color="green"
-                                                variant="light"
                                                 onClick={() =>
                                                     updateCommentMutation.mutate({
                                                         id: c.id,
@@ -404,9 +382,8 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                                                 <IconCheck size={16} />
                                             </ActionIcon>
                                         </Tooltip>
-                                        <Tooltip label={t('cancel')} withArrow>
+                                        <Tooltip label={t('cancel')}>
                                             <ActionIcon
-                                                size={30}
                                                 color="gray"
                                                 variant="subtle"
                                                 onClick={() => setEditingCommentId(null)}

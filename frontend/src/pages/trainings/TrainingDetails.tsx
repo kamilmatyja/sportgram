@@ -212,7 +212,7 @@ export default function TrainingDetails() {
             <Stack gap="lg">
                 {ownerUser && <UserProfileNav user={ownerUser} isOwner={isOwner} />}
 
-                <Card withBorder radius="md" p="lg" shadow="xs">
+                <Card p="lg">
                     <Group justify="space-between" align="flex-start" mb="md" wrap="nowrap">
                         <div>
                             <Title order={2}>{training.title}</Title>
@@ -223,7 +223,7 @@ export default function TrainingDetails() {
                                 <Text size="sm" c="dimmed">
                                     •
                                 </Text>
-                                <EntityViewCounter entityId={training.id} type={EntryTypeEnum.TRAINING} track={true} />
+                                <EntityViewCounter entityId={training.id} type={EntryTypeEnum.TRAINING} />
                             </Group>
                             <Group gap="xs" mt={4}>
                                 <IconMapPin size={16} />
@@ -253,7 +253,7 @@ export default function TrainingDetails() {
 
                             {isOwner && (
                                 <>
-                                    <EditActionButton onClick={openEdit} tooltip={t('editTraining')} />
+                                    <EditActionButton onClick={openEdit} />
                                     <DeleteActionButton
                                         onClick={handleDelete}
                                         loading={deleteMutation.isPending}
@@ -265,7 +265,7 @@ export default function TrainingDetails() {
                     </Group>
 
                     <Group gap="sm" mb="md">
-                        <StatusBadge status={training.status} enumType={ElementStatusEnum} />
+                        <StatusBadge status={training.status} />
                     </Group>
 
                     {training.description && (
@@ -281,14 +281,7 @@ export default function TrainingDetails() {
                         <EmptyState title={t('noData')} />
                     ) : (
                         <Table.ScrollContainer minWidth={600} mb="lg">
-                            <Table
-                                striped
-                                highlightOnHover
-                                withTableBorder
-                                withColumnBorders
-                                withRowBorders
-                                verticalSpacing="sm"
-                            >
+                            <Table verticalSpacing="sm">
                                 <Table.Thead>
                                     <Table.Tr>
                                         <Table.Th>{t('user')}</Table.Th>
@@ -345,8 +338,8 @@ export default function TrainingDetails() {
                     ) : (
                         <Stack gap="md">
                             {training.disciplines.map((disc: TrainingDisciplineResource) => (
-                                <Paper key={disc.id} withBorder p="md" radius="md">
-                                    <Badge variant="light" mb="sm">
+                                <Paper key={disc.id} p="md">
+                                    <Badge mb="sm">
                                         {DisciplineEnum.getOptions(t).find((o) => o.value === disc.discipline)?.label ??
                                             disc.discipline}
                                     </Badge>
@@ -355,14 +348,7 @@ export default function TrainingDetails() {
                                         <EmptyState title={t('noData')} />
                                     ) : (
                                         <Table.ScrollContainer minWidth={600}>
-                                            <Table
-                                                striped
-                                                highlightOnHover
-                                                withTableBorder
-                                                withColumnBorders
-                                                withRowBorders
-                                                verticalSpacing="sm"
-                                            >
+                                            <Table verticalSpacing="sm">
                                                 <Table.Thead>
                                                     <Table.Tr>
                                                         <Table.Th className="table-expand-col" />
@@ -417,14 +403,7 @@ export default function TrainingDetails() {
                                                                                 p={0}
                                                                                 className="table-nested-container"
                                                                             >
-                                                                                <Table
-                                                                                    striped
-                                                                                    highlightOnHover
-                                                                                    withTableBorder
-                                                                                    withColumnBorders
-                                                                                    withRowBorders
-                                                                                    verticalSpacing="sm"
-                                                                                >
+                                                                                <Table verticalSpacing="sm">
                                                                                     <Table.Thead>
                                                                                         <Table.Tr>
                                                                                             <Table.Th>

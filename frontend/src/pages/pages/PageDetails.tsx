@@ -23,7 +23,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { brown } from '../../theme';
 import { applyThemeColor } from '../../utils/themeUtils';
 import { getErrorMessage } from '../../api/client';
-import { pageService, eventService, type PageParticipantResource, type EventResource } from '../../api/services';
+import {
+    pageService,
+    eventService,
+    type PageResource,
+    type PageFollowResource,
+    type PageParticipantResource,
+    type EventResource,
+} from '../../api/services';
 import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
@@ -51,7 +58,11 @@ export default function PageDetails() {
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [createEventOpened, { open: openCreateEvent, close: closeCreateEvent }] = useDisclosure(false);
 
-    const { data: page, isLoading } = useQuery({
+    const {
+        data: page,
+        isLoading,
+        refetch,
+    } = useQuery({
         queryKey: ['page', link],
         queryFn: async () => {
             if (!link) return null;
@@ -60,7 +71,7 @@ export default function PageDetails() {
                     query: {
                         filter: { link },
                         limit: 1,
-                        'include[]': ['pageParticipants'],
+                        'include[]': ['pageParticipants', 'pageFollows'],
                     },
                 },
             });
@@ -124,9 +135,29 @@ export default function PageDetails() {
                 body: { status: PageFollowStatusEnum.ACCEPTED },
             });
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['page-follows'] });
-            queryClient.invalidateQueries({ queryKey: ['page', link] });
+        onSuccess: async () => {
+            queryClient.setQueryData(['page', link], (prev: PageResource | null | undefined) => {
+                if (!prev || !currentUser || !page?.id) return prev;
+                const newFollow: PageFollowResource = {
+                    id: 'temp-' + Date.now(),
+                    pageId: page.id,
+                    userId: currentUser.id,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    status: PageFollowStatusEnum.ACCEPTED,
+                };
+                const existing = prev.follows ?? [];
+                return {
+                    ...prev,
+                    follows: [...existing.filter((f) => f.userId !== currentUser.id), newFollow],
+                };
+            });
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['page-follows'] }),
+                queryClient.invalidateQueries({ queryKey: ['page'] }),
+                queryClient.invalidateQueries({ queryKey: ['pages'] }),
+            ]);
+            refetch();
             notifications.show({
                 title: t('pageFollows'),
                 message: t('pageFollowed'),
@@ -144,9 +175,21 @@ export default function PageDetails() {
                 params: { path: { id: followId } },
             });
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['page-follows'] });
-            queryClient.invalidateQueries({ queryKey: ['page', link] });
+        onSuccess: async () => {
+            queryClient.setQueryData(['page', link], (prev: PageResource | null | undefined) => {
+                if (!prev || !currentUser) return prev;
+                const existing = prev.follows ?? [];
+                return {
+                    ...prev,
+                    follows: existing.filter((f) => f.userId !== currentUser.id),
+                };
+            });
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['page-follows'] }),
+                queryClient.invalidateQueries({ queryKey: ['page'] }),
+                queryClient.invalidateQueries({ queryKey: ['pages'] }),
+            ]);
+            refetch();
             notifications.show({
                 title: t('pageFollows'),
                 message: t('pageUnfollowed'),
@@ -286,7 +329,7 @@ export default function PageDetails() {
             <Stack gap="lg">
                 <PageNav page={page} extraActions={extraActions} />
 
-                <Card withBorder radius="md" p="lg" shadow="xs">
+                <Card p="lg">
                     {page.description && (
                         <Text size="sm" mb="md" className="pre-wrap">
                             {page.description}
@@ -300,14 +343,7 @@ export default function PageDetails() {
                         <EmptyState title={t('noData')} />
                     ) : (
                         <Table.ScrollContainer minWidth={600}>
-                            <Table
-                                striped
-                                highlightOnHover
-                                withTableBorder
-                                withColumnBorders
-                                withRowBorders
-                                verticalSpacing="sm"
-                            >
+                            <Table verticalSpacing="sm">
                                 <Table.Thead>
                                     <Table.Tr>
                                         <Table.Th>{t('user')}</Table.Th>
@@ -328,7 +364,7 @@ export default function PageDetails() {
                                                     <UserInfoCell user={u} userId={p.userId} />
                                                 </Table.Td>
                                                 <Table.Td>
-                                                    <StatusBadge status={p.status} enumType={ElementStatusEnum} />
+                                                    <StatusBadge status={p.status} />
                                                 </Table.Td>
                                                 <Table.Td ta="right">
                                                     <Group gap="xs" justify="flex-end" wrap="nowrap">
@@ -365,7 +401,7 @@ export default function PageDetails() {
                                 leftSection={<IconPlus size={16} />}
                                 onClick={openCreateEvent}
                             >
-                                {t('addEvent')}
+                                {t('add')}
                             </Button>
                         )}
                     </Group>
@@ -378,14 +414,7 @@ export default function PageDetails() {
                         <EmptyState title={t('noData')} />
                     ) : (
                         <Table.ScrollContainer minWidth={600}>
-                            <Table
-                                striped
-                                highlightOnHover
-                                withTableBorder
-                                withColumnBorders
-                                withRowBorders
-                                verticalSpacing="sm"
-                            >
+                            <Table verticalSpacing="sm">
                                 <Table.Thead>
                                     <Table.Tr>
                                         <Table.Th>{t('title')}</Table.Th>
@@ -401,10 +430,8 @@ export default function PageDetails() {
                                     {pageEvents.map((ev: EventResource) => (
                                         <Table.Tr key={ev.id}>
                                             <Table.Td>
-                                                <Group gap="sm">
-                                                    <Avatar src={formatImageSrc(ev.photo)} radius={5}>
-                                                        ?
-                                                    </Avatar>
+                                                <Group gap="sm" wrap="nowrap">
+                                                    <Avatar src={formatImageSrc(ev.photo)}>?</Avatar>
                                                     <div>
                                                         <Text size="sm" fw={600}>
                                                             {ev.title}
@@ -426,7 +453,7 @@ export default function PageDetails() {
                                                 </Text>
                                             </Table.Td>
                                             <Table.Td>
-                                                <StatusBadge status={ev.status} enumType={ElementStatusEnum} />
+                                                <StatusBadge status={ev.status} />
                                             </Table.Td>
                                             <Table.Td ta="right">
                                                 <ViewActionButton to={`/events/${ev.link}`} />

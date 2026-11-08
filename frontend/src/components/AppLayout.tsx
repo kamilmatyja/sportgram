@@ -72,7 +72,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                                     aria-label="Toggle navigation"
                                 />
                             )}
-                            <UnstyledButton className="pointer" onClick={() => handleNav('/')}>
+                            <UnstyledButton onClick={() => handleNav('/')}>
                                 <Group gap="xs" wrap="nowrap">
                                     <RunnerLogo size={32} />
                                     <Text fw={700} size="lg" c="var(--mantine-primary-color)">
@@ -116,7 +116,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
                                     <ActionIcon
                                         variant="default"
-                                        size={30}
                                         onClick={() => toggleColorScheme()}
                                         aria-label={t('toggleTheme')}
                                     >
@@ -131,15 +130,11 @@ export function AppLayout({ children }: AppLayoutProps) {
                                     </Button>
                                 </>
                             ) : currentUser ? (
-                                <Menu shadow="md" width={200} position="bottom-end">
+                                <Menu width={200}>
                                     <Menu.Target>
                                         <Button variant="subtle" size="sm" p={4}>
                                             <Group gap="xs" wrap="nowrap">
-                                                <Avatar
-                                                    src={formatImageSrc(currentUser.profilePhoto)}
-                                                    radius={5}
-                                                    size="sm"
-                                                >
+                                                <Avatar src={formatImageSrc(currentUser.profilePhoto)} size="sm">
                                                     ?
                                                 </Avatar>
                                                 <Text size="sm" visibleFrom="xs" fw={500}>

@@ -136,7 +136,7 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                                 size="xs"
                                 leftSection={<IconArrowLeft size={16} />}
                             >
-                                {t('backToProfile')}
+                                {t('back')}
                             </Button>
                         )}
                     </Group>

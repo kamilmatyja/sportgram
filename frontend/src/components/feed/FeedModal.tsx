@@ -78,7 +78,7 @@ export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) 
     const canSubmit = isPhotoRequired ? !!text.trim() && !!photo : !!text.trim();
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editFeed') : t('addFeed')} size="lg" zIndex={1000}>
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')} zIndex={1000}>
             <Stack gap="sm">
                 <Textarea
                     label={t('text')}

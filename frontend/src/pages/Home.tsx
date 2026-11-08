@@ -252,7 +252,7 @@ export default function Home() {
     if (!isAuthenticated) {
         return (
             <Container size="xs" py="xl">
-                <Paper withBorder shadow="sm" p="xl" radius="md" ta="center">
+                <Paper p="xl" ta="center">
                     <Box mb="md">
                         <RunnerLogo size={64} />
                     </Box>
@@ -294,7 +294,7 @@ export default function Home() {
             <Stack gap="md">
                 {feedsLoading ? (
                     Array.from({ length: 3 }).map((_, i) => (
-                        <Card key={i} withBorder radius="md" p="md">
+                        <Card key={i}>
                             <Group gap="sm" mb="sm">
                                 <Skeleton height={40} circle />
                                 <Stack gap={6} flex={1}>

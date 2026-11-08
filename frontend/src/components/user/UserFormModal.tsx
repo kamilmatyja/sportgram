@@ -15,6 +15,7 @@ import { LanguageEnum } from '../../enums/LanguageEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { ThemeEnum } from '../../enums/ThemeEnum';
 import { resolveImageBase64 } from '../../utils/imageUtils';
+import { slugify } from '../../utils/text';
 
 export interface UserFormModalProps {
     opened: boolean;
@@ -219,7 +220,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
           !!bgPhotoFile;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editUser') : t('addUser')} size="lg">
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')}>
             <Stack gap="sm">
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
                     <TextInput
@@ -229,12 +230,10 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                         error={fieldErrors.firstName}
                         onChange={(e) => {
                             const val = e.currentTarget.value;
-                            if (!isEdit) {
-                                const generatedLink = `${val}-${formData.lastName}`
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9]+/g, '-')
-                                    .replace(/(^-|-$)/g, '');
-                                setFormData({ ...formData, firstName: val, link: generatedLink });
+                            const prevGenerated = slugify(`${formData.firstName}-${formData.lastName}`);
+                            const nextGenerated = slugify(`${val}-${formData.lastName}`);
+                            if (!isEdit && (!formData.link || formData.link === prevGenerated)) {
+                                setFormData({ ...formData, firstName: val, link: nextGenerated });
                             } else {
                                 setFormData({ ...formData, firstName: val });
                             }
@@ -247,12 +246,10 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                         error={fieldErrors.lastName}
                         onChange={(e) => {
                             const val = e.currentTarget.value;
-                            if (!isEdit) {
-                                const generatedLink = `${formData.firstName}-${val}`
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9]+/g, '-')
-                                    .replace(/(^-|-$)/g, '');
-                                setFormData({ ...formData, lastName: val, link: generatedLink });
+                            const prevGenerated = slugify(`${formData.firstName}-${formData.lastName}`);
+                            const nextGenerated = slugify(`${formData.firstName}-${val}`);
+                            if (!isEdit && (!formData.link || formData.link === prevGenerated)) {
+                                setFormData({ ...formData, lastName: val, link: nextGenerated });
                             } else {
                                 setFormData({ ...formData, lastName: val });
                             }

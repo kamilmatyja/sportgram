@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, ScrollArea, Group, Stack, Avatar, Text, Center, Loader } from '@mantine/core';
+import { Card, ScrollArea, Group, Stack, Avatar, Text, Center, Loader, UnstyledButton } from '@mantine/core';
 import { IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatImageSrc } from '../../utils/imageUtils';
@@ -29,7 +29,7 @@ export function StoriesBar({
     const { t } = useTranslation();
 
     return (
-        <Card withBorder radius="md" p="md" shadow="xs">
+        <Card>
             <ScrollArea
                 type="never"
                 offsetScrollbars
@@ -38,25 +38,29 @@ export function StoriesBar({
             >
                 <Group gap="md" wrap="nowrap">
                     {onAddStory && (
-                        <Stack align="center" gap={4} className="pointer" onClick={onAddStory} miw={64}>
-                            <Avatar radius="xl" size="lg" variant="light">
-                                <IconPlus size={24} />
-                            </Avatar>
-                            <Text size="xs" lineClamp={1}>
-                                {t('addStory')}
-                            </Text>
-                        </Stack>
+                        <UnstyledButton onClick={onAddStory}>
+                            <Stack align="center" gap={4} miw={64}>
+                                <Avatar radius="xl" size="lg">
+                                    <IconPlus size={24} />
+                                </Avatar>
+                                <Text size="xs" lineClamp={1}>
+                                    {t('addStory')}
+                                </Text>
+                            </Stack>
+                        </UnstyledButton>
                     )}
 
                     {onAddFeed && (
-                        <Stack align="center" gap={4} className="pointer" onClick={onAddFeed} miw={64}>
-                            <Avatar radius="xl" size="lg" variant="light">
-                                <IconPlus size={24} />
-                            </Avatar>
-                            <Text size="xs" lineClamp={1}>
-                                {t('addFeed')}
-                            </Text>
-                        </Stack>
+                        <UnstyledButton onClick={onAddFeed}>
+                            <Stack align="center" gap={4} miw={64}>
+                                <Avatar radius="xl" size="lg">
+                                    <IconPlus size={24} />
+                                </Avatar>
+                                <Text size="xs" lineClamp={1}>
+                                    {t('addFeed')}
+                                </Text>
+                            </Stack>
+                        </UnstyledButton>
                     )}
 
                     {groups.map((group, gIdx) => {
@@ -64,25 +68,23 @@ export function StoriesBar({
                         const storyImg =
                             formatImageSrc(group.newestStory?.photo) || formatImageSrc(storyAuthor?.profilePhoto);
                         return (
-                            <Stack
+                            <UnstyledButton
                                 key={group.userId}
                                 ref={gIdx === groups.length - 1 ? lastStoryElementRef : undefined}
-                                align="center"
-                                gap={4}
-                                className="pointer"
-                                miw={64}
                                 onClick={() => onSelectGroup(gIdx)}
                             >
-                                <Avatar src={storyImg} radius={5} size="lg" className="story-avatar-border">
-                                    ?
-                                </Avatar>
-                                <Text size="xs" lineClamp={1}>
-                                    {storyAuthor
-                                        ? `${storyAuthor.firstName ?? ''} ${storyAuthor.lastName ?? ''}`.trim() ||
-                                          t('user')
-                                        : t('user')}
-                                </Text>
-                            </Stack>
+                                <Stack align="center" gap={4} miw={64}>
+                                    <Avatar src={storyImg} size="lg" className="story-avatar-border">
+                                        ?
+                                    </Avatar>
+                                    <Text size="xs" lineClamp={1}>
+                                        {storyAuthor
+                                            ? `${storyAuthor.firstName ?? ''} ${storyAuthor.lastName ?? ''}`.trim() ||
+                                              t('user')
+                                            : t('user')}
+                                    </Text>
+                                </Stack>
+                            </UnstyledButton>
                         );
                     })}
 
