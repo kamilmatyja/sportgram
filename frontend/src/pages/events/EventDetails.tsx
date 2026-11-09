@@ -1,4 +1,3 @@
-import { brown } from '../../theme';
 import { useMemo, useEffect } from 'react';
 import {
     Card,
@@ -15,31 +14,32 @@ import {
     Box,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import NotFound from '../../components/NotFound';
-import { EmptyState } from '../../components/EmptyState';
-import { notifications } from '@mantine/notifications';
 import { IconMapPin, IconClock } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
-import { applyThemeColor } from '../../utils/themeUtils';
-import { getErrorMessage } from '../../api/client';
 import { eventService, pageService } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { useAuth } from '../../auth';
+import { EmptyState } from '../../components';
+import { EntityViewCounter } from '../../components';
+import NotFound from '../../components/NotFound';
+import { PageNav } from '../../components';
+import { StatusBadge, StatusActionMenu, EditActionButton, DeleteActionButton } from '../../components';
+import { DistanceParticipantsSection } from '../../components/events/DistanceParticipantsSection';
+import { EventFormModal } from '../../components';
 import { ColorEnum } from '../../enums/ColorEnum';
+import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
-import { EntityViewCounter } from '../../components/EntityViewCounter';
-import { PageNav } from '../../components/PageNav';
-import { formatDateTime } from '../../utils/date';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { StatusBadge } from '../../components/common/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { formatImageSrc } from '../../utils/imageUtils';
-import { EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { EventFormModal } from '../../components/events/EventFormModal';
-import { DistanceParticipantsSection } from '../../components/events/DistanceParticipantsSection';
+import { brown } from '../../theme';
+import {
+    applyThemeColor,
+    confirmDelete,
+    formatDateTime,
+    formatImageSrc,
+    notifyError,
+    notifySuccess,
+} from '../../utils';
 
 export default function EventDetails() {
     const { link } = useParams<{ link: string }>();
@@ -97,12 +97,10 @@ export default function EventDetails() {
                 params: { path: { id: distanceId } },
             }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['distance-participants'] });
-            notifications.show({ title: t('events'), message: t('signedUpForStartList'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['distance-participants'] });
+            notifySuccess(t('saved'), t('events'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const statusMutation = useMutation({
@@ -114,39 +112,23 @@ export default function EventDetails() {
             });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['event', link] });
-            notifications.show({ title: t('events'), message: t('statusUpdated'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['event', link] });
+            notifySuccess(t('statusUpdated'), t('events'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const deleteMutation = useMutation({
         mutationFn: async () => {
             if (!event?.id) return;
-            await eventService.deleteEvent({
-                params: { path: { id: event.id } },
-            });
+            await eventService.deleteEvent({ params: { path: { id: event.id } } });
         },
         onSuccess: () => {
-            notifications.show({ title: t('events'), message: t('eventDeleted'), color: 'green' });
+            notifySuccess(t('deleted'), t('events'));
             navigate('/events');
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
-
-    const handleDelete = () => {
-        openConfirmActionModal({
-            title: t('confirmDeleteTitle'),
-            message: t('confirmDeleteMessage'),
-            confirmLabel: t('delete'),
-            cancelLabel: t('cancel'),
-            onConfirm: () => deleteMutation.mutate(),
-        });
-    };
 
     const primaryColor = ColorEnum.getMantineColor(page?.color);
 
@@ -167,7 +149,7 @@ export default function EventDetails() {
     }
 
     if (!event) {
-        return <NotFound title={t('eventNotFound')} />;
+        return <NotFound title={t('notFound')} />;
     }
 
     const eventPhotoSrc = formatImageSrc(event.photo);
@@ -177,8 +159,8 @@ export default function EventDetails() {
             <Stack gap="lg">
                 {page && <PageNav page={page} simplifiedHeader={true} />}
 
-                <Card p="lg">
-                    {eventPhotoSrc && <Image src={eventPhotoSrc} alt={event.title} mah={300} fit="cover" mb="md" />}
+                <Card>
+                    {eventPhotoSrc && <Image src={eventPhotoSrc} alt={event.title} mah={300} mb="md" />}
 
                     <Group justify="space-between" align="flex-start" mb="md" wrap="nowrap">
                         <div>
@@ -220,7 +202,7 @@ export default function EventDetails() {
                                 <>
                                     <EditActionButton onClick={openEdit} />
                                     <DeleteActionButton
-                                        onClick={handleDelete}
+                                        onClick={() => confirmDelete(t, () => deleteMutation.mutate())}
                                         loading={deleteMutation.isPending}
                                         disabled={deleteMutation.isPending}
                                     />
@@ -229,7 +211,7 @@ export default function EventDetails() {
                         </Group>
                     </Group>
 
-                    <Group gap="sm" mb="md">
+                    <Group mb="md">
                         <StatusBadge status={event.status} />
                     </Group>
 
@@ -257,9 +239,9 @@ export default function EventDetails() {
                     {!event.disciplines || event.disciplines.length === 0 ? (
                         <EmptyState title={t('noData')} />
                     ) : (
-                        <Stack gap="md">
+                        <Stack>
                             {event.disciplines.map((disc) => (
-                                <Paper key={disc.id} p="md">
+                                <Paper key={disc.id}>
                                     <Badge mb="sm">
                                         {DisciplineEnum.getOptions(t).find((o) => o.value === disc.discipline)?.label ??
                                             disc.discipline}
@@ -290,7 +272,7 @@ export default function EventDetails() {
                     opened={editOpened}
                     onClose={closeEdit}
                     event={event}
-                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ['event', link] })}
+                    onSuccess={() => void queryClient.invalidateQueries({ queryKey: ['event', link] })}
                 />
             </Stack>
         </MantineThemeProvider>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, ScrollArea, Group, Stack, Avatar, Text, Center, Loader, UnstyledButton } from '@mantine/core';
 import { IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { formatImageSrc } from '../../utils/imageUtils';
+import { formatImageSrc } from '../../utils';
 import { type UserStoriesGroup } from '../StoryViewerModal';
 
 export interface StoriesBarProps {

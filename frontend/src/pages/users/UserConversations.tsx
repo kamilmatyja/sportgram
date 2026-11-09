@@ -16,31 +16,37 @@ import {
     Paper,
     ScrollArea,
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { IconSend, IconTrash, IconEdit } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { EmptyState } from '../../components/EmptyState';
-import { getErrorMessage } from '../../api/client';
 import { conversationService, friendService, type ConversationResource } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
-import { DataTable, type Column } from '../../components/DataTable';
+import { useAuth } from '../../auth';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { ConversationStatusEnum } from '../../enums/ConversationStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
-import { EntityViewCounter } from '../../components/EntityViewCounter';
-import { formatImageSrc } from '../../utils/imageUtils';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDateTime, formatTime } from '../../utils/date';
-import { truncate } from '../../utils/text';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
-import { StatusBadge } from '../../components/common/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { useUsersMap } from '../../hooks/useUsersMap';
-import { useMyFriends } from '../../hooks/useMyFriends';
-import { UserInfoCell } from '../../components/common/UserInfoCell';
+import {
+    DataTable,
+    type Column,
+    EmptyState,
+    EntityViewCounter,
+    UserSubpageContainer,
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    EditActionButton,
+    DeleteActionButton,
+    UserInfoCell,
+} from '../../components';
+import {
+    formatImageSrc,
+    confirmDelete,
+    formatDateTime,
+    formatTime,
+    truncate,
+    notifySuccess,
+    notifyError,
+} from '../../utils';
+import { useDataTableState, useUsersMap, useMyFriends, useFormErrors } from '../../hooks';
 
 export default function UserConversations() {
     const { t } = useTranslation();
@@ -48,9 +54,11 @@ export default function UserConversations() {
     const { currentUser } = useAuth();
     const chatEndRef = useRef<HTMLDivElement>(null);
 
-    const tableState = useDataTableState({
-        defaultSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState({ initialSort: 'createdAt:desc' });
+
+    const editErrors = useFormErrors();
+    const sendErrors = useFormErrors();
+    const chatErrors = useFormErrors();
 
     const [messageInput, setMessageInput] = useState('');
     const [statusFilter, setStatusFilter] = useState<number | null>(null);
@@ -90,7 +98,6 @@ export default function UserConversations() {
                 });
 
                 const canChat = !isOwner && friendship?.status === FriendStatusEnum.ACCEPTED;
-
                 const { collaboratorOptions } = useMyFriends();
 
                 const { data: conversationsResponse, isLoading: conversationsLoading } = useQuery({
@@ -138,21 +145,16 @@ export default function UserConversations() {
                                     page: pageParam,
                                     limit: 10,
                                     sort: 'createdAt:desc',
-                                    filter: {
-                                        userId: targetUser.id,
-                                    },
+                                    filter: { userId: targetUser.id },
                                 },
                             },
                         });
                     },
                     initialPageParam: 1,
-                    getNextPageParam: (lastPage) => {
-                        const p = lastPage.pagination;
-                        if (p?.hasNextPage && p?.page) {
-                            return p.page + 1;
-                        }
-                        return undefined;
-                    },
+                    getNextPageParam: (lastPage) =>
+                        lastPage.pagination?.hasNextPage && lastPage.pagination.page
+                            ? lastPage.pagination.page + 1
+                            : undefined,
                     enabled: !isOwner && !!currentUser,
                     refetchInterval: 3000,
                 });
@@ -183,7 +185,7 @@ export default function UserConversations() {
                                 prevScrollHeightRef.current = chatViewportRef.current.scrollHeight;
                                 isPrependingRef.current = true;
                             }
-                            fetchNextChatPage();
+                            void fetchNextChatPage();
                         }
                     },
                     [hasMoreChatMessages, isFetchingMoreChatMessages, fetchNextChatPage],
@@ -272,7 +274,7 @@ export default function UserConversations() {
                                 body: { status: ConversationStatusEnum.READ },
                             })
                             .then(() => {
-                                queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
+                                void queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
                             })
                             .catch(() => {});
                     }
@@ -302,34 +304,28 @@ export default function UserConversations() {
                 };
 
                 const sendMutation = useMutation({
-                    mutationFn: async ({ recipientId, text }: { recipientId: string; text: string }) => {
-                        await conversationService.createConversation({
+                    mutationFn: ({ recipientId, text }: { recipientId: string; text: string }) =>
+                        conversationService.createConversation({
                             params: { path: { id: recipientId } },
                             body: { text },
-                        });
-                    },
+                        }),
                     onSuccess: () => {
                         setMessageInput('');
                         lastActivitySentRef.current = 0;
                         setSendModalText('');
                         setSendModalOpened(false);
-                        queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
-                        queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
+                        sendErrors.clearErrors();
+                        chatErrors.clearErrors();
+                        void queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
+                        void queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
                         setTimeout(() => {
                             chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
                         }, 50);
-                        notifications.show({
-                            title: t('conversations'),
-                            message: t('messageSent'),
-                            color: 'green',
-                        });
+                        notifySuccess(t('saved'), t('conversations'));
                     },
                     onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
+                        sendErrors.setFromError(err);
+                        chatErrors.setFromError(err);
                     },
                 });
 
@@ -340,23 +336,14 @@ export default function UserConversations() {
                             body: { text },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
-                        queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
-                        notifications.show({
-                            title: t('conversations'),
-                            message: t('messageUpdated'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
+                        void queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
+                        notifySuccess(t('saved'), t('conversations'));
                         setEditModalOpened(false);
                         setEditingMessage(null);
+                        editErrors.clearErrors();
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => editErrors.setFromError(err),
                 });
 
                 const updateStatusMutation = useMutation({
@@ -366,21 +353,11 @@ export default function UserConversations() {
                             body: { status },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
-                        queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
-                        notifications.show({
-                            title: t('conversations'),
-                            message: t('statusUpdated'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
+                        void queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
+                        notifySuccess(t('statusUpdated'), t('conversations'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const deleteMessageMutation = useMutation({
@@ -389,32 +366,12 @@ export default function UserConversations() {
                             params: { path: { id } },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
-                        queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
-                        notifications.show({
-                            title: t('conversations'),
-                            message: t('deleted'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
+                        void queryClient.invalidateQueries({ queryKey: ['conversations-data'] });
+                        notifySuccess(t('deleted'), t('conversations'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
-
-                const handleDeleteMessage = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmDeleteTitle'),
-                        message: t('confirmDeleteMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMessageMutation.mutate(id),
-                    });
-                };
 
                 const handleSendChat = (e: SyntheticEvent) => {
                     e.preventDefault();
@@ -465,13 +422,24 @@ export default function UserConversations() {
                 ];
 
                 const editModalNode = (
-                    <Modal opened={editModalOpened} onClose={() => setEditModalOpened(false)} title={t('edit')}>
+                    <Modal
+                        opened={editModalOpened}
+                        onClose={() => {
+                            setEditModalOpened(false);
+                            editErrors.clearErrors();
+                        }}
+                        title={t('editMessage')}
+                    >
                         <Stack gap="sm">
                             <TextInput
                                 label={t('text')}
                                 required
                                 value={editModalText}
-                                onChange={(e) => setEditModalText(e.currentTarget.value)}
+                                error={editErrors.errors.text}
+                                onChange={(e) => {
+                                    setEditModalText(e.currentTarget.value);
+                                    editErrors.clearFieldError('text');
+                                }}
                             />
                             <Button
                                 loading={updateMessageMutation.isPending}
@@ -493,7 +461,7 @@ export default function UserConversations() {
 
                 if (isOwner) {
                     return (
-                        <Stack gap="md">
+                        <Stack>
                             <DataTable
                                 columns={conversationColumns}
                                 data={messages}
@@ -501,7 +469,7 @@ export default function UserConversations() {
                                 totalItems={conversationsResponse?.pagination?.total ?? messages.length}
                                 state={tableState}
                                 filtersNode={
-                                    <Group gap="sm">
+                                    <Group>
                                         <Select
                                             placeholder={t('allStatuses')}
                                             data={statusSelectOptions}
@@ -538,6 +506,7 @@ export default function UserConversations() {
                                             {isSender && (
                                                 <EditActionButton
                                                     onClick={() => {
+                                                        editErrors.clearErrors();
                                                         setEditingMessage(c);
                                                         setEditModalText(c.text);
                                                         setEditModalOpened(true);
@@ -546,7 +515,9 @@ export default function UserConversations() {
                                             )}
                                             {isSender && (
                                                 <DeleteActionButton
-                                                    onClick={() => handleDeleteMessage(c.id)}
+                                                    onClick={() =>
+                                                        confirmDelete(t, () => deleteMessageMutation.mutate(c.id))
+                                                    }
                                                     loading={deleteMessageMutation.isPending}
                                                 />
                                             )}
@@ -572,7 +543,10 @@ export default function UserConversations() {
 
                             <Modal
                                 opened={sendModalOpened}
-                                onClose={() => setSendModalOpened(false)}
+                                onClose={() => {
+                                    setSendModalOpened(false);
+                                    sendErrors.clearErrors();
+                                }}
                                 title={t('sendMessage')}
                             >
                                 <Stack gap="sm">
@@ -581,7 +555,17 @@ export default function UserConversations() {
                                         placeholder={t('selectUser')}
                                         data={collaboratorOptions}
                                         value={sendModalRecipientId}
-                                        onChange={setSendModalRecipientId}
+                                        error={
+                                            sendErrors.errors.recipientId ||
+                                            sendErrors.errors.user ||
+                                            sendErrors.errors.userId ||
+                                            sendErrors.errors.receiverUserId
+                                        }
+                                        onChange={(val) => {
+                                            setSendModalRecipientId(val);
+                                            sendErrors.clearFieldError('recipientId');
+                                            sendErrors.clearFieldError('user');
+                                        }}
                                         searchable
                                         clearable={false}
                                         required
@@ -591,7 +575,11 @@ export default function UserConversations() {
                                         placeholder={t('typeMessage')}
                                         required
                                         value={sendModalText}
-                                        onChange={(e) => setSendModalText(e.currentTarget.value)}
+                                        error={sendErrors.errors.text}
+                                        onChange={(e) => {
+                                            setSendModalText(e.currentTarget.value);
+                                            sendErrors.clearFieldError('text');
+                                        }}
                                     />
                                     <Button
                                         loading={sendMutation.isPending}
@@ -616,7 +604,7 @@ export default function UserConversations() {
                 }
 
                 return (
-                    <Stack gap="md">
+                    <Stack>
                         {!canChat && (
                             <Group justify="flex-end">
                                 <Badge color="red">{t('mustBeFriendsToChat')}</Badge>
@@ -642,7 +630,7 @@ export default function UserConversations() {
                                                             chatViewportRef.current.scrollHeight;
                                                         isPrependingRef.current = true;
                                                     }
-                                                    fetchNextChatPage();
+                                                    void fetchNextChatPage();
                                                 }}
                                                 loading={isFetchingMoreChatMessages}
                                             >
@@ -653,7 +641,7 @@ export default function UserConversations() {
 
                                     {chatLoading ? (
                                         <Text ta="center" c="dimmed">
-                                            {t('loadingMessages')}
+                                            {t('loading')}
                                         </Text>
                                     ) : messages.length === 0 ? (
                                         <EmptyState title={t('noMessagesSayHello')} />
@@ -714,7 +702,11 @@ export default function UserConversations() {
                                                                             size="xs"
                                                                             variant="subtle"
                                                                             color="red"
-                                                                            onClick={() => handleDeleteMessage(m.id)}
+                                                                            onClick={() =>
+                                                                                confirmDelete(t, () =>
+                                                                                    deleteMessageMutation.mutate(m.id),
+                                                                                )
+                                                                            }
                                                                             aria-label={t('delete')}
                                                                         >
                                                                             <IconTrash size={12} />
@@ -775,7 +767,11 @@ export default function UserConversations() {
                                         placeholder={canChat ? t('typeMessage') : t('mustBeFriendsToChat')}
                                         disabled={!canChat || sendMutation.isPending}
                                         value={messageInput}
-                                        onChange={(e) => handleInputChange(e.currentTarget.value)}
+                                        error={chatErrors.errors.text}
+                                        onChange={(e) => {
+                                            handleInputChange(e.currentTarget.value);
+                                            chatErrors.clearFieldError('text');
+                                        }}
                                         flex={1}
                                     />
                                     <Button

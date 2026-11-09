@@ -1,36 +1,41 @@
 import { useState, useMemo } from 'react';
-import { Text, SimpleGrid, TextInput, Select, Group } from '@mantine/core';
+import { Text, Group } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage } from '../../api/client';
 import { trainingService, type TrainingResource, type GetTrainingsQuery } from '../../api/services';
-import { useMyFriends } from '../../hooks/useMyFriends';
-import { DataTable, type Column } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components';
+import {
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    EditActionButton,
+    DeleteActionButton,
+    UserSubpageContainer,
+    TrainingFormModal,
+    TitleLinkStatusFilterGrid,
+} from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDateTime } from '../../utils/date';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
-import { StatusBadge } from '../../components/common/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { TrainingFormModal } from '../../components/trainings/TrainingFormModal';
+import { useDataTableState, useMyFriends, useTitleLinkStatusFilter } from '../../hooks';
+import { notifySuccess, notifyError, confirmDelete, formatDateTime, buildSortOptions } from '../../utils';
 
 export default function UserTrainings() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const tableState = useDataTableState({
-        defaultSort: 'startedAt:desc',
-    });
+    const tableState = useDataTableState({ defaultSort: 'startedAt:desc' });
 
-    const [titleFilter, setTitleFilter] = useState('');
-    const [linkFilter, setLinkFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState<string | null>(null);
+    const {
+        titleFilter,
+        setTitleFilter,
+        linkFilter,
+        setLinkFilter,
+        statusFilter,
+        setStatusFilter,
+        activeFiltersCount,
+        handleResetFilters,
+    } = useTitleLinkStatusFilter(tableState.resetPage);
 
     const [formModalOpened, { open: openFormModal, close: closeFormModal }] = useDisclosure(false);
     const [editingTraining, setEditingTraining] = useState<TrainingResource | null>(null);
@@ -42,21 +47,6 @@ export default function UserTrainings() {
     const { collaboratorOptions } = useMyFriends(extraUserIds);
 
     const sortOptions = buildSortOptions(t, ['startedAt', 'endedAt', 'title', 'location', 'status', 'createdAt']);
-
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (titleFilter.trim()) count++;
-        if (linkFilter.trim()) count++;
-        if (statusFilter !== null) count++;
-        return count;
-    }, [titleFilter, linkFilter, statusFilter]);
-
-    const handleResetFilters = () => {
-        setTitleFilter('');
-        setLinkFilter('');
-        setStatusFilter(null);
-        tableState.resetPage();
-    };
 
     return (
         <UserSubpageContainer requiredRole={RoleEnum.PARTICIPANT}>
@@ -109,46 +99,19 @@ export default function UserTrainings() {
                             body: { status },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({
-                            queryKey: ['user-trainings', targetUser.id],
-                        });
-                        notifications.show({
-                            title: t('trainings'),
-                            message: t('statusUpdated'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['user-trainings', targetUser.id] });
+                        notifySuccess(t('statusUpdated'), t('trainings'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const deleteMutation = useMutation({
-                    mutationFn: (id: string) =>
-                        trainingService.deleteTraining({
-                            params: { path: { id } },
-                        }),
+                    mutationFn: (id: string) => trainingService.deleteTraining({ params: { path: { id } } }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({
-                            queryKey: ['user-trainings', targetUser.id],
-                        });
-                        notifications.show({
-                            title: t('trainings'),
-                            message: t('trainingDeleted'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['user-trainings', targetUser.id] });
+                        notifySuccess(t('deleted'), t('trainings'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const handleOpenEdit = (tr: TrainingResource) => {
@@ -159,16 +122,6 @@ export default function UserTrainings() {
                 const handleOpenCreate = () => {
                     setEditingTraining(null);
                     openFormModal();
-                };
-
-                const handleDelete = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmDeleteTitle'),
-                        message: t('confirmDeleteMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMutation.mutate(id),
-                    });
                 };
 
                 const columns: Column<TrainingResource>[] = [
@@ -212,38 +165,15 @@ export default function UserTrainings() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
-                        <TextInput
-                            label={t('title')}
-                            value={titleFilter}
-                            onChange={(e) => {
-                                setTitleFilter(e.currentTarget.value);
-                                tableState.resetPage();
-                            }}
-                        />
-                        <TextInput
-                            label={t('link')}
-                            value={linkFilter}
-                            onChange={(e) => {
-                                setLinkFilter(e.currentTarget.value);
-                                tableState.resetPage();
-                            }}
-                        />
-                        <Select
-                            label={t('status')}
-                            placeholder={t('allStatuses')}
-                            data={ElementStatusEnum.getOptions(t).map((s) => ({
-                                value: String(s.value),
-                                label: s.label,
-                            }))}
-                            value={statusFilter}
-                            onChange={(v) => {
-                                setStatusFilter(v);
-                                tableState.resetPage();
-                            }}
-                            clearable
-                        />
-                    </SimpleGrid>
+                    <TitleLinkStatusFilterGrid
+                        title={titleFilter}
+                        onTitleChange={setTitleFilter}
+                        link={linkFilter}
+                        onLinkChange={setLinkFilter}
+                        status={statusFilter}
+                        onStatusChange={setStatusFilter}
+                        onFilterChange={tableState.resetPage}
+                    />
                 );
 
                 return (
@@ -259,6 +189,7 @@ export default function UserTrainings() {
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? handleOpenCreate : undefined}
+                            addLabel={t('addTraining')}
                             actions={(tr) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     <ViewActionButton to={`/trainings/${tr.link}`} />
@@ -277,7 +208,7 @@ export default function UserTrainings() {
                                     {isOwner && <EditActionButton onClick={() => handleOpenEdit(tr)} />}
                                     {isOwner && (
                                         <DeleteActionButton
-                                            onClick={() => handleDelete(tr.id)}
+                                            onClick={() => confirmDelete(t, () => deleteMutation.mutate(tr.id))}
                                             isPending={deleteMutation.isPending}
                                         />
                                     )}
@@ -291,7 +222,7 @@ export default function UserTrainings() {
                             training={editingTraining}
                             collaboratorOptions={collaboratorOptions}
                             onSuccess={() => {
-                                queryClient.invalidateQueries({
+                                void queryClient.invalidateQueries({
                                     queryKey: ['user-trainings', targetUser.id],
                                 });
                             }}

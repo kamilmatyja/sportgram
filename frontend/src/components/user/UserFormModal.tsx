@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { Modal, Stack, SimpleGrid, TextInput, Select, MultiSelect, Textarea, FileInput, Button } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconPhoto } from '@tabler/icons-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { userService, type UserResource } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
+import { useAuth } from '../../auth';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { CountryEnum } from '../../enums/CountryEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
@@ -14,8 +13,9 @@ import { GenderEnum } from '../../enums/GenderEnum';
 import { LanguageEnum } from '../../enums/LanguageEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { ThemeEnum } from '../../enums/ThemeEnum';
-import { resolveImageBase64 } from '../../utils/imageUtils';
-import { slugify } from '../../utils/text';
+import { useFormErrors } from '../../hooks';
+import { resolveImageBase64 } from '../../utils';
+import { slugify } from '../../utils';
 
 export interface UserFormModalProps {
     opened: boolean;
@@ -24,78 +24,77 @@ export interface UserFormModalProps {
     onSuccess?: () => void;
 }
 
+const INITIAL_FORM_DATA = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    link: '',
+    phone: '',
+    birthAt: '',
+    gender: null as string | null,
+    country: null as string | null,
+    language: null as string | null,
+    theme: null as string | null,
+    color: null as string | null,
+    bio: '',
+    roles: [] as string[],
+    disciplines: [] as string[],
+};
+
 export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModalProps) {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { refetchUser } = useAuth();
+    const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!user;
 
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
     const [bgPhotoFile, setBgPhotoFile] = useState<File | null>(null);
+    const [formData, setFormData] = useState(INITIAL_FORM_DATA);
 
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        link: '',
-        phone: '',
-        birthAt: '',
-        gender: null as string | null,
-        country: null as string | null,
-        language: null as string | null,
-        theme: null as string | null,
-        color: null as string | null,
-        bio: '',
-        roles: [] as string[],
-        disciplines: [] as string[],
+    const { data: userDetails } = useQuery({
+        queryKey: ['user-modal-details', user?.id],
+        queryFn: () =>
+            userService.getUser({
+                params: {
+                    path: { id: user!.id },
+                    query: { 'include[]': ['userDisciplines', 'userRoles'] },
+                },
+            }),
+        enabled: opened && !!user?.id && (user.roles === undefined || user.disciplines === undefined),
     });
 
     useEffect(() => {
         if (!opened) return;
 
-        if (user) {
+        const effectiveUser = userDetails?.data ?? user;
+
+        if (effectiveUser) {
             setFormData({
-                firstName: user.firstName ?? '',
-                lastName: user.lastName ?? '',
-                email: user.email ?? '',
+                firstName: effectiveUser.firstName ?? '',
+                lastName: effectiveUser.lastName ?? '',
+                email: effectiveUser.email ?? '',
                 password: '',
-                link: user.link ?? '',
-                phone: user.phone != null ? String(user.phone) : '',
-                birthAt: user.birthAt ? user.birthAt.split('T')[0] : '',
-                gender: user.gender != null ? String(user.gender) : null,
-                country: user.country != null ? String(user.country) : null,
-                language: user.language != null ? String(user.language) : null,
-                theme: user.theme != null ? String(user.theme) : null,
-                color: user.color != null ? String(user.color) : null,
-                bio: user.bio ?? '',
-                roles: user.roles?.map((r) => String(r.role)) ?? [],
-                disciplines: user.disciplines?.map((d) => String(d.discipline)) ?? [],
+                link: effectiveUser.link ?? '',
+                phone: effectiveUser.phone != null ? String(effectiveUser.phone) : '',
+                birthAt: effectiveUser.birthAt ? effectiveUser.birthAt.split('T')[0] : '',
+                gender: effectiveUser.gender != null ? String(effectiveUser.gender) : null,
+                country: effectiveUser.country != null ? String(effectiveUser.country) : null,
+                language: effectiveUser.language != null ? String(effectiveUser.language) : null,
+                theme: effectiveUser.theme != null ? String(effectiveUser.theme) : null,
+                color: effectiveUser.color != null ? String(effectiveUser.color) : null,
+                bio: effectiveUser.bio ?? '',
+                roles: effectiveUser.roles?.map((r) => String(r.role)) ?? [],
+                disciplines: effectiveUser.disciplines?.map((d) => String(d.discipline)) ?? [],
             });
         } else {
-            setFormData({
-                firstName: '',
-                lastName: '',
-                email: '',
-                password: '',
-                link: '',
-                phone: '',
-                birthAt: '',
-                gender: null,
-                country: null,
-                language: null,
-                theme: null,
-                color: null,
-                bio: '',
-                roles: [],
-                disciplines: [],
-            });
+            setFormData(INITIAL_FORM_DATA);
         }
         setProfilePhotoFile(null);
         setBgPhotoFile(null);
-        setFieldErrors({});
-    }, [opened, user]);
+        clearFieldErrors();
+    }, [opened, user, userDetails, clearFieldErrors]);
 
     const mutation = useMutation({
         mutationFn: async () => {
@@ -110,28 +109,29 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                 isEdit ? undefined : t('selectPhoto'),
             );
 
+            const body = {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                link: formData.link,
+                phone: Number(formData.phone) || 0,
+                birthAt: formData.birthAt,
+                gender: Number(formData.gender) as GenderEnum,
+                country: Number(formData.country) as CountryEnum,
+                language: Number(formData.language) as LanguageEnum,
+                theme: Number(formData.theme) as ThemeEnum,
+                color: Number(formData.color) as ColorEnum,
+                bio: formData.bio,
+                profilePhoto: profPhoto,
+                backgroundPhoto: bgPhoto,
+                roles: formData.roles.map(Number) as RoleEnum[],
+                disciplines: formData.disciplines.map(Number) as DisciplineEnum[],
+            };
+
             if (isEdit) {
                 await userService.updateUser({
                     params: { path: { id: user.id } },
-                    body: {
-                        firstName: formData.firstName,
-                        lastName: formData.lastName,
-                        bio: formData.bio,
-                        phone: Number(formData.phone) || 0,
-                        country: Number(formData.country) as CountryEnum,
-                        gender: Number(formData.gender) as GenderEnum,
-                        birthAt: formData.birthAt,
-                        theme: Number(formData.theme) as ThemeEnum,
-                        language: Number(formData.language) as LanguageEnum,
-                        color: Number(formData.color) as ColorEnum,
-                        link: formData.link,
-                        password: formData.password || null,
-                        email: formData.email,
-                        profilePhoto: profPhoto,
-                        backgroundPhoto: bgPhoto,
-                        disciplines: formData.disciplines.map(Number),
-                        roles: formData.roles.map(Number),
-                    },
+                    body: { ...body, password: formData.password || null },
                 });
             } else {
                 if (
@@ -143,48 +143,27 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                 ) {
                     throw new Error(t('error'));
                 }
-
                 await userService.createUser({
-                    body: {
-                        firstName: formData.firstName,
-                        lastName: formData.lastName,
-                        email: formData.email,
-                        password: formData.password,
-                        link: formData.link,
-                        phone: Number(formData.phone) || 0,
-                        birthAt: formData.birthAt,
-                        gender: Number(formData.gender) as 1 | 2,
-                        country: Number(formData.country) as CountryEnum,
-                        language: Number(formData.language) as 1 | 2,
-                        theme: Number(formData.theme) as 1 | 2,
-                        color: Number(formData.color) as ColorEnum,
-                        bio: formData.bio,
-                        profilePhoto: profPhoto,
-                        backgroundPhoto: bgPhoto,
-                        roles: formData.roles.map(Number) as RoleEnum[],
-                        disciplines: formData.disciplines.map(Number) as DisciplineEnum[],
-                    },
+                    body: { ...body, password: formData.password },
                 });
             }
         },
         onSuccess: () => {
             onClose();
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+            void queryClient.invalidateQueries({ queryKey: ['users'] });
             if (isEdit) {
-                queryClient.invalidateQueries({ queryKey: ['user', user.link] });
-                queryClient.invalidateQueries({ queryKey: ['user', formData.link] });
-                refetchUser();
-                notifications.show({ title: t('users'), message: t('userUpdated'), color: 'green' });
-            } else {
-                notifications.show({ title: t('users'), message: t('userCreated'), color: 'green' });
+                void queryClient.invalidateQueries({ queryKey: ['user', user.link] });
+                void queryClient.invalidateQueries({ queryKey: ['user', formData.link] });
+                void refetchUser();
             }
+            notifications.show({
+                title: t('users'),
+                message: isEdit ? t('saved') : t('created'),
+                color: 'green',
+            });
             onSuccess?.();
         },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: handleFormError,
     });
 
     const isSubmitting = mutation.isPending;
@@ -220,9 +199,9 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
           !!bgPhotoFile;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')}>
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editUser') : t('addUser')}>
             <Stack gap="sm">
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <TextInput
                         label={t('firstName')}
                         required
@@ -257,7 +236,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <TextInput
                         label={t('email')}
                         placeholder={t('emailPlaceholder')}
@@ -278,7 +257,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <TextInput
                         label={t('link')}
                         required
@@ -296,7 +275,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <TextInput
                         label={t('birthAt')}
                         type="date"
@@ -317,7 +296,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <Select
                         label={t('country')}
                         placeholder={t('country')}
@@ -341,7 +320,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <Select
                         label={t('theme')}
                         placeholder={t('theme')}
@@ -364,10 +343,10 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <MultiSelect
-                        label={t('role')}
-                        placeholder={t('role')}
+                        label={t('roles')}
+                        placeholder={t('roles')}
                         required
                         clearable
                         data={RoleEnum.getOptions(t).map((r) => ({ value: String(r.value), label: r.label }))}
@@ -376,8 +355,8 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                         onChange={(val) => setFormData({ ...formData, roles: val })}
                     />
                     <MultiSelect
-                        label={t('disciplinesLabel')}
-                        placeholder={t('disciplinesLabel')}
+                        label={t('disciplines')}
+                        placeholder={t('disciplines')}
                         clearable
                         data={DisciplineEnum.getStringOptions(t)}
                         value={formData.disciplines}
@@ -396,7 +375,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     onChange={(e) => setFormData({ ...formData, bio: e.currentTarget.value })}
                 />
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <FileInput
                         label={t('profilePhoto')}
                         placeholder={t('selectPhoto')}
@@ -429,7 +408,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     onClick={() => mutation.mutate()}
                     mt="sm"
                 >
-                    {isEdit ? t('save') : t('add')}
+                    {t('save')}
                 </Button>
             </Stack>
         </Modal>

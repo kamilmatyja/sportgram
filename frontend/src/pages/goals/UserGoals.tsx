@@ -1,26 +1,24 @@
 import { useState, useMemo } from 'react';
 import { Text, SimpleGrid, TextInput, Select, Badge, Group } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage } from '../../api/client';
 import { goalService, type GoalResource, type GetGoalsQuery } from '../../api/services';
-import { useMyFriends } from '../../hooks/useMyFriends';
-import { DataTable, type Column } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components';
+import {
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    EditActionButton,
+    DeleteActionButton,
+    UserSubpageContainer,
+} from '../../components';
+import { GoalFormModal } from '../../components';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDateTime } from '../../utils/date';
-import { truncate } from '../../utils/text';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
-import { StatusBadge } from '../../components/common/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { GoalFormModal } from '../../components/goals/GoalFormModal';
+import { useDataTableState, useMyFriends } from '../../hooks';
+import { notifySuccess, notifyError, confirmDelete, formatDateTime, buildSortOptions, truncate } from '../../utils';
 
 export default function UserGoals() {
     const { t } = useTranslation();
@@ -46,16 +44,14 @@ export default function UserGoals() {
 
     const sortOptions = buildSortOptions(t, ['createdAt', 'startedAt', 'endedAt', 'text', 'distance', 'status']);
 
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (textFilter.trim()) count++;
-        if (linkFilter.trim()) count++;
-        if (disciplineFilter !== null) count++;
-        if (distanceFilter.trim()) count++;
-        if (timeFilter.trim()) count++;
-        if (statusFilter !== null) count++;
-        return count;
-    }, [textFilter, linkFilter, disciplineFilter, distanceFilter, timeFilter, statusFilter]);
+    const activeFiltersCount = [
+        textFilter.trim(),
+        linkFilter.trim(),
+        disciplineFilter,
+        distanceFilter.trim(),
+        timeFilter.trim(),
+        statusFilter,
+    ].filter(Boolean).length;
 
     const handleResetFilters = () => {
         setTextFilter('');
@@ -113,42 +109,19 @@ export default function UserGoals() {
                             body: { status },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-goals', targetUser.id] });
-                        notifications.show({
-                            title: t('goals'),
-                            message: t('statusUpdated'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['user-goals', targetUser.id] });
+                        notifySuccess(t('statusUpdated'), t('goals'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const deleteMutation = useMutation({
-                    mutationFn: (id: string) =>
-                        goalService.deleteGoal({
-                            params: { path: { id } },
-                        }),
+                    mutationFn: (id: string) => goalService.deleteGoal({ params: { path: { id } } }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-goals', targetUser.id] });
-                        notifications.show({
-                            title: t('goals'),
-                            message: t('deleted'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['user-goals', targetUser.id] });
+                        notifySuccess(t('deleted'), t('goals'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const handleOpenEdit = (g: GoalResource) => {
@@ -159,16 +132,6 @@ export default function UserGoals() {
                 const handleOpenCreate = () => {
                     setEditingGoal(null);
                     openFormModal();
-                };
-
-                const handleDelete = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmDeleteTitle'),
-                        message: t('confirmDeleteMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMutation.mutate(id),
-                    });
                 };
 
                 const columns: Column<GoalResource>[] = [
@@ -222,7 +185,7 @@ export default function UserGoals() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
+                    <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
                         <TextInput
                             label={t('title')}
                             value={textFilter}
@@ -299,6 +262,7 @@ export default function UserGoals() {
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? handleOpenCreate : undefined}
+                            addLabel={t('addGoal')}
                             actions={(g) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     <ViewActionButton to={`/goals/${g.link}`} />
@@ -318,7 +282,7 @@ export default function UserGoals() {
                                     {isOwner && <EditActionButton onClick={() => handleOpenEdit(g)} />}
                                     {isOwner && (
                                         <DeleteActionButton
-                                            onClick={() => handleDelete(g.id)}
+                                            onClick={() => confirmDelete(t, () => deleteMutation.mutate(g.id))}
                                             isPending={deleteMutation.isPending}
                                         />
                                     )}
@@ -332,7 +296,7 @@ export default function UserGoals() {
                             goal={editingGoal}
                             collaboratorOptions={collaboratorOptions}
                             onSuccess={() => {
-                                queryClient.invalidateQueries({
+                                void queryClient.invalidateQueries({
                                     queryKey: ['user-goals', targetUser.id],
                                 });
                             }}

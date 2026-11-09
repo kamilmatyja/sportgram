@@ -3,11 +3,12 @@ import { Modal, Stack, TextInput, Select, SimpleGrid, MultiSelect, Button } from
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { goalService, type GoalResource } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
+import { useAuth } from '../../auth';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { slugify } from '../../utils/text';
+import { useFormErrors } from '../../hooks';
+import { toInputDateTime } from '../../utils';
+import { slugify } from '../../utils';
 
 export interface GoalFormModalProps {
     opened: boolean;
@@ -17,23 +18,25 @@ export interface GoalFormModalProps {
     onSuccess?: () => void;
 }
 
+const INITIAL_FORM_DATA = {
+    text: '',
+    link: '',
+    discipline: null as string | null,
+    distance: '',
+    time: '',
+    startedAt: '',
+    endedAt: '',
+};
+
 export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [], onSuccess }: GoalFormModalProps) {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
+    const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!goal;
 
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
-    const [formData, setFormData] = useState({
-        text: '',
-        link: '',
-        discipline: null as string | null,
-        distance: '',
-        time: '',
-        startedAt: '',
-        endedAt: '',
-    });
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const [formData, setFormData] = useState(INITIAL_FORM_DATA);
 
     useEffect(() => {
         if (!opened) return;
@@ -44,90 +47,56 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
                 discipline: goal.discipline != null ? String(goal.discipline) : null,
                 distance: goal.distance != null ? String(goal.distance) : '',
                 time: goal.time != null ? String(goal.time) : '',
-                startedAt: goal.startedAt ? goal.startedAt.replace(' ', 'T').slice(0, 16) : '',
-                endedAt: goal.endedAt ? goal.endedAt.replace(' ', 'T').slice(0, 16) : '',
+                startedAt: toInputDateTime(goal.startedAt),
+                endedAt: toInputDateTime(goal.endedAt),
             });
-
             const collabs = goal.participants?.filter((p) => p.userId !== goal.userId).map((p) => p.userId) ?? [];
             setCollaboratorIds(collabs);
         } else {
-            setFormData({
-                text: '',
-                link: '',
-                discipline: null,
-                distance: '',
-                time: '',
-                startedAt: '',
-                endedAt: '',
-            });
+            setFormData(INITIAL_FORM_DATA);
             setCollaboratorIds([]);
         }
-        setFieldErrors({});
-    }, [opened, goal]);
+        clearFieldErrors();
+    }, [opened, goal, clearFieldErrors]);
 
     const mutation = useMutation({
         mutationFn: async () => {
-            const disciplineNum = Number(formData.discipline) as DisciplineEnum;
-            const distanceNum = Math.round(Number(formData.distance)) || 0;
-            const timeNum = formData.time ? Math.round(Number(formData.time)) : null;
+            const ownerId = isEdit ? goal.userId : currentUser?.id;
+            const userIds = Array.from(new Set([ownerId, ...collaboratorIds].filter(Boolean))) as string[];
+
+            const body = {
+                text: formData.text,
+                link: formData.link,
+                discipline: Number(formData.discipline) as DisciplineEnum,
+                distance: Math.round(Number(formData.distance)) || 0,
+                time: formData.time ? Math.round(Number(formData.time)) : null,
+                startedAt: formData.startedAt || null,
+                endedAt: formData.endedAt || null,
+                userIds,
+            };
 
             if (isEdit) {
-                const resolvedUserIds = goal.userId
-                    ? Array.from(new Set([goal.userId, ...collaboratorIds]))
-                    : collaboratorIds;
-
-                await goalService.updateGoal({
-                    params: { path: { id: goal.id } },
-                    body: {
-                        text: formData.text,
-                        link: formData.link,
-                        discipline: disciplineNum,
-                        distance: distanceNum,
-                        time: timeNum,
-                        startedAt: formData.startedAt || null,
-                        endedAt: formData.endedAt || null,
-                        userIds: resolvedUserIds,
-                    },
-                });
+                await goalService.updateGoal({ params: { path: { id: goal.id } }, body });
             } else {
-                const resolvedUserIds = currentUser?.id
-                    ? Array.from(new Set([currentUser.id, ...collaboratorIds]))
-                    : collaboratorIds;
-
-                await goalService.createGoal({
-                    body: {
-                        text: formData.text,
-                        link: formData.link,
-                        discipline: disciplineNum,
-                        distance: distanceNum,
-                        time: timeNum,
-                        startedAt: formData.startedAt || null,
-                        endedAt: formData.endedAt || null,
-                        userIds: resolvedUserIds,
-                    },
-                });
+                await goalService.createGoal({ body });
             }
         },
         onSuccess: () => {
             onClose();
-            queryClient.invalidateQueries({ queryKey: ['goals'] });
-            queryClient.invalidateQueries({ queryKey: ['user-goals'] });
+            void queryClient.invalidateQueries({ queryKey: ['goals'] });
+            void queryClient.invalidateQueries({ queryKey: ['user-goals'] });
             if (isEdit) {
-                queryClient.invalidateQueries({ queryKey: ['goal', goal.link] });
-                queryClient.invalidateQueries({ queryKey: ['goal', formData.link] });
+                void queryClient.invalidateQueries({ queryKey: ['goal', goal.link] });
+                void queryClient.invalidateQueries({ queryKey: ['goal', formData.link] });
             }
             notifications.show({
                 title: t('goals'),
-                message: isEdit ? t('goalUpdated') : t('goalCreated'),
+                message: isEdit ? t('saved') : t('created'),
                 color: 'green',
             });
             onSuccess?.();
         },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: handleFormError,
     });
 
     const isSubmitting = mutation.isPending;
@@ -138,7 +107,7 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
         formData.distance.trim().length > 0;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')}>
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editGoal') : t('addGoal')}>
             <Stack gap="sm">
                 <TextInput
                     label={t('title')}
@@ -179,7 +148,7 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
                     onChange={(val) => setFormData({ ...formData, discipline: val })}
                 />
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <TextInput
                         label={t('distanceMeters')}
                         required
@@ -195,7 +164,7 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
                     />
                 </SimpleGrid>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <TextInput
                         label={t('startedAt')}
                         type="datetime-local"
@@ -230,7 +199,7 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
                     onClick={() => mutation.mutate()}
                     mt="sm"
                 >
-                    {isEdit ? t('save') : t('add')}
+                    {t('save')}
                 </Button>
             </Stack>
         </Modal>

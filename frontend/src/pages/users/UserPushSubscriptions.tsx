@@ -1,26 +1,26 @@
 import { useState, useMemo } from 'react';
 import { Button, SimpleGrid, TextInput, Modal, Stack, Group, Text, Divider, Paper } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import { IconDeviceMobile } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import {
     pushSubscriptionService,
     type PushSubscriptionResource,
     type GetPushSubscriptionsQuery,
 } from '../../api/services';
-import { DataTable, type Column } from '../../components/DataTable';
-import { StatusBadge } from '../../components/common/StatusBadge';
+import {
+    DataTable,
+    type Column,
+    StatusBadge,
+    StatusActionMenu,
+    EditActionButton,
+    DeleteActionButton,
+    UserSubpageContainer,
+} from '../../components';
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDateTime } from '../../utils/date';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
+import { buildSortOptions, confirmDelete, formatDateTime, notifySuccess, notifyError } from '../../utils';
+import { useDataTableState, useFormErrors } from '../../hooks';
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -33,46 +33,37 @@ function urlBase64ToUint8Array(base64String: string) {
     return outputArray;
 }
 
+const initialForm = {
+    endpoint: '',
+    p256dh: '',
+    auth: '',
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+};
+
 export default function UserPushSubscriptions() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
     const [subscribing, setSubscribing] = useState(false);
-
-    const tableState = useDataTableState({
-        defaultSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState({ initialSort: 'createdAt:desc' });
 
     const [endpointFilter, setEndpointFilter] = useState('');
     const [p256dhFilter, setP256dhFilter] = useState('');
     const [authFilter, setAuthFilter] = useState('');
 
     const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
-    const [createForm, setCreateForm] = useState({
-        endpoint: '',
-        p256dh: '',
-        auth: '',
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-    });
-    const [createFieldErrors, setCreateFieldErrors] = useState<Record<string, string>>({});
+    const [createForm, setCreateForm] = useState(initialForm);
+    const createErrors = useFormErrors();
 
     const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false);
     const [editingSub, setEditingSub] = useState<PushSubscriptionResource | null>(null);
-    const [editForm, setEditForm] = useState({
-        endpoint: '',
-        p256dh: '',
-        auth: '',
-        userAgent: '',
-    });
-    const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({});
+    const [editForm, setEditForm] = useState(initialForm);
+    const editErrors = useFormErrors();
 
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (endpointFilter.trim()) count++;
-        if (p256dhFilter.trim()) count++;
-        if (authFilter.trim()) count++;
-        return count;
-    }, [endpointFilter, p256dhFilter, authFilter]);
+    const activeFiltersCount = useMemo(
+        () => [endpointFilter.trim(), p256dhFilter.trim(), authFilter.trim()].filter(Boolean).length,
+        [endpointFilter, p256dhFilter, authFilter],
+    );
 
     const handleResetFilters = () => {
         setEndpointFilter('');
@@ -124,21 +115,13 @@ export default function UserPushSubscriptions() {
 
                 const handleSubscribeDevice = async () => {
                     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                        notifications.show({
-                            title: t('error'),
-                            message: t('pushNotificationsNotSupported'),
-                            color: 'red',
-                        });
+                        notifyError(t('pushNotificationsNotSupported'), t('error'));
                         return;
                     }
 
                     const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
                     if (!vapidPublicKey) {
-                        notifications.show({
-                            title: t('error'),
-                            message: t('missingVapidKey'),
-                            color: 'red',
-                        });
+                        notifyError(t('missingVapidKey'), t('error'));
                         return;
                     }
 
@@ -148,7 +131,8 @@ export default function UserPushSubscriptions() {
                         if ('Notification' in window && Notification.permission !== 'granted') {
                             const permission = await Notification.requestPermission();
                             if (permission !== 'granted') {
-                                throw new Error(t('pushNotificationsNotSupported'));
+                                notifyError(new Error(t('pushNotificationsNotSupported')), t('error'));
+                                return;
                             }
                         }
                         await navigator.serviceWorker.register('/sw.js');
@@ -170,59 +154,33 @@ export default function UserPushSubscriptions() {
                         });
 
                         closeCreate();
-                        queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-                        notifications.show({
-                            title: t('pushSubscriptions'),
-                            message: t('browserSubscriptionSaved'),
-                            color: 'green',
-                        });
+                        await queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifySuccess(t('saved'), t('pushSubscriptions'));
                     } catch (err) {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
+                        notifyError(err, t('error'));
                     } finally {
                         setSubscribing(false);
                     }
                 };
 
                 const createManualMutation = useMutation({
-                    mutationFn: async () => {
-                        await pushSubscriptionService.createPushSubscription({
+                    mutationFn: () =>
+                        pushSubscriptionService.createPushSubscription({
                             body: {
                                 endpoint: createForm.endpoint,
                                 p256dh: createForm.p256dh,
                                 auth: createForm.auth,
                                 userAgent: createForm.userAgent,
                             },
-                        });
-                    },
+                        }),
                     onSuccess: () => {
                         closeCreate();
-                        setCreateForm({
-                            endpoint: '',
-                            p256dh: '',
-                            auth: '',
-                            userAgent: navigator.userAgent || '',
-                        });
-                        setCreateFieldErrors({});
-                        queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-                        notifications.show({
-                            title: t('pushSubscriptions'),
-                            message: t('browserAdded'),
-                            color: 'green',
-                        });
+                        setCreateForm(initialForm);
+                        createErrors.clearErrors();
+                        void queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifySuccess(t('created'), t('pushSubscriptions'));
                     },
-                    onError: (err) => {
-                        const fe = extractFieldErrors(err);
-                        setCreateFieldErrors(fe);
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => createErrors.setFromError(err),
                 });
 
                 const handleOpenEdit = (sub: PushSubscriptionResource) => {
@@ -233,7 +191,7 @@ export default function UserPushSubscriptions() {
                         auth: sub.auth || '',
                         userAgent: sub.userAgent || '',
                     });
-                    setEditFieldErrors({});
+                    editErrors.clearErrors();
                     openEdit();
                 };
 
@@ -253,23 +211,11 @@ export default function UserPushSubscriptions() {
                     onSuccess: () => {
                         closeEdit();
                         setEditingSub(null);
-                        setEditFieldErrors({});
-                        queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-                        notifications.show({
-                            title: t('pushSubscriptions'),
-                            message: t('browserUpdated'),
-                            color: 'green',
-                        });
+                        editErrors.clearErrors();
+                        void queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifySuccess(t('saved'), t('pushSubscriptions'));
                     },
-                    onError: (err) => {
-                        const fe = extractFieldErrors(err);
-                        setEditFieldErrors(fe);
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => editErrors.setFromError(err),
                 });
 
                 const updateStatusMutation = useMutation({
@@ -279,53 +225,21 @@ export default function UserPushSubscriptions() {
                             body: { status },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-                        notifications.show({
-                            title: t('pushSubscriptions'),
-                            message: t('statusUpdated'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifySuccess(t('statusUpdated'), t('pushSubscriptions'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const deleteMutation = useMutation({
                     mutationFn: (id: string) =>
-                        pushSubscriptionService.deletePushSubscription({
-                            params: { path: { id } },
-                        }),
+                        pushSubscriptionService.deletePushSubscription({ params: { path: { id } } }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
-                        notifications.show({
-                            title: t('pushSubscriptions'),
-                            message: t('browserSubscriptionDeleted'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifySuccess(t('deleted'), t('pushSubscriptions'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
-
-                const handleDelete = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmDeleteTitle'),
-                        message: t('confirmDeleteMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMutation.mutate(id),
-                    });
-                };
 
                 const columns: Column<PushSubscriptionResource>[] = [
                     {
@@ -354,7 +268,7 @@ export default function UserPushSubscriptions() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="sm">
+                    <SimpleGrid cols={{ base: 1, sm: 3 }}>
                         <TextInput
                             label={t('endpoint')}
                             value={endpointFilter}
@@ -394,7 +308,15 @@ export default function UserPushSubscriptions() {
                             filtersNode={filtersNode}
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
-                            onAdd={isOwner ? openCreate : undefined}
+                            onAdd={
+                                isOwner
+                                    ? () => {
+                                          createErrors.clearErrors();
+                                          openCreate();
+                                      }
+                                    : undefined
+                            }
+                            addLabel={t('addSubscription')}
                             actions={(s) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     {canManage && (
@@ -413,7 +335,7 @@ export default function UserPushSubscriptions() {
                                     {isOwner && <EditActionButton onClick={() => handleOpenEdit(s)} />}
                                     {isOwner && (
                                         <DeleteActionButton
-                                            onClick={() => handleDelete(s.id)}
+                                            onClick={() => confirmDelete(t, () => deleteMutation.mutate(s.id))}
                                             loading={deleteMutation.isPending}
                                         />
                                     )}
@@ -421,9 +343,9 @@ export default function UserPushSubscriptions() {
                             )}
                         />
 
-                        <Modal opened={createOpened} onClose={closeCreate} title={t('add')}>
-                            <Stack gap="md">
-                                <Paper p="md">
+                        <Modal opened={createOpened} onClose={closeCreate} title={t('addSubscription')}>
+                            <Stack>
+                                <Paper>
                                     <Stack gap="xs">
                                         <Text fw={600} size="sm">
                                             {t('subscribeThisDevice')}
@@ -451,7 +373,7 @@ export default function UserPushSubscriptions() {
                                         placeholder="https://..."
                                         required
                                         value={createForm.endpoint}
-                                        error={createFieldErrors.endpoint}
+                                        error={createErrors.errors.endpoint}
                                         onChange={(e) =>
                                             setCreateForm({
                                                 ...createForm,
@@ -464,7 +386,7 @@ export default function UserPushSubscriptions() {
                                         placeholder="p256dh..."
                                         required
                                         value={createForm.p256dh}
-                                        error={createFieldErrors.p256dh}
+                                        error={createErrors.errors.p256dh}
                                         onChange={(e) =>
                                             setCreateForm({
                                                 ...createForm,
@@ -477,7 +399,7 @@ export default function UserPushSubscriptions() {
                                         placeholder="auth..."
                                         required
                                         value={createForm.auth}
-                                        error={createFieldErrors.auth}
+                                        error={createErrors.errors.auth}
                                         onChange={(e) =>
                                             setCreateForm({
                                                 ...createForm,
@@ -490,7 +412,7 @@ export default function UserPushSubscriptions() {
                                         placeholder="User-Agent..."
                                         required
                                         value={createForm.userAgent}
-                                        error={createFieldErrors.userAgent}
+                                        error={createErrors.errors.userAgent}
                                         onChange={(e) =>
                                             setCreateForm({
                                                 ...createForm,
@@ -505,44 +427,45 @@ export default function UserPushSubscriptions() {
                                             createManualMutation.isPending ||
                                             !createForm.endpoint.trim() ||
                                             !createForm.p256dh.trim() ||
-                                            !createForm.auth.trim()
+                                            !createForm.auth.trim() ||
+                                            !createForm.userAgent.trim()
                                         }
                                         onClick={() => createManualMutation.mutate()}
                                     >
-                                        {t('add')}
+                                        {t('save')}
                                     </Button>
                                 </Stack>
                             </Stack>
                         </Modal>
 
-                        <Modal opened={editOpened} onClose={closeEdit} title={t('edit')}>
+                        <Modal opened={editOpened} onClose={closeEdit} title={t('editSubscription')}>
                             <Stack gap="sm">
                                 <TextInput
                                     label={t('endpoint')}
                                     required
                                     value={editForm.endpoint}
-                                    error={editFieldErrors.endpoint}
+                                    error={editErrors.errors.endpoint}
                                     onChange={(e) => setEditForm({ ...editForm, endpoint: e.currentTarget.value })}
                                 />
                                 <TextInput
                                     label={t('p256dh')}
                                     required
                                     value={editForm.p256dh}
-                                    error={editFieldErrors.p256dh}
+                                    error={editErrors.errors.p256dh}
                                     onChange={(e) => setEditForm({ ...editForm, p256dh: e.currentTarget.value })}
                                 />
                                 <TextInput
                                     label={t('authKey')}
                                     required
                                     value={editForm.auth}
-                                    error={editFieldErrors.auth}
+                                    error={editErrors.errors.auth}
                                     onChange={(e) => setEditForm({ ...editForm, auth: e.currentTarget.value })}
                                 />
                                 <TextInput
                                     label={t('device')}
                                     required
                                     value={editForm.userAgent}
-                                    error={editFieldErrors.userAgent}
+                                    error={editErrors.errors.userAgent}
                                     onChange={(e) =>
                                         setEditForm({
                                             ...editForm,
@@ -557,7 +480,8 @@ export default function UserPushSubscriptions() {
                                         updateMutation.isPending ||
                                         !editForm.endpoint.trim() ||
                                         !editForm.p256dh.trim() ||
-                                        !editForm.auth.trim()
+                                        !editForm.auth.trim() ||
+                                        !editForm.userAgent.trim()
                                     }
                                     onClick={() => updateMutation.mutate()}
                                 >

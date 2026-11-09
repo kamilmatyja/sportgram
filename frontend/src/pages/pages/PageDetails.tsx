@@ -13,16 +13,10 @@ import {
     MantineThemeProvider,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import NotFound from '../../components/NotFound';
-import { EmptyState } from '../../components/EmptyState';
-import { notifications } from '@mantine/notifications';
 import { IconBookmark, IconBookmarkOff, IconPlus } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
-import { brown } from '../../theme';
-import { applyThemeColor } from '../../utils/themeUtils';
-import { getErrorMessage } from '../../api/client';
 import {
     pageService,
     eventService,
@@ -31,22 +25,33 @@ import {
     type PageParticipantResource,
     type EventResource,
 } from '../../api/services';
-import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
+import { useAuth } from '../../auth';
+import { EmptyState } from '../../components';
+import NotFound from '../../components/NotFound';
+import { PageNav } from '../../components';
+import {
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    EditActionButton,
+    DeleteActionButton,
+    UserInfoCell,
+} from '../../components';
+import { EventFormModal } from '../../components';
+import { PageFormModal } from '../../components';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { useAuth } from '../../auth/AuthContext';
-import { PageNav } from '../../components/PageNav';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatImageSrc } from '../../utils/imageUtils';
-import { formatDateTime } from '../../utils/date';
-import { StatusBadge } from '../../components/common/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { PageFormModal } from '../../components/pages/PageFormModal';
-import { EventFormModal } from '../../components/events/EventFormModal';
-import { useMyFriends } from '../../hooks/useMyFriends';
-import { useUsersMap } from '../../hooks/useUsersMap';
-import { UserInfoCell } from '../../components/common/UserInfoCell';
+import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
+import { useMyFriends, useUsersMap } from '../../hooks';
+import { brown } from '../../theme';
+import {
+    applyThemeColor,
+    confirmDelete,
+    formatDateTime,
+    formatImageSrc,
+    notifyError,
+    notifySuccess,
+} from '../../utils';
 
 export default function PageDetails() {
     const { link } = useParams<{ link: string }>();
@@ -157,23 +162,15 @@ export default function PageDetails() {
                 queryClient.invalidateQueries({ queryKey: ['page'] }),
                 queryClient.invalidateQueries({ queryKey: ['pages'] }),
             ]);
-            refetch();
-            notifications.show({
-                title: t('pageFollows'),
-                message: t('pageFollowed'),
-                color: 'green',
-            });
+            await refetch();
+            notifySuccess(t('saved'), t('pageFollows'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const unfollowMutation = useMutation({
         mutationFn: async (followId: string) => {
-            await pageService.deletePageFollow({
-                params: { path: { id: followId } },
-            });
+            await pageService.deletePageFollow({ params: { path: { id: followId } } });
         },
         onSuccess: async () => {
             queryClient.setQueryData(['page', link], (prev: PageResource | null | undefined) => {
@@ -189,16 +186,10 @@ export default function PageDetails() {
                 queryClient.invalidateQueries({ queryKey: ['page'] }),
                 queryClient.invalidateQueries({ queryKey: ['pages'] }),
             ]);
-            refetch();
-            notifications.show({
-                title: t('pageFollows'),
-                message: t('pageUnfollowed'),
-                color: 'green',
-            });
+            await refetch();
+            notifySuccess(t('deleted'), t('pageFollows'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const statusMutation = useMutation({
@@ -210,39 +201,23 @@ export default function PageDetails() {
             });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['page', link] });
-            notifications.show({ title: t('pages'), message: t('statusUpdated'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['page', link] });
+            notifySuccess(t('statusUpdated'), t('pages'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const deleteMutation = useMutation({
         mutationFn: async () => {
             if (!page?.id) return;
-            await pageService.deletePage({
-                params: { path: { id: page.id } },
-            });
+            await pageService.deletePage({ params: { path: { id: page.id } } });
         },
         onSuccess: () => {
-            notifications.show({ title: t('pages'), message: t('pageDeleted'), color: 'green' });
+            notifySuccess(t('deleted'), t('pages'));
             navigate('/pages');
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
-
-    const handleDelete = () => {
-        openConfirmActionModal({
-            title: t('confirmDeleteTitle'),
-            message: t('confirmDeleteMessage'),
-            confirmLabel: t('delete'),
-            cancelLabel: t('cancel'),
-            onConfirm: () => deleteMutation.mutate(),
-        });
-    };
 
     const updateParticipantStatusMutation = useMutation({
         mutationFn: ({ participantId, status }: { participantId: string; status: ElementStatusEnum }) =>
@@ -251,16 +226,10 @@ export default function PageDetails() {
                 body: { status },
             }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['page', link] });
-            notifications.show({
-                title: t('participants'),
-                message: t('statusUpdated'),
-                color: 'green',
-            });
+            void queryClient.invalidateQueries({ queryKey: ['page', link] });
+            notifySuccess(t('statusUpdated'), t('participants'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const primaryColor = ColorEnum.getMantineColor(page?.color);
@@ -282,7 +251,7 @@ export default function PageDetails() {
     }
 
     if (!page) {
-        return <NotFound title={t('pageNotFound')} />;
+        return <NotFound title={t('notFound')} />;
     }
 
     const extraActions = (
@@ -320,7 +289,12 @@ export default function PageDetails() {
             )}
 
             {isOwner && <EditActionButton onClick={openEdit} />}
-            {isOwner && <DeleteActionButton onClick={handleDelete} isPending={deleteMutation.isPending} />}
+            {isOwner && (
+                <DeleteActionButton
+                    onClick={() => confirmDelete(t, () => deleteMutation.mutate())}
+                    isPending={deleteMutation.isPending}
+                />
+            )}
         </Group>
     );
 
@@ -329,7 +303,7 @@ export default function PageDetails() {
             <Stack gap="lg">
                 <PageNav page={page} extraActions={extraActions} />
 
-                <Card p="lg">
+                <Card>
                     {page.description && (
                         <Text size="sm" mb="md" className="pre-wrap">
                             {page.description}
@@ -342,8 +316,8 @@ export default function PageDetails() {
                     {!page.participants || page.participants.length === 0 ? (
                         <EmptyState title={t('noData')} />
                     ) : (
-                        <Table.ScrollContainer minWidth={600}>
-                            <Table verticalSpacing="sm">
+                        <Table.ScrollContainer minWidth={500}>
+                            <Table>
                                 <Table.Thead>
                                     <Table.Tr>
                                         <Table.Th>{t('user')}</Table.Th>
@@ -401,7 +375,7 @@ export default function PageDetails() {
                                 leftSection={<IconPlus size={16} />}
                                 onClick={openCreateEvent}
                             >
-                                {t('add')}
+                                {t('addEvent')}
                             </Button>
                         )}
                     </Group>
@@ -413,8 +387,8 @@ export default function PageDetails() {
                     ) : pageEvents.length === 0 ? (
                         <EmptyState title={t('noData')} />
                     ) : (
-                        <Table.ScrollContainer minWidth={600}>
-                            <Table verticalSpacing="sm">
+                        <Table.ScrollContainer minWidth={500}>
+                            <Table>
                                 <Table.Thead>
                                     <Table.Tr>
                                         <Table.Th>{t('title')}</Table.Th>
@@ -430,7 +404,7 @@ export default function PageDetails() {
                                     {pageEvents.map((ev: EventResource) => (
                                         <Table.Tr key={ev.id}>
                                             <Table.Td>
-                                                <Group gap="sm" wrap="nowrap">
+                                                <Group wrap="nowrap">
                                                     <Avatar src={formatImageSrc(ev.photo)}>?</Avatar>
                                                     <div>
                                                         <Text size="sm" fw={600}>
@@ -472,7 +446,7 @@ export default function PageDetails() {
                     page={page}
                     collaboratorOptions={collaboratorOptions}
                     onSuccess={() => {
-                        queryClient.invalidateQueries({ queryKey: ['page', link] });
+                        void queryClient.invalidateQueries({ queryKey: ['page', link] });
                     }}
                 />
 
@@ -481,7 +455,7 @@ export default function PageDetails() {
                     onClose={closeCreateEvent}
                     defaultPageParticipantId={page.id}
                     onSuccess={() => {
-                        queryClient.invalidateQueries({ queryKey: ['page-events', page.id] });
+                        void queryClient.invalidateQueries({ queryKey: ['page-events', page.id] });
                     }}
                 />
             </Stack>

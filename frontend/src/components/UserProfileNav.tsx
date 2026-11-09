@@ -19,11 +19,11 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { type UserResource } from '../api/services';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth';
 import { RoleEnum } from '../enums/RoleEnum';
-import { useUserSubpageAccess } from '../hooks/useUserSubpageAccess';
-import { formatImageSrc } from '../utils/imageUtils';
-import { HeaderBannerWithAvatar } from './common/HeaderBannerWithAvatar';
+import { useUserSubpageAccess } from '../hooks';
+import { formatImageSrc } from '../utils';
+import { HeaderBannerWithAvatar } from './common';
 
 export interface UserProfileNavProps {
     user?:
@@ -70,7 +70,7 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
         { to: `/users/${link}/feeds`, icon: <IconArticle size={16} />, label: t('feeds') },
         { to: `/users/${link}/feed-reactions`, icon: <IconHeart size={16} />, label: t('reactions') },
         { to: `/users/${link}/feed-comments`, icon: <IconMessageCircle size={16} />, label: t('comments') },
-        { to: `/users/${link}/friends`, icon: <IconUsers size={16} />, label: t('friend') },
+        { to: `/users/${link}/friends`, icon: <IconUsers size={16} />, label: t('friends') },
     ];
 
     if (hasOrganizer) {
@@ -136,7 +136,7 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                                 size="xs"
                                 leftSection={<IconArrowLeft size={16} />}
                             >
-                                {t('back')}
+                                {t('backToUser')}
                             </Button>
                         )}
                     </Group>

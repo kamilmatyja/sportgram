@@ -1,21 +1,19 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
 import { Title, Text, Button, Group, Stack, Paper, Box, Card, Skeleton, Container } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { getErrorMessage } from '../api/client';
 import { feedService, storyService, type StoryResource, type FeedResource } from '../api/services';
-import { useAuth } from '../auth/AuthContext';
-import { StoryViewerModal, type UserStoriesGroup } from '../components/StoryViewerModal';
-import { RunnerLogo } from '../components/RunnerLogo';
-import { EmptyState } from '../components/EmptyState';
-import { openConfirmActionModal } from '../utils/confirmModal';
-import { FeedCard } from '../components/feed/FeedCard';
-import { FeedModal } from '../components/feed/FeedModal';
-import { StoryModal } from '../components/story/StoryModal';
-import { StoriesBar } from '../components/story/StoriesBar';
-import { useUsersMap } from '../hooks/useUsersMap';
+import { useAuth } from '../auth';
+import { EmptyState } from '../components';
+import { RunnerLogo } from '../components';
+import { StoryViewerModal, type UserStoriesGroup } from '../components';
+import { FeedCard } from '../components';
+import { FeedModal } from '../components';
+import { StoriesBar } from '../components';
+import { StoryModal } from '../components';
+import { useUsersMap, useInfiniteScrollObserver } from '../hooks';
+import { confirmDelete, notifyError, notifySuccess } from '../utils';
 
 export default function Home() {
     const { t } = useTranslation();
@@ -25,12 +23,9 @@ export default function Home() {
 
     const [storyModalOpened, setStoryModalOpened] = useState(false);
     const [feedModalOpened, setFeedModalOpened] = useState(false);
-
     const [editingStory, setEditingStory] = useState<StoryResource | null>(null);
     const [updatedStoryForModal, setUpdatedStoryForModal] = useState<StoryResource | null>(null);
-
     const [editingFeed, setEditingFeed] = useState<FeedResource | null>(null);
-
     const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
     const [storyViewerOpened, setStoryViewerOpened] = useState(false);
 
@@ -42,8 +37,8 @@ export default function Home() {
         isFetchingNextPage: isFetchingMoreFeeds,
     } = useInfiniteQuery({
         queryKey: ['feeds'],
-        queryFn: async ({ pageParam = 1 }) => {
-            return await feedService.getFeeds({
+        queryFn: ({ pageParam = 1 }) =>
+            feedService.getFeeds({
                 params: {
                     query: {
                         page: pageParam,
@@ -52,38 +47,24 @@ export default function Home() {
                         'include[]': ['feedComments', 'feedReactions', 'feedOrigin'],
                     },
                 },
-            });
-        },
+            }),
         initialPageParam: 1,
-        getNextPageParam: (lastPage) => {
-            const p = lastPage.pagination;
-            if (p?.hasNextPage && p?.page) {
-                return p.page + 1;
-            }
-            return undefined;
-        },
+        getNextPageParam: (lastPage) =>
+            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
         enabled: isAuthenticated,
     });
 
     const feedsData = useMemo(() => {
-        return feedsInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
+        const list = feedsInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
+        const parseTime = (dateStr?: string) => (dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0);
+        return [...list].sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt));
     }, [feedsInfiniteData]);
 
-    const feedObserver = useRef<IntersectionObserver | null>(null);
-    const lastFeedElementRef = useCallback(
-        (node: HTMLElement | null) => {
-            if (isFetchingMoreFeeds) return;
-            if (feedObserver.current) feedObserver.current.disconnect();
-            if (!node) return;
-            feedObserver.current = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && hasMoreFeeds) {
-                    fetchNextFeedsPage();
-                }
-            });
-            feedObserver.current.observe(node);
-        },
-        [isFetchingMoreFeeds, hasMoreFeeds, fetchNextFeedsPage],
-    );
+    const lastFeedElementRef = useInfiniteScrollObserver({
+        isLoading: isFetchingMoreFeeds,
+        hasNextPage: hasMoreFeeds,
+        fetchNextPage: fetchNextFeedsPage,
+    });
 
     const {
         data: storiesInfiniteData,
@@ -92,8 +73,8 @@ export default function Home() {
         isFetchingNextPage: isFetchingMoreStories,
     } = useInfiniteQuery({
         queryKey: ['stories'],
-        queryFn: async ({ pageParam = 1 }) => {
-            return await storyService.getStories({
+        queryFn: ({ pageParam = 1 }) =>
+            storyService.getStories({
                 params: {
                     query: {
                         page: pageParam,
@@ -101,70 +82,46 @@ export default function Home() {
                         sort: 'createdAt:desc',
                     },
                 },
-            });
-        },
+            }),
         initialPageParam: 1,
-        getNextPageParam: (lastPage) => {
-            const p = lastPage.pagination;
-            if (p?.hasNextPage && p?.page) {
-                return p.page + 1;
-            }
-            return undefined;
-        },
+        getNextPageParam: (lastPage) =>
+            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
         enabled: isAuthenticated,
     });
 
-    const storiesData = useMemo(() => {
-        return storiesInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
-    }, [storiesInfiniteData]);
+    const storiesData = useMemo(
+        () => storiesInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [],
+        [storiesInfiniteData],
+    );
 
     const storiesViewportRef = useRef<HTMLDivElement>(null);
     const handleStoriesScroll = useCallback(
         (position: { x: number; y: number }) => {
             const el = storiesViewportRef.current;
             if (!el || isFetchingMoreStories || !hasMoreStories) return;
-            const scrollRight = el.scrollWidth - el.clientWidth - position.x;
-            if (scrollRight < 100) {
-                fetchNextStoriesPage();
+            if (el.scrollWidth - el.clientWidth - position.x < 100) {
+                void fetchNextStoriesPage();
             }
         },
         [isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
     );
 
-    const storyObserver = useRef<IntersectionObserver | null>(null);
-    const lastStoryElementRef = useCallback(
-        (node: HTMLElement | null) => {
-            if (isFetchingMoreStories) return;
-            if (storyObserver.current) storyObserver.current.disconnect();
-            if (!node) return;
-            storyObserver.current = new IntersectionObserver(
-                (entries) => {
-                    if (entries[0].isIntersecting && hasMoreStories) {
-                        fetchNextStoriesPage();
-                    }
-                },
-                { root: storiesViewportRef.current },
-            );
-            storyObserver.current.observe(node);
-        },
-        [isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
-    );
+    const lastStoryElementRef = useInfiniteScrollObserver({
+        isLoading: isFetchingMoreStories,
+        hasNextPage: hasMoreStories,
+        fetchNextPage: fetchNextStoriesPage,
+        root: storiesViewportRef.current,
+    });
 
     const relatedUserIds = useMemo(() => {
-        const ids: string[] = [];
-        feedsData?.forEach((f) => {
-            if (f.userId) ids.push(f.userId);
-            f.comments?.forEach((c) => {
-                if (c.userId) ids.push(c.userId);
-            });
-            f.reactions?.forEach((r) => {
-                if (r.userId) ids.push(r.userId);
-            });
+        const ids = new Set<string>();
+        feedsData.forEach((f) => {
+            if (f.userId) ids.add(f.userId);
+            f.comments?.forEach((c) => c.userId && ids.add(c.userId));
+            f.reactions?.forEach((r) => r.userId && ids.add(r.userId));
         });
-        storiesData?.forEach((s) => {
-            if (s.userId) ids.push(s.userId);
-        });
-        return Array.from(new Set(ids));
+        storiesData.forEach((s) => s.userId && ids.add(s.userId));
+        return Array.from(ids);
     }, [feedsData, storiesData]);
 
     const { usersMap } = useUsersMap(relatedUserIds);
@@ -174,80 +131,42 @@ export default function Home() {
         const map = new Map<string, StoryResource[]>();
         for (const story of storiesData) {
             if (!story.userId) continue;
-            if (!map.has(story.userId)) {
-                map.set(story.userId, []);
-            }
-            map.get(story.userId)!.push(story);
+            const list = map.get(story.userId) ?? [];
+            list.push(story);
+            map.set(story.userId, list);
         }
 
         const parseTime = (dateStr?: string) => (dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0);
 
         const groups: UserStoriesGroup[] = [];
         for (const [userId, userStories] of map.entries()) {
-            const sortedStories = [...userStories].sort((a, b) => parseTime(a.createdAt) - parseTime(b.createdAt));
-            const newestStory = [...userStories].sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt))[0];
+            const sortedStories = [...userStories].sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt));
+            const newestStory = sortedStories[0];
             const author = usersMap[userId] ?? (currentUser?.id === userId ? currentUser : undefined);
 
-            groups.push({
-                userId,
-                author,
-                stories: sortedStories,
-                newestStory,
-            });
+            groups.push({ userId, author, stories: sortedStories, newestStory });
         }
 
-        groups.sort((a, b) => {
-            const timeA = parseTime(a.newestStory?.createdAt);
-            const timeB = parseTime(b.newestStory?.createdAt);
-            return timeB - timeA;
-        });
-
-        return groups;
+        return groups.sort((a, b) => parseTime(b.newestStory?.createdAt) - parseTime(a.newestStory?.createdAt));
     }, [storiesData, usersMap, currentUser]);
 
     const deleteStoryMutation = useMutation({
-        mutationFn: async (id: string) => {
-            await storyService.deleteStory({
-                params: { path: { id } },
-            });
-        },
+        mutationFn: (id: string) => storyService.deleteStory({ params: { path: { id } } }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['stories'] });
-            notifications.show({ title: t('stories'), message: t('storyDeleted'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['stories'] });
+            notifySuccess(t('deleted'), t('stories'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
-
-    const handleDeleteStory = (id: string) => {
-        deleteStoryMutation.mutate(id);
-    };
 
     const deleteFeedMutation = useMutation({
-        mutationFn: async (id: string) => {
-            await feedService.deleteFeed({
-                params: { path: { id } },
-            });
-        },
+        mutationFn: (id: string) => feedService.deleteFeed({ params: { path: { id } } }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['feeds'] });
-            notifications.show({ title: t('feeds'), message: t('feedDeleted'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifySuccess(t('deleted'), t('feeds'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
-
-    const handleDeleteFeed = (id: string) => {
-        openConfirmActionModal({
-            title: t('confirmDeleteTitle'),
-            message: t('confirmDeleteMessage'),
-            confirmLabel: t('delete'),
-            cancelLabel: t('cancel'),
-            onConfirm: () => deleteFeedMutation.mutate(id),
-        });
-    };
 
     if (!isAuthenticated) {
         return (
@@ -291,25 +210,25 @@ export default function Home() {
                 lastStoryElementRef={lastStoryElementRef}
             />
 
-            <Stack gap="md">
+            <Stack>
                 {feedsLoading ? (
                     Array.from({ length: 3 }).map((_, i) => (
                         <Card key={i}>
-                            <Group gap="sm" mb="sm">
+                            <Group mb="sm">
                                 <Skeleton height={40} circle />
                                 <Stack gap={6} flex={1}>
                                     <Skeleton height={14} width="40%" />
                                     <Skeleton height={10} width="20%" />
                                 </Stack>
                             </Group>
-                            <Skeleton height={50} radius="sm" mb="sm" />
+                            <Skeleton height={50} mb="sm" />
                             <Skeleton height={180} radius="md" />
                         </Card>
                     ))
-                ) : feedsData?.length === 0 ? (
+                ) : feedsData.length === 0 ? (
                     <EmptyState title={t('noData')} />
                 ) : (
-                    feedsData?.map((feed, idx) => {
+                    feedsData.map((feed, idx) => {
                         const author =
                             usersMap[feed.userId] ?? (currentUser?.id === feed.userId ? currentUser : undefined);
                         return (
@@ -319,7 +238,7 @@ export default function Home() {
                                 author={author}
                                 usersMap={usersMap}
                                 onEditFeed={(f) => setEditingFeed(f)}
-                                onDeleteFeed={handleDeleteFeed}
+                                onDeleteFeed={(id) => confirmDelete(t, () => deleteFeedMutation.mutate(id))}
                                 domRef={idx === feedsData.length - 1 ? lastFeedElementRef : undefined}
                             />
                         );
@@ -354,7 +273,7 @@ export default function Home() {
                 groups={userStoryGroups}
                 initialGroupIndex={selectedGroupIndex}
                 onEdit={(story) => setEditingStory(story)}
-                onDelete={handleDeleteStory}
+                onDelete={(id) => deleteStoryMutation.mutate(id)}
                 updatedStory={updatedStoryForModal}
             />
         </Stack>

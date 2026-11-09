@@ -1,43 +1,33 @@
 import { useState, useMemo } from 'react';
 import { Group, Text, SimpleGrid, Select, Modal, Button, Stack } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { userService, friendService, type FriendResource, type GetFriendsQuery } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
-import { DataTable, type Column } from '../../components/DataTable';
+import { useAuth } from '../../auth';
+import {
+    DataTable,
+    type Column,
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    DeleteActionButton,
+    UserSubpageContainer,
+    UserInfoCell,
+} from '../../components';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDateTime } from '../../utils/date';
-import { StatusBadge } from '../../components/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
-import { useUsersMap } from '../../hooks/useUsersMap';
-import { UserInfoCell } from '../../components/common/UserInfoCell';
+import { confirmDelete, formatDateTime, notifySuccess, notifyError } from '../../utils';
+import { useDataTableState, useUsersMap, useFormErrors } from '../../hooks';
 
 export default function UserFriends() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
 
-    const tableState = useDataTableState({
-        initialSort: 'createdAt:desc',
-    });
-
+    const tableState = useDataTableState({ initialSort: 'createdAt:desc' });
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
-
     const [addOpened, setAddOpened] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (statusFilter !== null) count++;
-        return count;
-    }, [statusFilter]);
+    const { errors, setFromError, clearFieldError, clearErrors } = useFormErrors();
 
     const handleResetFilters = () => {
         setStatusFilter(null);
@@ -95,9 +85,7 @@ export default function UserFriends() {
                     queryKey: ['potential-friends', targetUser?.id],
                     queryFn: async () => {
                         const res = await userService.getUsers({
-                            params: {
-                                query: { limit: 50 },
-                            },
+                            params: { query: { limit: 50 } },
                         });
                         return res.data ?? [];
                     },
@@ -113,6 +101,29 @@ export default function UserFriends() {
 
                 const addFriendMutation = useMutation({
                     mutationFn: async (userId: string) => {
+                        if (!currentUser?.id) return;
+                        const res = await friendService.getFriends({
+                            params: {
+                                query: {
+                                    filter: { userIds: [currentUser.id, userId] },
+                                    limit: 10,
+                                },
+                            },
+                        });
+                        const existing = res.data?.find(
+                            (f) =>
+                                (f.senderUserId === currentUser.id && f.receiverUserId === userId) ||
+                                (f.senderUserId === userId && f.receiverUserId === currentUser.id),
+                        );
+                        if (existing) {
+                            if (existing.status === FriendStatusEnum.REJECTED) {
+                                await friendService.updateFriendStatus({
+                                    params: { path: { id: existing.id } },
+                                    body: { status: FriendStatusEnum.PENDING },
+                                });
+                            }
+                            return;
+                        }
                         await friendService.createFriend({
                             body: { userId },
                         });
@@ -120,15 +131,11 @@ export default function UserFriends() {
                     onSuccess: () => {
                         setAddOpened(false);
                         setSelectedUserId(null);
-                        setFieldErrors({});
-                        queryClient.invalidateQueries({ queryKey: ['friends'] });
-                        notifications.show({ title: t('friend'), message: t('friendRequestSent'), color: 'green' });
+                        clearErrors();
+                        void queryClient.invalidateQueries({ queryKey: ['friends'] });
+                        notifySuccess(t('saved'), t('friends'));
                     },
-                    onError: (err) => {
-                        const fe = extractFieldErrors(err);
-                        setFieldErrors(fe);
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => setFromError(err),
                 });
 
                 const updateStatusMutation = useMutation({
@@ -138,12 +145,10 @@ export default function UserFriends() {
                             body: { status: status as 1 | 2 | 3 | 4 },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['friends'] });
-                        notifications.show({ title: t('friend'), message: t('friendStatusUpdated'), color: 'green' });
+                        void queryClient.invalidateQueries({ queryKey: ['friends'] });
+                        notifySuccess(t('statusUpdated'), t('friends'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const deleteMutation = useMutation({
@@ -152,23 +157,11 @@ export default function UserFriends() {
                             params: { path: { id } },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['friends'] });
-                        notifications.show({ title: t('friend'), message: t('friendRemoved'), color: 'green' });
+                        void queryClient.invalidateQueries({ queryKey: ['friends'] });
+                        notifySuccess(t('deleted'), t('friends'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
-
-                const handleDelete = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmFriendRemovalTitle'),
-                        message: t('confirmFriendRemovalMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMutation.mutate(id),
-                    });
-                };
 
                 const columns: Column<FriendResource>[] = [
                     {
@@ -196,7 +189,7 @@ export default function UserFriends() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                    <SimpleGrid>
                         <Select
                             label={t('status')}
                             placeholder={t('allStatuses')}
@@ -223,9 +216,17 @@ export default function UserFriends() {
                             totalItems={pagination?.total}
                             state={tableState}
                             filtersNode={filtersNode}
-                            activeFiltersCount={activeFiltersCount}
+                            activeFiltersCount={statusFilter !== null ? 1 : 0}
                             onResetFilters={handleResetFilters}
-                            onAdd={isOwner ? () => setAddOpened(true) : undefined}
+                            onAdd={
+                                isOwner
+                                    ? () => {
+                                          clearErrors();
+                                          setAddOpened(true);
+                                      }
+                                    : undefined
+                            }
+                            addLabel={t('addFriend')}
                             actions={(f) => {
                                 const otherId = f.senderUserId === targetUser?.id ? f.receiverUserId : f.senderUserId;
                                 const otherUser = getUser(otherId);
@@ -247,7 +248,7 @@ export default function UserFriends() {
                                                     loading={updateStatusMutation.isPending}
                                                 />
                                                 <DeleteActionButton
-                                                    onClick={() => handleDelete(f.id)}
+                                                    onClick={() => confirmDelete(t, () => deleteMutation.mutate(f.id))}
                                                     loading={deleteMutation.isPending}
                                                 />
                                             </>
@@ -257,8 +258,15 @@ export default function UserFriends() {
                             }}
                         />
 
-                        <Modal opened={addOpened} onClose={() => setAddOpened(false)} title={t('add')}>
-                            <Stack gap="md">
+                        <Modal
+                            opened={addOpened}
+                            onClose={() => {
+                                setAddOpened(false);
+                                clearErrors();
+                            }}
+                            title={t('addFriend')}
+                        >
+                            <Stack>
                                 <Select
                                     label={t('user')}
                                     placeholder={t('selectUser')}
@@ -269,15 +277,19 @@ export default function UserFriends() {
                                         label: `${u.firstName} ${u.lastName} (@${u.link})`,
                                     }))}
                                     value={selectedUserId}
-                                    error={fieldErrors.receiverUserId || fieldErrors.userId}
-                                    onChange={setSelectedUserId}
+                                    error={errors.receiverUserId || errors.userId}
+                                    onChange={(val) => {
+                                        setSelectedUserId(val);
+                                        clearFieldError('receiverUserId');
+                                        clearFieldError('userId');
+                                    }}
                                 />
                                 <Button
                                     loading={addFriendMutation.isPending}
                                     disabled={!selectedUserId || addFriendMutation.isPending}
                                     onClick={() => selectedUserId && addFriendMutation.mutate(selectedUserId)}
                                 >
-                                    {t('add')}
+                                    {t('save')}
                                 </Button>
                             </Stack>
                         </Modal>

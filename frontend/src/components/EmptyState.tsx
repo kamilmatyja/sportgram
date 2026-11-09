@@ -30,5 +30,3 @@ export function EmptyState({
         </Paper>
     );
 }
-
-export default EmptyState;

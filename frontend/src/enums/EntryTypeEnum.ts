@@ -1,4 +1,4 @@
-import { getEnumOptions } from '../utils/enumUtils';
+import { getEnumOptions } from '../utils';
 
 export enum EntryTypeEnum {
     USER = 1,

@@ -1,23 +1,31 @@
-import { useState, useMemo } from 'react';
-import { Text, Avatar, SimpleGrid, TextInput, Select, Badge, Group } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+import { useState } from 'react';
+import { Text, Avatar, Badge, Group } from '@mantine/core';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage } from '../../api/client';
 import { feedService, type FeedResource, type GetFeedsQuery } from '../../api/services';
-import { DataTable, type Column } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components';
+import {
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    EditActionButton,
+    DeleteActionButton,
+    UserSubpageContainer,
+    TextStatusFilterGrid,
+} from '../../components';
+import { FeedModal } from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatImageSrc } from '../../utils/imageUtils';
-import { formatDateTime } from '../../utils/date';
-import { truncate, formatFeedOrigin } from '../../utils/text';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { StatusBadge } from '../../components/StatusBadge';
-import { FeedModal } from '../../components/feed/FeedModal';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
+import { useDataTableState } from '../../hooks';
+import {
+    notifySuccess,
+    notifyError,
+    confirmDelete,
+    formatImageSrc,
+    formatDateTime,
+    buildSortOptions,
+    truncate,
+    formatFeedOrigin,
+} from '../../utils';
 
 export default function UserFeeds() {
     const { t } = useTranslation();
@@ -32,13 +40,7 @@ export default function UserFeeds() {
     const [editingFeed, setEditingFeed] = useState<FeedResource | null>(null);
 
     const sortOptions = buildSortOptions(t, ['createdAt', 'text', 'status']);
-
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (textFilter.trim()) count++;
-        if (statusFilter !== null) count++;
-        return count;
-    }, [textFilter, statusFilter]);
+    const activeFiltersCount = [textFilter.trim(), statusFilter].filter(Boolean).length;
 
     const handleResetFilters = () => {
         setTextFilter('');
@@ -91,51 +93,30 @@ export default function UserFeeds() {
                             body: { status },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-feeds', targetUser?.id] });
-                        queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', targetUser?.id] });
-                        queryClient.invalidateQueries({ queryKey: ['feeds'] });
-                        notifications.show({ title: t('feeds'), message: t('statusUpdated'), color: 'green' });
+                        void queryClient.invalidateQueries({ queryKey: ['user-feeds', targetUser?.id] });
+                        void queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', targetUser?.id] });
+                        void queryClient.invalidateQueries({ queryKey: ['feeds'] });
+                        notifySuccess(t('statusUpdated'), t('feeds'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const deleteMutation = useMutation({
-                    mutationFn: (id: string) =>
-                        feedService.deleteFeed({
-                            params: { path: { id } },
-                        }),
+                    mutationFn: (id: string) => feedService.deleteFeed({ params: { path: { id } } }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-feeds', targetUser?.id] });
-                        queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', targetUser?.id] });
-                        queryClient.invalidateQueries({ queryKey: ['feeds'] });
-                        notifications.show({ title: t('feeds'), message: t('feedDeleted'), color: 'green' });
+                        void queryClient.invalidateQueries({ queryKey: ['user-feeds', targetUser?.id] });
+                        void queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', targetUser?.id] });
+                        void queryClient.invalidateQueries({ queryKey: ['feeds'] });
+                        notifySuccess(t('deleted'), t('feeds'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
-
-                const handleDelete = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmDeleteTitle'),
-                        message: t('confirmDeleteMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMutation.mutate(id),
-                    });
-                };
 
                 const columns: Column<FeedResource>[] = [
                     {
                         key: 'photo',
                         header: t('photo'),
-                        render: (f) => (
-                            <Avatar src={formatImageSrc(f.photo)} size="md">
-                                ?
-                            </Avatar>
-                        ),
+                        render: (f) => <Avatar src={formatImageSrc(f.photo)}>?</Avatar>,
                     },
                     {
                         key: 'text',
@@ -156,7 +137,7 @@ export default function UserFeeds() {
                         header: t('origin'),
                         render: (f) =>
                             f.feedOrigin ? (
-                                <Badge size="sm">{formatFeedOrigin(f.feedOrigin, t)}</Badge>
+                                <Badge>{formatFeedOrigin(f.feedOrigin, t)}</Badge>
                             ) : (
                                 <Text size="sm" c="dimmed">
                                     —
@@ -180,31 +161,13 @@ export default function UserFeeds() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                        <TextInput
-                            label={t('text')}
-                            placeholder={t('search')}
-                            value={textFilter}
-                            onChange={(e) => {
-                                setTextFilter(e.currentTarget.value);
-                                tableState.resetPage();
-                            }}
-                        />
-                        <Select
-                            label={t('status')}
-                            placeholder={t('allStatuses')}
-                            data={ElementStatusEnum.getOptions(t).map((s) => ({
-                                value: String(s.value),
-                                label: s.label,
-                            }))}
-                            value={statusFilter}
-                            onChange={(v) => {
-                                setStatusFilter(v);
-                                tableState.resetPage();
-                            }}
-                            clearable
-                        />
-                    </SimpleGrid>
+                    <TextStatusFilterGrid
+                        text={textFilter}
+                        onTextChange={setTextFilter}
+                        status={statusFilter}
+                        onStatusChange={setStatusFilter}
+                        onFilterChange={tableState.resetPage}
+                    />
                 );
 
                 return (
@@ -220,6 +183,7 @@ export default function UserFeeds() {
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? () => setCreateOpened(true) : undefined}
+                            addLabel={t('addFeed')}
                             actions={(f) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     {targetUser?.link && <ViewActionButton to={`/users/${targetUser.link}`} />}
@@ -239,7 +203,7 @@ export default function UserFeeds() {
                                         <>
                                             <EditActionButton onClick={() => setEditingFeed(f)} />
                                             <DeleteActionButton
-                                                onClick={() => handleDelete(f.id)}
+                                                onClick={() => confirmDelete(t, () => deleteMutation.mutate(f.id))}
                                                 loading={deleteMutation.isPending}
                                             />
                                         </>

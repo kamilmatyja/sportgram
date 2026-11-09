@@ -12,7 +12,7 @@ import './index.css';
 
 import './i18n';
 import { theme } from './theme';
-import { AuthProvider } from './auth/AuthContext';
+import { AuthProvider } from './auth';
 import App from './App';
 
 const queryClient = new QueryClient({

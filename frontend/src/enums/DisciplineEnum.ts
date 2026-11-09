@@ -1,4 +1,4 @@
-import { getEnumOptions } from '../utils/enumUtils';
+import { getEnumOptions } from '../utils';
 
 export enum DisciplineEnum {
     RUNNING = 1,
@@ -14,7 +14,7 @@ export enum DisciplineEnum {
 }
 
 export namespace DisciplineEnum {
-    export const getOptions = (t: (key: string) => string) => getEnumOptions(DisciplineEnum, 'disciplines', t);
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(DisciplineEnum, 'disciplineTypes', t);
     export const getStringOptions = (t: (key: string) => string) =>
         getOptions(t).map((opt) => ({ value: String(opt.value), label: opt.label }));
 }

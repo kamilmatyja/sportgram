@@ -3,14 +3,14 @@ import { Modal, Stack, Group, Avatar, Text, Image, Box, ActionIcon, Badge, Toolt
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IconChevronLeft, IconChevronRight, IconEdit, IconTrash } from '@tabler/icons-react';
-import { formatImageSrc } from '../utils/imageUtils';
-import { formatDateTime } from '../utils/date';
-import { useAuth } from '../auth/AuthContext';
-import { storyService, type StoryResource } from '../api/services/story.service';
-import type { UserResource } from '../api/services/user.service';
+import { formatImageSrc } from '../utils';
+import { formatDateTime } from '../utils';
+import { useAuth } from '../auth';
+import { storyService, type StoryResource } from '../api/services';
+import type { UserResource } from '../api/services';
 import { EntryTypeEnum } from '../enums/EntryTypeEnum';
 import { EntityViewCounter } from './EntityViewCounter';
-import { openConfirmActionModal } from '../utils/confirmModal';
+import { openConfirmActionModal } from '../utils';
 
 export interface UserStoriesGroup {
     userId: string;
@@ -126,7 +126,7 @@ export function StoryViewerModal({
                         filter: { userId },
                         page: pageToFetch,
                         limit: 10,
-                        sort: 'createdAt:asc',
+                        sort: 'createdAt:desc',
                     },
                 },
             });
@@ -140,7 +140,7 @@ export function StoryViewerModal({
                 fetched.forEach((s) => existingMap.set(s.id, s));
                 const parseTime = (dateStr?: string) => (dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0);
                 const combined = Array.from(existingMap.values()).sort(
-                    (a, b) => parseTime(a.createdAt) - parseTime(b.createdAt),
+                    (a, b) => parseTime(b.createdAt) - parseTime(a.createdAt),
                 );
                 return {
                     ...prev,
@@ -166,7 +166,7 @@ export function StoryViewerModal({
     useEffect(() => {
         if (!opened || !paginateUserStories || !currentUserId) return;
         if (!userStoriesMap[currentUserId]) {
-            fetchUserStoriesPage(currentUserId, 1);
+            void fetchUserStoriesPage(currentUserId, 1);
         }
     }, [opened, paginateUserStories, currentUserId, userStoriesMap, fetchUserStoriesPage]);
 
@@ -175,7 +175,7 @@ export function StoryViewerModal({
         const state = userStoriesMap[currentUserId];
         if (!state || state.isLoading) return;
         if (currentStoryIdx >= state.stories.length - 1 && state.hasNextPage) {
-            fetchUserStoriesPage(currentUserId, state.page + 1);
+            void fetchUserStoriesPage(currentUserId, state.page + 1);
         }
     }, [opened, paginateUserStories, currentUserId, currentStoryIdx, userStoriesMap, fetchUserStoriesPage]);
 
@@ -255,7 +255,7 @@ export function StoryViewerModal({
                         </Box>
 
                         <Group justify="space-between" align="center" wrap="nowrap" w="100%">
-                            <Group gap="sm" wrap="nowrap">
+                            <Group wrap="nowrap">
                                 {currentAuthor?.link ? (
                                     <Anchor component={Link} to={`/users/${currentAuthor.link}`} underline="never">
                                         <Avatar src={authorPhoto}>?</Avatar>
@@ -287,11 +287,11 @@ export function StoryViewerModal({
                             </Group>
 
                             <Group gap="xs" align="center" wrap="nowrap">
-                                <Badge size="sm">
+                                <Badge>
                                     {currentStoryIdx + 1} / {currentStories.length}
                                 </Badge>
                                 {currentStory && (
-                                    <Badge size="sm">
+                                    <Badge>
                                         <EntityViewCounter
                                             key={currentStory.id}
                                             entityId={currentStory.id}
@@ -384,7 +384,7 @@ export function StoryViewerModal({
                     </Stack>
                 </Modal.Header>
                 <Modal.Body>
-                    <Stack gap="md" align="center" pos="relative">
+                    <Stack align="center" pos="relative">
                         <Box className="story-viewer-viewport">
                             <ActionIcon
                                 variant="filled"
@@ -395,7 +395,7 @@ export function StoryViewerModal({
                                     e.stopPropagation();
                                     handlePrevStory();
                                 }}
-                                aria-label={t('previous', 'Poprzedni')}
+                                aria-label={t('previous')}
                             >
                                 <IconChevronLeft size={18} />
                             </ActionIcon>
@@ -419,7 +419,7 @@ export function StoryViewerModal({
                                     e.stopPropagation();
                                     handleNextStory();
                                 }}
-                                aria-label={t('next', 'Następny')}
+                                aria-label={t('next')}
                             >
                                 <IconChevronRight size={18} />
                             </ActionIcon>
@@ -438,5 +438,3 @@ export function StoryViewerModal({
         </Modal.Root>
     );
 }
-
-export default StoryViewerModal;

@@ -1,3 +1,5 @@
+const toCamelCase = (str: string) => str.toLowerCase().replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
+
 export function getEnumOptions(
     enumObj: Record<string, unknown>,
     prefix: string,
@@ -8,7 +10,7 @@ export function getEnumOptions(
         .filter(([key, value]) => typeof value === 'number' && !excludeKeys.includes(key))
         .map(([key, value]) => ({
             value: value as number,
-            label: t(`${prefix}.${key.toLowerCase()}`),
+            label: t(`${prefix}.${toCamelCase(key)}`),
         }));
 }
 

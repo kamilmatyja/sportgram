@@ -9,20 +9,16 @@ import {
     Table,
     Paper,
     ActionIcon,
+    Tooltip,
     MantineThemeProvider,
     Center,
     Loader,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import { IconMapPin, IconClock, IconChevronDown, IconChevronRight } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
-import { applyThemeColor } from '../../utils/themeUtils';
-import NotFound from '../../components/NotFound';
-import { EmptyState } from '../../components/EmptyState';
-import { getErrorMessage } from '../../api/client';
 import {
     trainingService,
     userService,
@@ -31,25 +27,28 @@ import {
     type TrainingDisciplineDistanceResource,
     type TrainingDisciplineSubDistanceResource,
 } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
-import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { ColorEnum } from '../../enums/ColorEnum';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
-import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
-import { EntityViewCounter } from '../../components/EntityViewCounter';
+import { useAuth } from '../../auth';
+import { EmptyState } from '../../components';
+import { EntityViewCounter } from '../../components';
+import NotFound from '../../components/NotFound';
 import UserProfileNav from '../../components/UserProfileNav';
-import { openConfirmActionModal } from '../../utils/confirmModal';
+import {
+    StatusBadge,
+    StatusActionMenu,
+    EditActionButton,
+    DeleteActionButton,
+    ViewActionButton,
+    UserInfoCell,
+} from '../../components';
+import { TrainingFormModal } from '../../components';
+import { ColorEnum } from '../../enums/ColorEnum';
+import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
+import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
+import { useMyFriends, useUsersMap, useUserSubpageAccess } from '../../hooks';
 import { brown } from '../../theme';
-import { formatDateTime } from '../../utils/date';
-import { StatusBadge } from '../../components/common/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { EditActionButton, DeleteActionButton, ViewActionButton } from '../../components/common/RowActionButtons';
-import { TrainingFormModal } from '../../components/trainings/TrainingFormModal';
-import { useUsersMap } from '../../hooks/useUsersMap';
-import { useMyFriends } from '../../hooks/useMyFriends';
-import { UserInfoCell } from '../../components/common/UserInfoCell';
+import { applyThemeColor, confirmDelete, formatDateTime, notifyError, notifySuccess } from '../../utils';
 
 export default function TrainingDetails() {
     const { link } = useParams<{ link: string }>();
@@ -132,12 +131,10 @@ export default function TrainingDetails() {
             });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['training', link] });
-            notifications.show({ title: t('trainings'), message: t('statusUpdated'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['training', link] });
+            notifySuccess(t('statusUpdated'), t('trainings'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const updateParticipantStatusMutation = useMutation({
@@ -147,39 +144,23 @@ export default function TrainingDetails() {
                 body: { status },
             }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['training', link] });
-            notifications.show({ title: t('participants'), message: t('statusUpdated'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['training', link] });
+            notifySuccess(t('statusUpdated'), t('participants'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const deleteMutation = useMutation({
         mutationFn: async () => {
             if (!training?.id) return;
-            await trainingService.deleteTraining({
-                params: { path: { id: training.id } },
-            });
+            await trainingService.deleteTraining({ params: { path: { id: training.id } } });
         },
         onSuccess: () => {
-            notifications.show({ title: t('trainings'), message: t('trainingDeleted'), color: 'green' });
+            notifySuccess(t('deleted'), t('trainings'));
             navigate(ownerUser?.link ? `/users/${ownerUser.link}/trainings` : (-1 as unknown as string));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
-
-    const handleDelete = () => {
-        openConfirmActionModal({
-            title: t('confirmDeleteTitle'),
-            message: t('confirmDeleteMessage'),
-            confirmLabel: t('delete'),
-            cancelLabel: t('cancel'),
-            onConfirm: () => deleteMutation.mutate(),
-        });
-    };
 
     const primaryColor = ColorEnum.getMantineColor(ownerUser?.color);
 
@@ -200,7 +181,7 @@ export default function TrainingDetails() {
     }
 
     if (!training) {
-        return <NotFound title={t('trainingNotFound')} />;
+        return <NotFound title={t('notFound')} />;
     }
 
     if (!canAccessSubpage) {
@@ -212,7 +193,7 @@ export default function TrainingDetails() {
             <Stack gap="lg">
                 {ownerUser && <UserProfileNav user={ownerUser} isOwner={isOwner} />}
 
-                <Card p="lg">
+                <Card>
                     <Group justify="space-between" align="flex-start" mb="md" wrap="nowrap">
                         <div>
                             <Title order={2}>{training.title}</Title>
@@ -255,7 +236,7 @@ export default function TrainingDetails() {
                                 <>
                                     <EditActionButton onClick={openEdit} />
                                     <DeleteActionButton
-                                        onClick={handleDelete}
+                                        onClick={() => confirmDelete(t, () => deleteMutation.mutate())}
                                         loading={deleteMutation.isPending}
                                         disabled={deleteMutation.isPending}
                                     />
@@ -264,7 +245,7 @@ export default function TrainingDetails() {
                         </Group>
                     </Group>
 
-                    <Group gap="sm" mb="md">
+                    <Group mb="md">
                         <StatusBadge status={training.status} />
                     </Group>
 
@@ -280,8 +261,8 @@ export default function TrainingDetails() {
                     {!training.participants || training.participants.length === 0 ? (
                         <EmptyState title={t('noData')} />
                     ) : (
-                        <Table.ScrollContainer minWidth={600} mb="lg">
-                            <Table verticalSpacing="sm">
+                        <Table.ScrollContainer minWidth={500} mb="lg">
+                            <Table>
                                 <Table.Thead>
                                     <Table.Tr>
                                         <Table.Th>{t('user')}</Table.Th>
@@ -295,7 +276,6 @@ export default function TrainingDetails() {
                                     {training.participants?.map((p: TrainingParticipantResource) => {
                                         const u = getUser(p.userId);
                                         const isSelf = p.userId === currentUser?.id;
-                                        const canManageParticipant = isSelf;
                                         return (
                                             <Table.Tr key={p.id}>
                                                 <Table.Td>
@@ -307,7 +287,7 @@ export default function TrainingDetails() {
                                                 <Table.Td ta="right">
                                                     <Group gap="xs" justify="flex-end" wrap="nowrap">
                                                         {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
-                                                        {canManageParticipant && (
+                                                        {isSelf && (
                                                             <StatusActionMenu
                                                                 status={p.status}
                                                                 options={SaveStatusEnum.getOptions(t)}
@@ -336,9 +316,9 @@ export default function TrainingDetails() {
                     {!training.disciplines || training.disciplines.length === 0 ? (
                         <EmptyState title={t('noData')} />
                     ) : (
-                        <Stack gap="md">
+                        <Stack>
                             {training.disciplines.map((disc: TrainingDisciplineResource) => (
-                                <Paper key={disc.id} p="md">
+                                <Paper key={disc.id}>
                                     <Badge mb="sm">
                                         {DisciplineEnum.getOptions(t).find((o) => o.value === disc.discipline)?.label ??
                                             disc.discipline}
@@ -347,18 +327,18 @@ export default function TrainingDetails() {
                                     {!disc.distances || disc.distances.length === 0 ? (
                                         <EmptyState title={t('noData')} />
                                     ) : (
-                                        <Table.ScrollContainer minWidth={600}>
-                                            <Table verticalSpacing="sm">
+                                        <Table.ScrollContainer minWidth={500}>
+                                            <Table>
                                                 <Table.Thead>
                                                     <Table.Tr>
-                                                        <Table.Th className="table-expand-col" />
+                                                        <Table.Th w={46} />
                                                         <Table.Th>{t('distanceMeters')}</Table.Th>
                                                         <Table.Th>{t('timeSeconds')}</Table.Th>
                                                     </Table.Tr>
                                                 </Table.Thead>
                                                 <Table.Tbody>
                                                     {disc.distances.map(
-                                                        (dist: TrainingDisciplineDistanceResource, dIdx) => {
+                                                        (dist: TrainingDisciplineDistanceResource, dIdx: number) => {
                                                             const hasSub =
                                                                 dist.subDistances && dist.subDistances.length > 0;
                                                             const isExpanded = expandedDistanceIds.includes(dist.id);
@@ -373,20 +353,26 @@ export default function TrainingDetails() {
                                                                     >
                                                                         <Table.Td>
                                                                             {hasSub ? (
-                                                                                <ActionIcon
-                                                                                    size="xs"
-                                                                                    variant="subtle"
-                                                                                    onClick={() =>
-                                                                                        toggleExpandDistance(dist.id)
-                                                                                    }
-                                                                                    aria-label={t('details')}
-                                                                                >
-                                                                                    {isExpanded ? (
-                                                                                        <IconChevronDown size={16} />
-                                                                                    ) : (
-                                                                                        <IconChevronRight size={16} />
-                                                                                    )}
-                                                                                </ActionIcon>
+                                                                                <Tooltip label={t('details')}>
+                                                                                    <ActionIcon
+                                                                                        onClick={() =>
+                                                                                            toggleExpandDistance(
+                                                                                                dist.id,
+                                                                                            )
+                                                                                        }
+                                                                                        aria-label={t('details')}
+                                                                                    >
+                                                                                        {isExpanded ? (
+                                                                                            <IconChevronDown
+                                                                                                size={16}
+                                                                                            />
+                                                                                        ) : (
+                                                                                            <IconChevronRight
+                                                                                                size={16}
+                                                                                            />
+                                                                                        )}
+                                                                                    </ActionIcon>
+                                                                                </Tooltip>
                                                                             ) : null}
                                                                         </Table.Td>
                                                                         <Table.Td>
@@ -398,12 +384,8 @@ export default function TrainingDetails() {
                                                                     </Table.Tr>
                                                                     {hasSub && isExpanded && (
                                                                         <Table.Tr className="table-expansion-row">
-                                                                            <Table.Td
-                                                                                colSpan={3}
-                                                                                p={0}
-                                                                                className="table-nested-container"
-                                                                            >
-                                                                                <Table verticalSpacing="sm">
+                                                                            <Table.Td colSpan={3} p={0}>
+                                                                                <Table>
                                                                                     <Table.Thead>
                                                                                         <Table.Tr>
                                                                                             <Table.Th>
@@ -430,12 +412,12 @@ export default function TrainingDetails() {
                                                                                         {dist.subDistances.map(
                                                                                             (
                                                                                                 sd: TrainingDisciplineSubDistanceResource,
-                                                                                                sdIdx,
+                                                                                                sIdx: number,
                                                                                             ) => (
                                                                                                 <Table.Tr
                                                                                                     key={sd.id}
                                                                                                     className={
-                                                                                                        sdIdx % 2 === 0
+                                                                                                        sIdx % 2 === 0
                                                                                                             ? 'table-row-odd'
                                                                                                             : 'table-row-even'
                                                                                                     }
@@ -504,7 +486,7 @@ export default function TrainingDetails() {
                     onClose={closeEdit}
                     training={training}
                     collaboratorOptions={collaboratorOptions}
-                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ['training', link] })}
+                    onSuccess={() => void queryClient.invalidateQueries({ queryKey: ['training', link] })}
                 />
             </Stack>
         </MantineThemeProvider>

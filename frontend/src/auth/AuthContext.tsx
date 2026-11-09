@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useState, useCallback, useMemo, type ReactNode } from 'react';
 import { useMantineColorScheme } from '@mantine/core';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { authStorage } from '../api/client';
 import { authService, userService, type UserResource } from '../api/services';
-import { RoleEnum } from '../enums/RoleEnum';
 import { LanguageEnum } from '../enums/LanguageEnum';
+import { RoleEnum } from '../enums/RoleEnum';
 import { ThemeEnum } from '../enums/ThemeEnum';
 
 export type User = UserResource;
@@ -24,14 +25,12 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
 const REFRESH_INTERVAL_MS = 4 * 60 * 1000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+    const queryClient = useQueryClient();
     const [token, setToken] = useState<string | null>(authStorage.getToken());
     const [signId, setSignId] = useState<string | null>(authStorage.getSignId());
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(!!signId);
 
     const { setColorScheme } = useMantineColorScheme();
     const { i18n } = useTranslation();
@@ -40,9 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         authStorage.clear();
         setToken(null);
         setSignId(null);
-        setCurrentUser(null);
-        setIsLoading(false);
-    }, []);
+        queryClient.removeQueries({ queryKey: ['currentUser'] });
+    }, [queryClient]);
 
     const login = useCallback((newToken: string, newSignId: string, rememberMe: boolean) => {
         authStorage.save(newToken, newSignId, rememberMe);
@@ -50,60 +48,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSignId(newSignId);
     }, []);
 
-    const fetchUser = useCallback(
-        async (currentSignId: string) => {
-            try {
-                const res = await userService.getUsers({
-                    params: {
-                        query: {
-                            filter: { signId: currentSignId, userIds: null },
-                            'include[]': ['userRoles', 'userDisciplines'],
-                            limit: 1,
-                        },
+    const {
+        data: currentUser = null,
+        isLoading,
+        isError,
+        refetch,
+    } = useQuery({
+        queryKey: ['currentUser', signId],
+        queryFn: async () => {
+            const res = await userService.getUsers({
+                params: {
+                    query: {
+                        filter: { signId: signId!, userIds: null },
+                        'include[]': ['userRoles', 'userDisciplines'],
+                        limit: 1,
                     },
-                });
-                const user = res.data?.[0];
-                if (!user) {
-                    logout();
-                    return;
-                }
-                setCurrentUser(user);
-            } catch {
-                logout();
-            } finally {
-                setIsLoading(false);
-            }
+                },
+            });
+            const user = res.data?.[0];
+            if (!user) throw new Error('User not found');
+            return user;
         },
-        [logout],
-    );
+        enabled: !!(token && signId),
+        retry: false,
+    });
+
+    useEffect(() => {
+        if (isError) logout();
+    }, [isError, logout]);
 
     const refetchUser = useCallback(async () => {
-        if (!signId || !token) {
-            setCurrentUser(null);
-            setIsLoading(false);
-            return;
+        if (token && signId) {
+            await refetch();
         }
-        await fetchUser(signId);
-    }, [signId, token, fetchUser]);
+    }, [token, signId, refetch]);
 
     useEffect(() => {
-        if (signId && token) {
-            setIsLoading(true);
-            fetchUser(signId);
-        } else {
-            setCurrentUser(null);
-            setIsLoading(false);
-        }
-    }, [signId, token, fetchUser]);
-
-    useEffect(() => {
-        const handleLogout = () => {
-            logout();
-        };
-        window.addEventListener('auth:logout', handleLogout);
-        return () => {
-            window.removeEventListener('auth:logout', handleLogout);
-        };
+        window.addEventListener('auth:logout', logout);
+        return () => window.removeEventListener('auth:logout', logout);
     }, [logout]);
 
     useEffect(() => {
@@ -111,22 +93,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const targetLang = currentUser.language === LanguageEnum.ENGLISH ? 'en' : 'pl';
         if (i18n.language !== targetLang) {
-            i18n.changeLanguage(targetLang);
+            void i18n.changeLanguage(targetLang);
         }
 
-        const targetTheme = currentUser.theme === ThemeEnum.DARK ? 'dark' : 'light';
-        setColorScheme(targetTheme);
-    }, [currentUser?.id, currentUser?.language, currentUser?.theme, setColorScheme, i18n]);
+        setColorScheme(currentUser.theme === ThemeEnum.DARK ? 'dark' : 'light');
+    }, [currentUser?.language, currentUser?.theme, setColorScheme, i18n]);
 
     useEffect(() => {
         if (!signId) return;
+
         const interval = setInterval(async () => {
             try {
-                const data = await authService.refreshSign({
-                    params: {
-                        path: { id: signId },
-                    },
-                });
+                const data = await authService.refreshSign({ params: { path: { id: signId } } });
                 if (data?.token) {
                     authStorage.setToken(data.token);
                     setToken(data.token);
@@ -141,18 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => clearInterval(interval);
     }, [signId, logout]);
 
-    const isAdmin = useMemo(
-        () => currentUser?.roles?.some((r) => r.role === RoleEnum.ADMINISTRATOR) ?? false,
-        [currentUser],
-    );
-    const isOrganizer = useMemo(
-        () => currentUser?.roles?.some((r) => r.role === RoleEnum.ORGANIZER) ?? false,
-        [currentUser],
-    );
-    const isParticipant = useMemo(
-        () => currentUser?.roles?.some((r) => r.role === RoleEnum.PARTICIPANT) ?? false,
-        [currentUser],
-    );
+    const userRoles = useMemo(() => new Set(currentUser?.roles?.map((r) => r.role)), [currentUser]);
+    const isAdmin = userRoles.has(RoleEnum.ADMINISTRATOR);
+    const isOrganizer = userRoles.has(RoleEnum.ORGANIZER);
+    const isParticipant = userRoles.has(RoleEnum.PARTICIPANT);
 
     const value = useMemo(
         () => ({
@@ -160,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             signId,
             currentUser,
             isAuthenticated: !!token && !!currentUser,
-            isLoading,
+            isLoading: !!(token && signId) && isLoading,
             isAdmin,
             isOrganizer,
             isParticipant,

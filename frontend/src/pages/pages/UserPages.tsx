@@ -1,25 +1,24 @@
 import { useState, useMemo } from 'react';
-import { Group, Text, Avatar, SimpleGrid, TextInput, Select } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage } from '../../api/client';
 import { pageService, type PageResource, type GetPagesQuery } from '../../api/services';
-import { useMyFriends } from '../../hooks/useMyFriends';
-import { DataTable, type Column } from '../../components/DataTable';
+import {
+    DataTable,
+    StatusActionMenu,
+    ViewActionButton,
+    EditActionButton,
+    DeleteActionButton,
+    UserSubpageContainer,
+    PageFormModal,
+    TitleLinkStatusFilterGrid,
+    getPageTableColumns,
+} from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
-import { formatImageSrc } from '../../utils/imageUtils';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDateTime } from '../../utils/date';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { StatusBadge } from '../../components/common/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
-import { PageFormModal } from '../../components/pages/PageFormModal';
+import { useDataTableState, useMyFriends, useTitleLinkStatusFilter } from '../../hooks';
+import { notifySuccess, notifyError, confirmDelete, buildSortOptions } from '../../utils';
+import { Group } from '@mantine/core';
 
 export default function UserPages() {
     const { t } = useTranslation();
@@ -27,9 +26,16 @@ export default function UserPages() {
 
     const tableState = useDataTableState();
 
-    const [title, setTitle] = useState('');
-    const [linkFilter, setLinkFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState<string | null>(null);
+    const {
+        titleFilter: title,
+        setTitleFilter: setTitle,
+        linkFilter,
+        setLinkFilter,
+        statusFilter,
+        setStatusFilter,
+        activeFiltersCount,
+        handleResetFilters,
+    } = useTitleLinkStatusFilter(tableState.resetPage);
 
     const [formModalOpened, { open: openFormModal, close: closeFormModal }] = useDisclosure(false);
     const [editingPage, setEditingPage] = useState<PageResource | null>(null);
@@ -41,21 +47,6 @@ export default function UserPages() {
     const { collaboratorOptions } = useMyFriends(extraUserIds);
 
     const sortOptions = buildSortOptions(t, ['createdAt', 'title', 'status']);
-
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (title.trim()) count++;
-        if (linkFilter.trim()) count++;
-        if (statusFilter !== null) count++;
-        return count;
-    }, [title, linkFilter, statusFilter]);
-
-    const handleResetFilters = () => {
-        setTitle('');
-        setLinkFilter('');
-        setStatusFilter(null);
-        tableState.resetPage();
-    };
 
     return (
         <UserSubpageContainer requiredRole={RoleEnum.ORGANIZER}>
@@ -100,42 +91,19 @@ export default function UserPages() {
                             body: { status },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-pages', targetUser.id] });
-                        notifications.show({
-                            title: t('pages'),
-                            message: t('statusUpdated'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['user-pages', targetUser.id] });
+                        notifySuccess(t('statusUpdated'), t('pages'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const deleteMutation = useMutation({
-                    mutationFn: (id: string) =>
-                        pageService.deletePage({
-                            params: { path: { id } },
-                        }),
+                    mutationFn: (id: string) => pageService.deletePage({ params: { path: { id } } }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-pages', targetUser.id] });
-                        notifications.show({
-                            title: t('pages'),
-                            message: t('pageDeleted'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['user-pages', targetUser.id] });
+                        notifySuccess(t('deleted'), t('pages'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const handleOpenEdit = (p: PageResource) => {
@@ -148,83 +116,18 @@ export default function UserPages() {
                     openFormModal();
                 };
 
-                const handleDelete = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmDeleteTitle'),
-                        message: t('confirmDeleteMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMutation.mutate(id),
-                    });
-                };
-
-                const columns: Column<PageResource>[] = [
-                    {
-                        key: 'page',
-                        header: t('title'),
-                        render: (p) => (
-                            <Group gap="sm" wrap="nowrap">
-                                <Avatar src={formatImageSrc(p.profilePhoto)}>?</Avatar>
-                                <div>
-                                    <Text size="sm" fw={600} lineClamp={1}>
-                                        {p.title}
-                                    </Text>
-                                    <Text size="sm" c="dimmed" lineClamp={1}>
-                                        @{p.link}
-                                    </Text>
-                                </div>
-                            </Group>
-                        ),
-                    },
-                    {
-                        key: 'status',
-                        header: t('status'),
-                        render: (p) => <StatusBadge status={p.status} />,
-                    },
-                    {
-                        key: 'createdAt',
-                        header: t('createdAt'),
-                        render: (p) => (
-                            <Text size="sm" c="dimmed">
-                                {formatDateTime(p.createdAt)}
-                            </Text>
-                        ),
-                    },
-                ];
+                const columns = getPageTableColumns(t);
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
-                        <TextInput
-                            label={t('title')}
-                            value={title}
-                            onChange={(e) => {
-                                setTitle(e.currentTarget.value);
-                                tableState.resetPage();
-                            }}
-                        />
-                        <TextInput
-                            label={t('link')}
-                            value={linkFilter}
-                            onChange={(e) => {
-                                setLinkFilter(e.currentTarget.value);
-                                tableState.resetPage();
-                            }}
-                        />
-                        <Select
-                            label={t('status')}
-                            placeholder={t('allStatuses')}
-                            data={ElementStatusEnum.getOptions(t).map((s) => ({
-                                value: String(s.value),
-                                label: s.label,
-                            }))}
-                            value={statusFilter}
-                            onChange={(v) => {
-                                setStatusFilter(v);
-                                tableState.resetPage();
-                            }}
-                            clearable
-                        />
-                    </SimpleGrid>
+                    <TitleLinkStatusFilterGrid
+                        title={title}
+                        onTitleChange={setTitle}
+                        link={linkFilter}
+                        onLinkChange={setLinkFilter}
+                        status={statusFilter}
+                        onStatusChange={setStatusFilter}
+                        onFilterChange={tableState.resetPage}
+                    />
                 );
 
                 return (
@@ -240,6 +143,7 @@ export default function UserPages() {
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? handleOpenCreate : undefined}
+                            addLabel={t('addPage')}
                             actions={(p) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     <ViewActionButton to={`/pages/${p.link}`} />
@@ -258,7 +162,7 @@ export default function UserPages() {
                                     {isOwner && <EditActionButton onClick={() => handleOpenEdit(p)} />}
                                     {isOwner && (
                                         <DeleteActionButton
-                                            onClick={() => handleDelete(p.id)}
+                                            onClick={() => confirmDelete(t, () => deleteMutation.mutate(p.id))}
                                             isPending={deleteMutation.isPending}
                                         />
                                     )}
@@ -272,7 +176,7 @@ export default function UserPages() {
                             page={editingPage}
                             collaboratorOptions={collaboratorOptions}
                             onSuccess={() => {
-                                queryClient.invalidateQueries({
+                                void queryClient.invalidateQueries({
                                     queryKey: ['user-pages', targetUser.id],
                                 });
                             }}

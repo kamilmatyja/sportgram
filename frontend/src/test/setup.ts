@@ -5,7 +5,7 @@ Object.defineProperty(navigator, 'language', { value: 'pl-PL', configurable: tru
 
 import i18n from '../i18n';
 
-i18n.changeLanguage('pl');
+void i18n.changeLanguage('pl');
 
 Object.defineProperty(window, 'matchMedia', {
     writable: true,

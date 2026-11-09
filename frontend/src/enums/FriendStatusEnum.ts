@@ -1,4 +1,4 @@
-import { getEnumOptions } from '../utils/enumUtils';
+import { getEnumOptions } from '../utils';
 
 export enum FriendStatusEnum {
     PENDING = 1,
@@ -8,5 +8,5 @@ export enum FriendStatusEnum {
 }
 
 export namespace FriendStatusEnum {
-    export const getOptions = (t: (key: string) => string) => getEnumOptions(FriendStatusEnum, 'friends', t);
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(FriendStatusEnum, 'friendStatuses', t);
 }

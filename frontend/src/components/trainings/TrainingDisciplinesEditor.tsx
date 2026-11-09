@@ -2,7 +2,7 @@ import { Stack, Group, Paper, Select, TextInput, Button, ActionIcon, Tooltip, Te
 import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { updateItem, removeItem, patchItem } from '../../utils/treeUtils';
+import { updateItem, removeItem, patchItem } from '../../utils';
 
 export interface FormTrainingSubDistance {
     id: string;
@@ -136,7 +136,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange }: TrainingDis
                     {t('disciplinesAndDistances')}
                 </Text>
                 <Button size="xs" variant="light" leftSection={<IconPlus size={16} />} onClick={handleAddDiscipline}>
-                    {t('add')}
+                    {t('addDiscipline')}
                 </Button>
             </Group>
 
@@ -167,7 +167,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange }: TrainingDis
                     <Stack gap="sm" mt="xs">
                         {d.distances.map((dist) => (
                             <Paper key={dist.id} p="xs" bg="var(--mantine-color-gray-light)">
-                                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
+                                <SimpleGrid spacing="xs">
                                     <TextInput
                                         label={t('distanceMeters')}
                                         required
@@ -208,7 +208,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange }: TrainingDis
                                             leftSection={<IconPlus size={16} />}
                                             onClick={() => handleAddSubDistance(d.id, dist.id)}
                                         >
-                                            {t('add')}
+                                            {t('addSubDistance')}
                                         </Button>
                                     </Group>
 
@@ -325,7 +325,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange }: TrainingDis
                             leftSection={<IconPlus size={16} />}
                             onClick={() => handleAddDistance(d.id)}
                         >
-                            {t('add')}
+                            {t('addDistance')}
                         </Button>
                     </Stack>
                 </Paper>

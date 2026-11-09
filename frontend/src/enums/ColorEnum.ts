@@ -1,4 +1,4 @@
-import { getEnumOptions, getEnumLabel } from '../utils/enumUtils';
+import { getEnumOptions, getEnumLabel } from '../utils';
 
 export enum ColorEnum {
     RED = 1,

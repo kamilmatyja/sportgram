@@ -1,43 +1,33 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Group, Text, SimpleGrid, TextInput, Select } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { notificationService, type NotificationResource, type GetNotificationsQuery } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
-import { DataTable, type Column } from '../../components/DataTable';
+import { useAuth } from '../../auth';
+import { DataTable, type Column } from '../../components';
+import {
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    DeleteActionButton,
+    UserSubpageContainer,
+} from '../../components';
 import { NotificationStatusEnum } from '../../enums/NotificationStatusEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { getErrorMessage } from '../../api/client';
-import { formatDateTime } from '../../utils/date';
-import { truncate } from '../../utils/text';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
-import { StatusBadge } from '../../components/common/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
+import { useDataTableState } from '../../hooks';
+import { notifySuccess, notifyError, confirmDelete, formatDateTime, buildSortOptions, truncate } from '../../utils';
 
 export default function UserNotifications() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
 
-    const tableState = useDataTableState({
-        defaultSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState({ defaultSort: 'createdAt:desc' });
 
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
     const sortOptions = buildSortOptions(t, ['createdAt', 'text', 'status']);
-
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (textFilter.trim()) count++;
-        if (statusFilter !== null) count++;
-        return count;
-    }, [textFilter, statusFilter]);
+    const activeFiltersCount = [textFilter.trim(), statusFilter].filter(Boolean).length;
 
     const handleResetFilters = () => {
         setTextFilter('');
@@ -90,53 +80,20 @@ export default function UserNotifications() {
                             body: { status },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['notifications'] });
-                        notifications.show({
-                            title: t('notifications'),
-                            message: t('statusUpdated'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+                        notifySuccess(t('statusUpdated'), t('notifications'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const deleteMutation = useMutation({
-                    mutationFn: (id: string) =>
-                        notificationService.deleteNotification({
-                            params: { path: { id } },
-                        }),
+                    mutationFn: (id: string) => notificationService.deleteNotification({ params: { path: { id } } }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['notifications'] });
-                        notifications.show({
-                            title: t('notifications'),
-                            message: t('deleted'),
-                            color: 'green',
-                        });
+                        void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+                        notifySuccess(t('deleted'), t('notifications'));
                     },
-                    onError: (err) => {
-                        notifications.show({
-                            title: t('error'),
-                            message: getErrorMessage(err),
-                            color: 'red',
-                        });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
-
-                const handleDelete = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmDeleteTitle'),
-                        message: t('confirmDeleteMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMutation.mutate(id),
-                    });
-                };
 
                 const columns: Column<NotificationResource>[] = [
                     {
@@ -165,7 +122,7 @@ export default function UserNotifications() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                    <SimpleGrid>
                         <TextInput
                             label={t('text')}
                             value={textFilter}
@@ -218,7 +175,7 @@ export default function UserNotifications() {
                                 />
                                 {isOwner && (
                                     <DeleteActionButton
-                                        onClick={() => handleDelete(n.id)}
+                                        onClick={() => confirmDelete(t, () => deleteMutation.mutate(n.id))}
                                         loading={deleteMutation.isPending}
                                     />
                                 )}

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../auth/AuthContext';
 import { friendService, type UserResource } from '../api/services';
+import { useAuth } from '../auth';
 import { FriendStatusEnum } from '../enums/FriendStatusEnum';
 import { RoleEnum } from '../enums/RoleEnum';
 
@@ -30,21 +30,20 @@ export function useUserSubpageAccess({
                     },
                 },
             });
-            const match = res.data?.find(
-                (f) =>
-                    (f.senderUserId === currentUser.id && f.receiverUserId === targetUser.id) ||
-                    (f.senderUserId === targetUser.id && f.receiverUserId === currentUser.id),
+            return (
+                res.data?.find(
+                    (f) =>
+                        (f.senderUserId === currentUser.id && f.receiverUserId === targetUser.id) ||
+                        (f.senderUserId === targetUser.id && f.receiverUserId === currentUser.id),
+                ) ?? null
             );
-            return match ?? null;
         },
         enabled: !!targetUser?.id && !!currentUser?.id && !isOwner && !ownerOrAdminOnly,
     });
 
     const isAcceptedFriend = friendData?.status === FriendStatusEnum.ACCEPTED;
-    const canAccessSubpage = ownerOrAdminOnly ? isOwner || isAdmin : isOwner || isAdmin || isAcceptedFriend;
-
-    const targetRoles = targetUser?.roles?.map((r) => r.role) ?? [];
-    const hasRequiredRole = requiredRole ? targetRoles.includes(requiredRole) : true;
+    const canAccessSubpage = isOwner || isAdmin || (!ownerOrAdminOnly && isAcceptedFriend);
+    const hasRequiredRole = !requiredRole || (targetUser?.roles?.some((r) => r.role === requiredRole) ?? false);
 
     return {
         isOwner,

@@ -23,14 +23,14 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { feedService, type FeedResource, type UserResource, type FeedReactionResource } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
+import { useAuth } from '../../auth';
 import { EntityViewCounter } from '../EntityViewCounter';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDateTime } from '../../utils/date';
-import { formatImageSrc } from '../../utils/imageUtils';
-import { formatFeedOrigin } from '../../utils/text';
+import { openConfirmActionModal } from '../../utils';
+import { formatDateTime } from '../../utils';
+import { formatImageSrc } from '../../utils';
+import { formatFeedOrigin } from '../../utils';
 
 export interface FeedCardProps {
     feed: FeedResource;
@@ -55,9 +55,9 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
     const myReaction = feed.reactions?.find((r) => r.userId === currentUser?.id);
 
     const invalidateFeeds = () => {
-        queryClient.invalidateQueries({ queryKey: ['feeds'] });
-        queryClient.invalidateQueries({ queryKey: ['user-feeds'] });
-        queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
+        void queryClient.invalidateQueries({ queryKey: ['feeds'] });
+        void queryClient.invalidateQueries({ queryKey: ['user-feeds'] });
+        void queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
     };
 
     const addReactionMutation = useMutation({
@@ -69,7 +69,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
         },
         onSuccess: () => {
             invalidateFeeds();
-            notifications.show({ title: t('reactions'), message: t('reactionAdded'), color: 'green' });
+            notifications.show({ title: t('reactions'), message: t('created'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -85,7 +85,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
         },
         onSuccess: () => {
             invalidateFeeds();
-            notifications.show({ title: t('reactions'), message: t('reactionUpdated'), color: 'green' });
+            notifications.show({ title: t('reactions'), message: t('saved'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -100,7 +100,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
         },
         onSuccess: () => {
             invalidateFeeds();
-            notifications.show({ title: t('reactions'), message: t('reactionDeleted'), color: 'green' });
+            notifications.show({ title: t('reactions'), message: t('deleted'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -127,7 +127,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
         onSuccess: () => {
             setCommentInput('');
             invalidateFeeds();
-            notifications.show({ title: t('comments'), message: t('commentAdded'), color: 'green' });
+            notifications.show({ title: t('comments'), message: t('created'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -145,7 +145,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
             setEditingCommentId(null);
             setEditingCommentText('');
             invalidateFeeds();
-            notifications.show({ title: t('comments'), message: t('commentUpdated'), color: 'green' });
+            notifications.show({ title: t('comments'), message: t('saved'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -160,7 +160,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
         },
         onSuccess: () => {
             invalidateFeeds();
-            notifications.show({ title: t('comments'), message: t('commentDeleted'), color: 'green' });
+            notifications.show({ title: t('comments'), message: t('deleted'), color: 'green' });
         },
         onError: (err) => {
             notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
@@ -183,7 +183,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
     return (
         <Card ref={domRef}>
             <Group justify="space-between" mb="xs">
-                <Group gap="sm">
+                <Group>
                     <Avatar src={formatImageSrc(author?.profilePhoto)} component={Link} to={authorLink}>
                         ?
                     </Avatar>
@@ -218,7 +218,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
             </Group>
 
             {feed.feedOrigin && (
-                <Badge color="blue" size="sm" mb="xs">
+                <Badge color="blue" mb="xs">
                     {formatFeedOrigin(feed.feedOrigin, t)}
                 </Badge>
             )}
@@ -229,7 +229,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                 </Text>
             )}
 
-            {feed.photo && <Image src={formatImageSrc(feed.photo)} alt={t('photo')} mah={400} fit="cover" mb="sm" />}
+            {feed.photo && <Image src={formatImageSrc(feed.photo)} alt={t('photo')} mah={400} mb="sm" />}
 
             <Group justify="space-between" mt="xs">
                 <Group gap="xs">
@@ -288,7 +288,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                         return (
                             <Paper key={c.id} p="xs">
                                 <Group justify="space-between" align="center" wrap="nowrap" mb="xs">
-                                    <Group gap="sm" wrap="nowrap">
+                                    <Group wrap="nowrap">
                                         {cAuthor?.link ? (
                                             <Avatar src={cAuthorPhoto} component={Link} to={`/users/${cAuthor.link}`}>
                                                 ?
@@ -426,7 +426,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                             loading={addCommentMutation.isPending}
                             disabled={!commentInput.trim() || addCommentMutation.isPending}
                         >
-                            {t('comment')}
+                            {t('save')}
                         </Button>
                     </Group>
                 </Stack>

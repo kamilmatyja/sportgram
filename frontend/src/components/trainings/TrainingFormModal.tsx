@@ -3,11 +3,11 @@ import { Modal, Stack, TextInput, Textarea, MultiSelect, SimpleGrid, Button } fr
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { trainingService, type TrainingResource } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
+import { useAuth } from '../../auth';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { slugify } from '../../utils/text';
+import { useFormErrors } from '../../hooks';
+import { toInputDateTime, updateTitleWithSlug } from '../../utils';
 import { TrainingDisciplinesEditor, type FormTrainingDiscipline } from './TrainingDisciplinesEditor';
 
 export interface TrainingFormModalProps {
@@ -17,6 +17,15 @@ export interface TrainingFormModalProps {
     collaboratorOptions?: { value: string; label: string }[];
     onSuccess?: () => void;
 }
+
+const INITIAL_FORM_DATA = {
+    title: '',
+    description: '',
+    link: '',
+    location: '',
+    startedAt: '',
+    endedAt: '',
+};
 
 export function TrainingFormModal({
     opened,
@@ -28,19 +37,12 @@ export function TrainingFormModal({
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
+    const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!training;
 
     const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        link: '',
-        location: '',
-        startedAt: '',
-        endedAt: '',
-    });
+    const [formData, setFormData] = useState(INITIAL_FORM_DATA);
     const [disciplines, setDisciplines] = useState<FormTrainingDiscipline[]>([]);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (!opened) return;
@@ -50,54 +52,43 @@ export function TrainingFormModal({
                 description: training.description ?? '',
                 link: training.link ?? '',
                 location: training.location ?? '',
-                startedAt: training.startedAt ? training.startedAt.replace(' ', 'T').slice(0, 16) : '',
-                endedAt: training.endedAt ? training.endedAt.replace(' ', 'T').slice(0, 16) : '',
+                startedAt: toInputDateTime(training.startedAt),
+                endedAt: toInputDateTime(training.endedAt),
             });
 
             const collabs =
                 training.participants?.filter((p) => p.userId !== training.userId).map((p) => p.userId) ?? [];
             setCollaboratorIds(collabs);
 
-            if (training.disciplines) {
-                setDisciplines(
-                    training.disciplines.map((d) => ({
-                        id: d.id,
-                        discipline: String(d.discipline),
-                        distances:
-                            d.distances?.map((dist) => ({
-                                id: dist.id,
-                                distance: String(dist.distance),
-                                time: String(dist.time),
-                                subDistances:
-                                    dist.subDistances?.map((sd) => ({
-                                        id: sd.id,
-                                        subDistance: String(sd.subDistance),
-                                        time: String(sd.time),
-                                        lat: sd.lat != null ? String(sd.lat) : '',
-                                        lng: sd.lng != null ? String(sd.lng) : '',
-                                        accuracy: sd.accuracy != null ? String(sd.accuracy) : '',
-                                        speed: sd.speed != null ? String(sd.speed) : '',
-                                    })) || [],
-                            })) || [],
-                    })),
-                );
-            } else {
-                setDisciplines([]);
-            }
+            setDisciplines(
+                training.disciplines?.map((d) => ({
+                    id: d.id,
+                    discipline: String(d.discipline),
+                    distances:
+                        d.distances?.map((dist) => ({
+                            id: dist.id,
+                            distance: String(dist.distance),
+                            time: String(dist.time),
+                            subDistances:
+                                dist.subDistances?.map((sd) => ({
+                                    id: sd.id,
+                                    subDistance: String(sd.subDistance),
+                                    time: String(sd.time),
+                                    lat: sd.lat != null ? String(sd.lat) : '',
+                                    lng: sd.lng != null ? String(sd.lng) : '',
+                                    accuracy: sd.accuracy != null ? String(sd.accuracy) : '',
+                                    speed: sd.speed != null ? String(sd.speed) : '',
+                                })) || [],
+                        })) || [],
+                })) ?? [],
+            );
         } else {
-            setFormData({
-                title: '',
-                description: '',
-                link: '',
-                location: '',
-                startedAt: '',
-                endedAt: '',
-            });
+            setFormData(INITIAL_FORM_DATA);
             setCollaboratorIds([]);
             setDisciplines([]);
         }
-        setFieldErrors({});
-    }, [opened, training]);
+        clearFieldErrors();
+    }, [opened, training, clearFieldErrors]);
 
     const mutation = useMutation({
         mutationFn: async () => {
@@ -119,92 +110,75 @@ export function TrainingFormModal({
                     })),
                 }));
 
-            if (isEdit) {
-                const resolvedUserIds = training.userId
-                    ? Array.from(new Set([training.userId, ...collaboratorIds]))
-                    : collaboratorIds;
+            const baseUserId = isEdit ? training.userId : currentUser?.id;
+            const userIds = Array.from(new Set([baseUserId, ...collaboratorIds].filter(Boolean))) as string[];
 
+            const body = {
+                title: formData.title,
+                description: formData.description,
+                link: formData.link,
+                location: formData.location,
+                startedAt: formData.startedAt,
+                endedAt: formData.endedAt,
+                userIds,
+                disciplines: mappedDisciplines,
+            };
+
+            if (isEdit) {
                 await trainingService.updateTraining({
                     params: { path: { id: training.id } },
-                    body: {
-                        title: formData.title,
-                        description: formData.description,
-                        link: formData.link,
-                        location: formData.location,
-                        startedAt: formData.startedAt,
-                        endedAt: formData.endedAt,
-                        userIds: resolvedUserIds,
-                        disciplines: mappedDisciplines,
-                    },
+                    body,
                 });
             } else {
-                const resolvedUserIds = currentUser?.id
-                    ? Array.from(new Set([currentUser.id, ...collaboratorIds]))
-                    : collaboratorIds;
-
                 await trainingService.createTraining({
-                    body: {
-                        title: formData.title,
-                        description: formData.description,
-                        link: formData.link,
-                        location: formData.location,
-                        startedAt: formData.startedAt,
-                        endedAt: formData.endedAt,
-                        userIds: resolvedUserIds,
-                        disciplines: mappedDisciplines,
-                    },
+                    body,
                 });
             }
         },
         onSuccess: () => {
             onClose();
-            queryClient.invalidateQueries({ queryKey: ['trainings'] });
-            queryClient.invalidateQueries({ queryKey: ['user-trainings'] });
+            void queryClient.invalidateQueries({ queryKey: ['trainings'] });
+            void queryClient.invalidateQueries({ queryKey: ['user-trainings'] });
             if (isEdit) {
-                queryClient.invalidateQueries({ queryKey: ['training', training.link] });
-                queryClient.invalidateQueries({ queryKey: ['training', formData.link] });
+                void queryClient.invalidateQueries({ queryKey: ['training', training.link] });
+                void queryClient.invalidateQueries({ queryKey: ['training', formData.link] });
             }
             notifications.show({
                 title: t('trainings'),
-                message: isEdit ? t('trainingUpdated') : t('trainingCreated'),
+                message: isEdit ? t('saved') : t('created'),
                 color: 'green',
             });
             onSuccess?.();
         },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: handleFormError,
     });
 
     const isSubmitting = mutation.isPending;
+    const areDisciplinesValid = disciplines.every(
+        (d) =>
+            !!d.discipline &&
+            d.distances.every(
+                (dist) => !!dist.distance.trim() && dist.subDistances.every((sd) => !!sd.subDistance.trim()),
+            ),
+    );
     const canSubmit =
         !!formData.title.trim() &&
         !!formData.description.trim() &&
         !!formData.link.trim() &&
         !!formData.location.trim() &&
         !!formData.startedAt &&
-        !!formData.endedAt;
+        !!formData.endedAt &&
+        areDisciplinesValid;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')}>
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editTraining') : t('addTraining')}>
             <Stack gap="sm">
                 <TextInput
                     label={t('title')}
                     required
                     value={formData.title}
                     error={fieldErrors.title}
-                    onChange={(e) => {
-                        const val = e.currentTarget.value;
-                        const prevGenerated = slugify(formData.title);
-                        const nextGenerated = slugify(val);
-                        if (!isEdit && (!formData.link || formData.link === prevGenerated)) {
-                            setFormData({ ...formData, title: val, link: nextGenerated });
-                        } else {
-                            setFormData({ ...formData, title: val });
-                        }
-                    }}
+                    onChange={(e) => setFormData(updateTitleWithSlug(formData, e.currentTarget.value, isEdit))}
                 />
 
                 <Textarea
@@ -233,7 +207,7 @@ export function TrainingFormModal({
                     onChange={(e) => setFormData({ ...formData, location: e.currentTarget.value })}
                 />
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <TextInput
                         label={t('startedAt')}
                         type="datetime-local"
@@ -272,7 +246,7 @@ export function TrainingFormModal({
                     onClick={() => mutation.mutate()}
                     mt="md"
                 >
-                    {isEdit ? t('save') : t('add')}
+                    {t('save')}
                 </Button>
             </Stack>
         </Modal>

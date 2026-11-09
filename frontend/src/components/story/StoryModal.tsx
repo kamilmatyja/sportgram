@@ -4,9 +4,9 @@ import { notifications } from '@mantine/notifications';
 import { IconPhoto } from '@tabler/icons-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { storyService, type StoryResource } from '../../api/services';
-import { resolveImageBase64 } from '../../utils/imageUtils';
+import { useFormErrors } from '../../hooks';
+import { resolveImageBase64 } from '../../utils';
 
 export interface StoryModalProps {
     opened: boolean;
@@ -18,34 +18,32 @@ export interface StoryModalProps {
 export function StoryModal({ opened, onClose, story, onSuccess }: StoryModalProps) {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!story;
 
     const [text, setText] = useState('');
     const [photo, setPhoto] = useState<File | null>(null);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (!opened) return;
-        if (story) {
-            setText(story.text ?? '');
-        } else {
-            setText('');
-        }
+        setText(story?.text ?? '');
         setPhoto(null);
-        setFieldErrors({});
-    }, [opened, story]);
+        clearFieldErrors();
+    }, [opened, story, clearFieldErrors]);
 
     const mutation = useMutation({
         mutationFn: async () => {
             const photoStr = await resolveImageBase64(
                 photo,
                 story?.photo,
-                isEdit ? undefined : t('photo') + ' ' + t('required'),
+                isEdit ? undefined : `${t('photo')} ${t('required')}`,
             );
+            const body = { text, photo: photoStr };
+
             if (isEdit) {
                 const res = await storyService.updateStory({
                     params: { path: { id: story.id } },
-                    body: { text, photo: photoStr },
+                    body,
                 });
                 return {
                     ...story,
@@ -53,36 +51,29 @@ export function StoryModal({ opened, onClose, story, onSuccess }: StoryModalProp
                     photo: photoStr,
                     id: res?.id || story.id,
                 };
-            } else {
-                return await storyService.createStory({
-                    body: { text, photo: photoStr },
-                });
             }
+            return await storyService.createStory({ body });
         },
         onSuccess: (res) => {
             onClose();
-            queryClient.invalidateQueries({ queryKey: ['stories'] });
-            queryClient.invalidateQueries({ queryKey: ['user-stories'] });
-            queryClient.invalidateQueries({ queryKey: ['user-profile-stories'] });
+            void queryClient.invalidateQueries({ queryKey: ['stories'] });
+            void queryClient.invalidateQueries({ queryKey: ['user-stories'] });
+            void queryClient.invalidateQueries({ queryKey: ['user-profile-stories'] });
             notifications.show({
                 title: t('stories'),
-                message: isEdit ? t('storyUpdated') : t('storyAdded'),
+                message: isEdit ? t('saved') : t('created'),
                 color: 'green',
             });
             onSuccess?.(isEdit && res ? (res as StoryResource) : undefined);
         },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: handleFormError,
     });
 
     const isSubmitting = mutation.isPending;
     const canSubmit = isEdit ? !!text.trim() : !!text.trim() && !!photo;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')} zIndex={1000}>
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editStory') : t('addStory')} zIndex={1000}>
             <Stack gap="sm">
                 <Textarea
                     label={t('text')}
@@ -106,7 +97,7 @@ export function StoryModal({ opened, onClose, story, onSuccess }: StoryModalProp
                     required={!isEdit}
                 />
                 <Button loading={isSubmitting} disabled={isSubmitting || !canSubmit} onClick={() => mutation.mutate()}>
-                    {isEdit ? t('save') : t('add')}
+                    {t('save')}
                 </Button>
             </Stack>
         </Modal>

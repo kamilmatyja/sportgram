@@ -1,33 +1,30 @@
-export function formatDate(dateStr?: string | null): string {
-    if (!dateStr) return '-';
+function parseDate(dateStr?: string | null): Date | null {
+    if (!dateStr) return null;
     const cleanStr = dateStr.includes(' ') && !dateStr.includes('T') ? dateStr.replace(' ', 'T') : dateStr;
     const d = new Date(cleanStr);
-    if (isNaN(d.getTime())) return dateStr;
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}.${month}.${day}`;
+    return isNaN(d.getTime()) ? null : d;
 }
 
-export function formatDateTime(dateStr?: string | null): string {
-    if (!dateStr) return '-';
-    const cleanStr = dateStr.includes(' ') && !dateStr.includes('T') ? dateStr.replace(' ', 'T') : dateStr;
-    const d = new Date(cleanStr);
-    if (isNaN(d.getTime())) return dateStr;
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${year}.${month}.${day} ${hours}:${minutes}`;
+const pad = (n: number) => String(n).padStart(2, '0');
+
+export function formatDate(dateStr?: string | null): string {
+    const d = parseDate(dateStr);
+    if (!d) return dateStr ?? '-';
+    return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
 }
 
 export function formatTime(dateStr?: string | null): string {
-    if (!dateStr) return '';
-    const cleanStr = dateStr.includes(' ') && !dateStr.includes('T') ? dateStr.replace(' ', 'T') : dateStr;
-    const d = new Date(cleanStr);
-    if (isNaN(d.getTime())) return dateStr;
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
+    const d = parseDate(dateStr);
+    if (!d) return '';
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+export function formatDateTime(dateStr?: string | null): string {
+    const d = parseDate(dateStr);
+    if (!d) return dateStr ?? '-';
+    return `${formatDate(dateStr)} ${formatTime(dateStr)}`;
+}
+
+export function toInputDateTime(dateStr?: string | null): string {
+    return dateStr ? dateStr.replace(' ', 'T').slice(0, 16) : '';
 }

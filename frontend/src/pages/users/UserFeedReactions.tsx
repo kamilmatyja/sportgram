@@ -1,22 +1,21 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Text, Button, Stack, Modal, SimpleGrid, Select, Group } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage } from '../../api/client';
 import { feedService, type FeedReactionResource, type GetFeedReactionsQuery } from '../../api/services';
-import { DataTable, type Column } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components';
+import {
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    EditActionButton,
+    DeleteActionButton,
+    UserSubpageContainer,
+} from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDateTime } from '../../utils/date';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { StatusBadge } from '../../components/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
-import { useFeedAuthors } from '../../hooks/useFeedAuthors';
+import { useDataTableState, useFeedAuthors, useFormErrors } from '../../hooks';
+import { notifySuccess, notifyError, confirmDelete, formatDateTime, buildSortOptions } from '../../utils';
 
 export default function UserFeedReactions() {
     const { t } = useTranslation();
@@ -29,15 +28,10 @@ export default function UserFeedReactions() {
 
     const [editingReaction, setEditingReaction] = useState<FeedReactionResource | null>(null);
     const [editReactionType, setEditReactionType] = useState<number | null>(null);
+    const { errors, setFromError, clearFieldError, clearErrors } = useFormErrors();
 
     const sortOptions = buildSortOptions(t, ['createdAt', { field: 'reaction', labelKey: 'text' }, 'status']);
-
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (reactionFilter !== null) count++;
-        if (statusFilter !== null) count++;
-        return count;
-    }, [reactionFilter, statusFilter]);
+    const activeFiltersCount = [reactionFilter, statusFilter].filter(Boolean).length;
 
     const handleResetFilters = () => {
         setReactionFilter(null);
@@ -93,12 +87,10 @@ export default function UserFeedReactions() {
                             body: { status },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-feed-reactions', targetUser?.id] });
-                        notifications.show({ title: t('reactions'), message: t('statusUpdated'), color: 'green' });
+                        void queryClient.invalidateQueries({ queryKey: ['user-feed-reactions', targetUser?.id] });
+                        notifySuccess(t('statusUpdated'), t('reactions'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const updateMutation = useMutation({
@@ -112,51 +104,32 @@ export default function UserFeedReactions() {
                     onSuccess: () => {
                         setEditingReaction(null);
                         setEditReactionType(null);
-                        queryClient.invalidateQueries({ queryKey: ['user-feed-reactions', targetUser?.id] });
-                        notifications.show({ title: t('reactions'), message: t('reactionUpdated'), color: 'green' });
+                        clearErrors();
+                        void queryClient.invalidateQueries({ queryKey: ['user-feed-reactions', targetUser?.id] });
+                        notifySuccess(t('saved'), t('reactions'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => setFromError(err),
                 });
 
                 const deleteMutation = useMutation({
-                    mutationFn: (id: string) =>
-                        feedService.deleteFeedReaction({
-                            params: { path: { id } },
-                        }),
+                    mutationFn: (id: string) => feedService.deleteFeedReaction({ params: { path: { id } } }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-feed-reactions', targetUser?.id] });
-                        notifications.show({ title: t('reactions'), message: t('reactionDeleted'), color: 'green' });
+                        void queryClient.invalidateQueries({ queryKey: ['user-feed-reactions', targetUser?.id] });
+                        notifySuccess(t('deleted'), t('reactions'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
-
-                const handleDelete = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmDeleteTitle'),
-                        message: t('confirmDeleteMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMutation.mutate(id),
-                    });
-                };
 
                 const columns: Column<FeedReactionResource>[] = [
                     {
                         key: 'reaction',
                         header: t('reaction'),
-                        render: (r) => {
-                            const config = FeedReactionEnum.getEmoji(r.reaction);
-                            return (
-                                <Group gap="xs" wrap="nowrap">
-                                    <Text size="md">{config}</Text>
-                                    <Text size="sm">{t(`feedReactions.${FeedReactionEnum.getKey(r.reaction)}`)}</Text>
-                                </Group>
-                            );
-                        },
+                        render: (r) => (
+                            <Group gap="xs" wrap="nowrap">
+                                <Text size="md">{FeedReactionEnum.getEmoji(r.reaction)}</Text>
+                                <Text size="sm">{t(`feedReactions.${FeedReactionEnum.getKey(r.reaction)}`)}</Text>
+                            </Group>
+                        ),
                     },
                     {
                         key: 'status',
@@ -175,7 +148,7 @@ export default function UserFeedReactions() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                    <SimpleGrid>
                         <Select
                             label={t('reaction')}
                             placeholder={t('allReactions')}
@@ -241,12 +214,13 @@ export default function UserFeedReactions() {
                                             <>
                                                 <EditActionButton
                                                     onClick={() => {
+                                                        clearErrors();
                                                         setEditingReaction(r);
                                                         setEditReactionType(r.reaction);
                                                     }}
                                                 />
                                                 <DeleteActionButton
-                                                    onClick={() => handleDelete(r.id)}
+                                                    onClick={() => confirmDelete(t, () => deleteMutation.mutate(r.id))}
                                                     loading={deleteMutation.isPending}
                                                 />
                                             </>
@@ -256,8 +230,15 @@ export default function UserFeedReactions() {
                             }}
                         />
 
-                        <Modal opened={!!editingReaction} onClose={() => setEditingReaction(null)} title={t('edit')}>
-                            <Stack gap="md">
+                        <Modal
+                            opened={!!editingReaction}
+                            onClose={() => {
+                                setEditingReaction(null);
+                                clearErrors();
+                            }}
+                            title={t('editReaction')}
+                        >
+                            <Stack>
                                 <Select
                                     label={t('reaction')}
                                     required
@@ -266,16 +247,20 @@ export default function UserFeedReactions() {
                                         label: `${item.emoji} ${t(`feedReactions.${item.key}`)}`,
                                     }))}
                                     value={editReactionType ? String(editReactionType) : null}
-                                    onChange={(v) => setEditReactionType(v ? Number(v) : null)}
+                                    onChange={(v) => {
+                                        setEditReactionType(v ? Number(v) : null);
+                                        clearFieldError('reaction');
+                                        clearFieldError('type');
+                                    }}
+                                    error={errors.reaction || errors.type}
                                 />
-                                <Group justify="flex-end">
-                                    <Button variant="default" onClick={() => setEditingReaction(null)}>
-                                        {t('cancel')}
-                                    </Button>
-                                    <Button onClick={() => updateMutation.mutate()} loading={updateMutation.isPending}>
-                                        {t('save')}
-                                    </Button>
-                                </Group>
+                                <Button
+                                    onClick={() => updateMutation.mutate()}
+                                    loading={updateMutation.isPending}
+                                    disabled={editReactionType === null || updateMutation.isPending}
+                                >
+                                    {t('save')}
+                                </Button>
                             </Stack>
                         </Modal>
                     </>

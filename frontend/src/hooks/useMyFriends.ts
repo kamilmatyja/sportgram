@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { friendService, userService, type UserResource } from '../api/services';
+import { useAuth } from '../auth';
 import { FriendStatusEnum } from '../enums/FriendStatusEnum';
-import { useAuth } from '../auth/AuthContext';
 
 export interface CollaboratorOption {
     value: string;
@@ -41,14 +41,10 @@ export function useMyFriends(extraUserIds?: (string | undefined | null)[]) {
         enabled: !!currentUser?.id,
     });
 
-    const extraIds = useMemo(() => {
-        if (!extraUserIds || extraUserIds.length === 0) return [];
-        const set = new Set<string>();
-        for (const id of extraUserIds) {
-            if (id && id !== currentUser?.id) set.add(id);
-        }
-        return Array.from(set);
-    }, [extraUserIds, currentUser?.id]);
+    const extraIds = useMemo(
+        () => Array.from(new Set(extraUserIds?.filter((id): id is string => !!id && id !== currentUser?.id) ?? [])),
+        [extraUserIds, currentUser?.id],
+    );
 
     const { data: extraUsers = [], isLoading: extraLoading } = useQuery({
         queryKey: ['extra-collaborator-users', extraIds],
@@ -69,8 +65,7 @@ export function useMyFriends(extraUserIds?: (string | undefined | null)[]) {
 
     const collaboratorOptions = useMemo<CollaboratorOption[]>(() => {
         const map = new Map<string, UserResource>();
-        friends.forEach((u) => map.set(u.id, u));
-        extraUsers.forEach((u) => map.set(u.id, u));
+        [...friends, ...extraUsers].forEach((u) => map.set(u.id, u));
         return Array.from(map.values()).map((u) => ({
             value: u.id,
             label: `${u.firstName} ${u.lastName} (@${u.link})`,

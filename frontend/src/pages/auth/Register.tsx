@@ -1,4 +1,4 @@
-import { useState, type SyntheticEvent } from 'react';
+import { useState, useMemo, type SyntheticEvent } from 'react';
 import {
     Paper,
     Title,
@@ -16,52 +16,56 @@ import {
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
+import { getErrorMessage } from '../../api/client';
 import { authService, userService } from '../../api/services';
 import { CountryEnum } from '../../enums/CountryEnum';
 import { GenderEnum } from '../../enums/GenderEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
-import { registerSession, signSession } from '../../utils/authSession';
+import { useFormErrors } from '../../hooks';
+import { registerSession, signSession } from '../../utils';
 import { AuthVerificationStep } from './AuthVerificationStep';
+
+const INITIAL_FORM_DATA = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    birthAt: '',
+    gender: null as string | null,
+    phone: '',
+    country: null as string | null,
+    roles: [] as string[],
+};
 
 export default function Register() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { fieldErrors, handleFormError, clearFieldError, clearFieldErrors } = useFormErrors();
 
     const [step, setStep] = useState<number>(registerSession.step);
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        birthAt: '',
-        gender: null as string | null,
-        phone: '',
-        country: null as string | null,
-        roles: [] as string[],
-    });
-
-    const [password, setPassword] = useState('');
+    const [formData, setFormData] = useState(INITIAL_FORM_DATA);
     const [code, setCode] = useState('');
     const [loading, setLoading] = useState(false);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const registerId = registerSession.id();
 
-    const countryOptions = CountryEnum.getOptions(t).map((c) => ({
-        value: String(c.value),
-        label: c.label,
-    }));
+    const countryOptions = useMemo(
+        () => CountryEnum.getOptions(t).map((c) => ({ value: String(c.value), label: c.label })),
+        [t],
+    );
+    const genderOptions = useMemo(
+        () => GenderEnum.getOptions(t).map((g) => ({ value: String(g.value), label: g.label })),
+        [t],
+    );
+    const roleOptions = useMemo(
+        () => RoleEnum.getNanoOptions(t).map((r) => ({ value: String(r.value), label: r.label })),
+        [t],
+    );
 
-    const genderOptions = GenderEnum.getOptions(t).map((g) => ({
-        value: String(g.value),
-        label: g.label,
-    }));
-
-    const roleOptions = RoleEnum.getNanoOptions(t).map((r) => ({
-        value: String(r.value),
-        label: r.label,
-    }));
+    const updateField = (key: keyof typeof INITIAL_FORM_DATA, value: unknown) => {
+        setFormData((prev) => ({ ...prev, [key]: value }));
+        clearFieldError(key as string);
+    };
 
     const canSubmit =
         formData.firstName.trim().length > 0 &&
@@ -79,7 +83,7 @@ export default function Register() {
         if (!canSubmit || !formData.gender || !formData.country) return;
 
         setLoading(true);
-        setFieldErrors({});
+        clearFieldErrors();
 
         try {
             await userService.createUserNano({
@@ -113,11 +117,7 @@ export default function Register() {
             });
             setStep(2);
         } catch (err) {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            if (Object.keys(fe).length === 0) {
-                notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-            }
+            handleFormError(err, { notifyOnlyIfNoFields: true });
         } finally {
             setLoading(false);
         }
@@ -128,7 +128,7 @@ export default function Register() {
         if (!registerId) return;
 
         setLoading(true);
-        setFieldErrors({});
+        clearFieldErrors();
 
         try {
             await authService.confirmRegister({
@@ -158,11 +158,7 @@ export default function Register() {
             });
             navigate('/sign');
         } catch (err) {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            if (Object.keys(fe).length === 0) {
-                notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-            }
+            handleFormError(err, { notifyOnlyIfNoFields: true });
         } finally {
             setLoading(false);
         }
@@ -172,9 +168,7 @@ export default function Register() {
         if (!registerId) return;
         setLoading(true);
         try {
-            await authService.resendRegister({
-                params: { path: { id: registerId } },
-            });
+            await authService.resendRegister({ params: { path: { id: registerId } } });
             notifications.show({
                 title: t('resend'),
                 message: t('resendSuccess'),
@@ -197,30 +191,24 @@ export default function Register() {
                 {step === 1 ? (
                     <form onSubmit={handleRegisterSubmit}>
                         <Stack gap="sm">
-                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                            <SimpleGrid>
                                 <TextInput
                                     label={t('firstName')}
                                     required
                                     value={formData.firstName}
                                     error={fieldErrors.firstName}
-                                    onChange={(e) => {
-                                        setFormData({ ...formData, firstName: e.currentTarget.value });
-                                        if (fieldErrors.firstName) setFieldErrors({ ...fieldErrors, firstName: '' });
-                                    }}
+                                    onChange={(e) => updateField('firstName', e.currentTarget.value)}
                                 />
                                 <TextInput
                                     label={t('lastName')}
                                     required
                                     value={formData.lastName}
                                     error={fieldErrors.lastName}
-                                    onChange={(e) => {
-                                        setFormData({ ...formData, lastName: e.currentTarget.value });
-                                        if (fieldErrors.lastName) setFieldErrors({ ...fieldErrors, lastName: '' });
-                                    }}
+                                    onChange={(e) => updateField('lastName', e.currentTarget.value)}
                                 />
                             </SimpleGrid>
 
-                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                            <SimpleGrid>
                                 <TextInput
                                     label={t('email')}
                                     required
@@ -228,37 +216,26 @@ export default function Register() {
                                     placeholder={t('emailPlaceholder')}
                                     value={formData.email}
                                     error={fieldErrors.email}
-                                    onChange={(e) => {
-                                        setFormData({ ...formData, email: e.currentTarget.value });
-                                        if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
-                                    }}
+                                    onChange={(e) => updateField('email', e.currentTarget.value)}
                                 />
-
                                 <PasswordInput
                                     label={t('password')}
                                     placeholder={t('passwordPlaceholder')}
                                     required
-                                    value={password}
+                                    value={formData.password}
                                     error={fieldErrors.password}
-                                    onChange={(e) => {
-                                        setPassword(e.currentTarget.value);
-                                        setFormData({ ...formData, password: e.currentTarget.value });
-                                        if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
-                                    }}
+                                    onChange={(e) => updateField('password', e.currentTarget.value)}
                                 />
                             </SimpleGrid>
 
-                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                            <SimpleGrid>
                                 <TextInput
                                     label={t('birthAt')}
                                     type="date"
                                     required
                                     value={formData.birthAt}
                                     error={fieldErrors.birthAt}
-                                    onChange={(e) => {
-                                        setFormData({ ...formData, birthAt: e.currentTarget.value });
-                                        if (fieldErrors.birthAt) setFieldErrors({ ...fieldErrors, birthAt: '' });
-                                    }}
+                                    onChange={(e) => updateField('birthAt', e.currentTarget.value)}
                                 />
                                 <TextInput
                                     label={t('phone')}
@@ -266,24 +243,18 @@ export default function Register() {
                                     required
                                     value={formData.phone}
                                     error={fieldErrors.phone}
-                                    onChange={(e) => {
-                                        setFormData({ ...formData, phone: e.currentTarget.value });
-                                        if (fieldErrors.phone) setFieldErrors({ ...fieldErrors, phone: '' });
-                                    }}
+                                    onChange={(e) => updateField('phone', e.currentTarget.value)}
                                 />
                             </SimpleGrid>
 
-                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                            <SimpleGrid>
                                 <Select
                                     label={t('gender')}
                                     placeholder={t('gender')}
                                     data={genderOptions}
                                     value={formData.gender}
                                     error={fieldErrors.gender}
-                                    onChange={(val) => {
-                                        setFormData({ ...formData, gender: val });
-                                        if (fieldErrors.gender) setFieldErrors({ ...fieldErrors, gender: '' });
-                                    }}
+                                    onChange={(val) => updateField('gender', val)}
                                     required
                                     clearable
                                 />
@@ -293,10 +264,7 @@ export default function Register() {
                                     data={countryOptions}
                                     value={formData.country}
                                     error={fieldErrors.country}
-                                    onChange={(val) => {
-                                        setFormData({ ...formData, country: val });
-                                        if (fieldErrors.country) setFieldErrors({ ...fieldErrors, country: '' });
-                                    }}
+                                    onChange={(val) => updateField('country', val)}
                                     searchable
                                     required
                                     clearable
@@ -304,15 +272,12 @@ export default function Register() {
                             </SimpleGrid>
 
                             <MultiSelect
-                                label={t('role')}
-                                placeholder={t('role')}
+                                label={t('roles')}
+                                placeholder={t('roles')}
                                 data={roleOptions}
                                 value={formData.roles}
                                 error={fieldErrors.roles}
-                                onChange={(val) => {
-                                    setFormData({ ...formData, roles: val });
-                                    if (fieldErrors.roles) setFieldErrors({ ...fieldErrors, roles: '' });
-                                }}
+                                onChange={(val) => updateField('roles', val)}
                                 required
                                 clearable
                             />
@@ -335,13 +300,13 @@ export default function Register() {
                         code={code}
                         onCodeChange={(val) => {
                             setCode(val);
-                            if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
+                            clearFieldError('code');
                         }}
                         onSubmit={handleCodeSubmit}
                         onBack={() => {
                             registerSession.clear();
                             setStep(1);
-                            setFieldErrors({});
+                            clearFieldErrors();
                         }}
                         onResend={handleResend}
                         loading={loading}

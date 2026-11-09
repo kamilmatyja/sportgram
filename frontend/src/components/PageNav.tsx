@@ -6,8 +6,9 @@ import { type PageResource } from '../api/services';
 import { PageFollowStatusEnum } from '../enums/PageFollowStatusEnum';
 import { EntryTypeEnum } from '../enums/EntryTypeEnum';
 import { EntityViewCounter } from './EntityViewCounter';
-import { formatImageSrc } from '../utils/imageUtils';
-import { HeaderBannerWithAvatar } from './common/HeaderBannerWithAvatar';
+import { formatImageSrc } from '../utils';
+import { HeaderBannerWithAvatar } from './common';
+import React from 'react';
 
 export interface PageNavProps {
     page?: PageResource | null;
@@ -74,7 +75,7 @@ export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNa
                                 size="xs"
                                 leftSection={<IconArrowLeft size={16} />}
                             >
-                                {t('back')}
+                                {simplifiedHeader ? t('backToPage') : t('back')}
                             </Button>
                         )}
                         {extraActions}
@@ -84,5 +85,3 @@ export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNa
         </Box>
     );
 }
-
-export default PageNav;

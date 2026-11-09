@@ -1,14 +1,9 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
 import { Stack, Title, Text, Button, Group, Badge, Center, Loader } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { IconUserPlus, IconUserMinus, IconUserCheck, IconUserX } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
-import NotFound from '../../components/NotFound';
-import { EmptyState } from '../../components/EmptyState';
-import { StoryViewerModal, type UserStoriesGroup } from '../../components/StoryViewerModal';
 import {
     userService,
     friendService,
@@ -17,25 +12,32 @@ import {
     type FeedResource,
     type StoryResource,
 } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
+import { useAuth } from '../../auth';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
-import { UserProfileNav } from '../../components/UserProfileNav';
-import { EntityViewCounter } from '../../components/EntityViewCounter';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
-import { formatImageSrc } from '../../utils/imageUtils';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { HeaderBannerWithAvatar } from '../../components/common/HeaderBannerWithAvatar';
-import { EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { UserFormModal } from '../../components/user/UserFormModal';
-import { FeedCard } from '../../components/feed/FeedCard';
-import { FeedModal } from '../../components/feed/FeedModal';
-import { StoryModal } from '../../components/story/StoryModal';
-import { StoriesBar } from '../../components/story/StoriesBar';
+import {
+    NotFound,
+    EmptyState,
+    StoryViewerModal,
+    type UserStoriesGroup,
+    UserProfileNav,
+    EntityViewCounter,
+    StatusActionMenu,
+    HeaderBannerWithAvatar,
+    EditActionButton,
+    DeleteActionButton,
+    UserFormModal,
+    FeedCard,
+    FeedModal,
+    StoryModal,
+    StoriesBar,
+} from '../../components';
+import { formatImageSrc, confirmDelete, notifySuccess, notifyError } from '../../utils';
+import { useInfiniteScrollObserver } from '../../hooks';
 
 export default function UserProfile() {
     const { link } = useParams<{ link: string }>();
@@ -81,17 +83,18 @@ export default function UserProfile() {
             const res = await friendService.getFriends({
                 params: {
                     query: {
-                        filter: { userIds: [user.id] },
+                        filter: { userIds: [currentUser.id, user.id] },
                         limit: 10,
                     },
                 },
             });
-            const match = res.data?.find(
-                (f) =>
-                    (f.senderUserId === currentUser.id && f.receiverUserId === user.id) ||
-                    (f.senderUserId === user.id && f.receiverUserId === currentUser.id),
+            return (
+                res.data?.find(
+                    (f) =>
+                        (f.senderUserId === currentUser.id && f.receiverUserId === user.id) ||
+                        (f.senderUserId === user.id && f.receiverUserId === currentUser.id),
+                ) ?? null
             );
-            return match ?? null;
         },
         enabled: !!user?.id && !!currentUser?.id && !isOwner,
     });
@@ -122,35 +125,22 @@ export default function UserProfile() {
             });
         },
         initialPageParam: 1,
-        getNextPageParam: (lastPage) => {
-            const p = lastPage.pagination;
-            if (p?.hasNextPage && p?.page) {
-                return p.page + 1;
-            }
-            return undefined;
-        },
+        getNextPageParam: (lastPage) =>
+            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
         enabled: !!user?.id && canViewPrivateContent,
     });
 
     const userFeedsData = useMemo(() => {
-        return userFeedsInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
+        const list = userFeedsInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
+        const parseTime = (dateStr?: string) => (dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0);
+        return [...list].sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt));
     }, [userFeedsInfiniteData]);
 
-    const feedObserver = useRef<IntersectionObserver | null>(null);
-    const lastFeedElementRef = useCallback(
-        (node: HTMLElement | null) => {
-            if (isFetchingMoreFeeds) return;
-            if (feedObserver.current) feedObserver.current.disconnect();
-            if (!node) return;
-            feedObserver.current = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && hasMoreFeeds) {
-                    fetchNextFeedsPage();
-                }
-            });
-            feedObserver.current.observe(node);
-        },
-        [isFetchingMoreFeeds, hasMoreFeeds, fetchNextFeedsPage],
-    );
+    const lastFeedElementRef = useInfiniteScrollObserver({
+        isLoading: isFetchingMoreFeeds,
+        hasNextPage: hasMoreFeeds,
+        fetchNextPage: fetchNextFeedsPage,
+    });
 
     const {
         data: userStoriesInfiniteData,
@@ -173,19 +163,15 @@ export default function UserProfile() {
             });
         },
         initialPageParam: 1,
-        getNextPageParam: (lastPage) => {
-            const p = lastPage.pagination;
-            if (p?.hasNextPage && p?.page) {
-                return p.page + 1;
-            }
-            return undefined;
-        },
+        getNextPageParam: (lastPage) =>
+            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
         enabled: !!user?.id && canViewPrivateContent,
     });
 
-    const userStoriesData = useMemo(() => {
-        return userStoriesInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
-    }, [userStoriesInfiniteData]);
+    const userStoriesData = useMemo(
+        () => userStoriesInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [],
+        [userStoriesInfiniteData],
+    );
 
     const storiesViewportRef = useRef<HTMLDivElement>(null);
     const handleStoriesScroll = useCallback(
@@ -194,36 +180,24 @@ export default function UserProfile() {
             if (!el || isFetchingMoreStories || !hasMoreStories) return;
             const scrollRight = el.scrollWidth - el.clientWidth - position.x;
             if (scrollRight < 100) {
-                fetchNextStoriesPage();
+                void fetchNextStoriesPage();
             }
         },
         [isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
     );
 
-    const storyObserver = useRef<IntersectionObserver | null>(null);
-    const lastStoryElementRef = useCallback(
-        (node: HTMLElement | null) => {
-            if (isFetchingMoreStories) return;
-            if (storyObserver.current) storyObserver.current.disconnect();
-            if (!node) return;
-            storyObserver.current = new IntersectionObserver(
-                (entries) => {
-                    if (entries[0].isIntersecting && hasMoreStories) {
-                        fetchNextStoriesPage();
-                    }
-                },
-                { root: storiesViewportRef.current },
-            );
-            storyObserver.current.observe(node);
-        },
-        [isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
-    );
+    const lastStoryElementRef = useInfiniteScrollObserver({
+        isLoading: isFetchingMoreStories,
+        hasNextPage: hasMoreStories,
+        fetchNextPage: fetchNextStoriesPage,
+        root: storiesViewportRef.current,
+    });
 
     const userStoryGroups = useMemo<UserStoriesGroup[]>(() => {
         if (!user || !userStoriesData || userStoriesData.length === 0) return [];
         const parseTime = (dateStr?: string) => (dateStr ? new Date(dateStr.replace(' ', 'T')).getTime() : 0);
-        const sorted = [...userStoriesData].sort((a, b) => parseTime(a.createdAt) - parseTime(b.createdAt));
-        const newest = [...userStoriesData].sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt))[0];
+        const sorted = [...userStoriesData].sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt));
+        const newest = sorted[0];
 
         return [
             {
@@ -237,49 +211,64 @@ export default function UserProfile() {
 
     const sendFriendMutation = useMutation({
         mutationFn: async () => {
-            if (!user?.id) return;
+            if (!user?.id || !currentUser?.id) return;
+            const res = await friendService.getFriends({
+                params: {
+                    query: {
+                        filter: { userIds: [currentUser.id, user.id] },
+                        limit: 10,
+                    },
+                },
+            });
+            const existing = res.data?.find(
+                (f) =>
+                    (f.senderUserId === currentUser.id && f.receiverUserId === user.id) ||
+                    (f.senderUserId === user.id && f.receiverUserId === currentUser.id),
+            );
+
+            if (existing) {
+                if (existing.status === FriendStatusEnum.REJECTED) {
+                    await friendService.updateFriendStatus({
+                        params: { path: { id: existing.id } },
+                        body: { status: FriendStatusEnum.PENDING },
+                    });
+                }
+                return;
+            }
+
             await friendService.createFriend({
                 body: { userId: user.id },
             });
         },
         onSuccess: () => {
-            refetchFriendship();
-            notifications.show({ title: t('friend'), message: t('friendRequestSent'), color: 'green' });
+            void refetchFriendship();
+            void queryClient.invalidateQueries({ queryKey: ['friends'] });
+            notifySuccess(t('saved'), t('friends'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const updateFriendStatusMutation = useMutation({
-        mutationFn: async ({ id, status }: { id: string; status: number }) => {
-            await friendService.updateFriendStatus({
+        mutationFn: ({ id, status }: { id: string; status: number }) =>
+            friendService.updateFriendStatus({
                 params: { path: { id } },
                 body: { status: status as FriendStatusEnum },
-            });
-        },
+            }),
         onSuccess: () => {
-            refetchFriendship();
-            notifications.show({ title: t('friend'), message: t('statusUpdated'), color: 'green' });
+            void refetchFriendship();
+            void queryClient.invalidateQueries({ queryKey: ['friends'] });
+            notifySuccess(t('statusUpdated'), t('friends'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const deleteFriendMutation = useMutation({
-        mutationFn: async (id: string) => {
-            await friendService.deleteFriend({
-                params: { path: { id } },
-            });
-        },
+        mutationFn: (id: string) => friendService.deleteFriend({ params: { path: { id } } }),
         onSuccess: () => {
-            refetchFriendship();
-            notifications.show({ title: t('friend'), message: t('friendRemoved'), color: 'green' });
+            void refetchFriendship();
+            notifySuccess(t('deleted'), t('friends'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const updateUserStatusMutation = useMutation({
@@ -291,87 +280,45 @@ export default function UserProfile() {
             });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user', link] });
-            queryClient.invalidateQueries({ queryKey: ['users'] });
-            notifications.show({ title: t('users'), message: t('statusUpdated'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['user', link] });
+            void queryClient.invalidateQueries({ queryKey: ['users'] });
+            notifySuccess(t('statusUpdated'), t('users'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const deleteUserMutation = useMutation({
         mutationFn: async () => {
             if (!user?.id) return;
-            await userService.deleteUser({
-                params: { path: { id: user.id } },
-            });
+            await userService.deleteUser({ params: { path: { id: user.id } } });
         },
         onSuccess: async () => {
-            notifications.show({ title: t('users'), message: t('deleted'), color: 'green' });
-            await logout();
+            notifySuccess(t('deleted'), t('users'));
+            logout();
             navigate('/sign');
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
-
-    const handleDeleteUser = () => {
-        openConfirmActionModal({
-            title: t('confirmDeleteTitle'),
-            message: t('confirmDeleteMessage'),
-            confirmLabel: t('delete'),
-            cancelLabel: t('cancel'),
-            onConfirm: () => deleteUserMutation.mutate(),
-        });
-    };
 
     const deleteStoryMutation = useMutation({
-        mutationFn: async (id: string) => {
-            await storyService.deleteStory({
-                params: { path: { id } },
-            });
-        },
+        mutationFn: (id: string) => storyService.deleteStory({ params: { path: { id } } }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user-profile-stories', user?.id] });
-            queryClient.invalidateQueries({ queryKey: ['stories'] });
-            notifications.show({ title: t('stories'), message: t('storyDeleted'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['user-profile-stories', user?.id] });
+            void queryClient.invalidateQueries({ queryKey: ['stories'] });
+            notifySuccess(t('deleted'), t('stories'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
-
-    const handleDeleteStory = (id: string) => {
-        deleteStoryMutation.mutate(id);
-    };
 
     const deleteFeedMutation = useMutation({
-        mutationFn: async (id: string) => {
-            await feedService.deleteFeed({
-                params: { path: { id } },
-            });
-        },
+        mutationFn: (id: string) => feedService.deleteFeed({ params: { path: { id } } }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', user?.id] });
-            queryClient.invalidateQueries({ queryKey: ['feeds'] });
-            notifications.show({ title: t('feeds'), message: t('feedDeleted'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['user-profile-feeds', user?.id] });
+            void queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            notifySuccess(t('deleted'), t('feeds'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
-
-    const handleDeleteFeed = (id: string) => {
-        openConfirmActionModal({
-            title: t('confirmDeleteTitle'),
-            message: t('confirmDeleteMessage'),
-            confirmLabel: t('delete'),
-            cancelLabel: t('cancel'),
-            onConfirm: () => deleteFeedMutation.mutate(id),
-        });
-    };
 
     if (userLoading) {
         return (
@@ -382,14 +329,14 @@ export default function UserProfile() {
     }
 
     if (!user) {
-        return <NotFound title={t('userNotFound')} />;
+        return <NotFound title={t('notFound')} />;
     }
 
     const userProfilePhotoSrc = formatImageSrc(user.profilePhoto);
     const userBgPhotoSrc = formatImageSrc(user.backgroundPhoto);
 
     return (
-        <Stack gap="md">
+        <Stack>
             <HeaderBannerWithAvatar
                 backgroundPhotoSrc={userBgPhotoSrc}
                 profilePhotoSrc={userProfilePhotoSrc}
@@ -424,13 +371,16 @@ export default function UserProfile() {
                         {isOwner && (
                             <>
                                 <EditActionButton onClick={() => setEditUserOpened(true)} />
-                                <DeleteActionButton onClick={handleDeleteUser} loading={deleteUserMutation.isPending} />
+                                <DeleteActionButton
+                                    onClick={() => confirmDelete(t, () => deleteUserMutation.mutate())}
+                                    loading={deleteUserMutation.isPending}
+                                />
                             </>
                         )}
 
                         {!isOwner && currentUser && (
                             <Group gap="xs">
-                                {!friendship && (
+                                {(!friendship || friendship.status === FriendStatusEnum.REJECTED) && (
                                     <Button
                                         size="xs"
                                         leftSection={<IconUserPlus size={16} />}
@@ -438,20 +388,7 @@ export default function UserProfile() {
                                         loading={sendFriendMutation.isPending}
                                         disabled={sendFriendMutation.isPending}
                                     >
-                                        {t('add')}
-                                    </Button>
-                                )}
-
-                                {friendship && friendship.status === FriendStatusEnum.REJECTED && (
-                                    <Button
-                                        variant="default"
-                                        size="xs"
-                                        leftSection={<IconUserX size={16} />}
-                                        onClick={() => deleteFriendMutation.mutate(friendship.id)}
-                                        loading={deleteFriendMutation.isPending}
-                                        disabled={deleteFriendMutation.isPending}
-                                    >
-                                        {t('cancelFriendRequest')}
+                                        {t('addFriend')}
                                     </Button>
                                 )}
 
@@ -460,19 +397,24 @@ export default function UserProfile() {
                                         variant="default"
                                         size="xs"
                                         leftSection={<IconUserMinus size={16} />}
-                                        onClick={() => {
-                                            openConfirmActionModal({
-                                                title: t('confirmFriendRemovalTitle'),
-                                                message: t('confirmFriendRemovalMessage'),
-                                                confirmLabel: t('delete'),
-                                                cancelLabel: t('cancel'),
-                                                onConfirm: () => deleteFriendMutation.mutate(friendship.id),
-                                            });
-                                        }}
-                                        loading={deleteFriendMutation.isPending}
-                                        disabled={deleteFriendMutation.isPending}
+                                        onClick={() =>
+                                            confirmDelete(
+                                                t,
+                                                () =>
+                                                    updateFriendStatusMutation.mutate({
+                                                        id: friendship.id,
+                                                        status: FriendStatusEnum.REJECTED,
+                                                    }),
+                                                {
+                                                    title: t('confirmFriendRemovalTitle'),
+                                                    message: t('confirmFriendRemovalMessage'),
+                                                },
+                                            )
+                                        }
+                                        loading={updateFriendStatusMutation.isPending}
+                                        disabled={updateFriendStatusMutation.isPending}
                                     >
-                                        {t('delete')}
+                                        {`${t('delete')} ${t('friendship').toLowerCase()}`}
                                     </Button>
                                 )}
 
@@ -540,10 +482,10 @@ export default function UserProfile() {
                         const label =
                             RoleEnum.getOptions(t).find((o) => Number(o.value) === Number(r.role))?.label ??
                             (r.role === RoleEnum.ADMINISTRATOR
-                                ? t('roles.administrator')
+                                ? t('roleTypes.administrator')
                                 : r.role === RoleEnum.ORGANIZER
-                                  ? t('roles.organizer')
-                                  : t('roles.participant'));
+                                  ? t('roleTypes.organizer')
+                                  : t('roleTypes.participant'));
                         return (
                             <Badge key={r.id || r.role} color={primaryColor} variant="outline">
                                 {label}
@@ -577,10 +519,10 @@ export default function UserProfile() {
                         />
                     )}
 
-                    <Stack gap="md">
+                    <Stack>
                         {feedsLoading ? (
                             <Text ta="center" c="dimmed">
-                                {t('loadingFeeds')}
+                                {t('loading')}
                             </Text>
                         ) : userFeedsData?.length === 0 ? (
                             <EmptyState title={t('noData')} />
@@ -590,8 +532,12 @@ export default function UserProfile() {
                                     key={feed.id}
                                     feed={feed}
                                     author={user}
-                                    onEditFeed={isOwner ? (f) => setEditingFeed(f) : undefined}
-                                    onDeleteFeed={isOwner ? handleDeleteFeed : undefined}
+                                    onEditFeed={isOwner ? (f: FeedResource) => setEditingFeed(f) : undefined}
+                                    onDeleteFeed={
+                                        isOwner
+                                            ? (id: string) => confirmDelete(t, () => deleteFeedMutation.mutate(id))
+                                            : undefined
+                                    }
                                     domRef={idx === userFeedsData.length - 1 ? lastFeedElementRef : undefined}
                                 />
                             ))
@@ -614,7 +560,7 @@ export default function UserProfile() {
                 opened={!!editingStory}
                 story={editingStory}
                 onClose={() => setEditingStory(null)}
-                onSuccess={(updated) => {
+                onSuccess={(updated?: StoryResource) => {
                     if (updated) setUpdatedStoryForModal(updated);
                 }}
             />
@@ -629,7 +575,7 @@ export default function UserProfile() {
                 groups={userStoryGroups}
                 initialGroupIndex={0}
                 onEdit={isOwner ? (story) => setEditingStory(story) : undefined}
-                onDelete={isOwner ? handleDeleteStory : undefined}
+                onDelete={isOwner ? (id) => deleteStoryMutation.mutate(id) : undefined}
                 updatedStory={updatedStoryForModal}
             />
         </Stack>

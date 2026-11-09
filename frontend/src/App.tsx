@@ -4,11 +4,11 @@ import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useParams, Outlet, useLocation } from 'react-router-dom';
 import { Center, Loader, MantineThemeProvider } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from './auth/AuthContext';
-import { AppLayout } from './components/AppLayout';
+import { useAuth } from './auth';
+import { AppLayout } from './components';
 import { userService } from './api/services';
 import { ColorEnum } from './enums/ColorEnum';
-import { applyThemeColor } from './utils/themeUtils';
+import { applyThemeColor } from './utils';
 
 import Home from './pages/Home';
 import Login from './pages/auth/Login';

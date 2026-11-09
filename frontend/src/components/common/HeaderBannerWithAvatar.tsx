@@ -14,46 +14,39 @@ export function HeaderBannerWithAvatar({
     altText = '',
     children,
 }: HeaderBannerWithAvatarProps) {
+    const [imageError, setImageError] = React.useState(false);
+
     return (
-        <Card p={0} mb="sm" style={{ overflow: 'hidden' }}>
-            {backgroundPhotoSrc ? (
-                <Box h={160} pos="relative" bg="var(--mantine-primary-color-filled)">
-                    <Center pos="absolute" inset={0} style={{ zIndex: 0 }}>
-                        <Text fz={48} fw={700} c="white" opacity={0.8} style={{ userSelect: 'none' }}>
+        <Card p={0} mb="sm">
+            <Card.Section>
+                {backgroundPhotoSrc && !imageError ? (
+                    <Box h={160} pos="relative" bg="var(--mantine-primary-color-filled)">
+                        <Center pos="absolute" inset={0}>
+                            <Text fz={48} fw={700} c="white" opacity={0.8}>
+                                ?
+                            </Text>
+                        </Center>
+                        <Image
+                            src={backgroundPhotoSrc}
+                            h={160}
+                            w="100%"
+                            alt={altText}
+                            pos="relative"
+                            radius={0}
+                            onError={() => setImageError(true)}
+                        />
+                    </Box>
+                ) : (
+                    <Center h={160} bg="var(--mantine-primary-color-filled)">
+                        <Text fz={48} fw={700} c="white" opacity={0.8}>
                             ?
                         </Text>
                     </Center>
-                    <Image
-                        src={backgroundPhotoSrc}
-                        h={160}
-                        w="100%"
-                        fit="cover"
-                        alt={altText}
-                        pos="relative"
-                        radius={0}
-                        style={{ zIndex: 1 }}
-                        onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                        }}
-                    />
-                </Box>
-            ) : (
-                <Center h={160} bg="var(--mantine-primary-color-filled)">
-                    <Text fz={48} fw={700} c="white" opacity={0.8} style={{ userSelect: 'none' }}>
-                        ?
-                    </Text>
-                </Center>
-            )}
+                )}
+            </Card.Section>
 
-            <Box p="md" pos="relative" style={{ zIndex: 2 }}>
-                <Avatar
-                    src={profilePhotoSrc}
-                    size={100}
-                    pos="absolute"
-                    top={-50}
-                    left={24}
-                    className="profile-avatar-border"
-                >
+            <Box p="md" pos="relative">
+                <Avatar src={profilePhotoSrc} size={100} className="profile-avatar-border">
                     ?
                 </Avatar>
                 {children}

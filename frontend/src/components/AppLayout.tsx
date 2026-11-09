@@ -28,8 +28,8 @@ import {
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import { formatImageSrc } from '../utils/imageUtils';
+import { useAuth } from '../auth';
+import { formatImageSrc } from '../utils';
 import { RunnerLogo } from './RunnerLogo';
 
 interface AppLayoutProps {
@@ -60,9 +60,9 @@ export function AppLayout({ children }: AppLayoutProps) {
     return (
         <AppShell header={{ height: 60 }} padding="md">
             <AppShell.Header>
-                <Container size="lg" h="100%">
+                <Container h="100%">
                     <Group h="100%" justify="space-between" wrap="nowrap">
-                        <Group gap="sm" wrap="nowrap">
+                        <Group wrap="nowrap">
                             {isAuthenticated && (
                                 <Burger
                                     opened={drawerOpened}
@@ -164,9 +164,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             </AppShell.Header>
 
             <AppShell.Main>
-                <Container size="lg" w="100%">
-                    {children}
-                </Container>
+                <Container w="100%">{children}</Container>
             </AppShell.Main>
 
             {isAuthenticated && (

@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { userService, type UserResource } from '../../api/services';
 import NotFound from '../NotFound';
 import { UserProfileNav } from '../UserProfileNav';
-import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
+import { useUserSubpageAccess } from '../../hooks';
 import { RoleEnum } from '../../enums/RoleEnum';
 
 export interface UserSubpageContextValue {
@@ -23,14 +23,13 @@ export interface UserSubpageContainerProps {
     children: (ctx: UserSubpageContextValue) => React.ReactNode;
 }
 
-function SubpageContentWrapper({
-    content,
-    ctx,
-}: {
-    content: (ctx: UserSubpageContextValue) => React.ReactNode;
-    ctx: UserSubpageContextValue;
-}) {
-    return <>{content(ctx)}</>;
+interface UserSubpageContentWrapperProps {
+    render: (ctx: UserSubpageContextValue) => React.ReactNode;
+    value: UserSubpageContextValue;
+}
+
+function UserSubpageContentWrapper({ render, value }: UserSubpageContentWrapperProps) {
+    return <>{render(value)}</>;
 }
 
 export function UserSubpageContainer({ ownerOrAdminOnly = false, requiredRole, children }: UserSubpageContainerProps) {
@@ -76,7 +75,7 @@ export function UserSubpageContainer({ ownerOrAdminOnly = false, requiredRole, c
     }
 
     if (!targetUser) {
-        return <NotFound title={t('userNotFound')} />;
+        return <NotFound title={t('notFound')} />;
     }
 
     if (!canAccessSubpage || (requiredRole && !hasRequiredRole)) {
@@ -84,12 +83,11 @@ export function UserSubpageContainer({ ownerOrAdminOnly = false, requiredRole, c
     }
 
     return (
-        <Stack gap="md">
+        <Stack key={targetUser.id}>
             <UserProfileNav user={targetUser} isOwner={isOwner} />
-            <SubpageContentWrapper
-                key={targetUser.id}
-                content={children}
-                ctx={{
+            <UserSubpageContentWrapper
+                render={children}
+                value={{
                     targetUser,
                     isOwner,
                     isAdmin,

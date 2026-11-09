@@ -1,26 +1,26 @@
 import { useState, useMemo } from 'react';
 import { Group, Text, SimpleGrid, TextInput, Select } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { getErrorMessage } from '../../api/client';
 import { userService, type UserResource, type GetUsersQuery } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
-
-import { DataTable, type Column } from '../../components/DataTable';
-import { StatusBadge } from '../../components/StatusBadge';
+import { useAuth } from '../../auth';
+import {
+    DataTable,
+    type Column,
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    EditActionButton,
+    DeleteActionButton,
+    UserInfoCell,
+    UserFormModal,
+} from '../../components';
 import { CountryEnum } from '../../enums/CountryEnum';
 import { GenderEnum } from '../../enums/GenderEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDateTime } from '../../utils/date';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { UserFormModal } from '../../components/user/UserFormModal';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { UserInfoCell } from '../../components/common/UserInfoCell';
-import { useDataTableState } from '../../hooks/useDataTableState';
+import { buildSortOptions, confirmDelete, formatDateTime, notifySuccess, notifyError } from '../../utils';
+import { useDataTableState } from '../../hooks';
 
 export default function UsersList() {
     const { t } = useTranslation();
@@ -31,9 +31,7 @@ export default function UsersList() {
     const [createOpened, setCreateOpened] = useState(false);
     const [editingUser, setEditingUser] = useState<UserResource | null>(null);
 
-    const tableState = useDataTableState({
-        initialSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState({ initialSort: 'createdAt:desc' });
 
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -50,38 +48,21 @@ export default function UsersList() {
                 body: { status },
             }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
-            notifications.show({ title: t('users'), message: t('statusUpdated'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['users'] });
+            notifySuccess(t('statusUpdated'), t('users'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (id: string) =>
-            userService.deleteUser({
-                params: { path: { id } },
-            }),
+        mutationFn: (id: string) => userService.deleteUser({ params: { path: { id } } }),
         onSuccess: async () => {
-            notifications.show({ title: t('users'), message: t('deleted'), color: 'green' });
-            await logout();
+            notifySuccess(t('deleted'), t('users'));
+            logout();
             navigate('/login');
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
-
-    const handleDeleteUser = (id: string) => {
-        openConfirmActionModal({
-            title: t('confirmDeleteTitle'),
-            message: t('confirmDeleteMessage'),
-            confirmLabel: t('delete'),
-            cancelLabel: t('cancel'),
-            onConfirm: () => deleteMutation.mutate(id),
-        });
-    };
 
     const sortOptions = buildSortOptions(t, [
         'createdAt',
@@ -94,15 +75,8 @@ export default function UsersList() {
     ]);
 
     const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (firstName.trim()) count++;
-        if (lastName.trim()) count++;
-        if (email.trim()) count++;
-        if (link.trim()) count++;
-        if (gender !== null) count++;
-        if (country !== null) count++;
-        if (status !== null) count++;
-        return count;
+        return [firstName.trim(), lastName.trim(), email.trim(), link.trim(), gender, country, status].filter(Boolean)
+            .length;
     }, [firstName, lastName, email, link, gender, country, status]);
 
     const handleResetFilters = () => {
@@ -139,6 +113,7 @@ export default function UsersList() {
                         limit: tableState.limit,
                         sort: (tableState.sort as NonNullable<GetUsersQuery>['sort']) ?? 'createdAt:desc',
                         filter: queryFilter,
+                        'include[]': ['userDisciplines', 'userRoles'],
                     },
                 },
             }),
@@ -162,7 +137,6 @@ export default function UsersList() {
                 </Text>
             ),
         },
-
         {
             key: 'status',
             header: t('status'),
@@ -180,7 +154,7 @@ export default function UsersList() {
     ];
 
     const filtersNode = (
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="sm">
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
             <TextInput
                 label={t('firstName')}
                 placeholder={t('firstName')}
@@ -267,6 +241,7 @@ export default function UsersList() {
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
                 onAdd={isAdmin ? () => setCreateOpened(true) : undefined}
+                addLabel={t('addUser')}
                 actions={(u) => {
                     const isOwner = currentUser?.id === u.id;
                     return (
@@ -289,7 +264,7 @@ export default function UsersList() {
                                 <>
                                     <EditActionButton onClick={() => setEditingUser(u)} />
                                     <DeleteActionButton
-                                        onClick={() => handleDeleteUser(u.id)}
+                                        onClick={() => confirmDelete(t, () => deleteMutation.mutate(u.id))}
                                         loading={deleteMutation.isPending}
                                     />
                                 </>
@@ -300,7 +275,6 @@ export default function UsersList() {
             />
 
             <UserFormModal opened={createOpened} onClose={() => setCreateOpened(false)} />
-
             <UserFormModal opened={!!editingUser} user={editingUser} onClose={() => setEditingUser(null)} />
         </>
     );

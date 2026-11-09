@@ -6,7 +6,7 @@ export interface AuthVerificationStepProps {
     promptText?: string;
     code: string;
     onCodeChange: (code: string) => void;
-    onSubmit: (e: React.FormEvent) => void;
+    onSubmit: (e: React.SyntheticEvent) => void;
     onBack: () => void;
     onResend: () => void;
     loading: boolean;
@@ -33,7 +33,7 @@ export function AuthVerificationStep({
 
     return (
         <form onSubmit={onSubmit}>
-            <Stack align="center" gap="md">
+            <Stack align="center">
                 <Text size="sm" c="dimmed" ta="center">
                     {promptText ?? t('enterVerificationCodePrompt')}
                 </Text>

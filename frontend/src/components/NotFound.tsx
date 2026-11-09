@@ -18,10 +18,10 @@ export function NotFound({ title, message }: NotFoundProps) {
                     404
                 </Text>
                 <Text size="xl" fw={600} ta="center">
-                    {title ?? t('notFound.title')}
+                    {title ?? t('notFound')}
                 </Text>
                 <Text c="dimmed" ta="center">
-                    {message ?? t('notFound.message')}
+                    {message ?? t('notFoundMessage')}
                 </Text>
                 <Button variant="light" size="xs" mt="sm" onClick={() => navigate('/')}>
                     {t('navHome')}

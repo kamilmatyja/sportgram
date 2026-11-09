@@ -27,12 +27,13 @@ import {
 } from '../../api/services';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { EmptyState } from '../EmptyState';
-import { StatusBadge } from '../common/StatusBadge';
-import { StatusActionMenu } from '../common/StatusActionMenu';
-import { EditActionButton, DeleteActionButton, ViewActionButton } from '../common/RowActionButtons';
-import { UserInfoCell } from '../common/UserInfoCell';
-import { useUsersMap } from '../../hooks/useUsersMap';
-import { openConfirmActionModal } from '../../utils/confirmModal';
+import { StatusBadge } from '../common';
+import { StatusActionMenu } from '../common';
+import { EditActionButton, DeleteActionButton, ViewActionButton } from '../common';
+import { UserInfoCell } from '../common';
+import { useUsersMap } from '../../hooks';
+import { useFormErrors } from '../../hooks';
+import { openConfirmActionModal } from '../../utils';
 
 export interface DistanceParticipantsProps {
     distance: EventDisciplineDistanceResource;
@@ -67,6 +68,7 @@ export function DistanceParticipantsSection({
     const [expandedParticipantIds, setExpandedParticipantIds] = useState<string[]>([]);
     const [expandedResultIds, setExpandedResultIds] = useState<string[]>([]);
     const [resultModal, setResultModal] = useState<ResultModalState | null>(null);
+    const { errors, setFromError, clearFieldError, clearErrors } = useFormErrors();
 
     const toggleExpandParticipant = (id: string) => {
         setExpandedParticipantIds((prev) => (prev.includes(id) ? prev.filter((pId) => pId !== id) : [...prev, id]));
@@ -103,7 +105,7 @@ export function DistanceParticipantsSection({
                 body: { status: status as 1 | 2 | 3 },
             }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['distance-participants', distance.id] });
+            void queryClient.invalidateQueries({ queryKey: ['distance-participants', distance.id] });
             notifications.show({ title: t('participants'), message: t('statusUpdated'), color: 'green' });
         },
         onError: (err) => {
@@ -148,16 +150,17 @@ export function DistanceParticipantsSection({
                 setExpandedParticipantIds((prev) => (prev.includes(targetId) ? prev : [...prev, targetId]));
             }
             const isAdd = resultModal?.mode === 'add';
+            clearErrors();
             setResultModal(null);
-            queryClient.invalidateQueries({ queryKey: ['distance-participants', distance.id] });
+            void queryClient.invalidateQueries({ queryKey: ['distance-participants', distance.id] });
             notifications.show({
                 title: t('events'),
-                message: isAdd ? t('resultAdded') : t('resultUpdated'),
+                message: isAdd ? t('created') : t('saved'),
                 color: 'green',
             });
         },
         onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
+            setFromError(err);
         },
     });
 
@@ -167,7 +170,7 @@ export function DistanceParticipantsSection({
                 params: { path: { id: resultId } },
             }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['distance-participants', distance.id] });
+            void queryClient.invalidateQueries({ queryKey: ['distance-participants', distance.id] });
             notifications.show({ title: t('events'), message: t('deleted'), color: 'green' });
         },
         onError: (err) => {
@@ -176,6 +179,7 @@ export function DistanceParticipantsSection({
     });
 
     const handleOpenAddResult = (participantId: string) => {
+        clearErrors();
         setResultModal({
             mode: 'add',
             targetId: participantId,
@@ -185,11 +189,17 @@ export function DistanceParticipantsSection({
     };
 
     const handleOpenEditResult = (res: EventDisciplineDistanceResultResource) => {
+        clearErrors();
+        const subDistances = distance.subDistances || [];
+        const subTimes = subDistances.map((sd) => {
+            const match = res.subResults?.find((sr) => sr.eventDisciplineSubDistanceId === sd.id);
+            return match?.time != null ? String(match.time) : '';
+        });
         setResultModal({
             mode: 'edit',
             targetId: res.id,
             time: String(res.time ?? ''),
-            subTimes: res.subResults?.map((sr) => String(sr.time ?? '')) ?? [],
+            subTimes,
         });
     };
 
@@ -231,11 +241,11 @@ export function DistanceParticipantsSection({
                 <EmptyState title={t('noData')} />
             ) : (
                 <Stack gap="sm">
-                    <Table.ScrollContainer minWidth={600}>
-                        <Table verticalSpacing="sm">
+                    <Table.ScrollContainer minWidth={500}>
+                        <Table>
                             <Table.Thead>
                                 <Table.Tr>
-                                    <Table.Th className="table-expand-col" />
+                                    <Table.Th w={46} />
                                     <Table.Th>{t('user')}</Table.Th>
                                     <Table.Th>{t('status')}</Table.Th>
                                     <Table.Th w={120} ta="right">
@@ -244,7 +254,7 @@ export function DistanceParticipantsSection({
                                 </Table.Tr>
                             </Table.Thead>
                             <Table.Tbody>
-                                {participants.map((p: EventDisciplineDistanceListResource) => {
+                                {participants.map((p: EventDisciplineDistanceListResource, pIdx: number) => {
                                     const u = getUser(p.userId);
                                     const isSelf = p.userId === currentUserId;
                                     const canManageParticipant = isSelf || isOwner;
@@ -253,13 +263,11 @@ export function DistanceParticipantsSection({
 
                                     return (
                                         <React.Fragment key={p.id}>
-                                            <Table.Tr>
+                                            <Table.Tr className={pIdx % 2 === 0 ? 'table-row-odd' : 'table-row-even'}>
                                                 <Table.Td>
                                                     {hasResults ? (
                                                         <Tooltip label={t('results')}>
                                                             <ActionIcon
-                                                                size="xs"
-                                                                variant="subtle"
                                                                 onClick={() => toggleExpandParticipant(p.id)}
                                                                 aria-label={t('results')}
                                                             >
@@ -302,7 +310,7 @@ export function DistanceParticipantsSection({
                                                                     leftSection={<IconPlus size={16} />}
                                                                     onClick={() => handleOpenAddResult(p.id)}
                                                                 >
-                                                                    {t('add')}
+                                                                    {t('addResult')}
                                                                 </Button>
                                                             )}
                                                     </Group>
@@ -310,11 +318,11 @@ export function DistanceParticipantsSection({
                                             </Table.Tr>
                                             {hasResults && isParticipantExpanded && (
                                                 <Table.Tr className="table-expansion-row">
-                                                    <Table.Td colSpan={4} p={0} className="table-nested-container">
-                                                        <Table verticalSpacing="sm">
+                                                    <Table.Td colSpan={4} p={0}>
+                                                        <Table>
                                                             <Table.Thead>
                                                                 <Table.Tr>
-                                                                    <Table.Th className="table-expand-col" />
+                                                                    <Table.Th w={46} />
                                                                     <Table.Th>{t('distanceMeters')}</Table.Th>
                                                                     <Table.Th>{t('timeSeconds')}</Table.Th>
                                                                     <Table.Th w={120} ta="right">
@@ -326,7 +334,7 @@ export function DistanceParticipantsSection({
                                                                 {p.results.map(
                                                                     (
                                                                         res: EventDisciplineDistanceResultResource,
-                                                                        rIdx,
+                                                                        rIdx: number,
                                                                     ) => {
                                                                         const hasSubResults =
                                                                             res.subResults && res.subResults.length > 0;
@@ -348,8 +356,6 @@ export function DistanceParticipantsSection({
                                                                                                 label={t('details')}
                                                                                             >
                                                                                                 <ActionIcon
-                                                                                                    size="xs"
-                                                                                                    variant="subtle"
                                                                                                     onClick={() =>
                                                                                                         toggleExpandResult(
                                                                                                             res.id,
@@ -408,12 +414,8 @@ export function DistanceParticipantsSection({
                                                                                     </Table.Td>
                                                                                 </Table.Tr>
                                                                                 {hasSubResults && isSubExpanded && (
-                                                                                    <Table.Tr className="table-sub-expansion-row">
-                                                                                        <Table.Td
-                                                                                            colSpan={4}
-                                                                                            p={0}
-                                                                                            className="table-nested-container"
-                                                                                        >
+                                                                                    <Table.Tr className="table-expansion-row">
+                                                                                        <Table.Td colSpan={4} p={0}>
                                                                                             <Table verticalSpacing="xs">
                                                                                                 <Table.Thead>
                                                                                                     <Table.Tr>
@@ -498,8 +500,11 @@ export function DistanceParticipantsSection({
             {resultModal && (
                 <Modal
                     opened={true}
-                    onClose={() => setResultModal(null)}
-                    title={resultModal.mode === 'add' ? t('add') : t('edit')}
+                    onClose={() => {
+                        setResultModal(null);
+                        clearErrors();
+                    }}
+                    title={resultModal.mode === 'add' ? t('addResult') : t('editResult')}
                 >
                     <Stack gap="sm">
                         <TextInput
@@ -507,9 +512,12 @@ export function DistanceParticipantsSection({
                             required
                             type="number"
                             value={resultModal.time}
-                            onChange={(e) =>
-                                setResultModal((prev) => (prev ? { ...prev, time: e.currentTarget.value } : null))
-                            }
+                            onChange={(e) => {
+                                const val = e.currentTarget.value;
+                                setResultModal((prev) => (prev ? { ...prev, time: val } : null));
+                                clearFieldError('time');
+                            }}
+                            error={errors.time}
                         />
 
                         {distance.subDistances && distance.subDistances.length > 0 && (
@@ -532,7 +540,16 @@ export function DistanceParticipantsSection({
                                                 nextSubTimes[idx] = val;
                                                 return { ...prev, subTimes: nextSubTimes };
                                             });
+                                            clearFieldError(`subResults.${idx}.time`);
+                                            clearFieldError(`subResults[${idx}].time`);
                                         }}
+                                        error={
+                                            errors[`subResults.${idx}.time`] ||
+                                            errors[`subResults[${idx}].time`] ||
+                                            (errors.subResults && !resultModal.subTimes[idx]?.trim()
+                                                ? errors.subResults
+                                                : undefined)
+                                        }
                                     />
                                 ))}
                             </Stack>
@@ -544,7 +561,7 @@ export function DistanceParticipantsSection({
                             disabled={saveResultMutation.isPending || !resultModal.time.trim()}
                             onClick={() => saveResultMutation.mutate()}
                         >
-                            {resultModal.mode === 'add' ? t('add') : t('save')}
+                            {t('save')}
                         </Button>
                     </Stack>
                 </Modal>

@@ -1,28 +1,28 @@
-import { useState, useMemo } from 'react';
-import { Text, TextInput, Button, Stack, Modal, SimpleGrid, Select, Group } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+import { useState } from 'react';
+import { Text, TextInput, Button, Stack, Modal, Group } from '@mantine/core';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage } from '../../api/client';
 import { feedService, type FeedCommentResource, type GetFeedCommentsQuery } from '../../api/services';
-import { DataTable, type Column } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components';
+import {
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    EditActionButton,
+    DeleteActionButton,
+    UserSubpageContainer,
+    TextStatusFilterGrid,
+} from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatDateTime } from '../../utils/date';
-import { truncate } from '../../utils/text';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { StatusBadge } from '../../components/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
-import { useFeedAuthors } from '../../hooks/useFeedAuthors';
+import { useDataTableState, useFeedAuthors, useFormErrors } from '../../hooks';
+import { notifySuccess, notifyError, confirmDelete, formatDateTime, buildSortOptions, truncate } from '../../utils';
 
 export default function UserFeedComments() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
     const tableState = useDataTableState();
+    const { errors, setFromError, clearErrors, clearFieldError } = useFormErrors();
 
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -31,13 +31,7 @@ export default function UserFeedComments() {
     const [editText, setEditText] = useState('');
 
     const sortOptions = buildSortOptions(t, ['createdAt', 'text', 'status']);
-
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (textFilter.trim()) count++;
-        if (statusFilter !== null) count++;
-        return count;
-    }, [textFilter, statusFilter]);
+    const activeFiltersCount = [textFilter.trim(), statusFilter].filter(Boolean).length;
 
     const handleResetFilters = () => {
         setTextFilter('');
@@ -50,7 +44,7 @@ export default function UserFeedComments() {
             {({ targetUser, isOwner, isAdmin, canAccessSubpage }) => {
                 const queryFilter = {
                     userId: targetUser?.id ?? null,
-                    text: textFilter.trim() ? textFilter.trim() : null,
+                    text: textFilter.trim() || null,
                     status: statusFilter ? (Number(statusFilter) as ElementStatusEnum) : null,
                 };
 
@@ -93,12 +87,10 @@ export default function UserFeedComments() {
                             body: { status },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-feed-comments', targetUser?.id] });
-                        notifications.show({ title: t('comments'), message: t('statusUpdated'), color: 'green' });
+                        void queryClient.invalidateQueries({ queryKey: ['user-feed-comments', targetUser?.id] });
+                        notifySuccess(t('statusUpdated'), t('comments'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const updateMutation = useMutation({
@@ -112,37 +104,21 @@ export default function UserFeedComments() {
                     onSuccess: () => {
                         setEditingComment(null);
                         setEditText('');
-                        queryClient.invalidateQueries({ queryKey: ['user-feed-comments', targetUser?.id] });
-                        notifications.show({ title: t('comments'), message: t('commentUpdated'), color: 'green' });
+                        clearErrors();
+                        void queryClient.invalidateQueries({ queryKey: ['user-feed-comments', targetUser?.id] });
+                        notifySuccess(t('saved'), t('comments'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => setFromError(err),
                 });
 
                 const deleteMutation = useMutation({
-                    mutationFn: (id: string) =>
-                        feedService.deleteFeedComment({
-                            params: { path: { id } },
-                        }),
+                    mutationFn: (id: string) => feedService.deleteFeedComment({ params: { path: { id } } }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-feed-comments', targetUser?.id] });
-                        notifications.show({ title: t('comments'), message: t('commentDeleted'), color: 'green' });
+                        void queryClient.invalidateQueries({ queryKey: ['user-feed-comments', targetUser?.id] });
+                        notifySuccess(t('deleted'), t('comments'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
-
-                const handleDelete = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmDeleteTitle'),
-                        message: t('confirmDeleteMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMutation.mutate(id),
-                    });
-                };
 
                 const columns: Column<FeedCommentResource>[] = [
                     {
@@ -176,31 +152,13 @@ export default function UserFeedComments() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                        <TextInput
-                            label={t('text')}
-                            placeholder={t('search')}
-                            value={textFilter}
-                            onChange={(e) => {
-                                setTextFilter(e.currentTarget.value);
-                                tableState.resetPage();
-                            }}
-                        />
-                        <Select
-                            label={t('status')}
-                            placeholder={t('allStatuses')}
-                            data={ElementStatusEnum.getOptions(t).map((s) => ({
-                                value: String(s.value),
-                                label: s.label,
-                            }))}
-                            value={statusFilter}
-                            onChange={(v) => {
-                                setStatusFilter(v);
-                                tableState.resetPage();
-                            }}
-                            clearable
-                        />
-                    </SimpleGrid>
+                    <TextStatusFilterGrid
+                        text={textFilter}
+                        onTextChange={setTextFilter}
+                        status={statusFilter}
+                        onStatusChange={setStatusFilter}
+                        onFilterChange={tableState.resetPage}
+                    />
                 );
 
                 return (
@@ -237,12 +195,13 @@ export default function UserFeedComments() {
                                             <>
                                                 <EditActionButton
                                                     onClick={() => {
+                                                        clearErrors();
                                                         setEditingComment(c);
                                                         setEditText(c.text);
                                                     }}
                                                 />
                                                 <DeleteActionButton
-                                                    onClick={() => handleDelete(c.id)}
+                                                    onClick={() => confirmDelete(t, () => deleteMutation.mutate(c.id))}
                                                     loading={deleteMutation.isPending}
                                                 />
                                             </>
@@ -252,22 +211,32 @@ export default function UserFeedComments() {
                             }}
                         />
 
-                        <Modal opened={!!editingComment} onClose={() => setEditingComment(null)} title={t('edit')}>
-                            <Stack gap="md">
+                        <Modal
+                            opened={!!editingComment}
+                            onClose={() => {
+                                setEditingComment(null);
+                                clearErrors();
+                            }}
+                            title={t('editComment')}
+                        >
+                            <Stack>
                                 <TextInput
                                     label={t('text')}
                                     required
                                     value={editText}
-                                    onChange={(e) => setEditText(e.currentTarget.value)}
+                                    onChange={(e) => {
+                                        setEditText(e.currentTarget.value);
+                                        clearFieldError('text');
+                                    }}
+                                    error={errors.text}
                                 />
-                                <Group justify="flex-end">
-                                    <Button variant="default" onClick={() => setEditingComment(null)}>
-                                        {t('cancel')}
-                                    </Button>
-                                    <Button onClick={() => updateMutation.mutate()} loading={updateMutation.isPending}>
-                                        {t('save')}
-                                    </Button>
-                                </Group>
+                                <Button
+                                    onClick={() => updateMutation.mutate()}
+                                    loading={updateMutation.isPending}
+                                    disabled={!editText.trim() || updateMutation.isPending}
+                                >
+                                    {t('save')}
+                                </Button>
                             </Stack>
                         </Modal>
                     </>

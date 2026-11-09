@@ -1,6 +1,7 @@
 import {
     createTheme,
     Table,
+    TableScrollContainer,
     Avatar,
     Card,
     Paper,
@@ -12,6 +13,11 @@ import {
     Tooltip,
     Menu,
     Image,
+    Container,
+    SimpleGrid,
+    Stack,
+    Group,
+    Skeleton,
     type MantineColorsTuple,
 } from '@mantine/core';
 
@@ -37,6 +43,32 @@ export const theme = createTheme({
     fontFamily:
         '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
     components: {
+        Container: Container.extend({
+            defaultProps: {
+                size: 'lg',
+            },
+        }),
+        SimpleGrid: SimpleGrid.extend({
+            defaultProps: {
+                cols: { base: 1, sm: 2 },
+                spacing: 'sm',
+            },
+        }),
+        Stack: Stack.extend({
+            defaultProps: {
+                gap: 'md',
+            },
+        }),
+        Group: Group.extend({
+            defaultProps: {
+                gap: 'sm',
+            },
+        }),
+        Skeleton: Skeleton.extend({
+            defaultProps: {
+                radius: 'sm',
+            },
+        }),
         Table: Table.extend({
             defaultProps: {
                 striped: true,
@@ -44,6 +76,12 @@ export const theme = createTheme({
                 withTableBorder: true,
                 withColumnBorders: true,
                 withRowBorders: true,
+                verticalSpacing: 'sm',
+            },
+        }),
+        TableScrollContainer: TableScrollContainer.extend({
+            defaultProps: {
+                minWidth: 600,
             },
         }),
         Avatar: Avatar.extend({
@@ -65,6 +103,7 @@ export const theme = createTheme({
                 radius: 'sm',
                 withBorder: true,
                 shadow: 'xs',
+                p: 'md',
             },
         }),
         Modal: Modal.extend({
@@ -85,6 +124,7 @@ export const theme = createTheme({
         Badge: Badge.extend({
             defaultProps: {
                 variant: 'light',
+                size: 'sm',
             },
         }),
         ActionIcon: ActionIcon.extend({
@@ -107,6 +147,7 @@ export const theme = createTheme({
         Image: Image.extend({
             defaultProps: {
                 radius: 'sm',
+                fit: 'cover',
             },
         }),
     },

@@ -4,11 +4,12 @@ import { notifications } from '@mantine/notifications';
 import { IconPhoto } from '@tabler/icons-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { eventService, type EventResource } from '../../api/services';
-import { resolveImageBase64 } from '../../utils/imageUtils';
-import { slugify } from '../../utils/text';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { useFormErrors } from '../../hooks';
+import { toInputDateTime } from '../../utils';
+import { resolveImageBase64 } from '../../utils';
+import { updateTitleWithSlug } from '../../utils';
 import { EventDisciplinesEditor, type FormEventDiscipline } from './EventDisciplinesEditor';
 
 export interface PageParticipantOption {
@@ -25,6 +26,16 @@ export interface EventFormModalProps {
     onSuccess?: () => void;
 }
 
+const INITIAL_FORM_DATA = {
+    title: '',
+    description: '',
+    link: '',
+    location: '',
+    rules: '',
+    startedAt: '',
+    endedAt: '',
+};
+
 export function EventFormModal({
     opened,
     onClose,
@@ -35,23 +46,15 @@ export function EventFormModal({
 }: EventFormModalProps) {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!event;
 
     const [selectedPageParticipantId, setSelectedPageParticipantId] = useState<string | null>(
         defaultPageParticipantId ?? null,
     );
     const [photoFile, setPhotoFile] = useState<File | null>(null);
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        link: '',
-        location: '',
-        rules: '',
-        startedAt: '',
-        endedAt: '',
-    });
+    const [formData, setFormData] = useState(INITIAL_FORM_DATA);
     const [disciplines, setDisciplines] = useState<FormEventDiscipline[]>([]);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (!opened) return;
@@ -63,46 +66,34 @@ export function EventFormModal({
                 link: event.link ?? '',
                 location: event.location ?? '',
                 rules: event.rules ?? '',
-                startedAt: event.startedAt ? event.startedAt.replace(' ', 'T').slice(0, 16) : '',
-                endedAt: event.endedAt ? event.endedAt.replace(' ', 'T').slice(0, 16) : '',
+                startedAt: toInputDateTime(event.startedAt),
+                endedAt: toInputDateTime(event.endedAt),
             });
 
-            if (event.disciplines) {
-                setDisciplines(
-                    event.disciplines.map((d) => ({
-                        id: d.id,
-                        discipline: String(d.discipline),
-                        distances:
-                            d.distances?.map((dist) => ({
-                                id: dist.id,
-                                distance: String(dist.distance),
-                                subDistances:
-                                    dist.subDistances?.map((sd) => ({
-                                        id: sd.id,
-                                        subDistance: String(sd.subDistance),
-                                    })) || [],
-                            })) || [],
-                    })),
-                );
-            } else {
-                setDisciplines([]);
-            }
+            setDisciplines(
+                event.disciplines?.map((d) => ({
+                    id: d.id,
+                    discipline: String(d.discipline),
+                    distances:
+                        d.distances?.map((dist) => ({
+                            id: dist.id,
+                            distance: String(dist.distance),
+                            subDistances:
+                                dist.subDistances?.map((sd) => ({
+                                    id: sd.id,
+                                    subDistance: String(sd.subDistance),
+                                })) || [],
+                        })) || [],
+                })) ?? [],
+            );
         } else {
             setSelectedPageParticipantId(defaultPageParticipantId ?? null);
-            setFormData({
-                title: '',
-                description: '',
-                link: '',
-                location: '',
-                rules: '',
-                startedAt: '',
-                endedAt: '',
-            });
+            setFormData(INITIAL_FORM_DATA);
             setDisciplines([]);
         }
         setPhotoFile(null);
-        setFieldErrors({});
-    }, [opened, event, defaultPageParticipantId]);
+        clearFieldErrors();
+    }, [opened, event, defaultPageParticipantId, clearFieldErrors]);
 
     const mutation = useMutation({
         mutationFn: async () => {
@@ -148,45 +139,52 @@ export function EventFormModal({
         },
         onSuccess: () => {
             onClose();
-            queryClient.invalidateQueries({ queryKey: ['events'] });
-            queryClient.invalidateQueries({ queryKey: ['user-events'] });
+            void queryClient.invalidateQueries({ queryKey: ['events'] });
+            void queryClient.invalidateQueries({ queryKey: ['user-events'] });
             if (isEdit) {
-                queryClient.invalidateQueries({ queryKey: ['event', event.link] });
-                queryClient.invalidateQueries({ queryKey: ['event', formData.link] });
+                void queryClient.invalidateQueries({ queryKey: ['event', event.link] });
+                void queryClient.invalidateQueries({ queryKey: ['event', formData.link] });
             }
             notifications.show({
                 title: t('events'),
-                message: isEdit ? t('eventUpdated') : t('eventCreated'),
+                message: isEdit ? t('saved') : t('created'),
                 color: 'green',
             });
             onSuccess?.();
         },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: handleFormError,
     });
 
     const isSubmitting = mutation.isPending;
+    const areDisciplinesValid = disciplines.every(
+        (d) =>
+            !!d.discipline &&
+            d.distances.every(
+                (dist) => !!dist.distance.trim() && dist.subDistances.every((sd) => !!sd.subDistance.trim()),
+            ),
+    );
     const canSubmit = isEdit
         ? !!formData.title.trim() &&
           !!formData.description.trim() &&
           !!formData.link.trim() &&
           !!formData.location.trim() &&
+          !!formData.rules.trim() &&
           !!formData.startedAt &&
-          !!formData.endedAt
+          !!formData.endedAt &&
+          areDisciplinesValid
         : !!selectedPageParticipantId &&
           !!formData.title.trim() &&
           !!formData.description.trim() &&
           !!formData.link.trim() &&
           !!formData.location.trim() &&
+          !!formData.rules.trim() &&
           !!formData.startedAt &&
           !!formData.endedAt &&
-          !!photoFile;
+          !!photoFile &&
+          areDisciplinesValid;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')}>
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editEvent') : t('addEvent')}>
             <Stack gap="sm">
                 {!isEdit && !defaultPageParticipantId && pageOptions.length > 0 && (
                     <Select
@@ -205,16 +203,7 @@ export function EventFormModal({
                     required
                     value={formData.title}
                     error={fieldErrors.title}
-                    onChange={(e) => {
-                        const val = e.currentTarget.value;
-                        const prevGenerated = slugify(formData.title);
-                        const nextGenerated = slugify(val);
-                        if (!isEdit && (!formData.link || formData.link === prevGenerated)) {
-                            setFormData({ ...formData, title: val, link: nextGenerated });
-                        } else {
-                            setFormData({ ...formData, title: val });
-                        }
-                    }}
+                    onChange={(e) => setFormData(updateTitleWithSlug(formData, e.currentTarget.value, isEdit))}
                 />
 
                 <Textarea
@@ -253,7 +242,7 @@ export function EventFormModal({
                     required
                 />
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                <SimpleGrid>
                     <TextInput
                         label={t('startedAt')}
                         type="datetime-local"
@@ -293,7 +282,7 @@ export function EventFormModal({
                     onClick={() => mutation.mutate()}
                     mt="sm"
                 >
-                    {isEdit ? t('save') : t('add')}
+                    {t('save')}
                 </Button>
             </Stack>
         </Modal>

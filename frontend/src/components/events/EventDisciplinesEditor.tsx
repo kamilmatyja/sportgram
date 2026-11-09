@@ -2,7 +2,7 @@ import { Stack, Group, Paper, Select, TextInput, Button, ActionIcon, Tooltip, Te
 import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { updateItem, removeItem, patchItem } from '../../utils/treeUtils';
+import { updateItem, removeItem, patchItem } from '../../utils';
 
 export interface FormEventSubDistance {
     id: string;
@@ -108,7 +108,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                     {t('disciplinesAndDistances')}
                 </Text>
                 <Button size="xs" variant="light" leftSection={<IconPlus size={16} />} onClick={handleAddDiscipline}>
-                    {t('add')}
+                    {t('addDiscipline')}
                 </Button>
             </Group>
 
@@ -169,7 +169,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                                             leftSection={<IconPlus size={16} />}
                                             onClick={() => handleAddSubDistance(d.id, dist.id)}
                                         >
-                                            {t('add')}
+                                            {t('addSubDistance')}
                                         </Button>
                                     </Group>
 
@@ -207,7 +207,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                             leftSection={<IconPlus size={16} />}
                             onClick={() => handleAddDistance(d.id)}
                         >
-                            {t('add')}
+                            {t('addDistance')}
                         </Button>
                     </Stack>
                 </Paper>

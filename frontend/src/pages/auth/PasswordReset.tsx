@@ -3,29 +3,29 @@ import { Paper, Title, TextInput, PasswordInput, Button, Stack, Anchor, Text, Co
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
+import { getErrorMessage } from '../../api/client';
 import { authService } from '../../api/services';
-import { passwordResetSession, signSession } from '../../utils/authSession';
+import { useFormErrors } from '../../hooks';
+import { passwordResetSession, signSession } from '../../utils';
 import { AuthVerificationStep } from './AuthVerificationStep';
 
 export default function PasswordReset() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { fieldErrors, handleFormError, clearFieldError, clearFieldErrors } = useFormErrors();
 
     const [step, setStep] = useState<number>(passwordResetSession.step);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [code, setCode] = useState('');
-
     const [loading, setLoading] = useState(false);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const resetId = passwordResetSession.id();
 
     const handleEmailSubmit = async (e: SyntheticEvent) => {
         e.preventDefault();
         setLoading(true);
-        setFieldErrors({});
+        clearFieldErrors();
 
         try {
             const data = await authService.passwordReset({ body: { email } });
@@ -42,11 +42,7 @@ export default function PasswordReset() {
             });
             setStep(2);
         } catch (err) {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            if (Object.keys(fe).length === 0) {
-                notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-            }
+            handleFormError(err, { notifyOnlyIfNoFields: true });
         } finally {
             setLoading(false);
         }
@@ -57,7 +53,7 @@ export default function PasswordReset() {
         if (!resetId) return;
 
         setLoading(true);
-        setFieldErrors({});
+        clearFieldErrors();
 
         try {
             await authService.confirmPasswordReset({
@@ -94,11 +90,7 @@ export default function PasswordReset() {
             });
             navigate('/sign');
         } catch (err) {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            if (Object.keys(fe).length === 0) {
-                notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-            }
+            handleFormError(err, { notifyOnlyIfNoFields: true });
         } finally {
             setLoading(false);
         }
@@ -108,9 +100,7 @@ export default function PasswordReset() {
         if (!resetId) return;
         setLoading(true);
         try {
-            await authService.resendPasswordReset({
-                params: { path: { id: resetId } },
-            });
+            await authService.resendPasswordReset({ params: { path: { id: resetId } } });
             notifications.show({
                 title: t('resend'),
                 message: t('resendSuccess'),
@@ -132,7 +122,7 @@ export default function PasswordReset() {
 
                 {step === 1 ? (
                     <form onSubmit={handleEmailSubmit}>
-                        <Stack gap="md">
+                        <Stack>
                             <TextInput
                                 label={t('email')}
                                 required
@@ -142,11 +132,17 @@ export default function PasswordReset() {
                                 error={fieldErrors.email}
                                 onChange={(e) => {
                                     setEmail(e.currentTarget.value);
-                                    if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                                    clearFieldError('email');
                                 }}
                             />
 
-                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={loading}>
+                            <Button
+                                type="submit"
+                                fullWidth
+                                mt="md"
+                                loading={loading}
+                                disabled={loading || !email.trim()}
+                            >
                                 {t('send')}
                             </Button>
 
@@ -164,13 +160,13 @@ export default function PasswordReset() {
                         code={code}
                         onCodeChange={(val) => {
                             setCode(val);
-                            if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
+                            clearFieldError('code');
                         }}
                         onSubmit={handleCodeSubmit}
                         onBack={() => {
                             passwordResetSession.clear();
                             setStep(1);
-                            setFieldErrors({});
+                            clearFieldErrors();
                         }}
                         onResend={handleResend}
                         loading={loading}
@@ -186,12 +182,8 @@ export default function PasswordReset() {
                             error={fieldErrors.password || fieldErrors.newPassword}
                             onChange={(e) => {
                                 setPassword(e.currentTarget.value);
-                                if (fieldErrors.password || fieldErrors.newPassword) {
-                                    const next = { ...fieldErrors };
-                                    delete next.password;
-                                    delete next.newPassword;
-                                    setFieldErrors(next);
-                                }
+                                clearFieldError('password');
+                                clearFieldError('newPassword');
                             }}
                             w="100%"
                         />

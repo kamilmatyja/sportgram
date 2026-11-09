@@ -1,6 +1,6 @@
 import { Group, Avatar, Text } from '@mantine/core';
 import { type UserResource } from '../../api/services';
-import { formatImageSrc } from '../../utils/imageUtils';
+import { formatImageSrc } from '../../utils';
 
 export interface UserInfoCellProps {
     user?: UserResource | null;
@@ -12,7 +12,7 @@ export function UserInfoCell({ user, userId, showLink = true }: UserInfoCellProp
     const displayName = user ? `${user.firstName} ${user.lastName}` : (userId ?? '');
 
     return (
-        <Group gap="sm" wrap="nowrap">
+        <Group wrap="nowrap">
             <Avatar src={formatImageSrc(user?.profilePhoto)}>?</Avatar>
             <div>
                 <Text size="sm" fw={600} lineClamp={1}>

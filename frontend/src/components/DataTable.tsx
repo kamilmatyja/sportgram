@@ -16,7 +16,7 @@ import {
 } from '@mantine/core';
 import { IconSearch, IconPlus, IconFilter, IconX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { getDefaultSortOptions, buildSortOptions, type SortOption } from '../utils/tableUtils';
+import { getDefaultSortOptions, buildSortOptions, type SortOption } from '../utils';
 import { EmptyState } from './EmptyState';
 
 export interface Column<T> {
@@ -62,6 +62,7 @@ interface DataTableProps<T> {
     addLabel?: string;
     actions?: (item: T) => React.ReactNode;
     toolbarExtra?: React.ReactNode;
+    minWidth?: number | string;
 }
 
 export function DataTable<T extends Record<string, unknown>>({
@@ -89,16 +90,17 @@ export function DataTable<T extends Record<string, unknown>>({
     addLabel,
     actions,
     toolbarExtra,
+    minWidth = 500,
 }: DataTableProps<T>) {
     const { t } = useTranslation();
     const [filtersOpened, setFiltersOpened] = useState(false);
 
-    const activePage = state ? state.page : page;
-    const activeLimit = state ? state.limit : limit;
-    const activeSort = state ? state.sort : sort;
-    const activeOnPageChange = state ? state.setPage : onPageChange;
-    const activeOnLimitChange = state ? state.onLimitChange : onLimitChange;
-    const activeOnSortChange = state ? state.onSortChange : onSortChange;
+    const activePage = state?.page ?? page;
+    const activeLimit = state?.limit ?? limit;
+    const activeSort = state?.sort ?? sort;
+    const activeOnPageChange = state?.setPage ?? onPageChange;
+    const activeOnLimitChange = state?.onLimitChange ?? onLimitChange;
+    const activeOnSortChange = state?.onSortChange ?? onSortChange;
     const isFiltersActive = hasActiveFilters ?? (activeFiltersCount ?? 0) > 0;
 
     const computedTotalPages =
@@ -108,11 +110,11 @@ export function DataTable<T extends Record<string, unknown>>({
     const hasToolbar = onSearchChange || effectiveSortOptions || filtersNode || onAdd || toolbarExtra;
 
     return (
-        <Paper p="md">
-            <Stack gap="md">
+        <Paper>
+            <Stack>
                 {hasToolbar && (
                     <Flex justify="space-between" align="center" wrap="wrap" gap="sm">
-                        <Group gap="sm" flex={1} wrap="wrap">
+                        <Group flex={1} wrap="wrap">
                             {onSearchChange && (
                                 <TextInput
                                     placeholder={searchPlaceholder ?? t('search')}
@@ -181,14 +183,14 @@ export function DataTable<T extends Record<string, unknown>>({
 
                 {filtersNode && (
                     <Collapse expanded={filtersOpened}>
-                        <Paper p="md">
+                        <Paper>
                             <Stack gap="sm">{filtersNode}</Stack>
                         </Paper>
                     </Collapse>
                 )}
 
-                <Table.ScrollContainer minWidth={600}>
-                    <Table verticalSpacing="sm">
+                <Table.ScrollContainer minWidth={minWidth}>
+                    <Table>
                         <Table.Thead>
                             <Table.Tr>
                                 {columns.map((col) => (

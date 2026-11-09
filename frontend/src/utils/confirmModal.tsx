@@ -29,3 +29,23 @@ export function openConfirmActionModal({
         onConfirm,
     });
 }
+
+export function confirmDelete(
+    t: (key: string) => string,
+    onConfirm: () => void,
+    options?: {
+        title?: string;
+        message?: string;
+        confirmLabel?: string;
+        cancelLabel?: string;
+    },
+) {
+    openConfirmActionModal({
+        title: options?.title ?? t('confirmDeleteTitle'),
+        message: options?.message ?? t('confirmDeleteMessage'),
+        confirmLabel: options?.confirmLabel ?? t('delete'),
+        cancelLabel: options?.cancelLabel ?? t('cancel'),
+        confirmColor: 'red',
+        onConfirm,
+    });
+}

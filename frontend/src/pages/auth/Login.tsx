@@ -15,33 +15,32 @@ import {
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
+import { getErrorMessage } from '../../api/client';
 import { authService } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
-import { signSession, registerSession, UNCONFIRMED_ACCOUNT_ERROR } from '../../utils/authSession';
-
+import { useAuth } from '../../auth';
+import { useFormErrors } from '../../hooks';
+import { signSession, registerSession, UNCONFIRMED_ACCOUNT_ERROR } from '../../utils';
 import { AuthVerificationStep } from './AuthVerificationStep';
 
 export default function Login() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { login } = useAuth();
+    const { fieldErrors, handleFormError, clearFieldError, clearFieldErrors } = useFormErrors();
 
     const [step, setStep] = useState<number>(signSession.step);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [code, setCode] = useState('');
-
     const [loading, setLoading] = useState(false);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const signId = signSession.id();
 
     const handleSignSubmit = async (e: SyntheticEvent) => {
         e.preventDefault();
         setLoading(true);
-        setFieldErrors({});
+        clearFieldErrors();
 
         try {
             const data = await authService.sign({ body: { email, password } });
@@ -58,9 +57,7 @@ export default function Login() {
             });
             setStep(2);
         } catch (apiErr) {
-            const fe = extractFieldErrors(apiErr);
-            setFieldErrors(fe);
-            const msg = getErrorMessage(apiErr);
+            const { msg } = handleFormError(apiErr, { notifyOnlyIfNoFields: true });
             if (msg === UNCONFIRMED_ACCOUNT_ERROR) {
                 try {
                     const res = await authService.register({ body: { email } });
@@ -74,9 +71,6 @@ export default function Login() {
                     void 0;
                 }
             }
-            if (Object.keys(fe).length === 0) {
-                notifications.show({ title: t('error'), message: msg, color: 'red' });
-            }
         } finally {
             setLoading(false);
         }
@@ -87,7 +81,7 @@ export default function Login() {
         if (!signId) return;
 
         setLoading(true);
-        setFieldErrors({});
+        clearFieldErrors();
 
         try {
             const data = await authService.confirmSign({
@@ -109,11 +103,7 @@ export default function Login() {
             });
             navigate('/');
         } catch (err) {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            if (Object.keys(fe).length === 0) {
-                notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-            }
+            handleFormError(err, { notifyOnlyIfNoFields: true });
         } finally {
             setLoading(false);
         }
@@ -123,9 +113,7 @@ export default function Login() {
         if (!signId) return;
         setLoading(true);
         try {
-            await authService.resendSign({
-                params: { path: { id: signId } },
-            });
+            await authService.resendSign({ params: { path: { id: signId } } });
             notifications.show({
                 title: t('resend'),
                 message: t('resendSuccess'),
@@ -141,7 +129,7 @@ export default function Login() {
     const handleBackToStep1 = () => {
         signSession.clear();
         setStep(1);
-        setFieldErrors({});
+        clearFieldErrors();
     };
 
     return (
@@ -153,7 +141,7 @@ export default function Login() {
 
                 {step === 1 ? (
                     <form onSubmit={handleSignSubmit}>
-                        <Stack gap="md">
+                        <Stack>
                             <TextInput
                                 label={t('email')}
                                 required
@@ -163,7 +151,7 @@ export default function Login() {
                                 error={fieldErrors.email}
                                 onChange={(e) => {
                                     setEmail(e.currentTarget.value);
-                                    if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' });
+                                    clearFieldError('email');
                                 }}
                             />
 
@@ -175,7 +163,7 @@ export default function Login() {
                                 error={fieldErrors.password}
                                 onChange={(e) => {
                                     setPassword(e.currentTarget.value);
-                                    if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                                    clearFieldError('password');
                                 }}
                             />
 
@@ -190,7 +178,13 @@ export default function Login() {
                                 </Anchor>
                             </Group>
 
-                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={loading}>
+                            <Button
+                                type="submit"
+                                fullWidth
+                                mt="md"
+                                loading={loading}
+                                disabled={loading || !email.trim() || !password}
+                            >
                                 {t('sign')}
                             </Button>
 
@@ -207,7 +201,7 @@ export default function Login() {
                         code={code}
                         onCodeChange={(val) => {
                             setCode(val);
-                            if (fieldErrors.code) setFieldErrors({ ...fieldErrors, code: '' });
+                            clearFieldError('code');
                         }}
                         onSubmit={handleCodeSubmit}
                         onBack={handleBackToStep1}

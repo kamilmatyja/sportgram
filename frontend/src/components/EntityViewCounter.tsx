@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { entryService } from '../api/services';
 import { EntryTypeEnum } from '../enums/EntryTypeEnum';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../auth';
 
 export const sessionTrackedEntities = new Set<string>();
 
@@ -49,7 +49,7 @@ export function EntityViewCounter({
             .createEntry({ body: { entityId, type } })
             .then(() => {
                 queryClient.setQueryData(['entry-views', type, entityId], (old: number | undefined) => (old ?? 0) + 1);
-                queryClient.invalidateQueries({ queryKey: ['entry-views', type, entityId] });
+                void queryClient.invalidateQueries({ queryKey: ['entry-views', type, entityId] });
             })
             .catch(() => {
                 sessionTrackedEntities.delete(trackingKey);

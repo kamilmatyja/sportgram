@@ -4,9 +4,9 @@ import { notifications } from '@mantine/notifications';
 import { IconPhoto } from '@tabler/icons-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage, extractFieldErrors } from '../../api/client';
 import { feedService, type FeedResource } from '../../api/services';
-import { resolveImageBase64 } from '../../utils/imageUtils';
+import { useFormErrors } from '../../hooks';
+import { resolveImageBase64 } from '../../utils';
 
 export interface FeedModalProps {
     opened: boolean;
@@ -18,58 +18,47 @@ export interface FeedModalProps {
 export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!feed;
 
     const [text, setText] = useState('');
     const [photo, setPhoto] = useState<File | null>(null);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (!opened) return;
-        if (feed) {
-            setText(feed.text ?? '');
-        } else {
-            setText('');
-        }
+        setText(feed?.text ?? '');
         setPhoto(null);
-        setFieldErrors({});
-    }, [opened, feed]);
+        clearFieldErrors();
+    }, [opened, feed, clearFieldErrors]);
 
     const mutation = useMutation({
         mutationFn: async () => {
             const photoStr = await resolveImageBase64(
                 photo,
                 feed?.photo,
-                isEdit ? undefined : t('photo') + ' ' + t('required'),
+                isEdit ? undefined : `${t('photo')} ${t('required')}`,
             );
+            const body = { text, photo: photoStr };
+
             if (isEdit) {
-                await feedService.updateFeed({
-                    params: { path: { id: feed.id } },
-                    body: { text, photo: photoStr },
-                });
+                await feedService.updateFeed({ params: { path: { id: feed.id } }, body });
             } else {
-                await feedService.createFeed({
-                    body: { text, photo: photoStr },
-                });
+                await feedService.createFeed({ body });
             }
         },
         onSuccess: () => {
             onClose();
-            queryClient.invalidateQueries({ queryKey: ['feeds'] });
-            queryClient.invalidateQueries({ queryKey: ['user-feeds'] });
-            queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
+            void queryClient.invalidateQueries({ queryKey: ['feeds'] });
+            void queryClient.invalidateQueries({ queryKey: ['user-feeds'] });
+            void queryClient.invalidateQueries({ queryKey: ['user-profile-feeds'] });
             notifications.show({
                 title: t('feeds'),
-                message: isEdit ? t('feedUpdated') : t('feedAdded'),
+                message: isEdit ? t('saved') : t('created'),
                 color: 'green',
             });
             onSuccess?.();
         },
-        onError: (err) => {
-            const fe = extractFieldErrors(err);
-            setFieldErrors(fe);
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: handleFormError,
     });
 
     const isSubmitting = mutation.isPending;
@@ -78,7 +67,7 @@ export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) 
     const canSubmit = isPhotoRequired ? !!text.trim() && !!photo : !!text.trim();
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('edit') : t('add')} zIndex={1000}>
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editFeed') : t('addFeed')} zIndex={1000}>
             <Stack gap="sm">
                 <Textarea
                     label={t('text')}
@@ -102,7 +91,7 @@ export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) 
                     required={isPhotoRequired}
                 />
                 <Button loading={isSubmitting} disabled={isSubmitting || !canSubmit} onClick={() => mutation.mutate()}>
-                    {isEdit ? t('save') : t('add')}
+                    {t('save')}
                 </Button>
             </Stack>
         </Modal>

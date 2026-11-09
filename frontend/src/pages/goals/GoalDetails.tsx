@@ -1,40 +1,38 @@
 import { useMemo, useEffect } from 'react';
 import { Card, Title, Text, Group, Stack, Badge, Table, MantineThemeProvider, Center, Loader } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { notifications } from '@mantine/notifications';
 import { IconClock } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
-import { applyThemeColor } from '../../utils/themeUtils';
-import NotFound from '../../components/NotFound';
-import { EmptyState } from '../../components/EmptyState';
-import { getErrorMessage } from '../../api/client';
 import {
     goalService,
     userService,
     type GoalParticipantResource,
     type GoalParticipantResultResource,
 } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
-import { useUserSubpageAccess } from '../../hooks/useUserSubpageAccess';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { useAuth } from '../../auth';
+import { EmptyState } from '../../components';
+import { EntityViewCounter } from '../../components';
+import NotFound from '../../components/NotFound';
+import UserProfileNav from '../../components/UserProfileNav';
+import {
+    StatusBadge,
+    StatusActionMenu,
+    EditActionButton,
+    DeleteActionButton,
+    ViewActionButton,
+    UserInfoCell,
+} from '../../components';
+import { GoalFormModal } from '../../components';
 import { ColorEnum } from '../../enums/ColorEnum';
-import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
+import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
-import { EntityViewCounter } from '../../components/EntityViewCounter';
-import UserProfileNav from '../../components/UserProfileNav';
-import { openConfirmActionModal } from '../../utils/confirmModal';
+import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
+import { useUsersMap, useMyFriends, useUserSubpageAccess } from '../../hooks';
 import { brown } from '../../theme';
-import { formatDateTime } from '../../utils/date';
-import { StatusBadge } from '../../components/common/StatusBadge';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { EditActionButton, DeleteActionButton, ViewActionButton } from '../../components/common/RowActionButtons';
-import { GoalFormModal } from '../../components/goals/GoalFormModal';
-import { useUsersMap } from '../../hooks/useUsersMap';
-import { useMyFriends } from '../../hooks/useMyFriends';
-import { UserInfoCell } from '../../components/common/UserInfoCell';
+import { applyThemeColor, confirmDelete, formatDateTime, notifyError, notifySuccess } from '../../utils';
 
 export default function GoalDetails() {
     const { link } = useParams<{ link: string }>();
@@ -93,10 +91,7 @@ export default function GoalDetails() {
 
     const { collaboratorOptions } = useMyFriends();
 
-    const participantUserIds = useMemo(() => {
-        if (!goal?.participants) return [];
-        return goal.participants.map((p) => p.userId);
-    }, [goal?.participants]);
+    const participantUserIds = useMemo(() => goal?.participants?.map((p) => p.userId) ?? [], [goal?.participants]);
 
     const { getUser } = useUsersMap(participantUserIds);
 
@@ -109,12 +104,10 @@ export default function GoalDetails() {
             });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['goal', link] });
-            notifications.show({ title: t('goals'), message: t('statusUpdated'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['goal', link] });
+            notifySuccess(t('statusUpdated'), t('goals'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const updateParticipantStatusMutation = useMutation({
@@ -124,12 +117,10 @@ export default function GoalDetails() {
                 body: { status },
             }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['goal', link] });
-            notifications.show({ title: t('participants'), message: t('statusUpdated'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['goal', link] });
+            notifySuccess(t('statusUpdated'), t('participants'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const updateResultStatusMutation = useMutation({
@@ -139,39 +130,23 @@ export default function GoalDetails() {
                 body: { status },
             }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['goal', link] });
-            notifications.show({ title: t('goals'), message: t('statusUpdated'), color: 'green' });
+            void queryClient.invalidateQueries({ queryKey: ['goal', link] });
+            notifySuccess(t('statusUpdated'), t('goals'));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
 
     const deleteMutation = useMutation({
         mutationFn: async () => {
             if (!goal?.id) return;
-            await goalService.deleteGoal({
-                params: { path: { id: goal.id } },
-            });
+            await goalService.deleteGoal({ params: { path: { id: goal.id } } });
         },
         onSuccess: () => {
-            notifications.show({ title: t('goals'), message: t('goalDeleted'), color: 'green' });
+            notifySuccess(t('deleted'), t('goals'));
             navigate(ownerUser?.link ? `/users/${ownerUser.link}/goals` : (-1 as unknown as string));
         },
-        onError: (err) => {
-            notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-        },
+        onError: (err) => notifyError(err, t('error')),
     });
-
-    const handleDelete = () => {
-        openConfirmActionModal({
-            title: t('confirmDeleteTitle'),
-            message: t('confirmDeleteMessage'),
-            confirmLabel: t('delete'),
-            cancelLabel: t('cancel'),
-            onConfirm: () => deleteMutation.mutate(),
-        });
-    };
 
     const primaryColor = ColorEnum.getMantineColor(ownerUser?.color);
 
@@ -192,7 +167,7 @@ export default function GoalDetails() {
     }
 
     if (!goal) {
-        return <NotFound title={t('goalNotFound')} />;
+        return <NotFound title={t('notFound')} />;
     }
 
     if (!canAccessSubpage) {
@@ -204,7 +179,7 @@ export default function GoalDetails() {
             <Stack gap="lg">
                 {ownerUser && <UserProfileNav user={ownerUser} isOwner={isOwner} />}
 
-                <Card p="lg">
+                <Card>
                     <Group justify="space-between" align="flex-start" mb="md" wrap="nowrap">
                         <div>
                             <Title order={2}>{goal.text}</Title>
@@ -242,7 +217,7 @@ export default function GoalDetails() {
                                 <>
                                     <EditActionButton onClick={openEdit} />
                                     <DeleteActionButton
-                                        onClick={handleDelete}
+                                        onClick={() => confirmDelete(t, () => deleteMutation.mutate())}
                                         loading={deleteMutation.isPending}
                                         disabled={deleteMutation.isPending}
                                     />
@@ -251,7 +226,7 @@ export default function GoalDetails() {
                         </Group>
                     </Group>
 
-                    <Group gap="sm" mb="md" wrap="wrap">
+                    <Group mb="md" wrap="wrap">
                         <Badge>
                             {DisciplineEnum.getOptions(t).find((o) => o.value === goal.discipline)?.label ??
                                 goal.discipline}
@@ -273,8 +248,8 @@ export default function GoalDetails() {
                     {!goal.participants || goal.participants.length === 0 ? (
                         <EmptyState title={t('noData')} />
                     ) : (
-                        <Table.ScrollContainer minWidth={600}>
-                            <Table verticalSpacing="sm">
+                        <Table.ScrollContainer minWidth={500}>
+                            <Table>
                                 <Table.Thead>
                                     <Table.Tr>
                                         <Table.Th>{t('user')}</Table.Th>
@@ -288,7 +263,6 @@ export default function GoalDetails() {
                                     {goal.participants?.map((p: GoalParticipantResource) => {
                                         const u = getUser(p.userId);
                                         const isSelf = p.userId === currentUser?.id;
-                                        const canManageParticipant = isSelf;
 
                                         return (
                                             <Table.Tr key={p.id}>
@@ -301,7 +275,7 @@ export default function GoalDetails() {
                                                 <Table.Td ta="right">
                                                     <Group gap="xs" justify="flex-end" wrap="nowrap">
                                                         {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
-                                                        {canManageParticipant && (
+                                                        {isSelf && (
                                                             <StatusActionMenu
                                                                 status={p.status}
                                                                 onStatusChange={(status) =>
@@ -326,8 +300,8 @@ export default function GoalDetails() {
                     {goal.participants?.some((p) => p.results && p.results.length > 0) && (
                         <Stack gap="sm" mt="lg">
                             <Title order={4}>{t('results')}</Title>
-                            <Table.ScrollContainer minWidth={600}>
-                                <Table verticalSpacing="sm">
+                            <Table.ScrollContainer minWidth={500}>
+                                <Table>
                                     <Table.Thead>
                                         <Table.Tr>
                                             <Table.Th>{t('user')}</Table.Th>
@@ -345,50 +319,45 @@ export default function GoalDetails() {
                                             if (!p.results || p.results.length === 0) return [];
                                             const u = getUser(p.userId);
                                             const isSelf = p.userId === currentUser?.id;
-                                            const canManageResult = isSelf;
 
-                                            return p.results.map((res: GoalParticipantResultResource) => {
-                                                return (
-                                                    <Table.Tr key={res.id}>
-                                                        <Table.Td>
-                                                            <UserInfoCell user={u} userId={p.userId} />
-                                                        </Table.Td>
-                                                        <Table.Td>
-                                                            <Text size="sm">{res.distance} m</Text>
-                                                        </Table.Td>
-                                                        <Table.Td>
-                                                            <Text size="sm">{res.time} s</Text>
-                                                        </Table.Td>
-                                                        <Table.Td>
-                                                            <StatusBadge status={res.status} />
-                                                        </Table.Td>
-                                                        <Table.Td>
-                                                            <Text size="sm" c="dimmed">
-                                                                {formatDateTime(res.createdAt)}
-                                                            </Text>
-                                                        </Table.Td>
-                                                        <Table.Td ta="right">
-                                                            <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                                {u?.link && (
-                                                                    <ViewActionButton to={`/users/${u.link}`} />
-                                                                )}
-                                                                {canManageResult && (
-                                                                    <StatusActionMenu
-                                                                        status={res.status}
-                                                                        onStatusChange={(status) =>
-                                                                            updateResultStatusMutation.mutate({
-                                                                                resultId: res.id,
-                                                                                status: status as ElementStatusEnum,
-                                                                            })
-                                                                        }
-                                                                        isPending={updateResultStatusMutation.isPending}
-                                                                    />
-                                                                )}
-                                                            </Group>
-                                                        </Table.Td>
-                                                    </Table.Tr>
-                                                );
-                                            });
+                                            return p.results.map((res: GoalParticipantResultResource) => (
+                                                <Table.Tr key={res.id}>
+                                                    <Table.Td>
+                                                        <UserInfoCell user={u} userId={p.userId} />
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <Text size="sm">{res.distance} m</Text>
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <Text size="sm">{res.time} s</Text>
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <StatusBadge status={res.status} />
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <Text size="sm" c="dimmed">
+                                                            {formatDateTime(res.createdAt)}
+                                                        </Text>
+                                                    </Table.Td>
+                                                    <Table.Td ta="right">
+                                                        <Group gap="xs" justify="flex-end" wrap="nowrap">
+                                                            {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
+                                                            {isSelf && (
+                                                                <StatusActionMenu
+                                                                    status={res.status}
+                                                                    onStatusChange={(status) =>
+                                                                        updateResultStatusMutation.mutate({
+                                                                            resultId: res.id,
+                                                                            status: status as ElementStatusEnum,
+                                                                        })
+                                                                    }
+                                                                    isPending={updateResultStatusMutation.isPending}
+                                                                />
+                                                            )}
+                                                        </Group>
+                                                    </Table.Td>
+                                                </Table.Tr>
+                                            ));
                                         })}
                                     </Table.Tbody>
                                 </Table>
@@ -402,7 +371,7 @@ export default function GoalDetails() {
                     onClose={closeEdit}
                     goal={goal}
                     collaboratorOptions={collaboratorOptions}
-                    onSuccess={() => queryClient.invalidateQueries({ queryKey: ['goal', link] })}
+                    onSuccess={() => void queryClient.invalidateQueries({ queryKey: ['goal', link] })}
                 />
             </Stack>
         </MantineThemeProvider>

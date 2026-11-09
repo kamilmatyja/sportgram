@@ -79,5 +79,3 @@ export function RunnerLogo({ size = 32 }: RunnerLogoProps) {
         </svg>
     );
 }
-
-export default RunnerLogo;

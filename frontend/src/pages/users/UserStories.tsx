@@ -1,32 +1,36 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Text, SimpleGrid, TextInput, Select, Avatar, Group } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { getErrorMessage } from '../../api/client';
 import { storyService, type StoryResource, type GetStoriesQuery } from '../../api/services';
-import { DataTable, type Column } from '../../components/DataTable';
+import { DataTable, type Column } from '../../components';
+import { StoryViewerModal } from '../../components';
+import {
+    StatusBadge,
+    StatusActionMenu,
+    ViewActionButton,
+    EditActionButton,
+    DeleteActionButton,
+    UserSubpageContainer,
+} from '../../components';
+import { StoryModal } from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { openConfirmActionModal } from '../../utils/confirmModal';
-import { formatImageSrc } from '../../utils/imageUtils';
-import { formatDateTime } from '../../utils/date';
-import { truncate } from '../../utils/text';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { StatusBadge } from '../../components/StatusBadge';
-import { StoryViewerModal } from '../../components/StoryViewerModal';
-import { StoryModal } from '../../components/story/StoryModal';
-import { StatusActionMenu } from '../../components/common/StatusActionMenu';
-import { ViewActionButton, EditActionButton, DeleteActionButton } from '../../components/common/RowActionButtons';
-import { UserSubpageContainer } from '../../components/common/UserSubpageContainer';
-import { useDataTableState } from '../../hooks/useDataTableState';
+import { useDataTableState } from '../../hooks';
+import {
+    notifySuccess,
+    notifyError,
+    confirmDelete,
+    formatImageSrc,
+    formatDateTime,
+    buildSortOptions,
+    truncate,
+} from '../../utils';
 
 export default function UserStories() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
 
-    const tableState = useDataTableState({
-        initialSort: 'createdAt:desc',
-    });
+    const tableState = useDataTableState({ initialSort: 'createdAt:desc' });
 
     const [textFilter, setTextFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -37,13 +41,7 @@ export default function UserStories() {
     const [updatedStoryForModal, setUpdatedStoryForModal] = useState<StoryResource | null>(null);
 
     const sortOptions = buildSortOptions(t, ['createdAt', 'text', 'status']);
-
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (textFilter.trim()) count++;
-        if (statusFilter !== null) count++;
-        return count;
-    }, [textFilter, statusFilter]);
+    const activeFiltersCount = [textFilter.trim(), statusFilter].filter(Boolean).length;
 
     const handleResetFilters = () => {
         setTextFilter('');
@@ -95,42 +93,25 @@ export default function UserStories() {
                             body: { status },
                         }),
                     onSuccess: () => {
-                        queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
-                        queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
-                        queryClient.invalidateQueries({ queryKey: ['stories'] });
-                        notifications.show({ title: t('stories'), message: t('statusUpdated'), color: 'green' });
+                        void queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
+                        void queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
+                        void queryClient.invalidateQueries({ queryKey: ['stories'] });
+                        notifySuccess(t('statusUpdated'), t('stories'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
 
                 const deleteMutation = useMutation({
-                    mutationFn: (id: string) =>
-                        storyService.deleteStory({
-                            params: { path: { id } },
-                        }),
+                    mutationFn: (id: string) => storyService.deleteStory({ params: { path: { id } } }),
                     onSuccess: () => {
                         setViewingStory(null);
-                        queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
-                        queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
-                        queryClient.invalidateQueries({ queryKey: ['stories'] });
-                        notifications.show({ title: t('stories'), message: t('storyDeleted'), color: 'green' });
+                        void queryClient.invalidateQueries({ queryKey: ['user-stories', targetUser?.id] });
+                        void queryClient.invalidateQueries({ queryKey: ['user-profile-stories', targetUser?.id] });
+                        void queryClient.invalidateQueries({ queryKey: ['stories'] });
+                        notifySuccess(t('deleted'), t('stories'));
                     },
-                    onError: (err) => {
-                        notifications.show({ title: t('error'), message: getErrorMessage(err), color: 'red' });
-                    },
+                    onError: (err) => notifyError(err, t('error')),
                 });
-
-                const handleDelete = (id: string) => {
-                    openConfirmActionModal({
-                        title: t('confirmDeleteTitle'),
-                        message: t('confirmDeleteMessage'),
-                        confirmLabel: t('delete'),
-                        cancelLabel: t('cancel'),
-                        onConfirm: () => deleteMutation.mutate(id),
-                    });
-                };
 
                 const columns: Column<StoryResource>[] = [
                     {
@@ -169,7 +150,7 @@ export default function UserStories() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                    <SimpleGrid>
                         <TextInput
                             label={t('text')}
                             placeholder={t('search')}
@@ -209,6 +190,7 @@ export default function UserStories() {
                             activeFiltersCount={activeFiltersCount}
                             onResetFilters={handleResetFilters}
                             onAdd={isOwner ? () => setCreateOpened(true) : undefined}
+                            addLabel={t('addStory')}
                             actions={(s) => (
                                 <Group gap="xs" justify="flex-end" wrap="nowrap">
                                     <ViewActionButton onClick={() => setViewingStory(s)} />
@@ -228,7 +210,7 @@ export default function UserStories() {
                                         <>
                                             <EditActionButton onClick={() => setEditingStory(s)} />
                                             <DeleteActionButton
-                                                onClick={() => handleDelete(s.id)}
+                                                onClick={() => confirmDelete(t, () => deleteMutation.mutate(s.id))}
                                                 loading={deleteMutation.isPending}
                                             />
                                         </>
@@ -267,7 +249,7 @@ export default function UserStories() {
                             story={viewingStory}
                             author={targetUser}
                             onEdit={(s) => setEditingStory(s)}
-                            onDelete={handleDelete}
+                            onDelete={(id) => confirmDelete(t, () => deleteMutation.mutate(id))}
                             updatedStory={updatedStoryForModal}
                         />
                     </>

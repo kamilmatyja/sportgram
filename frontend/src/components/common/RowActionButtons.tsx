@@ -3,64 +3,47 @@ import { IconEye, IconEdit, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-interface ViewActionButtonProps {
+export interface ActionButtonProps {
     to?: string;
     onClick?: () => void;
-    tooltipLabel?: string;
-    disabled?: boolean;
-}
-
-export function ViewActionButton({ to, onClick, tooltipLabel, disabled }: ViewActionButtonProps) {
-    const { t } = useTranslation();
-    const label = tooltipLabel ?? t('details');
-
-    if (to) {
-        return (
-            <Tooltip label={label}>
-                <ActionIcon component={Link} to={to} aria-label={label} disabled={disabled}>
-                    <IconEye size={16} />
-                </ActionIcon>
-            </Tooltip>
-        );
-    }
-
-    return (
-        <Tooltip label={label}>
-            <ActionIcon onClick={onClick} aria-label={label} disabled={disabled}>
-                <IconEye size={16} />
-            </ActionIcon>
-        </Tooltip>
-    );
-}
-
-interface EditActionButtonProps {
-    onClick: () => void;
     tooltipLabel?: string;
     tooltip?: string;
     disabled?: boolean;
     loading?: boolean;
+    isPending?: boolean;
 }
 
-export function EditActionButton({ onClick, tooltipLabel, tooltip, disabled, loading }: EditActionButtonProps) {
+export function ViewActionButton({ to, onClick, tooltipLabel, tooltip, disabled }: ActionButtonProps) {
     const { t } = useTranslation();
-    const label = tooltipLabel ?? tooltip ?? t('edit');
+    const label = tooltipLabel ?? tooltip ?? t('details');
 
     return (
         <Tooltip label={label}>
-            <ActionIcon onClick={onClick} aria-label={label} disabled={disabled} loading={loading}>
+            {to ? (
+                <ActionIcon component={Link} to={to} aria-label={label} disabled={disabled}>
+                    <IconEye size={16} />
+                </ActionIcon>
+            ) : (
+                <ActionIcon onClick={onClick} aria-label={label} disabled={disabled}>
+                    <IconEye size={16} />
+                </ActionIcon>
+            )}
+        </Tooltip>
+    );
+}
+
+export function EditActionButton({ onClick, tooltipLabel, tooltip, disabled, loading, isPending }: ActionButtonProps) {
+    const { t } = useTranslation();
+    const label = tooltipLabel ?? tooltip ?? t('edit');
+    const isLoading = loading ?? isPending;
+
+    return (
+        <Tooltip label={label}>
+            <ActionIcon onClick={onClick} aria-label={label} disabled={disabled || isLoading} loading={isLoading}>
                 <IconEdit size={16} />
             </ActionIcon>
         </Tooltip>
     );
-}
-
-interface DeleteActionButtonProps {
-    onClick: () => void;
-    tooltipLabel?: string;
-    tooltip?: string;
-    loading?: boolean;
-    isPending?: boolean;
-    disabled?: boolean;
 }
 
 export function DeleteActionButton({
@@ -70,7 +53,7 @@ export function DeleteActionButton({
     loading,
     isPending,
     disabled,
-}: DeleteActionButtonProps) {
+}: ActionButtonProps) {
     const { t } = useTranslation();
     const label = tooltipLabel ?? tooltip ?? t('delete');
     const isLoading = loading ?? isPending;

@@ -5,6 +5,8 @@ export interface SortOption {
 
 const DESC_FIRST_FIELDS = new Set(['createdAt', 'updatedAt', 'startedAt', 'endedAt', 'count']);
 
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 export function buildSortOptions(
     t: (key: string) => string,
     fields: (string | { field: string; labelKey?: string })[] = ['createdAt', 'status'],
@@ -15,7 +17,7 @@ export function buildSortOptions(
         const directions = DESC_FIRST_FIELDS.has(field) ? ['desc', 'asc'] : ['asc', 'desc'];
         return directions.map((dir) => ({
             value: `${field}:${dir}`,
-            label: t(`sort_${key}_${dir}`),
+            label: t(`sort${capitalize(key)}${capitalize(dir)}`),
         }));
     });
 }

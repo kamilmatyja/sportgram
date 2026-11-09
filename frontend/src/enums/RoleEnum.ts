@@ -1,4 +1,4 @@
-import { getEnumOptions } from '../utils/enumUtils';
+import { getEnumOptions } from '../utils';
 
 export enum RoleEnum {
     PARTICIPANT = 1,
@@ -7,7 +7,7 @@ export enum RoleEnum {
 }
 
 export namespace RoleEnum {
-    export const getOptions = (t: (key: string) => string) => getEnumOptions(RoleEnum, 'roles', t);
+    export const getOptions = (t: (key: string) => string) => getEnumOptions(RoleEnum, 'roleTypes', t);
     export const getNanoOptions = (t: (key: string) => string) =>
-        getEnumOptions(RoleEnum, 'roles', t, ['ADMINISTRATOR']);
+        getEnumOptions(RoleEnum, 'roleTypes', t, ['ADMINISTRATOR']);
 }

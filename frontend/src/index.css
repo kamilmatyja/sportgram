@@ -13,59 +13,24 @@
     max-width: 75%;
 }
 
-.story-avatar-border {
-    border: 2px solid var(--mantine-primary-color-filled);
-    border-radius: var(--mantine-radius-default);
-    overflow: hidden;
-}
-
-.story-avatar-border img,
-.story-avatar-border .mantine-Avatar-image {
-    border-radius: 0 !important;
-}
-
 .profile-avatar-border {
-    border: 3px solid var(--mantine-color-body);
+    position: absolute;
+    top: -50px;
+    left: 24px;
     z-index: 3;
-    overflow: hidden;
+    border: 3px solid var(--mantine-color-body);
     border-radius: var(--mantine-radius-default);
-}
-
-.profile-avatar-border img,
-.profile-avatar-border .mantine-Avatar-image {
-    border-radius: 0 !important;
-}
-
-.mantine-ActionIcon-root,
-.mantine-CloseButton-root,
-.mantine-Modal-close {
-    width: 30px !important;
-    height: 30px !important;
-    min-width: 30px !important;
-    min-height: 30px !important;
-}
-
-.mantine-ActionIcon-root svg,
-.mantine-CloseButton-root svg,
-.mantine-Modal-close svg {
-    width: 16px !important;
-    height: 16px !important;
-    min-width: 16px !important;
-    min-height: 16px !important;
-    max-width: 16px !important;
-    max-height: 16px !important;
-}
-
-.mantine-Avatar-root,
-.mantine-Avatar-image,
-.mantine-Avatar-placeholder,
-.mantine-Image-root,
-.mantine-Image-image {
-    border-radius: var(--mantine-radius-default) !important;
+    overflow: hidden;
 }
 
 .subdistances-container {
     border-left: 2px solid var(--mantine-primary-color-filled);
+}
+
+.story-avatar-border {
+    border: 2px solid var(--mantine-primary-color-filled);
+    border-radius: var(--mantine-radius-default);
+    overflow: hidden;
 }
 
 .story-modal-header {
@@ -73,15 +38,10 @@
     width: 100%;
 }
 
-.story-modal-header .mantine-Modal-close {
-    margin: 0;
-}
-
 .story-progress-bar-container {
     width: 100%;
     display: flex;
     flex-direction: row;
-    flex-wrap: nowrap;
     gap: 4px;
     height: 4px;
     margin-bottom: 6px;
@@ -115,26 +75,30 @@
     justify-content: center;
     border-radius: var(--mantine-radius-default);
     overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.95);
 }
 
-.story-nav-btn,
+.story-nav-btn {
+    position: absolute;
+    top: calc(50% - 16px);
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.65);
+    color: var(--mantine-color-white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
 .story-nav-btn:hover,
 .story-nav-btn:active,
 .story-nav-btn:focus {
-    position: absolute;
-    top: calc(50% - 15px);
-    transform: none !important;
-    z-index: 10;
-    background-color: rgba(0, 0, 0, 0.65) !important;
-    color: var(--mantine-color-white) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.85);
+    color: var(--mantine-color-white);
 }
 
 .story-nav-btn:disabled,
 .story-nav-btn[data-disabled] {
-    opacity: 0.3 !important;
-    cursor: default !important;
-    pointer-events: none !important;
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
 }
 
 .story-nav-btn-prev {
@@ -162,40 +126,23 @@
     padding-right: var(--mantine-spacing-xs);
 }
 
-.table-expand-col {
-    width: 40px;
-}
-
 .table-expansion-row,
-.table-expansion-row > td,
-.table-nested-container {
+.table-expansion-row:hover,
+.table-expansion-row > td {
     background-color: var(--mantine-color-body) !important;
 }
 
-.table-nested-container > .mantine-Table-table {
-    background-color: var(--mantine-color-body);
-}
-
-.mantine-Table-tbody > tr.table-row-odd {
+.table-row-odd {
     background-color: var(--table-striped-color, var(--mantine-color-gray-0));
 }
 
-.mantine-Table-tbody > tr.table-row-even {
+.table-row-even {
     background-color: var(--mantine-color-body);
 }
 
 @media (hover: hover) {
-    .mantine-Table-tbody > tr.table-row-odd:hover,
-    .mantine-Table-tbody > tr.table-row-even:hover {
+    .table-row-odd:hover,
+    .table-row-even:hover {
         background-color: var(--table-hover-color, var(--mantine-color-gray-1));
     }
-}
-
-.mantine-Table-table {
-    border-collapse: collapse;
-}
-
-.mantine-Table-table th,
-.mantine-Table-table td {
-    border: 1px solid var(--table-border-color, var(--mantine-color-default-border));
 }

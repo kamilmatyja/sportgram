@@ -77,10 +77,6 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 )]
 class DatabaseSeedCommand extends Command
 {
-    private string $profilePhotoBase64;
-
-    private string $backgroundPhotoBase64;
-
     /** @var array<string, User> */
     private array $users = [];
 
@@ -100,13 +96,11 @@ class DatabaseSeedCommand extends Command
     private array $goals = [];
 
     /** @var array<Feed> */
-    private array $allFeeds = [];
+    private array $feeds = [];
 
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly UserPasswordHasherInterface $hasher,
-        #[Autowire('%kernel.project_dir%')]
-        private readonly string $projectDir,
     ) {
         parent::__construct();
     }
@@ -126,8 +120,6 @@ class DatabaseSeedCommand extends Command
             $this->truncateTables();
             $io->success('All application tables truncated successfully.');
         }
-
-        $this->loadDefaultPhotos();
 
         $io->section('1. Seeding Users (with roles, disciplines, registers, signs, resets, push subscriptions)...');
         $this->seedUsers();
@@ -189,6 +181,9 @@ class DatabaseSeedCommand extends Command
         $this->em->flush();
         $io->text(sprintf('   Seeded %d entry tracking records.', $entriesCount));
 
+        $io->section('13. Seeding Feeds...');
+        $io->text(sprintf('   Seeded %d feeds.', count($this->feeds)));
+
         $io->success([
             'Database successfully populated with rich, realistic, interconnected data!',
             'Login credentials for all seeded users: Password123!',
@@ -240,20 +235,6 @@ class DatabaseSeedCommand extends Command
         $connection = $this->em->getConnection();
         $sql = sprintf('TRUNCATE TABLE %s CASCADE', implode(', ', $tables));
         $connection->executeStatement($sql);
-    }
-
-    private function loadDefaultPhotos(): void
-    {
-        $profilePath = $this->projectDir . '/public/profile.webp';
-        $backgroundPath = $this->projectDir . '/public/background.webp';
-
-        $this->profilePhotoBase64 = file_exists($profilePath)
-            ? base64_encode(file_get_contents($profilePath))
-            : base64_encode('dummy_profile_photo');
-
-        $this->backgroundPhotoBase64 = file_exists($backgroundPath)
-            ? base64_encode(file_get_contents($backgroundPath))
-            : base64_encode('dummy_background_photo');
     }
 
     private function seedUsers(): void
@@ -1173,6 +1154,15 @@ class DatabaseSeedCommand extends Command
 
         $hashedPassword = null;
         foreach ($userData as $data) {
+            $profilePhoto = $this->generateProfilePhoto(
+                $data['color'],
+                $data['link'] . '_user',
+            );
+            $backgroundPhoto = $this->generateLandscapeSvg(
+                $data['color'],
+                $data['link'] . '_bg',
+            );
+
             $user = new User(
                 $data['birthAt'],
                 $data['firstName'],
@@ -1185,8 +1175,8 @@ class DatabaseSeedCommand extends Command
                 CountryEnum::Poland,
                 ThemeEnum::Light,
                 $data['color'],
-                $this->profilePhotoBase64,
-                $this->backgroundPhotoBase64,
+                $profilePhoto,
+                $backgroundPhoto,
                 $data['bio'],
                 UserStatusEnum::Accepted,
             );
@@ -1367,15 +1357,23 @@ class DatabaseSeedCommand extends Command
         $janEmail = 'jan.kowalski@sportgram.local';
         $jan = $this->users[$janEmail];
 
-        foreach ($pageTitles as $i => [$key, $title, $desc, $link, $col, $ownerEmail, $status]) {
+        foreach ($pageTitles as [$key, $title, $desc, $link, $col, $ownerEmail, $status]) {
             $owner = $this->users[$ownerEmail] ?? $jan;
+            $profilePhoto = $this->generateProfilePhoto(
+                $col,
+                $key . '_page',
+            );
+            $backgroundPhoto = $this->generateLandscapeSvg(
+                $col,
+                $key . '_bg',
+            );
             $page = new Page(
                 $owner,
                 $title,
                 $desc,
                 $link,
-                $this->profilePhotoBase64,
-                $this->backgroundPhotoBase64,
+                $profilePhoto,
+                $backgroundPhoto,
                 $col,
                 $status,
             );
@@ -1473,18 +1471,27 @@ class DatabaseSeedCommand extends Command
             ['krakow-blonia-sprawdzian-5k', 'Sprawdzian Biegowy Błonia 5km', 'Błyskawiczna asfaltowa pętla wokół krakowskich Błoń.', 'Kraków, al. 3 Maja', 5, DisciplineEnum::Running, 5000, 1160, 'krakow_trail'],
         ];
 
+        $organizer = $this->users['organizer@sportgram.local'] ?? $admin;
+        $organizers = [$jan, $admin, $organizer, $piotr];
+        $athletes = [$jan, $anna, $piotr, $admin];
+
         foreach ($eventDefs as $i => [$link, $title, $desc, $loc, $days, $disc, $dist, $finishTime, $pageKey]) {
-            $organizerUser = ($i < 55) ? $jan : $admin;
+            $organizerUser = $organizers[$i % count($organizers)];
             $partKey = sprintf('%s_%s', $pageKey, $organizerUser->email);
             $part = $this->pageParticipants[$partKey] ?? array_values($this->pageParticipants)[0];
 
             $eventFeed = new Feed($organizerUser, null, null, ElementStatusEnum::Active);
             $this->em->persist($eventFeed);
-            $this->allFeeds[] = $eventFeed;
+            $this->feeds[] = $eventFeed;
 
             $startedAt = new DateTimeImmutable(sprintf('%+d days 09:00:00', $days));
             $endedAt = $startedAt->modify('+4 hours');
             $status = ($i % 15 === 14) ? ElementStatusEnum::Rejected : ElementStatusEnum::Active;
+
+            $photo = $this->generateLandscapeSvg(
+                $part->page->color,
+                $link . '_bg',
+            );
 
             $event = new Event(
                 $part,
@@ -1495,7 +1502,7 @@ class DatabaseSeedCommand extends Command
                 $desc,
                 $link,
                 '1. Przestrzegaj regulaminu imprezy. 2. Limit czasu zgodnie z komunikatem technicznym.',
-                $this->profilePhotoBase64,
+                $photo,
                 $loc,
                 $status,
             );
@@ -1508,28 +1515,47 @@ class DatabaseSeedCommand extends Command
             $edd = new EventDisciplineDistance($ed, $dist);
             $this->em->persist($edd);
 
-            $subDistVal = (int) round($dist / 2);
+            $subDistVal = (int)round($dist / 2);
             $subDist = new EventDisciplineSubDistance($edd, $subDistVal);
             $this->em->persist($subDist);
 
-            $runner = ($i % 2 === 0) ? $jan : $anna;
+            $runner = $athletes[$i % count($athletes)];
             $listFeed = new Feed($runner, null, null, ElementStatusEnum::Active);
             $this->em->persist($listFeed);
-            $this->allFeeds[] = $listFeed;
+            $this->feeds[] = $listFeed;
 
             $listEntry = new EventDisciplineList($edd, $listFeed, $runner, SaveStatusEnum::Accepted);
             $this->em->persist($listEntry);
 
+            $competitor = $athletes[($i + 1) % count($athletes)];
+            $compListFeed = new Feed($competitor, null, null, ElementStatusEnum::Active);
+            $this->em->persist($compListFeed);
+            $this->feeds[] = $compListFeed;
+
+            $compListEntry = new EventDisciplineList($edd, $compListFeed, $competitor, SaveStatusEnum::Accepted);
+            $this->em->persist($compListEntry);
+
             if ($days < 0 || $i % 3 === 0) {
                 $resFeed = new Feed($runner, null, null, ElementStatusEnum::Active);
                 $this->em->persist($resFeed);
-                $this->allFeeds[] = $resFeed;
+                $this->feeds[] = $resFeed;
 
                 $result = new EventDisciplineResult($listEntry, $resFeed, $runner, $finishTime);
                 $this->em->persist($result);
 
-                $subRes = new EventDisciplineSubResult($subDist, $result, $runner, (int) round($finishTime / 2));
+                $subRes = new EventDisciplineSubResult($subDist, $result, $runner, (int)round($finishTime / 2));
                 $this->em->persist($subRes);
+
+                $compFinishTime = (int)round($finishTime * 1.05);
+                $compResFeed = new Feed($competitor, null, null, ElementStatusEnum::Active);
+                $this->em->persist($compResFeed);
+                $this->feeds[] = $compResFeed;
+
+                $compResult = new EventDisciplineResult($compListEntry, $compResFeed, $competitor, $compFinishTime);
+                $this->em->persist($compResult);
+
+                $compSubRes = new EventDisciplineSubResult($subDist, $compResult, $competitor, (int)round($compFinishTime / 2));
+                $this->em->persist($compSubRes);
             }
         }
     }
@@ -1540,79 +1566,470 @@ class DatabaseSeedCommand extends Command
         $anna = $this->users['anna.nowak@sportgram.local'];
         $piotr = $this->users['piotr.wisniewski@sportgram.local'];
         $admin = $this->users['admin@sportgram.local'];
+        $athletes = [$jan, $anna, $piotr, $admin];
+        $allAthletes = array_values($this->users);
 
+        /**
+         * Training definitions format:
+         * [title, link, location, daysAgo, creatorEmail, [ [DisciplineEnum, [ [distanceMeters, durationSeconds], ... ]], ... ]]
+         *
+         * @var array<int, array{0: string, 1: string, 2: string, 3: int, 4: string|null, 5: array<int, array{0: DisciplineEnum, 1: array<int, array{0: int, 1: int}>}>}>
+         */
         $trainingDefs = [
-            ['Poranny rozruch wzdłuż Wisły', 'poranny-rozruch-wisla-1k', DisciplineEnum::Running, 1000, 240, 'Warszawa, Bulwary Wiślane', -1, 'jan.kowalski@sportgram.local'],
-            ['Szybki kilometr z hakiem', 'szybki-odcinek-1500m', DisciplineEnum::Running, 1500, 375, 'Warszawa, Park Skaryszewski', -2, 'jan.kowalski@sportgram.local'],
-            ['Odcinek testowy w Agrykoli', 'odcinek-testowy-2k', DisciplineEnum::Running, 2000, 520, 'Warszawa, Park Ujazdowski', -3, 'jan.kowalski@sportgram.local'],
-            ['Bieg tempowy 3 km w trupa', 'bieg-tempowy-3k', DisciplineEnum::Running, 3000, 780, 'Warszawa, Kępa Potocka', -4, 'jan.kowalski@sportgram.local'],
-            ['Czwórka na rozgrzewkę przed zawodami', 'czworka-rozgrzewka-4k', DisciplineEnum::Running, 4000, 1020, 'Warszawa, Pole Mokotowskie', -5, 'jan.kowalski@sportgram.local'],
-            ['Piątka parkrun w Parku Skaryszewskim', 'piatka-parkrun-5k', DisciplineEnum::Running, 5000, 1260, 'Warszawa, Park Skaryszewski', -6, 'jan.kowalski@sportgram.local'],
-            ['Spokojne 6 km po pracy', 'spokojne-szesc-km', DisciplineEnum::Running, 6000, 1500, 'Warszawa, Lasek Bielański', -7, 'jan.kowalski@sportgram.local'],
-            ['Siódemka o poranku przed pracą', 'siodemka-o-poranku-7k', DisciplineEnum::Running, 7000, 1750, 'Warszawa, Bulwary Wiślane', -8, 'jan.kowalski@sportgram.local'],
-            ['Ósemka interwałowa na bieżni AWF', 'osemka-interwalowa-8k', DisciplineEnum::Running, 8000, 1980, 'Warszawa, Stadion AWF', -9, 'jan.kowalski@sportgram.local'],
-            ['Dziewięć kilometrów w drugim zakresie', 'dziewiec-km-zakres-2', DisciplineEnum::Running, 9000, 2220, 'Warszawa, Las Kabacki', -10, 'jan.kowalski@sportgram.local'],
-            ['Klasyczna dycha w tempie maratońskim', 'klasyczna-dycha-10k', DisciplineEnum::Running, 10000, 2460, 'Warszawa, Wał Zawadowski', -11, 'jan.kowalski@sportgram.local'],
-            ['Jedenastka w tlenie w lesie', 'jedenastka-w-tlenie-11k', DisciplineEnum::Running, 11000, 2700, 'Warszawa, Puszcza Kampinoska', -12, 'jan.kowalski@sportgram.local'],
-            ['Dwanaście kilometrów z narastającą prędkością', 'dwunastka-bnp-12k', DisciplineEnum::Running, 12000, 2950, 'Warszawa, Park Młociński', -13, 'jan.kowalski@sportgram.local'],
-            ['Trzynaście kilometrów regeneracji', 'trzynascie-km-regeneracji', DisciplineEnum::Running, 13000, 3190, 'Warszawa, Bulwary Wiślane', -14, 'jan.kowalski@sportgram.local'],
-            ['Czternaście kilometrów po pagórkach', 'czternastka-podbiegi-14k', DisciplineEnum::Running, 14000, 3440, 'Warszawa, Skarpa Ursynowska', -15, 'jan.kowalski@sportgram.local'],
-            ['Piętnaście kilometrów w stałym tempie', 'pietnastka-stale-tempo-15k', DisciplineEnum::Running, 15000, 3690, 'Warszawa, Las Młociński', -16, 'jan.kowalski@sportgram.local'],
-            ['Szesnastka weekendowa w Kampinosie', 'szesnastka-kampinos-16k', DisciplineEnum::Running, 16000, 3930, 'Izabelin, Kampinos', -17, 'jan.kowalski@sportgram.local'],
-            ['Osiemnaście kilometrów przed maratonem', 'osiemnastka-przedmaratonska-18k', DisciplineEnum::Running, 18000, 4450, 'Warszawa, Wał Miedzeszyński', -18, 'jan.kowalski@sportgram.local'],
-            ['Dwudziestka w tlenie w słońcu', 'dwudziestka-w-tlenie-20k', DisciplineEnum::Running, 20000, 4980, 'Warszawa, Bulwary Wiślane', -19, 'jan.kowalski@sportgram.local'],
-            ['Sprawdzian na dystansie półmaratonu', 'sprawdzian-polmaraton-21k', DisciplineEnum::Running, 21097, 5240, 'Warszawa, Trasa Półmaratonu', -20, 'jan.kowalski@sportgram.local'],
-            ['Długie wybieganie 25 km w niedzielę', 'dlugie-wybieganie-25k', DisciplineEnum::Running, 25000, 6300, 'Warszawa, Kampinoski PN', -21, 'jan.kowalski@sportgram.local'],
-            ['Trzydziestka w ramach przygotowań do maratonu', 'trzydziestka-maratonska-30k', DisciplineEnum::Running, 30000, 7800, 'Warszawa, Trasa wzdłuż Wisły', -22, 'jan.kowalski@sportgram.local'],
-            ['Długie wybieganie z akcentem 32 km', 'wybieganie-akcent-32k', DisciplineEnum::Running, 32000, 8350, 'Warszawa, Las Kabacki', -23, 'jan.kowalski@sportgram.local'],
-            ['Ostatnie długie wybieganie 35 km', 'ostatnia-trzydziestka-piatka-35k', DisciplineEnum::Running, 35000, 9200, 'Puszcza Kampinoska, Granica', -24, 'jan.kowalski@sportgram.local'],
-            ['Symulacja maratonu na atestowanej trasie', 'symulacja-maratonu-42k', DisciplineEnum::Running, 42195, 11400, 'Warszawa, Trasa Maratonu', -25, 'jan.kowalski@sportgram.local'],
-            ['Rozgrzewka szosowa na pętli', 'rozgrzewka-szosa-10k', DisciplineEnum::Cycling, 10000, 1200, 'Warszawa, Pętla Gassy', -26, 'jan.kowalski@sportgram.local'],
-            ['Szybka runda wokół komina', 'szybka-runda-15k', DisciplineEnum::Cycling, 15000, 1750, 'Warszawa, Wilanów', -27, 'jan.kowalski@sportgram.local'],
-            ['Dwudziestka regeneracyjna na szosie', 'dwudziestka-szosa-20k', DisciplineEnum::Cycling, 20000, 2300, 'Warszawa, Konstancin', -28, 'jan.kowalski@sportgram.local'],
-            ['Dwadzieścia pięć kilometrów w tlenie', 'dwadziescia-piec-km-szosa', DisciplineEnum::Cycling, 25000, 2850, 'Warszawa, Wał Miedzeszyński', -29, 'jan.kowalski@sportgram.local'],
-            ['Pętla szosowa Gassy 30 km', 'petla-gassy-30k', DisciplineEnum::Cycling, 30000, 3400, 'Konstancin, Gassy', -30, 'jan.kowalski@sportgram.local'],
-            ['Trzydzieści pięć kilometrów ze średnią 34', 'trzydziesci-piec-km-szosa', DisciplineEnum::Cycling, 35000, 3950, 'Otwock, Karczew', -31, 'jan.kowalski@sportgram.local'],
-            ['Czterdziestka szosowa w słońcu', 'czterdziestka-szosa-40k', DisciplineEnum::Cycling, 40000, 4500, 'Piaseczno, Góra Kalwaria', -32, 'jan.kowalski@sportgram.local'],
-            ['Trening jazdy na czas 45 km', 'jazda-na-czas-45k', DisciplineEnum::Cycling, 45000, 5100, 'Góra Kalwaria, Czersk', -33, 'jan.kowalski@sportgram.local'],
-            ['Pięćdziesiątka szosowa z grupą', 'piecdziesiatka-szosa-50k', DisciplineEnum::Cycling, 50000, 5650, 'Warszawa, Szosa Lubelska', -34, 'jan.kowalski@sportgram.local'],
-            ['Sześćdziesiąt kilometrów gravelu po lesie', 'szescdziesiatka-gravel-60k', DisciplineEnum::Cycling, 60000, 6800, 'Puszcza Kampinoska', -35, 'jan.kowalski@sportgram.local'],
-            ['Siedemdziesiąt kilometrów w peletonie', 'siedemdziesiatka-peleton-70k', DisciplineEnum::Cycling, 70000, 7950, 'Warszawa, Mazowsze Płd', -36, 'jan.kowalski@sportgram.local'],
-            ['Osiemdziesiąt kilometrów po Jurze', 'osiemdziesiatka-jura-80k', DisciplineEnum::Cycling, 80000, 9100, 'Zawiercie, Ogrodzieniec', -37, 'jan.kowalski@sportgram.local'],
-            ['Dziewięćdziesiąt kilometrów z przewyższeniami', 'dziewiecdziesiatka-szosa-90k', DisciplineEnum::Cycling, 90000, 10300, 'Podkarpacie, Strzyżów', -38, 'jan.kowalski@sportgram.local'],
-            ['Gran Fondo 100 km z przyjaciółmi', 'gran-fondo-100k', DisciplineEnum::Cycling, 100000, 11500, 'Warszawa - Góra Kalwaria - Warszawa', -39, 'jan.kowalski@sportgram.local'],
-            ['Długi rajd kolarski 120 km', 'dlugi-rajd-szosa-120k', DisciplineEnum::Cycling, 120000, 14000, 'Mazowsze, Pętla Grójecka', -40, 'jan.kowalski@sportgram.local'],
-            ['Krótki basen na technikę 400m', 'krotki-basen-technika-400m', DisciplineEnum::Swimming, 400, 420, 'Warszawa, OSiR Polna', -41, 'jan.kowalski@sportgram.local'],
-            ['Pięćsetka rozgrzewkowa kraulem', 'piecsetka-rozgrzewka-500m', DisciplineEnum::Swimming, 500, 510, 'Warszawa, Wodny Park Warszawianka', -42, 'jan.kowalski@sportgram.local'],
-            ['Dystans sprinterski w triathlonie 750m', 'sprint-tri-plywanie-750m', DisciplineEnum::Swimming, 750, 760, 'Warszawa, Basen Inflancka', -43, 'jan.kowalski@sportgram.local'],
-            ['Osiemsetka stylem dowolnym', 'osiemsetka-dowolny-800m', DisciplineEnum::Swimming, 800, 800, 'Warszawa, CSR WUM', -44, 'jan.kowalski@sportgram.local'],
-            ['Kilometr w wodzie z łapkami', 'kilometr-z-lapkami-1000m', DisciplineEnum::Swimming, 1000, 1020, 'Warszawa, Warszawianka', -45, 'jan.kowalski@sportgram.local'],
-            ['Tysiąc dwieście metrów interwałów', 'tysiac-dwiescie-interwaly-1200m', DisciplineEnum::Swimming, 1200, 1230, 'Warszawa, OSiR Żoliborz', -46, 'jan.kowalski@sportgram.local'],
-            ['Półtora kilometra ciągłego pływania', 'poltora-km-ciagly-1500m', DisciplineEnum::Swimming, 1500, 1530, 'Warszawa, Basen Olimpijski', -47, 'jan.kowalski@sportgram.local'],
-            ['Dystans 1/2 Ironmana w wodzie 1900m', 'dystans-polowki-im-1900m', DisciplineEnum::Swimming, 1900, 1950, 'Jezioro Zegrzyńskie, Nieporęt', -48, 'jan.kowalski@sportgram.local'],
-            ['Dwa kilometry w piance open water', 'dwa-km-open-water-2000m', DisciplineEnum::Swimming, 2000, 2060, 'Zalew Zegrzyński', -49, 'jan.kowalski@sportgram.local'],
-            ['Dwa i pół kilometra na Zegrzu', 'dwa-i-pol-km-zegrze-2500m', DisciplineEnum::Swimming, 2500, 2600, 'Jezioro Zegrzyńskie, Port Pilawa', -50, 'jan.kowalski@sportgram.local'],
-            ['Trzy kilometry treningu tlenowego', 'trzy-km-trening-tlenowy-3000m', DisciplineEnum::Swimming, 3000, 3150, 'Warszawa, Warszawianka', -51, 'jan.kowalski@sportgram.local'],
-            ['Pełny dystans pływacki Ironmana 3800m', 'pelny-dystans-im-plywanie-3800m', DisciplineEnum::Swimming, 3800, 4050, 'Zalew Zegrzyński, Dzika Plaża', -52, 'jan.kowalski@sportgram.local'],
-            ['Rolki szybkościowe dycha w parku', 'rolki-dycha-park-10k', DisciplineEnum::InlineSkating, 10000, 1600, 'Warszawa, Park Szczęśliwicki', -53, 'jan.kowalski@sportgram.local'],
-            ['Piętnaście kilometrów na kółkach 110mm', 'pietnastka-rolki-15k', DisciplineEnum::InlineSkating, 15000, 2400, 'Chorzów, Park Śląski', -54, 'jan.kowalski@sportgram.local'],
-            ['Dwudziestka rolkowa po płaskim asfalcie', 'dwudziestka-rolki-20k', DisciplineEnum::InlineSkating, 20000, 3200, 'Warszawa, Bulwary Wiślane', -55, 'jan.kowalski@sportgram.local'],
-            ['Bieg regeneracyjny Adama', 'adam-bieg-regeneracyjny', DisciplineEnum::Running, 8000, 2100, 'Warszawa, Park Agrykola', -2, 'admin@sportgram.local'],
-            ['Poranne pływanie Ani', 'anna-poranne-plywanie', DisciplineEnum::Swimming, 2000, 2200, 'Warszawa, Inflancka', -3, 'anna.nowak@sportgram.local'],
-            ['Szosa Piotra w Jurze', 'piotr-szosa-jura', DisciplineEnum::Cycling, 65000, 7500, 'Zawiercie, Kromołów', -4, 'piotr.wisniewski@sportgram.local'],
-            ['Basen techniczny Michała', 'michal-basen-techniczny', DisciplineEnum::Swimming, 2500, 2700, 'Warszawa, WUM', -5, 'michal.zielinski@sportgram.local'],
-            ['Trening rolkowy Olgi', 'olga-trening-rolkowy', DisciplineEnum::InlineSkating, 18000, 2900, 'Katowice, Muchowiec', -6, 'organizer@sportgram.local'],
+            // --- Single discipline Running (single & multi-distance) ---
+            ['Poranny rozruch wzdłuż Wisły', 'poranny-rozruch-wisla-1k', 'Warszawa, Bulwary Wiślane', -1, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[1000, 240]]],
+            ]],
+            ['Szybki kilometr z hakiem', 'szybki-odcinek-1500m', 'Warszawa, Park Skaryszewski', -2, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[1500, 375]]],
+            ]],
+            ['Odcinek testowy w Agrykoli', 'odcinek-testowy-2k', 'Warszawa, Park Ujazdowski', -3, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[2000, 520]]],
+            ]],
+            ['Bieg tempowy 3 km w trupa', 'bieg-tempowy-3k', 'Warszawa, Kępa Potocka', -4, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[3000, 780]]],
+            ]],
+            ['Czwórka na rozgrzewkę przed zawodami', 'czworka-rozgrzewka-4k', 'Warszawa, Pole Mokotowskie', -5, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[4000, 1020]]],
+            ]],
+            ['Piątka parkrun w Parku Skaryszewskim', 'piatka-parkrun-5k', 'Warszawa, Park Skaryszewski', -6, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[5000, 1260]]],
+            ]],
+            ['Spokojne 6 km po pracy', 'spokojne-szesc-km', 'Warszawa, Lasek Bielański', -7, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[6000, 1500]]],
+            ]],
+            ['Siódemka o poranku przed pracą', 'siodemka-o-poranku-7k', 'Warszawa, Bulwary Wiślane', -8, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[7000, 1750]]],
+            ]],
+            ['Ósemka interwałowa na bieżni AWF', 'osemka-interwalowa-8k', 'Warszawa, Stadion AWF', -9, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [
+                    [2000, 520],
+                    [4000, 960],
+                    [2000, 500],
+                ]],
+            ]],
+            ['Dziewięć kilometrów w drugim zakresie', 'dziewiec-km-zakres-2', 'Warszawa, Las Kabacki', -10, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[9000, 2220]]],
+            ]],
+            ['Klasyczna dycha w tempie maratońskim', 'klasyczna-dycha-10k', 'Warszawa, Wał Zawadowski', -11, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [
+                    [1500, 420],
+                    [7000, 1680],
+                    [1500, 360],
+                ]],
+            ]],
+            ['Jedenastka w tlenie w lesie', 'jedenastka-w-tlenie-11k', 'Warszawa, Puszcza Kampinoska', -12, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[11000, 2700]]],
+            ]],
+            ['Dwanaście kilometrów z narastającą prędkością', 'dwunastka-bnp-12k', 'Warszawa, Park Młociński', -13, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [
+                    [4000, 1050],
+                    [4000, 980],
+                    [4000, 920],
+                ]],
+            ]],
+            ['Trzynaście kilometrów regeneracji', 'trzynascie-km-regeneracji', 'Warszawa, Bulwary Wiślane', -14, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[13000, 3190]]],
+            ]],
+            ['Czternaście kilometrów po pagórkach', 'czternastka-podbiegi-14k', 'Warszawa, Skarpa Ursynowska', -15, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[14000, 3440]]],
+            ]],
+            ['Piętnaście kilometrów w stałym tempie', 'pietnastka-stale-tempo-15k', 'Warszawa, Las Młociński', -16, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [
+                    [2000, 540],
+                    [11000, 2640],
+                    [2000, 510],
+                ]],
+            ]],
+            ['Szesnastka weekendowa w Kampinosie', 'szesnastka-kampinos-16k', 'Izabelin, Kampinos', -17, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[16000, 3930]]],
+            ]],
+            ['Osiemnaście kilometrów przed maratonem', 'osiemnastka-przedmaratonska-18k', 'Warszawa, Wał Miedzeszyński', -18, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[18000, 4450]]],
+            ]],
+            ['Dwudziestka w tlenie w słońcu', 'dwudziestka-w-tlenie-20k', 'Warszawa, Bulwary Wiślane', -19, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[20000, 4980]]],
+            ]],
+            ['Sprawdzian na dystansie półmaratonu', 'sprawdzian-polmaraton-21k', 'Warszawa, Trasa Półmaratonu', -20, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [
+                    [5000, 1260],
+                    [10000, 2460],
+                    [6097, 1520],
+                ]],
+            ]],
+            ['Długie wybieganie 25 km w niedzielę', 'dlugie-wybieganie-25k', 'Warszawa, Kampinoski PN', -21, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[25000, 6300]]],
+            ]],
+            ['Trzydziestka w ramach przygotowań do maratonu', 'trzydziestka-maratonska-30k', 'Warszawa, Trasa wzdłuż Wisły', -22, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[30000, 7800]]],
+            ]],
+            ['Długie wybieganie z akcentem 32 km', 'wybieganie-akcent-32k', 'Warszawa, Las Kabacki', -23, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [
+                    [10000, 2650],
+                    [12000, 3050],
+                    [10000, 2650],
+                ]],
+            ]],
+            ['Ostatnie długie wybieganie 35 km', 'ostatnia-trzydziestka-piatka-35k', 'Puszcza Kampinoska, Granica', -24, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[35000, 9200]]],
+            ]],
+            ['Symulacja maratonu na atestowanej trasie', 'symulacja-maratonu-42k', 'Warszawa, Trasa Maratonu', -25, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [
+                    [10000, 2700],
+                    [10000, 2700],
+                    [10000, 2700],
+                    [12195, 3300],
+                ]],
+            ]],
+
+            // --- Single discipline Cycling (single & multi-distance) ---
+            ['Rozgrzewka szosowa na pętli', 'rozgrzewka-szosa-10k', 'Warszawa, Pętla Gassy', -26, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[10000, 1200]]],
+            ]],
+            ['Szybka runda wokół komina', 'szybka-runda-15k', 'Warszawa, Wilanów', -27, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[15000, 1750]]],
+            ]],
+            ['Dwudziestka regeneracyjna na szosie', 'dwudziestka-szosa-20k', 'Warszawa, Konstancin', -28, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[20000, 2300]]],
+            ]],
+            ['Dwadzieścia pięć kilometrów w tlenie', 'dwadziescia-piec-km-szosa', 'Warszawa, Wał Miedzeszyński', -29, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[25000, 2850]]],
+            ]],
+            ['Pętla szosowa Gassy 30 km', 'petla-gassy-30k', 'Konstancin, Gassy', -30, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[30000, 3400]]],
+            ]],
+            ['Trzydzieści pięć kilometrów ze średnią 34', 'trzydziesci-piec-km-szosa', 'Otwock, Karczew', -31, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[35000, 3950]]],
+            ]],
+            ['Czterdziestka szosowa w słońcu', 'czterdziestka-szosa-40k', 'Piaseczno, Góra Kalwaria', -32, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[40000, 4500]]],
+            ]],
+            ['Trening jazdy na czas 45 km', 'jazda-na-czas-45k', 'Góra Kalwaria, Czersk', -33, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [
+                    [5000, 650],
+                    [35000, 3850],
+                    [5000, 600],
+                ]],
+            ]],
+            ['Pięćdziesiątka szosowa z grupą', 'piecdziesiatka-szosa-50k', 'Warszawa, Szosa Lubelska', -34, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [
+                    [10000, 1200],
+                    [30000, 3150],
+                    [10000, 1300],
+                ]],
+            ]],
+            ['Sześćdziesiąt kilometrów gravelu po lesie', 'szescdziesiatka-gravel-60k', 'Puszcza Kampinoska', -35, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[60000, 6800]]],
+            ]],
+            ['Siedemdziesiąt kilometrów w peletonie', 'siedemdziesiatka-peleton-70k', 'Warszawa, Mazowsze Płd', -36, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[70000, 7950]]],
+            ]],
+            ['Osiemdziesiąt kilometrów po Jurze', 'osiemdziesiatka-jura-80k', 'Zawiercie, Ogrodzieniec', -37, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [
+                    [15000, 1900],
+                    [50000, 5250],
+                    [15000, 1950],
+                ]],
+            ]],
+            ['Dziewięćdziesiąt kilometrów z przewyższeniami', 'dziewiecdziesiatka-szosa-90k', 'Podkarpacie, Strzyżów', -38, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[90000, 10300]]],
+            ]],
+            ['Gran Fondo 100 km z przyjaciółmi', 'gran-fondo-100k', 'Warszawa - Góra Kalwaria - Warszawa', -39, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [
+                    [30000, 3600],
+                    [40000, 4400],
+                    [30000, 3500],
+                ]],
+            ]],
+            ['Długi rajd kolarski 120 km', 'dlugi-rajd-szosa-120k', 'Mazowsze, Pętla Grójecka', -40, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [[120000, 14000]]],
+            ]],
+
+            // --- Single discipline Swimming (single & multi-distance) ---
+            ['Krótki basen na technikę 400m', 'krotki-basen-technika-400m', 'Warszawa, OSiR Polna', -41, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [[400, 420]]],
+            ]],
+            ['Pięćsetka rozgrzewkowa kraulem', 'piecsetka-rozgrzewka-500m', 'Warszawa, Wodny Park Warszawianka', -42, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [[500, 510]]],
+            ]],
+            ['Dystans sprinterski w triathlonie 750m', 'sprint-tri-plywanie-750m', 'Warszawa, Basen Inflancka', -43, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [[750, 760]]],
+            ]],
+            ['Osiemsetka stylem dowolnym', 'osiemsetka-dowolny-800m', 'Warszawa, CSR WUM', -44, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [[800, 800]]],
+            ]],
+            ['Kilometr w wodzie z łapkami', 'kilometr-z-lapkami-1000m', 'Warszawa, Wodny Park Warszawianka', -45, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [[1000, 1020]]],
+            ]],
+            ['Tysiąc dwieście metrów interwałów', 'tysiac-dwiescie-interwaly-1200m', 'Warszawa, OSiR Żoliborz', -46, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [
+                    [300, 330],
+                    [600, 580],
+                    [300, 320],
+                ]],
+            ]],
+            ['Półtora kilometra ciągłego pływania', 'poltora-km-ciagly-1500m', 'Warszawa, Basen Olimpijski', -47, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [
+                    [300, 320],
+                    [1000, 990],
+                    [200, 220],
+                ]],
+            ]],
+            ['Dystans 1/2 Ironmana w wodzie 1900m', 'dystans-polowki-im-1900m', 'Jezioro Zegrzyńskie, Nieporęt', -48, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [[1900, 1950]]],
+            ]],
+            ['Dwa kilometry w piance open water', 'dwa-km-open-water-2000m', 'Zalew Zegrzyński', -49, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [[2000, 2060]]],
+            ]],
+            ['Dwa i pół kilometra na Zegrzu', 'dwa-i-pol-km-zegrze-2500m', 'Jezioro Zegrzyńskie, Port Pilawa', -50, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [
+                    [500, 530],
+                    [1500, 1540],
+                    [500, 530],
+                ]],
+            ]],
+            ['Trzy kilometry treningu tlenowego', 'trzy-km-trening-tlenowy-3000m', 'Warszawa, Wodny Park Warszawianka', -51, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [[3000, 3150]]],
+            ]],
+            ['Pełny dystans pływacki Ironmana 3800m', 'pelny-dystans-im-plywanie-3800m', 'Zalew Zegrzyński, Dzika Plaża', -52, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [
+                    [1900, 2000],
+                    [1900, 2050],
+                ]],
+            ]],
+
+            // --- Single discipline Inline Skating ---
+            ['Rolki szybkościowe dycha w parku', 'rolki-dycha-park-10k', 'Warszawa, Park Szczęśliwicki', -53, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::InlineSkating, [[10000, 1600]]],
+            ]],
+            ['Piętnaście kilometrów na kółkach 110mm', 'pietnastka-rolki-15k', 'Chorzów, Park Śląski', -54, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::InlineSkating, [
+                    [2000, 350],
+                    [11000, 1700],
+                    [2000, 350],
+                ]],
+            ]],
+            ['Dwudziestka rolkowa po płaskim asfalcie', 'dwudziestka-rolki-20k', 'Warszawa, Bulwary Wiślane', -55, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::InlineSkating, [[20000, 3200]]],
+            ]],
+
+            // --- Individual specific trainings ---
+            ['Bieg regeneracyjny Adama', 'adam-bieg-regeneracyjny', 'Warszawa, Park Agrykola', -2, 'admin@sportgram.local', [
+                [DisciplineEnum::Running, [[8000, 2100]]],
+            ]],
+            ['Poranne pływanie Ani', 'anna-poranne-plywanie', 'Warszawa, Inflancka', -3, 'anna.nowak@sportgram.local', [
+                [DisciplineEnum::Swimming, [
+                    [500, 550],
+                    [1000, 1100],
+                    [500, 550],
+                ]],
+            ]],
+            ['Szosa Piotra w Jurze', 'piotr-szosa-jura', 'Zawiercie, Kromołów', -4, 'piotr.wisniewski@sportgram.local', [
+                [DisciplineEnum::Cycling, [
+                    [15000, 1800],
+                    [35000, 3900],
+                    [15000, 1800],
+                ]],
+            ]],
+            ['Basen techniczny Michała', 'michal-basen-techniczny', 'Warszawa, WUM', -5, 'michal.zielinski@sportgram.local', [
+                [DisciplineEnum::Swimming, [[2500, 2700]]],
+            ]],
+            ['Trening rolkowy Olgi', 'olga-trening-rolkowy', 'Katowice, Muchowiec', -6, 'organizer@sportgram.local', [
+                [DisciplineEnum::InlineSkating, [[18000, 2900]]],
+            ]],
+
+            // --- Multi-discipline Triathlons & Duathlons ---
+            ['Triathlon Olimpijski - przetarcie szlaków', 'triathlon-olimpijski-zegrze', 'Jezioro Zegrzyńskie, Nieporęt', -8, 'admin@sportgram.local', [
+                [DisciplineEnum::Swimming, [[1500, 1560]]],
+                [DisciplineEnum::Cycling, [
+                    [35000, 3600],
+                    [5000, 600],
+                ]],
+                [DisciplineEnum::Running, [
+                    [8000, 2080],
+                    [2000, 520],
+                ]],
+            ]],
+            ['Triathlon Sprinterski w Parku Skaryszewskim', 'sprint-triathlon-kamionkowskie', 'Warszawa, Park Skaryszewski', -11, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Swimming, [[750, 780]]],
+                [DisciplineEnum::Cycling, [[20000, 2200]]],
+                [DisciplineEnum::Running, [[5000, 1260]]],
+            ]],
+            ['Klasyczny Duathlon w Parku Śląskim', 'klasyczny-duathlon-park-slaski', 'Chorzów, Park Śląski', -14, 'organizer@sportgram.local', [
+                [DisciplineEnum::Running, [[5000, 1250]]],
+                [DisciplineEnum::Cycling, [[20000, 2200]]],
+                [DisciplineEnum::Running, [[2500, 650]]],
+            ]],
+            ['Trening zakładkowy (Brick) przed połówką IM', 'brick-trening-gassy-szosa-bieg', 'Konstancin, Gassy', -15, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Cycling, [
+                    [35000, 3700],
+                    [10000, 1200],
+                ]],
+                [DisciplineEnum::Running, [
+                    [6000, 1500],
+                    [2000, 540],
+                ]],
+            ]],
+            ['Aquathlon Zegrzyński (Woda + Bieg)', 'aquathlon-zegrzynski-woda-bieg', 'Jezioro Zegrzyńskie, Nieporęt', -17, 'anna.nowak@sportgram.local', [
+                [DisciplineEnum::Swimming, [[1000, 1050]]],
+                [DisciplineEnum::Running, [[5000, 1280]]],
+            ]],
+            ['Duathlon przełajowy w Kampinosie', 'duathlon-kampinos-przelaj', 'Warszawa, Puszcza Kampinoska', -19, 'piotr.wisniewski@sportgram.local', [
+                [DisciplineEnum::Running, [[4000, 1080]]],
+                [DisciplineEnum::Cycling, [[15000, 2200]]],
+                [DisciplineEnum::Running, [[2000, 580]]],
+            ]],
+            ['Cross-training wioślarsko-biegowy na Malcie', 'cross-wioslarstwo-bieg-malta', 'Poznań, Tor Regatowy Malta', -22, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Rowing, [[4000, 920]]],
+                [DisciplineEnum::Running, [[6000, 1500]]],
+            ]],
+            ['Morska wyprawa kajakowa z pływaniem wpław', 'wyprawa-kajak-plywanie-brzezno', 'Gdańsk, Molo Brzeźno', -23, 'anna.nowak@sportgram.local', [
+                [DisciplineEnum::Canoeing, [[6000, 2400]]],
+                [DisciplineEnum::Swimming, [[1200, 1300]]],
+            ]],
+            ['Miejskie combo: rolki i deskorolka', 'miejskie-combo-rolki-deska', 'Warszawa, Pole Mokotowskie', -25, 'organizer@sportgram.local', [
+                [DisciplineEnum::InlineSkating, [[12000, 1950]]],
+                [DisciplineEnum::Skateboarding, [[4000, 980]]],
+            ]],
+            ['Zimowy biathlon amatorski w Jakuszycach', 'zimowy-biathlon-jakuszyce', 'Szklarska Poręba, Jakuszyce', -27, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::CrossCountrySkiing, [
+                    [10000, 2200],
+                    [5000, 1100],
+                ]],
+                [DisciplineEnum::Running, [[3000, 850]]],
+            ]],
+            ['Tatry: podejście biegowe i zjazd snowboardowy', 'tatry-skitour-snowboard-nosal', 'Zakopane, Nosal', -28, 'admin@sportgram.local', [
+                [DisciplineEnum::Running, [[4000, 1400]]],
+                [DisciplineEnum::Snowboarding, [[3000, 600]]],
+            ]],
+            ['Łyżwiarstwo szybkie Stegny z rozgrzewką biegową', 'stegny-lyzwiarstwo-bieg-rozgrzewka', 'Warszawa, Tor Stegny', -30, 'admin@sportgram.local', [
+                [DisciplineEnum::Running, [[3000, 800]]],
+                [DisciplineEnum::IceSkating, [[10000, 1450]]],
+            ]],
+            ['Kajakarstwo na Wiśle i bieg bulwarami', 'kajakarstwo-wisla-krakow-bulwary', 'Kraków, Bulwary Wiślane', -31, 'michal.zielinski@sportgram.local', [
+                [DisciplineEnum::Canoeing, [[5000, 2100]]],
+                [DisciplineEnum::Running, [[5000, 1300]]],
+            ]],
+            ['Wioślarstwo i bieg wokół zalewu', 'wioslarstwo-bieg-zalew-zegrzynski', 'Jezioro Zegrzyńskie, Port Pilawa', -33, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Rowing, [[5000, 1150]]],
+                [DisciplineEnum::Running, [[7000, 1850]]],
+            ]],
+            ['Rolki i deska wzdłuż Bałtyku', 'gdynia-rolki-deska-bulwar', 'Gdynia, Bulwar Nadmorski', -34, 'organizer@sportgram.local', [
+                [DisciplineEnum::InlineSkating, [[10000, 1600]]],
+                [DisciplineEnum::Skateboarding, [[3000, 720]]],
+            ]],
+            ['Nartorolki i bieg w Parku Śląskim', 'nartorolki-bieg-park-slaski', 'Chorzów, Park Śląski', -36, 'organizer@sportgram.local', [
+                [DisciplineEnum::InlineSkating, [[14000, 2200]]],
+                [DisciplineEnum::Running, [[4000, 1020]]],
+            ]],
+            ['Triathlon treningowy 1/4 IM na Zakrzówku', 'triathlon-treningowy-zakrzowek', 'Kraków, Zakrzówek', -37, 'admin@sportgram.local', [
+                [DisciplineEnum::Swimming, [[950, 990]]],
+                [DisciplineEnum::Cycling, [
+                    [35000, 3700],
+                    [10000, 1100],
+                ]],
+                [DisciplineEnum::Running, [
+                    [8000, 2080],
+                    [2500, 670],
+                ]],
+            ]],
+            ['Duathlon sprinterski we Wrocławiu', 'duathlon-szczytnicki-wroclaw', 'Wrocław, Park Szczytnicki', -39, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::Running, [[3000, 750]]],
+                [DisciplineEnum::Cycling, [[12000, 1350]]],
+                [DisciplineEnum::Running, [[1500, 390]]],
+            ]],
+            ['Kajakowy spływ i bieg po plaży', 'kajak-bieg-plaza-reagana', 'Gdańsk, Park Reagana', -41, 'anna.nowak@sportgram.local', [
+                [DisciplineEnum::Canoeing, [[4000, 1700]]],
+                [DisciplineEnum::Running, [[6000, 1550]]],
+            ]],
+            ['Bieg górski z elementami snowboardu', 'koscieliska-gorski-snowboard', 'Zakopane, Dolina Kościeliska', -43, 'piotr.wisniewski@sportgram.local', [
+                [DisciplineEnum::Running, [[8000, 2500]]],
+                [DisciplineEnum::Snowboarding, [[4000, 800]]],
+            ]],
+            ['Pływanie open water i rozbieganie na Malcie', 'malta-plywanie-openwater-bieg', 'Poznań, Tor Regatowy Malta', -44, 'anna.nowak@sportgram.local', [
+                [DisciplineEnum::Swimming, [[2000, 2100]]],
+                [DisciplineEnum::Running, [[8000, 2050]]],
+            ]],
+            ['Wioślarstwo i trening interwałowy na AWF', 'awf-wioslarstwo-bieznia-interwaly', 'Warszawa, Stadion AWF', -46, 'admin@sportgram.local', [
+                [DisciplineEnum::Rowing, [[3000, 700]]],
+                [DisciplineEnum::Running, [[5000, 1200]]],
+            ]],
+            ['Łyżwiarstwo i bieg wokół Parku Śląskiego', 'lyzwiarstwo-bieg-slaski-lod', 'Chorzów, Park Śląski', -47, 'organizer@sportgram.local', [
+                [DisciplineEnum::Running, [[4000, 1040]]],
+                [DisciplineEnum::IceSkating, [[8000, 1200]]],
+            ]],
+            ['Duathlon szosowy z finiszem pod Górę Zamkową', 'duathlon-jura-ogrodzieniec', 'Zawiercie, Ogrodzieniec', -49, 'piotr.wisniewski@sportgram.local', [
+                [DisciplineEnum::Running, [[6000, 1600]]],
+                [DisciplineEnum::Cycling, [[30000, 3300]]],
+                [DisciplineEnum::Running, [[3000, 820]]],
+            ]],
+            ['Biegi narciarskie i marszobieg zimowy', 'jakuszyce-biegowki-marszobieg', 'Szklarska Poręba, Jakuszyce', -51, 'jan.kowalski@sportgram.local', [
+                [DisciplineEnum::CrossCountrySkiing, [
+                    [15000, 3300],
+                    [5000, 1100],
+                ]],
+                [DisciplineEnum::Running, [[4000, 1100]]],
+            ]],
+
+            // --- Additional endurance workouts with team athletes ---
+            ['Gravelowa eksploracja Kampinosu Katarzyny', 'katarzyna-gravel-kampinos-55k', 'Warszawa, Puszcza Kampinoska', -5, 'katarzyna.wojcik@sportgram.local', [
+                [DisciplineEnum::Cycling, [
+                    [15000, 1950],
+                    [30000, 3600],
+                    [10000, 1300],
+                ]],
+            ]],
+            ['Mocne interwały na bieżni AWF Tomasza', 'tomasz-interwaly-awf-12k', 'Warszawa, Stadion AWF', -7, 'tomasz.lewandowski@sportgram.local', [
+                [DisciplineEnum::Running, [
+                    [3000, 780],
+                    [6000, 1440],
+                    [3000, 810],
+                ]],
+            ]],
+            ['Długi trening open water Magdy na Zegrzu', 'magda-plywanie-zegrze-open-water', 'Zalew Zegrzyński, Dzika Plaża', -9, 'magdalena.kaminska@sportgram.local', [
+                [DisciplineEnum::Swimming, [
+                    [1000, 1050],
+                    [1500, 1550],
+                    [500, 520],
+                ]],
+            ]],
+            ['Szosa Czersk - Góra Kalwaria Marcina', 'marcin-szosa-czersk-gora-kalwaria', 'Góra Kalwaria, Czersk', -12, 'marcin.mazur@sportgram.local', [
+                [DisciplineEnum::Cycling, [
+                    [20000, 2300],
+                    [30000, 3300],
+                    [15000, 1750],
+                ]],
+            ]],
+            ['Szybkie rolki w Dolinie Trzech Stawów Natalii', 'natalia-rolki-dolina-trzech-stawow', 'Katowice, Dolina Trzech Stawów', -13, 'natalia.wozniak@sportgram.local', [
+                [DisciplineEnum::InlineSkating, [
+                    [4000, 680],
+                    [14000, 2200],
+                    [4000, 700],
+                ]],
+            ]],
         ];
 
-        foreach ($trainingDefs as $i => [$title, $link, $disc, $dist, $tm, $loc, $daysAgo, $creatorEmail]) {
-            $creator = $this->users[$creatorEmail] ?? $jan;
+        foreach ($trainingDefs as $i => [$title, $link, $loc, $daysAgo, $creatorEmail, $disciplinesData]) {
+            $creator = ($creatorEmail !== null && isset($this->users[$creatorEmail]))
+                ? $this->users[$creatorEmail]
+                : (($i % 4 !== 0) ? $athletes[$i % count($athletes)] : ($allAthletes[$i % count($allAthletes)] ?? $jan));
+
+            $totalDist = 0;
+            $totalTime = 0;
+            foreach ($disciplinesData as [, $distances]) {
+                foreach ($distances as [$dDist, $dTm]) {
+                    $totalDist += $dDist;
+                    $totalTime += $dTm;
+                }
+            }
+
             $tFeed = new Feed($creator, null, null, ElementStatusEnum::Active);
             $this->em->persist($tFeed);
-            $this->allFeeds[] = $tFeed;
+            $this->feeds[] = $tFeed;
 
             $startedAt = new DateTimeImmutable(sprintf('%+d days 07:00:00', $daysAgo));
-            $endedAt = $startedAt->modify(sprintf('+%d seconds', $tm));
-            $status = ($i % 20 === 19) ? ElementStatusEnum::Rejected : ElementStatusEnum::Active;
+            $endedAt = $startedAt->modify(sprintf('+%d seconds', $totalTime));
+            $status = ($i % 30 === 29) ? ElementStatusEnum::Rejected : ElementStatusEnum::Active;
 
             $training = new Training(
                 $tFeed,
@@ -1620,7 +2037,12 @@ class DatabaseSeedCommand extends Command
                 $startedAt,
                 $endedAt,
                 $title,
-                sprintf('Trening na dystansie %d m w czasie %d s. Świetne samopoczucie i doskonałe warunki atmosferyczne.', $dist, $tm),
+                sprintf(
+                    'Trening na łącznym dystansie %d m w czasie %d s (%d min). Świetne samopoczucie, optymalne tętno i doskonałe warunki na trasie.',
+                    $totalDist,
+                    $totalTime,
+                    (int) round($totalTime / 60),
+                ),
                 $link,
                 $loc,
                 $status,
@@ -1630,23 +2052,164 @@ class DatabaseSeedCommand extends Command
 
             $tpCreator = new TrainingParticipant($training, $creator, SaveStatusEnum::Accepted);
             $this->em->persist($tpCreator);
-            $partner = ($creator->email === $jan->email) ? $anna : $jan;
-            $tpPartner = new TrainingParticipant($training, $partner, SaveStatusEnum::Accepted);
-            $this->em->persist($tpPartner);
 
-            $td = new TrainingDiscipline($training, $disc);
-            $this->em->persist($td);
+            $availablePartners = array_values(array_filter(
+                $allAthletes,
+                static fn (User $u): bool => $u->email !== $creator->email,
+            ));
+            if (!empty($availablePartners)) {
+                $partner1 = $availablePartners[$i % count($availablePartners)];
+                $tpPartner = new TrainingParticipant($training, $partner1, SaveStatusEnum::Accepted);
+                $this->em->persist($tpPartner);
 
-            $tdd = new TrainingDisciplineDistance($td, $dist, $tm);
-            $this->em->persist($tdd);
+                if ($i % 3 === 0) {
+                    $partner2 = $availablePartners[($i + 1) % count($availablePartners)];
+                    $tpSecond = new TrainingParticipant($training, $partner2, SaveStatusEnum::Accepted);
+                    $this->em->persist($tpSecond);
+                }
 
-            $halfDist = (int) round($dist / 2);
-            $halfTime = (int) round($tm / 2);
-            $sub1 = new TrainingDisciplineSubDistance($tdd, $halfDist, $halfTime, 52231900, 21011500, 4, 15);
-            $this->em->persist($sub1);
-            $sub2 = new TrainingDisciplineSubDistance($tdd, $dist, $tm, 52233500, 21013200, 4, 15);
-            $this->em->persist($sub2);
+                if ($i % 7 === 0) {
+                    $partner3 = $availablePartners[($i + 2) % count($availablePartners)];
+                    $tpThird = new TrainingParticipant($training, $partner3, SaveStatusEnum::Accepted);
+                    $this->em->persist($tpThird);
+                }
+            }
+
+            [$baseLat, $baseLng] = $this->resolveBaseCoordinates($loc);
+
+            foreach ($disciplinesData as $discIdx => [$discEnum, $distances]) {
+                $td = new TrainingDiscipline($training, $discEnum);
+                $this->em->persist($td);
+
+                foreach ($distances as $distIdx => [$distMeters, $distSeconds]) {
+                    $tdd = new TrainingDisciplineDistance($td, $distMeters, $distSeconds);
+                    $this->em->persist($tdd);
+
+                    $subCount = $this->resolveSubdistanceCount($distMeters);
+                    $routeAngle = (($i * 43 + $discIdx * 71 + $distIdx * 109) % 360) * (M_PI / 180.0);
+
+                    for ($s = 1; $s <= $subCount; $s++) {
+                        $subDist = (int) round(($distMeters * $s) / $subCount);
+                        $subTime = (int) round(($distSeconds * $s) / $subCount);
+
+                        $progress = $s / (float) $subCount;
+                        $curvedHeading = $routeAngle + 0.35 * sin($progress * M_PI * 2.0);
+
+                        if ($distMeters > 10000) {
+                            $loopAngle = $routeAngle + ($progress * 2.0 * M_PI * 0.85);
+                            $radiusMeters = min(3000, (int) round($distMeters / 6));
+                            $dLat = (int) round(cos($loopAngle) * $radiusMeters * 9.0 * $progress + cos($routeAngle) * ($subDist % 1500) * 4.0);
+                            $dLng = (int) round(sin($loopAngle) * $radiusMeters * 14.6 * $progress + sin($routeAngle) * ($subDist % 1500) * 6.5);
+                        } else {
+                            $dLat = (int) round(cos($curvedHeading) * $subDist * 9.0 * 0.8);
+                            $dLng = (int) round(sin($curvedHeading) * $subDist * 14.6 * 0.8);
+                        }
+
+                        $lat = $baseLat + $dLat;
+                        $lng = $baseLng + $dLng;
+                        $accuracy = 3 + (($i + $s) % 4);
+                        $speed = max(1, (int) round($distMeters / max(1, $distSeconds)));
+
+                        $sub = new TrainingDisciplineSubDistance($tdd, $subDist, $subTime, $lat, $lng, $accuracy, $speed);
+                        $this->em->persist($sub);
+                    }
+                }
+            }
         }
+    }
+
+    /**
+     * @return array{0: int, 1: int} Base GPS latitude & longitude multiplied by 1_000_000
+     */
+    private function resolveBaseCoordinates(string $location): array
+    {
+        $cityCoordinates = [
+            'Bulwary Wiślane' => [52243500, 21019800],
+            'Park Skaryszewski' => [52244200, 21056500],
+            'Kamionkowskie' => [52247000, 21059000],
+            'Park Ujazdowski' => [52220500, 21025500],
+            'Agrykola' => [52218000, 21028000],
+            'Kępa Potocka' => [52277000, 20987000],
+            'Pole Mokotowskie' => [52210500, 20998000],
+            'Lasek Bielański' => [52289000, 20961000],
+            'AWF' => [52285000, 20958000],
+            'Las Kabacki' => [52128000, 21055000],
+            'Wał Zawadowski' => [52165000, 21102000],
+            'Wał Miedzeszyński' => [52185000, 21125000],
+            'Kampinos' => [52305000, 20785000],
+            'Park Młociński' => [52302000, 20935000],
+            'Skarpa Ursynowska' => [52158000, 21045000],
+            'Las Młociński' => [52310000, 20925000],
+            'Park Szczęśliwicki' => [52204000, 20958000],
+            'Wilanów' => [52165000, 21085000],
+            'Warszawianka' => [52199000, 21024000],
+            'Polna' => [52217000, 21015000],
+            'Inflancka' => [52254000, 20999000],
+            'WUM' => [52207000, 20986000],
+            'Żoliborz' => [52270000, 20978000],
+            'Stegny' => [52187000, 21048000],
+            'Gassy' => [52100000, 21180000],
+            'Konstancin' => [52090000, 21120000],
+            'Karczew' => [52100000, 21260000],
+            'Góra Kalwaria' => [51970000, 21230000],
+            'Czersk' => [51965000, 21225000],
+            'Zawiercie' => [50452000, 19558000],
+            'Ogrodzieniec' => [50452000, 19558000],
+            'Kromołów' => [50495000, 19485000],
+            'Strzyżów' => [49870000, 21790000],
+            'Zegrz' => [52445000, 21040000],
+            'Nieporęt' => [52430000, 21040000],
+            'Pilawa' => [52438000, 21055000],
+            'Park Śląski' => [50286000, 18988000],
+            'Chorzów' => [50286000, 18988000],
+            'Muchowiec' => [50238000, 19034000],
+            'Trzech Stawów' => [50242000, 19038000],
+            'Katowice' => [50238000, 19034000],
+            'Kraków' => [50059100, 19914400],
+            'Zakrzówek' => [50039000, 19912000],
+            'Błonia' => [50059100, 19914400],
+            'Gdańsk' => [54412000, 18618000],
+            'Brzeźno' => [54417000, 18635000],
+            'Reagana' => [54412000, 18618000],
+            'Gdynia' => [54512000, 18552000],
+            'Sopot' => [54445000, 18570000],
+            'Poznań' => [52401000, 16974000],
+            'Malta' => [52401000, 16974000],
+            'Jakuszyce' => [50819000, 15438000],
+            'Szklarska Poręba' => [50819000, 15438000],
+            'Zakopane' => [49278000, 19870000],
+            'Tatry' => [49278000, 19870000],
+            'Kościeliska' => [49278000, 19870000],
+            'Nosal' => [49282000, 19985000],
+            'Wrocław' => [51114000, 17086000],
+            'Szczytnicki' => [51114000, 17086000],
+        ];
+
+        foreach ($cityCoordinates as $key => $coords) {
+            if (str_contains($location, $key)) {
+                return $coords;
+            }
+        }
+
+        return [52229700, 21012200];
+    }
+
+    private function resolveSubdistanceCount(int $distanceMeters): int
+    {
+        if ($distanceMeters <= 1000) {
+            return 4;
+        }
+        if ($distanceMeters <= 5000) {
+            return 5;
+        }
+        if ($distanceMeters <= 15000) {
+            return 6;
+        }
+        if ($distanceMeters <= 35000) {
+            return 7;
+        }
+
+        return 8;
     }
 
     private function seedGoals(): void
@@ -1654,6 +2217,8 @@ class DatabaseSeedCommand extends Command
         $jan = $this->users['jan.kowalski@sportgram.local'];
         $anna = $this->users['anna.nowak@sportgram.local'];
         $admin = $this->users['admin@sportgram.local'];
+        $piotr = $this->users['piotr.wisniewski@sportgram.local'];
+        $athletes = [$jan, $anna, $admin, $piotr];
 
         $goalDefs = [
             ['Złamać 40 minut na 10 km w oficjalnych zawodach', 'zlamac-40-minut-na-10km', DisciplineEnum::Running, 10000, 2400, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
@@ -1719,10 +2284,12 @@ class DatabaseSeedCommand extends Command
         ];
 
         foreach ($goalDefs as $i => [$text, $link, $disc, $dist, $tm, $st, $creatorEmail]) {
-            $creator = $this->users[$creatorEmail] ?? $jan;
+            $creator = ($creatorEmail === 'jan.kowalski@sportgram.local' && $i % 4 !== 0)
+                ? $athletes[$i % count($athletes)]
+                : ($this->users[$creatorEmail] ?? $jan);
             $gFeed = new Feed($creator, null, null, ElementStatusEnum::Active);
             $this->em->persist($gFeed);
-            $this->allFeeds[] = $gFeed;
+            $this->feeds[] = $gFeed;
 
             $goal = new Goal(
                 $gFeed,
@@ -1742,17 +2309,31 @@ class DatabaseSeedCommand extends Command
             $gp = new GoalParticipant($goal, $creator, SaveStatusEnum::Accepted);
             $this->em->persist($gp);
 
-            $friendUser = ($creator->email === $jan->email) ? $anna : $jan;
+            $buddies = array_values(array_filter(
+                $athletes,
+                static fn (User $u): bool => $u->email !== $creator->email,
+            ));
+            $friendUser = $buddies[$i % count($buddies)];
             $gpFriend = new GoalParticipant($goal, $friendUser, SaveStatusEnum::Accepted);
             $this->em->persist($gpFriend);
 
             $rFeed = new Feed($creator, null, null, ElementStatusEnum::Active);
             $this->em->persist($rFeed);
-            $this->allFeeds[] = $rFeed;
+            $this->feeds[] = $rFeed;
 
-            $achievedTime = (int) round($tm * 1.02);
+            $achievedTime = (int)round($tm * 1.02);
             $gpr = new GoalParticipantResult($gp, $rFeed, $dist, $achievedTime, SaveStatusEnum::Accepted);
             $this->em->persist($gpr);
+
+            if ($st === GoalStatusEnum::Completed && $i % 2 === 0) {
+                $fFeed = new Feed($friendUser, null, null, ElementStatusEnum::Active);
+                $this->em->persist($fFeed);
+                $this->feeds[] = $fFeed;
+
+                $friendTime = (int)round($tm * 1.04);
+                $gprFriend = new GoalParticipantResult($gpFriend, $fFeed, $dist, $friendTime, SaveStatusEnum::Accepted);
+                $this->em->persist($gprFriend);
+            }
         }
     }
 
@@ -1762,6 +2343,8 @@ class DatabaseSeedCommand extends Command
         $anna = $this->users['anna.nowak@sportgram.local'];
         $admin = $this->users['admin@sportgram.local'];
         $piotr = $this->users['piotr.wisniewski@sportgram.local'];
+
+        $athletes = [$jan, $anna, $admin, $piotr];
 
         $postTexts = [
             'Nowy sezon biegowy rozpoczęty z przytupem! Pierwszy akcent tempowy w tym roku wszedł gładko. Kto z Was trenuje dziś na zewnątrz?',
@@ -1784,58 +2367,92 @@ class DatabaseSeedCommand extends Command
             'Dziś pękła kolejna setka kilometrów w tym miesiącu. Systematyczność i cierpliwość przynoszą upragnione efekty.',
             'Trening tempowy w zmiennych warunkach: 4 km rozgrzewki, 6 km w drugim zakresie i 2 km schłodzenia.',
             'Kiedy nie chce się wyjść na trening, właśnie wtedy wychodzi się z największą korzyścią dla głowy i charakteru.',
-            'Wpis treningowy #21: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #22: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #23: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #24: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #25: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #26: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #27: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #28: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #29: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #30: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #31: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #32: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #33: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #34: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #35: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #36: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #37: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #38: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #39: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #40: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #41: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #42: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #43: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #44: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #45: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #46: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #47: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #48: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #49: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #50: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #51: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #52: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #53: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #54: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
-            'Wpis treningowy #55: Kolejny solidny akcent wykonany zgodnie z planem. Forma rośnie z każdym tygodniem!',
+            'Dziś sprawdzian na 10 km na bieżni mechanicznej. Równe tempo 4:05/km, tętno pod pełną kontrolą.',
+            'Pływanie na wodach otwartych w piance. Temperatura wody 16 stopni – orzeźwienie gwarantowane!',
+            'Podjazdy pod wzgórza tynieckie: 12 powtórzeń na maksymalnym zaangażowaniu. Nogi płoną!',
+            'Nowa owijka na kierownicy szosówki i precyzyjne ustawienie bloków SPD. Rower gotowy na weekend.',
+            'Długie niedzielne wybieganie z kubkiem domowego izotonika. Pamiętajcie o nawadnianiu nawet w chłodne dni.',
+            'Test żeli energetycznych przed zbliżającym się startem maratońskim. Smak cytrynowy wchodzi bez problemu.',
+            'Wieczorny powrót z pracy rowerem wzdłuż bulwarów wiślanych. Najlepszy sposób na przewietrzenie głowy.',
+            'Rozciąganie powięziowe i rolowanie pasma biodrowo-piszczelowego po 18 km w lesie. Czyste złoto.',
+            'Trening siły ogólnej na siłowni: przysiady ze sztangą, wykroki i martwy ciąg na prostych nogach.',
+            'Poranna sesja jogi dla biegaczy. Mobilność bioder i elastyczność kręgosłupa to fundament bezkontuzyjności.',
+            'Bieg ciągły w drugim zakresie tętna. 12 km ze średnią 4:18/km, wiatr w plecy na powrocie pomagał.',
+            'Pierwszy raz na rolkach po zimowej przerwie! Asfalt w Parku Śląskim idealnie gładki.',
+            'Wspólny trening klubowy na stadionie. W grupie kilkunastu osób kilometry mijają nieporównywalnie szybciej.',
+            'Mokry i błotnisty bieg przełajowy po Jurze. Przyczepność butów trailowych zdała egzamin celująco.',
+            'Owsianka pieczona z bananem i orzechami – najlepsze paliwo przed 80 km na gravelu.',
+            'Analiza techniki biegu z nagrania wideo. Praca nad lądowaniem na śródstopiu i krótszym czasem kontaktu z podłożem.',
+            'Czasówka na szosie: 20 km z profilem aerodynamicznym. Średnia moc 285W utrzymana przez cały dystans.',
+            'Spokojne pływanie regeneracyjne w basenie: 1000m kraulem, 500m na plecach i ćwiczenia oddechowe.',
+            'Podbiegi pod Górę Świętej Anny. Ostatnie 3 powtórzenia wymagały maksymalnej dyscypliny mentalnej.',
+            'Poranny parkrun w doborowym towarzystwie. Cudowna atmosfera i mnóstwo uśmiechniętych ludzi.',
+            'Dzisiejsza pogoda nie zachęcała do wyjścia, ale po pierwszych 2 kilometrach deszcz przestał mieć jakiekolwiek znaczenie.',
+            'Bikepacking po Mazurach – zapakowane sakwy, zaplanowane 200 km i nocleg pod namiotem.',
+            'Trening progowy: 3x 3000m na przerwie 3 minuty w truchcie. Wykonany w 100% zgodnie z założeniami trenera.',
+            'Kąpiel solankowa i kompresja po 32 km wybiegania. Regeneracja to integralna część każdego dobrego planu.',
+            'Nowe opony bezdętkowe założone i zalane świeżym mleczkiem. Zero obaw o drobne przebicia na kamieniach.',
+            'Wschód słońca na szczycie Kasprowego Wierchu po stromym podejściu o świcie. Widoki zapierają dech w piersiach!',
+            'Wyścig ze samym sobą na pętli wokół Błoń. Każde okrążenie równe co do sekundy.',
+            'Kajakowy spływ rzeką Pilicą – świetny trening stabilizacji korpusu i siły ramion.',
+            'Trening czucia tempa: 5x 1000m bez spoglądania na zegarek. Błąd pomiaru poniżej 2 sekund na kilometr!',
+            'Bieg z psem leśnymi duktami. Czworonożny kompan dyktował tempo przez całe 10 kilometrów.',
+            'Przygotowania sprzętowe do triathlonu: pianka, rower czasowy, kask aero i buty z elastycznymi sznurówkami.',
+            'Nocne bieganie po pustych ulicach miasta. Światła latarni, cisza i miarowy stukot butów o asfalt.',
+            'Zaliczona setka na rowerze w strefie tlenowej. Zapas energii pozostał nawet na krótki bieg transition.',
+            'Ostatnie przetarcie przed niedzielnymi zawodami. Krótkie rytmy, dynamiczny stretching i pozytywne nastawienie!',
+            'Kolejny udany mikrocykl treningowy domknięty. Czas na regenerację i naładowanie baterii przed kolejnym wyzwaniem.',
+        ];
+
+        $sampleComments = [
+            'Świetny trening, tempo i forma robią ogromne wrażenie! 🔥',
+            'Znakomity czas! Do zobaczenia na kolejnym wspólnym wybieganiu.',
+            'Forma idzie w górę jak z nut! Oby tak dalej do samych zawodów.',
+            'Brawo za determinację, warunki dzisiaj były naprawdę wymagające.',
+            'Rewelacja, z taką dyspozycją życiówka na zawodach murowana!',
+            'Mocna jednostka treningowa, szacunek za konsekwencję w planie!',
+            'Piękna trasa i świetne cyfry, gratulacje!',
+            'Dobra robota! Pamiętaj o solidnym posiłku regeneracyjnym.',
         ];
 
         $count = 0;
         foreach ($postTexts as $i => $text) {
-            $photo = ($i % 3 === 0) ? $this->profilePhotoBase64 : (($i % 3 === 1) ? $this->backgroundPhotoBase64 : null);
-            $feed = new Feed($jan, $text, $photo, ElementStatusEnum::Active);
+            $author = $athletes[$i % count($athletes)];
+            $photo = ($i % 3 === 2)
+                ? null
+                : $this->generateLandscapeSvg($author->color, $author->link . '_feed');
+            $feed = new Feed($author, $text, $photo, ElementStatusEnum::Active);
             $this->em->persist($feed);
-            $this->allFeeds[] = $feed;
+            $this->feeds[] = $feed;
             $count++;
 
-            $comment = new FeedComment($feed, $anna, 'Świetny trening Janek, gratulacje!', ElementStatusEnum::Active);
+            $commenters = array_values(array_filter(
+                $athletes,
+                static fn (User $u): bool => $u->email !== $author->email,
+            ));
+            $commentUser = $commenters[$i % count($commenters)];
+            $commentTxt = $sampleComments[$i % count($sampleComments)];
+            $comment = new FeedComment($feed, $commentUser, $commentTxt, ElementStatusEnum::Active);
             $this->em->persist($comment);
 
-            $r1 = new FeedReaction($feed, $anna, FeedReactionEnum::Love, ElementStatusEnum::Active);
+            $rUser1 = $commenters[0];
+            $rType1 = match ($i % 3) {
+                0 => FeedReactionEnum::Love,
+                1 => FeedReactionEnum::Like,
+                default => FeedReactionEnum::Wow,
+            };
+            $r1 = new FeedReaction($feed, $rUser1, $rType1, ElementStatusEnum::Active);
             $this->em->persist($r1);
-            $r2 = new FeedReaction($feed, $admin, FeedReactionEnum::Like, ElementStatusEnum::Active);
+
+            $rUser2 = $commenters[1] ?? $jan;
+            $rType2 = ($i % 2 === 0) ? FeedReactionEnum::Like : FeedReactionEnum::Love;
+            $r2 = new FeedReaction($feed, $rUser2, $rType2, ElementStatusEnum::Active);
             $this->em->persist($r2);
+
+            if (isset($commenters[2]) && $i % 2 === 0) {
+                $r3 = new FeedReaction($feed, $commenters[2], FeedReactionEnum::Wow, ElementStatusEnum::Active);
+                $this->em->persist($r3);
+            }
         }
 
         $otherPosts = [
@@ -1847,9 +2464,10 @@ class DatabaseSeedCommand extends Command
         ];
         foreach ($otherPosts as [$authorEmail, $txt]) {
             $author = $this->users[$authorEmail] ?? $admin;
-            $feed = new Feed($author, $txt, $this->profilePhotoBase64, ElementStatusEnum::Active);
+            $photo = $this->generateLandscapeSvg($author->color, $author->link . '_feed');
+            $feed = new Feed($author, $txt, $photo, ElementStatusEnum::Active);
             $this->em->persist($feed);
-            $this->allFeeds[] = $feed;
+            $this->feeds[] = $feed;
             $count++;
         }
 
@@ -1868,6 +2486,21 @@ class DatabaseSeedCommand extends Command
             'organizer@sportgram.local' => 'Olga Organizerska - Trening rolkowy i koordynacja eventów biegowych',
         ];
 
+        $storyCaptions = [
+            'Wschód słońca na trasie – rześkie poranne powietrze i puste ścieżki.',
+            'Kolejne kilometry wpadają na konto. Dziś skupienie na technice i rytmie.',
+            'Cudowne widoki na trasie! Taki trening to czysta przyjemność i reset głowy.',
+            'Przerwa na łyk izotonika i podziwianie panoramy. Forma rośnie!',
+            'Gravelowe szutry o zachodzie słońca – najlepsza pora na rower.',
+            'Interwały zaliczone! Nogi piekły, ale satysfakcja na mecie bezcenna.',
+            'Poranny rozruch przed zawodami. Wszystko dopięte na ostatni guzik.',
+            'Regeneracja w wodzie – czucie wody i luźne pociągnięcia kraulem.',
+            'Wspólna runda ze znajomymi. W grupie kilometry mijają dwa razy szybciej!',
+            'Nowa trasa przetestowana i zatwierdzona. Zdecydowanie tu wrócę.',
+            'Podbiegi w lesie – budujemy siłę biegową przed zbliżającym się startem.',
+            'Dzień odpoczynku i rozciągania. Dbajcie o regenerację tak samo jak o kilometry!',
+        ];
+
         foreach ($multiStoryUsers as $email => $description) {
             $user = $this->users[$email] ?? null;
             if (! $user) {
@@ -1875,8 +2508,10 @@ class DatabaseSeedCommand extends Command
             }
 
             for ($i = 1; $i <= 31; $i++) {
-                $text = sprintf('Relacja #%d: %s (#%d). Pozdrowienia dla społeczności Sportgram!', $i, $description, $i);
-                $story = new Story($user, $text, $this->profilePhotoBase64, ElementStatusEnum::Active);
+                $caption = $storyCaptions[($i - 1) % count($storyCaptions)];
+                $text = sprintf('%s – %s (#%d)', $description, $caption, $i);
+                $photo = $this->generateLandscapeSvg($user->color, $user->link . '_story');
+                $story = new Story($user, $text, $photo, ElementStatusEnum::Active);
                 $this->em->persist($story);
                 $count++;
             }
@@ -1892,7 +2527,8 @@ class DatabaseSeedCommand extends Command
         ];
         foreach ($otherStories as [$user, $text]) {
             if ($user) {
-                $story = new Story($user, $text, $this->profilePhotoBase64, ElementStatusEnum::Active);
+                $photo = $this->generateLandscapeSvg($user->color, $user->link . '_story');
+                $story = new Story($user, $text, $photo, ElementStatusEnum::Active);
                 $this->em->persist($story);
                 $count++;
             }
@@ -1922,6 +2558,17 @@ class DatabaseSeedCommand extends Command
             'Hej, o której godzinie planujesz jutrzejszy trening?',
         ];
 
+        $sampleReplies = [
+            'Hej! Bardzo chętnie, pasuje mi jak najbardziej. Daj znać o której się widzimy!',
+            'Cześć! Trening wszedł idealnie, tempo równe, nogi podawały znakomicie.',
+            'Jasne, niedziela rano brzmi super. Proponuję start o 8:00 z parkingu pod lasem.',
+            'Zdecydowanie polecam modele z pianką PEBA i pełną płytką węglową, robią ogromną różnicę!',
+            'Będę na pewno! Odbieram pakiet w piątek, możemy zrobić wspólną rozgrzewkę przed startem.',
+            'Jasne, zaraz podeślę Ci plik GPX. Trasa jest malownicza i dobrze utwardzona.',
+            'Dzięki wielkie! Systematyczne treningi wreszcie zaczynają przynosić upragnione efekty.',
+            'Planuję wyjść punktualnie o 7:30, żeby zdążyć przed popołudniowym upałem.',
+        ];
+
         foreach (array_slice($otherUsers, 0, 52) as $i => $friend) {
             $act1 = new ConversationActivity($jan, $friend);
             $this->em->persist($act1);
@@ -1929,7 +2576,7 @@ class DatabaseSeedCommand extends Command
             $this->em->persist($act2);
 
             $question = $sampleDialogs[$i % count($sampleDialogs)];
-            $reply = 'Hej! Bardzo chętnie, pasuje mi jak najbardziej. Daj znać o której się widzimy!';
+            $reply = $sampleReplies[$i % count($sampleReplies)];
 
             $c1 = new Conversation($jan, $friend, $question, ConversationStatusEnum::Read);
             $this->em->persist($c1);
@@ -1948,7 +2595,15 @@ class DatabaseSeedCommand extends Command
     {
         $jan = $this->users['jan.kowalski@sportgram.local'];
         $admin = $this->users['admin@sportgram.local'];
+        $anna = $this->users['anna.nowak@sportgram.local'];
+        $piotr = $this->users['piotr.wisniewski@sportgram.local'];
+        $recipients = [$jan, $anna, $piotr];
         $count = 0;
+
+        $otherUsers = array_values(array_filter(
+            $this->users,
+            static fn (User $u): bool => $u->email !== 'jan.kowalski@sportgram.local',
+        ));
 
         $notificationTemplates = [
             ['%s zaakceptował Twoje zaproszenie do grona znajomych.', '/users/anna-nowak', NotificationStatusEnum::Sent],
@@ -1963,8 +2618,10 @@ class DatabaseSeedCommand extends Command
 
         for ($i = 1; $i <= 55; $i++) {
             [$tmpl, $link, $st] = $notificationTemplates[($i - 1) % count($notificationTemplates)];
-            $text = sprintf($tmpl, 'Anna Nowak #' . $i);
-            $notif = new Notification($jan, $text, $link, $st);
+            $sender = $otherUsers[($i - 1) % count($otherUsers)];
+            $recipient = ($i <= 45) ? $jan : $recipients[$i % count($recipients)];
+            $text = sprintf($tmpl, $sender->firstName . ' ' . $sender->lastName);
+            $notif = new Notification($recipient, $text, $link, $st);
             $this->em->persist($notif);
             $count++;
         }
@@ -1981,6 +2638,9 @@ class DatabaseSeedCommand extends Command
     private function seedPushSubscriptions(): int
     {
         $jan = $this->users['jan.kowalski@sportgram.local'];
+        $anna = $this->users['anna.nowak@sportgram.local'];
+        $admin = $this->users['admin@sportgram.local'];
+        $piotr = $this->users['piotr.wisniewski@sportgram.local'];
         $count = 0;
 
         $browsers = [
@@ -2000,8 +2660,14 @@ class DatabaseSeedCommand extends Command
         for ($i = 1; $i <= 55; $i++) {
             $browser = $browsers[($i - 1) % count($browsers)];
             $status = ($i % 5 === 0) ? PushSubscriptionStatusEnum::Rejected : PushSubscriptionStatusEnum::Active;
+            $targetUser = match (true) {
+                $i <= 35 => $jan,
+                $i <= 42 => $anna,
+                $i <= 49 => $admin,
+                default => $piotr,
+            };
             $pushSub = new PushSubscription(
-                $jan,
+                $targetUser,
                 sprintf('https://fcm.googleapis.com/fcm/send/%s_%d', bin2hex(random_bytes(16)), $i),
                 base64_encode(random_bytes(65)),
                 base64_encode(random_bytes(16)),
@@ -2019,38 +2685,437 @@ class DatabaseSeedCommand extends Command
     {
         $jan = $this->users['jan.kowalski@sportgram.local'];
         $anna = $this->users['anna.nowak@sportgram.local'];
+        $admin = $this->users['admin@sportgram.local'];
+        $piotr = $this->users['piotr.wisniewski@sportgram.local'];
+        $viewers = [$jan, $anna, $admin, $piotr];
         $count = 0;
 
-        foreach (array_slice($this->users, 0, 20) as $user) {
-            $entry = new Entry($jan, $user->id, EntryTypeEnum::User);
+        foreach (array_values(array_slice($this->users, 0, 20)) as $i => $user) {
+            $entry = new Entry($viewers[$i % count($viewers)], $user->id, EntryTypeEnum::User);
             $this->em->persist($entry);
             $count++;
         }
 
-        foreach (array_slice($this->pages, 0, 15) as $page) {
-            $entry = new Entry($jan, $page->id, EntryTypeEnum::Page);
+        foreach (array_values(array_slice($this->pages, 0, 15)) as $i => $page) {
+            $entry = new Entry($viewers[$i % count($viewers)], $page->id, EntryTypeEnum::Page);
             $this->em->persist($entry);
             $count++;
         }
 
-        foreach (array_slice($this->events, 0, 15) as $event) {
-            $entry = new Entry($jan, $event->id, EntryTypeEnum::Event);
+        foreach (array_values(array_slice($this->events, 0, 15)) as $i => $event) {
+            $entry = new Entry($viewers[$i % count($viewers)], $event->id, EntryTypeEnum::Event);
             $this->em->persist($entry);
             $count++;
         }
 
-        foreach (array_slice($this->trainings, 0, 10) as $training) {
-            $entry = new Entry($anna, $training->id, EntryTypeEnum::Training);
+        foreach (array_values(array_slice($this->trainings, 0, 10)) as $i => $training) {
+            $entry = new Entry($viewers[$i % count($viewers)], $training->id, EntryTypeEnum::Training);
             $this->em->persist($entry);
             $count++;
         }
 
-        foreach (array_slice($this->goals, 0, 10) as $goal) {
-            $entry = new Entry($jan, $goal->id, EntryTypeEnum::Goal);
+        foreach (array_values(array_slice($this->goals, 0, 10)) as $i => $goal) {
+            $entry = new Entry($viewers[$i % count($viewers)], $goal->id, EntryTypeEnum::Goal);
             $this->em->persist($entry);
             $count++;
         }
 
         return $count;
+    }
+
+    private function generateProfilePhoto(
+        ColorEnum $color,
+        string $seed,
+    ): string {
+        $palette = $this->resolvePalette($color);
+        [$c1, $c2, $c3, $c4, $c5] = $palette;
+        $id = 'usr_' . substr(md5($seed), 0, 8);
+        $variant = abs(crc32($seed)) % 4;
+
+        $hair = match ($variant) {
+            0 => sprintf('<path d="M 105,120 Q 150,70 195,120 Q 180,85 150,80 Q 120,85 105,120 Z" fill="%s" />', $c5),
+            1 => sprintf('<path d="M 98,135 C 95,85 120,65 150,65 C 180,65 205,85 202,135 C 190,105 175,95 150,95 C 125,95 110,105 98,135 Z" fill="%s" />', $c1),
+            2 => sprintf('<path d="M 95,125 Q 150,85 205,125 L 212,135 Q 150,110 88,135 Z" fill="%s" /><ellipse cx="150" cy="95" rx="44" ry="18" fill="%s" />', $c4, $c4),
+            default => sprintf('<circle cx="150" cy="80" r="22" fill="%s" /><path d="M 108,125 Q 150,90 192,125" stroke="%s" stroke-width="8" fill="none" stroke-linecap="round" />', $c3, $c3),
+        };
+
+        $svg = <<<SVG
+            <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+              <defs>
+                <linearGradient id="{$id}_bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="{$c1}" />
+                  <stop offset="60%" stop-color="{$c2}" />
+                  <stop offset="100%" stop-color="{$c3}" />
+                </linearGradient>
+                <linearGradient id="{$id}_torso" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="{$c4}" />
+                  <stop offset="100%" stop-color="{$c2}" />
+                </linearGradient>
+              </defs>
+              <rect width="300" height="300" fill="url(#{$id}_bg)" />
+              <circle cx="150" cy="150" r="130" fill="{$c3}" opacity="0.25" />
+              <circle cx="230" cy="70" r="50" fill="{$c4}" opacity="0.18" />
+              <circle cx="60" cy="220" r="40" fill="{$c5}" opacity="0.2" />
+
+              <path d="M 40,300 C 45,225 90,195 150,195 C 210,195 255,225 260,300 Z" fill="url(#{$id}_torso)" />
+              <path d="M 115,200 L 150,225 L 185,200 Z" fill="{$c1}" opacity="0.4" />
+
+              <rect x="135" y="148" width="30" height="35" rx="6" fill="#fcd34d" />
+              <circle cx="150" cy="122" r="44" fill="#fde68a" />
+              {$hair}
+
+              <path d="M 118,118 Q 150,126 182,118 Q 185,130 150,134 Q 115,130 118,118 Z" fill="{$c1}" opacity="0.85" />
+              <path d="M 122,120 Q 150,126 178,120" stroke="{$c5}" stroke-width="2" fill="none" opacity="0.7" />
+            </svg>
+            SVG;
+
+        return base64_encode($svg);
+    }
+
+    private function generateLandscapeSvg(ColorEnum $color, string $seed): string
+    {
+        $w = 1200;
+        $h = 400;
+        $palette = $this->resolvePalette($color);
+        [$c1, $c2, $c3, $c4, $c5] = $palette;
+        $id = 'geo_' . substr(md5($seed), 0, 8);
+        $variant = abs(crc32($seed)) % 5;
+
+        switch ($variant) {
+            case 0:
+                $sunX = (int)($w * 0.75);
+                $sunY = (int)($h * 0.3);
+                $sunR = (int)(min($w, $h) * 0.2);
+                $sunR1 = (int)($sunR * 1.35);
+
+                $m1y1 = (int)($h * 0.65);
+                $m1x2 = (int)($w * 0.22);
+                $m1y2 = (int)($h * 0.38);
+                $m1x3 = (int)($w * 0.44);
+                $m1y3 = (int)($h * 0.58);
+                $m1x4 = (int)($w * 0.68);
+                $m1y4 = (int)($h * 0.35);
+                $m1x5 = (int)($w * 0.9);
+                $m1y5 = (int)($h * 0.52);
+                $m1y6 = (int)($h * 0.45);
+
+                $m2y1 = (int)($h * 0.78);
+                $m2x2 = (int)($w * 0.18);
+                $m2y2 = (int)($h * 0.62);
+                $m2x3 = (int)($w * 0.38);
+                $m2y3 = (int)($h * 0.72);
+                $m2x4 = (int)($w * 0.62);
+                $m2y4 = (int)($h * 0.52);
+                $m2x5 = (int)($w * 0.85);
+                $m2y5 = (int)($h * 0.68);
+                $m2y6 = (int)($h * 0.6);
+
+                $fgY = (int)($h * 0.88);
+                $fgQx = (int)($w * 0.3);
+                $fgQy = (int)($h * 0.72);
+                $fgEx = (int)($w * 0.65);
+                $fgEy = (int)($h * 0.84);
+                $fgTy = (int)($h * 0.78);
+
+                $t1x1 = (int)($w * 0.12);
+                $t1y1 = (int)($h * 0.78);
+                $t1x2 = (int)($w * 0.15);
+                $t1y2 = (int)($h * 0.88);
+                $t1x3 = (int)($w * 0.09);
+
+                $t2x1 = (int)($w * 0.18);
+                $t2y1 = (int)($h * 0.75);
+                $t2x2 = (int)($w * 0.21);
+                $t2y2 = (int)($h * 0.86);
+                $t2x3 = (int)($w * 0.15);
+
+                $t3x1 = (int)($w * 0.75);
+                $t3y1 = (int)($h * 0.8);
+                $t3x2 = (int)($w * 0.78);
+                $t3y2 = (int)($h * 0.9);
+                $t3x3 = (int)($w * 0.72);
+
+                $svg = <<<SVG
+                    <svg xmlns="http://www.w3.org/2000/svg" width="{$w}" height="{$h}" viewBox="0 0 {$w} {$h}">
+                      <defs>
+                        <linearGradient id="{$id}_sky" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stop-color="{$c1}" />
+                          <stop offset="55%" stop-color="{$c2}" />
+                          <stop offset="100%" stop-color="{$c3}" />
+                        </linearGradient>
+                      </defs>
+                      <rect width="{$w}" height="{$h}" fill="url(#{$id}_sky)" />
+                      <circle cx="{$sunX}" cy="{$sunY}" r="{$sunR}" fill="{$c4}" opacity="0.85" />
+                      <circle cx="{$sunX}" cy="{$sunY}" r="{$sunR1}" fill="{$c5}" opacity="0.2" />
+
+                      <path d="M 0,{$h} L 0,{$m1y1} L {$m1x2},{$m1y2} L {$m1x3},{$m1y3} L {$m1x4},{$m1y4} L {$m1x5},{$m1y5} L {$w},{$m1y6} L {$w},{$h} Z" fill="{$c2}" opacity="0.75" />
+                      <path d="M 0,{$h} L 0,{$m2y1} L {$m2x2},{$m2y2} L {$m2x3},{$m2y3} L {$m2x4},{$m2y4} L {$m2x5},{$m2y5} L {$w},{$m2y6} L {$w},{$h} Z" fill="{$c1}" opacity="0.9" />
+
+                      <path d="M 0,{$h} L 0,{$fgY} Q {$fgQx},{$fgQy} {$fgEx},{$fgEy} T {$w},{$fgTy} L {$w},{$h} Z" fill="{$c1}" />
+                      <polygon points="{$t1x1},{$t1y1} {$t1x2},{$t1y2} {$t1x3},{$t1y2}" fill="{$c3}" />
+                      <polygon points="{$t2x1},{$t2y1} {$t2x2},{$t2y2} {$t2x3},{$t2y2}" fill="{$c4}" opacity="0.8" />
+                      <polygon points="{$t3x1},{$t3y1} {$t3x2},{$t3y2} {$t3x3},{$t3y2}" fill="{$c3}" />
+                    </svg>
+                    SVG;
+
+                break;
+
+            case 1:
+                $sunX = (int)($w * 0.25);
+                $sunY = (int)($h * 0.35);
+                $sunR = (int)(min($w, $h) * 0.18);
+
+                $h1y = (int)($h * 0.55);
+                $h1qx = (int)($w * 0.3);
+                $h1qy = (int)($h * 0.42);
+                $h1ex = (int)($w * 0.6);
+                $h1ey = (int)($h * 0.52);
+                $h1ty = (int)($h * 0.48);
+
+                $h2y = (int)($h * 0.68);
+                $h2qx = (int)($w * 0.4);
+                $h2qy = (int)($h * 0.55);
+                $h2ex = (int)($w * 0.75);
+                $h2ey = (int)($h * 0.66);
+                $h2ty = (int)($h * 0.62);
+
+                $fgY = (int)($h * 0.8);
+                $fgQx = (int)($w * 0.35);
+                $fgQy = (int)($h * 0.7);
+                $fgEx = (int)($w * 0.7);
+                $fgEy = (int)($h * 0.82);
+                $fgTy = (int)($h * 0.75);
+
+                $pSx = (int)($w * 0.15);
+                $pQx = (int)($w * 0.35);
+                $pQy = (int)($h * 0.84);
+                $pEx = (int)($w * 0.45);
+                $pEy = (int)($h * 0.72);
+                $pTx = (int)($w * 0.6);
+                $pTy = (int)($h * 0.58);
+
+                $tr1x = (int)($w * 0.22);
+                $tr1y = (int)($h * 0.74);
+                $tr1r = (int)($w * 0.025 + 10);
+                $tr2x = (int)($w * 0.78);
+                $tr2y = (int)($h * 0.72);
+                $tr2r = (int)($w * 0.03 + 12);
+
+                $svg = <<<SVG
+                    <svg xmlns="http://www.w3.org/2000/svg" width="{$w}" height="{$h}" viewBox="0 0 {$w} {$h}">
+                      <defs>
+                        <linearGradient id="{$id}_sky" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stop-color="{$c1}" />
+                          <stop offset="60%" stop-color="{$c2}" />
+                          <stop offset="100%" stop-color="{$c4}" />
+                        </linearGradient>
+                      </defs>
+                      <rect width="{$w}" height="{$h}" fill="url(#{$id}_sky)" />
+                      <circle cx="{$sunX}" cy="{$sunY}" r="{$sunR}" fill="{$c5}" opacity="0.75" />
+
+                      <path d="M 0,{$h1y} Q {$h1qx},{$h1qy} {$h1ex},{$h1ey} T {$w},{$h1ty} L {$w},{$h} L 0,{$h} Z" fill="{$c3}" opacity="0.65" />
+                      <path d="M 0,{$h2y} Q {$h2qx},{$h2qy} {$h2ex},{$h2ey} T {$w},{$h2ty} L {$w},{$h} L 0,{$h} Z" fill="{$c2}" opacity="0.85" />
+                      <path d="M 0,{$fgY} Q {$fgQx},{$fgQy} {$fgEx},{$fgEy} T {$w},{$fgTy} L {$w},{$h} L 0,{$h} Z" fill="{$c1}" />
+
+                      <path d="M {$pSx},{$h} Q {$pQx},{$pQy} {$pEx},{$pEy} T {$pTx},{$pTy}" stroke="{$c4}" stroke-width="4" fill="none" opacity="0.6" stroke-dasharray="10 6" />
+
+                      <circle cx="{$tr1x}" cy="{$tr1y}" r="{$tr1r}" fill="{$c3}" />
+                      <circle cx="{$tr2x}" cy="{$tr2y}" r="{$tr2r}" fill="{$c3}" />
+                    </svg>
+                    SVG;
+
+                break;
+
+            case 2:
+                $sunX = (int)($w * 0.5);
+                $sunY = (int)($h * 0.42);
+                $sunR = (int)(min($w, $h) * 0.16);
+
+                $w1y = (int)($h * 0.64);
+                $w1c1x = (int)($w * 0.25);
+                $w1c1y = (int)($h * 0.6);
+                $w1c2x = (int)($w * 0.4);
+                $w1c2y = (int)($h * 0.68);
+                $w1ex = (int)($w * 0.65);
+                $w1ey = (int)($h * 0.62);
+                $w1c3x = (int)($w * 0.85);
+                $w1c3y = (int)($h * 0.58);
+                $w1c4x = (int)($w * 0.95);
+                $w1c4y = (int)($h * 0.65);
+
+                $w2y = (int)($h * 0.76);
+                $w2c1x = (int)($w * 0.3);
+                $w2c1y = (int)($h * 0.72);
+                $w2c2x = (int)($w * 0.5);
+                $w2c2y = (int)($h * 0.8);
+                $w2ex = (int)($w * 0.75);
+                $w2ey = (int)($h * 0.74);
+                $w2c3x = (int)($w * 0.9);
+                $w2c3y = (int)($h * 0.7);
+
+                $fgY = (int)($h * 0.88);
+                $fgC1x = (int)($w * 0.2);
+                $fgC1y = (int)($h * 0.82);
+                $fgC2x = (int)($w * 0.45);
+                $fgC2y = (int)($h * 0.92);
+                $fgEx = (int)($w * 0.7);
+                $fgEy = (int)($h * 0.85);
+
+                $svg = <<<SVG
+                    <svg xmlns="http://www.w3.org/2000/svg" width="{$w}" height="{$h}" viewBox="0 0 {$w} {$h}">
+                      <defs>
+                        <linearGradient id="{$id}_sky" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stop-color="{$c1}" />
+                          <stop offset="50%" stop-color="{$c2}" />
+                          <stop offset="100%" stop-color="{$c4}" />
+                        </linearGradient>
+                      </defs>
+                      <rect width="{$w}" height="{$h}" fill="url(#{$id}_sky)" />
+                      <circle cx="{$sunX}" cy="{$sunY}" r="{$sunR}" fill="{$c5}" opacity="0.85" />
+
+                      <path d="M 0,{$w1y} C {$w1c1x},{$w1c1y} {$w1c2x},{$w1c2y} {$w1ex},{$w1ey} C {$w1c3x},{$w1c3y} {$w1c4x},{$w1c4y} {$w},{$w1y} L {$w},{$h} L 0,{$h} Z" fill="{$c3}" opacity="0.7" />
+                      <path d="M 0,{$w2y} C {$w2c1x},{$w2c1y} {$w2c2x},{$w2c2y} {$w2ex},{$w2ey} C {$w2c3x},{$w2c3y} {$w},{$w2y} {$w},{$w2y} L {$w},{$h} L 0,{$h} Z" fill="{$c2}" opacity="0.85" />
+
+                      <path d="M 0,{$fgY} C {$fgC1x},{$fgC1y} {$fgC2x},{$fgC2y} {$fgEx},{$fgEy} T {$w},{$fgY} L {$w},{$h} L 0,{$h} Z" fill="{$c1}" />
+                      <path d="M 0,{$fgY} C {$fgC1x},{$fgC1y} {$fgC2x},{$fgC2y} {$fgEx},{$fgEy} T {$w},{$fgY}" stroke="{$c5}" stroke-width="3" fill="none" opacity="0.6" />
+                    </svg>
+                    SVG;
+
+                break;
+
+            case 3:
+                $sunX = (int)($w * 0.8);
+                $sunY = (int)($h * 0.25);
+                $sunR = (int)(min($w, $h) * 0.2);
+
+                $d1y = (int)($h * 0.6);
+                $d1qx = (int)($w * 0.4);
+                $d1qy = (int)($h * 0.45);
+                $d1ex = (int)($w * 0.75);
+                $d1ey = (int)($h * 0.62);
+                $d1ty = (int)($h * 0.55);
+
+                $d2y = (int)($h * 0.74);
+                $d2qx = (int)($w * 0.3);
+                $d2qy = (int)($h * 0.62);
+                $d2ex = (int)($w * 0.6);
+                $d2ey = (int)($h * 0.75);
+                $d2ty = (int)($h * 0.68);
+
+                $fgY = (int)($h * 0.85);
+                $fgQx = (int)($w * 0.5);
+                $fgQy = (int)($h * 0.7);
+                $fgEy = (int)($h * 0.82);
+
+                $svg = <<<SVG
+                    <svg xmlns="http://www.w3.org/2000/svg" width="{$w}" height="{$h}" viewBox="0 0 {$w} {$h}">
+                      <defs>
+                        <linearGradient id="{$id}_sky" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stop-color="{$c1}" />
+                          <stop offset="45%" stop-color="{$c2}" />
+                          <stop offset="100%" stop-color="{$c4}" />
+                        </linearGradient>
+                      </defs>
+                      <rect width="{$w}" height="{$h}" fill="url(#{$id}_sky)" />
+                      <circle cx="{$sunX}" cy="{$sunY}" r="{$sunR}" fill="{$c5}" opacity="0.9" />
+
+                      <path d="M 0,{$d1y} Q {$d1qx},{$d1qy} {$d1ex},{$d1ey} T {$w},{$d1ty} L {$w},{$h} L 0,{$h} Z" fill="{$c3}" opacity="0.75" />
+                      <path d="M 0,{$d2y} Q {$d2qx},{$d2qy} {$d2ex},{$d2ey} T {$w},{$d2ty} L {$w},{$h} L 0,{$h} Z" fill="{$c2}" opacity="0.9" />
+
+                      <path d="M 0,{$fgY} Q {$fgQx},{$fgQy} {$w},{$fgEy} L {$w},{$h} L 0,{$h} Z" fill="{$c1}" />
+                      <path d="M 0,{$fgY} Q {$fgQx},{$fgQy} {$w},{$fgEy}" stroke="{$c4}" stroke-width="4" fill="none" opacity="0.6" />
+                    </svg>
+                    SVG;
+
+                break;
+
+            default:
+                $moonX = (int)($w * 0.2);
+                $moonY = (int)($h * 0.25);
+                $moonR = (int)(min($w, $h) * 0.12);
+                $cresX = $moonX + (int)($moonR * 0.35);
+                $cresY = $moonY - (int)($moonR * 0.15);
+                $cresR = (int)($moonR * 0.88);
+
+                $shoreY = (int)($h * 0.56);
+                $lakeH = $h - $shoreY;
+
+                $t1x1 = (int)($w * 0.1);
+                $t1y1 = (int)($h * 0.5);
+                $t1x2 = (int)($w * 0.12);
+                $t1x3 = (int)($w * 0.08);
+
+                $t2x1 = (int)($w * 0.2);
+                $t2y1 = (int)($h * 0.48);
+                $t2x2 = (int)($w * 0.22);
+                $t2x3 = (int)($w * 0.18);
+
+                $t3x1 = (int)($w * 0.55);
+                $t3y1 = (int)($h * 0.49);
+                $t3x2 = (int)($w * 0.58);
+                $t3x3 = (int)($w * 0.52);
+
+                $t4x1 = (int)($w * 0.72);
+                $t4y1 = (int)($h * 0.5);
+                $t4x2 = (int)($w * 0.75);
+                $t4x3 = (int)($w * 0.69);
+
+                $r1y = (int)($h * 0.68);
+                $r1rx = (int)($moonR * 1.5);
+                $r2y = (int)($h * 0.75);
+                $r2rx = (int)($moonR * 2.2);
+
+                $fgY = (int)($h * 0.92);
+                $fgQx = (int)($w * 0.4);
+                $fgQy = (int)($h * 0.86);
+                $fgEy = (int)($h * 0.94);
+
+                $svg = <<<SVG
+                    <svg xmlns="http://www.w3.org/2000/svg" width="{$w}" height="{$h}" viewBox="0 0 {$w} {$h}">
+                      <defs>
+                        <linearGradient id="{$id}_sky" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stop-color="{$c1}" />
+                          <stop offset="60%" stop-color="{$c2}" />
+                          <stop offset="100%" stop-color="{$c3}" />
+                        </linearGradient>
+                      </defs>
+                      <rect width="{$w}" height="{$h}" fill="url(#{$id}_sky)" />
+
+                      <circle cx="{$moonX}" cy="{$moonY}" r="{$moonR}" fill="{$c5}" opacity="0.85" />
+                      <circle cx="{$cresX}" cy="{$cresY}" r="{$cresR}" fill="{$c1}" />
+
+                      <path d="M 0,{$shoreY} L {$w},{$shoreY} L {$w},{$h} L 0,{$h} Z" fill="{$c2}" opacity="0.8" />
+                      <polygon points="{$t1x1},{$t1y1} {$t1x2},{$shoreY} {$t1x3},{$shoreY}" fill="{$c1}" />
+                      <polygon points="{$t2x1},{$t2y1} {$t2x2},{$shoreY} {$t2x3},{$shoreY}" fill="{$c1}" />
+                      <polygon points="{$t3x1},{$t3y1} {$t3x2},{$shoreY} {$t3x3},{$shoreY}" fill="{$c1}" />
+                      <polygon points="{$t4x1},{$t4y1} {$t4x2},{$shoreY} {$t4x3},{$shoreY}" fill="{$c1}" />
+
+                      <rect y="{$shoreY}" width="{$w}" height="{$lakeH}" fill="{$c1}" opacity="0.9" />
+                      <ellipse cx="{$moonX}" cy="{$r1y}" rx="{$r1rx}" ry="4" fill="{$c5}" opacity="0.3" />
+                      <ellipse cx="{$moonX}" cy="{$r2y}" rx="{$r2rx}" ry="5" fill="{$c5}" opacity="0.25" />
+
+                      <path d="M 0,{$fgY} Q {$fgQx},{$fgQy} {$w},{$fgEy} L {$w},{$h} L 0,{$h} Z" fill="{$c2}" />
+                    </svg>
+                    SVG;
+
+                break;
+        }
+
+        return base64_encode($svg);
+    }
+
+    private function resolvePalette(ColorEnum $color): array
+    {
+        return match ($color) {
+            ColorEnum::Blue => ['#0c4a6e', '#0369a1', '#0284c7', '#38bdf8', '#bae6fd'],
+            ColorEnum::Green => ['#064e3b', '#047857', '#10b981', '#34d399', '#a7f3d0'],
+            ColorEnum::Red => ['#450a0a', '#991b1b', '#dc2626', '#ef4444', '#fca5a5'],
+            ColorEnum::Yellow => ['#451a03', '#78350f', '#b45309', '#f59e0b', '#fde68a'],
+            ColorEnum::Purple => ['#3b0764', '#581c87', '#9333ea', '#c084fc', '#f3e8ff'],
+            ColorEnum::Orange => ['#18181b', '#9a3412', '#c2410c', '#ea580c', '#fdba74'],
+            ColorEnum::Pink => ['#4a044e', '#831843', '#be185d', '#ec4899', '#fbcfe8'],
+            ColorEnum::Brown => ['#29180f', '#451a03', '#78350f', '#9a3412', '#fed7aa'],
+            ColorEnum::Gray => ['#09090b', '#18181b', '#27272a', '#71717a', '#d4d4d8'],
+        };
     }
 }

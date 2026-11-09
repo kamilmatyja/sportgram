@@ -3,15 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { userService, type UserResource } from '../api/services';
 
 export function useUsersMap(userIds: (string | undefined | null)[]) {
-    const cleanIds = useMemo(() => {
-        const set = new Set<string>();
-        for (const id of userIds) {
-            if (id) set.add(id);
-        }
-        return Array.from(set);
-    }, [userIds]);
+    const cleanIds = useMemo(() => Array.from(new Set(userIds.filter((id): id is string => !!id))), [userIds]);
 
-    const { data, isLoading } = useQuery({
+    const { data: usersMap = {}, isLoading } = useQuery<Record<string, UserResource>>({
         queryKey: ['users-map', cleanIds],
         queryFn: async () => {
             if (cleanIds.length === 0) return {};
@@ -23,17 +17,10 @@ export function useUsersMap(userIds: (string | undefined | null)[]) {
                     },
                 },
             });
-            const users = res.data ?? [];
-            const map: Record<string, UserResource> = {};
-            users.forEach((u) => {
-                map[u.id] = u;
-            });
-            return map;
+            return Object.fromEntries((res.data ?? []).map((u) => [u.id, u]));
         },
         enabled: cleanIds.length > 0,
     });
-
-    const usersMap = data ?? {};
 
     return {
         usersMap,

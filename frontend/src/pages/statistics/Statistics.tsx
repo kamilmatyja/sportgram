@@ -3,37 +3,25 @@ import { SegmentedControl, Badge, Text, SimpleGrid, TextInput, Select, Group } f
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { statisticService, type StatisticResource, type GetStatisticRecordsQuery } from '../../api/services';
-import { useAuth } from '../../auth/AuthContext';
-import { DataTable, type Column } from '../../components/DataTable';
+import { useAuth } from '../../auth';
+import { DataTable, type Column } from '../../components';
+import { ViewActionButton, UserInfoCell } from '../../components';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { formatDateTime } from '../../utils/date';
-import { buildSortOptions } from '../../utils/tableUtils';
-import { ViewActionButton } from '../../components/common/RowActionButtons';
-import { useDataTableState } from '../../hooks/useDataTableState';
-import { useUsersMap } from '../../hooks/useUsersMap';
-import { UserInfoCell } from '../../components/common/UserInfoCell';
+import { useDataTableState, useUsersMap } from '../../hooks';
+import { formatDateTime, buildSortOptions } from '../../utils';
 
 export default function Statistics() {
     const { t } = useTranslation();
     const { currentUser } = useAuth();
 
     const [activeTab, setActiveTab] = useState<'records' | 'progress'>('records');
-
-    const tableState = useDataTableState({
-        defaultSort: 'time:asc',
-    });
+    const tableState = useDataTableState({ defaultSort: 'time:asc' });
 
     const [disciplineFilter, setDisciplineFilter] = useState<string | null>(null);
     const [distanceFilter, setDistanceFilter] = useState('');
 
     const sortOptions = buildSortOptions(t, ['time', 'createdAt', 'distance', 'discipline']);
-
-    const activeFiltersCount = useMemo(() => {
-        let count = 0;
-        if (disciplineFilter !== null) count++;
-        if (distanceFilter.trim()) count++;
-        return count;
-    }, [disciplineFilter, distanceFilter]);
+    const activeFiltersCount = [disciplineFilter, distanceFilter.trim()].filter(Boolean).length;
 
     const handleResetFilters = () => {
         setDisciplineFilter(null);
@@ -41,13 +29,14 @@ export default function Statistics() {
         tableState.resetPage();
     };
 
-    const queryFilter = useMemo(() => {
-        return {
+    const queryFilter = useMemo(
+        () => ({
             discipline: disciplineFilter ? (Number(disciplineFilter) as DisciplineEnum) : null,
             distance: distanceFilter.trim() ? Number(distanceFilter) : null,
             userIds: null,
-        };
-    }, [disciplineFilter, distanceFilter]);
+        }),
+        [disciplineFilter, distanceFilter],
+    );
 
     const { data, isLoading } = useQuery({
         queryKey: ['statistics', activeTab, tableState.page, tableState.limit, tableState.sort, queryFilter],
@@ -60,17 +49,15 @@ export default function Statistics() {
                     (activeTab === 'records' ? 'time:asc' : 'createdAt:desc'),
                 filter: queryFilter,
             };
-            if (activeTab === 'records') {
-                return statisticService.getStatisticRecords({ params: { query } });
-            }
-            return statisticService.getStatisticProgress({ params: { query } });
+            return activeTab === 'records'
+                ? statisticService.getStatisticRecords({ params: { query } })
+                : statisticService.getStatisticProgress({ params: { query } });
         },
         enabled: !!currentUser,
     });
 
     const stats = data?.data ?? [];
     const pagination = data?.pagination;
-
     const { getUser } = useUsersMap(stats.map((s) => s.userId));
 
     const columns: Column<StatisticResource>[] = [
@@ -110,7 +97,7 @@ export default function Statistics() {
     ];
 
     const filtersNode = (
-        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+        <SimpleGrid>
             <Select
                 label={t('discipline')}
                 placeholder={t('allDisciplines')}

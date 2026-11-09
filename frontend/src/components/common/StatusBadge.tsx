@@ -10,6 +10,14 @@ export interface EnumLike {
     getOptions: (t: (key: string) => string) => { value: number | string; label: string }[];
 }
 
+const ENUM_MAP: Record<string, EnumLike> = {
+    element: ElementStatusEnum,
+    friend: FriendStatusEnum,
+    user: UserStatusEnum,
+    role: RoleEnum,
+    discipline: DisciplineEnum,
+};
+
 export interface StatusBadgeProps {
     status?: number | string | null;
     label?: string;
@@ -21,64 +29,32 @@ export interface StatusBadgeProps {
 
 export function StatusBadge({ status, label, color: explicitColor, variant, enumType, type }: StatusBadgeProps) {
     const { t } = useTranslation();
-
-    let resolvedEnumType = enumType;
-    if (!resolvedEnumType && type) {
-        switch (type) {
-            case 'element':
-                resolvedEnumType = ElementStatusEnum;
-                break;
-            case 'friend':
-                resolvedEnumType = FriendStatusEnum;
-                break;
-            case 'user':
-                resolvedEnumType = UserStatusEnum;
-                break;
-            case 'role':
-                resolvedEnumType = RoleEnum;
-                break;
-            case 'discipline':
-                resolvedEnumType = DisciplineEnum;
-                break;
-        }
-    }
-    if (!resolvedEnumType) {
-        resolvedEnumType = ElementStatusEnum;
-    }
+    const resolvedEnumType = enumType ?? (type ? ENUM_MAP[type] : undefined) ?? ElementStatusEnum;
 
     let resolvedLabel = label;
-    if (!resolvedLabel && resolvedEnumType && status !== undefined && status !== null) {
-        const option = resolvedEnumType.getOptions(t).find((o) => o.value === status);
-        if (option) {
-            resolvedLabel = option.label;
-        }
-    }
-
-    if (!resolvedLabel) {
-        resolvedLabel = status !== undefined && status !== null ? String(status) : '';
+    if (!resolvedLabel && status !== undefined && status !== null) {
+        resolvedLabel = resolvedEnumType.getOptions(t).find((o) => o.value === status)?.label ?? String(status);
     }
 
     let color: MantineColor = explicitColor ?? 'gray';
     if (!explicitColor && status !== undefined && status !== null) {
-        const statusNum = typeof status === 'number' ? status : parseInt(String(status), 10);
+        const num = Number(status);
         if (type === 'role') {
-            color = statusNum === RoleEnum.ADMINISTRATOR ? 'red' : statusNum === RoleEnum.ORGANIZER ? 'blue' : 'gray';
+            color = num === RoleEnum.ADMINISTRATOR ? 'red' : num === RoleEnum.ORGANIZER ? 'blue' : 'gray';
         } else if (type === 'discipline') {
             color = 'blue';
-        } else if (statusNum === 2) {
+        } else if (num === 2) {
             color = 'green';
-        } else if (statusNum === 3 || statusNum === 4) {
+        } else if (num === 3 || num === 4) {
             color = 'red';
-        } else if (statusNum === 1) {
+        } else if (num === 1) {
             color = resolvedEnumType === ElementStatusEnum ? 'gray' : 'yellow';
-        } else {
-            color = 'gray';
         }
     }
 
     return (
         <Badge color={color} variant={variant}>
-            {resolvedLabel}
+            {resolvedLabel ?? ''}
         </Badge>
     );
 }
