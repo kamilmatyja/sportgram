@@ -6,10 +6,12 @@ import { useTranslation } from 'react-i18next';
 import { useWakeLock } from '../../hooks';
 import {
     calculateHaversineDistance,
-    formatDuration,
     formatDistance,
     formatPace,
     formatSpeed,
+    formatTime,
+    calculatePace,
+    calculateSpeed,
     confirmDelete,
 } from '../../utils';
 import { TrainingRouteMap, type RoutePoint } from './TrainingRouteMap';
@@ -56,7 +58,6 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
     const totalDistanceRef = useRef(totalDistance);
     totalDistanceRef.current = totalDistance;
 
-    // Timer effect
     useEffect(() => {
         if (status !== 'recording') return;
 
@@ -67,7 +68,6 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
         return () => clearInterval(interval);
     }, [status]);
 
-    // Geolocation watcher
     useEffect(() => {
         if (!navigator.geolocation) {
             notifications.show({
@@ -94,46 +94,20 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                 if (calculatedSpeed == null && deltaSeconds > 0 && deltaMeters > 0) {
                     calculatedSpeed = deltaMeters / deltaSeconds;
                 }
+            }
 
-                setCurrentPos({
-                    lat: latitude,
-                    lng: longitude,
-                    accuracy,
-                    speed: calculatedSpeed,
-                });
+            setCurrentPos({
+                lat: latitude,
+                lng: longitude,
+                accuracy,
+                speed: calculatedSpeed,
+            });
 
-                if (statusRef.current !== 'recording') {
-                    return;
-                }
+            if (statusRef.current !== 'recording') {
+                return;
+            }
 
-                // Filter out minor GPS jitter (< 2 meters)
-                if (deltaMeters >= 2) {
-                    const newTotalDistance = totalDistanceRef.current + deltaMeters;
-                    const currentPoint: TelemetryPoint = {
-                        lat: latitude,
-                        lng: longitude,
-                        accuracy,
-                        speed: calculatedSpeed,
-                        subDistance: newTotalDistance,
-                        time: elapsedRef.current,
-                    };
-                    totalDistanceRef.current = newTotalDistance;
-                    setTotalDistance(newTotalDistance);
-                    lastPointRef.current = currentPoint;
-                    setPoints((prev) => [...prev, currentPoint]);
-                }
-            } else {
-                setCurrentPos({
-                    lat: latitude,
-                    lng: longitude,
-                    accuracy,
-                    speed: calculatedSpeed,
-                });
-
-                if (statusRef.current !== 'recording') {
-                    return;
-                }
-
+            if (!lastPointRef.current) {
                 const initialPoint: TelemetryPoint = {
                     lat: latitude,
                     lng: longitude,
@@ -144,6 +118,29 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                 };
                 lastPointRef.current = initialPoint;
                 setPoints([initialPoint]);
+                return;
+            }
+
+            const deltaMeters = calculateHaversineDistance(
+                lastPointRef.current.lat,
+                lastPointRef.current.lng,
+                latitude,
+                longitude,
+            );
+            if (deltaMeters >= 2) {
+                const newTotalDistance = totalDistanceRef.current + deltaMeters;
+                const currentPoint: TelemetryPoint = {
+                    lat: latitude,
+                    lng: longitude,
+                    accuracy,
+                    speed: calculatedSpeed,
+                    subDistance: newTotalDistance,
+                    time: elapsedRef.current,
+                };
+                totalDistanceRef.current = newTotalDistance;
+                setTotalDistance(newTotalDistance);
+                lastPointRef.current = currentPoint;
+                setPoints((prev) => [...prev, currentPoint]);
             }
         };
 
@@ -217,7 +214,6 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
             const timeDiff = Math.abs(pt.time - lastAccepted.time);
             const distDiff = Math.abs(pt.subDistance - lastAccepted.subDistance);
 
-            // max 1 subdystans per 10 sekund, max 1 subdystans per 10 metrów
             if (timeDiff >= 10 && distDiff >= 10) {
                 result.push(pt);
                 lastAccepted = pt;
@@ -338,13 +334,11 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
     }, [currentPos?.speed]);
 
     const averagePaceSecPerKm = useMemo(() => {
-        if (totalDistance <= 0 || elapsedSeconds <= 0) return 0;
-        return (elapsedSeconds / totalDistance) * 1000;
+        return calculatePace(totalDistance, elapsedSeconds);
     }, [totalDistance, elapsedSeconds]);
 
     const averageSpeedKmH = useMemo(() => {
-        if (totalDistance <= 0 || elapsedSeconds <= 0) return 0;
-        return (totalDistance / elapsedSeconds) * 3.6;
+        return calculateSpeed(totalDistance, elapsedSeconds);
     }, [totalDistance, elapsedSeconds]);
 
     const gpsAccuracyBadge = useMemo(() => {
@@ -381,24 +375,24 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
             <Stack gap="sm">
                 <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
                     <div className="gps-metric-card">
-                        <div className="gps-primary-metric-val">{formatDuration(elapsedSeconds)}</div>
-                        <div className="gps-metric-lbl">{t('duration')}</div>
+                        <div className="gps-metric-val">{formatDistance(totalDistance)}</div>
+                        <div className="gps-metric-lbl">{t('distance')}</div>
                     </div>
                     <div className="gps-metric-card">
-                        <div className="gps-primary-metric-val">{formatDistance(totalDistance)}</div>
-                        <div className="gps-metric-lbl">{t('distance')}</div>
+                        <div className="gps-metric-val">{formatTime(elapsedSeconds)}</div>
+                        <div className="gps-metric-lbl">{t('time')}</div>
                     </div>
                     <div className="gps-metric-card">
                         <div className="gps-metric-val">
                             {formatPace(status === 'idle' ? 0 : currentPaceSecPerKm || averagePaceSecPerKm)}
                         </div>
-                        <div className="gps-metric-lbl">{t('currentPace')}</div>
+                        <div className="gps-metric-lbl">{t('pace')}</div>
                     </div>
                     <div className="gps-metric-card">
                         <div className="gps-metric-val">
                             {formatSpeed(status === 'idle' ? 0 : currentSpeedKmH || averageSpeedKmH)}
                         </div>
-                        <div className="gps-metric-lbl">{t('currentSpeed')}</div>
+                        <div className="gps-metric-lbl">{t('speed')}</div>
                     </div>
                 </SimpleGrid>
 
@@ -409,22 +403,9 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
 
                     <Group gap="xs" align="center">
                         {status === 'idle' && (
-                            <>
-                                <Button size="xs" leftSection={<IconPlayerPlay size={16} />} onClick={handleStart}>
-                                    {t('startMeasurement')}
-                                </Button>
-                                <Tooltip label={t('delete')}>
-                                    <ActionIcon
-                                        size={30}
-                                        color="red"
-                                        variant="subtle"
-                                        onClick={handleDiscard}
-                                        aria-label={t('delete')}
-                                    >
-                                        <IconTrash size={16} />
-                                    </ActionIcon>
-                                </Tooltip>
-                            </>
+                            <Button size="xs" leftSection={<IconPlayerPlay size={16} />} onClick={handleStart}>
+                                {t('startMeasurement')}
+                            </Button>
                         )}
 
                         {status === 'recording' && (
@@ -440,17 +421,6 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                                 <Button size="xs" leftSection={<IconCheck size={16} />} onClick={handleFinish}>
                                     {t('finish')}
                                 </Button>
-                                <Tooltip label={t('delete')}>
-                                    <ActionIcon
-                                        size={30}
-                                        color="red"
-                                        variant="subtle"
-                                        onClick={handleDiscard}
-                                        aria-label={t('delete')}
-                                    >
-                                        <IconTrash size={16} />
-                                    </ActionIcon>
-                                </Tooltip>
                             </>
                         )}
 
@@ -467,19 +437,20 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                                 >
                                     {t('finish')}
                                 </Button>
-                                <Tooltip label={t('delete')}>
-                                    <ActionIcon
-                                        size={30}
-                                        color="red"
-                                        variant="subtle"
-                                        onClick={handleDiscard}
-                                        aria-label={t('delete')}
-                                    >
-                                        <IconTrash size={16} />
-                                    </ActionIcon>
-                                </Tooltip>
                             </>
                         )}
+
+                        <Tooltip label={t('delete')}>
+                            <ActionIcon
+                                size={30}
+                                color="red"
+                                variant="subtle"
+                                onClick={handleDiscard}
+                                aria-label={t('delete')}
+                            >
+                                <IconTrash size={16} />
+                            </ActionIcon>
+                        </Tooltip>
                     </Group>
                 </Group>
             </Stack>

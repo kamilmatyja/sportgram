@@ -46,7 +46,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'feedOrigin',
             type: 'string',
-            example: 'Event title, {Running}, 10000 m',
+            example: 'Title: {discipline:Running}, {distance:1000}, {time:3600}',
             nullable: true,
         ),
     ],
@@ -100,12 +100,12 @@ class FeedResource
             foreach ($feed->event->disciplines as $eventDiscipline) {
                 $disciplineName = $eventDiscipline->discipline->name;
                 foreach ($eventDiscipline->distances as $distance) {
-                    $parts[] = sprintf('{%s}: %d m', $disciplineName, $distance->distance);
+                    $parts[] = sprintf('{discipline:%s}, {distance:%d}', $disciplineName, $distance->distance);
                 }
             }
 
             if (! empty($parts)) {
-                return sprintf('%s, %s', $feed->event->title, implode(', ', $parts));
+                return sprintf('%s: %s', $feed->event->title, implode('; ', $parts));
             }
 
             return $feed->event->title;
@@ -116,7 +116,7 @@ class FeedResource
             $eventDiscipline = $distance->eventDiscipline;
 
             return sprintf(
-                '%s, {%s}, %d m',
+                '%s: {discipline:%s}, {distance:%d}',
                 $eventDiscipline->event->title,
                 $eventDiscipline->discipline->name,
                 $distance->distance,
@@ -128,7 +128,7 @@ class FeedResource
             $eventDiscipline = $distance->eventDiscipline;
 
             return sprintf(
-                '%s, {%s}, %d m, %d s',
+                '%s: {discipline:%s}, {distance:%d}, {time:%d}',
                 $eventDiscipline->event->title,
                 $eventDiscipline->discipline->name,
                 $distance->distance,
@@ -138,7 +138,7 @@ class FeedResource
 
         if (null !== $feed->goal) {
             return sprintf(
-                '%s, {%s}, %d m',
+                '%s: {discipline:%s}, {distance:%d}',
                 $feed->goal->text,
                 $feed->goal->discipline->name,
                 $feed->goal->distance,
@@ -147,7 +147,7 @@ class FeedResource
 
         if (null !== $feed->goalParticipantResult) {
             return sprintf(
-                '%s, {%s}, %d m, %d s',
+                '%s: {discipline:%s}, {distance:%d}, {time:%d}',
                 $feed->goalParticipantResult->goalParticipant->goal->text,
                 $feed->goalParticipantResult->goalParticipant->goal->discipline->name,
                 $feed->goalParticipantResult->distance,
@@ -160,12 +160,12 @@ class FeedResource
             foreach ($feed->training->disciplines as $trainingDiscipline) {
                 $disciplineName = $trainingDiscipline->discipline->name;
                 foreach ($trainingDiscipline->distances as $distance) {
-                    $parts[] = sprintf('{%s}: %d m (%d s)', $disciplineName, $distance->distance, $distance->time);
+                    $parts[] = sprintf('{discipline:%s}, {distance:%d}, {time:%d}', $disciplineName, $distance->distance, $distance->time);
                 }
             }
 
             if (! empty($parts)) {
-                return sprintf('%s, %s', $feed->training->title, implode(', ', $parts));
+                return sprintf('%s: %s', $feed->training->title, implode('; ', $parts));
             }
 
             return $feed->training->title;

@@ -35,9 +35,18 @@ export interface TrainingDisciplinesEditorProps {
     onSessionTimes?: (times: { startedAt: Date; endedAt: Date }) => void;
 }
 
+interface ActiveRecordingSession {
+    id: string;
+    disciplineId: string;
+}
+
 export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTimes }: TrainingDisciplinesEditorProps) {
     const { t } = useTranslation();
-    const [recordingDisciplineId, setRecordingDisciplineId] = useState<string | null>(null);
+    const [recordingSessions, setRecordingSessions] = useState<ActiveRecordingSession[]>([]);
+
+    const handleStartRecording = (disciplineId: string) => {
+        setRecordingSessions((prev) => [...prev, { id: crypto.randomUUID(), disciplineId }]);
+    };
 
     const handleAddDiscipline = () => {
         onChange([...disciplines, { id: crypto.randomUUID(), discipline: null, distances: [] }]);
@@ -323,28 +332,33 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
                             </Paper>
                         ))}
 
-                        {recordingDisciplineId === d.id && (
-                            <GpsDistanceRecorderPanel
-                                onFinish={(newDist, times) => {
-                                    onChange(
-                                        updateItem(disciplines, d.id, (disc) => ({
-                                            ...disc,
-                                            distances: [...disc.distances, newDist],
-                                        })),
-                                    );
-                                    onSessionTimes?.(times);
-                                    setRecordingDisciplineId(null);
-                                }}
-                                onCancel={() => setRecordingDisciplineId(null)}
-                            />
-                        )}
+                        {recordingSessions
+                            .filter((s) => s.disciplineId === d.id)
+                            .map((session) => (
+                                <GpsDistanceRecorderPanel
+                                    key={session.id}
+                                    onFinish={(newDist, times) => {
+                                        onChange(
+                                            updateItem(disciplines, d.id, (disc) => ({
+                                                ...disc,
+                                                distances: [...disc.distances, newDist],
+                                            })),
+                                        );
+                                        onSessionTimes?.(times);
+                                        setRecordingSessions((prev) => prev.filter((s) => s.id !== session.id));
+                                    }}
+                                    onCancel={() => {
+                                        setRecordingSessions((prev) => prev.filter((s) => s.id !== session.id));
+                                    }}
+                                />
+                            ))}
 
                         <Group grow gap="xs" mt="xs">
                             <Button
                                 size="xs"
                                 variant="light"
                                 leftSection={<IconPlayerPlay size={16} />}
-                                onClick={() => setRecordingDisciplineId(d.id)}
+                                onClick={() => handleStartRecording(d.id)}
                             >
                                 {t('recordDistanceGps')}
                             </Button>

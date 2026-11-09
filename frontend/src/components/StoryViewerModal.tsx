@@ -386,19 +386,21 @@ export function StoryViewerModal({
                 <Modal.Body>
                     <Stack align="center" pos="relative">
                         <Box className="story-viewer-viewport">
-                            <ActionIcon
-                                variant="filled"
-                                size={32}
-                                className="story-nav-btn story-nav-btn-prev"
-                                disabled={!hasPrevStory && !hasPrevGroup}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handlePrevStory();
-                                }}
-                                aria-label={t('previous')}
-                            >
-                                <IconChevronLeft size={18} />
-                            </ActionIcon>
+                            <Tooltip label={t('previous')}>
+                                <ActionIcon
+                                    variant="filled"
+                                    size={32}
+                                    className="story-nav-btn story-nav-btn-prev"
+                                    disabled={!hasPrevStory && !hasPrevGroup}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handlePrevStory();
+                                    }}
+                                    aria-label={t('previous')}
+                                >
+                                    <IconChevronLeft size={18} />
+                                </ActionIcon>
+                            </Tooltip>
 
                             {storyPhotoSrc ? (
                                 <Image
@@ -410,19 +412,21 @@ export function StoryViewerModal({
                                 <Box w="100%" h="100%" />
                             )}
 
-                            <ActionIcon
-                                variant="filled"
-                                size={32}
-                                className="story-nav-btn story-nav-btn-next"
-                                loading={isFetchingMoreCurrentStories}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleNextStory();
-                                }}
-                                aria-label={t('next')}
-                            >
-                                <IconChevronRight size={18} />
-                            </ActionIcon>
+                            <Tooltip label={t('next')}>
+                                <ActionIcon
+                                    variant="filled"
+                                    size={32}
+                                    className="story-nav-btn story-nav-btn-next"
+                                    loading={isFetchingMoreCurrentStories}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleNextStory();
+                                    }}
+                                    aria-label={t('next')}
+                                >
+                                    <IconChevronRight size={18} />
+                                </ActionIcon>
+                            </Tooltip>
                         </Box>
 
                         <Box className="story-text-caption">

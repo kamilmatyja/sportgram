@@ -8,7 +8,16 @@ import { DataTable, type Column } from '../../components';
 import { ViewActionButton, UserInfoCell } from '../../components';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useDataTableState, useUsersMap } from '../../hooks';
-import { formatDateTime, buildSortOptions } from '../../utils';
+import {
+    formatDateTime,
+    buildSortOptions,
+    formatDistance,
+    formatTime,
+    formatPace,
+    formatSpeed,
+    calculatePace,
+    calculateSpeed,
+} from '../../utils';
 
 export default function Statistics() {
     const { t } = useTranslation();
@@ -78,12 +87,22 @@ export default function Statistics() {
         {
             key: 'distance',
             header: t('distance'),
-            render: (s) => <Badge variant="outline">{s.distance} m</Badge>,
+            render: (s) => <Badge variant="outline">{formatDistance(s.distance)}</Badge>,
         },
         {
             key: 'time',
             header: t('time'),
-            render: (s) => <Text size="sm">{s.time} s</Text>,
+            render: (s) => <Text size="sm">{formatTime(s.time)}</Text>,
+        },
+        {
+            key: 'pace',
+            header: t('pace'),
+            render: (s) => <Text size="sm">{formatPace(calculatePace(s.distance, s.time))}</Text>,
+        },
+        {
+            key: 'speed',
+            header: t('speed'),
+            render: (s) => <Text size="sm">{formatSpeed(calculateSpeed(s.distance, s.time))}</Text>,
         },
         {
             key: 'createdAt',

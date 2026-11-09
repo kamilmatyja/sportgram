@@ -27,12 +27,24 @@ import {
 import { GoalFormModal } from '../../components';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
+import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
 import { useUsersMap, useMyFriends, useUserSubpageAccess } from '../../hooks';
 import { brown } from '../../theme';
-import { applyThemeColor, confirmDelete, formatDateTime, notifyError, notifySuccess } from '../../utils';
+import {
+    applyThemeColor,
+    confirmDelete,
+    formatDateTime,
+    formatDistance,
+    formatPace,
+    formatSpeed,
+    formatTime,
+    calculatePace,
+    calculateSpeed,
+    notifyError,
+    notifySuccess,
+} from '../../utils';
 
 export default function GoalDetails() {
     const { link } = useParams<{ link: string }>();
@@ -52,7 +64,7 @@ export default function GoalDetails() {
                     query: {
                         filter: { link },
                         limit: 1,
-                        'include[]': ['goalParticipants'],
+                        'include[]': ['goalParticipants', 'goalParticipantResults'],
                     },
                 },
             });
@@ -95,6 +107,18 @@ export default function GoalDetails() {
 
     const { getUser } = useUsersMap(participantUserIds);
 
+    const allResults = useMemo(() => {
+        const list =
+            goal?.participants?.flatMap((p) =>
+                (p.results ?? []).map((res: GoalParticipantResultResource) => ({
+                    ...res,
+                    userId: p.userId,
+                })),
+            ) ?? [];
+
+        return list.sort((a, b) => (a.time || Infinity) - (b.time || Infinity));
+    }, [goal?.participants]);
+
     const updateStatusMutation = useMutation({
         mutationFn: (status: GoalStatusEnum) => {
             if (!goal?.id) throw new Error('No goal');
@@ -111,7 +135,7 @@ export default function GoalDetails() {
     });
 
     const updateParticipantStatusMutation = useMutation({
-        mutationFn: ({ participantId, status }: { participantId: string; status: ElementStatusEnum }) =>
+        mutationFn: ({ participantId, status }: { participantId: string; status: SaveStatusEnum }) =>
             goalService.updateGoalParticipantStatus({
                 params: { path: { id: participantId } },
                 body: { status },
@@ -124,7 +148,7 @@ export default function GoalDetails() {
     });
 
     const updateResultStatusMutation = useMutation({
-        mutationFn: ({ resultId, status }: { resultId: string; status: ElementStatusEnum }) =>
+        mutationFn: ({ resultId, status }: { resultId: string; status: SaveStatusEnum }) =>
             goalService.updateGoalParticipantResultStatus({
                 params: { path: { id: resultId } },
                 body: { status },
@@ -232,11 +256,11 @@ export default function GoalDetails() {
                                 goal.discipline}
                         </Badge>
                         <Badge color={primaryColor} variant="outline">
-                            {goal.distance} m
+                            {formatDistance(goal.distance)}
                         </Badge>
                         {goal.time && (
                             <Badge color={primaryColor} variant="outline">
-                                {goal.time} s
+                                {formatTime(goal.time)}
                             </Badge>
                         )}
                         <StatusBadge status={goal.status} enumType={GoalStatusEnum} />
@@ -270,7 +294,7 @@ export default function GoalDetails() {
                                                     <UserInfoCell user={u} userId={p.userId} />
                                                 </Table.Td>
                                                 <Table.Td>
-                                                    <StatusBadge status={p.status} />
+                                                    <StatusBadge status={p.status} enumType={SaveStatusEnum} />
                                                 </Table.Td>
                                                 <Table.Td ta="right">
                                                     <Group gap="xs" justify="flex-end" wrap="nowrap">
@@ -278,10 +302,11 @@ export default function GoalDetails() {
                                                         {isSelf && (
                                                             <StatusActionMenu
                                                                 status={p.status}
+                                                                options={SaveStatusEnum.getOptions(t)}
                                                                 onStatusChange={(status) =>
                                                                     updateParticipantStatusMutation.mutate({
                                                                         participantId: p.id,
-                                                                        status: status as ElementStatusEnum,
+                                                                        status: status as SaveStatusEnum,
                                                                     })
                                                                 }
                                                                 isPending={updateParticipantStatusMutation.isPending}
@@ -297,72 +322,84 @@ export default function GoalDetails() {
                         </Table.ScrollContainer>
                     )}
 
-                    {goal.participants?.some((p) => p.results && p.results.length > 0) && (
-                        <Stack gap="sm" mt="lg">
-                            <Title order={4}>{t('results')}</Title>
-                            <Table.ScrollContainer minWidth={500}>
-                                <Table>
-                                    <Table.Thead>
-                                        <Table.Tr>
-                                            <Table.Th>{t('user')}</Table.Th>
-                                            <Table.Th>{t('distanceMeters')}</Table.Th>
-                                            <Table.Th>{t('timeSeconds')}</Table.Th>
-                                            <Table.Th>{t('status')}</Table.Th>
-                                            <Table.Th>{t('createdAt')}</Table.Th>
-                                            <Table.Th w={120} ta="right">
-                                                {t('actions')}
-                                            </Table.Th>
-                                        </Table.Tr>
-                                    </Table.Thead>
-                                    <Table.Tbody>
-                                        {goal.participants.flatMap((p) => {
-                                            if (!p.results || p.results.length === 0) return [];
-                                            const u = getUser(p.userId);
-                                            const isSelf = p.userId === currentUser?.id;
+                    <Title order={4} mt="lg" mb="xs">
+                        {t('results')}
+                    </Title>
+                    {allResults.length === 0 ? (
+                        <EmptyState title={t('noData')} />
+                    ) : (
+                        <Table.ScrollContainer minWidth={500}>
+                            <Table>
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>{t('user')}</Table.Th>
+                                        <Table.Th>{t('distance')}</Table.Th>
+                                        <Table.Th>{t('time')}</Table.Th>
+                                        <Table.Th>{t('pace')}</Table.Th>
+                                        <Table.Th>{t('speed')}</Table.Th>
+                                        <Table.Th>{t('status')}</Table.Th>
+                                        <Table.Th>{t('createdAt')}</Table.Th>
+                                        <Table.Th w={120} ta="right">
+                                            {t('actions')}
+                                        </Table.Th>
+                                    </Table.Tr>
+                                </Table.Thead>
+                                <Table.Tbody>
+                                    {allResults.map((res) => {
+                                        const u = getUser(res.userId);
+                                        const isSelf = res.userId === currentUser?.id;
+                                        const paceSecPerKm = calculatePace(res.distance, res.time);
+                                        const speedKmH = calculateSpeed(res.distance, res.time);
 
-                                            return p.results.map((res: GoalParticipantResultResource) => (
-                                                <Table.Tr key={res.id}>
-                                                    <Table.Td>
-                                                        <UserInfoCell user={u} userId={p.userId} />
-                                                    </Table.Td>
-                                                    <Table.Td>
-                                                        <Text size="sm">{res.distance} m</Text>
-                                                    </Table.Td>
-                                                    <Table.Td>
-                                                        <Text size="sm">{res.time} s</Text>
-                                                    </Table.Td>
-                                                    <Table.Td>
-                                                        <StatusBadge status={res.status} />
-                                                    </Table.Td>
-                                                    <Table.Td>
-                                                        <Text size="sm" c="dimmed">
-                                                            {formatDateTime(res.createdAt)}
-                                                        </Text>
-                                                    </Table.Td>
-                                                    <Table.Td ta="right">
-                                                        <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                            {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
-                                                            {isSelf && (
-                                                                <StatusActionMenu
-                                                                    status={res.status}
-                                                                    onStatusChange={(status) =>
-                                                                        updateResultStatusMutation.mutate({
-                                                                            resultId: res.id,
-                                                                            status: status as ElementStatusEnum,
-                                                                        })
-                                                                    }
-                                                                    isPending={updateResultStatusMutation.isPending}
-                                                                />
-                                                            )}
-                                                        </Group>
-                                                    </Table.Td>
-                                                </Table.Tr>
-                                            ));
-                                        })}
-                                    </Table.Tbody>
-                                </Table>
-                            </Table.ScrollContainer>
-                        </Stack>
+                                        return (
+                                            <Table.Tr key={res.id}>
+                                                <Table.Td>
+                                                    <UserInfoCell user={u} userId={res.userId} />
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Text size="sm">{formatDistance(res.distance)}</Text>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Text size="sm">{formatTime(res.time)}</Text>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Text size="sm">{formatPace(paceSecPerKm)}</Text>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Text size="sm">{formatSpeed(speedKmH)}</Text>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <StatusBadge status={res.status} enumType={SaveStatusEnum} />
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Text size="sm" c="dimmed">
+                                                        {formatDateTime(res.createdAt)}
+                                                    </Text>
+                                                </Table.Td>
+                                                <Table.Td ta="right">
+                                                    <Group gap="xs" justify="flex-end" wrap="nowrap">
+                                                        {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
+                                                        {isSelf && (
+                                                            <StatusActionMenu
+                                                                status={res.status}
+                                                                options={SaveStatusEnum.getOptions(t)}
+                                                                onStatusChange={(status) =>
+                                                                    updateResultStatusMutation.mutate({
+                                                                        resultId: res.id,
+                                                                        status: status as SaveStatusEnum,
+                                                                    })
+                                                                }
+                                                                isPending={updateResultStatusMutation.isPending}
+                                                            />
+                                                        )}
+                                                    </Group>
+                                                </Table.Td>
+                                            </Table.Tr>
+                                        );
+                                    })}
+                                </Table.Tbody>
+                            </Table>
+                        </Table.ScrollContainer>
                     )}
                 </Card>
 

@@ -1,3 +1,5 @@
+import { formatDistance, formatTime } from './format';
+
 export function truncate(text: string | null | undefined, maxLength: number = 50): string {
     if (!text) return '';
     return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
@@ -5,7 +7,29 @@ export function truncate(text: string | null | undefined, maxLength: number = 50
 
 export function formatFeedOrigin(origin: string | null | undefined, t: (key: string) => string): string {
     if (!origin) return '';
-    return origin.replace(/\{([^}]+)\}/g, (_, token: string) => {
+    let res = origin.replace(/\{([^}]+)\}/g, (_, token: string) => {
+        if (token.startsWith('discipline:')) {
+            const rawName = token.slice('discipline:'.length).trim();
+            const camelCase = rawName.charAt(0).toLowerCase() + rawName.slice(1);
+            const disciplineKey = `disciplineTypes.${camelCase}`;
+            const translated = t(disciplineKey);
+            if (translated && translated !== disciplineKey) {
+                return translated;
+            }
+            const direct = t(rawName);
+            return direct && direct !== rawName ? direct : rawName;
+        }
+
+        if (token.startsWith('distance:')) {
+            const num = Number(token.slice('distance:'.length).trim());
+            return formatDistance(num);
+        }
+
+        if (token.startsWith('time:')) {
+            const num = Number(token.slice('time:'.length).trim());
+            return formatTime(num);
+        }
+
         const camelCase = token.charAt(0).toLowerCase() + token.slice(1);
         const disciplineKey = `disciplineTypes.${camelCase}`;
         const translated = t(disciplineKey);
@@ -18,6 +42,18 @@ export function formatFeedOrigin(origin: string | null | undefined, t: (key: str
         }
         return token;
     });
+
+    res = res.replace(/\b(\d+)\s*m\b/g, (_, numStr: string) => {
+        const m = Number(numStr);
+        return formatDistance(m);
+    });
+
+    res = res.replace(/\b(\d+)\s*s\b/g, (_, numStr: string) => {
+        const s = Number(numStr);
+        return formatTime(s);
+    });
+
+    return res;
 }
 
 export function slugify(text: string): string {

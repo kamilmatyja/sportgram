@@ -72,7 +72,7 @@ class FeedResourceTest extends ResourceTestCase
             'comments' => array_map(FeedCommentResource::fromEntity(...), $feed->comments->toArray()),
             'reactions' => array_map(FeedReactionResource::fromEntity(...), $feed->reactions->toArray()),
             'feedOrigin' => sprintf(
-                '%s, {%s}, %d m',
+                '%s: {discipline:%s}, {distance:%d}',
                 $feed->eventDisciplineList->eventDisciplineDistance->eventDiscipline->event->title,
                 $feed->eventDisciplineList->eventDisciplineDistance->eventDiscipline->discipline->name,
                 $feed->eventDisciplineList->eventDisciplineDistance->distance,
@@ -137,7 +137,7 @@ class FeedResourceTest extends ResourceTestCase
 
         $data = FeedResource::fromEntity($feed, $dto);
 
-        $this->assertSame('Bieg Niepodległości, {Running}: 10000 m', $data['feedOrigin']);
+        $this->assertSame('Bieg Niepodległości: {discipline:Running}, {distance:10000}', $data['feedOrigin']);
     }
 
     final public function testFeedOriginWithEventWithoutDisciplines(): void
@@ -179,7 +179,7 @@ class FeedResourceTest extends ResourceTestCase
 
         $data = FeedResource::fromEntity($feed, $dto);
 
-        $this->assertSame('Maraton Warszawski, {Running}, 42195 m', $data['feedOrigin']);
+        $this->assertSame('Maraton Warszawski: {discipline:Running}, {distance:42195}', $data['feedOrigin']);
     }
 
     final public function testFeedOriginWithEventDisciplineResult(): void
@@ -208,7 +208,7 @@ class FeedResourceTest extends ResourceTestCase
 
         $data = FeedResource::fromEntity($feed, $dto);
 
-        $this->assertSame('Półmaraton, {Cycling}, 21097 m, 5400 s', $data['feedOrigin']);
+        $this->assertSame('Półmaraton: {discipline:Cycling}, {distance:21097}, {time:5400}', $data['feedOrigin']);
     }
 
     final public function testFeedOriginWithGoal(): void
@@ -226,7 +226,7 @@ class FeedResourceTest extends ResourceTestCase
 
         $data = FeedResource::fromEntity($feed, $dto);
 
-        $this->assertSame('Przebiec 100km w miesiąc, {Running}, 100000 m', $data['feedOrigin']);
+        $this->assertSame('Przebiec 100km w miesiąc: {discipline:Running}, {distance:100000}', $data['feedOrigin']);
     }
 
     final public function testFeedOriginWithGoalParticipantResult(): void
@@ -249,7 +249,7 @@ class FeedResourceTest extends ResourceTestCase
 
         $data = FeedResource::fromEntity($feed, $dto);
 
-        $this->assertSame('Rowerowe wyzwanie, {Cycling}, 15000 m, 3600 s', $data['feedOrigin']);
+        $this->assertSame('Rowerowe wyzwanie: {discipline:Cycling}, {distance:15000}, {time:3600}', $data['feedOrigin']);
     }
 
     final public function testFeedOriginWithTraining(): void
@@ -290,7 +290,7 @@ class FeedResourceTest extends ResourceTestCase
 
         $data = FeedResource::fromEntity($feed, $dto);
 
-        $this->assertSame('Trening interwałowy, {Running}: 5000 m (1500 s), {Swimming}: 1000 m (1200 s)', $data['feedOrigin']);
+        $this->assertSame('Trening interwałowy: {discipline:Running}, {distance:5000}, {time:1500}, {discipline:Swimming}, {distance:1000}, {time:1200}', $data['feedOrigin']);
     }
 
     final public function testMapsCollectionInOrder(): void

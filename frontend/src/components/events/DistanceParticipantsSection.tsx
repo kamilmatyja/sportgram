@@ -33,7 +33,17 @@ import { EditActionButton, DeleteActionButton, ViewActionButton } from '../commo
 import { UserInfoCell } from '../common';
 import { useUsersMap } from '../../hooks';
 import { useFormErrors } from '../../hooks';
-import { openConfirmActionModal } from '../../utils';
+import {
+    openConfirmActionModal,
+    formatDistance,
+    formatTime,
+    formatPace,
+    formatSpeed,
+    calculatePace,
+    calculateSpeed,
+    calculateSplitPace,
+    calculateSplitSpeed,
+} from '../../utils';
 
 export interface DistanceParticipantsProps {
     distance: EventDisciplineDistanceResource;
@@ -217,7 +227,7 @@ export function DistanceParticipantsSection({
         <Paper p="sm" mb="sm">
             <Group justify="space-between" mb="xs">
                 <Badge color={primaryColor} variant="outline">
-                    {distance.distance} m
+                    {formatDistance(distance.distance)}
                 </Badge>
                 {isParticipant && !isSignedUp && (
                     <Button
@@ -323,8 +333,10 @@ export function DistanceParticipantsSection({
                                                             <Table.Thead>
                                                                 <Table.Tr>
                                                                     <Table.Th w={46} />
-                                                                    <Table.Th>{t('distanceMeters')}</Table.Th>
-                                                                    <Table.Th>{t('timeSeconds')}</Table.Th>
+                                                                    <Table.Th>{t('distance')}</Table.Th>
+                                                                    <Table.Th>{t('time')}</Table.Th>
+                                                                    <Table.Th>{t('pace')}</Table.Th>
+                                                                    <Table.Th>{t('speed')}</Table.Th>
                                                                     <Table.Th w={120} ta="right">
                                                                         {t('actions')}
                                                                     </Table.Th>
@@ -340,6 +352,14 @@ export function DistanceParticipantsSection({
                                                                             res.subResults && res.subResults.length > 0;
                                                                         const isSubExpanded =
                                                                             expandedResultIds.includes(res.id);
+                                                                        const paceSecPerKm = calculatePace(
+                                                                            distance.distance,
+                                                                            res.time,
+                                                                        );
+                                                                        const speedKmH = calculateSpeed(
+                                                                            distance.distance,
+                                                                            res.time,
+                                                                        );
 
                                                                         return (
                                                                             <React.Fragment key={res.id}>
@@ -380,12 +400,24 @@ export function DistanceParticipantsSection({
                                                                                     </Table.Td>
                                                                                     <Table.Td>
                                                                                         <Text size="sm">
-                                                                                            {distance.distance} m
+                                                                                            {formatDistance(
+                                                                                                distance.distance,
+                                                                                            )}
                                                                                         </Text>
                                                                                     </Table.Td>
                                                                                     <Table.Td>
                                                                                         <Text size="sm">
-                                                                                            {res.time} s
+                                                                                            {formatTime(res.time)}
+                                                                                        </Text>
+                                                                                    </Table.Td>
+                                                                                    <Table.Td>
+                                                                                        <Text size="sm">
+                                                                                            {formatPace(paceSecPerKm)}
+                                                                                        </Text>
+                                                                                    </Table.Td>
+                                                                                    <Table.Td>
+                                                                                        <Text size="sm">
+                                                                                            {formatSpeed(speedKmH)}
                                                                                         </Text>
                                                                                     </Table.Td>
                                                                                     <Table.Td ta="right">
@@ -415,19 +447,23 @@ export function DistanceParticipantsSection({
                                                                                 </Table.Tr>
                                                                                 {hasSubResults && isSubExpanded && (
                                                                                     <Table.Tr className="table-expansion-row">
-                                                                                        <Table.Td colSpan={4} p={0}>
+                                                                                        <Table.Td colSpan={6} p={0}>
                                                                                             <Table verticalSpacing="xs">
                                                                                                 <Table.Thead>
                                                                                                     <Table.Tr>
                                                                                                         <Table.Th>
                                                                                                             {t(
-                                                                                                                'subDistances',
+                                                                                                                'subDistance',
                                                                                                             )}
                                                                                                         </Table.Th>
                                                                                                         <Table.Th>
-                                                                                                            {t(
-                                                                                                                'timeSeconds',
-                                                                                                            )}
+                                                                                                            {t('time')}
+                                                                                                        </Table.Th>
+                                                                                                        <Table.Th>
+                                                                                                            {t('pace')}
+                                                                                                        </Table.Th>
+                                                                                                        <Table.Th>
+                                                                                                            {t('speed')}
                                                                                                         </Table.Th>
                                                                                                     </Table.Tr>
                                                                                                 </Table.Thead>
@@ -442,6 +478,61 @@ export function DistanceParticipantsSection({
                                                                                                                         d.id ===
                                                                                                                         sr.eventDisciplineSubDistanceId,
                                                                                                                 );
+                                                                                                            let subPaceSecPerKm: number;
+                                                                                                            let subSpeedKmH: number;
+                                                                                                            const curDist =
+                                                                                                                sd
+                                                                                                                    ? sd.subDistance
+                                                                                                                    : 0;
+                                                                                                            if (
+                                                                                                                idx ===
+                                                                                                                0
+                                                                                                            ) {
+                                                                                                                subPaceSecPerKm =
+                                                                                                                    calculatePace(
+                                                                                                                        curDist,
+                                                                                                                        sr.time,
+                                                                                                                    );
+                                                                                                                subSpeedKmH =
+                                                                                                                    calculateSpeed(
+                                                                                                                        curDist,
+                                                                                                                        sr.time,
+                                                                                                                    );
+                                                                                                            } else {
+                                                                                                                const prevSr =
+                                                                                                                    res
+                                                                                                                        .subResults[
+                                                                                                                        idx -
+                                                                                                                            1
+                                                                                                                    ];
+                                                                                                                const prevSd =
+                                                                                                                    distance.subDistances?.find(
+                                                                                                                        (
+                                                                                                                            d,
+                                                                                                                        ) =>
+                                                                                                                            d.id ===
+                                                                                                                            prevSr.eventDisciplineSubDistanceId,
+                                                                                                                    );
+                                                                                                                const prevDist =
+                                                                                                                    prevSd
+                                                                                                                        ? prevSd.subDistance
+                                                                                                                        : 0;
+                                                                                                                subPaceSecPerKm =
+                                                                                                                    calculateSplitPace(
+                                                                                                                        curDist,
+                                                                                                                        prevDist,
+                                                                                                                        sr.time,
+                                                                                                                        prevSr.time,
+                                                                                                                    );
+                                                                                                                subSpeedKmH =
+                                                                                                                    calculateSplitSpeed(
+                                                                                                                        curDist,
+                                                                                                                        prevDist,
+                                                                                                                        sr.time,
+                                                                                                                        prevSr.time,
+                                                                                                                    );
+                                                                                                            }
+
                                                                                                             return (
                                                                                                                 <Table.Tr
                                                                                                                     key={
@@ -458,16 +549,31 @@ export function DistanceParticipantsSection({
                                                                                                                     <Table.Td>
                                                                                                                         <Text size="sm">
                                                                                                                             {sd
-                                                                                                                                ? `${sd.subDistance} m`
+                                                                                                                                ? formatDistance(
+                                                                                                                                      sd.subDistance,
+                                                                                                                                  )
                                                                                                                                 : `#${idx + 1}`}
                                                                                                                         </Text>
                                                                                                                     </Table.Td>
                                                                                                                     <Table.Td>
                                                                                                                         <Text size="sm">
-                                                                                                                            {
-                                                                                                                                sr.time
-                                                                                                                            }{' '}
-                                                                                                                            s
+                                                                                                                            {formatTime(
+                                                                                                                                sr.time,
+                                                                                                                            )}
+                                                                                                                        </Text>
+                                                                                                                    </Table.Td>
+                                                                                                                    <Table.Td>
+                                                                                                                        <Text size="sm">
+                                                                                                                            {formatPace(
+                                                                                                                                subPaceSecPerKm,
+                                                                                                                            )}
+                                                                                                                        </Text>
+                                                                                                                    </Table.Td>
+                                                                                                                    <Table.Td>
+                                                                                                                        <Text size="sm">
+                                                                                                                            {formatSpeed(
+                                                                                                                                subSpeedKmH,
+                                                                                                                            )}
                                                                                                                         </Text>
                                                                                                                     </Table.Td>
                                                                                                                 </Table.Tr>
@@ -508,7 +614,8 @@ export function DistanceParticipantsSection({
                 >
                     <Stack gap="sm">
                         <TextInput
-                            label={t('timeSeconds')}
+                            label={`${formatDistance(distance.distance)} (${t('time')})`}
+                            placeholder={formatDistance(distance.distance)}
                             required
                             type="number"
                             value={resultModal.time}
@@ -529,7 +636,8 @@ export function DistanceParticipantsSection({
                                     <TextInput
                                         key={sd.id}
                                         size="xs"
-                                        label={`${sd.subDistance} m (${t('timeSeconds')})`}
+                                        label={`${formatDistance(sd.subDistance)} (${t('time')})`}
+                                        placeholder={formatDistance(sd.subDistance)}
                                         type="number"
                                         value={resultModal.subTimes[idx] ?? ''}
                                         onChange={(e) => {

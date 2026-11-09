@@ -59,6 +59,12 @@ import {
     coordFromBackendInt,
     formatPace,
     formatSpeed,
+    formatDistance,
+    formatTime,
+    calculatePace,
+    calculateSpeed,
+    calculateSplitPace,
+    calculateSplitSpeed,
 } from '../../utils';
 
 export default function TrainingDetails() {
@@ -344,11 +350,10 @@ export default function TrainingDetails() {
                                                 <Table.Thead>
                                                     <Table.Tr>
                                                         <Table.Th w={46} />
-                                                        <Table.Th>{t('distanceMeters')}</Table.Th>
-                                                        <Table.Th>{t('timeSeconds')}</Table.Th>
-                                                        <Table.Th w={100} ta="center">
-                                                            {t('gps')}
-                                                        </Table.Th>
+                                                        <Table.Th>{t('distance')}</Table.Th>
+                                                        <Table.Th>{t('time')}</Table.Th>
+                                                        <Table.Th>{t('pace')}</Table.Th>
+                                                        <Table.Th>{t('speed')}</Table.Th>
                                                     </Table.Tr>
                                                 </Table.Thead>
                                                 <Table.Tbody>
@@ -359,21 +364,17 @@ export default function TrainingDetails() {
                                                             const isExpanded = expandedDistanceIds.includes(dist.id);
                                                             const distRoutePoints: RoutePoint[] = (
                                                                 dist.subDistances ?? []
-                                                            )
-                                                                .map((sd) => {
-                                                                    const lat = coordFromBackendInt(sd.lat);
-                                                                    const lng = coordFromBackendInt(sd.lng);
-                                                                    if (lat != null && lng != null) {
-                                                                        return {
-                                                                            lat,
-                                                                            lng,
-                                                                            subDistance: sd.subDistance,
-                                                                            time: sd.time,
-                                                                        };
-                                                                    }
-                                                                    return null;
-                                                                })
-                                                                .filter((pt): pt is RoutePoint => pt !== null);
+                                                            ).flatMap((sd) => {
+                                                                const lat = coordFromBackendInt(sd.lat);
+                                                                const lng = coordFromBackendInt(sd.lng);
+                                                                return lat != null && lng != null ? [{ lat, lng }] : [];
+                                                            });
+                                                            const hasGps = distRoutePoints.length > 0;
+                                                            const paceSecPerKm = calculatePace(
+                                                                dist.distance,
+                                                                dist.time,
+                                                            );
+                                                            const speedKmH = calculateSpeed(dist.distance, dist.time);
 
                                                             return (
                                                                 <React.Fragment key={dist.id}>
@@ -409,24 +410,31 @@ export default function TrainingDetails() {
                                                                             ) : null}
                                                                         </Table.Td>
                                                                         <Table.Td>
-                                                                            <Text size="sm">{dist.distance} m</Text>
+                                                                            <Text size="sm">
+                                                                                {formatDistance(dist.distance)}
+                                                                            </Text>
                                                                         </Table.Td>
                                                                         <Table.Td>
-                                                                            <Text size="sm">{dist.time} s</Text>
+                                                                            <Text size="sm">
+                                                                                {formatTime(dist.time)}
+                                                                            </Text>
                                                                         </Table.Td>
-                                                                        <Table.Td ta="center">
-                                                                            {distRoutePoints.length > 0 ? (
-                                                                                <Badge color="green">{t('yes')}</Badge>
-                                                                            ) : (
-                                                                                <Badge color="red">{t('no')}</Badge>
-                                                                            )}
+                                                                        <Table.Td>
+                                                                            <Text size="sm">
+                                                                                {formatPace(paceSecPerKm)}
+                                                                            </Text>
+                                                                        </Table.Td>
+                                                                        <Table.Td>
+                                                                            <Text size="sm">
+                                                                                {formatSpeed(speedKmH)}
+                                                                            </Text>
                                                                         </Table.Td>
                                                                     </Table.Tr>
                                                                     {hasSub && isExpanded && (
                                                                         <Table.Tr className="table-expansion-row">
-                                                                            <Table.Td colSpan={4} p={0}>
+                                                                            <Table.Td colSpan={5} p={0}>
                                                                                 <Stack gap={0}>
-                                                                                    {distRoutePoints.length > 0 && (
+                                                                                    {hasGps && (
                                                                                         <TrainingRouteMap
                                                                                             points={distRoutePoints}
                                                                                             flat
@@ -436,28 +444,17 @@ export default function TrainingDetails() {
                                                                                         <Table.Thead>
                                                                                             <Table.Tr>
                                                                                                 <Table.Th>
-                                                                                                    {t(
-                                                                                                        'subDistanceMeters',
-                                                                                                    )}
+                                                                                                    {t('subDistance')}
                                                                                                 </Table.Th>
                                                                                                 <Table.Th>
-                                                                                                    {t('timeSeconds')}
+                                                                                                    {t('time')}
                                                                                                 </Table.Th>
-                                                                                                {distRoutePoints.length >
-                                                                                                    0 && (
-                                                                                                    <>
-                                                                                                        <Table.Th>
-                                                                                                            {t(
-                                                                                                                'paceMinKm',
-                                                                                                            )}
-                                                                                                        </Table.Th>
-                                                                                                        <Table.Th>
-                                                                                                            {t(
-                                                                                                                'speedKmH',
-                                                                                                            )}
-                                                                                                        </Table.Th>
-                                                                                                    </>
-                                                                                                )}
+                                                                                                <Table.Th>
+                                                                                                    {t('pace')}
+                                                                                                </Table.Th>
+                                                                                                <Table.Th>
+                                                                                                    {t('speed')}
+                                                                                                </Table.Th>
                                                                                             </Table.Tr>
                                                                                         </Table.Thead>
                                                                                         <Table.Tbody>
@@ -466,25 +463,40 @@ export default function TrainingDetails() {
                                                                                                     sd: TrainingDisciplineSubDistanceResource,
                                                                                                     sIdx: number,
                                                                                                 ) => {
-                                                                                                    const speedMps =
-                                                                                                        sd.speed !=
-                                                                                                            null &&
-                                                                                                        sd.speed > 0
-                                                                                                            ? sd.speed
-                                                                                                            : sd.time >
-                                                                                                                    0 &&
-                                                                                                                sd.subDistance >
-                                                                                                                    0
-                                                                                                              ? sd.subDistance /
-                                                                                                                sd.time
-                                                                                                              : 0;
-                                                                                                    const paceSecPerKm =
-                                                                                                        speedMps > 0.2
-                                                                                                            ? 1000 /
-                                                                                                              speedMps
-                                                                                                            : 0;
-                                                                                                    const speedKmH =
-                                                                                                        speedMps * 3.6;
+                                                                                                    let subPaceSecPerKm: number;
+                                                                                                    let subSpeedKmH: number;
+                                                                                                    if (sIdx === 0) {
+                                                                                                        subPaceSecPerKm =
+                                                                                                            calculatePace(
+                                                                                                                sd.subDistance,
+                                                                                                                sd.time,
+                                                                                                            );
+                                                                                                        subSpeedKmH =
+                                                                                                            calculateSpeed(
+                                                                                                                sd.subDistance,
+                                                                                                                sd.time,
+                                                                                                            );
+                                                                                                    } else {
+                                                                                                        const prevSd =
+                                                                                                            dist
+                                                                                                                .subDistances[
+                                                                                                                sIdx - 1
+                                                                                                            ];
+                                                                                                        subPaceSecPerKm =
+                                                                                                            calculateSplitPace(
+                                                                                                                sd.subDistance,
+                                                                                                                prevSd.subDistance,
+                                                                                                                sd.time,
+                                                                                                                prevSd.time,
+                                                                                                            );
+                                                                                                        subSpeedKmH =
+                                                                                                            calculateSplitSpeed(
+                                                                                                                sd.subDistance,
+                                                                                                                prevSd.subDistance,
+                                                                                                                sd.time,
+                                                                                                                prevSd.time,
+                                                                                                            );
+                                                                                                    }
 
                                                                                                     return (
                                                                                                         <Table.Tr
@@ -499,39 +511,32 @@ export default function TrainingDetails() {
                                                                                                         >
                                                                                                             <Table.Td>
                                                                                                                 <Text size="sm">
-                                                                                                                    {
-                                                                                                                        sd.subDistance
-                                                                                                                    }{' '}
-                                                                                                                    m
+                                                                                                                    {formatDistance(
+                                                                                                                        sd.subDistance,
+                                                                                                                    )}
                                                                                                                 </Text>
                                                                                                             </Table.Td>
                                                                                                             <Table.Td>
                                                                                                                 <Text size="sm">
-                                                                                                                    {
-                                                                                                                        sd.time
-                                                                                                                    }{' '}
-                                                                                                                    s
+                                                                                                                    {formatTime(
+                                                                                                                        sd.time,
+                                                                                                                    )}
                                                                                                                 </Text>
                                                                                                             </Table.Td>
-                                                                                                            {distRoutePoints.length >
-                                                                                                                0 && (
-                                                                                                                <>
-                                                                                                                    <Table.Td>
-                                                                                                                        <Text size="sm">
-                                                                                                                            {formatPace(
-                                                                                                                                paceSecPerKm,
-                                                                                                                            )}
-                                                                                                                        </Text>
-                                                                                                                    </Table.Td>
-                                                                                                                    <Table.Td>
-                                                                                                                        <Text size="sm">
-                                                                                                                            {formatSpeed(
-                                                                                                                                speedKmH,
-                                                                                                                            )}
-                                                                                                                        </Text>
-                                                                                                                    </Table.Td>
-                                                                                                                </>
-                                                                                                            )}
+                                                                                                            <Table.Td>
+                                                                                                                <Text size="sm">
+                                                                                                                    {formatPace(
+                                                                                                                        subPaceSecPerKm,
+                                                                                                                    )}
+                                                                                                                </Text>
+                                                                                                            </Table.Td>
+                                                                                                            <Table.Td>
+                                                                                                                <Text size="sm">
+                                                                                                                    {formatSpeed(
+                                                                                                                        subSpeedKmH,
+                                                                                                                    )}
+                                                                                                                </Text>
+                                                                                                            </Table.Td>
                                                                                                         </Table.Tr>
                                                                                                     );
                                                                                                 },

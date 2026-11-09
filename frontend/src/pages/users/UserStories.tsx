@@ -129,7 +129,7 @@ export default function UserStories() {
                                 </Text>
                             ) : (
                                 <Text size="sm" c="dimmed">
-                                    —
+                                    -
                                 </Text>
                             ),
                     },

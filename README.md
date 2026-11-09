@@ -632,24 +632,7 @@ npm run fix
 
 ## Problemy i zadania do wdrożenia
 
-### 1. Śledzenie i rejestracja trasy GPS na żywo na frontendzie
-
-- **Stan obecny:** 
-  Backend i model bazy danych w pełni obsługują strukturę telemetryczną GPS (tabela `training_discipline_sub_distances` posiada kolumny `sub_distance`, `time`, `lat`, `lng`, `accuracy`, `speed`), a formularz `TrainingFormModal.tsx` umożliwia ręczną edycję i prezentację tych danych. Na frontendzie brak jest jednak modułu aktywnego rejestratora trasy w czasie rzeczywistym.
-- **Co jest do zrobienia:**
-  - Utworzenie dedykowanego widoku / modalu aktywnego treningu (np. `ActiveTrainingRecorder`).
-  - Bieżący odczyt pozycji z modułu GPS urządzenia i automatyczne przeliczanie dystansu oraz tempa chwilowego.
-  - Generowanie punktów telemetrycznych (sub-dystansów) i agregowanie ich do struktury `TrainingDto` przed wysyłką do API.
-  - Opcjonalna wizualizacja przebytej trasy na podglądzie mapy (np. z użyciem biblioteki Leaflet / MapLibre).
-- **Jak to zaimplementować:**
-  - Użyć standardowego interfejsu przeglądarki `navigator.geolocation.watchPosition` z konfiguracją `{ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }`.
-  - Zaimplementować algorytm obliczania odległości pomiędzy kolejnymi punktami geograficznymi w oparciu o numeryczny wzór **Haversine'a**.
-  - Zintegrować interfejs **Screen Wake Lock API** (`navigator.wakeLock.request('screen')`), aby zabezpieczyć przeglądarkę mobilną przed wygaszeniem ekranu i przerwaniem wątku zbierania pozycji podczas biegu lub jazdy rowerem.
-  - Zapewnić obsługę błędów (odrzucenie uprawnień, brak sygnału satelitarnego GPS) z czytelnym powiadomieniem w `@mantine/notifications`.
-- **Po co:**
-  - Automatyczny tracking GPS stanowi fundamentalną funkcjonalność aplikacji sportowej. Użytkownik nie powinien ręcznie wprowadzać dystansów ani czasów po zakończeniu aktywności, lecz mieć możliwość włączenia przycisku „Start”, wykonania treningu i automatycznego zapisania rzeczywistej trasy. Zbliża to PWA funkcjonalnie do rozwiązań pokroju Strava czy Garmin Connect.
-
-### 2. Bezpośrednia integracja z kamerą na frontendzie (MediaDevices API)
+### 1. Bezpośrednia integracja z kamerą na frontendzie (MediaDevices API)
 
 - **Stan obecny:** 
   Dodawanie zdjęć do relacji (Stories), wpisów (Feeds) oraz profili użytkowników i stron odbywa się za pomocą standardowego komponentu `<FileInput>` biblioteki Mantine, który otwiera selektor plików systemu operacyjnego i konwertuje plik na format Base64. Brak bezpośredniego podglądu kadru z kamery wewnątrz aplikacji.
@@ -664,7 +647,7 @@ npm run fix
 - **Po co:**
   - W dynamicznym środowisku społecznościowo-sportowym użytkownik publikujący relację (Story) lub zdjęcie z trasy oczekuje natychmiastowego doświadczenia „point-and-shoot” bez konieczności opuszczania aplikacji PWA, uruchamiania zewnętrznej aplikacji aparatu, zapisywania pliku w pamięci telefonu i ręcznego wgrywania go przez okno dialogowe.
 
-### 3. Buforowanie danych offline i mechanizm synchronizacji (Offline-First Data Sync)
+### 2. Buforowanie danych offline i mechanizm synchronizacji (Offline-First Data Sync)
 
 - **Stan obecny:** 
   Service Worker (`frontend/public/sw.js`) buforuje wyłącznie powłokę aplikacji (pliki HTML, ikony SVG, manifest). Wszystkie zapytania pod ścieżkę `/api` są wyłączone z cache'owania (`Network-Only`). W przypadku braku Internetu aplikacja uruchamia się, ale nie pozwala na tworzenie nowych aktywności bez połączenia z serwerem.
@@ -678,7 +661,7 @@ npm run fix
 - **Po co:**
   - Treningi biegowe, kolarstwo czy trekking bardzo często odbywają się na obszarach leśnych, górskich lub pozamiejskich z niestabilnym zasięgiem GSM. Prawdziwa aplikacja PWA o charakterze sportowym musi gwarantować, że dane z ukończonego treningu nie zostaną utracone, a użytkownik otrzyma informację o pomyślnym zapisie lokalnym i oczekującej synchronizacji.
 
-### 4. Zestawy testów automatycznych dla warstwy frontendu (Vitest / React Testing Library)
+### 3. Zestawy testów automatycznych dla warstwy frontendu (Vitest / React Testing Library)
 
 - **Stan obecny:** 
   W projekcie frontendu zainstalowano zależności i przygotowano infrastrukturę pod testy (`vitest`, `@testing-library/react`, `frontend/src/test/setup.ts`, `test-utils.tsx`), lecz w katalogu `frontend/src` nie ma jeszcze napisanych plików zestawów testowych (`*.test.tsx`).
@@ -692,7 +675,7 @@ npm run fix
 - **Po co:**
   - Automatyczna weryfikacja poprawności działania interfejsu zabezpiecza projekt przed regresją podczas wprowadzania nowych funkcjonalności i refaktoryzacji, podnosząc niezawodność oprogramowania zgodnie ze standardem ISO/IEC 25010.
 
-### 5. Skrypty testów obciążeniowych i wydajnościowych backendu (k6 / Stress Testing)
+### 4. Skrypty testów obciążeniowych i wydajnościowych backendu (k6 / Stress Testing)
 
 - **Stan obecny:** 
   Backend posiada imponujący zestaw ponad 90 klas testowych Feature w PHPUnit (`backend/tests/Feature`), które dokładnie sprawdzają logikę biznesową, uprawnienia i bazę danych. Brak jednak w repozytorium zdefiniowanych skryptów do testów przeciążeniowych symulujących ruch masowy.

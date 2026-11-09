@@ -5,9 +5,7 @@ import {
     TextInput,
     Button,
     Stack,
-    Avatar,
     Badge,
-    ActionIcon,
     Center,
     Loader,
     Select,
@@ -16,7 +14,7 @@ import {
     Paper,
     ScrollArea,
 } from '@mantine/core';
-import { IconSend, IconTrash, IconEdit } from '@tabler/icons-react';
+import { IconSend } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { conversationService, friendService, type ConversationResource } from '../../api/services';
@@ -37,15 +35,7 @@ import {
     DeleteActionButton,
     UserInfoCell,
 } from '../../components';
-import {
-    formatImageSrc,
-    confirmDelete,
-    formatDateTime,
-    formatTime,
-    truncate,
-    notifySuccess,
-    notifyError,
-} from '../../utils';
+import { confirmDelete, formatDateTime, formatClockTime, truncate, notifySuccess, notifyError } from '../../utils';
 import { useDataTableState, useUsersMap, useMyFriends, useFormErrors } from '../../hooks';
 
 export default function UserConversations() {
@@ -657,14 +647,6 @@ export default function UserConversations() {
                                                         align="flex-end"
                                                         gap="xs"
                                                     >
-                                                        {!isMine && (
-                                                            <Avatar
-                                                                src={formatImageSrc(targetUser.profilePhoto)}
-                                                                size="xs"
-                                                            >
-                                                                ?
-                                                            </Avatar>
-                                                        )}
                                                         <Paper
                                                             p="xs"
                                                             className={
@@ -682,35 +664,24 @@ export default function UserConversations() {
                                                                     opacity={0.7}
                                                                 />
                                                                 <Text size="xs" opacity={0.7}>
-                                                                    {formatTime(m.createdAt)}
+                                                                    {formatClockTime(m.createdAt)}
                                                                 </Text>
                                                                 {isMine && (
-                                                                    <Group gap={2}>
-                                                                        <ActionIcon
-                                                                            size="xs"
-                                                                            variant="subtle"
+                                                                    <Group gap={4}>
+                                                                        <EditActionButton
                                                                             onClick={() => {
                                                                                 setEditingMessage(m);
                                                                                 setEditModalText(m.text);
                                                                                 setEditModalOpened(true);
                                                                             }}
-                                                                            aria-label={t('edit')}
-                                                                        >
-                                                                            <IconEdit size={12} />
-                                                                        </ActionIcon>
-                                                                        <ActionIcon
-                                                                            size="xs"
-                                                                            variant="subtle"
-                                                                            color="red"
+                                                                        />
+                                                                        <DeleteActionButton
                                                                             onClick={() =>
                                                                                 confirmDelete(t, () =>
                                                                                     deleteMessageMutation.mutate(m.id),
                                                                                 )
                                                                             }
-                                                                            aria-label={t('delete')}
-                                                                        >
-                                                                            <IconTrash size={12} />
-                                                                        </ActionIcon>
+                                                                        />
                                                                     </Group>
                                                                 )}
                                                             </Group>
@@ -743,9 +714,6 @@ export default function UserConversations() {
                                     )}
                                     {isPartnerTyping && (
                                         <Group gap="xs" align="center" mt="xs">
-                                            <Avatar src={formatImageSrc(targetUser.profilePhoto)} size="xs">
-                                                ?
-                                            </Avatar>
                                             <Paper p="xs" className="chat-bubble-other">
                                                 <Group gap={6} align="center">
                                                     <Loader size={12} type="dots" />

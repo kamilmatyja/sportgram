@@ -10,10 +10,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
 export function formatDate(dateStr?: string | null): string {
     const d = parseDate(dateStr);
     if (!d) return dateStr ?? '-';
-    return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
+    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
 }
 
-export function formatTime(dateStr?: string | null): string {
+export function formatClockTime(dateStr?: string | null): string {
     const d = parseDate(dateStr);
     if (!d) return '';
     return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -22,7 +22,7 @@ export function formatTime(dateStr?: string | null): string {
 export function formatDateTime(dateStr?: string | null): string {
     const d = parseDate(dateStr);
     if (!d) return dateStr ?? '-';
-    return `${formatDate(dateStr)} ${formatTime(dateStr)}`;
+    return `${formatDate(dateStr)} ${formatClockTime(dateStr)}`;
 }
 
 export function toInputDateTime(dateStr?: string | null): string {

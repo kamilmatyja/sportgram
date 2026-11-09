@@ -1,9 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
 
-/**
- * Screen Wake Lock hook to prevent mobile device displays from turning off
- * during active tracking sessions (running, cycling, etc.).
- */
 export function useWakeLock(enabled: boolean) {
     const sentinelRef = useRef<WakeLockSentinel | null>(null);
 
@@ -19,7 +15,6 @@ export function useWakeLock(enabled: boolean) {
                 });
             }
         } catch {
-            // Wake lock request may fail (e.g., low battery mode, page not visible)
             sentinelRef.current = null;
         }
     }, []);
@@ -28,8 +23,6 @@ export function useWakeLock(enabled: boolean) {
         if (sentinelRef.current) {
             try {
                 await sentinelRef.current.release();
-            } catch {
-                // Ignore error on release
             } finally {
                 sentinelRef.current = null;
             }

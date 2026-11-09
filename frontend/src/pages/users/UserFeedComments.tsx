@@ -131,7 +131,7 @@ export default function UserFeedComments() {
                                 </Text>
                             ) : (
                                 <Text size="sm" c="dimmed">
-                                    —
+                                    -
                                 </Text>
                             ),
                     },

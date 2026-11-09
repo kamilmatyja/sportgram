@@ -22,7 +22,7 @@ import { RoleEnum } from '../../enums/RoleEnum';
 import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ColorEnum } from '../../enums/ColorEnum';
-import { confirmDelete, formatDateTime, formatImageSrc, notifySuccess, notifyError } from '../../utils';
+import { confirmDelete, formatDateTime, formatImageSrc, notifySuccess, notifyError, formatDistance } from '../../utils';
 import { useDataTableState } from '../../hooks';
 
 export default function UserEventSignups() {
@@ -214,7 +214,7 @@ export default function UserEventSignups() {
                             const info = distanceLookup[s.eventDisciplineDistanceId];
                             return info?.distance !== undefined ? (
                                 <Badge variant="outline" color={primaryColor}>
-                                    {info.distance} m
+                                    {formatDistance(info.distance)}
                                 </Badge>
                             ) : null;
                         },

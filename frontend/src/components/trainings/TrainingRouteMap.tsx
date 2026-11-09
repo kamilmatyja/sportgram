@@ -4,15 +4,12 @@ import L from 'leaflet';
 export interface RoutePoint {
     lat: number;
     lng: number;
-    subDistance?: number;
-    time?: number;
 }
 
 export interface TrainingRouteMapProps {
     points: RoutePoint[];
     currentPosition?: { lat: number; lng: number } | null;
     isLive?: boolean;
-    tall?: boolean;
     flat?: boolean;
     className?: string;
 }
@@ -21,7 +18,6 @@ export function TrainingRouteMap({
     points,
     currentPosition,
     isLive = false,
-    tall = false,
     flat = false,
     className,
 }: TrainingRouteMapProps) {
@@ -32,7 +28,6 @@ export function TrainingRouteMap({
     const finishMarkerRef = useRef<L.Marker | null>(null);
     const currentMarkerRef = useRef<L.Marker | null>(null);
 
-    // Initialize map
     useEffect(() => {
         if (!containerRef.current || mapRef.current) return;
 
@@ -64,7 +59,6 @@ export function TrainingRouteMap({
         mapRef.current = map;
         polylineRef.current = polyline;
 
-        // Invalidate map size on layout shifts
         const resizeObserver = new ResizeObserver(() => {
             map.invalidateSize();
         });
@@ -81,7 +75,6 @@ export function TrainingRouteMap({
         };
     }, []);
 
-    // Update polyline and markers when points or currentPosition change
     useEffect(() => {
         const map = mapRef.current;
         const polyline = polylineRef.current;
@@ -90,7 +83,6 @@ export function TrainingRouteMap({
         const latLngs: L.LatLngExpression[] = points.map((p) => [p.lat, p.lng]);
         polyline.setLatLngs(latLngs);
 
-        // Start marker
         if (points.length > 0) {
             const startPos: L.LatLngExpression = [points[0].lat, points[0].lng];
             if (!startMarkerRef.current) {
@@ -108,7 +100,6 @@ export function TrainingRouteMap({
             startMarkerRef.current = null;
         }
 
-        // Finish marker (for completed / static routes)
         if (!isLive && points.length > 1) {
             const finishPos: L.LatLngExpression = [points[points.length - 1].lat, points[points.length - 1].lng];
             if (!finishMarkerRef.current) {
@@ -126,7 +117,6 @@ export function TrainingRouteMap({
             finishMarkerRef.current = null;
         }
 
-        // Current position marker (for live recording)
         if (isLive && currentPosition) {
             const curPos: L.LatLngExpression = [currentPosition.lat, currentPosition.lng];
             if (!currentMarkerRef.current) {
@@ -141,14 +131,12 @@ export function TrainingRouteMap({
                 currentMarkerRef.current.setLatLng(curPos);
             }
 
-            // Follow current position in live mode
             map.panTo(curPos, { animate: true });
         } else if (!isLive && currentMarkerRef.current) {
             currentMarkerRef.current.remove();
             currentMarkerRef.current = null;
         }
 
-        // Fit bounds for static view
         if (!isLive && points.length > 0) {
             const bounds = polyline.getBounds();
             if (bounds.isValid()) {
@@ -157,13 +145,7 @@ export function TrainingRouteMap({
         }
     }, [points, currentPosition, isLive]);
 
-    const containerClass = className
-        ? className
-        : flat
-          ? 'route-map-container-flat'
-          : tall
-            ? 'route-map-container-tall'
-            : 'route-map-container';
+    const containerClass = className || (flat ? 'route-map-container-flat' : 'route-map-container');
 
     return <div ref={containerRef} className={containerClass} />;
 }

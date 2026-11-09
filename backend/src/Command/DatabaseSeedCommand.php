@@ -68,7 +68,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\{InputInterface, InputOption};
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[AsCommand(
@@ -502,7 +501,7 @@ class DatabaseSeedCommand extends Command
                 'color' => ColorEnum::Red,
                 'roles' => [RoleEnum::Participant],
                 'disciplines' => [DisciplineEnum::Cycling, DisciplineEnum::Swimming],
-                'bio' => 'Rower szosowy i basen. Regularny uczestnik rajdów na 200 km.',
+                'bio' => 'Rower szosowy i basen. Regularny uczestnik rajdów na 200km.',
                 'birthAt' => new DateTimeImmutable('1985-11-16'),
                 'browser' => 'Chrome na Windows',
             ],
@@ -1292,7 +1291,7 @@ class DatabaseSeedCommand extends Command
     private function seedPages(): void
     {
         $pageTitles = [
-            ['wkb', 'Warszawski Klub Biegacza', 'Oficjalna strona stowarzyszenia biegaczy w Warszawie. Cykliczne treningi w Parku Skaryszewskim, sprawdziany na 5 km i biegi uliczne.', 'warszawski-klub-biegacza', ColorEnum::Blue, 'admin@sportgram.local', ElementStatusEnum::Active],
+            ['wkb', 'Warszawski Klub Biegacza', 'Oficjalna strona stowarzyszenia biegaczy w Warszawie. Cykliczne treningi w Parku Skaryszewskim, sprawdziany na 5km i biegi uliczne.', 'warszawski-klub-biegacza', ColorEnum::Blue, 'admin@sportgram.local', ElementStatusEnum::Active],
             ['velo', 'Velo Silesia Cycling Team', 'Śląska społeczność pasjonatów dwóch kółek: szosa, gravel i MTB. Wspólne ustawki weekendowe i rajdy.', 'velo-silesia-cycling-team', ColorEnum::Red, 'organizer@sportgram.local', ElementStatusEnum::Active],
             ['triton', 'Triton Triathlon Polska', 'Ogólnopolski klub triathlonowy. Łączymy pływanie, kolarstwo i bieg w jedną całość. Dystanse sprint do pełnego IM.', 'triton-triathlon-polska', ColorEnum::Orange, 'piotr.wisniewski@sportgram.local', ElementStatusEnum::Active],
             ['krakow_trail', 'Kraków Ultra Trail Runners', 'Grupa zrzeszająca biegaczy górskich w Małopolsce. Treningi podbiegowe w Lasku Wolskim i wypady w Tatry.', 'krakow-ultra-trail-runners', ColorEnum::Green, 'magdalena.lewandowska@sportgram.local', ElementStatusEnum::Active],
@@ -1318,7 +1317,7 @@ class DatabaseSeedCommand extends Command
             ['slask_lyzwy', 'Śląska Sekcja Łyżwiarstwa Szybkiego', 'Treningi na torze lodowym i rolkowym w Katowicach i Tychach.', 'slaska-sekcja-lyzwiarstwa-szybkiego', ColorEnum::Blue, 'organizer@sportgram.local', ElementStatusEnum::Active],
             ['podhale_bieg', 'Podhalański Klub Biegowy', 'Górskie powietrze, biegi pod Reglami i Dolina Kościeliska.', 'podhalanski-klub-biegowy', ColorEnum::Green, 'jan.kowalski@sportgram.local', ElementStatusEnum::Active],
             ['zgora_bike', 'Zielonogórskie Ustawki Rowerowe', 'Winnice, lasy lubuskie i trasy wzdłuż Odry.', 'zielonogorskie-ustawki-rowerowe', ColorEnum::Green, 'piotr.wisniewski@sportgram.local', ElementStatusEnum::Active],
-            ['rzeszow_run', 'Rzeszowska Grupa Biegowa', 'Bulwary nad Wisłokiem, Lisi Kąt i sprawdziany na 10 km.', 'rzeszowska-grupa-biegowa', ColorEnum::Red, 'jan.kowalski@sportgram.local', ElementStatusEnum::Active],
+            ['rzeszow_run', 'Rzeszowska Grupa Biegowa', 'Bulwary nad Wisłokiem, Lisi Kąt i sprawdziany na 10km.', 'rzeszowska-grupa-biegowa', ColorEnum::Red, 'jan.kowalski@sportgram.local', ElementStatusEnum::Active],
             ['suwalki_biegowki', 'Suwalski Klub Narciarstwa Biegowego', 'Polska Syberia, trasy biegowe w Szelmencie i Suwalskim Parku Krajobrazowym.', 'suwalski-klub-narciarstwa-biegowego', ColorEnum::Blue, 'krzysztof.wozniak@sportgram.local', ElementStatusEnum::Active],
             ['sopot_openwater', 'Sopot Open Water Swimmers', 'Pływanie wokół sopockiego molo, pianki i bojki asekuracyjne.', 'sopot-open-water-swimmers', ColorEnum::Blue, 'joanna.dabrowska@sportgram.local', ElementStatusEnum::Active],
             ['olsztyn_warmia', 'Olsztyńska Warmia Biegowa', 'Jezioro Ukiel, Las Miejski i malownicze ścieżki Warmii.', 'olsztynska-warmia-biegowa', ColorEnum::Green, 'jan.kowalski@sportgram.local', ElementStatusEnum::Active],
@@ -1569,14 +1568,8 @@ class DatabaseSeedCommand extends Command
         $athletes = [$jan, $anna, $piotr, $admin];
         $allAthletes = array_values($this->users);
 
-        /**
-         * Training definitions format:
-         * [title, link, location, daysAgo, creatorEmail, [ [DisciplineEnum, [ [distanceMeters, durationSeconds], ... ]], ... ]]
-         *
-         * @var array<int, array{0: string, 1: string, 2: string, 3: int, 4: string|null, 5: array<int, array{0: DisciplineEnum, 1: array<int, array{0: int, 1: int}>}>}>
-         */
+        /** @var array<int, array{0: string, 1: string, 2: string, 3: int, 4: string|null, 5: array<int, array{0: DisciplineEnum, 1: array<int, array{0: int, 1: int}>}>}> */
         $trainingDefs = [
-            // --- Single discipline Running (single & multi-distance) ---
             ['Poranny rozruch wzdłuż Wisły', 'poranny-rozruch-wisla-1k', 'Warszawa, Bulwary Wiślane', -1, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Running, [[1000, 240]]],
             ]],
@@ -1586,7 +1579,7 @@ class DatabaseSeedCommand extends Command
             ['Odcinek testowy w Agrykoli', 'odcinek-testowy-2k', 'Warszawa, Park Ujazdowski', -3, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Running, [[2000, 520]]],
             ]],
-            ['Bieg tempowy 3 km w trupa', 'bieg-tempowy-3k', 'Warszawa, Kępa Potocka', -4, 'jan.kowalski@sportgram.local', [
+            ['Bieg tempowy 3km w trupa', 'bieg-tempowy-3k', 'Warszawa, Kępa Potocka', -4, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Running, [[3000, 780]]],
             ]],
             ['Czwórka na rozgrzewkę przed zawodami', 'czworka-rozgrzewka-4k', 'Warszawa, Pole Mokotowskie', -5, 'jan.kowalski@sportgram.local', [
@@ -1595,7 +1588,7 @@ class DatabaseSeedCommand extends Command
             ['Piątka parkrun w Parku Skaryszewskim', 'piatka-parkrun-5k', 'Warszawa, Park Skaryszewski', -6, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Running, [[5000, 1260]]],
             ]],
-            ['Spokojne 6 km po pracy', 'spokojne-szesc-km', 'Warszawa, Lasek Bielański', -7, 'jan.kowalski@sportgram.local', [
+            ['Spokojne 6km po pracy', 'spokojne-szesc-km', 'Warszawa, Lasek Bielański', -7, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Running, [[6000, 1500]]],
             ]],
             ['Siódemka o poranku przed pracą', 'siodemka-o-poranku-7k', 'Warszawa, Bulwary Wiślane', -8, 'jan.kowalski@sportgram.local', [
@@ -1657,20 +1650,20 @@ class DatabaseSeedCommand extends Command
                     [6097, 1520],
                 ]],
             ]],
-            ['Długie wybieganie 25 km w niedzielę', 'dlugie-wybieganie-25k', 'Warszawa, Kampinoski PN', -21, 'jan.kowalski@sportgram.local', [
+            ['Długie wybieganie 25km w niedzielę', 'dlugie-wybieganie-25k', 'Warszawa, Kampinoski PN', -21, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Running, [[25000, 6300]]],
             ]],
             ['Trzydziestka w ramach przygotowań do maratonu', 'trzydziestka-maratonska-30k', 'Warszawa, Trasa wzdłuż Wisły', -22, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Running, [[30000, 7800]]],
             ]],
-            ['Długie wybieganie z akcentem 32 km', 'wybieganie-akcent-32k', 'Warszawa, Las Kabacki', -23, 'jan.kowalski@sportgram.local', [
+            ['Długie wybieganie z akcentem 32km', 'wybieganie-akcent-32k', 'Warszawa, Las Kabacki', -23, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Running, [
                     [10000, 2650],
                     [12000, 3050],
                     [10000, 2650],
                 ]],
             ]],
-            ['Ostatnie długie wybieganie 35 km', 'ostatnia-trzydziestka-piatka-35k', 'Puszcza Kampinoska, Granica', -24, 'jan.kowalski@sportgram.local', [
+            ['Ostatnie długie wybieganie 35km', 'ostatnia-trzydziestka-piatka-35k', 'Puszcza Kampinoska, Granica', -24, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Running, [[35000, 9200]]],
             ]],
             ['Symulacja maratonu na atestowanej trasie', 'symulacja-maratonu-42k', 'Warszawa, Trasa Maratonu', -25, 'jan.kowalski@sportgram.local', [
@@ -1682,7 +1675,6 @@ class DatabaseSeedCommand extends Command
                 ]],
             ]],
 
-            // --- Single discipline Cycling (single & multi-distance) ---
             ['Rozgrzewka szosowa na pętli', 'rozgrzewka-szosa-10k', 'Warszawa, Pętla Gassy', -26, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Cycling, [[10000, 1200]]],
             ]],
@@ -1695,7 +1687,7 @@ class DatabaseSeedCommand extends Command
             ['Dwadzieścia pięć kilometrów w tlenie', 'dwadziescia-piec-km-szosa', 'Warszawa, Wał Miedzeszyński', -29, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Cycling, [[25000, 2850]]],
             ]],
-            ['Pętla szosowa Gassy 30 km', 'petla-gassy-30k', 'Konstancin, Gassy', -30, 'jan.kowalski@sportgram.local', [
+            ['Pętla szosowa Gassy 30km', 'petla-gassy-30k', 'Konstancin, Gassy', -30, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Cycling, [[30000, 3400]]],
             ]],
             ['Trzydzieści pięć kilometrów ze średnią 34', 'trzydziesci-piec-km-szosa', 'Otwock, Karczew', -31, 'jan.kowalski@sportgram.local', [
@@ -1704,7 +1696,7 @@ class DatabaseSeedCommand extends Command
             ['Czterdziestka szosowa w słońcu', 'czterdziestka-szosa-40k', 'Piaseczno, Góra Kalwaria', -32, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Cycling, [[40000, 4500]]],
             ]],
-            ['Trening jazdy na czas 45 km', 'jazda-na-czas-45k', 'Góra Kalwaria, Czersk', -33, 'jan.kowalski@sportgram.local', [
+            ['Trening jazdy na czas 45km', 'jazda-na-czas-45k', 'Góra Kalwaria, Czersk', -33, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Cycling, [
                     [5000, 650],
                     [35000, 3850],
@@ -1734,18 +1726,16 @@ class DatabaseSeedCommand extends Command
             ['Dziewięćdziesiąt kilometrów z przewyższeniami', 'dziewiecdziesiatka-szosa-90k', 'Podkarpacie, Strzyżów', -38, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Cycling, [[90000, 10300]]],
             ]],
-            ['Gran Fondo 100 km z przyjaciółmi', 'gran-fondo-100k', 'Warszawa - Góra Kalwaria - Warszawa', -39, 'jan.kowalski@sportgram.local', [
+            ['Gran Fondo 100km z przyjaciółmi', 'gran-fondo-100k', 'Warszawa - Góra Kalwaria - Warszawa', -39, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Cycling, [
                     [30000, 3600],
                     [40000, 4400],
                     [30000, 3500],
                 ]],
             ]],
-            ['Długi rajd kolarski 120 km', 'dlugi-rajd-szosa-120k', 'Mazowsze, Pętla Grójecka', -40, 'jan.kowalski@sportgram.local', [
+            ['Długi rajd kolarski 120km', 'dlugi-rajd-szosa-120k', 'Mazowsze, Pętla Grójecka', -40, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Cycling, [[120000, 14000]]],
             ]],
-
-            // --- Single discipline Swimming (single & multi-distance) ---
             ['Krótki basen na technikę 400m', 'krotki-basen-technika-400m', 'Warszawa, OSiR Polna', -41, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::Swimming, [[400, 420]]],
             ]],
@@ -1797,8 +1787,6 @@ class DatabaseSeedCommand extends Command
                     [1900, 2050],
                 ]],
             ]],
-
-            // --- Single discipline Inline Skating ---
             ['Rolki szybkościowe dycha w parku', 'rolki-dycha-park-10k', 'Warszawa, Park Szczęśliwicki', -53, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::InlineSkating, [[10000, 1600]]],
             ]],
@@ -1812,8 +1800,6 @@ class DatabaseSeedCommand extends Command
             ['Dwudziestka rolkowa po płaskim asfalcie', 'dwudziestka-rolki-20k', 'Warszawa, Bulwary Wiślane', -55, 'jan.kowalski@sportgram.local', [
                 [DisciplineEnum::InlineSkating, [[20000, 3200]]],
             ]],
-
-            // --- Individual specific trainings ---
             ['Bieg regeneracyjny Adama', 'adam-bieg-regeneracyjny', 'Warszawa, Park Agrykola', -2, 'admin@sportgram.local', [
                 [DisciplineEnum::Running, [[8000, 2100]]],
             ]],
@@ -1837,8 +1823,6 @@ class DatabaseSeedCommand extends Command
             ['Trening rolkowy Olgi', 'olga-trening-rolkowy', 'Katowice, Muchowiec', -6, 'organizer@sportgram.local', [
                 [DisciplineEnum::InlineSkating, [[18000, 2900]]],
             ]],
-
-            // --- Multi-discipline Triathlons & Duathlons ---
             ['Triathlon Olimpijski - przetarcie szlaków', 'triathlon-olimpijski-zegrze', 'Jezioro Zegrzyńskie, Nieporęt', -8, 'admin@sportgram.local', [
                 [DisciplineEnum::Swimming, [[1500, 1560]]],
                 [DisciplineEnum::Cycling, [
@@ -1970,8 +1954,6 @@ class DatabaseSeedCommand extends Command
                 ]],
                 [DisciplineEnum::Running, [[4000, 1100]]],
             ]],
-
-            // --- Additional endurance workouts with team athletes ---
             ['Gravelowa eksploracja Kampinosu Katarzyny', 'katarzyna-gravel-kampinos-55k', 'Warszawa, Puszcza Kampinoska', -5, 'katarzyna.wojcik@sportgram.local', [
                 [DisciplineEnum::Cycling, [
                     [15000, 1950],
@@ -2057,7 +2039,7 @@ class DatabaseSeedCommand extends Command
                 $allAthletes,
                 static fn (User $u): bool => $u->email !== $creator->email,
             ));
-            if (!empty($availablePartners)) {
+            if (! empty($availablePartners)) {
                 $partner1 = $availablePartners[$i % count($availablePartners)];
                 $tpPartner = new TrainingParticipant($training, $partner1, SaveStatusEnum::Accepted);
                 $this->em->persist($tpPartner);
@@ -2118,9 +2100,7 @@ class DatabaseSeedCommand extends Command
         }
     }
 
-    /**
-     * @return array{0: int, 1: int} Base GPS latitude & longitude multiplied by 1_000_000
-     */
+    /** @return array{0: int, 1: int} Base GPS latitude & longitude multiplied by 1_000_000 */
     private function resolveBaseCoordinates(string $location): array
     {
         $cityCoordinates = [
@@ -2221,11 +2201,11 @@ class DatabaseSeedCommand extends Command
         $athletes = [$jan, $anna, $admin, $piotr];
 
         $goalDefs = [
-            ['Złamać 40 minut na 10 km w oficjalnych zawodach', 'zlamac-40-minut-na-10km', DisciplineEnum::Running, 10000, 2400, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Złamać 40 minut na 10km w oficjalnych zawodach', 'zlamac-40-minut-na-10km', DisciplineEnum::Running, 10000, 2400, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Przebiec Maraton poniżej 3 godzin i 30 minut', 'maraton-ponizej-3h30m', DisciplineEnum::Running, 42195, 12600, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Półmaraton poniżej 1 godziny i 30 minut', 'polmaraton-ponizej-1h30m', DisciplineEnum::Running, 21097, 5400, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
             ['Piątka poniżej 19 minut na parkrunie', 'piatka-ponizej-19-minut', DisciplineEnum::Running, 5000, 1140, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['100 km na rowerze szosowym ze średnią 30 km/h', '100km-rower-srednia-30', DisciplineEnum::Cycling, 100000, 12000, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['100km na rowerze szosowym ze średnią 30 km/h', '100km-rower-srednia-30', DisciplineEnum::Cycling, 100000, 12000, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Gravelowa setka z przewyższeniem 1000m', 'gravel-setka-1000m-up', DisciplineEnum::Cycling, 100000, 14400, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
             ['Przepłynąć 1500m kraulem poniżej 25 minut', 'plywanie-1500m-ponizej-25m', DisciplineEnum::Swimming, 1500, 1500, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Przepłynąć 3000m na wodach otwartych', 'plywanie-3000m-open-water', DisciplineEnum::Swimming, 3000, 3300, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
@@ -2233,14 +2213,14 @@ class DatabaseSeedCommand extends Command
             ['Bieg narciarski 50km Bieg Piastów poniżej 3h30m', 'bieg-piastow-50km-cel', DisciplineEnum::CrossCountrySkiing, 50000, 12600, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Ergometr wioślarski 2000m poniżej 6 minut 45 sekund', 'ergometr-wioslarski-2k-cel', DisciplineEnum::Rowing, 2000, 405, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
             ['Sprawdzian na 3000m na bieżni poniżej 10:30', 'sprawdzian-3000m-ponizej-1030', DisciplineEnum::Running, 3000, 630, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Bieg na 15 km w tempie 4:10 min/km', 'bieg-15km-tempo-410', DisciplineEnum::Running, 15000, 3750, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Szosowa czasówka 20 km poniżej 30 minut', 'czasowka-szosa-20km', DisciplineEnum::Cycling, 20000, 1800, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Bieg na 15km w tempie 4:10 min/km', 'bieg-15km-tempo-410', DisciplineEnum::Running, 15000, 3750, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Szosowa czasówka 20km poniżej 30 minut', 'czasowka-szosa-20km', DisciplineEnum::Cycling, 20000, 1800, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Przepłynąć 1000m poniżej 16 minut', 'plywanie-1000m-ponizej-16m', DisciplineEnum::Swimming, 1000, 960, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
-            ['Bieg na 5 km poniżej 18:30', 'bieg-5km-ponizej-1830', DisciplineEnum::Running, 5000, 1110, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Bieg na 5km poniżej 18:30', 'bieg-5km-ponizej-1830', DisciplineEnum::Running, 5000, 1110, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Maraton poniżej 3h15m jesienią', 'maraton-ponizej-3h15m', DisciplineEnum::Running, 42195, 11700, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Ukończyć 1/4 Ironmana poniżej 2h15m', 'ukonczyc-1-4-im-ponizej-2h15', DisciplineEnum::Swimming, 950, 900, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Szosowa setka ze średnią 32 km/h', 'szosowa-setka-srednia-32', DisciplineEnum::Cycling, 100000, 11250, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Długie wybieganie 30 km w tempie 4:45', 'dlugie-wybieganie-30k-tempo-445', DisciplineEnum::Running, 30000, 8550, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Długie wybieganie 30km w tempie 4:45', 'dlugie-wybieganie-30k-tempo-445', DisciplineEnum::Running, 30000, 8550, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
             ['Cel treningowy #21: 26000m w tempie docelowym', 'cel-treningowy-21-26000m', DisciplineEnum::Running, 26000, 6240, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Cel treningowy #22: 27000m w tempie docelowym', 'cel-treningowy-22-27000m', DisciplineEnum::Running, 27000, 6480, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Cel treningowy #23: 28000m w tempie docelowym', 'cel-treningowy-23-28000m', DisciplineEnum::Running, 28000, 6720, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
@@ -2276,9 +2256,9 @@ class DatabaseSeedCommand extends Command
             ['Cel treningowy #53: 58000m w tempie docelowym', 'cel-treningowy-53-58000m', DisciplineEnum::Running, 58000, 13920, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Cel treningowy #54: 59000m w tempie docelowym', 'cel-treningowy-54-59000m', DisciplineEnum::Running, 59000, 14160, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Cel treningowy #55: 60000m w tempie docelowym', 'cel-treningowy-55-60000m', DisciplineEnum::Running, 60000, 14400, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Anna: Bieg na 5 km poniżej 22 minut', 'anna-5km-ponizej-22', DisciplineEnum::Running, 5000, 1320, GoalStatusEnum::Active, 'anna.nowak@sportgram.local'],
+            ['Anna: Bieg na 5km poniżej 22 minut', 'anna-5km-ponizej-22', DisciplineEnum::Running, 5000, 1320, GoalStatusEnum::Active, 'anna.nowak@sportgram.local'],
             ['Adam: Złamać 3h w maratonie', 'adam-maraton-sub-3h', DisciplineEnum::Running, 42195, 10790, GoalStatusEnum::Active, 'admin@sportgram.local'],
-            ['Piotr: Gravel 150 km non-stop', 'piotr-gravel-150k', DisciplineEnum::Cycling, 150000, 18000, GoalStatusEnum::Completed, 'piotr.wisniewski@sportgram.local'],
+            ['Piotr: Gravel 150km non-stop', 'piotr-gravel-150k', DisciplineEnum::Cycling, 150000, 18000, GoalStatusEnum::Completed, 'piotr.wisniewski@sportgram.local'],
             ['Michał: 400m kraulem poniżej 4:40', 'michal-400m-kraul', DisciplineEnum::Swimming, 400, 280, GoalStatusEnum::Active, 'michal.zielinski@sportgram.local'],
             ['Olga: Półmaraton rolkowy poniżej 42 min', 'olga-polmaraton-rolki', DisciplineEnum::InlineSkating, 21097, 2520, GoalStatusEnum::Active, 'organizer@sportgram.local'],
         ];
@@ -2348,49 +2328,49 @@ class DatabaseSeedCommand extends Command
 
         $postTexts = [
             'Nowy sezon biegowy rozpoczęty z przytupem! Pierwszy akcent tempowy w tym roku wszedł gładko. Kto z Was trenuje dziś na zewnątrz?',
-            'Wschód słońca nad Wisłą i 15 km w tlenie przed pracą. Taki poranek ustawia energię na cały nadchodzący tydzień!',
+            'Wschód słońca nad Wisłą i 15km w tlenie przed pracą. Taki poranek ustawia energię na cały nadchodzący tydzień!',
             'Test nowych butów karbonowych zaliczony. Sprężystość na asfalcie jest niesamowita, tempo 3:50/km bez uczucia zmęczenia nóg.',
             'Regeneracja po długim wybieganiu: rolowanie, stretching i duża micha owsianki z owocami i orzechami. Dbajcie o odbudowę mięśni!',
-            'Piątkowy sprawdzian na 5 km w Parku Skaryszewskim. Życiówka poprawiona o 14 sekund! Czas na małe świętowanie.',
-            'Gravelowy wypad w Kampinos. Błoto, piach, powalone drzewa i 60 km czystej kolarskiej frajdy z ekipą.',
-            'Wiosenne przygotowania do Półmaratonu Warszawskiego idą pełną parą. Objętość tygodniowa przekroczyła 75 km.',
+            'Piątkowy sprawdzian na 5km w Parku Skaryszewskim. Życiówka poprawiona o 14 sekund! Czas na małe świętowanie.',
+            'Gravelowy wypad w Kampinos. Błoto, piach, powalone drzewa i 60km czystej kolarskiej frajdy z ekipą.',
+            'Wiosenne przygotowania do Półmaratonu Warszawskiego idą pełną parą. Objętość tygodniowa przekroczyła 75km.',
             'Interwały 8x 1000m na stadionie lekkoatletycznym. Każdy odcinek równo w 3:35. Płuca paliły, ale satysfakcja bezcenna!',
             'Poranna kawa smakuje najlepiej po 10 kilometrach w chłodnym porannym powietrzu. Jakie macie plany treningowe na weekend?',
             'Spokojne wybieganie regeneracyjne w tempie konwersacyjnym. Pamiętajcie, że wolne biegi budują bazę tlenową pod szybkie starty.',
-            'Niedzielne 30 km w tlenie. Pogoda wymarzona: 12 stopni, brak wiatru i puste ścieżki leśne.',
+            'Niedzielne 30km w tlenie. Pogoda wymarzona: 12 stopni, brak wiatru i puste ścieżki leśne.',
             'Trening siły biegowej: podbiegi 10x 200m z mocnym akcentem na pracę ramion i wysokie unoszenie kolan.',
-            'Dzisiaj zamieniłem buty biegowe na rower szosowy. 70 km w słońcu po mazowieckich asfaltach.',
+            'Dzisiaj zamieniłem buty biegowe na rower szosowy. 70km w słońcu po mazowieckich asfaltach.',
             'Równowaga to klucz: po ciężkim tygodniu treningowym dziś pełny dzień odpoczynku i sauna na regenerację.',
             'Pierwszy start w zawodach w tym sezonie tuż tuż! Emocje rosną, pakiety startowe odebrane, nogi rwą się do biegu.',
             'Śniadanie mistrzów przed zawodami: banany, miód, ryż i espresso. A co u Was sprawdza się najlepiej przed startem?',
             'Wieczorny bieg z czołówką po lesie. Zupełnie inna perspektywa, zmysły wyostrzone, cisza i spokój natury.',
             'Dziś pękła kolejna setka kilometrów w tym miesiącu. Systematyczność i cierpliwość przynoszą upragnione efekty.',
-            'Trening tempowy w zmiennych warunkach: 4 km rozgrzewki, 6 km w drugim zakresie i 2 km schłodzenia.',
+            'Trening tempowy w zmiennych warunkach: 4km rozgrzewki, 6km w drugim zakresie i 2km schłodzenia.',
             'Kiedy nie chce się wyjść na trening, właśnie wtedy wychodzi się z największą korzyścią dla głowy i charakteru.',
-            'Dziś sprawdzian na 10 km na bieżni mechanicznej. Równe tempo 4:05/km, tętno pod pełną kontrolą.',
+            'Dziś sprawdzian na 10km na bieżni mechanicznej. Równe tempo 4:05/km, tętno pod pełną kontrolą.',
             'Pływanie na wodach otwartych w piance. Temperatura wody 16 stopni – orzeźwienie gwarantowane!',
             'Podjazdy pod wzgórza tynieckie: 12 powtórzeń na maksymalnym zaangażowaniu. Nogi płoną!',
             'Nowa owijka na kierownicy szosówki i precyzyjne ustawienie bloków SPD. Rower gotowy na weekend.',
             'Długie niedzielne wybieganie z kubkiem domowego izotonika. Pamiętajcie o nawadnianiu nawet w chłodne dni.',
             'Test żeli energetycznych przed zbliżającym się startem maratońskim. Smak cytrynowy wchodzi bez problemu.',
             'Wieczorny powrót z pracy rowerem wzdłuż bulwarów wiślanych. Najlepszy sposób na przewietrzenie głowy.',
-            'Rozciąganie powięziowe i rolowanie pasma biodrowo-piszczelowego po 18 km w lesie. Czyste złoto.',
+            'Rozciąganie powięziowe i rolowanie pasma biodrowo-piszczelowego po 18km w lesie. Czyste złoto.',
             'Trening siły ogólnej na siłowni: przysiady ze sztangą, wykroki i martwy ciąg na prostych nogach.',
             'Poranna sesja jogi dla biegaczy. Mobilność bioder i elastyczność kręgosłupa to fundament bezkontuzyjności.',
-            'Bieg ciągły w drugim zakresie tętna. 12 km ze średnią 4:18/km, wiatr w plecy na powrocie pomagał.',
+            'Bieg ciągły w drugim zakresie tętna. 12km ze średnią 4:18/km, wiatr w plecy na powrocie pomagał.',
             'Pierwszy raz na rolkach po zimowej przerwie! Asfalt w Parku Śląskim idealnie gładki.',
             'Wspólny trening klubowy na stadionie. W grupie kilkunastu osób kilometry mijają nieporównywalnie szybciej.',
             'Mokry i błotnisty bieg przełajowy po Jurze. Przyczepność butów trailowych zdała egzamin celująco.',
-            'Owsianka pieczona z bananem i orzechami – najlepsze paliwo przed 80 km na gravelu.',
+            'Owsianka pieczona z bananem i orzechami – najlepsze paliwo przed 80km na gravelu.',
             'Analiza techniki biegu z nagrania wideo. Praca nad lądowaniem na śródstopiu i krótszym czasem kontaktu z podłożem.',
-            'Czasówka na szosie: 20 km z profilem aerodynamicznym. Średnia moc 285W utrzymana przez cały dystans.',
+            'Czasówka na szosie: 20km z profilem aerodynamicznym. Średnia moc 285W utrzymana przez cały dystans.',
             'Spokojne pływanie regeneracyjne w basenie: 1000m kraulem, 500m na plecach i ćwiczenia oddechowe.',
             'Podbiegi pod Górę Świętej Anny. Ostatnie 3 powtórzenia wymagały maksymalnej dyscypliny mentalnej.',
             'Poranny parkrun w doborowym towarzystwie. Cudowna atmosfera i mnóstwo uśmiechniętych ludzi.',
             'Dzisiejsza pogoda nie zachęcała do wyjścia, ale po pierwszych 2 kilometrach deszcz przestał mieć jakiekolwiek znaczenie.',
-            'Bikepacking po Mazurach – zapakowane sakwy, zaplanowane 200 km i nocleg pod namiotem.',
+            'Bikepacking po Mazurach – zapakowane sakwy, zaplanowane 200km i nocleg pod namiotem.',
             'Trening progowy: 3x 3000m na przerwie 3 minuty w truchcie. Wykonany w 100% zgodnie z założeniami trenera.',
-            'Kąpiel solankowa i kompresja po 32 km wybiegania. Regeneracja to integralna część każdego dobrego planu.',
+            'Kąpiel solankowa i kompresja po 32km wybiegania. Regeneracja to integralna część każdego dobrego planu.',
             'Nowe opony bezdętkowe założone i zalane świeżym mleczkiem. Zero obaw o drobne przebicia na kamieniach.',
             'Wschód słońca na szczycie Kasprowego Wierchu po stromym podejściu o świcie. Widoki zapierają dech w piersiach!',
             'Wyścig ze samym sobą na pętli wokół Błoń. Każde okrążenie równe co do sekundy.',
@@ -2458,7 +2438,7 @@ class DatabaseSeedCommand extends Command
         $otherPosts = [
             ['anna.nowak@sportgram.local', 'Wschód słońca nad Zegrzem i poranny trening pływacki na wodach otwartych.'],
             ['admin@sportgram.local', 'Zapisy na Półmaraton Warszawski oficjalnie otwarte! Zapraszamy wszystkich.'],
-            ['piotr.wisniewski@sportgram.local', 'Gravelowa runda po Jurze zaliczona. 85 km, wspaniałe ostańce i zjazdy.'],
+            ['piotr.wisniewski@sportgram.local', 'Gravelowa runda po Jurze zaliczona. 85km, wspaniałe ostańce i zjazdy.'],
             ['magdalena.lewandowska@sportgram.local', 'Podbiegi pod Kopiec Kościuszki w Krakowie. Płuca płoną, moc w nogach rośnie!'],
             ['michal.zielinski@sportgram.local', 'Puste tory na basenie olimpijskim o 6 rano to najlepszy start dnia.'],
         ];
@@ -2518,7 +2498,7 @@ class DatabaseSeedCommand extends Command
         }
 
         $otherStories = [
-            [$this->users['katarzyna.wojcik@sportgram.local'] ?? null, 'Zachód słońca po 15 km w lesie kabackim.'],
+            [$this->users['katarzyna.wojcik@sportgram.local'] ?? null, 'Zachód słońca po 15km w lesie kabackim.'],
             [$this->users['tomasz.kaminski@sportgram.local'] ?? null, 'Nowy łańcuch i smarowanie, rower gotowy do startu.'],
             [$this->users['magdalena.lewandowska@sportgram.local'] ?? null, 'Dzień podbiegów pod Kopiec Kościuszki.'],
             [$this->users['michal.zielinski@sportgram.local'] ?? null, '6 rano na basenie - puste tory to raj.'],
@@ -2611,7 +2591,7 @@ class DatabaseSeedCommand extends Command
             ['Zostałeś dodany do listy startowej wydarzenia Półmaraton Warszawski 2026.', '/events/polmaraton-warszawski-2026', NotificationStatusEnum::Sent],
             ['Nowa wiadomość od użytkownika %s.', '/users/jan-kowalski/conversations', NotificationStatusEnum::NotSent],
             ['Użytkownik %s zareagował na Twój ostatni trening.', '/trainings/poranny-rozruch-wisla-1k', NotificationStatusEnum::Sent],
-            ['Nowy wynik w celu: Złamać 40 minut na 10 km został zatwierdzony.', '/goals/zlamac-40-minut-na-10km', NotificationStatusEnum::Sent],
+            ['Nowy wynik w celu: Złamać 40 minut na 10km został zatwierdzony.', '/goals/zlamac-40-minut-na-10km', NotificationStatusEnum::Sent],
             ['Strona Warszawski Klub Biegacza dodała nowe wydarzenie.', '/pages/warszawski-klub-biegacza', NotificationStatusEnum::Sent],
             ['Przypomnienie: do zawodów Silesia Gravel Classic zostało 45 dni.', '/events/silesia-gravel-100', NotificationStatusEnum::NotSent],
         ];

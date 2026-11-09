@@ -128,7 +128,7 @@ export default function UserFeeds() {
                                 </Text>
                             ) : (
                                 <Text size="sm" c="dimmed">
-                                    —
+                                    -
                                 </Text>
                             ),
                     },
@@ -140,7 +140,7 @@ export default function UserFeeds() {
                                 <Badge>{formatFeedOrigin(f.feedOrigin, t)}</Badge>
                             ) : (
                                 <Text size="sm" c="dimmed">
-                                    —
+                                    -
                                 </Text>
                             ),
                     },

@@ -157,16 +157,6 @@
     z-index: 1;
 }
 
-.route-map-container-tall {
-    width: 100%;
-    height: 420px;
-    border-radius: var(--mantine-radius-md);
-    overflow: hidden;
-    position: relative;
-    border: 1px solid var(--mantine-color-default-border);
-    z-index: 1;
-}
-
 .route-map-container-flat {
     width: 100%;
     height: 320px;
@@ -242,31 +232,32 @@
 .gps-metric-card {
     background-color: var(--mantine-color-body);
     border: 1px solid var(--mantine-color-default-border);
-    border-radius: var(--mantine-radius-md);
-    padding: var(--mantine-spacing-sm);
+    border-radius: var(--mantine-radius-sm);
+    padding: 6px 8px;
     text-align: center;
 }
 
 .gps-metric-val {
-    font-size: 1.4rem;
+    font-size: 0.95rem;
     font-weight: 700;
     line-height: 1.2;
     color: var(--mantine-color-text);
 }
 
 .gps-primary-metric-val {
-    font-size: 1.7rem;
-    font-weight: 800;
-    line-height: 1.1;
-    color: var(--mantine-primary-color-filled);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--mantine-color-text);
 }
 
 .gps-metric-lbl {
-    font-size: var(--mantine-font-size-xs);
+    font-size: 0.65rem;
     font-weight: 600;
     text-transform: uppercase;
     color: var(--mantine-color-dimmed);
-    margin-top: 4px;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
 }
 
 .mantine-Modal-content {

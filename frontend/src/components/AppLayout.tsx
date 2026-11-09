@@ -4,6 +4,7 @@ import {
     Group,
     Button,
     ActionIcon,
+    Tooltip,
     useMantineColorScheme,
     Menu,
     Avatar,
@@ -114,13 +115,15 @@ export function AppLayout({ children }: AppLayoutProps) {
                                         ]}
                                     />
 
-                                    <ActionIcon
-                                        variant="default"
-                                        onClick={() => toggleColorScheme()}
-                                        aria-label={t('toggleTheme')}
-                                    >
-                                        {colorScheme === 'dark' ? <IconSun size={16} /> : <IconMoon size={16} />}
-                                    </ActionIcon>
+                                    <Tooltip label={t('toggleTheme')}>
+                                        <ActionIcon
+                                            variant="default"
+                                            onClick={() => toggleColorScheme()}
+                                            aria-label={t('toggleTheme')}
+                                        >
+                                            {colorScheme === 'dark' ? <IconSun size={16} /> : <IconMoon size={16} />}
+                                        </ActionIcon>
+                                    </Tooltip>
 
                                     <Button variant="default" size="xs" onClick={() => handleNav('/sign')}>
                                         {t('sign')}
