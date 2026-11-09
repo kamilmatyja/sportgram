@@ -8,3 +8,4 @@ export * from './tableUtils';
 export * from './text';
 export * from './themeUtils';
 export * from './treeUtils';
+export * from './geoUtils';

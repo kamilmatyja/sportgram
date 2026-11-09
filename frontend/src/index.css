@@ -146,3 +146,140 @@
         background-color: var(--table-hover-color, var(--mantine-color-gray-1));
     }
 }
+
+.route-map-container {
+    width: 100%;
+    height: 320px;
+    border-radius: var(--mantine-radius-md);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--mantine-color-default-border);
+    z-index: 1;
+}
+
+.route-map-container-tall {
+    width: 100%;
+    height: 420px;
+    border-radius: var(--mantine-radius-md);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--mantine-color-default-border);
+    z-index: 1;
+}
+
+.route-map-container-flat {
+    width: 100%;
+    height: 320px;
+    border-radius: 0;
+    overflow: hidden;
+    position: relative;
+    border: none;
+    border-bottom: 1px solid var(--mantine-color-default-border);
+    z-index: 1;
+}
+
+.route-map-start-marker {
+    width: 20px;
+    height: 20px;
+    background-color: var(--mantine-color-green-6);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+}
+
+.route-map-finish-marker {
+    width: 20px;
+    height: 20px;
+    background-color: var(--mantine-color-red-6);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+}
+
+.route-map-current-marker {
+    position: relative;
+    width: 20px;
+    height: 20px;
+}
+
+.route-map-current-dot {
+    width: 16px;
+    height: 16px;
+    background-color: var(--mantine-color-blue-6);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    z-index: 2;
+}
+
+.route-map-current-pulse {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--mantine-color-blue-4);
+    opacity: 0.6;
+    animation: route-map-pulse 1.8s infinite ease-out;
+    z-index: 1;
+}
+
+@keyframes route-map-pulse {
+    0% {
+        transform: scale(0.6);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+.gps-metric-card {
+    background-color: var(--mantine-color-body);
+    border: 1px solid var(--mantine-color-default-border);
+    border-radius: var(--mantine-radius-md);
+    padding: var(--mantine-spacing-sm);
+    text-align: center;
+}
+
+.gps-metric-val {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--mantine-color-text);
+}
+
+.gps-primary-metric-val {
+    font-size: 1.7rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--mantine-primary-color-filled);
+}
+
+.gps-metric-lbl {
+    font-size: var(--mantine-font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--mantine-color-dimmed);
+    margin-top: 4px;
+}
+
+.mantine-Modal-content {
+    padding: 0 !important;
+}
+
+.mantine-Modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--mantine-color-body);
+}
+
+.mantine-Drawer-content {
+    padding: 0 !important;
+}

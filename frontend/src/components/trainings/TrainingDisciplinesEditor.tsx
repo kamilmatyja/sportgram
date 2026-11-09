@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { Stack, Group, Paper, Select, TextInput, Button, ActionIcon, Tooltip, Text, SimpleGrid } from '@mantine/core';
-import { IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconPlus, IconTrash, IconPlayerPlay } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { updateItem, removeItem, patchItem } from '../../utils';
+import { GpsDistanceRecorderPanel } from './GpsDistanceRecorderPanel';
 
 export interface FormTrainingSubDistance {
     id: string;
@@ -30,10 +32,12 @@ export interface FormTrainingDiscipline {
 export interface TrainingDisciplinesEditorProps {
     disciplines: FormTrainingDiscipline[];
     onChange: (disciplines: FormTrainingDiscipline[]) => void;
+    onSessionTimes?: (times: { startedAt: Date; endedAt: Date }) => void;
 }
 
-export function TrainingDisciplinesEditor({ disciplines, onChange }: TrainingDisciplinesEditorProps) {
+export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTimes }: TrainingDisciplinesEditorProps) {
     const { t } = useTranslation();
+    const [recordingDisciplineId, setRecordingDisciplineId] = useState<string | null>(null);
 
     const handleAddDiscipline = () => {
         onChange([...disciplines, { id: crypto.randomUUID(), discipline: null, distances: [] }]);
@@ -319,14 +323,40 @@ export function TrainingDisciplinesEditor({ disciplines, onChange }: TrainingDis
                             </Paper>
                         ))}
 
-                        <Button
-                            size="xs"
-                            variant="subtle"
-                            leftSection={<IconPlus size={16} />}
-                            onClick={() => handleAddDistance(d.id)}
-                        >
-                            {t('addDistance')}
-                        </Button>
+                        {recordingDisciplineId === d.id && (
+                            <GpsDistanceRecorderPanel
+                                onFinish={(newDist, times) => {
+                                    onChange(
+                                        updateItem(disciplines, d.id, (disc) => ({
+                                            ...disc,
+                                            distances: [...disc.distances, newDist],
+                                        })),
+                                    );
+                                    onSessionTimes?.(times);
+                                    setRecordingDisciplineId(null);
+                                }}
+                                onCancel={() => setRecordingDisciplineId(null)}
+                            />
+                        )}
+
+                        <Group grow gap="xs" mt="xs">
+                            <Button
+                                size="xs"
+                                variant="light"
+                                leftSection={<IconPlayerPlay size={16} />}
+                                onClick={() => setRecordingDisciplineId(d.id)}
+                            >
+                                {t('recordDistanceGps')}
+                            </Button>
+                            <Button
+                                size="xs"
+                                variant="subtle"
+                                leftSection={<IconPlus size={16} />}
+                                onClick={() => handleAddDistance(d.id)}
+                            >
+                                {t('addDistanceManually')}
+                            </Button>
+                        </Group>
                     </Stack>
                 </Paper>
             ))}

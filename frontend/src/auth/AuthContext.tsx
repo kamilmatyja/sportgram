@@ -99,25 +99,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setColorScheme(currentUser.theme === ThemeEnum.DARK ? 'dark' : 'light');
     }, [currentUser?.language, currentUser?.theme, setColorScheme, i18n]);
 
+    const refreshSession = useCallback(async () => {
+        if (!signId) return;
+        try {
+            const data = await authService.refreshSign({ params: { path: { id: signId } } });
+            if (data?.token) {
+                authStorage.setToken(data.token);
+                setToken(data.token);
+            } else {
+                logout();
+            }
+        } catch {
+            logout();
+        }
+    }, [signId, logout]);
+
     useEffect(() => {
         if (!signId) return;
 
-        const interval = setInterval(async () => {
-            try {
-                const data = await authService.refreshSign({ params: { path: { id: signId } } });
-                if (data?.token) {
-                    authStorage.setToken(data.token);
-                    setToken(data.token);
-                } else {
-                    logout();
-                }
-            } catch {
-                logout();
-            }
+        const interval = setInterval(() => {
+            void refreshSession();
         }, REFRESH_INTERVAL_MS);
 
-        return () => clearInterval(interval);
-    }, [signId, logout]);
+        const handlePageShow = (event: PageTransitionEvent) => {
+            if (event.persisted) {
+                void refreshSession();
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                void refreshSession();
+            }
+        };
+
+        window.addEventListener('pageshow', handlePageShow);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('pageshow', handlePageShow);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [signId, refreshSession]);
 
     const userRoles = useMemo(() => new Set(currentUser?.roles?.map((r) => r.role)), [currentUser]);
     const isAdmin = userRoles.has(RoleEnum.ADMINISTRATOR);

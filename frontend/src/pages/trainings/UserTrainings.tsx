@@ -44,7 +44,7 @@ export default function UserTrainings() {
         () => editingTraining?.participants?.map((p) => p.userId) ?? [],
         [editingTraining?.participants],
     );
-    const { collaboratorOptions } = useMyFriends(extraUserIds);
+    const { collaboratorOptions } = useMyFriends(extraUserIds, formModalOpened);
 
     const sortOptions = buildSortOptions(t, ['startedAt', 'endedAt', 'title', 'location', 'status', 'createdAt']);
 

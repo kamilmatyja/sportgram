@@ -6,3 +6,4 @@ export * from './useMyFriends';
 export * from './useTitleLinkStatusFilter';
 export * from './useUsersMap';
 export * from './useUserSubpageAccess';
+export * from './useWakeLock';

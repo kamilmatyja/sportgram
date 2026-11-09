@@ -7,6 +7,9 @@ import {
     Paper,
     Modal,
     ModalRoot,
+    ModalContent,
+    Drawer,
+    DrawerContent,
     CloseButton,
     Badge,
     ActionIcon,
@@ -110,10 +113,49 @@ export const theme = createTheme({
             defaultProps: {
                 size: 'lg',
             },
+            styles: {
+                content: {
+                    padding: 0,
+                },
+                header: {
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 100,
+                    backgroundColor: 'var(--mantine-color-body)',
+                },
+            },
         }),
         ModalRoot: ModalRoot.extend({
             defaultProps: {
                 size: 'lg',
+            },
+            styles: {
+                content: {
+                    padding: 0,
+                },
+                header: {
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 100,
+                    backgroundColor: 'var(--mantine-color-body)',
+                },
+            },
+        }),
+        ModalContent: ModalContent.extend({
+            defaultProps: {
+                p: 0,
+            },
+        }),
+        Drawer: Drawer.extend({
+            styles: {
+                content: {
+                    padding: 0,
+                },
+            },
+        }),
+        DrawerContent: DrawerContent.extend({
+            defaultProps: {
+                p: 0,
             },
         }),
         CloseButton: CloseButton.extend({

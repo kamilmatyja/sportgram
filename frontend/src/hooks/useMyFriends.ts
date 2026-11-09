@@ -9,7 +9,7 @@ export interface CollaboratorOption {
     label: string;
 }
 
-export function useMyFriends(extraUserIds?: (string | undefined | null)[]) {
+export function useMyFriends(extraUserIds?: (string | undefined | null)[], enabled: boolean = true) {
     const { currentUser } = useAuth();
 
     const { data: friends = [], isLoading: friendsLoading } = useQuery({
@@ -38,7 +38,7 @@ export function useMyFriends(extraUserIds?: (string | undefined | null)[]) {
             });
             return uRes.data ?? [];
         },
-        enabled: !!currentUser?.id,
+        enabled: enabled && !!currentUser?.id,
     });
 
     const extraIds = useMemo(
@@ -60,7 +60,7 @@ export function useMyFriends(extraUserIds?: (string | undefined | null)[]) {
             });
             return uRes.data ?? [];
         },
-        enabled: extraIds.length > 0,
+        enabled: enabled && extraIds.length > 0,
     });
 
     const collaboratorOptions = useMemo<CollaboratorOption[]>(() => {

@@ -7,7 +7,7 @@ import { trainingService, type TrainingResource } from '../../api/services';
 import { useAuth } from '../../auth';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useFormErrors } from '../../hooks';
-import { toInputDateTime, updateTitleWithSlug } from '../../utils';
+import { toInputDateTime, updateTitleWithSlug, coordFromBackendInt, coordToBackendInt } from '../../utils';
 import { TrainingDisciplinesEditor, type FormTrainingDiscipline } from './TrainingDisciplinesEditor';
 
 export interface TrainingFormModalProps {
@@ -44,6 +44,19 @@ export function TrainingFormModal({
     const [formData, setFormData] = useState(INITIAL_FORM_DATA);
     const [disciplines, setDisciplines] = useState<FormTrainingDiscipline[]>([]);
 
+    const handleSessionTimes = ({ startedAt, endedAt }: { startedAt: Date; endedAt: Date }) => {
+        setFormData((prev) => {
+            const next = { ...prev };
+            if (!next.startedAt) {
+                next.startedAt = toInputDateTime(startedAt.toISOString());
+            }
+            if (!next.endedAt) {
+                next.endedAt = toInputDateTime(endedAt.toISOString());
+            }
+            return next;
+        });
+    };
+
     useEffect(() => {
         if (!opened) return;
         if (training) {
@@ -74,8 +87,8 @@ export function TrainingFormModal({
                                     id: sd.id,
                                     subDistance: String(sd.subDistance),
                                     time: String(sd.time),
-                                    lat: sd.lat != null ? String(sd.lat) : '',
-                                    lng: sd.lng != null ? String(sd.lng) : '',
+                                    lat: sd.lat != null ? String(coordFromBackendInt(sd.lat)) : '',
+                                    lng: sd.lng != null ? String(coordFromBackendInt(sd.lng)) : '',
                                     accuracy: sd.accuracy != null ? String(sd.accuracy) : '',
                                     speed: sd.speed != null ? String(sd.speed) : '',
                                 })) || [],
@@ -102,10 +115,16 @@ export function TrainingFormModal({
                         subDistances: (dist.subDistances || []).map((sd) => ({
                             subDistance: Number(sd.subDistance) || 0,
                             time: Number(sd.time) || 0,
-                            lat: sd.lat ? Number(sd.lat) : null,
-                            lng: sd.lng ? Number(sd.lng) : null,
-                            accuracy: sd.accuracy ? Number(sd.accuracy) : null,
-                            speed: sd.speed ? Number(sd.speed) : null,
+                            lat: sd.lat ? coordToBackendInt(Number(sd.lat)) : null,
+                            lng: sd.lng ? coordToBackendInt(Number(sd.lng)) : null,
+                            accuracy:
+                                sd.accuracy !== '' && sd.accuracy != null && !Number.isNaN(Number(sd.accuracy))
+                                    ? Math.round(Number(sd.accuracy))
+                                    : null,
+                            speed:
+                                sd.speed !== '' && sd.speed != null && !Number.isNaN(Number(sd.speed))
+                                    ? Math.max(0, Math.round(Number(sd.speed)))
+                                    : null,
                         })),
                     })),
                 }));
@@ -238,7 +257,11 @@ export function TrainingFormModal({
                     />
                 )}
 
-                <TrainingDisciplinesEditor disciplines={disciplines} onChange={setDisciplines} />
+                <TrainingDisciplinesEditor
+                    disciplines={disciplines}
+                    onChange={setDisciplines}
+                    onSessionTimes={handleSessionTimes}
+                />
 
                 <Button
                     loading={isSubmitting}

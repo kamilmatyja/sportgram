@@ -19,3 +19,4 @@ export * from './goals/GoalFormModal';
 export * from './pages/PageFormModal';
 export * from './pages/pageTableColumns';
 export * from './trainings/TrainingFormModal';
+export * from './trainings/TrainingRouteMap';

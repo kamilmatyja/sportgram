@@ -39,8 +39,10 @@ import {
     DeleteActionButton,
     ViewActionButton,
     UserInfoCell,
+    TrainingFormModal,
+    TrainingRouteMap,
+    type RoutePoint,
 } from '../../components';
-import { TrainingFormModal } from '../../components';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
@@ -48,7 +50,16 @@ import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
 import { useMyFriends, useUsersMap, useUserSubpageAccess } from '../../hooks';
 import { brown } from '../../theme';
-import { applyThemeColor, confirmDelete, formatDateTime, notifyError, notifySuccess } from '../../utils';
+import {
+    applyThemeColor,
+    confirmDelete,
+    formatDateTime,
+    notifyError,
+    notifySuccess,
+    coordFromBackendInt,
+    formatPace,
+    formatSpeed,
+} from '../../utils';
 
 export default function TrainingDetails() {
     const { link } = useParams<{ link: string }>();
@@ -119,8 +130,9 @@ export default function TrainingDetails() {
         () => training?.participants?.map((p) => p.userId) ?? [],
         [training?.participants],
     );
+
     const { getUser } = useUsersMap(participantUserIds);
-    const { collaboratorOptions } = useMyFriends();
+    const { collaboratorOptions } = useMyFriends(undefined, editOpened && canManage);
 
     const updateStatusMutation = useMutation({
         mutationFn: (status: ElementStatusEnum) => {
@@ -334,6 +346,9 @@ export default function TrainingDetails() {
                                                         <Table.Th w={46} />
                                                         <Table.Th>{t('distanceMeters')}</Table.Th>
                                                         <Table.Th>{t('timeSeconds')}</Table.Th>
+                                                        <Table.Th w={100} ta="center">
+                                                            {t('gps')}
+                                                        </Table.Th>
                                                     </Table.Tr>
                                                 </Table.Thead>
                                                 <Table.Tbody>
@@ -342,6 +357,24 @@ export default function TrainingDetails() {
                                                             const hasSub =
                                                                 dist.subDistances && dist.subDistances.length > 0;
                                                             const isExpanded = expandedDistanceIds.includes(dist.id);
+                                                            const distRoutePoints: RoutePoint[] = (
+                                                                dist.subDistances ?? []
+                                                            )
+                                                                .map((sd) => {
+                                                                    const lat = coordFromBackendInt(sd.lat);
+                                                                    const lng = coordFromBackendInt(sd.lng);
+                                                                    if (lat != null && lng != null) {
+                                                                        return {
+                                                                            lat,
+                                                                            lng,
+                                                                            subDistance: sd.subDistance,
+                                                                            time: sd.time,
+                                                                        };
+                                                                    }
+                                                                    return null;
+                                                                })
+                                                                .filter((pt): pt is RoutePoint => pt !== null);
+
                                                             return (
                                                                 <React.Fragment key={dist.id}>
                                                                     <Table.Tr
@@ -381,89 +414,131 @@ export default function TrainingDetails() {
                                                                         <Table.Td>
                                                                             <Text size="sm">{dist.time} s</Text>
                                                                         </Table.Td>
+                                                                        <Table.Td ta="center">
+                                                                            {distRoutePoints.length > 0 ? (
+                                                                                <Badge color="green">{t('yes')}</Badge>
+                                                                            ) : (
+                                                                                <Badge color="red">{t('no')}</Badge>
+                                                                            )}
+                                                                        </Table.Td>
                                                                     </Table.Tr>
                                                                     {hasSub && isExpanded && (
                                                                         <Table.Tr className="table-expansion-row">
-                                                                            <Table.Td colSpan={3} p={0}>
-                                                                                <Table>
-                                                                                    <Table.Thead>
-                                                                                        <Table.Tr>
-                                                                                            <Table.Th>
-                                                                                                {t('subDistanceMeters')}
-                                                                                            </Table.Th>
-                                                                                            <Table.Th>
-                                                                                                {t('timeSeconds')}
-                                                                                            </Table.Th>
-                                                                                            <Table.Th>
-                                                                                                {t('lat')}
-                                                                                            </Table.Th>
-                                                                                            <Table.Th>
-                                                                                                {t('lng')}
-                                                                                            </Table.Th>
-                                                                                            <Table.Th>
-                                                                                                {t('accuracy')}
-                                                                                            </Table.Th>
-                                                                                            <Table.Th>
-                                                                                                {t('speed')}
-                                                                                            </Table.Th>
-                                                                                        </Table.Tr>
-                                                                                    </Table.Thead>
-                                                                                    <Table.Tbody>
-                                                                                        {dist.subDistances.map(
-                                                                                            (
-                                                                                                sd: TrainingDisciplineSubDistanceResource,
-                                                                                                sIdx: number,
-                                                                                            ) => (
-                                                                                                <Table.Tr
-                                                                                                    key={sd.id}
-                                                                                                    className={
-                                                                                                        sIdx % 2 === 0
-                                                                                                            ? 'table-row-odd'
-                                                                                                            : 'table-row-even'
-                                                                                                    }
-                                                                                                >
-                                                                                                    <Table.Td>
-                                                                                                        <Text size="sm">
-                                                                                                            {
-                                                                                                                sd.subDistance
-                                                                                                            }{' '}
-                                                                                                            m
-                                                                                                        </Text>
-                                                                                                    </Table.Td>
-                                                                                                    <Table.Td>
-                                                                                                        <Text size="sm">
-                                                                                                            {sd.time} s
-                                                                                                        </Text>
-                                                                                                    </Table.Td>
-                                                                                                    <Table.Td>
-                                                                                                        <Text size="sm">
-                                                                                                            {sd.lat ??
-                                                                                                                '-'}
-                                                                                                        </Text>
-                                                                                                    </Table.Td>
-                                                                                                    <Table.Td>
-                                                                                                        <Text size="sm">
-                                                                                                            {sd.lng ??
-                                                                                                                '-'}
-                                                                                                        </Text>
-                                                                                                    </Table.Td>
-                                                                                                    <Table.Td>
-                                                                                                        <Text size="sm">
-                                                                                                            {sd.accuracy ??
-                                                                                                                '-'}
-                                                                                                        </Text>
-                                                                                                    </Table.Td>
-                                                                                                    <Table.Td>
-                                                                                                        <Text size="sm">
-                                                                                                            {sd.speed ??
-                                                                                                                '-'}
-                                                                                                        </Text>
-                                                                                                    </Table.Td>
-                                                                                                </Table.Tr>
-                                                                                            ),
-                                                                                        )}
-                                                                                    </Table.Tbody>
-                                                                                </Table>
+                                                                            <Table.Td colSpan={4} p={0}>
+                                                                                <Stack gap={0}>
+                                                                                    {distRoutePoints.length > 0 && (
+                                                                                        <TrainingRouteMap
+                                                                                            points={distRoutePoints}
+                                                                                            flat
+                                                                                        />
+                                                                                    )}
+                                                                                    <Table>
+                                                                                        <Table.Thead>
+                                                                                            <Table.Tr>
+                                                                                                <Table.Th>
+                                                                                                    {t(
+                                                                                                        'subDistanceMeters',
+                                                                                                    )}
+                                                                                                </Table.Th>
+                                                                                                <Table.Th>
+                                                                                                    {t('timeSeconds')}
+                                                                                                </Table.Th>
+                                                                                                {distRoutePoints.length >
+                                                                                                    0 && (
+                                                                                                    <>
+                                                                                                        <Table.Th>
+                                                                                                            {t(
+                                                                                                                'paceMinKm',
+                                                                                                            )}
+                                                                                                        </Table.Th>
+                                                                                                        <Table.Th>
+                                                                                                            {t(
+                                                                                                                'speedKmH',
+                                                                                                            )}
+                                                                                                        </Table.Th>
+                                                                                                    </>
+                                                                                                )}
+                                                                                            </Table.Tr>
+                                                                                        </Table.Thead>
+                                                                                        <Table.Tbody>
+                                                                                            {dist.subDistances.map(
+                                                                                                (
+                                                                                                    sd: TrainingDisciplineSubDistanceResource,
+                                                                                                    sIdx: number,
+                                                                                                ) => {
+                                                                                                    const speedMps =
+                                                                                                        sd.speed !=
+                                                                                                            null &&
+                                                                                                        sd.speed > 0
+                                                                                                            ? sd.speed
+                                                                                                            : sd.time >
+                                                                                                                    0 &&
+                                                                                                                sd.subDistance >
+                                                                                                                    0
+                                                                                                              ? sd.subDistance /
+                                                                                                                sd.time
+                                                                                                              : 0;
+                                                                                                    const paceSecPerKm =
+                                                                                                        speedMps > 0.2
+                                                                                                            ? 1000 /
+                                                                                                              speedMps
+                                                                                                            : 0;
+                                                                                                    const speedKmH =
+                                                                                                        speedMps * 3.6;
+
+                                                                                                    return (
+                                                                                                        <Table.Tr
+                                                                                                            key={sd.id}
+                                                                                                            className={
+                                                                                                                sIdx %
+                                                                                                                    2 ===
+                                                                                                                0
+                                                                                                                    ? 'table-row-odd'
+                                                                                                                    : 'table-row-even'
+                                                                                                            }
+                                                                                                        >
+                                                                                                            <Table.Td>
+                                                                                                                <Text size="sm">
+                                                                                                                    {
+                                                                                                                        sd.subDistance
+                                                                                                                    }{' '}
+                                                                                                                    m
+                                                                                                                </Text>
+                                                                                                            </Table.Td>
+                                                                                                            <Table.Td>
+                                                                                                                <Text size="sm">
+                                                                                                                    {
+                                                                                                                        sd.time
+                                                                                                                    }{' '}
+                                                                                                                    s
+                                                                                                                </Text>
+                                                                                                            </Table.Td>
+                                                                                                            {distRoutePoints.length >
+                                                                                                                0 && (
+                                                                                                                <>
+                                                                                                                    <Table.Td>
+                                                                                                                        <Text size="sm">
+                                                                                                                            {formatPace(
+                                                                                                                                paceSecPerKm,
+                                                                                                                            )}
+                                                                                                                        </Text>
+                                                                                                                    </Table.Td>
+                                                                                                                    <Table.Td>
+                                                                                                                        <Text size="sm">
+                                                                                                                            {formatSpeed(
+                                                                                                                                speedKmH,
+                                                                                                                            )}
+                                                                                                                        </Text>
+                                                                                                                    </Table.Td>
+                                                                                                                </>
+                                                                                                            )}
+                                                                                                        </Table.Tr>
+                                                                                                    );
+                                                                                                },
+                                                                                            )}
+                                                                                        </Table.Tbody>
+                                                                                    </Table>
+                                                                                </Stack>
                                                                             </Table.Td>
                                                                         </Table.Tr>
                                                                     )}
