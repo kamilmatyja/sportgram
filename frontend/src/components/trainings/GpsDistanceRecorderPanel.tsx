@@ -12,7 +12,7 @@ import {
     formatTime,
     calculatePace,
     calculateSpeed,
-    confirmDelete,
+    generateUuid,
 } from '../../utils';
 import { TrainingRouteMap, type RoutePoint } from './TrainingRouteMap';
 import type { FormTrainingDistance } from './TrainingDisciplinesEditor';
@@ -71,10 +71,12 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
     useEffect(() => {
         if (!navigator.geolocation) {
             notifications.show({
+                id: 'gps-status-error',
                 color: 'red',
-                title: t('gpsSignal'),
-                message: t('gpsNotSupported'),
+                title: t('gps'),
+                message: t('gpsPermissionDenied'),
             });
+            onCancel();
             return;
         }
 
@@ -145,15 +147,21 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
         };
 
         const handleError = (error: GeolocationPositionError) => {
-            let message = t('gpsPositionUnavailable');
             if (error.code === error.PERMISSION_DENIED) {
-                message = t('gpsPermissionDenied');
-            } else if (error.code === error.TIMEOUT) {
-                message = t('gpsTimeout');
+                notifications.show({
+                    id: 'gps-status-error',
+                    color: 'red',
+                    title: t('gps'),
+                    message: t('gpsPermissionDenied'),
+                });
+                onCancel();
+                return;
             }
+            const message = error.code === error.TIMEOUT ? t('gpsTimeout') : t('gpsPositionUnavailable');
             notifications.show({
+                id: 'gps-status-error',
                 color: 'red',
-                title: t('gpsSignal'),
+                title: t('gps'),
                 message,
             });
         };
@@ -170,7 +178,7 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                 watchIdRef.current = null;
             }
         };
-    }, [t]);
+    }, [onCancel, t]);
 
     const handleStart = () => {
         setStartedAt(new Date());
@@ -268,7 +276,7 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
         const sampledSubDistances = downsampleSubDistances(finalPoints);
 
         const newDistance: FormTrainingDistance = {
-            id: crypto.randomUUID(),
+            id: generateUuid(),
             distance: String(Math.round(totalDistance)),
             time: String(Math.round(elapsedSeconds)),
             subDistances: sampledSubDistances.map((p, idx) => {
@@ -294,7 +302,7 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                 const finalSpeed = p.subDistance > 0 || totalDistance > 0 ? Math.max(1, roundedSpeed) : roundedSpeed;
 
                 return {
-                    id: crypto.randomUUID(),
+                    id: generateUuid(),
                     subDistance: String(Math.round(p.subDistance)),
                     time: String(Math.round(p.time)),
                     lat: String(p.lat),
@@ -309,18 +317,11 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
     };
 
     const handleDiscard = () => {
-        if (status === 'idle') {
-            onCancel();
-            return;
+        if (watchIdRef.current !== null) {
+            navigator.geolocation.clearWatch(watchIdRef.current);
+            watchIdRef.current = null;
         }
-
-        confirmDelete(t, () => {
-            if (watchIdRef.current !== null) {
-                navigator.geolocation.clearWatch(watchIdRef.current);
-                watchIdRef.current = null;
-            }
-            onCancel();
-        });
+        onCancel();
     };
 
     const currentPaceSecPerKm = useMemo(() => {
@@ -373,7 +374,7 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
     return (
         <Paper p="sm" mt="xs" bg="var(--mantine-color-gray-light)">
             <Stack gap="sm">
-                <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="xs">
+                <SimpleGrid className="metrics-grid" spacing="xs">
                     <div className="gps-metric-card">
                         <div className="gps-metric-val">{formatDistance(totalDistance)}</div>
                         <div className="gps-metric-lbl">{t('distance')}</div>

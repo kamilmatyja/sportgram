@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stack, Textarea, FileInput, Button } from '@mantine/core';
+import { Modal, Stack, Textarea, Button } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPhoto } from '@tabler/icons-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { feedService, type FeedResource } from '../../api/services';
+import { ImageInput } from '../common';
 import { useFormErrors } from '../../hooks';
 import { resolveImageBase64 } from '../../utils';
 
@@ -67,7 +67,7 @@ export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) 
     const canSubmit = isPhotoRequired ? !!text.trim() && !!photo : !!text.trim();
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editFeed') : t('addFeed')} zIndex={1000}>
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editFeed') : t('addFeed')}>
             <Stack gap="sm">
                 <Textarea
                     label={t('text')}
@@ -78,16 +78,12 @@ export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) 
                     onChange={(e) => setText(e.currentTarget.value)}
                     required
                 />
-                <FileInput
+                <ImageInput
                     label={t('photo')}
-                    placeholder={t('selectPhoto')}
                     description={hasExistingPhoto ? t('leaveEmptyToKeep') : undefined}
-                    accept="image/*"
-                    leftSection={<IconPhoto size={16} />}
                     value={photo}
                     error={fieldErrors.photo}
                     onChange={setPhoto}
-                    clearable
                     required={isPhotoRequired}
                 />
                 <Button loading={isSubmitting} disabled={isSubmitting || !canSubmit} onClick={() => mutation.mutate()}>

@@ -632,22 +632,7 @@ npm run fix
 
 ## Problemy i zadania do wdrożenia
 
-### 1. Bezpośrednia integracja z kamerą na frontendzie (MediaDevices API)
-
-- **Stan obecny:** 
-  Dodawanie zdjęć do relacji (Stories), wpisów (Feeds) oraz profili użytkowników i stron odbywa się za pomocą standardowego komponentu `<FileInput>` biblioteki Mantine, który otwiera selektor plików systemu operacyjnego i konwertuje plik na format Base64. Brak bezpośredniego podglądu kadru z kamery wewnątrz aplikacji.
-- **Co jest do zrobienia:**
-  - Stworzenie komponentu aparatu (np. `CameraCaptureModal`) wbudowanego bezpośrednio w interfejs PWA.
-  - Zapewnienie podglądu wideo na żywo, przycisku wyzwolenia migawki oraz przełącznika wyboru kamery (przednia kamera do selfie vs. tylna kamera do zdjęć otoczenia/trasy).
-- **Jak to zaimplementować:**
-  - Wywołać `navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false })`.
-  - Przypisać strumień `MediaStream` do elementu `<video autoPlay playsInline muted />`.
-  - W momencie wykonania zdjęcia przechwycić klatkę na niewidocznym elemencie `<canvas>`, wywołać `canvas.toDataURL('image/jpeg', 0.85)` lub `canvas.toBlob()`, a uzyskany ciąg Base64 przekazać do istniejącej logiki zapisu (`resolveImageBase64`).
-  - Pamiętać o zwalnianiu zasobów sprzętowych (`stream.getTracks().forEach(track => track.stop())`) po zamknięciu modalu lub wykonaniu ujęcia, aby nie blokować kamery i nie drenować baterii.
-- **Po co:**
-  - W dynamicznym środowisku społecznościowo-sportowym użytkownik publikujący relację (Story) lub zdjęcie z trasy oczekuje natychmiastowego doświadczenia „point-and-shoot” bez konieczności opuszczania aplikacji PWA, uruchamiania zewnętrznej aplikacji aparatu, zapisywania pliku w pamięci telefonu i ręcznego wgrywania go przez okno dialogowe.
-
-### 2. Buforowanie danych offline i mechanizm synchronizacji (Offline-First Data Sync)
+### 1. Buforowanie danych offline i mechanizm synchronizacji (Offline-First Data Sync)
 
 - **Stan obecny:** 
   Service Worker (`frontend/public/sw.js`) buforuje wyłącznie powłokę aplikacji (pliki HTML, ikony SVG, manifest). Wszystkie zapytania pod ścieżkę `/api` są wyłączone z cache'owania (`Network-Only`). W przypadku braku Internetu aplikacja uruchamia się, ale nie pozwala na tworzenie nowych aktywności bez połączenia z serwerem.
@@ -661,7 +646,7 @@ npm run fix
 - **Po co:**
   - Treningi biegowe, kolarstwo czy trekking bardzo często odbywają się na obszarach leśnych, górskich lub pozamiejskich z niestabilnym zasięgiem GSM. Prawdziwa aplikacja PWA o charakterze sportowym musi gwarantować, że dane z ukończonego treningu nie zostaną utracone, a użytkownik otrzyma informację o pomyślnym zapisie lokalnym i oczekującej synchronizacji.
 
-### 3. Zestawy testów automatycznych dla warstwy frontendu (Vitest / React Testing Library)
+### 2. Zestawy testów automatycznych dla warstwy frontendu (Vitest / React Testing Library)
 
 - **Stan obecny:** 
   W projekcie frontendu zainstalowano zależności i przygotowano infrastrukturę pod testy (`vitest`, `@testing-library/react`, `frontend/src/test/setup.ts`, `test-utils.tsx`), lecz w katalogu `frontend/src` nie ma jeszcze napisanych plików zestawów testowych (`*.test.tsx`).
@@ -675,7 +660,7 @@ npm run fix
 - **Po co:**
   - Automatyczna weryfikacja poprawności działania interfejsu zabezpiecza projekt przed regresją podczas wprowadzania nowych funkcjonalności i refaktoryzacji, podnosząc niezawodność oprogramowania zgodnie ze standardem ISO/IEC 25010.
 
-### 4. Skrypty testów obciążeniowych i wydajnościowych backendu (k6 / Stress Testing)
+### 3. Skrypty testów obciążeniowych i wydajnościowych backendu (k6 / Stress Testing)
 
 - **Stan obecny:** 
   Backend posiada imponujący zestaw ponad 90 klas testowych Feature w PHPUnit (`backend/tests/Feature`), które dokładnie sprawdzają logikę biznesową, uprawnienia i bazę danych. Brak jednak w repozytorium zdefiniowanych skryptów do testów przeciążeniowych symulujących ruch masowy.

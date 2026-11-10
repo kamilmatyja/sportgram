@@ -31,7 +31,7 @@ import { ColorEnum } from '../../enums/ColorEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
-import { brown } from '../../theme';
+import { createDynamicTheme } from '../../theme';
 import {
     applyThemeColor,
     confirmDelete,
@@ -153,9 +153,10 @@ export default function EventDetails() {
     }
 
     const eventPhotoSrc = formatImageSrc(event.photo);
+    const dynamicTheme = useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
 
     return (
-        <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
+        <MantineThemeProvider theme={dynamicTheme} inherit>
             <Stack gap="lg">
                 {page && <PageNav page={page} simplifiedHeader={true} />}
 

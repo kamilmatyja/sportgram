@@ -24,7 +24,7 @@ export function TitleLinkStatusFilterGrid({
     const { t } = useTranslation();
 
     return (
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
+        <SimpleGrid className="filter-grid-3">
             <TextInput
                 label={t('title')}
                 value={title}

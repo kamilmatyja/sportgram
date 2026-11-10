@@ -31,7 +31,7 @@ import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { GoalStatusEnum } from '../../enums/GoalStatusEnum';
 import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
 import { useUsersMap, useMyFriends, useUserSubpageAccess } from '../../hooks';
-import { brown } from '../../theme';
+import { createDynamicTheme } from '../../theme';
 import {
     applyThemeColor,
     confirmDelete,
@@ -198,8 +198,10 @@ export default function GoalDetails() {
         return <NotFound title={t('accessDenied')} />;
     }
 
+    const dynamicTheme = useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
+
     return (
-        <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
+        <MantineThemeProvider theme={dynamicTheme} inherit>
             <Stack gap="lg">
                 {ownerUser && <UserProfileNav user={ownerUser} isOwner={isOwner} />}
 

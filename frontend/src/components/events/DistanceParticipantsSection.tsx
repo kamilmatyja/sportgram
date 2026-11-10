@@ -316,7 +316,7 @@ export function DistanceParticipantsSection({
                                                             (!p.results || p.results.length === 0) && (
                                                                 <Button
                                                                     size="xs"
-                                                                    variant="subtle"
+                                                                    variant="default"
                                                                     leftSection={<IconPlus size={16} />}
                                                                     onClick={() => handleOpenAddResult(p.id)}
                                                                 >

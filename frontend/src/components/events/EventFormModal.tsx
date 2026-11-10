@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stack, TextInput, Textarea, FileInput, Select, SimpleGrid, Button } from '@mantine/core';
+import { Modal, Stack, TextInput, Textarea, Select, SimpleGrid, Button } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPhoto } from '@tabler/icons-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { ImageInput } from '../common';
 import { eventService, type EventResource } from '../../api/services';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useFormErrors } from '../../hooks';
@@ -261,17 +261,13 @@ export function EventFormModal({
                     />
                 </SimpleGrid>
 
-                <FileInput
+                <ImageInput
                     label={t('photo')}
-                    placeholder={t('selectPhoto')}
                     description={isEdit ? t('leaveEmptyToKeep') : undefined}
                     required={!isEdit}
-                    accept="image/*"
-                    leftSection={<IconPhoto size={16} />}
                     value={photoFile}
                     error={fieldErrors.photo}
                     onChange={setPhotoFile}
-                    clearable
                 />
 
                 <EventDisciplinesEditor disciplines={disciplines} onChange={setDisciplines} />

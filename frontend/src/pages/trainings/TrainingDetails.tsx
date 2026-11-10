@@ -49,7 +49,7 @@ import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
 import { useMyFriends, useUsersMap, useUserSubpageAccess } from '../../hooks';
-import { brown } from '../../theme';
+import { createDynamicTheme } from '../../theme';
 import {
     applyThemeColor,
     confirmDelete,
@@ -206,8 +206,10 @@ export default function TrainingDetails() {
         return <NotFound title={t('accessDenied')} />;
     }
 
+    const dynamicTheme = useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
+
     return (
-        <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
+        <MantineThemeProvider theme={dynamicTheme} inherit>
             <Stack gap="lg">
                 {ownerUser && <UserProfileNav user={ownerUser} isOwner={isOwner} />}
 

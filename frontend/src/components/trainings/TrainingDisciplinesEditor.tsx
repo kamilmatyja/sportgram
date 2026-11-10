@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Stack, Group, Paper, Select, TextInput, Button, ActionIcon, Tooltip, Text, SimpleGrid } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { IconPlus, IconTrash, IconPlayerPlay } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { updateItem, removeItem, patchItem } from '../../utils';
+import { updateItem, removeItem, patchItem, generateUuid } from '../../utils';
 import { GpsDistanceRecorderPanel } from './GpsDistanceRecorderPanel';
 
 export interface FormTrainingSubDistance {
@@ -43,13 +44,72 @@ interface ActiveRecordingSession {
 export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTimes }: TrainingDisciplinesEditorProps) {
     const { t } = useTranslation();
     const [recordingSessions, setRecordingSessions] = useState<ActiveRecordingSession[]>([]);
+    const [requestingGpsId, setRequestingGpsId] = useState<string | null>(null);
 
-    const handleStartRecording = (disciplineId: string) => {
-        setRecordingSessions((prev) => [...prev, { id: crypto.randomUUID(), disciplineId }]);
+    const handleStartRecording = async (disciplineId: string) => {
+        if (typeof navigator === 'undefined' || !navigator.geolocation) {
+            notifications.show({
+                id: 'gps-status-error',
+                color: 'red',
+                title: t('gps'),
+                message: t('gpsPermissionDenied'),
+            });
+            return;
+        }
+
+        if (navigator.permissions && navigator.permissions.query) {
+            try {
+                const permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+                if (permissionStatus.state === 'denied') {
+                    notifications.show({
+                        id: 'gps-status-error',
+                        color: 'red',
+                        title: t('gps'),
+                        message: t('gpsPermissionDenied'),
+                    });
+                    return;
+                }
+            } catch {
+                // Ignore
+            }
+        }
+
+        setRequestingGpsId(disciplineId);
+
+        navigator.geolocation.getCurrentPosition(
+            () => {
+                setRequestingGpsId(null);
+                setRecordingSessions((prev) => [...prev, { id: generateUuid(), disciplineId }]);
+            },
+            (error) => {
+                setRequestingGpsId(null);
+                if (error.code === error.PERMISSION_DENIED) {
+                    notifications.show({
+                        id: 'gps-status-error',
+                        color: 'red',
+                        title: t('gps'),
+                        message: t('gpsPermissionDenied'),
+                    });
+                } else {
+                    const message = error.code === error.TIMEOUT ? t('gpsTimeout') : t('gpsPositionUnavailable');
+                    notifications.show({
+                        id: 'gps-status-error',
+                        color: 'red',
+                        title: t('gps'),
+                        message,
+                    });
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0,
+            },
+        );
     };
 
     const handleAddDiscipline = () => {
-        onChange([...disciplines, { id: crypto.randomUUID(), discipline: null, distances: [] }]);
+        onChange([...disciplines, { id: generateUuid(), discipline: null, distances: [] }]);
     };
 
     const handleRemoveDiscipline = (id: string) => onChange(removeItem(disciplines, id));
@@ -61,7 +121,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
         onChange(
             updateItem(disciplines, disciplineId, (d) => ({
                 ...d,
-                distances: [...d.distances, { id: crypto.randomUUID(), distance: '', time: '', subDistances: [] }],
+                distances: [...d.distances, { id: generateUuid(), distance: '', time: '', subDistances: [] }],
             })),
         );
     };
@@ -98,7 +158,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
                     subDistances: [
                         ...(dist.subDistances || []),
                         {
-                            id: crypto.randomUUID(),
+                            id: generateUuid(),
                             subDistance: '',
                             time: '',
                             lat: '',
@@ -217,7 +277,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
                                         </Text>
                                         <Button
                                             size="compact-xs"
-                                            variant="subtle"
+                                            variant="default"
                                             leftSection={<IconPlus size={16} />}
                                             onClick={() => handleAddSubDistance(d.id, dist.id)}
                                         >
@@ -227,7 +287,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
 
                                     {dist.subDistances?.map((sd) => (
                                         <Paper key={sd.id} p="xs">
-                                            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="xs">
+                                            <SimpleGrid className="subdistances-grid" spacing="xs">
                                                 <TextInput
                                                     size="xs"
                                                     label={t('subDistanceMeters')}
@@ -358,13 +418,15 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
                                 size="xs"
                                 variant="light"
                                 leftSection={<IconPlayerPlay size={16} />}
-                                onClick={() => handleStartRecording(d.id)}
+                                loading={requestingGpsId === d.id}
+                                disabled={requestingGpsId !== null}
+                                onClick={() => void handleStartRecording(d.id)}
                             >
                                 {t('recordDistanceGps')}
                             </Button>
                             <Button
                                 size="xs"
-                                variant="subtle"
+                                variant="default"
                                 leftSection={<IconPlus size={16} />}
                                 onClick={() => handleAddDistance(d.id)}
                             >

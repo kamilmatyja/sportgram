@@ -147,14 +147,56 @@
     }
 }
 
+.recorder-media-container,
 .route-map-container {
     width: 100%;
-    height: 320px;
+    height: 280px;
     border-radius: var(--mantine-radius-md);
     overflow: hidden;
     position: relative;
     border: 1px solid var(--mantine-color-default-border);
+    background-color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 1;
+}
+
+.route-map-container {
+    height: 320px;
+    background-color: transparent;
+    display: block;
+}
+
+.recorder-media-element {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.recorder-media-flipped {
+    transform: scaleX(-1);
+}
+
+.recorder-media-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 2;
+}
+
+.recorder-media-hidden {
+    display: none;
+}
+
+.file-preview-info {
+    min-width: 0;
+    overflow: hidden;
+    flex: 1;
 }
 
 .route-map-container-flat {
@@ -273,4 +315,61 @@
 
 .mantine-Drawer-content {
     padding: 0 !important;
+}
+
+@media (max-width: 768px) {
+    .mantine-AppShell-main {
+        padding-inline-start: 0 !important;
+        padding-inline-end: 0 !important;
+    }
+
+    .mantine-AppShell-header .mantine-Container-root {
+        padding-inline: 8px !important;
+    }
+
+    .mantine-AppShell-main .mantine-Container-root {
+        padding-inline: 4px !important;
+    }
+
+    .mantine-Card-root {
+        --card-padding: var(--mantine-spacing-xs);
+    }
+}
+
+.metrics-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.subdistances-grid,
+.filter-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.filter-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 992px) {
+    .subdistances-grid,
+    .filter-grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .filter-grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .subdistances-grid,
+    .filter-grid-3,
+    .filter-grid-4 {
+        grid-template-columns: 1fr !important;
+    }
 }

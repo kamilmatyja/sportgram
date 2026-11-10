@@ -613,7 +613,7 @@ export default function UserConversations() {
                                         <Center my="xs">
                                             <Button
                                                 size="xs"
-                                                variant="subtle"
+                                                variant="default"
                                                 onClick={() => {
                                                     if (chatViewportRef.current) {
                                                         prevScrollHeightRef.current =

@@ -177,14 +177,17 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
         });
     };
 
-    const authorLink = author?.link ? `/users/${author.link}` : `/users/${feed.userId}`;
-    const authorName = author ? `${author.firstName} ${author.lastName}` : feed.userId;
+    const feedAuthor = author ?? usersMap[feed.userId];
+    const authorLink = feedAuthor?.link ? `/users/${feedAuthor.link}` : `/users/${feed.userId}`;
+    const authorName = feedAuthor
+        ? `${feedAuthor.firstName ?? ''} ${feedAuthor.lastName ?? ''}`.trim() || feedAuthor.link || feed.userId
+        : feed.userId;
 
     return (
         <Card ref={domRef}>
             <Group justify="space-between" mb="xs">
                 <Group>
-                    <Avatar src={formatImageSrc(author?.profilePhoto)} component={Link} to={authorLink}>
+                    <Avatar src={formatImageSrc(feedAuthor?.profilePhoto)} component={Link} to={authorLink}>
                         ?
                     </Avatar>
                     <Box>
@@ -261,9 +264,8 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                     </Group>
 
                     <Button
-                        variant="subtle"
+                        variant="default"
                         size="xs"
-                        color="gray"
                         leftSection={<IconMessageCircle size={16} />}
                         onClick={() => setCommentsOpen(!commentsOpen)}
                     >
@@ -277,7 +279,10 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
             <Collapse expanded={commentsOpen}>
                 <Stack gap="xs" mt="sm">
                     {feed.comments?.map((c) => {
-                        const cAuthor = usersMap[c.userId] ?? (currentUser?.id === c.userId ? currentUser : undefined);
+                        const cAuthor =
+                            usersMap[c.userId] ??
+                            (currentUser?.id === c.userId ? currentUser : undefined) ??
+                            (feedAuthor?.id === c.userId ? feedAuthor : undefined);
                         const cAuthorName = cAuthor
                             ? `${cAuthor.firstName ?? ''} ${cAuthor.lastName ?? ''}`.trim() || cAuthor.link || c.userId
                             : c.userId;

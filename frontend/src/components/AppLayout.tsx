@@ -15,6 +15,7 @@ import {
     Burger,
     Drawer,
     Stack,
+    Divider,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
@@ -26,6 +27,8 @@ import {
     IconBuildingStore,
     IconCalendarEvent,
     IconChartBar,
+    IconLogin,
+    IconUserPlus,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -59,20 +62,18 @@ export function AppLayout({ children }: AppLayoutProps) {
     ];
 
     return (
-        <AppShell header={{ height: 60 }} padding="md">
+        <AppShell>
             <AppShell.Header>
-                <Container h="100%">
+                <Container h="100%" px="md">
                     <Group h="100%" justify="space-between" wrap="nowrap">
                         <Group wrap="nowrap">
-                            {isAuthenticated && (
-                                <Burger
-                                    opened={drawerOpened}
-                                    onClick={toggleDrawer}
-                                    hiddenFrom="sm"
-                                    size="sm"
-                                    aria-label="Toggle navigation"
-                                />
-                            )}
+                            <Burger
+                                opened={drawerOpened}
+                                onClick={toggleDrawer}
+                                hiddenFrom="sm"
+                                size="sm"
+                                aria-label="Toggle navigation"
+                            />
                             <UnstyledButton onClick={() => handleNav('/')}>
                                 <Group gap="xs" wrap="nowrap">
                                     <RunnerLogo size={32} />
@@ -104,7 +105,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
                         <Group gap="xs" wrap="nowrap">
                             {!isAuthenticated ? (
-                                <>
+                                <Group gap="xs" wrap="nowrap" visibleFrom="sm">
                                     <SegmentedControl
                                         size="xs"
                                         value={i18n.language.startsWith('en') ? 'en' : 'pl'}
@@ -131,7 +132,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                                     <Button size="xs" onClick={() => handleNav('/register')}>
                                         {t('register')}
                                     </Button>
-                                </>
+                                </Group>
                             ) : currentUser ? (
                                 <Menu width={200}>
                                     <Menu.Target>
@@ -167,26 +168,28 @@ export function AppLayout({ children }: AppLayoutProps) {
             </AppShell.Header>
 
             <AppShell.Main>
-                <Container w="100%">{children}</Container>
+                <Container w="100%" px="md">
+                    {children}
+                </Container>
             </AppShell.Main>
 
-            {isAuthenticated && (
-                <Drawer
-                    opened={drawerOpened}
-                    onClose={closeDrawer}
-                    size="xs"
-                    title={
-                        <Group gap="xs">
-                            <RunnerLogo size={24} />
-                            <Text fw={700} size="md" c="var(--mantine-primary-color)">
-                                Sportgram
-                            </Text>
-                        </Group>
-                    }
-                    hiddenFrom="sm"
-                >
-                    <Stack gap="xs" mt="sm">
-                        {navItems.map((item) => {
+            <Drawer
+                opened={drawerOpened}
+                onClose={closeDrawer}
+                size="xs"
+                title={
+                    <Group gap="xs">
+                        <RunnerLogo size={24} />
+                        <Text fw={700} size="md" c="var(--mantine-primary-color)">
+                            Sportgram
+                        </Text>
+                    </Group>
+                }
+                hiddenFrom="sm"
+            >
+                <Stack gap="xs" mt="sm">
+                    {isAuthenticated ? (
+                        navItems.map((item) => {
                             const isActive = location.pathname === item.path;
                             return (
                                 <Button
@@ -202,10 +205,58 @@ export function AppLayout({ children }: AppLayoutProps) {
                                     {item.label}
                                 </Button>
                             );
-                        })}
-                    </Stack>
-                </Drawer>
-            )}
+                        })
+                    ) : (
+                        <>
+                            <Button
+                                variant={location.pathname === '/sign' ? 'light' : 'default'}
+                                justify="flex-start"
+                                leftSection={<IconLogin size={16} />}
+                                onClick={() => {
+                                    handleNav('/sign');
+                                    closeDrawer();
+                                }}
+                            >
+                                {t('sign')}
+                            </Button>
+                            <Button
+                                variant={location.pathname === '/register' ? 'light' : 'filled'}
+                                justify="flex-start"
+                                leftSection={<IconUserPlus size={16} />}
+                                onClick={() => {
+                                    handleNav('/register');
+                                    closeDrawer();
+                                }}
+                            >
+                                {t('register')}
+                            </Button>
+                            <Divider my="xs" />
+                            <Group justify="space-between" px="xs">
+                                <Text size="sm">{t('language')}</Text>
+                                <SegmentedControl
+                                    size="xs"
+                                    value={i18n.language.startsWith('en') ? 'en' : 'pl'}
+                                    onChange={(val) => i18n.changeLanguage(val)}
+                                    data={[
+                                        { label: 'PL', value: 'pl' },
+                                        { label: 'EN', value: 'en' },
+                                    ]}
+                                />
+                            </Group>
+                            <Group justify="space-between" px="xs">
+                                <Text size="sm">{t('theme')}</Text>
+                                <ActionIcon
+                                    variant="default"
+                                    onClick={() => toggleColorScheme()}
+                                    aria-label={t('toggleTheme')}
+                                >
+                                    {colorScheme === 'dark' ? <IconSun size={16} /> : <IconMoon size={16} />}
+                                </ActionIcon>
+                            </Group>
+                        </>
+                    )}
+                </Stack>
+            </Drawer>
         </AppShell>
     );
 }

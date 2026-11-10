@@ -1358,8 +1358,9 @@ class DatabaseSeedCommand extends Command
 
         foreach ($pageTitles as [$key, $title, $desc, $link, $col, $ownerEmail, $status]) {
             $owner = $this->users[$ownerEmail] ?? $jan;
-            $profilePhoto = $this->generateProfilePhoto(
+            $profilePhoto = $this->generatePageProfilePhoto(
                 $col,
+                $title,
                 $key . '_page',
             );
             $backgroundPhoto = $this->generateLandscapeSvg(
@@ -2221,41 +2222,41 @@ class DatabaseSeedCommand extends Command
             ['Ukończyć 1/4 Ironmana poniżej 2h15m', 'ukonczyc-1-4-im-ponizej-2h15', DisciplineEnum::Swimming, 950, 900, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Szosowa setka ze średnią 32 km/h', 'szosowa-setka-srednia-32', DisciplineEnum::Cycling, 100000, 11250, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Długie wybieganie 30km w tempie 4:45', 'dlugie-wybieganie-30k-tempo-445', DisciplineEnum::Running, 30000, 8550, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #21: 26000m w tempie docelowym', 'cel-treningowy-21-26000m', DisciplineEnum::Running, 26000, 6240, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #22: 27000m w tempie docelowym', 'cel-treningowy-22-27000m', DisciplineEnum::Running, 27000, 6480, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #23: 28000m w tempie docelowym', 'cel-treningowy-23-28000m', DisciplineEnum::Running, 28000, 6720, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #24: 29000m w tempie docelowym', 'cel-treningowy-24-29000m', DisciplineEnum::Running, 29000, 6960, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #25: 30000m w tempie docelowym', 'cel-treningowy-25-30000m', DisciplineEnum::Running, 30000, 7200, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #26: 31000m w tempie docelowym', 'cel-treningowy-26-31000m', DisciplineEnum::Running, 31000, 7440, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #27: 32000m w tempie docelowym', 'cel-treningowy-27-32000m', DisciplineEnum::Running, 32000, 7680, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #28: 33000m w tempie docelowym', 'cel-treningowy-28-33000m', DisciplineEnum::Running, 33000, 7920, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #29: 34000m w tempie docelowym', 'cel-treningowy-29-34000m', DisciplineEnum::Running, 34000, 8160, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #30: 35000m w tempie docelowym', 'cel-treningowy-30-35000m', DisciplineEnum::Running, 35000, 8400, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #31: 36000m w tempie docelowym', 'cel-treningowy-31-36000m', DisciplineEnum::Running, 36000, 8640, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #32: 37000m w tempie docelowym', 'cel-treningowy-32-37000m', DisciplineEnum::Running, 37000, 8880, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #33: 38000m w tempie docelowym', 'cel-treningowy-33-38000m', DisciplineEnum::Running, 38000, 9120, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #34: 39000m w tempie docelowym', 'cel-treningowy-34-39000m', DisciplineEnum::Running, 39000, 9360, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #35: 40000m w tempie docelowym', 'cel-treningowy-35-40000m', DisciplineEnum::Running, 40000, 9600, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #36: 41000m w tempie docelowym', 'cel-treningowy-36-41000m', DisciplineEnum::Running, 41000, 9840, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #37: 42000m w tempie docelowym', 'cel-treningowy-37-42000m', DisciplineEnum::Running, 42000, 10080, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #38: 43000m w tempie docelowym', 'cel-treningowy-38-43000m', DisciplineEnum::Running, 43000, 10320, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #39: 44000m w tempie docelowym', 'cel-treningowy-39-44000m', DisciplineEnum::Running, 44000, 10560, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #40: 45000m w tempie docelowym', 'cel-treningowy-40-45000m', DisciplineEnum::Running, 45000, 10800, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #41: 46000m w tempie docelowym', 'cel-treningowy-41-46000m', DisciplineEnum::Running, 46000, 11040, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #42: 47000m w tempie docelowym', 'cel-treningowy-42-47000m', DisciplineEnum::Running, 47000, 11280, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #43: 48000m w tempie docelowym', 'cel-treningowy-43-48000m', DisciplineEnum::Running, 48000, 11520, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #44: 49000m w tempie docelowym', 'cel-treningowy-44-49000m', DisciplineEnum::Running, 49000, 11760, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #45: 50000m w tempie docelowym', 'cel-treningowy-45-50000m', DisciplineEnum::Running, 50000, 12000, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #46: 51000m w tempie docelowym', 'cel-treningowy-46-51000m', DisciplineEnum::Running, 51000, 12240, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #47: 52000m w tempie docelowym', 'cel-treningowy-47-52000m', DisciplineEnum::Running, 52000, 12480, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #48: 53000m w tempie docelowym', 'cel-treningowy-48-53000m', DisciplineEnum::Running, 53000, 12720, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #49: 54000m w tempie docelowym', 'cel-treningowy-49-54000m', DisciplineEnum::Running, 54000, 12960, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #50: 55000m w tempie docelowym', 'cel-treningowy-50-55000m', DisciplineEnum::Running, 55000, 13200, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #51: 56000m w tempie docelowym', 'cel-treningowy-51-56000m', DisciplineEnum::Running, 56000, 13440, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #52: 57000m w tempie docelowym', 'cel-treningowy-52-57000m', DisciplineEnum::Running, 57000, 13680, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #53: 58000m w tempie docelowym', 'cel-treningowy-53-58000m', DisciplineEnum::Running, 58000, 13920, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #54: 59000m w tempie docelowym', 'cel-treningowy-54-59000m', DisciplineEnum::Running, 59000, 14160, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
-            ['Cel treningowy #55: 60000m w tempie docelowym', 'cel-treningowy-55-60000m', DisciplineEnum::Running, 60000, 14400, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Przebiec półmaraton górski z przewyższeniem +800m', 'polmaraton-gorski-800m-up', DisciplineEnum::Running, 21097, 7200, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Pokonać 100km na gravelu po Puszczy Kampinoskiej', 'gravel-100km-kampinos', DisciplineEnum::Cycling, 100000, 13500, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Przepłynąć 3800m w jeziorze bez zatrzymania', 'plywanie-3800m-open-water', DisciplineEnum::Swimming, 3800, 4500, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Bieg na Śnieżkę: zdobycie szczytu z Karpacza', 'bieg-na-sniezke-karpacz', DisciplineEnum::Running, 14000, 5400, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Przejechać trasę R10 wzdłuż polskiego wybrzeża', 'trasa-r10-wybrzeze-szosa', DisciplineEnum::Cycling, 180000, 21600, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Trening tempowy: 10 x 1000m w tempie 3:50/km', 'trening-tempowy-10x1000m', DisciplineEnum::Running, 10000, 2300, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Przepłynąć 400m stylem zmiennym poniżej 6 minut', 'plywanie-400m-zmienny', DisciplineEnum::Swimming, 400, 350, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Maraton na rolkach poniżej 1h 20 min', 'maraton-rolki-ponizej-1h20m', DisciplineEnum::InlineSkating, 42195, 4700, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Przejechać Przełęcz Karkonoską na rowerze szosowym', 'przelecz-karkonoska-szosa', DisciplineEnum::Cycling, 25000, 4200, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Bieg na orientację 20km w terenie leśnym', 'bieg-na-orientacje-20km', DisciplineEnum::Running, 20000, 6600, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Test Coopera: pokonać ponad 3200m w 12 minut', 'test-coopera-3200m', DisciplineEnum::Running, 3200, 720, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Szosowy wyjazd 120km ze średnią powyżej 32 km/h', 'szosowy-wyjazd-120km-srednia-32', DisciplineEnum::Cycling, 120000, 13500, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Ukończyć triathlon olimpijski poniżej 2h 25 min', 'triathlon-olimpijski-sub-2h25m', DisciplineEnum::Swimming, 1500, 1400, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Pokonać 50 basenów kraulem z deską i ósemką', '50-basenow-kraul-technika', DisciplineEnum::Swimming, 2500, 2700, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Bieg Rzeźnika: ukończyć trasę w limicie czasu', 'bieg-rzeznika-bieszczady', DisciplineEnum::Running, 84000, 43200, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Zimowy maraton na nartach biegowych w Jakuszycach', 'jakuszyce-maraton-narciarski', DisciplineEnum::CrossCountrySkiing, 42000, 9600, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Ergometr wioślarski 5000m poniżej 18 minut', 'ergometr-5000m-ponizej-18m', DisciplineEnum::Rowing, 5000, 1070, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Wyprawa bikepackingowa: 300km z sakwami przez Mazury', 'bikepacking-300km-mazury', DisciplineEnum::Cycling, 300000, 43200, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Trening siły biegowej: 15 podbiegów pod Agrykolę', 'sila-biegowa-agrykola-15x', DisciplineEnum::Running, 12000, 3600, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Rolkowy nocny przejazd Nightskating 30km', 'nightskating-30km-warszawa', DisciplineEnum::InlineSkating, 30000, 4500, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Górski bieg ultra 50km z przewyższeniem +2500m', 'ultra-beskidy-50km', DisciplineEnum::Running, 50000, 23400, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Rowerowa czasówka 30km poniżej 44 minut', 'czasowka-30km-sub-44m', DisciplineEnum::Cycling, 30000, 2600, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Przepłynąć 100m kraulem w sprincie poniżej 58 sekund', 'sprint-100m-kraul-sub-58s', DisciplineEnum::Swimming, 100, 57, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Bieg z narastającą prędkością 18km (BNP)', 'bieg-narastajaca-predkosc-18km', DisciplineEnum::Running, 18000, 4500, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Przejechać pętlę dookoła Tatr w jeden dzień (210km)', 'dookola-tatr-210km', DisciplineEnum::Cycling, 210000, 27000, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Ergometr wioślarski 1000m w tempie poniżej 1:35/500m', 'ergometr-1000m-moc', DisciplineEnum::Rowing, 1000, 188, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Bieg przełajowy 12km w trudnym błotnistym terenie', 'przelaj-12km-bloto', DisciplineEnum::Running, 12000, 3120, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Szybka setka rowerowa ze średnią kadencją 95 rpm', 'setka-rowerowa-wysoka-kadencja', DisciplineEnum::Cycling, 100000, 11400, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Przepłynąć dystans 2000m z deską (praca samych nóg)', 'plywanie-2000m-same-nogi', DisciplineEnum::Swimming, 2000, 2600, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Zbiegi górskie: trening techniki na kamienistym szlaku', 'zbiegi-gorskie-technika-15km', DisciplineEnum::Running, 15000, 4200, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Przejazd rolkowy wzdłuż Bałtyku na trasie 35km', 'rolki-wzdluz-baltyku-35km', DisciplineEnum::InlineSkating, 35000, 4800, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Długi bieg tlenowy 35km przed maratonem jesiennym', 'dlugie-wybieganie-35km-tlen', DisciplineEnum::Running, 35000, 9900, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Szosowy podjazd pod Przełęcz Salmopolską', 'szosa-salmopol-podjazd', DisciplineEnum::Cycling, 18000, 3200, GoalStatusEnum::Completed, 'jan.kowalski@sportgram.local'],
+            ['Przepłynąć 800m kraulem w równym tempie 1:25/100m', 'kraul-800m-rowne-tempo', DisciplineEnum::Swimming, 800, 680, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
+            ['Pokonać 10000m na bieżni mechanicznej z nachyleniem 3%', 'bieznia-nachylenie-10km', DisciplineEnum::Running, 10000, 2520, GoalStatusEnum::Active, 'jan.kowalski@sportgram.local'],
             ['Anna: Bieg na 5km poniżej 22 minut', 'anna-5km-ponizej-22', DisciplineEnum::Running, 5000, 1320, GoalStatusEnum::Active, 'anna.nowak@sportgram.local'],
             ['Adam: Złamać 3h w maratonie', 'adam-maraton-sub-3h', DisciplineEnum::Running, 42195, 10790, GoalStatusEnum::Active, 'admin@sportgram.local'],
             ['Piotr: Gravel 150km non-stop', 'piotr-gravel-150k', DisciplineEnum::Cycling, 150000, 18000, GoalStatusEnum::Completed, 'piotr.wisniewski@sportgram.local'],
@@ -2458,39 +2459,182 @@ class DatabaseSeedCommand extends Command
     {
         $count = 0;
 
-        $multiStoryUsers = [
-            'jan.kowalski@sportgram.local' => 'Jan Kowalski - Poranny rozruch w terenie i przygotowania do maratonu',
-            'anna.nowak@sportgram.local' => 'Anna Nowak - Trening pływacki i biegi o wschodzie słońca',
-            'admin@sportgram.local' => 'Adam Adamski - Przygotowania do triathlonu i organizacja zawodów',
-            'piotr.wisniewski@sportgram.local' => 'Piotr Wiśniewski - Wyprawa gravelowa i bikepacking po Jurze',
-            'organizer@sportgram.local' => 'Olga Organizerska - Trening rolkowy i koordynacja eventów biegowych',
+        $userSpecificStories = [
+            'jan.kowalski@sportgram.local' => [
+                'Wschód słońca nad Wisłą – rześkie poranne powietrze i 10km w pierwszym zakresie.',
+                'Mocne interwały na bieżni lekkoatletycznej: 10x 400m w tempie 3:20/km. Nogi pieką, satysfakcja gwarantowana!',
+                'Poranna kawa i owsianka z borówkami przed niedzielnym długim wybieganiem.',
+                'Nowe buty startowe z płytką karbonową przetestowane na asfalcie. Dynamika odbicia niesamowita.',
+                'Regeneracyjny trucht w Lesie Kabackim – cisza, spokój i szelest liści pod butami.',
+                'Trening siły biegowej: 12 dynamicznych podbiegów pod most. Płuca popracowały solidnie!',
+                'Ostatni mocny akcent przed zbliżającym się startem w półmaratonie. Tętno pod pełną kontrolą.',
+                'Złota polska jesień na trasie biegowej. Idealne warunki do budowania bazy tlenowej.',
+                'Wieczorne rolowanie i mobilność stawów biodrowych. Regeneracja to klucz do sukcesu.',
+                'Sprawdzian na 5 km na lokalnym parkrunie zaliczony z nowym rekordem trasy!',
+                'Bieg z narastającą prędkością (BNP) – ostatnie 3 kilometry w docelowym tempie maratońskim.',
+                'Wspólny trening z klubem biegowym. W grupie kilometry mijają dwa razy szybciej!',
+                'Uzupełniamy glikogen: domowy makaron z pesto, pomidorkami i grillowanym kurczakiem.',
+                'Poranna mgła nad parkiem i pierwsze promienie słońca. Najlepszy sposób na rozpoczęcie dnia.',
+                'Przegląd trasy zbliżających się zawodów. Każdy zakręt i podbieg przeanalizowany.',
+                'Lekki rozruch w deszczu. Mokre buty, ale endorfiny i uśmiech na twarzy!',
+                'Stabilizacja centralna i ćwiczenia core na macie. Silny brzuch to stabilny krok biegowy.',
+                'Dziś 24 kilometry po leśnych pagórkach. Nogi zmęczone, głowa zresetowana w 100%.',
+                'Test nowego pasa biodrowego i miękkich flasków. Nic nie obciera, nawodnienie pod ręką.',
+                'Poranne 6 km na czczo w luźnym tempie konwersacyjnym. Dzień od razu staje się lepszy.',
+                'Krótkie rytmy 10x 100m na zakończenie wybiegania – pobudzenie układu nerwowego.',
+                'Zimny prysznic na nogi i chłodzenie mięśni po ciężkiej jednostce tempowej.',
+                'Praca nad kadencją: 180 kroków na minutę utrzymane przez całe 15 kilometrów.',
+                'Dzień wolny od biegania – spacer z psem i pełen relaks przed kolejnym blokiem treningowym.',
+                'Pakiet startowy odebrany! Numer z chipem przypięty do koszulki, pełna gotowość.',
+                'Trening progowy: 3x 3km na 3-minutowej przerwie w truchcie. Założenia zrealizowane co do sekundy.',
+                'Poranny chłód i puste ścieżki wzdłuż rzeki. Tylko oddech i miarowy stukot butów.',
+                'Urodzinowe wybieganie ze znajomymi zakończone pyszną kawą i szarlotką.',
+                'Nowy zegarek sportowy przetestowany – analiza stref tętna i dynamiki biegu robi wrażenie.',
+                'Ostatnie szlify formy i tapering przed maratonem. Zbieramy energię na dzień startu.',
+                'Wszystkie treningi zrealizowane zgodnie z planem. Czas pokazać wypracowaną formę na mecie!',
+            ],
+            'anna.nowak@sportgram.local' => [
+                'Puste tory na basenie olimpijskim o 6:00 rano – czysta woda i pełne skupienie.',
+                'Trening czucia wody: 8x 100m kraulem z łapkami i ósemką. Akcent na wysoki łokieć.',
+                'Pierwsze pływanie w piance na wodach otwartych w tym sezonie. Woda rześka, ale widoki piękne!',
+                'Przejście woda-rower w strefie zmian T1 przećwiczone na sucho. Każda sekunda ma znaczenie.',
+                'Poranny bieg tlenowy przed pracą – tętno 135 bpm pod pełną kontrolą.',
+                'Mocna seria zadaniowa: 20x 50m sprintem ze startu ze słupka na krótkiej przerwie.',
+                'Trening wytrzymałościowy: 3000m stylem zmiennym – motyl dał popalić w barkach!',
+                'Nowe okularki z lustrzanymi szkłami przetestowane na zewnątrz. Zero parowania.',
+                'Pływanie techniczne z deską: praca nóg do kraula i rotacja bioder.',
+                'Trening open water na jeziorze: nawigacja na bojki i pływanie w nogach grupy.',
+                'Regeneracja w saunie i jacuzzi po dwóch tygodniach ciężkich objętości pływackich.',
+                'Mocna jednostka progowa: 15x 100m kraulem w stałym tempie 1:20. Płuca płoną!',
+                'Poranna joga i rozciąganie obręczy barkowej przed wejściem do wody.',
+                'Przymiarka nowego stroju startowego na zawody triathlonowe. Leży jak druga skóra!',
+                'Zachód słońca nad jeziorem po przepłynięciu 2500m. Cisza i tafla wody jak lustro.',
+                'Test nowego izotonika o smaku cytrusowym podczas 2-godzinnej sesji treningowej.',
+                'Nauka nawrotów koziołkowych i szybkiego odbicia od ściany basenu.',
+                'Pływanie z rurką czołową i płetwami – doskonalenie symetrycznego ułożenia ciała w wodzie.',
+                'Poranna kawa z mlekiem migdałowym po 4 kilometrach w wodzie. Idealny początek dnia.',
+                'Symulacja startu masowego w jeziorze – walka o pozycję i odnalezienie własnego rytmu.',
+                'Długie spokojne pływanie ciągłe 2000m kraulem z równomiernym oddechem na 3 strony.',
+                'Analiza wideo techniki pływania z trenerem – drobne korekty w fazie chwytu wody.',
+                'Trening siłowy na lądzie: gumy oporowe, podciąganie i stabilizacja łopatek.',
+                'Pływanie o zachodzie słońca w morzu. Fale dodawały dodatkowego wyzwania!',
+                'Sprawdzian na 400m kraulem – nowy rekord życiowy: 4:52! Radość nie do opisania.',
+                'Bojka asekuracyjna spakowana, neopren wysuszony, gotowa na weekendowy obóz.',
+                'Trening hipoksji: serie 50m z oddechem co 5 i 7 pociągnięć ramion.',
+                'Pożywne smoothie białkowe z bananem, szpinakiem i masłem orzechowym po basenie.',
+                'Lekki rozjazd na rowerze stacjonarnym dla rozluźnienia nóg po pływaniu.',
+                'Ostatnie pływanie regeneracyjne przed zawodami – czucie wody bezbłędne.',
+                'Pianka spakowana, numer startowy odebrany. Gotowa na walkę od pierwszej boi!',
+            ],
+            'admin@sportgram.local' => [
+                'Trening zakładkowy: 60 km mocnej jazdy na rowerze czasowym i od razu 10 km biegu.',
+                'Ostatnie szlify organizacyjne przed startem zawodów – trasa rowerowa oznakowana.',
+                'Sesja w strefie Sweet Spot na trenażerze. 90 minut ciężkiej pracy z pomiarem mocy.',
+                'Weryfikacja stref zmian i mat pomiarowych przed nadchodzącym weekendem.',
+                'Poranny rozruch biegowy o świcie przed całodzienną koordynacją imprezy sportowej.',
+                'Test dysku aerodynamicznego i nowej pozycji na lemondce w tunelu aerodynamicznym.',
+                'Medale dla uczestników zawodów właśnie dotarły z grawerunku – prezentują się świetnie!',
+                'Mocne interwały VO2max na rowerze: 5x 4 minuty na 115% FTP. Pot lał się strumieniami.',
+                'Odprawa techniczna z wolontariuszami i służbami ratowniczymi przed maratonem.',
+                'Długi trening kolarski po pagórkach: 130 km ze średnią mocą znormalizowaną 245W.',
+                'Odbiór koszulek technicznych i pakietów startowych w biurze zawodów.',
+                'Regeneracyjna jazda ze znajomymi ze średnią 28 km/h i postojem na espresso.',
+                'Kalibracja miernika mocy i sprawdzenie ciśnienia w kołach przed startem czasówki.',
+                'Przegląd łodzi motorowych i zabezpieczenia ratowniczego na trasie pływackiej.',
+                'Poranna zakładka: 45 minut pływania w basenie + 45 minut biegu progowego.',
+                'Test bramy startowej, systemu nagłośnienia i telebimu na mecie zawodów.',
+                'Zbilansowana kolacja węglowodanowa przed 150-kilometrowym treningiem kolarskim.',
+                'Analiza wykresów obciążenia treningowego TSS i formy w TrainingPeaks. Tapering rozpoczęty.',
+                'Wspólny objazd trasy rowerowej z zawodnikami – omówienie niebezpiecznych zakrętów.',
+                'Mocna sesja biegowa na bieżni mechanicznej z nachyleniem – budowanie siły mięśniowej.',
+                'Spotkanie z władzami miasta w sprawie zamknięcia ulic na czas półmaratonu.',
+                'Nowy kask aero przetestowany na trasie czasowej. Zysk aerodynamiczny odczuwalny.',
+                'Test systemu telemetrycznego i nadajników GPS dla czołówki zawodników.',
+                'Regeneracyjny spacer po lesie kabackim i chwila wytchnienia od planowania logistyki.',
+                'Zalane świeże mleczko uszczelniające w kołach tubeless przed długą trasą.',
+                'Ekipa sędziowska gotowa do weryfikacji sprzętu i draftingu na trasie kolarskiej.',
+                'Trening odżywiania na trasie: 90g węglowodanów na godzinę przetestowane bez problemów.',
+                'Ostatnie zakupy żeli energetycznych i bidonów przed weekendem startowym.',
+                'Miasteczko biegowe tętni życiem! Expo otwarte, wystawcy na swoich miejscach.',
+                'Wszystkie zgody formalne uzyskane, trasa gotowa. Do startu pozostało 24 godziny!',
+                'Emocje sięgają zenitu! Wszystko dopięte na ostatni guzik, zapowiada się wspaniałe widowisko.',
+            ],
+            'piotr.wisniewski@sportgram.local' => [
+                'Gravelowa pętla po Jurze Krakowsko-Częstochowskiej. Szutry, białe ostańce i puste ścieżki!',
+                'Szybka wymiana opon na bezdętkowe 45c ze świeżym mleczkiem. Zero obaw o kamienie.',
+                'Przerwa na podwójne espresso i drożdżówkę w klimatycznej wiejskiej piekarni po 75 km.',
+                'Podjazd pod Przełęcz Karkonoską – nachylenie 18% sprawdza charakter i przełożenia!',
+                'Bikepacking weekend: torby podsiodłowe spakowane, lekki namiot przypięty, ruszam w trasę!',
+                'Złota godzina na wałach przeciwpowodziowych – gravel płynie gładko po ubitym szutrze.',
+                'Mycie napędu i nałożenie wosku na łańcuch. Bezgłośna praca napędu to czysta poezja.',
+                'Nocleg na dziko pod gwiazdami po 140 kilometrach w siodle. Szum lasu i ciepła herbata z menażki.',
+                'Trening interwałowy na podjazdach: 6 powtórzeń ostrego wzniesienia z kadencją 85 rpm.',
+                'Nowa owijka na kierownicę baranek i żelowe wkładki. Komfort dłoni na wybojach bezcenny.',
+                'Trasa wokół Tatr w jeden dzień: 210 km, 2400m w pionie i niesamowite alpejskie panoramy.',
+                'Błoto po osie w Puszczy Kampinoskiej! Gravel poradził sobie wyśmienicie, rower do mycia.',
+                'Poranny rozjazd w strefie regeneracyjnej po wczorajszej 160-kilometrowej setce z plusem.',
+                'Przetestowane nowe lampki z mocnym strumieniem 1200 lumenów na nocną jazdę po bezdrożach.',
+                'Szosowa runda ze znajomymi w peletonie. Zmiany na czele i średnia prędkość 34 km/h!',
+                'Śniadanie na polanie leśnej: liofilizat, banan i gorąca kawa parzona w aeropressie.',
+                'Stromy zjazd po luźnym szutrze – balans ciałem, niska pozycja i pełne opanowanie roweru.',
+                'Wymiana klocków hamulcowych na żywiczne ze skrzydełkami chłodzącymi przed wyjazdem w góry.',
+                'Zachód słońca nad mazurskim jeziorem po całym dniu gravelowej włóczęgi.',
+                'Trening siłowy na niskiej kadencji pod wiatr – budowanie mocy na płaskich odcinkach.',
+                'Odkrywanie zapomnianych leśnych duktów i starych nasypów kolejowych w Dolinie Baryczy.',
+                'Zapasowa dętka TPU, pompka CO2 i multitool w torebce na ramę – gotowość na każdą awarię.',
+                'Klimatyczna przeprawa promowa z rowerem przez Wisłę. Chwila odpoczynku dla nóg.',
+                'Sprawdzian formy na segmencie szutrowym: wpadł puchar KOM na Strava! Noga podawała super.',
+                'Jazda w jesiennej mżawce – błotniki gravelowe uratowały suchy tyłek i dobrą zabawę.',
+                'Kawa przelewowa i ciasto marchewkowe w zaprzyjaźnionej kawiarni kolarskiej po treningu.',
+                'Montaż dynama w przedniej piaście do zasilania nawigacji podczas wielodniowych wypraw.',
+                'Wiosenne pierwsze 100 kilometrów na krótkich spodenkach. Słońce wreszcie grzeje!',
+                'Planowanie śladu GPX na wyprawę przez Bieszczady – unikanie dróg wojewódzkich.',
+                'Ostatnia kontrola dokręcenia śrub kluczem dynamometrycznym przed jutrzejszym maratonem gravelowym.',
+                'Rower wyczyszczony, nawigacja naładowana, bidony przygotowane. Czas na wielką przygodę!',
+            ],
+            'organizer@sportgram.local' => [
+                'Rolki szybkie na asfaltowej pętli: 25 km z równym, dynamicznym odepchnięciem.',
+                'Trening techniki: jazda na jednej nodze, głębokie zejście na kolanach i niska pozycja aero.',
+                'Biuro zawodów gotowe – pakiety startowe z numerami i medale czekają na uczestników!',
+                'Sprawdzenie gładkości nawierzchni trasy rolkarskiej – bezpieczeństwo to nasz priorytet.',
+                'Wieczorny przejazd rekreacyjny Nightskating z grupą 500 rolkarzy przez centrum miasta.',
+                'Wymiana kółek w płozie na twardość 86A i montaż precyzyjnych ceramicznych łożysk ILQ-9.',
+                'Poranny trucht w parku przed rozpoczęciem koordynacji biegu charytatywnego.',
+                'Trening interwałowy na rolkach: 10x 500m na maksymalnej prędkości z wiatrem.',
+                'Odprawa z wolontariuszami na punktach odżywczych – woda, izotonik i banany przygotowane.',
+                'Szybki przejazd 30 km wzdłuż nadmorskiej promenady w Gdańsku. Wiatr od morza chłodził idealnie.',
+                'Harmonogram minutowy imprezy biegowej dopięty – każda fala startowa wystartuje o czasie.',
+                'Ćwiczenia mobilności i siły mięśni przywodzicieli po ciężkim treningu na rolkach.',
+                'Test bramek z fotokomórkami na mecie zawodów sprinterskich dla rolkarzy.',
+                'Trening hamowania T-stopem i slajdem na mokrym asfalcie dla bezpieczeństwa w peletonie.',
+                'Zamówienie pucharów i statuetek dla zwycięzców kategorii wiekowych zrealizowane.',
+                'Rolkowy maraton pokonany w 1h 18min – nowy rekord życiowy na płaskiej trasie!',
+                'Czyszczenie i smarowanie łożysk specjalnym syntetycznym żelem – kręcą się bez oporów.',
+                'Koordynacja zabezpieczenia medycznego i karetek wzdłuż całej 21-kilometrowej trasy biegu.',
+                'Spokojna jazda fitnessowa na rolkach o zachodzie słońca po alejkach parkowych.',
+                'Spotkanie z fotografami sportowymi – wyznaczenie najlepszych punktów widokowych na trasie.',
+                'Trening w parach: jazda w tunelu aerodynamicznym za partnerem ze zmianami co 1 km.',
+                'Znakowanie kilometrów na trasie biegu – żółte tablice co 1000m widoczne z daleka.',
+                'Przymiarka nowych karbonowych butów rolkowych formowanych termicznie pod stopę.',
+                'Pyszna regeneracyjna sałatka z komosą ryżową, awokado i pieczonym łososiem.',
+                'Objazd trasy z policją i pilotem motocyklowym przed porannym startem maratonu.',
+                'Trening kadencji kroków rolkarskich pod okiem trenera kadry juniorów.',
+                'Konferencja prasowa przed wielkim festiwalem biegowym – media dopisały w komplecie.',
+                'Wieczorne rozciąganie taśm powięziowych na macie przy relaksacyjnej muzyce.',
+                'Weryfikacja elektronicznych mat pomiaru czasu na punktach kontrolnych 5km, 10km i 15km.',
+                'Ostatnie pakiety odebrane, atmosfera w miasteczku zawodów jest elektryzująca!',
+                'Wystrzał startera, tłum rusza na trasę! Niezapomniane emocje każdego organizatora.',
+            ],
         ];
 
-        $storyCaptions = [
-            'Wschód słońca na trasie – rześkie poranne powietrze i puste ścieżki.',
-            'Kolejne kilometry wpadają na konto. Dziś skupienie na technice i rytmie.',
-            'Cudowne widoki na trasie! Taki trening to czysta przyjemność i reset głowy.',
-            'Przerwa na łyk izotonika i podziwianie panoramy. Forma rośnie!',
-            'Gravelowe szutry o zachodzie słońca – najlepsza pora na rower.',
-            'Interwały zaliczone! Nogi piekły, ale satysfakcja na mecie bezcenna.',
-            'Poranny rozruch przed zawodami. Wszystko dopięte na ostatni guzik.',
-            'Regeneracja w wodzie – czucie wody i luźne pociągnięcia kraulem.',
-            'Wspólna runda ze znajomymi. W grupie kilometry mijają dwa razy szybciej!',
-            'Nowa trasa przetestowana i zatwierdzona. Zdecydowanie tu wrócę.',
-            'Podbiegi w lesie – budujemy siłę biegową przed zbliżającym się startem.',
-            'Dzień odpoczynku i rozciągania. Dbajcie o regenerację tak samo jak o kilometry!',
-        ];
-
-        foreach ($multiStoryUsers as $email => $description) {
+        foreach ($userSpecificStories as $email => $stories) {
             $user = $this->users[$email] ?? null;
             if (! $user) {
                 continue;
             }
 
-            for ($i = 1; $i <= 31; $i++) {
-                $caption = $storyCaptions[($i - 1) % count($storyCaptions)];
-                $text = sprintf('%s – %s (#%d)', $description, $caption, $i);
-                $photo = $this->generateLandscapeSvg($user->color, $user->link . '_story');
+            foreach ($stories as $i => $text) {
+                $photo = $this->generateLandscapeSvg($user->color, sprintf('%s_story_%d', $user->link, $i + 1));
                 $story = new Story($user, $text, $photo, ElementStatusEnum::Active);
                 $this->em->persist($story);
                 $count++;
@@ -2505,9 +2649,9 @@ class DatabaseSeedCommand extends Command
             [$this->users['aleksandra.szymanska@sportgram.local'] ?? null, 'Cardio przed śniadaniem zrobione!'],
             [$this->users['lukasz.grabowski@sportgram.local'] ?? null, 'Beskidzkie szlaki nigdy nie zawodzą.'],
         ];
-        foreach ($otherStories as [$user, $text]) {
+        foreach ($otherStories as $idx => [$user, $text]) {
             if ($user) {
-                $photo = $this->generateLandscapeSvg($user->color, $user->link . '_story');
+                $photo = $this->generateLandscapeSvg($user->color, sprintf('%s_story_single_%d', $user->link, $idx + 1));
                 $story = new Story($user, $text, $photo, ElementStatusEnum::Active);
                 $this->em->persist($story);
                 $count++;
@@ -2606,8 +2750,25 @@ class DatabaseSeedCommand extends Command
             $count++;
         }
 
-        for ($j = 1; $j <= 15; $j++) {
-            $notif = new Notification($admin, sprintf('Powiadomienie systemowe dla administratora #%d.', $j), '/pages/warszawski-klub-biegacza', NotificationStatusEnum::Sent);
+        $adminSystemNotifications = [
+            'Automatyczna kopia zapasowa bazy danych została pomyślnie utworzona i zarchiwizowana.',
+            'Opublikowano zaktualizowany regulamin serwisu Sportgram oraz politykę prywatności.',
+            'Wykryto pomyślne logowanie na konto administratora z nowego adresu IP w Warszawie.',
+            'Zgłoszenie naruszenia standardów społeczności w komentarzu zostało rozpatrzone pozytywnie.',
+            'Certyfikat SSL dla domeny głównej oraz subdomen został automatycznie odnowiony.',
+            'Zintegrowana usługa pogodowa pomyślnie zsynchronizowała prognozy dla najbliższych wydarzeń.',
+            'Miesięczny raport aktywności użytkowników oraz statystyk serwisu jest gotowy do pobrania.',
+            'System antywirusowy zakończył skanowanie nowo przesłanych plików multimedialnych.',
+            'Pomyślnie zindeksowano segmenty tras GPS i zaktualizowano kafelki mapy wektorowej.',
+            'Osiągnięto nowy kamień milowy: w serwisie zarejestrowano ponad 1000 treningów!',
+            'Kolejka powiadomień Push została pomyślnie przetworzona dla wszystkich aktywnych subskrypcji.',
+            'Zaplanowane okno serwisowe bazy danych zakończyło się sukcesem bez przerw w działaniu.',
+            'Nowy organizator złożył wniosek o weryfikację profilu oficjalnej strony klubowej.',
+            'Zaktualizowano biblioteki map OpenStreetMap oraz zestaw stylów wektorowych.',
+            'Pomyślnie zweryfikowano spójność danych i integralność relacji w magazynie bazy danych.',
+        ];
+        foreach ($adminSystemNotifications as $adminNotice) {
+            $notif = new Notification($admin, $adminNotice, '/pages/warszawski-klub-biegacza', NotificationStatusEnum::Sent);
             $this->em->persist($notif);
             $count++;
         }
@@ -2637,8 +2798,15 @@ class DatabaseSeedCommand extends Command
             'Vivaldi 6.6 na macOS Ventura',
         ];
 
+        $deviceLabels = [
+            'Telefon główny', 'Laptop domowy', 'Komputer biurowy', 'Tablet treningowy',
+            'Zegarek sportowy LTE', 'Drugi telefon', 'Stacja robocza', 'Ultrabook podróżny',
+            'Tablet domowy', 'Smartfon służbowy', 'Zegarek GPS',
+        ];
+
         for ($i = 1; $i <= 55; $i++) {
             $browser = $browsers[($i - 1) % count($browsers)];
+            $deviceLabel = $deviceLabels[($i - 1) % count($deviceLabels)];
             $status = ($i % 5 === 0) ? PushSubscriptionStatusEnum::Rejected : PushSubscriptionStatusEnum::Active;
             $targetUser = match (true) {
                 $i <= 35 => $jan,
@@ -2651,7 +2819,7 @@ class DatabaseSeedCommand extends Command
                 sprintf('https://fcm.googleapis.com/fcm/send/%s_%d', bin2hex(random_bytes(16)), $i),
                 base64_encode(random_bytes(65)),
                 base64_encode(random_bytes(16)),
-                sprintf('%s (Urządzenie #%d)', $browser, $i),
+                sprintf('%s (%s)', $browser, $deviceLabel),
                 $status,
             );
             $this->em->persist($pushSub);
@@ -2710,26 +2878,18 @@ class DatabaseSeedCommand extends Command
         $palette = $this->resolvePalette($color);
         [$c1, $c2, $c3, $c4, $c5] = $palette;
         $id = 'usr_' . substr(md5($seed), 0, 8);
-        $variant = abs(crc32($seed)) % 4;
-
-        $hair = match ($variant) {
-            0 => sprintf('<path d="M 105,120 Q 150,70 195,120 Q 180,85 150,80 Q 120,85 105,120 Z" fill="%s" />', $c5),
-            1 => sprintf('<path d="M 98,135 C 95,85 120,65 150,65 C 180,65 205,85 202,135 C 190,105 175,95 150,95 C 125,95 110,105 98,135 Z" fill="%s" />', $c1),
-            2 => sprintf('<path d="M 95,125 Q 150,85 205,125 L 212,135 Q 150,110 88,135 Z" fill="%s" /><ellipse cx="150" cy="95" rx="44" ry="18" fill="%s" />', $c4, $c4),
-            default => sprintf('<circle cx="150" cy="80" r="22" fill="%s" /><path d="M 108,125 Q 150,90 192,125" stroke="%s" stroke-width="8" fill="none" stroke-linecap="round" />', $c3, $c3),
-        };
 
         $svg = <<<SVG
             <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
               <defs>
                 <linearGradient id="{$id}_bg" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stop-color="{$c1}" />
-                  <stop offset="60%" stop-color="{$c2}" />
+                  <stop offset="50%" stop-color="{$c2}" />
                   <stop offset="100%" stop-color="{$c3}" />
                 </linearGradient>
-                <linearGradient id="{$id}_torso" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="{$id}_silhouette" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stop-color="{$c4}" />
-                  <stop offset="100%" stop-color="{$c2}" />
+                  <stop offset="100%" stop-color="{$c5}" />
                 </linearGradient>
               </defs>
               <rect width="300" height="300" fill="url(#{$id}_bg)" />
@@ -2737,15 +2897,61 @@ class DatabaseSeedCommand extends Command
               <circle cx="230" cy="70" r="50" fill="{$c4}" opacity="0.18" />
               <circle cx="60" cy="220" r="40" fill="{$c5}" opacity="0.2" />
 
-              <path d="M 40,300 C 45,225 90,195 150,195 C 210,195 255,225 260,300 Z" fill="url(#{$id}_torso)" />
-              <path d="M 115,200 L 150,225 L 185,200 Z" fill="{$c1}" opacity="0.4" />
+              <circle cx="150" cy="115" r="48" fill="url(#{$id}_silhouette)" />
+              <path d="M 50,300 C 55,215 95,185 150,185 C 205,185 245,215 250,300 Z" fill="url(#{$id}_silhouette)" />
+            </svg>
+            SVG;
 
-              <rect x="135" y="148" width="30" height="35" rx="6" fill="#fcd34d" />
-              <circle cx="150" cy="122" r="44" fill="#fde68a" />
-              {$hair}
+        return base64_encode($svg);
+    }
 
-              <path d="M 118,118 Q 150,126 182,118 Q 185,130 150,134 Q 115,130 118,118 Z" fill="{$c1}" opacity="0.85" />
-              <path d="M 122,120 Q 150,126 178,120" stroke="{$c5}" stroke-width="2" fill="none" opacity="0.7" />
+    private function generatePageProfilePhoto(
+        ColorEnum $color,
+        string $title,
+        string $seed,
+    ): string {
+        $palette = $this->resolvePalette($color);
+        [$c1, $c2, $c3, $c4, $c5] = $palette;
+        $id = 'pg_' . substr(md5($seed), 0, 8);
+
+        $words = preg_split('/[\s\-_]+/u', trim($title)) ?: [];
+        $initials = '';
+        foreach ($words as $w) {
+            if ($w !== '' && mb_strlen($initials) < 3) {
+                $initials .= mb_strtoupper(mb_substr($w, 0, 1));
+            }
+        }
+        if ($initials === '') {
+            $initials = 'SG';
+        }
+
+        $svg = <<<SVG
+            <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+              <defs>
+                <linearGradient id="{$id}_bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="{$c1}" />
+                  <stop offset="50%" stop-color="{$c2}" />
+                  <stop offset="100%" stop-color="{$c3}" />
+                </linearGradient>
+                <linearGradient id="{$id}_inner" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="{$c2}" />
+                  <stop offset="100%" stop-color="{$c1}" />
+                </linearGradient>
+                <linearGradient id="{$id}_gold" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="{$c4}" />
+                  <stop offset="100%" stop-color="{$c5}" />
+                </linearGradient>
+              </defs>
+              <rect width="300" height="300" fill="url(#{$id}_bg)" />
+              <circle cx="150" cy="150" r="135" fill="{$c3}" opacity="0.3" />
+              <circle cx="150" cy="150" r="120" fill="none" stroke="url(#{$id}_gold)" stroke-width="4" opacity="0.85" />
+              <circle cx="150" cy="150" r="108" fill="url(#{$id}_inner)" stroke="{$c4}" stroke-width="2" opacity="0.95" />
+              <polygon points="150,68 153,77 163,77 155,83 158,92 150,86 142,92 145,83 137,77 147,77" fill="{$c5}" />
+              <polygon points="122,76 124,83 132,83 125,88 128,95 122,90 116,95 119,88 112,83 120,83" fill="{$c4}" opacity="0.85" />
+              <polygon points="178,76 180,83 188,83 181,88 184,95 178,90 172,95 175,88 168,83 176,83" fill="{$c4}" opacity="0.85" />
+              <text x="150" y="166" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="3">{$initials}</text>
+              <path d="M 85,190 Q 150,225 215,190" stroke="{$c4}" stroke-width="4" fill="none" stroke-linecap="round" />
+              <path d="M 100,205 Q 150,235 200,205" stroke="{$c5}" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.75" />
             </svg>
             SVG;
 

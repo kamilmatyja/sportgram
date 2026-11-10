@@ -43,7 +43,7 @@ import { ColorEnum } from '../../enums/ColorEnum';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { PageFollowStatusEnum } from '../../enums/PageFollowStatusEnum';
 import { useMyFriends, useUsersMap } from '../../hooks';
-import { brown } from '../../theme';
+import { createDynamicTheme } from '../../theme';
 import {
     applyThemeColor,
     confirmDelete,
@@ -298,8 +298,10 @@ export default function PageDetails() {
         </Group>
     );
 
+    const dynamicTheme = useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
+
     return (
-        <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
+        <MantineThemeProvider theme={dynamicTheme} inherit>
             <Stack gap="lg">
                 <PageNav page={page} extraActions={extraActions} />
 

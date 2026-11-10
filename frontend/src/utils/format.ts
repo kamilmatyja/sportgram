@@ -1,11 +1,3 @@
-/**
- * Format distance in meters or kilometers without spaces:
- * - < 1000: e.g. "500m", "0m"
- * - >= 1000:
- *   - whole km: "1km"
- *   - incomplete km with whole hundreds (tenths): "1,1km" (for 1100 m)
- *   - incomplete hundreds: rounded to 2 decimal places: "1,11km"
- */
 export function formatDistance(meters: number | null | undefined): string {
     if (meters == null || !isFinite(meters)) {
         return '-';
@@ -24,12 +16,6 @@ export function formatDistance(meters: number | null | undefined): string {
     return `${m}m`;
 }
 
-/**
- * Format time in seconds to compact units without commas:
- * - < 60: e.g. "45s", "0s"
- * - >= 60 and < 3600: e.g. "1m 18s", "1m"
- * - >= 3600: e.g. "1h 47m 32s", "1h 2m", "1h"
- */
 export function formatTime(totalSeconds: number | null | undefined): string {
     if (totalSeconds == null || !isFinite(totalSeconds)) {
         return '-';
@@ -55,13 +41,8 @@ export function formatTime(totalSeconds: number | null | undefined): string {
     return parts.join(' ');
 }
 
-// Backward-compatible alias
 export const formatTimeSeconds = formatTime;
 
-/**
- * Calculate speed in km/h from distance in meters and time in seconds.
- * Returns 0 if inputs are invalid or <= 0.
- */
 export function calculateSpeed(
     distanceMeters: number | null | undefined,
     timeSeconds: number | null | undefined,
@@ -79,10 +60,6 @@ export function calculateSpeed(
     return (distanceMeters / timeSeconds) * 3.6;
 }
 
-/**
- * Calculate pace in seconds per kilometer (sec/km) from distance in meters and time in seconds.
- * Returns 0 if inputs are invalid or <= 0.
- */
 export function calculatePace(
     distanceMeters: number | null | undefined,
     timeSeconds: number | null | undefined,
@@ -100,10 +77,6 @@ export function calculatePace(
     return (timeSeconds / distanceMeters) * 1000;
 }
 
-/**
- * Calculate speed for a split interval.
- * Automatically resolves whether inputs are cumulative checkpoints or standalone segments.
- */
 export function calculateSplitSpeed(
     curDist: number | null | undefined,
     prevDist: number | null | undefined,
@@ -121,10 +94,6 @@ export function calculateSplitSpeed(
     return calculateSpeed(deltaDist, deltaTime);
 }
 
-/**
- * Calculate pace for a split interval.
- * Automatically resolves whether inputs are cumulative checkpoints or standalone segments.
- */
 export function calculateSplitPace(
     curDist: number | null | undefined,
     prevDist: number | null | undefined,
@@ -142,11 +111,6 @@ export function calculateSplitPace(
     return calculatePace(deltaDist, deltaTime);
 }
 
-/**
- * Format speed in km/h (e.g. "12,4 km/h").
- * For very small positive speeds (< 0.1 km/h), formats with 2 decimals (e.g. "0,03 km/h")
- * to avoid misleading "0,0 km/h".
- */
 export function formatSpeed(speedKmH: number | null | undefined): string {
     if (speedKmH == null || !isFinite(speedKmH) || speedKmH <= 0) {
         return '-';
@@ -160,9 +124,6 @@ export function formatSpeed(speedKmH: number | null | undefined): string {
     return `${speedKmH.toFixed(1).replace('.', ',')} km/h`;
 }
 
-/**
- * Format pace in min/km (e.g. "5:23 /km") or h:mm:ss /km (e.g. "1:01:00 /km") when > 60:00 /km.
- */
 export function formatPace(secPerKm: number | null | undefined): string {
     if (secPerKm == null || !isFinite(secPerKm) || secPerKm <= 0) {
         return '-';

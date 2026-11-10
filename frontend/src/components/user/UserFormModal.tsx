@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stack, SimpleGrid, TextInput, Select, MultiSelect, Textarea, FileInput, Button } from '@mantine/core';
+import { Modal, Stack, SimpleGrid, TextInput, Select, MultiSelect, Textarea, Button } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPhoto } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { ImageInput } from '../common';
 import { userService, type UserResource } from '../../api/services';
 import { useAuth } from '../../auth';
 import { ColorEnum } from '../../enums/ColorEnum';
@@ -375,32 +375,22 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     onChange={(e) => setFormData({ ...formData, bio: e.currentTarget.value })}
                 />
 
-                <SimpleGrid>
-                    <FileInput
-                        label={t('profilePhoto')}
-                        placeholder={t('selectPhoto')}
-                        description={isEdit ? t('leaveEmptyToKeep') : undefined}
-                        required={!isEdit}
-                        accept="image/*"
-                        leftSection={<IconPhoto size={16} />}
-                        value={profilePhotoFile}
-                        error={fieldErrors.profilePhoto}
-                        onChange={setProfilePhotoFile}
-                        clearable
-                    />
-                    <FileInput
-                        label={t('backgroundPhoto')}
-                        placeholder={t('selectPhoto')}
-                        description={isEdit ? t('leaveEmptyToKeep') : undefined}
-                        required={!isEdit}
-                        accept="image/*"
-                        leftSection={<IconPhoto size={16} />}
-                        value={bgPhotoFile}
-                        error={fieldErrors.backgroundPhoto}
-                        onChange={setBgPhotoFile}
-                        clearable
-                    />
-                </SimpleGrid>
+                <ImageInput
+                    label={t('profilePhoto')}
+                    description={isEdit ? t('leaveEmptyToKeep') : undefined}
+                    required={!isEdit}
+                    value={profilePhotoFile}
+                    error={fieldErrors.profilePhoto}
+                    onChange={setProfilePhotoFile}
+                />
+                <ImageInput
+                    label={t('backgroundPhoto')}
+                    description={isEdit ? t('leaveEmptyToKeep') : undefined}
+                    required={!isEdit}
+                    value={bgPhotoFile}
+                    error={fieldErrors.backgroundPhoto}
+                    onChange={setBgPhotoFile}
+                />
 
                 <Button
                     loading={isSubmitting}

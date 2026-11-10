@@ -21,6 +21,7 @@ import {
     Stack,
     Group,
     Skeleton,
+    AppShell,
     type MantineColorsTuple,
 } from '@mantine/core';
 
@@ -37,6 +38,13 @@ export const brown: MantineColorsTuple = [
     '#6d4422',
 ];
 
+export function createDynamicTheme(primaryColor?: string) {
+    return {
+        primaryColor,
+        colors: { brown },
+    };
+}
+
 export const theme = createTheme({
     primaryColor: 'blue',
     colors: {
@@ -46,6 +54,12 @@ export const theme = createTheme({
     fontFamily:
         '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
     components: {
+        AppShell: AppShell.extend({
+            defaultProps: {
+                header: { height: 60 },
+                padding: 'md',
+            },
+        }),
         Container: Container.extend({
             defaultProps: {
                 size: 'lg',
@@ -53,7 +67,7 @@ export const theme = createTheme({
         }),
         SimpleGrid: SimpleGrid.extend({
             defaultProps: {
-                cols: { base: 1, sm: 2 },
+                cols: 2,
                 spacing: 'sm',
             },
         }),
@@ -178,6 +192,7 @@ export const theme = createTheme({
         Tooltip: Tooltip.extend({
             defaultProps: {
                 withArrow: true,
+                zIndex: 1000,
             },
         }),
         Menu: Menu.extend({

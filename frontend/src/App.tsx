@@ -1,4 +1,4 @@
-import { brown } from './theme';
+import { createDynamicTheme } from './theme';
 import NotFound from './components/NotFound';
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useParams, Outlet, useLocation } from 'react-router-dom';
@@ -104,8 +104,10 @@ function UserProfileThemeLayout() {
         };
     }, [primaryColor]);
 
+    const userTheme = React.useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
+
     return (
-        <MantineThemeProvider theme={{ primaryColor, colors: { brown } }} inherit>
+        <MantineThemeProvider theme={userTheme} inherit>
             <Outlet />
         </MantineThemeProvider>
     );

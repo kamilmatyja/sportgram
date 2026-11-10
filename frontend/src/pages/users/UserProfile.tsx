@@ -37,7 +37,7 @@ import {
     StoriesBar,
 } from '../../components';
 import { formatImageSrc, confirmDelete, notifySuccess, notifyError } from '../../utils';
-import { useInfiniteScrollObserver } from '../../hooks';
+import { useInfiniteScrollObserver, useUsersMap } from '../../hooks';
 
 export default function UserProfile() {
     const { link } = useParams<{ link: string }>();
@@ -141,6 +141,23 @@ export default function UserProfile() {
         hasNextPage: hasMoreFeeds,
         fetchNextPage: fetchNextFeedsPage,
     });
+
+    const relatedUserIds = useMemo(() => {
+        const ids = new Set<string>();
+        userFeedsData.forEach((f) => {
+            if (f.userId) ids.add(f.userId);
+            f.comments?.forEach((c) => c.userId && ids.add(c.userId));
+            f.reactions?.forEach((r) => r.userId && ids.add(r.userId));
+        });
+        return Array.from(ids);
+    }, [userFeedsData]);
+
+    const { usersMap } = useUsersMap(relatedUserIds);
+
+    const allUsersMap = useMemo(() => {
+        if (!user) return usersMap;
+        return { [user.id]: user, ...usersMap };
+    }, [user, usersMap]);
 
     const {
         data: userStoriesInfiniteData,
@@ -531,7 +548,8 @@ export default function UserProfile() {
                                 <FeedCard
                                     key={feed.id}
                                     feed={feed}
-                                    author={user}
+                                    author={allUsersMap[feed.userId] ?? user}
+                                    usersMap={allUsersMap}
                                     onEditFeed={isOwner ? (f: FeedResource) => setEditingFeed(f) : undefined}
                                     onDeleteFeed={
                                         isOwner

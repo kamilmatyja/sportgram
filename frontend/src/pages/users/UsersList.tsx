@@ -154,7 +154,7 @@ export default function UsersList() {
     ];
 
     const filtersNode = (
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
+        <SimpleGrid className="filter-grid-4">
             <TextInput
                 label={t('firstName')}
                 placeholder={t('firstName')}

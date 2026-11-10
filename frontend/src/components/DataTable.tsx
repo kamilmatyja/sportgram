@@ -158,8 +158,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
                                     {isFiltersActive && onResetFilters && (
                                         <Button
-                                            variant="subtle"
-                                            color="gray"
+                                            variant="default"
                                             size="sm"
                                             leftSection={<IconX size={16} />}
                                             onClick={onResetFilters}

@@ -2,7 +2,7 @@ import { Stack, Group, Paper, Select, TextInput, Button, ActionIcon, Tooltip, Te
 import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { updateItem, removeItem, patchItem } from '../../utils';
+import { updateItem, removeItem, patchItem, generateUuid } from '../../utils';
 
 export interface FormEventSubDistance {
     id: string;
@@ -30,7 +30,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
     const { t } = useTranslation();
 
     const handleAddDiscipline = () => {
-        onChange([...disciplines, { id: crypto.randomUUID(), discipline: null, distances: [] }]);
+        onChange([...disciplines, { id: generateUuid(), discipline: null, distances: [] }]);
     };
 
     const handleRemoveDiscipline = (id: string) => onChange(removeItem(disciplines, id));
@@ -42,7 +42,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
         onChange(
             updateItem(disciplines, disciplineId, (d) => ({
                 ...d,
-                distances: [...d.distances, { id: crypto.randomUUID(), distance: '', subDistances: [] }],
+                distances: [...d.distances, { id: generateUuid(), distance: '', subDistances: [] }],
             })),
         );
     };
@@ -71,7 +71,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                 ...d,
                 distances: updateItem(d.distances, distanceId, (dist) => ({
                     ...dist,
-                    subDistances: [...(dist.subDistances || []), { id: crypto.randomUUID(), subDistance: '' }],
+                    subDistances: [...(dist.subDistances || []), { id: generateUuid(), subDistance: '' }],
                 })),
             })),
         );
@@ -165,7 +165,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                                         </Text>
                                         <Button
                                             size="compact-xs"
-                                            variant="subtle"
+                                            variant="default"
                                             leftSection={<IconPlus size={16} />}
                                             onClick={() => handleAddSubDistance(d.id, dist.id)}
                                         >
@@ -203,7 +203,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
 
                         <Button
                             size="xs"
-                            variant="subtle"
+                            variant="default"
                             leftSection={<IconPlus size={16} />}
                             onClick={() => handleAddDistance(d.id)}
                         >

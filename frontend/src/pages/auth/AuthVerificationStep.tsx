@@ -67,10 +67,10 @@ export function AuthVerificationStep({
                 </Button>
 
                 <Group justify="space-between" w="100%" mt="xs">
-                    <Button variant="subtle" size="xs" onClick={onBack} disabled={loading}>
+                    <Button variant="default" size="xs" onClick={onBack} disabled={loading}>
                         {t('back')}
                     </Button>
-                    <Button variant="subtle" size="xs" onClick={onResend} loading={loading} disabled={loading}>
+                    <Button variant="default" size="xs" onClick={onResend} loading={loading} disabled={loading}>
                         {t('resend')}
                     </Button>
                 </Group>

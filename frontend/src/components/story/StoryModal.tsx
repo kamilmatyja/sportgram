@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stack, Textarea, FileInput, Button } from '@mantine/core';
+import { Modal, Stack, Textarea, Button } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPhoto } from '@tabler/icons-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { storyService, type StoryResource } from '../../api/services';
+import { ImageInput } from '../common';
 import { useFormErrors } from '../../hooks';
 import { resolveImageBase64 } from '../../utils';
 
@@ -73,7 +73,7 @@ export function StoryModal({ opened, onClose, story, onSuccess }: StoryModalProp
     const canSubmit = isEdit ? !!text.trim() : !!text.trim() && !!photo;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editStory') : t('addStory')} zIndex={1000}>
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editStory') : t('addStory')}>
             <Stack gap="sm">
                 <Textarea
                     label={t('text')}
@@ -84,16 +84,12 @@ export function StoryModal({ opened, onClose, story, onSuccess }: StoryModalProp
                     onChange={(e) => setText(e.currentTarget.value)}
                     required
                 />
-                <FileInput
+                <ImageInput
                     label={t('photo')}
-                    placeholder={t('selectPhoto')}
                     description={isEdit ? t('leaveEmptyToKeep') : undefined}
-                    accept="image/*"
-                    leftSection={<IconPhoto size={16} />}
                     value={photo}
                     error={fieldErrors.photo}
                     onChange={setPhoto}
-                    clearable
                     required={!isEdit}
                 />
                 <Button loading={isSubmitting} disabled={isSubmitting || !canSubmit} onClick={() => mutation.mutate()}>

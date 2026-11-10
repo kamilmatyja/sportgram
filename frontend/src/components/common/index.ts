@@ -6,3 +6,4 @@ export * from './TextStatusFilterGrid';
 export * from './TitleLinkStatusFilterGrid';
 export * from './UserInfoCell';
 export * from './UserSubpageContainer';
+export * from './ImageInput';

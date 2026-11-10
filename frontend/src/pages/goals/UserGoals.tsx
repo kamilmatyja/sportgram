@@ -185,7 +185,7 @@ export default function UserGoals() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
+                    <SimpleGrid className="filter-grid-3">
                         <TextInput
                             label={t('title')}
                             value={textFilter}

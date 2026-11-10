@@ -82,19 +82,18 @@ export function UserSubpageContainer({ ownerOrAdminOnly = false, requiredRole, c
         return <NotFound title={t('accessDenied')} />;
     }
 
+    const contextValue = {
+        targetUser,
+        isOwner,
+        isAdmin,
+        canAccessSubpage,
+        hasRequiredRole,
+    };
+
     return (
         <Stack key={targetUser.id}>
             <UserProfileNav user={targetUser} isOwner={isOwner} />
-            <UserSubpageContentWrapper
-                render={children}
-                value={{
-                    targetUser,
-                    isOwner,
-                    isAdmin,
-                    canAccessSubpage,
-                    hasRequiredRole,
-                }}
-            />
+            <UserSubpageContentWrapper render={children} value={contextValue} />
         </Stack>
     );
 }

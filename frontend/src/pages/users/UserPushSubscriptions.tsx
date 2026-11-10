@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Button, SimpleGrid, TextInput, Modal, Stack, Group, Text, Divider, Paper } from '@mantine/core';
+import { Button, SimpleGrid, TextInput, Modal, Stack, Group, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconDeviceMobile } from '@tabler/icons-react';
+import { IconDeviceMobile, IconPlus } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -45,6 +46,8 @@ export default function UserPushSubscriptions() {
     const queryClient = useQueryClient();
 
     const [subscribing, setSubscribing] = useState(false);
+    const [showManualCreate, setShowManualCreate] = useState(false);
+    const [showManualEdit, setShowManualEdit] = useState(false);
     const tableState = useDataTableState({ initialSort: 'createdAt:desc' });
 
     const [endpointFilter, setEndpointFilter] = useState('');
@@ -114,8 +117,17 @@ export default function UserPushSubscriptions() {
                 const pagination = data?.pagination;
 
                 const handleSubscribeDevice = async () => {
-                    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                        notifyError(t('pushNotificationsNotSupported'), t('error'));
+                    if (
+                        typeof navigator === 'undefined' ||
+                        !('serviceWorker' in navigator) ||
+                        !('PushManager' in window)
+                    ) {
+                        notifications.show({
+                            id: 'push-status-error',
+                            color: 'red',
+                            title: t('pushNotifications'),
+                            message: t('pushPermissionDenied'),
+                        });
                         return;
                     }
 
@@ -131,7 +143,12 @@ export default function UserPushSubscriptions() {
                         if ('Notification' in window && Notification.permission !== 'granted') {
                             const permission = await Notification.requestPermission();
                             if (permission !== 'granted') {
-                                notifyError(new Error(t('pushNotificationsNotSupported')), t('error'));
+                                notifications.show({
+                                    id: 'push-status-error',
+                                    color: 'red',
+                                    title: t('pushNotifications'),
+                                    message: t('pushPermissionDenied'),
+                                });
                                 return;
                             }
                         }
@@ -156,8 +173,86 @@ export default function UserPushSubscriptions() {
                         closeCreate();
                         await queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
                         notifySuccess(t('saved'), t('pushSubscriptions'));
-                    } catch (err) {
-                        notifyError(err, t('error'));
+                    } catch {
+                        notifications.show({
+                            id: 'push-status-error',
+                            color: 'red',
+                            title: t('pushNotifications'),
+                            message: t('pushPermissionDenied'),
+                        });
+                    } finally {
+                        setSubscribing(false);
+                    }
+                };
+
+                const handleSubscribeDeviceInEdit = async () => {
+                    if (
+                        typeof navigator === 'undefined' ||
+                        !('serviceWorker' in navigator) ||
+                        !('PushManager' in window)
+                    ) {
+                        notifications.show({
+                            id: 'push-status-error',
+                            color: 'red',
+                            title: t('pushNotifications'),
+                            message: t('pushPermissionDenied'),
+                        });
+                        return;
+                    }
+
+                    const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+                    if (!vapidPublicKey) {
+                        notifyError(t('missingVapidKey'), t('error'));
+                        return;
+                    }
+
+                    if (!editingSub) return;
+
+                    setSubscribing(true);
+
+                    try {
+                        if ('Notification' in window && Notification.permission !== 'granted') {
+                            const permission = await Notification.requestPermission();
+                            if (permission !== 'granted') {
+                                notifications.show({
+                                    id: 'push-status-error',
+                                    color: 'red',
+                                    title: t('pushNotifications'),
+                                    message: t('pushPermissionDenied'),
+                                });
+                                return;
+                            }
+                        }
+                        await navigator.serviceWorker.register('/sw.js');
+                        const reg = await navigator.serviceWorker.ready;
+                        const subscription = await reg.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+                        });
+
+                        const keys = subscription.toJSON().keys ?? {};
+
+                        await pushSubscriptionService.updatePushSubscription({
+                            params: { path: { id: editingSub.id } },
+                            body: {
+                                endpoint: subscription.endpoint,
+                                p256dh: keys.p256dh || '',
+                                auth: keys.auth || '',
+                                userAgent: navigator.userAgent,
+                            },
+                        });
+
+                        closeEdit();
+                        setEditingSub(null);
+                        await queryClient.invalidateQueries({ queryKey: ['push-subscriptions'] });
+                        notifySuccess(t('saved'), t('pushSubscriptions'));
+                    } catch {
+                        notifications.show({
+                            id: 'push-status-error',
+                            color: 'red',
+                            title: t('pushNotifications'),
+                            message: t('pushPermissionDenied'),
+                        });
                     } finally {
                         setSubscribing(false);
                     }
@@ -192,6 +287,7 @@ export default function UserPushSubscriptions() {
                         userAgent: sub.userAgent || '',
                     });
                     editErrors.clearErrors();
+                    setShowManualEdit(false);
                     openEdit();
                 };
 
@@ -268,7 +364,7 @@ export default function UserPushSubscriptions() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 3 }}>
+                    <SimpleGrid className="filter-grid-3">
                         <TextInput
                             label={t('endpoint')}
                             value={endpointFilter}
@@ -312,6 +408,7 @@ export default function UserPushSubscriptions() {
                                 isOwner
                                     ? () => {
                                           createErrors.clearErrors();
+                                          setShowManualCreate(false);
                                           openCreate();
                                       }
                                     : undefined
@@ -344,149 +441,175 @@ export default function UserPushSubscriptions() {
                         />
 
                         <Modal opened={createOpened} onClose={closeCreate} title={t('addSubscription')}>
-                            <Stack>
-                                <Paper>
-                                    <Stack gap="xs">
-                                        <Text fw={600} size="sm">
-                                            {t('subscribeThisDevice')}
-                                        </Text>
-                                        <Text size="xs" c="dimmed">
-                                            {t('pushPermissionWillBeAsked')}
-                                        </Text>
+                            <Stack gap="md">
+                                <Group grow gap="xs">
+                                    <Button
+                                        variant="light"
+                                        leftSection={<IconDeviceMobile size={16} />}
+                                        loading={subscribing}
+                                        disabled={subscribing}
+                                        onClick={handleSubscribeDevice}
+                                    >
+                                        {t('addAutomatically')}
+                                    </Button>
+                                    <Button
+                                        variant={showManualCreate ? 'filled' : 'default'}
+                                        leftSection={<IconPlus size={16} />}
+                                        onClick={() => setShowManualCreate((prev) => !prev)}
+                                    >
+                                        {t('addManually')}
+                                    </Button>
+                                </Group>
+
+                                {showManualCreate && (
+                                    <Stack gap="sm">
+                                        <TextInput
+                                            label={t('endpoint')}
+                                            placeholder="https://..."
+                                            required
+                                            value={createForm.endpoint}
+                                            error={createErrors.errors.endpoint}
+                                            onChange={(e) =>
+                                                setCreateForm({
+                                                    ...createForm,
+                                                    endpoint: e.currentTarget.value,
+                                                })
+                                            }
+                                        />
+                                        <TextInput
+                                            label={t('p256dh')}
+                                            placeholder="p256dh..."
+                                            required
+                                            value={createForm.p256dh}
+                                            error={createErrors.errors.p256dh}
+                                            onChange={(e) =>
+                                                setCreateForm({
+                                                    ...createForm,
+                                                    p256dh: e.currentTarget.value,
+                                                })
+                                            }
+                                        />
+                                        <TextInput
+                                            label={t('authKey')}
+                                            placeholder="auth..."
+                                            required
+                                            value={createForm.auth}
+                                            error={createErrors.errors.auth}
+                                            onChange={(e) =>
+                                                setCreateForm({
+                                                    ...createForm,
+                                                    auth: e.currentTarget.value,
+                                                })
+                                            }
+                                        />
+                                        <TextInput
+                                            label={t('device')}
+                                            placeholder="User-Agent..."
+                                            required
+                                            value={createForm.userAgent}
+                                            error={createErrors.errors.userAgent}
+                                            onChange={(e) =>
+                                                setCreateForm({
+                                                    ...createForm,
+                                                    userAgent: e.currentTarget.value,
+                                                })
+                                            }
+                                        />
                                         <Button
-                                            mt="xs"
-                                            loading={subscribing}
-                                            disabled={subscribing}
-                                            leftSection={<IconDeviceMobile size={16} />}
-                                            onClick={handleSubscribeDevice}
+                                            mt="sm"
+                                            loading={createManualMutation.isPending}
+                                            disabled={
+                                                createManualMutation.isPending ||
+                                                !createForm.endpoint.trim() ||
+                                                !createForm.p256dh.trim() ||
+                                                !createForm.auth.trim() ||
+                                                !createForm.userAgent.trim()
+                                            }
+                                            onClick={() => createManualMutation.mutate()}
                                         >
-                                            {t('subscribeThisDevice')}
+                                            {t('save')}
                                         </Button>
                                     </Stack>
-                                </Paper>
-
-                                <Divider label={t('orManualEntry')} labelPosition="center" />
-
-                                <Stack gap="sm">
-                                    <TextInput
-                                        label={t('endpoint')}
-                                        placeholder="https://..."
-                                        required
-                                        value={createForm.endpoint}
-                                        error={createErrors.errors.endpoint}
-                                        onChange={(e) =>
-                                            setCreateForm({
-                                                ...createForm,
-                                                endpoint: e.currentTarget.value,
-                                            })
-                                        }
-                                    />
-                                    <TextInput
-                                        label={t('p256dh')}
-                                        placeholder="p256dh..."
-                                        required
-                                        value={createForm.p256dh}
-                                        error={createErrors.errors.p256dh}
-                                        onChange={(e) =>
-                                            setCreateForm({
-                                                ...createForm,
-                                                p256dh: e.currentTarget.value,
-                                            })
-                                        }
-                                    />
-                                    <TextInput
-                                        label={t('authKey')}
-                                        placeholder="auth..."
-                                        required
-                                        value={createForm.auth}
-                                        error={createErrors.errors.auth}
-                                        onChange={(e) =>
-                                            setCreateForm({
-                                                ...createForm,
-                                                auth: e.currentTarget.value,
-                                            })
-                                        }
-                                    />
-                                    <TextInput
-                                        label={t('device')}
-                                        placeholder="User-Agent..."
-                                        required
-                                        value={createForm.userAgent}
-                                        error={createErrors.errors.userAgent}
-                                        onChange={(e) =>
-                                            setCreateForm({
-                                                ...createForm,
-                                                userAgent: e.currentTarget.value,
-                                            })
-                                        }
-                                    />
-                                    <Button
-                                        mt="sm"
-                                        loading={createManualMutation.isPending}
-                                        disabled={
-                                            createManualMutation.isPending ||
-                                            !createForm.endpoint.trim() ||
-                                            !createForm.p256dh.trim() ||
-                                            !createForm.auth.trim() ||
-                                            !createForm.userAgent.trim()
-                                        }
-                                        onClick={() => createManualMutation.mutate()}
-                                    >
-                                        {t('save')}
-                                    </Button>
-                                </Stack>
+                                )}
                             </Stack>
                         </Modal>
 
                         <Modal opened={editOpened} onClose={closeEdit} title={t('editSubscription')}>
-                            <Stack gap="sm">
-                                <TextInput
-                                    label={t('endpoint')}
-                                    required
-                                    value={editForm.endpoint}
-                                    error={editErrors.errors.endpoint}
-                                    onChange={(e) => setEditForm({ ...editForm, endpoint: e.currentTarget.value })}
-                                />
-                                <TextInput
-                                    label={t('p256dh')}
-                                    required
-                                    value={editForm.p256dh}
-                                    error={editErrors.errors.p256dh}
-                                    onChange={(e) => setEditForm({ ...editForm, p256dh: e.currentTarget.value })}
-                                />
-                                <TextInput
-                                    label={t('authKey')}
-                                    required
-                                    value={editForm.auth}
-                                    error={editErrors.errors.auth}
-                                    onChange={(e) => setEditForm({ ...editForm, auth: e.currentTarget.value })}
-                                />
-                                <TextInput
-                                    label={t('device')}
-                                    required
-                                    value={editForm.userAgent}
-                                    error={editErrors.errors.userAgent}
-                                    onChange={(e) =>
-                                        setEditForm({
-                                            ...editForm,
-                                            userAgent: e.currentTarget.value,
-                                        })
-                                    }
-                                />
-                                <Button
-                                    mt="md"
-                                    loading={updateMutation.isPending}
-                                    disabled={
-                                        updateMutation.isPending ||
-                                        !editForm.endpoint.trim() ||
-                                        !editForm.p256dh.trim() ||
-                                        !editForm.auth.trim() ||
-                                        !editForm.userAgent.trim()
-                                    }
-                                    onClick={() => updateMutation.mutate()}
-                                >
-                                    {t('save')}
-                                </Button>
+                            <Stack gap="md">
+                                <Group grow gap="xs">
+                                    <Button
+                                        variant="light"
+                                        leftSection={<IconDeviceMobile size={16} />}
+                                        loading={subscribing}
+                                        disabled={subscribing}
+                                        onClick={handleSubscribeDeviceInEdit}
+                                    >
+                                        {t('addAutomatically')}
+                                    </Button>
+                                    <Button
+                                        variant={showManualEdit ? 'filled' : 'default'}
+                                        leftSection={<IconPlus size={16} />}
+                                        onClick={() => setShowManualEdit((prev) => !prev)}
+                                    >
+                                        {t('addManually')}
+                                    </Button>
+                                </Group>
+
+                                {showManualEdit && (
+                                    <Stack gap="sm">
+                                        <TextInput
+                                            label={t('endpoint')}
+                                            required
+                                            value={editForm.endpoint}
+                                            error={editErrors.errors.endpoint}
+                                            onChange={(e) =>
+                                                setEditForm({ ...editForm, endpoint: e.currentTarget.value })
+                                            }
+                                        />
+                                        <TextInput
+                                            label={t('p256dh')}
+                                            required
+                                            value={editForm.p256dh}
+                                            error={editErrors.errors.p256dh}
+                                            onChange={(e) =>
+                                                setEditForm({ ...editForm, p256dh: e.currentTarget.value })
+                                            }
+                                        />
+                                        <TextInput
+                                            label={t('authKey')}
+                                            required
+                                            value={editForm.auth}
+                                            error={editErrors.errors.auth}
+                                            onChange={(e) => setEditForm({ ...editForm, auth: e.currentTarget.value })}
+                                        />
+                                        <TextInput
+                                            label={t('device')}
+                                            required
+                                            value={editForm.userAgent}
+                                            error={editErrors.errors.userAgent}
+                                            onChange={(e) =>
+                                                setEditForm({
+                                                    ...editForm,
+                                                    userAgent: e.currentTarget.value,
+                                                })
+                                            }
+                                        />
+                                        <Button
+                                            mt="md"
+                                            loading={updateMutation.isPending}
+                                            disabled={
+                                                updateMutation.isPending ||
+                                                !editForm.endpoint.trim() ||
+                                                !editForm.p256dh.trim() ||
+                                                !editForm.auth.trim() ||
+                                                !editForm.userAgent.trim()
+                                            }
+                                            onClick={() => updateMutation.mutate()}
+                                        >
+                                            {t('save')}
+                                        </Button>
+                                    </Stack>
+                                )}
                             </Stack>
                         </Modal>
                     </>
