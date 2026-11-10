@@ -14,6 +14,7 @@ import { LanguageEnum } from '../../enums/LanguageEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { ThemeEnum } from '../../enums/ThemeEnum';
 import { useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 import { resolveImageBase64 } from '../../utils';
 import { slugify } from '../../utils';
 
@@ -47,6 +48,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
     const queryClient = useQueryClient();
     const { refetchUser } = useAuth();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
+    const { isOffline } = useOffline();
     const isEdit = !!user;
 
     const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
@@ -394,7 +396,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
 
                 <Button
                     loading={isSubmitting}
-                    disabled={isSubmitting || !canSubmit}
+                    disabled={isSubmitting || !canSubmit || isOffline}
                     onClick={() => mutation.mutate()}
                     mt="sm"
                 >

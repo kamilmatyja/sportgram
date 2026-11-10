@@ -1,4 +1,4 @@
-import { Group, Avatar, Text } from '@mantine/core';
+import { Group, Avatar, Text, Skeleton } from '@mantine/core';
 import { type UserResource } from '../../api/services';
 import { formatImageSrc } from '../../utils';
 
@@ -8,8 +8,20 @@ export interface UserInfoCellProps {
     showLink?: boolean;
 }
 
-export function UserInfoCell({ user, userId, showLink = true }: UserInfoCellProps) {
-    const displayName = user ? `${user.firstName} ${user.lastName}` : (userId ?? '');
+export function UserInfoCell({ user, showLink = true }: UserInfoCellProps) {
+    if (!user) {
+        return (
+            <Group wrap="nowrap">
+                <Skeleton height={38} circle />
+                <div>
+                    <Skeleton height={14} width={120} mb={4} />
+                    {showLink && <Skeleton height={10} width={80} />}
+                </div>
+            </Group>
+        );
+    }
+
+    const displayName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.link || '';
 
     return (
         <Group wrap="nowrap">

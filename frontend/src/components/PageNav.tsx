@@ -74,6 +74,7 @@ export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNa
                                 variant="light"
                                 size="xs"
                                 leftSection={<IconArrowLeft size={16} />}
+                                data-offline-allowed="true"
                             >
                                 {simplifiedHeader ? t('backToPage') : t('back')}
                             </Button>

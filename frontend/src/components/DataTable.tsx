@@ -16,6 +16,7 @@ import {
 } from '@mantine/core';
 import { IconSearch, IconPlus, IconFilter, IconX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { useOffline } from '../services';
 import { getDefaultSortOptions, buildSortOptions, type SortOption } from '../utils';
 import { EmptyState } from './EmptyState';
 
@@ -93,6 +94,7 @@ export function DataTable<T extends Record<string, unknown>>({
     minWidth = 500,
 }: DataTableProps<T>) {
     const { t } = useTranslation();
+    const { isOfflineDisabled } = useOffline();
     const [filtersOpened, setFiltersOpened] = useState(false);
 
     const activePage = state?.page ?? page;
@@ -122,6 +124,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                     leftSection={<IconSearch size={16} />}
                                     value={search ?? ''}
                                     onChange={(e) => onSearchChange(e.currentTarget.value)}
+                                    disabled={isOfflineDisabled}
                                     flex={1}
                                     maw={300}
                                 />
@@ -134,6 +137,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                     data={effectiveSortOptions}
                                     value={activeSort ?? null}
                                     onChange={activeOnSortChange}
+                                    disabled={isOfflineDisabled}
                                     clearable
                                     searchable
                                     maw={260}
@@ -147,6 +151,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                         variant={filtersOpened ? 'filled' : 'light'}
                                         leftSection={<IconFilter size={16} />}
                                         onClick={() => setFiltersOpened((prev) => !prev)}
+                                        disabled={isOfflineDisabled}
                                     >
                                         {t('filters')}
                                         {activeFiltersCount && activeFiltersCount > 0 ? (
@@ -162,6 +167,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                             size="sm"
                                             leftSection={<IconX size={16} />}
                                             onClick={onResetFilters}
+                                            disabled={isOfflineDisabled}
                                         >
                                             {t('clearFilters')}
                                         </Button>
@@ -173,7 +179,7 @@ export function DataTable<T extends Record<string, unknown>>({
                         </Group>
 
                         {onAdd && (
-                            <Button leftSection={<IconPlus size={16} />} onClick={onAdd}>
+                            <Button leftSection={<IconPlus size={16} />} onClick={onAdd} disabled={isOfflineDisabled}>
                                 {addLabel ?? t('add')}
                             </Button>
                         )}
@@ -271,6 +277,7 @@ export function DataTable<T extends Record<string, unknown>>({
                             total={computedTotalPages}
                             size="sm"
                             withEdges
+                            disabled={isOfflineDisabled}
                         />
                     </Flex>
                 )}

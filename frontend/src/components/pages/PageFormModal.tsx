@@ -8,6 +8,7 @@ import { pageService, type PageResource } from '../../api/services';
 import { useAuth } from '../../auth';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 import { resolveImageBase64, updateTitleWithSlug } from '../../utils';
 
 export interface PageFormModalProps {
@@ -30,6 +31,7 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
+    const { isOffline } = useOffline();
     const isEdit = !!page;
 
     const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
@@ -192,7 +194,7 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
 
                 <Button
                     loading={isSubmitting}
-                    disabled={isSubmitting || !canSubmit}
+                    disabled={isSubmitting || !canSubmit || isOffline}
                     onClick={() => mutation.mutate()}
                     mt="sm"
                 >

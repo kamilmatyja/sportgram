@@ -242,6 +242,8 @@ export default function PageDetails() {
         };
     }, [primaryColor]);
 
+    const dynamicTheme = useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
+
     if (isLoading) {
         return (
             <Center h={200}>
@@ -297,8 +299,6 @@ export default function PageDetails() {
             )}
         </Group>
     );
-
-    const dynamicTheme = useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
 
     return (
         <MantineThemeProvider theme={dynamicTheme} inherit>

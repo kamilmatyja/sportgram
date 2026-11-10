@@ -7,6 +7,7 @@ import { authService, userService, type UserResource } from '../api/services';
 import { LanguageEnum } from '../enums/LanguageEnum';
 import { RoleEnum } from '../enums/RoleEnum';
 import { ThemeEnum } from '../enums/ThemeEnum';
+import { saveOfflineCurrentUser, getOfflineCurrentUser, getOfflineCurrentUserSync } from '../services';
 
 export type User = UserResource;
 
@@ -37,6 +38,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const logout = useCallback(() => {
         authStorage.clear();
+        try {
+            localStorage.removeItem('sportgram_offline_user');
+        } catch {
+            // ignore
+        }
         setToken(null);
         setSignId(null);
         queryClient.removeQueries({ queryKey: ['currentUser'] });
@@ -56,29 +62,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = useQuery({
         queryKey: ['currentUser', signId],
         queryFn: async () => {
-            const res = await userService.getUsers({
-                params: {
-                    query: {
-                        filter: { signId: signId!, userIds: null },
-                        'include[]': ['userRoles', 'userDisciplines'],
-                        limit: 1,
+            if (typeof navigator !== 'undefined' && !navigator.onLine) {
+                const offlineUser = await getOfflineCurrentUser();
+                if (offlineUser) return offlineUser;
+            }
+
+            try {
+                const res = await userService.getUsers({
+                    params: {
+                        query: {
+                            filter: { signId: signId!, userIds: null },
+                            'include[]': ['userRoles', 'userDisciplines'],
+                            limit: 1,
+                        },
                     },
-                },
-            });
-            const user = res.data?.[0];
-            if (!user) throw new Error('User not found');
-            return user;
+                });
+                const user = res.data?.[0];
+                if (!user) throw new Error('User not found');
+                void saveOfflineCurrentUser(user);
+                return user;
+            } catch (err) {
+                if (typeof navigator !== 'undefined' && !navigator.onLine) {
+                    const offlineUser = await getOfflineCurrentUser();
+                    if (offlineUser) return offlineUser;
+                }
+                throw err;
+            }
         },
+        initialData: () => (token && signId ? getOfflineCurrentUserSync() || undefined : undefined),
         enabled: !!(token && signId),
         retry: false,
     });
 
     useEffect(() => {
-        if (isError) logout();
+        // Requirement 4: Don't logout when offline
+        if (isError && (typeof navigator === 'undefined' || navigator.onLine)) {
+            logout();
+        }
     }, [isError, logout]);
 
     const refetchUser = useCallback(async () => {
-        if (token && signId) {
+        if (token && signId && (typeof navigator === 'undefined' || navigator.onLine)) {
             await refetch();
         }
     }, [token, signId, refetch]);
@@ -100,17 +124,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [currentUser?.language, currentUser?.theme, setColorScheme, i18n]);
 
     const refreshSession = useCallback(async () => {
-        if (!signId) return;
+        if (!signId || (typeof navigator !== 'undefined' && !navigator.onLine)) return;
         try {
             const data = await authService.refreshSign({ params: { path: { id: signId } } });
             if (data?.token) {
                 authStorage.setToken(data.token);
                 setToken(data.token);
-            } else {
+            } else if (typeof navigator === 'undefined' || navigator.onLine) {
                 logout();
             }
         } catch {
-            logout();
+            if (typeof navigator === 'undefined' || navigator.onLine) {
+                logout();
+            }
         }
     }, [signId, logout]);
 
@@ -153,8 +179,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             token,
             signId,
             currentUser,
-            isAuthenticated: !!token && !!currentUser,
-            isLoading: !!(token && signId) && isLoading,
+            isAuthenticated: !!(token && signId),
+            isLoading,
             isAdmin,
             isOrganizer,
             isParticipant,

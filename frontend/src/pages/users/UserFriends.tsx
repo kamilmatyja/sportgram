@@ -79,7 +79,7 @@ export default function UserFriends() {
                     );
                 }, [friends, targetUser]);
 
-                const { getUser } = useUsersMap(otherUserIds);
+                const { getUser, isLoading: usersLoading } = useUsersMap(otherUserIds);
 
                 const { data: allUsersData } = useQuery({
                     queryKey: ['potential-friends', targetUser?.id],
@@ -212,7 +212,7 @@ export default function UserFriends() {
                         <DataTable
                             columns={columns}
                             data={friends}
-                            isLoading={isLoading}
+                            isLoading={isLoading || (otherUserIds.length > 0 && usersLoading)}
                             totalItems={pagination?.total}
                             state={tableState}
                             filtersNode={filtersNode}

@@ -15,6 +15,7 @@ import {
     ActionIcon,
     Tooltip,
     Anchor,
+    Skeleton,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconMessageCircle, IconEdit, IconTrash, IconCheck, IconX } from '@tabler/icons-react';
@@ -180,8 +181,8 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
     const feedAuthor = author ?? usersMap[feed.userId];
     const authorLink = feedAuthor?.link ? `/users/${feedAuthor.link}` : `/users/${feed.userId}`;
     const authorName = feedAuthor
-        ? `${feedAuthor.firstName ?? ''} ${feedAuthor.lastName ?? ''}`.trim() || feedAuthor.link || feed.userId
-        : feed.userId;
+        ? `${feedAuthor.firstName ?? ''} ${feedAuthor.lastName ?? ''}`.trim() || feedAuthor.link || t('user')
+        : '';
 
     return (
         <Card ref={domRef}>
@@ -191,9 +192,13 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                         ?
                     </Avatar>
                     <Box>
-                        <Anchor size="sm" fw={600} component={Link} to={authorLink} c="inherit" underline="hover">
-                            {authorName}
-                        </Anchor>
+                        {feedAuthor ? (
+                            <Anchor size="sm" fw={600} component={Link} to={authorLink} c="inherit" underline="hover">
+                                {authorName}
+                            </Anchor>
+                        ) : (
+                            <Skeleton height={14} width={120} mb={4} />
+                        )}
                         <Text size="sm" c="dimmed">
                             {formatDateTime(feed.createdAt)}
                         </Text>
@@ -284,8 +289,8 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                             (currentUser?.id === c.userId ? currentUser : undefined) ??
                             (feedAuthor?.id === c.userId ? feedAuthor : undefined);
                         const cAuthorName = cAuthor
-                            ? `${cAuthor.firstName ?? ''} ${cAuthor.lastName ?? ''}`.trim() || cAuthor.link || c.userId
-                            : c.userId;
+                            ? `${cAuthor.firstName ?? ''} ${cAuthor.lastName ?? ''}`.trim() || cAuthor.link || t('user')
+                            : '';
                         const cAuthorPhoto = formatImageSrc(cAuthor?.profilePhoto);
                         const canManageComment = currentUser?.id === c.userId;
                         const isEditing = editingCommentId === c.id;
@@ -302,21 +307,25 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                                             <Avatar src={cAuthorPhoto}>?</Avatar>
                                         )}
                                         <Box>
-                                            {cAuthor?.link ? (
-                                                <Anchor
-                                                    size="sm"
-                                                    fw={600}
-                                                    component={Link}
-                                                    to={`/users/${cAuthor.link}`}
-                                                    c="inherit"
-                                                    underline="hover"
-                                                >
-                                                    {cAuthorName}
-                                                </Anchor>
+                                            {cAuthor ? (
+                                                cAuthor?.link ? (
+                                                    <Anchor
+                                                        size="sm"
+                                                        fw={600}
+                                                        component={Link}
+                                                        to={`/users/${cAuthor.link}`}
+                                                        c="inherit"
+                                                        underline="hover"
+                                                    >
+                                                        {cAuthorName}
+                                                    </Anchor>
+                                                ) : (
+                                                    <Text size="sm" fw={600}>
+                                                        {cAuthorName}
+                                                    </Text>
+                                                )
                                             ) : (
-                                                <Text size="sm" fw={600}>
-                                                    {cAuthorName}
-                                                </Text>
+                                                <Skeleton height={14} width={100} mb={4} />
                                             )}
                                             <Text size="sm" c="dimmed">
                                                 {formatDateTime(c.createdAt)}

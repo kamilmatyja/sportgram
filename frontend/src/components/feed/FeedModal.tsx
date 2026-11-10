@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { feedService, type FeedResource } from '../../api/services';
 import { ImageInput } from '../common';
 import { useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 import { resolveImageBase64 } from '../../utils';
 
 export interface FeedModalProps {
@@ -18,6 +19,7 @@ export interface FeedModalProps {
 export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const { isOffline } = useOffline();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!feed;
 
@@ -86,7 +88,11 @@ export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) 
                     onChange={setPhoto}
                     required={isPhotoRequired}
                 />
-                <Button loading={isSubmitting} disabled={isSubmitting || !canSubmit} onClick={() => mutation.mutate()}>
+                <Button
+                    loading={isSubmitting}
+                    disabled={isSubmitting || !canSubmit || isOffline}
+                    onClick={() => mutation.mutate()}
+                >
                     {t('save')}
                 </Button>
             </Stack>

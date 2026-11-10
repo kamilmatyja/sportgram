@@ -190,6 +190,8 @@ export default function TrainingDetails() {
         };
     }, [primaryColor]);
 
+    const dynamicTheme = useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
+
     if (trainingLoading || userLoading || accessLoading) {
         return (
             <Center h={200}>
@@ -205,8 +207,6 @@ export default function TrainingDetails() {
     if (!canAccessSubpage) {
         return <NotFound title={t('accessDenied')} />;
     }
-
-    const dynamicTheme = useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
 
     return (
         <MantineThemeProvider theme={dynamicTheme} inherit>

@@ -37,11 +37,13 @@ import {
 } from '../../components';
 import { confirmDelete, formatDateTime, formatClockTime, truncate, notifySuccess, notifyError } from '../../utils';
 import { useDataTableState, useUsersMap, useMyFriends, useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 
 export default function UserConversations() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
+    const { isOffline } = useOffline();
     const chatEndRef = useRef<HTMLDivElement>(null);
 
     const tableState = useDataTableState({ initialSort: 'createdAt:desc' });
@@ -433,7 +435,7 @@ export default function UserConversations() {
                             />
                             <Button
                                 loading={updateMessageMutation.isPending}
-                                disabled={!editModalText.trim() || updateMessageMutation.isPending}
+                                disabled={!editModalText.trim() || updateMessageMutation.isPending || isOffline}
                                 onClick={() => {
                                     if (editingMessage) {
                                         updateMessageMutation.mutate({
@@ -574,7 +576,10 @@ export default function UserConversations() {
                                     <Button
                                         loading={sendMutation.isPending}
                                         disabled={
-                                            !sendModalText.trim() || !sendModalRecipientId || sendMutation.isPending
+                                            !sendModalText.trim() ||
+                                            !sendModalRecipientId ||
+                                            sendMutation.isPending ||
+                                            isOffline
                                         }
                                         onClick={() => {
                                             if (sendModalRecipientId && sendModalText.trim()) {
@@ -733,7 +738,7 @@ export default function UserConversations() {
                                     <TextInput
                                         aria-label={canChat ? t('typeMessage') : t('mustBeFriendsToChat')}
                                         placeholder={canChat ? t('typeMessage') : t('mustBeFriendsToChat')}
-                                        disabled={!canChat || sendMutation.isPending}
+                                        disabled={!canChat || sendMutation.isPending || isOffline}
                                         value={messageInput}
                                         error={chatErrors.errors.text}
                                         onChange={(e) => {
@@ -744,7 +749,9 @@ export default function UserConversations() {
                                     />
                                     <Button
                                         type="submit"
-                                        disabled={sendMutation.isPending || !canChat || !messageInput.trim()}
+                                        disabled={
+                                            sendMutation.isPending || !canChat || !messageInput.trim() || isOffline
+                                        }
                                         loading={sendMutation.isPending}
                                         leftSection={<IconSend size={16} />}
                                     >

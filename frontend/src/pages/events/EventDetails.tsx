@@ -140,6 +140,8 @@ export default function EventDetails() {
         };
     }, [primaryColor]);
 
+    const dynamicTheme = useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
+
     if (eventLoading) {
         return (
             <Center h={200}>
@@ -153,7 +155,6 @@ export default function EventDetails() {
     }
 
     const eventPhotoSrc = formatImageSrc(event.photo);
-    const dynamicTheme = useMemo(() => createDynamicTheme(primaryColor), [primaryColor]);
 
     return (
         <MantineThemeProvider theme={dynamicTheme} inherit>

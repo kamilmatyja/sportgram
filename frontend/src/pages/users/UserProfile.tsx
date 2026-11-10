@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
-import { Stack, Title, Text, Button, Group, Badge, Center, Loader } from '@mantine/core';
+import { Stack, Title, Text, Button, Group, Badge, Center, Loader, Card, Skeleton } from '@mantine/core';
 import { IconUserPlus, IconUserMinus, IconUserCheck, IconUserX } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import {
     type StoryResource,
 } from '../../api/services';
 import { useAuth } from '../../auth';
+import { useOffline } from '../../services';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
@@ -43,6 +44,7 @@ export default function UserProfile() {
     const { link } = useParams<{ link: string }>();
     const { t } = useTranslation();
     const { currentUser, isAdmin, logout } = useAuth();
+    const { isOffline } = useOffline();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -126,7 +128,9 @@ export default function UserProfile() {
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) =>
-            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
+            !isOffline && lastPage.pagination?.hasNextPage && lastPage.pagination.page
+                ? lastPage.pagination.page + 1
+                : undefined,
         enabled: !!user?.id && canViewPrivateContent,
     });
 
@@ -138,8 +142,9 @@ export default function UserProfile() {
 
     const lastFeedElementRef = useInfiniteScrollObserver({
         isLoading: isFetchingMoreFeeds,
-        hasNextPage: hasMoreFeeds,
-        fetchNextPage: fetchNextFeedsPage,
+        hasNextPage: !isOffline && hasMoreFeeds,
+        fetchNextPage: isOffline ? () => {} : fetchNextFeedsPage,
+        disabled: isOffline,
     });
 
     const relatedUserIds = useMemo(() => {
@@ -152,7 +157,8 @@ export default function UserProfile() {
         return Array.from(ids);
     }, [userFeedsData]);
 
-    const { usersMap } = useUsersMap(relatedUserIds);
+    const { usersMap, isLoading: usersMapLoading } = useUsersMap(relatedUserIds);
+    const isProfileFeedsLoading = feedsLoading || (relatedUserIds.length > 0 && usersMapLoading);
 
     const allUsersMap = useMemo(() => {
         if (!user) return usersMap;
@@ -161,6 +167,7 @@ export default function UserProfile() {
 
     const {
         data: userStoriesInfiniteData,
+        isLoading: userStoriesLoading,
         fetchNextPage: fetchNextStoriesPage,
         hasNextPage: hasMoreStories,
         isFetchingNextPage: isFetchingMoreStories,
@@ -181,7 +188,9 @@ export default function UserProfile() {
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) =>
-            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
+            !isOffline && lastPage.pagination?.hasNextPage && lastPage.pagination.page
+                ? lastPage.pagination.page + 1
+                : undefined,
         enabled: !!user?.id && canViewPrivateContent,
     });
 
@@ -193,6 +202,7 @@ export default function UserProfile() {
     const storiesViewportRef = useRef<HTMLDivElement>(null);
     const handleStoriesScroll = useCallback(
         (position: { x: number; y: number }) => {
+            if (isOffline) return;
             const el = storiesViewportRef.current;
             if (!el || isFetchingMoreStories || !hasMoreStories) return;
             const scrollRight = el.scrollWidth - el.clientWidth - position.x;
@@ -200,14 +210,15 @@ export default function UserProfile() {
                 void fetchNextStoriesPage();
             }
         },
-        [isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
+        [isOffline, isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
     );
 
     const lastStoryElementRef = useInfiniteScrollObserver({
         isLoading: isFetchingMoreStories,
-        hasNextPage: hasMoreStories,
-        fetchNextPage: fetchNextStoriesPage,
+        hasNextPage: !isOffline && hasMoreStories,
+        fetchNextPage: isOffline ? () => {} : fetchNextStoriesPage,
         root: storiesViewportRef.current,
+        disabled: isOffline,
     });
 
     const userStoryGroups = useMemo<UserStoriesGroup[]>(() => {
@@ -403,7 +414,7 @@ export default function UserProfile() {
                                         leftSection={<IconUserPlus size={16} />}
                                         onClick={() => sendFriendMutation.mutate()}
                                         loading={sendFriendMutation.isPending}
-                                        disabled={sendFriendMutation.isPending}
+                                        disabled={sendFriendMutation.isPending || isOffline}
                                     >
                                         {t('addFriend')}
                                     </Button>
@@ -429,7 +440,7 @@ export default function UserProfile() {
                                             )
                                         }
                                         loading={updateFriendStatusMutation.isPending}
-                                        disabled={updateFriendStatusMutation.isPending}
+                                        disabled={updateFriendStatusMutation.isPending || isOffline}
                                     >
                                         {`${t('delete')} ${t('friendship').toLowerCase()}`}
                                     </Button>
@@ -444,7 +455,7 @@ export default function UserProfile() {
                                             leftSection={<IconUserX size={16} />}
                                             onClick={() => deleteFriendMutation.mutate(friendship.id)}
                                             loading={deleteFriendMutation.isPending}
-                                            disabled={deleteFriendMutation.isPending}
+                                            disabled={deleteFriendMutation.isPending || isOffline}
                                         >
                                             {t('cancelFriendRequest')}
                                         </Button>
@@ -461,7 +472,7 @@ export default function UserProfile() {
                                                     })
                                                 }
                                                 loading={updateFriendStatusMutation.isPending}
-                                                disabled={updateFriendStatusMutation.isPending}
+                                                disabled={updateFriendStatusMutation.isPending || isOffline}
                                             >
                                                 {t('acceptFriend')}
                                             </Button>
@@ -476,7 +487,7 @@ export default function UserProfile() {
                                                     })
                                                 }
                                                 loading={updateFriendStatusMutation.isPending}
-                                                disabled={updateFriendStatusMutation.isPending}
+                                                disabled={updateFriendStatusMutation.isPending || isOffline}
                                             >
                                                 {t('rejectFriend')}
                                             </Button>
@@ -523,13 +534,14 @@ export default function UserProfile() {
 
             {canViewPrivateContent && (
                 <>
-                    {(isOwner || userStoriesData?.length > 0) && (
+                    {(isOwner || userStoriesData?.length > 0 || userStoriesLoading) && (
                         <StoriesBar
                             groups={userStoryGroups}
+                            isLoading={userStoriesLoading}
                             onSelectGroup={() => setStoryViewerOpened(true)}
                             onAddStory={isOwner ? () => setStoryModalOpened(true) : undefined}
                             onAddFeed={isOwner ? () => setFeedModalOpened(true) : undefined}
-                            isFetchingMore={isFetchingMoreStories}
+                            isFetchingMore={!isOffline && isFetchingMoreStories}
                             viewportRef={storiesViewportRef}
                             onScrollPositionChange={handleStoriesScroll}
                             lastStoryElementRef={lastStoryElementRef}
@@ -537,10 +549,20 @@ export default function UserProfile() {
                     )}
 
                     <Stack>
-                        {feedsLoading ? (
-                            <Text ta="center" c="dimmed">
-                                {t('loading')}
-                            </Text>
+                        {isProfileFeedsLoading ? (
+                            Array.from({ length: 3 }).map((_, i) => (
+                                <Card key={i}>
+                                    <Group mb="sm">
+                                        <Skeleton height={40} circle />
+                                        <Stack gap={6} flex={1}>
+                                            <Skeleton height={14} width="40%" />
+                                            <Skeleton height={10} width="20%" />
+                                        </Stack>
+                                    </Group>
+                                    <Skeleton height={50} mb="sm" />
+                                    <Skeleton height={180} radius="md" />
+                                </Card>
+                            ))
                         ) : userFeedsData?.length === 0 ? (
                             <EmptyState title={t('noData')} />
                         ) : (
@@ -561,7 +583,7 @@ export default function UserProfile() {
                             ))
                         )}
 
-                        {isFetchingMoreFeeds && (
+                        {isFetchingMoreFeeds && !isOffline && (
                             <Center py="sm">
                                 <Loader size="sm" />
                             </Center>

@@ -13,6 +13,7 @@ import { FeedModal } from '../components';
 import { StoriesBar } from '../components';
 import { StoryModal } from '../components';
 import { useUsersMap, useInfiniteScrollObserver } from '../hooks';
+import { useOffline } from '../services';
 import { confirmDelete, notifyError, notifySuccess } from '../utils';
 
 export default function Home() {
@@ -20,6 +21,7 @@ export default function Home() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { isAuthenticated, currentUser } = useAuth();
+    const { isOffline } = useOffline();
 
     const [storyModalOpened, setStoryModalOpened] = useState(false);
     const [feedModalOpened, setFeedModalOpened] = useState(false);
@@ -50,7 +52,9 @@ export default function Home() {
             }),
         initialPageParam: 1,
         getNextPageParam: (lastPage) =>
-            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
+            !isOffline && lastPage.pagination?.hasNextPage && lastPage.pagination.page
+                ? lastPage.pagination.page + 1
+                : undefined,
         enabled: isAuthenticated,
     });
 
@@ -62,12 +66,14 @@ export default function Home() {
 
     const lastFeedElementRef = useInfiniteScrollObserver({
         isLoading: isFetchingMoreFeeds,
-        hasNextPage: hasMoreFeeds,
-        fetchNextPage: fetchNextFeedsPage,
+        hasNextPage: !isOffline && hasMoreFeeds,
+        fetchNextPage: isOffline ? () => {} : fetchNextFeedsPage,
+        disabled: isOffline,
     });
 
     const {
         data: storiesInfiniteData,
+        isLoading: storiesLoading,
         fetchNextPage: fetchNextStoriesPage,
         hasNextPage: hasMoreStories,
         isFetchingNextPage: isFetchingMoreStories,
@@ -85,7 +91,9 @@ export default function Home() {
             }),
         initialPageParam: 1,
         getNextPageParam: (lastPage) =>
-            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
+            !isOffline && lastPage.pagination?.hasNextPage && lastPage.pagination.page
+                ? lastPage.pagination.page + 1
+                : undefined,
         enabled: isAuthenticated,
     });
 
@@ -97,20 +105,22 @@ export default function Home() {
     const storiesViewportRef = useRef<HTMLDivElement>(null);
     const handleStoriesScroll = useCallback(
         (position: { x: number; y: number }) => {
+            if (isOffline) return;
             const el = storiesViewportRef.current;
             if (!el || isFetchingMoreStories || !hasMoreStories) return;
             if (el.scrollWidth - el.clientWidth - position.x < 100) {
                 void fetchNextStoriesPage();
             }
         },
-        [isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
+        [isOffline, isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
     );
 
     const lastStoryElementRef = useInfiniteScrollObserver({
         isLoading: isFetchingMoreStories,
-        hasNextPage: hasMoreStories,
-        fetchNextPage: fetchNextStoriesPage,
+        hasNextPage: !isOffline && hasMoreStories,
+        fetchNextPage: isOffline ? () => {} : fetchNextStoriesPage,
         root: storiesViewportRef.current,
+        disabled: isOffline,
     });
 
     const relatedUserIds = useMemo(() => {
@@ -124,7 +134,9 @@ export default function Home() {
         return Array.from(ids);
     }, [feedsData, storiesData]);
 
-    const { usersMap } = useUsersMap(relatedUserIds);
+    const { usersMap, isLoading: usersLoading } = useUsersMap(relatedUserIds);
+    const isStoriesLoading = storiesLoading || (storiesData.length > 0 && usersLoading);
+    const isFeedsLoading = feedsLoading || (relatedUserIds.length > 0 && usersLoading);
 
     const userStoryGroups = useMemo<UserStoriesGroup[]>(() => {
         if (!storiesData || storiesData.length === 0) return [];
@@ -198,20 +210,21 @@ export default function Home() {
         <Stack gap="xl">
             <StoriesBar
                 groups={userStoryGroups}
+                isLoading={isStoriesLoading}
                 onSelectGroup={(idx) => {
                     setSelectedGroupIndex(idx);
                     setStoryViewerOpened(true);
                 }}
                 onAddStory={() => setStoryModalOpened(true)}
                 onAddFeed={() => setFeedModalOpened(true)}
-                isFetchingMore={isFetchingMoreStories}
+                isFetchingMore={!isOffline && isFetchingMoreStories}
                 viewportRef={storiesViewportRef}
                 onScrollPositionChange={handleStoriesScroll}
                 lastStoryElementRef={lastStoryElementRef}
             />
 
             <Stack>
-                {feedsLoading ? (
+                {isFeedsLoading ? (
                     Array.from({ length: 3 }).map((_, i) => (
                         <Card key={i}>
                             <Group mb="sm">
@@ -245,7 +258,7 @@ export default function Home() {
                     })
                 )}
 
-                {isFetchingMoreFeeds && (
+                {isFetchingMoreFeeds && !isOffline && (
                     <Text ta="center" size="sm" c="dimmed">
                         {t('loadingMore')}
                     </Text>

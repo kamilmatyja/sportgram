@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Button, SimpleGrid, TextInput, Modal, Stack, Group, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconDeviceMobile, IconPlus } from '@tabler/icons-react';
+import { IconDeviceMobile, IconPlus, IconEdit } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -544,14 +544,14 @@ export default function UserPushSubscriptions() {
                                         disabled={subscribing}
                                         onClick={handleSubscribeDeviceInEdit}
                                     >
-                                        {t('addAutomatically')}
+                                        {t('editAutomatically')}
                                     </Button>
                                     <Button
                                         variant={showManualEdit ? 'filled' : 'default'}
-                                        leftSection={<IconPlus size={16} />}
+                                        leftSection={<IconEdit size={16} />}
                                         onClick={() => setShowManualEdit((prev) => !prev)}
                                     >
-                                        {t('addManually')}
+                                        {t('editManually')}
                                     </Button>
                                 </Group>
 

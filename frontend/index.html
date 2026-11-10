@@ -7,6 +7,34 @@
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <title>Sportgram</title>
+        <script>
+            (function () {
+                window.addEventListener('unhandledrejection', function (event) {
+                    var reason = event.reason;
+                    var message = (reason && (reason.message || reason.stack || String(reason))) || '';
+                    if (
+                        message.includes('WebSocket') ||
+                        message.includes('failed to connect to websocket') ||
+                        message.includes('WebSocket closed without opened')
+                    ) {
+                        event.preventDefault();
+                    }
+                });
+
+                var originalConsoleError = console.error;
+                console.error = function () {
+                    var firstArg = arguments[0];
+                    if (
+                        typeof firstArg === 'string' &&
+                        (firstArg.includes('[vite] failed to connect to websocket') ||
+                            firstArg.includes('WebSocket closed without opened'))
+                    ) {
+                        return;
+                    }
+                    return originalConsoleError.apply(console, arguments);
+                };
+            })();
+        </script>
     </head>
     <body>
         <div id="root"></div>

@@ -1,6 +1,7 @@
 import { SimpleGrid, TextInput, Select } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import { useOffline } from '../../services';
 
 export interface TextStatusFilterGridProps {
     text: string;
@@ -8,6 +9,7 @@ export interface TextStatusFilterGridProps {
     status: string | null;
     onStatusChange: (val: string | null) => void;
     onFilterChange?: () => void;
+    disabled?: boolean;
 }
 
 export function TextStatusFilterGrid({
@@ -16,8 +18,11 @@ export function TextStatusFilterGrid({
     status,
     onStatusChange,
     onFilterChange,
+    disabled = false,
 }: TextStatusFilterGridProps) {
     const { t } = useTranslation();
+    const { isOfflineDisabled } = useOffline();
+    const isEffectiveDisabled = disabled || isOfflineDisabled;
 
     return (
         <SimpleGrid>
@@ -29,6 +34,7 @@ export function TextStatusFilterGrid({
                     onTextChange(e.currentTarget.value);
                     onFilterChange?.();
                 }}
+                disabled={isEffectiveDisabled}
             />
             <Select
                 label={t('status')}
@@ -42,6 +48,7 @@ export function TextStatusFilterGrid({
                     onStatusChange(v);
                     onFilterChange?.();
                 }}
+                disabled={isEffectiveDisabled}
                 clearable
             />
         </SimpleGrid>

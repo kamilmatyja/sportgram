@@ -7,6 +7,7 @@ import { ImageInput } from '../common';
 import { eventService, type EventResource } from '../../api/services';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 import { toInputDateTime } from '../../utils';
 import { resolveImageBase64 } from '../../utils';
 import { updateTitleWithSlug } from '../../utils';
@@ -47,6 +48,7 @@ export function EventFormModal({
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
+    const { isOffline } = useOffline();
     const isEdit = !!event;
 
     const [selectedPageParticipantId, setSelectedPageParticipantId] = useState<string | null>(
@@ -274,7 +276,7 @@ export function EventFormModal({
 
                 <Button
                     loading={isSubmitting}
-                    disabled={isSubmitting || !canSubmit}
+                    disabled={isSubmitting || !canSubmit || isOffline}
                     onClick={() => mutation.mutate()}
                     mt="sm"
                 >

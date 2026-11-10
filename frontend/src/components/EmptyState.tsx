@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Stack, Title, Text } from '@mantine/core';
+import { Paper, Stack, Title, Text, Box } from '@mantine/core';
 import { IconInbox } from '@tabler/icons-react';
 
 export interface EmptyStateProps {
@@ -7,6 +7,7 @@ export interface EmptyStateProps {
     title: string;
     description?: string;
     action?: React.ReactNode;
+    withPaper?: boolean;
 }
 
 export function EmptyState({
@@ -14,19 +15,32 @@ export function EmptyState({
     title,
     description,
     action,
+    withPaper = false,
 }: EmptyStateProps) {
+    const content = (
+        <Stack align="center" gap="xs">
+            <Text c="dimmed">{icon}</Text>
+            <Title order={4}>{title}</Title>
+            {description && (
+                <Text size="sm" c="dimmed" maw={400}>
+                    {description}
+                </Text>
+            )}
+            {action}
+        </Stack>
+    );
+
+    if (withPaper) {
+        return (
+            <Paper p="xl" ta="center">
+                {content}
+            </Paper>
+        );
+    }
+
     return (
-        <Paper p="xl" ta="center">
-            <Stack align="center" gap="xs">
-                <Text c="dimmed">{icon}</Text>
-                <Title order={4}>{title}</Title>
-                {description && (
-                    <Text size="sm" c="dimmed" maw={400}>
-                        {description}
-                    </Text>
-                )}
-                {action}
-            </Stack>
-        </Paper>
+        <Box py="xl" ta="center">
+            {content}
+        </Box>
     );
 }

@@ -67,7 +67,7 @@ export default function Statistics() {
 
     const stats = data?.data ?? [];
     const pagination = data?.pagination;
-    const { getUser } = useUsersMap(stats.map((s) => s.userId));
+    const { getUser, isLoading: usersLoading } = useUsersMap(stats.map((s) => s.userId));
 
     const columns: Column<StatisticResource>[] = [
         {
@@ -143,7 +143,7 @@ export default function Statistics() {
         <DataTable
             columns={columns}
             data={stats}
-            isLoading={isLoading}
+            isLoading={isLoading || (stats.length > 0 && usersLoading)}
             totalItems={pagination?.total}
             state={tableState}
             sortOptions={sortOptions}

@@ -7,6 +7,7 @@ import { goalService, type GoalResource } from '../../api/services';
 import { useAuth } from '../../auth';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 import { toInputDateTime } from '../../utils';
 import { slugify } from '../../utils';
 
@@ -32,6 +33,7 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
+    const { isOffline } = useOffline();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!goal;
 
@@ -181,15 +183,16 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
                     />
                 </SimpleGrid>
 
-                {collaboratorOptions.length > 0 && (
+                {(collaboratorOptions.length > 0 || isOffline) && (
                     <MultiSelect
                         label={t('collaborators')}
-                        placeholder={t('selectCollaborators')}
+                        placeholder={isOffline ? t('offlineUnavailable') : t('selectCollaborators')}
                         data={collaboratorOptions}
                         value={collaboratorIds}
                         onChange={setCollaboratorIds}
-                        searchable
-                        clearable
+                        disabled={isOffline}
+                        searchable={!isOffline}
+                        clearable={!isOffline}
                     />
                 )}
 

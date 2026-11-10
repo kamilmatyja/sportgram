@@ -17,6 +17,7 @@ import {
 import { useDataTableState, useTitleLinkStatusFilter } from '../../hooks';
 import { notifySuccess, notifyError, confirmDelete, buildSortOptions } from '../../utils';
 import { Group } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum.ts';
 
 export default function EventsList() {
@@ -125,6 +126,14 @@ export default function EventsList() {
     };
 
     const handleOpenCreate = () => {
+        if (pageOptions.length === 0) {
+            notifications.show({
+                title: t('events'),
+                message: t('noPagesFound'),
+                color: 'yellow',
+            });
+            return;
+        }
         setEditingEvent(null);
         openFormModal();
     };
@@ -143,7 +152,7 @@ export default function EventsList() {
         />
     );
 
-    const canAddEvent = (isOrganizer || isAdmin) && pageOptions.length > 0;
+    const canAddEvent = isOrganizer || isAdmin;
 
     return (
         <>

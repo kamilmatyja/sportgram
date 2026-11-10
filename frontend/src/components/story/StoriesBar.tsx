@@ -1,7 +1,8 @@
 import React from 'react';
-import { Card, ScrollArea, Group, Stack, Avatar, Text, Center, Loader, UnstyledButton } from '@mantine/core';
+import { Card, ScrollArea, Group, Stack, Avatar, Text, Center, Loader, UnstyledButton, Skeleton } from '@mantine/core';
 import { IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { useOffline } from '../../services';
 import { formatImageSrc } from '../../utils';
 import { type UserStoriesGroup } from '../StoryViewerModal';
 
@@ -10,6 +11,7 @@ export interface StoriesBarProps {
     onSelectGroup: (index: number) => void;
     onAddStory?: () => void;
     onAddFeed?: () => void;
+    isLoading?: boolean;
     isFetchingMore?: boolean;
     viewportRef?: React.RefObject<HTMLDivElement | null>;
     onScrollPositionChange?: (pos: { x: number; y: number }) => void;
@@ -21,12 +23,14 @@ export function StoriesBar({
     onSelectGroup,
     onAddStory,
     onAddFeed,
+    isLoading,
     isFetchingMore,
     viewportRef,
     onScrollPositionChange,
     lastStoryElementRef,
 }: StoriesBarProps) {
     const { t } = useTranslation();
+    const { isOffline } = useOffline();
 
     return (
         <Card>
@@ -38,7 +42,11 @@ export function StoriesBar({
             >
                 <Group gap="md" wrap="nowrap">
                     {onAddStory && (
-                        <UnstyledButton onClick={onAddStory}>
+                        <UnstyledButton
+                            onClick={isOffline ? undefined : onAddStory}
+                            disabled={isOffline}
+                            style={isOffline ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                        >
                             <Stack align="center" gap={4} miw={64}>
                                 <Avatar radius="xl" size="lg">
                                     <IconPlus size={24} />
@@ -51,7 +59,11 @@ export function StoriesBar({
                     )}
 
                     {onAddFeed && (
-                        <UnstyledButton onClick={onAddFeed}>
+                        <UnstyledButton
+                            onClick={isOffline ? undefined : onAddFeed}
+                            disabled={isOffline}
+                            style={isOffline ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                        >
                             <Stack align="center" gap={4} miw={64}>
                                 <Avatar radius="xl" size="lg">
                                     <IconPlus size={24} />
@@ -63,30 +75,37 @@ export function StoriesBar({
                         </UnstyledButton>
                     )}
 
-                    {groups.map((group, gIdx) => {
-                        const storyAuthor = group.author;
-                        const storyImg =
-                            formatImageSrc(group.newestStory?.photo) || formatImageSrc(storyAuthor?.profilePhoto);
-                        return (
-                            <UnstyledButton
-                                key={group.userId}
-                                ref={gIdx === groups.length - 1 ? lastStoryElementRef : undefined}
-                                onClick={() => onSelectGroup(gIdx)}
-                            >
-                                <Stack align="center" gap={4} miw={64}>
-                                    <Avatar src={storyImg} size="lg" className="story-avatar-border">
-                                        ?
-                                    </Avatar>
-                                    <Text size="xs" lineClamp={1}>
-                                        {storyAuthor
-                                            ? `${storyAuthor.firstName ?? ''} ${storyAuthor.lastName ?? ''}`.trim() ||
-                                              t('user')
-                                            : t('user')}
-                                    </Text>
-                                </Stack>
-                            </UnstyledButton>
-                        );
-                    })}
+                    {isLoading
+                        ? Array.from({ length: 5 }).map((_, i) => (
+                              <Stack key={i} align="center" gap={4} miw={64}>
+                                  <Skeleton height={56} circle />
+                                  <Skeleton height={10} width={48} />
+                              </Stack>
+                          ))
+                        : groups.map((group, gIdx) => {
+                              const storyAuthor = group.author;
+                              const storyImg =
+                                  formatImageSrc(group.newestStory?.photo) || formatImageSrc(storyAuthor?.profilePhoto);
+                              return (
+                                  <UnstyledButton
+                                      key={group.userId}
+                                      ref={gIdx === groups.length - 1 ? lastStoryElementRef : undefined}
+                                      onClick={() => onSelectGroup(gIdx)}
+                                  >
+                                      <Stack align="center" gap={4} miw={64}>
+                                          <Avatar src={storyImg} size="lg" className="story-avatar-border">
+                                              ?
+                                          </Avatar>
+                                          <Text size="xs" lineClamp={1}>
+                                              {storyAuthor
+                                                  ? `${storyAuthor.firstName ?? ''} ${storyAuthor.lastName ?? ''}`.trim() ||
+                                                    t('user')
+                                                  : t('user')}
+                                          </Text>
+                                      </Stack>
+                                  </UnstyledButton>
+                              );
+                          })}
 
                     {isFetchingMore && (
                         <Center px="md">

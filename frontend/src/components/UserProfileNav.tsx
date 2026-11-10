@@ -135,6 +135,7 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                                 variant="light"
                                 size="xs"
                                 leftSection={<IconArrowLeft size={16} />}
+                                data-offline-allowed="true"
                             >
                                 {t('backToUser')}
                             </Button>
@@ -155,6 +156,7 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
                                 variant={isActive ? 'filled' : 'light'}
                                 size="xs"
                                 leftSection={item.icon}
+                                data-offline-allowed="true"
                             >
                                 {item.label}
                             </Button>

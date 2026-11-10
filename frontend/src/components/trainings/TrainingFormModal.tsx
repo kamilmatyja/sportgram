@@ -7,6 +7,7 @@ import { trainingService, type TrainingResource } from '../../api/services';
 import { useAuth } from '../../auth';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 import { toInputDateTime, updateTitleWithSlug, coordFromBackendInt, coordToBackendInt } from '../../utils';
 import { TrainingDisciplinesEditor, type FormTrainingDiscipline } from './TrainingDisciplinesEditor';
 
@@ -37,6 +38,7 @@ export function TrainingFormModal({
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
+    const { isOffline } = useOffline();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!training;
 
@@ -245,15 +247,16 @@ export function TrainingFormModal({
                     />
                 </SimpleGrid>
 
-                {collaboratorOptions.length > 0 && (
+                {(collaboratorOptions.length > 0 || isOffline) && (
                     <MultiSelect
                         label={t('collaborators')}
-                        placeholder={t('selectCollaborators')}
+                        placeholder={isOffline ? t('offlineUnavailable') : t('selectCollaborators')}
                         data={collaboratorOptions}
                         value={collaboratorIds}
                         onChange={setCollaboratorIds}
-                        searchable
-                        clearable
+                        disabled={isOffline}
+                        searchable={!isOffline}
+                        clearable={!isOffline}
                     />
                 )}
 

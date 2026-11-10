@@ -373,3 +373,24 @@
         grid-template-columns: 1fr !important;
     }
 }
+
+/* Offline mode global button & control disabling outside trainings and goals */
+[data-offline-disabled='true'] button:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] .mantine-ActionIcon-root:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] .mantine-Button-root:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] .mantine-Pagination-control:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] .mantine-Select-input:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] .mantine-TextInput-input:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] .mantine-Menu-item:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] .mantine-UnstyledButton-root:not([data-offline-allowed='true']) {
+    pointer-events: none !important;
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+[data-offline-disabled='true'] [data-offline-allowed='true'],
+[data-offline-disabled='true'] [data-offline-allowed='true'] * {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    cursor: pointer !important;
+}

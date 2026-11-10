@@ -14,6 +14,7 @@ import './index.css';
 import './i18n';
 import { theme } from './theme';
 import { AuthProvider } from './auth';
+import { OfflineProvider } from './services';
 import App from './App';
 
 const queryClient = new QueryClient({
@@ -21,9 +22,21 @@ const queryClient = new QueryClient({
         queries: {
             retry: 1,
             refetchOnWindowFocus: false,
+            networkMode: 'always',
+        },
+        mutations: {
+            networkMode: 'always',
         },
     },
 });
+
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.warn('Service Worker registration failed:', err);
+        });
+    });
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
@@ -32,9 +45,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 <ModalsProvider>
                     <Notifications position="top-right" />
                     <BrowserRouter>
-                        <AuthProvider>
-                            <App />
-                        </AuthProvider>
+                        <OfflineProvider>
+                            <AuthProvider>
+                                <App />
+                            </AuthProvider>
+                        </OfflineProvider>
                     </BrowserRouter>
                 </ModalsProvider>
             </MantineProvider>

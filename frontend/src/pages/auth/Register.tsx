@@ -22,6 +22,7 @@ import { CountryEnum } from '../../enums/CountryEnum';
 import { GenderEnum } from '../../enums/GenderEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 import { registerSession, signSession } from '../../utils';
 import { AuthVerificationStep } from './AuthVerificationStep';
 
@@ -40,6 +41,7 @@ const INITIAL_FORM_DATA = {
 export default function Register() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { isOffline } = useOffline();
     const { fieldErrors, handleFormError, clearFieldError, clearFieldErrors } = useFormErrors();
 
     const [step, setStep] = useState<number>(registerSession.step);
@@ -282,7 +284,13 @@ export default function Register() {
                                 clearable
                             />
 
-                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={loading || !canSubmit}>
+                            <Button
+                                type="submit"
+                                fullWidth
+                                mt="md"
+                                loading={loading}
+                                disabled={loading || !canSubmit || isOffline}
+                            >
                                 {t('register')}
                             </Button>
 

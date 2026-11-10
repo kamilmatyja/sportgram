@@ -6,12 +6,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { authService } from '../../api/services';
 import { useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 import { passwordResetSession, signSession } from '../../utils';
 import { AuthVerificationStep } from './AuthVerificationStep';
 
 export default function PasswordReset() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { isOffline } = useOffline();
     const { fieldErrors, handleFormError, clearFieldError, clearFieldErrors } = useFormErrors();
 
     const [step, setStep] = useState<number>(passwordResetSession.step);
@@ -141,7 +143,7 @@ export default function PasswordReset() {
                                 fullWidth
                                 mt="md"
                                 loading={loading}
-                                disabled={loading || !email.trim()}
+                                disabled={loading || !email.trim() || isOffline}
                             >
                                 {t('send')}
                             </Button>
