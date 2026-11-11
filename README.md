@@ -632,21 +632,7 @@ npm run fix
 
 ## Problemy i zadania do wdrożenia
 
-### 1. Buforowanie danych offline i mechanizm synchronizacji (Offline-First Data Sync)
-
-- **Stan obecny:** 
-  Service Worker (`frontend/public/sw.js`) buforuje wyłącznie powłokę aplikacji (pliki HTML, ikony SVG, manifest). Wszystkie zapytania pod ścieżkę `/api` są wyłączone z cache'owania (`Network-Only`). W przypadku braku Internetu aplikacja uruchamia się, ale nie pozwala na tworzenie nowych aktywności bez połączenia z serwerem.
-- **Co jest do zrobienia:**
-  - Zaimplementowanie lokalnej bazy danych do kolejkowania nowych treningów, wpisów i relacji tworzonych w warunkach braku zasięgu (Outbox Queue).
-  - Automatyczna synchronizacja zakolejkowanych żądań z bazą PostgreSQL po odzyskaniu połączenia z siecią.
-- **Jak to zaimplementować:**
-  - Wykorzystać przeglądarkową bazę **IndexedDB** (np. za pośrednictwem biblioteki `idb` lub mechanizmu persystencji w TanStack Query).
-  - Podczas tworzenia treningu offline generować identyfikator `UUID v4` bezpośrednio na frontendzie i zapisywać ładunek DTO w tabeli kolejki `offline_trainings`.
-  - Zaimplementować nasłuchiwanie zdarzenia sieciowego `window.addEventListener('online', ...)` lub zintegrować **Background Sync API** w Service Workerze (`self.registration.sync.register('sync-trainings')`), które po wykryciu połączenia asynchronicznie przesyła zakolejkowane treningi metodą `POST /api/trainings`.
-- **Po co:**
-  - Treningi biegowe, kolarstwo czy trekking bardzo często odbywają się na obszarach leśnych, górskich lub pozamiejskich z niestabilnym zasięgiem GSM. Prawdziwa aplikacja PWA o charakterze sportowym musi gwarantować, że dane z ukończonego treningu nie zostaną utracone, a użytkownik otrzyma informację o pomyślnym zapisie lokalnym i oczekującej synchronizacji.
-
-### 2. Zestawy testów automatycznych dla warstwy frontendu (Vitest / React Testing Library)
+### 1. Zestawy testów automatycznych dla warstwy frontendu (Vitest / React Testing Library)
 
 - **Stan obecny:** 
   W projekcie frontendu zainstalowano zależności i przygotowano infrastrukturę pod testy (`vitest`, `@testing-library/react`, `frontend/src/test/setup.ts`, `test-utils.tsx`), lecz w katalogu `frontend/src` nie ma jeszcze napisanych plików zestawów testowych (`*.test.tsx`).
@@ -660,7 +646,7 @@ npm run fix
 - **Po co:**
   - Automatyczna weryfikacja poprawności działania interfejsu zabezpiecza projekt przed regresją podczas wprowadzania nowych funkcjonalności i refaktoryzacji, podnosząc niezawodność oprogramowania zgodnie ze standardem ISO/IEC 25010.
 
-### 3. Skrypty testów obciążeniowych i wydajnościowych backendu (k6 / Stress Testing)
+### 2. Skrypty testów obciążeniowych i wydajnościowych backendu (k6 / Stress Testing)
 
 - **Stan obecny:** 
   Backend posiada imponujący zestaw ponad 90 klas testowych Feature w PHPUnit (`backend/tests/Feature`), które dokładnie sprawdzają logikę biznesową, uprawnienia i bazę danych. Brak jednak w repozytorium zdefiniowanych skryptów do testów przeciążeniowych symulujących ruch masowy.

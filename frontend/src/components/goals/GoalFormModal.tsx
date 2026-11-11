@@ -109,8 +109,15 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
         formData.distance.trim().length > 0;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editGoal') : t('addGoal')}>
-            <Stack gap="sm">
+        <Modal
+            opened={opened}
+            onClose={onClose}
+            title={isEdit ? t('editGoal') : t('addGoal')}
+            data-goal-modal="true"
+            data-offline-allowed="true"
+            className="training-goal-modal"
+        >
+            <Stack gap="sm" data-goal-modal="true" data-offline-allowed="true">
                 <TextInput
                     label={t('title')}
                     required

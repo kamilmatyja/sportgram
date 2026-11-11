@@ -90,7 +90,9 @@ export function StoriesBar({
                                   <UnstyledButton
                                       key={group.userId}
                                       ref={gIdx === groups.length - 1 ? lastStoryElementRef : undefined}
-                                      onClick={() => onSelectGroup(gIdx)}
+                                      onClick={isOffline ? undefined : () => onSelectGroup(gIdx)}
+                                      disabled={isOffline}
+                                      style={isOffline ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
                                   >
                                       <Stack align="center" gap={4} miw={64}>
                                           <Avatar src={storyImg} size="lg" className="story-avatar-border">

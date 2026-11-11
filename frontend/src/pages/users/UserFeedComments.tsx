@@ -16,10 +16,12 @@ import {
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { useDataTableState, useFeedAuthors, useFormErrors } from '../../hooks';
 import { notifySuccess, notifyError, confirmDelete, formatDateTime, buildSortOptions, truncate } from '../../utils';
+import { useOffline } from '../../services';
 
 export default function UserFeedComments() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const { isOffline } = useOffline();
 
     const tableState = useDataTableState();
     const { errors, setFromError, clearErrors, clearFieldError } = useFormErrors();
@@ -223,6 +225,7 @@ export default function UserFeedComments() {
                                 <TextInput
                                     label={t('text')}
                                     required
+                                    disabled={isOffline}
                                     value={editText}
                                     onChange={(e) => {
                                         setEditText(e.currentTarget.value);
@@ -233,7 +236,7 @@ export default function UserFeedComments() {
                                 <Button
                                     onClick={() => updateMutation.mutate()}
                                     loading={updateMutation.isPending}
-                                    disabled={!editText.trim() || updateMutation.isPending}
+                                    disabled={!editText.trim() || updateMutation.isPending || isOffline}
                                 >
                                     {t('save')}
                                 </Button>

@@ -384,6 +384,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     value={profilePhotoFile}
                     error={fieldErrors.profilePhoto}
                     onChange={setProfilePhotoFile}
+                    disabled={isOffline}
                 />
                 <ImageInput
                     label={t('backgroundPhoto')}
@@ -392,6 +393,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     value={bgPhotoFile}
                     error={fieldErrors.backgroundPhoto}
                     onChange={setBgPhotoFile}
+                    disabled={isOffline}
                 />
 
                 <Button

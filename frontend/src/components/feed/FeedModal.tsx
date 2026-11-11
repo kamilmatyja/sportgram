@@ -87,6 +87,7 @@ export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) 
                     error={fieldErrors.photo}
                     onChange={setPhoto}
                     required={isPhotoRequired}
+                    disabled={isOffline}
                 />
                 <Button
                     loading={isSubmitting}

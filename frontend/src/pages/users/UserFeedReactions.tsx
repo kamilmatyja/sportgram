@@ -16,10 +16,12 @@ import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
 import { useDataTableState, useFeedAuthors, useFormErrors } from '../../hooks';
 import { notifySuccess, notifyError, confirmDelete, formatDateTime, buildSortOptions } from '../../utils';
+import { useOffline } from '../../services';
 
 export default function UserFeedReactions() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const { isOffline } = useOffline();
 
     const tableState = useDataTableState();
 
@@ -242,6 +244,7 @@ export default function UserFeedReactions() {
                                 <Select
                                     label={t('reaction')}
                                     required
+                                    disabled={isOffline}
                                     data={FeedReactionEnum.ALL_REACTIONS.map((item) => ({
                                         value: String(item.type),
                                         label: `${item.emoji} ${t(`feedReactions.${item.key}`)}`,
@@ -257,7 +260,7 @@ export default function UserFeedReactions() {
                                 <Button
                                     onClick={() => updateMutation.mutate()}
                                     loading={updateMutation.isPending}
-                                    disabled={editReactionType === null || updateMutation.isPending}
+                                    disabled={editReactionType === null || updateMutation.isPending || isOffline}
                                 >
                                     {t('save')}
                                 </Button>

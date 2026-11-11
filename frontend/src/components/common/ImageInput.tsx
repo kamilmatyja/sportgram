@@ -348,7 +348,7 @@ export function ImageInput({
                         return;
                     }
                 } catch {
-                    // Ignore
+                    void 0;
                 }
             }
 

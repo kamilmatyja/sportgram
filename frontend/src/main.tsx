@@ -20,7 +20,12 @@ import App from './App';
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            retry: 1,
+            retry: (failureCount) => {
+                if (typeof navigator !== 'undefined' && !navigator.onLine) {
+                    return false;
+                }
+                return failureCount < 1;
+            },
             refetchOnWindowFocus: false,
             networkMode: 'always',
         },

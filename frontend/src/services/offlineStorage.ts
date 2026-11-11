@@ -62,13 +62,11 @@ function notifyServiceWorker(type: string, data: any) {
     }
 }
 
-// ---------------- USER STORAGE ----------------
-
 export async function saveOfflineCurrentUser(user: UserResource): Promise<void> {
     try {
         localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
     } catch {
-        // ignore quota errors
+        void 0;
     }
 
     notifyServiceWorker('SET_OFFLINE_USER', user);
@@ -116,8 +114,6 @@ export async function getOfflineCurrentUser(): Promise<UserResource | null> {
     }
 }
 
-// ---------------- TRAININGS STORAGE ----------------
-
 export function getOfflineTrainingsSync(): TrainingResource[] {
     try {
         const raw = localStorage.getItem(LOCAL_TRAININGS_KEY);
@@ -131,7 +127,7 @@ function saveOfflineTrainingsSync(trainings: TrainingResource[]): void {
     try {
         localStorage.setItem(LOCAL_TRAININGS_KEY, JSON.stringify(trainings));
     } catch {
-        // ignore
+        void 0;
     }
     notifyServiceWorker('SET_OFFLINE_TRAININGS', trainings);
 }
@@ -230,8 +226,6 @@ export async function deleteOfflineTraining(id: string): Promise<void> {
         console.warn('Error deleting offline training from IDB', err);
     }
 
-    // If it was a newly created offline training that was never sent to backend,
-    // we can remove its CREATE action from sync queue instead of queueing DELETE
     const syncQueue = getSyncQueueSync();
     const pendingCreateIdx = syncQueue.findIndex((op) => op.type === 'CREATE_TRAINING' && op.targetId === id);
     if (pendingCreateIdx >= 0) {
@@ -246,8 +240,6 @@ export async function deleteOfflineTraining(id: string): Promise<void> {
     }
 }
 
-// ---------------- GOALS STORAGE ----------------
-
 export function getOfflineGoalsSync(): GoalResource[] {
     try {
         const raw = localStorage.getItem(LOCAL_GOALS_KEY);
@@ -261,7 +253,7 @@ function saveOfflineGoalsSync(goals: GoalResource[]): void {
     try {
         localStorage.setItem(LOCAL_GOALS_KEY, JSON.stringify(goals));
     } catch {
-        // ignore
+        void 0;
     }
     notifyServiceWorker('SET_OFFLINE_GOALS', goals);
 }
@@ -370,8 +362,6 @@ export async function deleteOfflineGoal(id: string): Promise<void> {
     }
 }
 
-// ---------------- SYNC QUEUE ----------------
-
 function getSyncQueueSync(): SyncAction[] {
     try {
         const raw = localStorage.getItem(LOCAL_SYNC_KEY);
@@ -385,7 +375,7 @@ function saveSyncQueueSync(queue: SyncAction[]): void {
     try {
         localStorage.setItem(LOCAL_SYNC_KEY, JSON.stringify(queue));
     } catch {
-        // ignore
+        void 0;
     }
 }
 
@@ -440,6 +430,6 @@ export async function removeSyncAction(id: number): Promise<void> {
             req.onerror = () => resolve();
         });
     } catch {
-        // ignore
+        void 0;
     }
 }

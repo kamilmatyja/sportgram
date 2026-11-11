@@ -75,7 +75,7 @@ export function StoryModal({ opened, onClose, story, onSuccess }: StoryModalProp
     const canSubmit = isEdit ? !!text.trim() : !!text.trim() && !!photo;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editStory') : t('addStory')}>
+        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editStory') : t('addStory')} zIndex={350}>
             <Stack gap="sm">
                 <Textarea
                     label={t('text')}
@@ -93,6 +93,7 @@ export function StoryModal({ opened, onClose, story, onSuccess }: StoryModalProp
                     error={fieldErrors.photo}
                     onChange={setPhoto}
                     required={!isEdit}
+                    disabled={isOffline}
                 />
                 <Button
                     loading={isSubmitting}

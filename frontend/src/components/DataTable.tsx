@@ -226,7 +226,12 @@ export function DataTable<T extends Record<string, unknown>>({
                                 ))
                             ) : data.length === 0 ? (
                                 <Table.Tr>
-                                    <Table.Td colSpan={columns.length + (actions ? 1 : 0)} p="md">
+                                    <Table.Td
+                                        colSpan={columns.length + (actions ? 1 : 0)}
+                                        p={0}
+                                        m={0}
+                                        style={{ padding: 0, margin: 0 }}
+                                    >
                                         <EmptyState title={t('noData')} />
                                     </Table.Td>
                                 </Table.Tr>
@@ -262,6 +267,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                     data={['5', '10', '20', '50']}
                                     size="xs"
                                     w={75}
+                                    disabled={isOfflineDisabled}
                                 />
                             )}
                             {totalItems !== undefined && (

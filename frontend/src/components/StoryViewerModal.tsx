@@ -11,6 +11,7 @@ import type { UserResource } from '../api/services';
 import { EntryTypeEnum } from '../enums/EntryTypeEnum';
 import { EntityViewCounter } from './EntityViewCounter';
 import { openConfirmActionModal } from '../utils';
+import { useOffline } from '../services';
 
 export interface UserStoriesGroup {
     userId: string;
@@ -48,6 +49,7 @@ export function StoryViewerModal({
 }: StoryViewerModalProps) {
     const { t } = useTranslation();
     const { currentUser } = useAuth();
+    const { isOffline } = useOffline();
 
     const effectiveGroups: UserStoriesGroup[] =
         groups && groups.length > 0 ? groups : story ? [{ userId: story.userId, author, stories: [story] }] : [];
@@ -234,7 +236,7 @@ export function StoryViewerModal({
     const isStoryOwner = !!(currentUser && currentStory && currentUser.id === currentStory.userId);
 
     return (
-        <Modal.Root opened={opened} onClose={onClose} centered>
+        <Modal.Root opened={opened} onClose={onClose} centered zIndex={200}>
             <Modal.Overlay />
             <Modal.Content>
                 <Modal.Header className="story-modal-header">
@@ -256,15 +258,24 @@ export function StoryViewerModal({
 
                         <Group justify="space-between" align="center" wrap="nowrap" w="100%">
                             <Group wrap="nowrap">
-                                {currentAuthor?.link ? (
+                                {currentAuthor?.link && !isOffline ? (
                                     <Anchor component={Link} to={`/users/${currentAuthor.link}`} underline="never">
                                         <Avatar src={authorPhoto}>?</Avatar>
                                     </Anchor>
                                 ) : (
-                                    <Avatar src={authorPhoto}>?</Avatar>
+                                    <Avatar
+                                        src={authorPhoto}
+                                        style={
+                                            isOffline && currentAuthor?.link
+                                                ? { opacity: 0.5, cursor: 'not-allowed' }
+                                                : undefined
+                                        }
+                                    >
+                                        ?
+                                    </Avatar>
                                 )}
                                 <Box>
-                                    {currentAuthor?.link ? (
+                                    {currentAuthor?.link && !isOffline ? (
                                         <Anchor
                                             size="sm"
                                             fw={600}
@@ -276,11 +287,19 @@ export function StoryViewerModal({
                                             {authorName}
                                         </Anchor>
                                     ) : (
-                                        <Text size="sm" fw={600}>
+                                        <Text
+                                            size="sm"
+                                            fw={600}
+                                            style={
+                                                isOffline && currentAuthor?.link
+                                                    ? { opacity: 0.5, cursor: 'not-allowed' }
+                                                    : undefined
+                                            }
+                                        >
                                             {authorName}
                                         </Text>
                                     )}
-                                    <Text size="xs" c="dimmed">
+                                    <Text size="sm" c="dimmed">
                                         {formatDateTime(currentStory.createdAt)}
                                     </Text>
                                 </Box>
@@ -308,7 +327,9 @@ export function StoryViewerModal({
                                         {onEdit && (
                                             <Tooltip label={t('edit')}>
                                                 <ActionIcon
+                                                    disabled={isOffline}
                                                     onClick={(e) => {
+                                                        if (isOffline) return;
                                                         e.stopPropagation();
                                                         onEdit(currentStory);
                                                     }}
@@ -322,7 +343,9 @@ export function StoryViewerModal({
                                             <Tooltip label={t('delete')}>
                                                 <ActionIcon
                                                     color="red"
+                                                    disabled={isOffline}
                                                     onClick={(e) => {
+                                                        if (isOffline) return;
                                                         e.stopPropagation();
                                                         const storyIdToDelete = currentStory.id;
                                                         openConfirmActionModal({
@@ -378,7 +401,7 @@ export function StoryViewerModal({
                                         )}
                                     </>
                                 )}
-                                <Modal.CloseButton />
+                                <Modal.CloseButton data-offline-allowed="true" />
                             </Group>
                         </Group>
                     </Stack>
@@ -391,8 +414,9 @@ export function StoryViewerModal({
                                     variant="filled"
                                     size={32}
                                     className="story-nav-btn story-nav-btn-prev"
-                                    disabled={!hasPrevStory && !hasPrevGroup}
+                                    disabled={(!hasPrevStory && !hasPrevGroup) || isOffline}
                                     onClick={(e) => {
+                                        if (isOffline) return;
                                         e.stopPropagation();
                                         handlePrevStory();
                                     }}
@@ -417,8 +441,10 @@ export function StoryViewerModal({
                                     variant="filled"
                                     size={32}
                                     className="story-nav-btn story-nav-btn-next"
-                                    loading={isFetchingMoreCurrentStories}
+                                    loading={!isOffline && isFetchingMoreCurrentStories}
+                                    disabled={isOffline}
                                     onClick={(e) => {
+                                        if (isOffline) return;
                                         e.stopPropagation();
                                         handleNextStory();
                                     }}

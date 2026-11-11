@@ -271,22 +271,26 @@ export default function GoalDetails() {
                     <Title order={4} mb="xs">
                         {t('participants')}
                     </Title>
-                    {!goal.participants || goal.participants.length === 0 ? (
-                        <EmptyState title={t('noData')} />
-                    ) : (
-                        <Table.ScrollContainer minWidth={500}>
-                            <Table>
-                                <Table.Thead>
+                    <Table.ScrollContainer minWidth={500}>
+                        <Table>
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>{t('user')}</Table.Th>
+                                    <Table.Th>{t('status')}</Table.Th>
+                                    <Table.Th w={120} ta="right">
+                                        {t('actions')}
+                                    </Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>
+                                {!goal.participants || goal.participants.length === 0 ? (
                                     <Table.Tr>
-                                        <Table.Th>{t('user')}</Table.Th>
-                                        <Table.Th>{t('status')}</Table.Th>
-                                        <Table.Th w={120} ta="right">
-                                            {t('actions')}
-                                        </Table.Th>
+                                        <Table.Td colSpan={3} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                            <EmptyState title={t('noData')} />
+                                        </Table.Td>
                                     </Table.Tr>
-                                </Table.Thead>
-                                <Table.Tbody>
-                                    {goal.participants?.map((p: GoalParticipantResource) => {
+                                ) : (
+                                    goal.participants.map((p: GoalParticipantResource) => {
                                         const u = getUser(p.userId);
                                         const isSelf = p.userId === currentUser?.id;
 
@@ -318,36 +322,40 @@ export default function GoalDetails() {
                                                 </Table.Td>
                                             </Table.Tr>
                                         );
-                                    })}
-                                </Table.Tbody>
-                            </Table>
-                        </Table.ScrollContainer>
-                    )}
+                                    })
+                                )}
+                            </Table.Tbody>
+                        </Table>
+                    </Table.ScrollContainer>
 
                     <Title order={4} mt="lg" mb="xs">
                         {t('results')}
                     </Title>
-                    {allResults.length === 0 ? (
-                        <EmptyState title={t('noData')} />
-                    ) : (
-                        <Table.ScrollContainer minWidth={500}>
-                            <Table>
-                                <Table.Thead>
+                    <Table.ScrollContainer minWidth={500}>
+                        <Table>
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>{t('user')}</Table.Th>
+                                    <Table.Th>{t('distance')}</Table.Th>
+                                    <Table.Th>{t('time')}</Table.Th>
+                                    <Table.Th>{t('pace')}</Table.Th>
+                                    <Table.Th>{t('speed')}</Table.Th>
+                                    <Table.Th>{t('status')}</Table.Th>
+                                    <Table.Th>{t('createdAt')}</Table.Th>
+                                    <Table.Th w={120} ta="right">
+                                        {t('actions')}
+                                    </Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>
+                                {allResults.length === 0 ? (
                                     <Table.Tr>
-                                        <Table.Th>{t('user')}</Table.Th>
-                                        <Table.Th>{t('distance')}</Table.Th>
-                                        <Table.Th>{t('time')}</Table.Th>
-                                        <Table.Th>{t('pace')}</Table.Th>
-                                        <Table.Th>{t('speed')}</Table.Th>
-                                        <Table.Th>{t('status')}</Table.Th>
-                                        <Table.Th>{t('createdAt')}</Table.Th>
-                                        <Table.Th w={120} ta="right">
-                                            {t('actions')}
-                                        </Table.Th>
+                                        <Table.Td colSpan={8} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                            <EmptyState title={t('noData')} />
+                                        </Table.Td>
                                     </Table.Tr>
-                                </Table.Thead>
-                                <Table.Tbody>
-                                    {allResults.map((res) => {
+                                ) : (
+                                    allResults.map((res) => {
                                         const u = getUser(res.userId);
                                         const isSelf = res.userId === currentUser?.id;
                                         const paceSecPerKm = calculatePace(res.distance, res.time);
@@ -398,11 +406,11 @@ export default function GoalDetails() {
                                                 </Table.Td>
                                             </Table.Tr>
                                         );
-                                    })}
-                                </Table.Tbody>
-                            </Table>
-                        </Table.ScrollContainer>
-                    )}
+                                    })
+                                )}
+                            </Table.Tbody>
+                        </Table>
+                    </Table.ScrollContainer>
                 </Card>
 
                 <GoalFormModal

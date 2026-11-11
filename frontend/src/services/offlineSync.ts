@@ -24,7 +24,6 @@ export async function synchronizeOfflineData(queryClient?: QueryClient, t?: (key
                 if (action.type === 'CREATE_TRAINING') {
                     const res = await api.POST('/api/trainings', { body: action.payload });
                     if (!res.error) {
-                        // Remove from offline store
                         const list = getOfflineTrainingsSync().filter((t) => t.id !== action.targetId);
                         localStorage.setItem('sportgram_offline_trainings', JSON.stringify(list));
                         if (action.id) await removeSyncAction(action.id);
@@ -41,7 +40,6 @@ export async function synchronizeOfflineData(queryClient?: QueryClient, t?: (key
                             syncedCount++;
                         }
                     } else {
-                        // If it was a temp offline item, create payload was already updated
                         if (action.id) await removeSyncAction(action.id);
                     }
                 } else if (action.type === 'DELETE_TRAINING') {

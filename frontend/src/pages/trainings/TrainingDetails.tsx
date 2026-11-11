@@ -278,22 +278,26 @@ export default function TrainingDetails() {
                     <Title order={4} mb="xs">
                         {t('participants')}
                     </Title>
-                    {!training.participants || training.participants.length === 0 ? (
-                        <EmptyState title={t('noData')} />
-                    ) : (
-                        <Table.ScrollContainer minWidth={500} mb="lg">
-                            <Table>
-                                <Table.Thead>
+                    <Table.ScrollContainer minWidth={500} mb="lg">
+                        <Table>
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>{t('user')}</Table.Th>
+                                    <Table.Th>{t('status')}</Table.Th>
+                                    <Table.Th w={120} ta="right">
+                                        {t('actions')}
+                                    </Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>
+                                {!training.participants || training.participants.length === 0 ? (
                                     <Table.Tr>
-                                        <Table.Th>{t('user')}</Table.Th>
-                                        <Table.Th>{t('status')}</Table.Th>
-                                        <Table.Th w={120} ta="right">
-                                            {t('actions')}
-                                        </Table.Th>
+                                        <Table.Td colSpan={3} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                            <EmptyState title={t('noData')} />
+                                        </Table.Td>
                                     </Table.Tr>
-                                </Table.Thead>
-                                <Table.Tbody>
-                                    {training.participants?.map((p: TrainingParticipantResource) => {
+                                ) : (
+                                    training.participants?.map((p: TrainingParticipantResource) => {
                                         const u = getUser(p.userId);
                                         const isSelf = p.userId === currentUser?.id;
                                         return (
@@ -324,11 +328,11 @@ export default function TrainingDetails() {
                                                 </Table.Td>
                                             </Table.Tr>
                                         );
-                                    })}
-                                </Table.Tbody>
-                            </Table>
-                        </Table.ScrollContainer>
-                    )}
+                                    })
+                                )}
+                            </Table.Tbody>
+                        </Table>
+                    </Table.ScrollContainer>
 
                     <Title order={4} mb="xs">
                         {t('disciplinesAndDistances')}
@@ -344,22 +348,31 @@ export default function TrainingDetails() {
                                             disc.discipline}
                                     </Badge>
 
-                                    {!disc.distances || disc.distances.length === 0 ? (
-                                        <EmptyState title={t('noData')} />
-                                    ) : (
-                                        <Table.ScrollContainer minWidth={500}>
-                                            <Table>
-                                                <Table.Thead>
+                                    <Table.ScrollContainer minWidth={500}>
+                                        <Table>
+                                            <Table.Thead>
+                                                <Table.Tr>
+                                                    <Table.Th w={46} />
+                                                    <Table.Th>{t('distance')}</Table.Th>
+                                                    <Table.Th>{t('time')}</Table.Th>
+                                                    <Table.Th>{t('pace')}</Table.Th>
+                                                    <Table.Th>{t('speed')}</Table.Th>
+                                                </Table.Tr>
+                                            </Table.Thead>
+                                            <Table.Tbody>
+                                                {!disc.distances || disc.distances.length === 0 ? (
                                                     <Table.Tr>
-                                                        <Table.Th w={46} />
-                                                        <Table.Th>{t('distance')}</Table.Th>
-                                                        <Table.Th>{t('time')}</Table.Th>
-                                                        <Table.Th>{t('pace')}</Table.Th>
-                                                        <Table.Th>{t('speed')}</Table.Th>
+                                                        <Table.Td
+                                                            colSpan={5}
+                                                            p={0}
+                                                            m={0}
+                                                            style={{ padding: 0, margin: 0 }}
+                                                        >
+                                                            <EmptyState title={t('noData')} />
+                                                        </Table.Td>
                                                     </Table.Tr>
-                                                </Table.Thead>
-                                                <Table.Tbody>
-                                                    {disc.distances.map(
+                                                ) : (
+                                                    disc.distances.map(
                                                         (dist: TrainingDisciplineDistanceResource, dIdx: number) => {
                                                             const hasSub =
                                                                 dist.subDistances && dist.subDistances.length > 0;
@@ -552,11 +565,11 @@ export default function TrainingDetails() {
                                                                 </React.Fragment>
                                                             );
                                                         },
-                                                    )}
-                                                </Table.Tbody>
-                                            </Table>
-                                        </Table.ScrollContainer>
-                                    )}
+                                                    )
+                                                )}
+                                            </Table.Tbody>
+                                        </Table>
+                                    </Table.ScrollContainer>
                                 </Paper>
                             ))}
                         </Stack>

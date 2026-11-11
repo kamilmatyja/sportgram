@@ -22,6 +22,7 @@ import {
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 import { buildSortOptions, confirmDelete, formatDateTime, notifySuccess, notifyError } from '../../utils';
 import { useDataTableState, useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -44,6 +45,7 @@ const initialForm = {
 export default function UserPushSubscriptions() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const { isOffline } = useOffline();
 
     const [subscribing, setSubscribing] = useState(false);
     const [showManualCreate, setShowManualCreate] = useState(false);
@@ -447,7 +449,7 @@ export default function UserPushSubscriptions() {
                                         variant="light"
                                         leftSection={<IconDeviceMobile size={16} />}
                                         loading={subscribing}
-                                        disabled={subscribing}
+                                        disabled={subscribing || isOffline}
                                         onClick={handleSubscribeDevice}
                                     >
                                         {t('addAutomatically')}
@@ -455,6 +457,7 @@ export default function UserPushSubscriptions() {
                                     <Button
                                         variant={showManualCreate ? 'filled' : 'default'}
                                         leftSection={<IconPlus size={16} />}
+                                        disabled={isOffline}
                                         onClick={() => setShowManualCreate((prev) => !prev)}
                                     >
                                         {t('addManually')}
@@ -467,6 +470,7 @@ export default function UserPushSubscriptions() {
                                             label={t('endpoint')}
                                             placeholder="https://..."
                                             required
+                                            disabled={isOffline}
                                             value={createForm.endpoint}
                                             error={createErrors.errors.endpoint}
                                             onChange={(e) =>
@@ -480,6 +484,7 @@ export default function UserPushSubscriptions() {
                                             label={t('p256dh')}
                                             placeholder="p256dh..."
                                             required
+                                            disabled={isOffline}
                                             value={createForm.p256dh}
                                             error={createErrors.errors.p256dh}
                                             onChange={(e) =>
@@ -493,6 +498,7 @@ export default function UserPushSubscriptions() {
                                             label={t('authKey')}
                                             placeholder="auth..."
                                             required
+                                            disabled={isOffline}
                                             value={createForm.auth}
                                             error={createErrors.errors.auth}
                                             onChange={(e) =>
@@ -506,6 +512,7 @@ export default function UserPushSubscriptions() {
                                             label={t('device')}
                                             placeholder="User-Agent..."
                                             required
+                                            disabled={isOffline}
                                             value={createForm.userAgent}
                                             error={createErrors.errors.userAgent}
                                             onChange={(e) =>
@@ -523,7 +530,8 @@ export default function UserPushSubscriptions() {
                                                 !createForm.endpoint.trim() ||
                                                 !createForm.p256dh.trim() ||
                                                 !createForm.auth.trim() ||
-                                                !createForm.userAgent.trim()
+                                                !createForm.userAgent.trim() ||
+                                                isOffline
                                             }
                                             onClick={() => createManualMutation.mutate()}
                                         >
@@ -541,7 +549,7 @@ export default function UserPushSubscriptions() {
                                         variant="light"
                                         leftSection={<IconDeviceMobile size={16} />}
                                         loading={subscribing}
-                                        disabled={subscribing}
+                                        disabled={subscribing || isOffline}
                                         onClick={handleSubscribeDeviceInEdit}
                                     >
                                         {t('editAutomatically')}
@@ -549,6 +557,7 @@ export default function UserPushSubscriptions() {
                                     <Button
                                         variant={showManualEdit ? 'filled' : 'default'}
                                         leftSection={<IconEdit size={16} />}
+                                        disabled={isOffline}
                                         onClick={() => setShowManualEdit((prev) => !prev)}
                                     >
                                         {t('editManually')}
@@ -560,6 +569,7 @@ export default function UserPushSubscriptions() {
                                         <TextInput
                                             label={t('endpoint')}
                                             required
+                                            disabled={isOffline}
                                             value={editForm.endpoint}
                                             error={editErrors.errors.endpoint}
                                             onChange={(e) =>
@@ -569,6 +579,7 @@ export default function UserPushSubscriptions() {
                                         <TextInput
                                             label={t('p256dh')}
                                             required
+                                            disabled={isOffline}
                                             value={editForm.p256dh}
                                             error={editErrors.errors.p256dh}
                                             onChange={(e) =>
@@ -578,6 +589,7 @@ export default function UserPushSubscriptions() {
                                         <TextInput
                                             label={t('authKey')}
                                             required
+                                            disabled={isOffline}
                                             value={editForm.auth}
                                             error={editErrors.errors.auth}
                                             onChange={(e) => setEditForm({ ...editForm, auth: e.currentTarget.value })}
@@ -585,6 +597,7 @@ export default function UserPushSubscriptions() {
                                         <TextInput
                                             label={t('device')}
                                             required
+                                            disabled={isOffline}
                                             value={editForm.userAgent}
                                             error={editErrors.errors.userAgent}
                                             onChange={(e) =>
@@ -602,7 +615,8 @@ export default function UserPushSubscriptions() {
                                                 !editForm.endpoint.trim() ||
                                                 !editForm.p256dh.trim() ||
                                                 !editForm.auth.trim() ||
-                                                !editForm.userAgent.trim()
+                                                !editForm.userAgent.trim() ||
+                                                isOffline
                                             }
                                             onClick={() => updateMutation.mutate()}
                                         >

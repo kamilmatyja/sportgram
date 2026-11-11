@@ -192,8 +192,15 @@ export function TrainingFormModal({
         areDisciplinesValid;
 
     return (
-        <Modal opened={opened} onClose={onClose} title={isEdit ? t('editTraining') : t('addTraining')}>
-            <Stack gap="sm">
+        <Modal
+            opened={opened}
+            onClose={onClose}
+            title={isEdit ? t('editTraining') : t('addTraining')}
+            data-training-modal="true"
+            data-offline-allowed="true"
+            className="training-goal-modal"
+        >
+            <Stack gap="sm" data-training-modal="true" data-offline-allowed="true">
                 <TextInput
                     label={t('title')}
                     required

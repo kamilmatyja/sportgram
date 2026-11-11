@@ -8,6 +8,11 @@ export interface EmptyStateProps {
     description?: string;
     action?: React.ReactNode;
     withPaper?: boolean;
+    p?: string | number;
+    py?: string | number;
+    px?: string | number;
+    m?: string | number;
+    radius?: string | number;
 }
 
 export function EmptyState({
@@ -15,7 +20,12 @@ export function EmptyState({
     title,
     description,
     action,
-    withPaper = false,
+    withPaper = true,
+    p,
+    py = 'sm',
+    px = 0,
+    m = 0,
+    radius = 0,
 }: EmptyStateProps) {
     const content = (
         <Stack align="center" gap="xs">
@@ -32,14 +42,22 @@ export function EmptyState({
 
     if (withPaper) {
         return (
-            <Paper p="xl" ta="center">
+            <Paper
+                p={p}
+                py={p !== undefined ? undefined : py}
+                px={p !== undefined ? undefined : px}
+                m={m}
+                radius={radius}
+                ta="center"
+                bg="var(--mantine-color-gray-light)"
+            >
                 {content}
             </Paper>
         );
     }
 
     return (
-        <Box py="xl" ta="center">
+        <Box p={p} py={p !== undefined ? undefined : py} px={p !== undefined ? undefined : px} m={m} ta="center">
             {content}
         </Box>
     );

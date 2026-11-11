@@ -21,10 +21,12 @@ import { GenderEnum } from '../../enums/GenderEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
 import { buildSortOptions, confirmDelete, formatDateTime, notifySuccess, notifyError } from '../../utils';
 import { useDataTableState } from '../../hooks';
+import { useOffline } from '../../services';
 
 export default function UsersList() {
     const { t } = useTranslation();
     const { currentUser, isAdmin, logout } = useAuth();
+    const { isOffline } = useOffline();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -154,7 +156,7 @@ export default function UsersList() {
     ];
 
     const filtersNode = (
-        <SimpleGrid className="filter-grid-4">
+        <SimpleGrid className="filter-grid-3">
             <TextInput
                 label={t('firstName')}
                 placeholder={t('firstName')}
@@ -163,6 +165,7 @@ export default function UsersList() {
                     setFirstName(e.currentTarget.value);
                     tableState.setPage(1);
                 }}
+                disabled={isOffline}
             />
             <TextInput
                 label={t('lastName')}
@@ -172,6 +175,7 @@ export default function UsersList() {
                     setLastName(e.currentTarget.value);
                     tableState.setPage(1);
                 }}
+                disabled={isOffline}
             />
             <TextInput
                 label={t('email')}
@@ -181,6 +185,7 @@ export default function UsersList() {
                     setEmail(e.currentTarget.value);
                     tableState.setPage(1);
                 }}
+                disabled={isOffline}
             />
             <TextInput
                 label={t('link')}
@@ -190,6 +195,7 @@ export default function UsersList() {
                     setLink(e.currentTarget.value);
                     tableState.setPage(1);
                 }}
+                disabled={isOffline}
             />
             <Select
                 label={t('gender')}
@@ -201,6 +207,7 @@ export default function UsersList() {
                     tableState.setPage(1);
                 }}
                 clearable
+                disabled={isOffline}
             />
             <Select
                 label={t('country')}
@@ -213,6 +220,7 @@ export default function UsersList() {
                 }}
                 clearable
                 searchable
+                disabled={isOffline}
             />
             <Select
                 label={t('status')}
@@ -224,6 +232,7 @@ export default function UsersList() {
                     tableState.setPage(1);
                 }}
                 clearable
+                disabled={isOffline}
             />
         </SimpleGrid>
     );

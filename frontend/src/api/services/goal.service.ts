@@ -31,7 +31,6 @@ export const goalService = {
                     pagination: { total: found.length, page: 1, limit: 1, totalPages: 1 },
                 } as ApiResponse<'get_goal_index'>;
             }
-            // Requirement 9: Show only offline added goals when offline
             const offlineOnly = allOffline.filter((g) => g.id.startsWith('offline_') || (g as any).isOffline);
             return {
                 data: offlineOnly,
@@ -92,7 +91,7 @@ export const goalService = {
                 startedAt: body?.startedAt || null,
                 endedAt: body?.endedAt || null,
                 status: 1 as any,
-                participants: [], // Requirement 10: empty list
+                participants: [],
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 isOffline: true,

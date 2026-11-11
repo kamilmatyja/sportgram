@@ -33,7 +33,6 @@ export const trainingService = {
                     pagination: { total: found.length, page: 1, limit: 1, totalPages: 1 },
                 } as ApiResponse<'get_training_index'>;
             }
-            // Requirement 9: Show only offline added trainings when offline
             const offlineOnly = allOffline.filter((t) => t.id.startsWith('offline_') || (t as any).isOffline);
             return {
                 data: offlineOnly,
@@ -112,7 +111,7 @@ export const trainingService = {
                 endedAt: body?.endedAt || new Date().toISOString(),
                 status: 1 as any,
                 disciplines: mappedDisciplines as any,
-                participants: [], // Requirement 10: empty list
+                participants: [],
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 isOffline: true,

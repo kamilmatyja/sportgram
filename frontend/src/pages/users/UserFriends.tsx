@@ -17,11 +17,13 @@ import {
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { confirmDelete, formatDateTime, notifySuccess, notifyError } from '../../utils';
 import { useDataTableState, useUsersMap, useFormErrors } from '../../hooks';
+import { useOffline } from '../../services';
 
 export default function UserFriends() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
+    const { isOffline } = useOffline();
 
     const tableState = useDataTableState({ initialSort: 'createdAt:desc' });
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -272,6 +274,7 @@ export default function UserFriends() {
                                     placeholder={t('selectUser')}
                                     required
                                     searchable
+                                    disabled={isOffline}
                                     data={candidateUsers.map((u) => ({
                                         value: u.id,
                                         label: `${u.firstName} ${u.lastName} (@${u.link})`,
@@ -286,7 +289,7 @@ export default function UserFriends() {
                                 />
                                 <Button
                                     loading={addFriendMutation.isPending}
-                                    disabled={!selectedUserId || addFriendMutation.isPending}
+                                    disabled={!selectedUserId || addFriendMutation.isPending || isOffline}
                                     onClick={() => selectedUserId && addFriendMutation.mutate(selectedUserId)}
                                 >
                                     {t('save')}

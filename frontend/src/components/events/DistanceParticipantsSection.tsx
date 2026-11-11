@@ -44,6 +44,7 @@ import {
     calculateSplitPace,
     calculateSplitSpeed,
 } from '../../utils';
+import { useOffline } from '../../services';
 
 export interface DistanceParticipantsProps {
     distance: EventDisciplineDistanceResource;
@@ -74,6 +75,7 @@ export function DistanceParticipantsSection({
 }: DistanceParticipantsProps) {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
+    const { isOffline } = useOffline();
 
     const [expandedParticipantIds, setExpandedParticipantIds] = useState<string[]>([]);
     const [expandedResultIds, setExpandedResultIds] = useState<string[]>([]);
@@ -247,8 +249,6 @@ export function DistanceParticipantsSection({
                 <Center h={60}>
                     <Loader size="xs" />
                 </Center>
-            ) : participants.length === 0 ? (
-                <EmptyState title={t('noData')} />
             ) : (
                 <Stack gap="sm">
                     <Table.ScrollContainer minWidth={500}>
@@ -264,339 +264,367 @@ export function DistanceParticipantsSection({
                                 </Table.Tr>
                             </Table.Thead>
                             <Table.Tbody>
-                                {participants.map((p: EventDisciplineDistanceListResource, pIdx: number) => {
-                                    const u = getUser(p.userId);
-                                    const isSelf = p.userId === currentUserId;
-                                    const canManageParticipant = isSelf || isOwner;
-                                    const hasResults = p.results && p.results.length > 0;
-                                    const isParticipantExpanded = expandedParticipantIds.includes(p.id);
+                                {participants.length === 0 ? (
+                                    <Table.Tr>
+                                        <Table.Td colSpan={4} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                            <EmptyState title={t('noData')} />
+                                        </Table.Td>
+                                    </Table.Tr>
+                                ) : (
+                                    participants.map((p: EventDisciplineDistanceListResource, pIdx: number) => {
+                                        const u = getUser(p.userId);
+                                        const isSelf = p.userId === currentUserId;
+                                        const canManageParticipant = isSelf || isOwner;
+                                        const hasResults = p.results && p.results.length > 0;
+                                        const isParticipantExpanded = expandedParticipantIds.includes(p.id);
 
-                                    return (
-                                        <React.Fragment key={p.id}>
-                                            <Table.Tr className={pIdx % 2 === 0 ? 'table-row-odd' : 'table-row-even'}>
-                                                <Table.Td>
-                                                    {hasResults ? (
-                                                        <Tooltip label={t('results')}>
-                                                            <ActionIcon
-                                                                onClick={() => toggleExpandParticipant(p.id)}
-                                                                aria-label={t('results')}
-                                                            >
-                                                                {isParticipantExpanded ? (
-                                                                    <IconChevronDown size={16} />
-                                                                ) : (
-                                                                    <IconChevronRight size={16} />
-                                                                )}
-                                                            </ActionIcon>
-                                                        </Tooltip>
-                                                    ) : null}
-                                                </Table.Td>
-                                                <Table.Td>
-                                                    <UserInfoCell user={u} userId={p.userId} />
-                                                </Table.Td>
-                                                <Table.Td>
-                                                    <StatusBadge status={p.status} />
-                                                </Table.Td>
-                                                <Table.Td ta="right">
-                                                    <Group gap="xs" justify="flex-end" wrap="nowrap">
-                                                        {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
-                                                        {canManageParticipant && (
-                                                            <StatusActionMenu
-                                                                status={p.status}
-                                                                onStatusChange={(status) =>
-                                                                    updateParticipantStatusMutation.mutate({
-                                                                        participantId: p.id,
-                                                                        status: status as ElementStatusEnum,
-                                                                    })
-                                                                }
-                                                                isPending={updateParticipantStatusMutation.isPending}
-                                                            />
-                                                        )}
-                                                        {isOwner &&
-                                                            p.status === ElementStatusEnum.ACTIVE &&
-                                                            (!p.results || p.results.length === 0) && (
-                                                                <Button
-                                                                    size="xs"
-                                                                    variant="default"
-                                                                    leftSection={<IconPlus size={16} />}
-                                                                    onClick={() => handleOpenAddResult(p.id)}
+                                        return (
+                                            <React.Fragment key={p.id}>
+                                                <Table.Tr
+                                                    className={pIdx % 2 === 0 ? 'table-row-odd' : 'table-row-even'}
+                                                >
+                                                    <Table.Td>
+                                                        {hasResults ? (
+                                                            <Tooltip label={t('results')}>
+                                                                <ActionIcon
+                                                                    onClick={() => toggleExpandParticipant(p.id)}
+                                                                    aria-label={t('results')}
                                                                 >
-                                                                    {t('addResult')}
-                                                                </Button>
+                                                                    {isParticipantExpanded ? (
+                                                                        <IconChevronDown size={16} />
+                                                                    ) : (
+                                                                        <IconChevronRight size={16} />
+                                                                    )}
+                                                                </ActionIcon>
+                                                            </Tooltip>
+                                                        ) : null}
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <UserInfoCell user={u} userId={p.userId} />
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <StatusBadge status={p.status} />
+                                                    </Table.Td>
+                                                    <Table.Td ta="right">
+                                                        <Group gap="xs" justify="flex-end" wrap="nowrap">
+                                                            {u?.link && <ViewActionButton to={`/users/${u.link}`} />}
+                                                            {canManageParticipant && (
+                                                                <StatusActionMenu
+                                                                    status={p.status}
+                                                                    onStatusChange={(status) =>
+                                                                        updateParticipantStatusMutation.mutate({
+                                                                            participantId: p.id,
+                                                                            status: status as ElementStatusEnum,
+                                                                        })
+                                                                    }
+                                                                    isPending={
+                                                                        updateParticipantStatusMutation.isPending
+                                                                    }
+                                                                />
                                                             )}
-                                                    </Group>
-                                                </Table.Td>
-                                            </Table.Tr>
-                                            {hasResults && isParticipantExpanded && (
-                                                <Table.Tr className="table-expansion-row">
-                                                    <Table.Td colSpan={4} p={0}>
-                                                        <Table>
-                                                            <Table.Thead>
-                                                                <Table.Tr>
-                                                                    <Table.Th w={46} />
-                                                                    <Table.Th>{t('distance')}</Table.Th>
-                                                                    <Table.Th>{t('time')}</Table.Th>
-                                                                    <Table.Th>{t('pace')}</Table.Th>
-                                                                    <Table.Th>{t('speed')}</Table.Th>
-                                                                    <Table.Th w={120} ta="right">
-                                                                        {t('actions')}
-                                                                    </Table.Th>
-                                                                </Table.Tr>
-                                                            </Table.Thead>
-                                                            <Table.Tbody>
-                                                                {p.results.map(
-                                                                    (
-                                                                        res: EventDisciplineDistanceResultResource,
-                                                                        rIdx: number,
-                                                                    ) => {
-                                                                        const hasSubResults =
-                                                                            res.subResults && res.subResults.length > 0;
-                                                                        const isSubExpanded =
-                                                                            expandedResultIds.includes(res.id);
-                                                                        const paceSecPerKm = calculatePace(
-                                                                            distance.distance,
-                                                                            res.time,
-                                                                        );
-                                                                        const speedKmH = calculateSpeed(
-                                                                            distance.distance,
-                                                                            res.time,
-                                                                        );
+                                                            {isOwner &&
+                                                                p.status === ElementStatusEnum.ACTIVE &&
+                                                                (!p.results || p.results.length === 0) && (
+                                                                    <Button
+                                                                        size="xs"
+                                                                        variant="default"
+                                                                        leftSection={<IconPlus size={16} />}
+                                                                        onClick={() => handleOpenAddResult(p.id)}
+                                                                    >
+                                                                        {t('addResult')}
+                                                                    </Button>
+                                                                )}
+                                                        </Group>
+                                                    </Table.Td>
+                                                </Table.Tr>
+                                                {hasResults && isParticipantExpanded && (
+                                                    <Table.Tr className="table-expansion-row">
+                                                        <Table.Td colSpan={4} p={0}>
+                                                            <Table>
+                                                                <Table.Thead>
+                                                                    <Table.Tr>
+                                                                        <Table.Th w={46} />
+                                                                        <Table.Th>{t('distance')}</Table.Th>
+                                                                        <Table.Th>{t('time')}</Table.Th>
+                                                                        <Table.Th>{t('pace')}</Table.Th>
+                                                                        <Table.Th>{t('speed')}</Table.Th>
+                                                                        <Table.Th w={120} ta="right">
+                                                                            {t('actions')}
+                                                                        </Table.Th>
+                                                                    </Table.Tr>
+                                                                </Table.Thead>
+                                                                <Table.Tbody>
+                                                                    {p.results.map(
+                                                                        (
+                                                                            res: EventDisciplineDistanceResultResource,
+                                                                            rIdx: number,
+                                                                        ) => {
+                                                                            const hasSubResults =
+                                                                                res.subResults &&
+                                                                                res.subResults.length > 0;
+                                                                            const isSubExpanded =
+                                                                                expandedResultIds.includes(res.id);
+                                                                            const paceSecPerKm = calculatePace(
+                                                                                distance.distance,
+                                                                                res.time,
+                                                                            );
+                                                                            const speedKmH = calculateSpeed(
+                                                                                distance.distance,
+                                                                                res.time,
+                                                                            );
 
-                                                                        return (
-                                                                            <React.Fragment key={res.id}>
-                                                                                <Table.Tr
-                                                                                    className={
-                                                                                        rIdx % 2 === 0
-                                                                                            ? 'table-row-odd'
-                                                                                            : 'table-row-even'
-                                                                                    }
-                                                                                >
-                                                                                    <Table.Td>
-                                                                                        {hasSubResults ? (
-                                                                                            <Tooltip
-                                                                                                label={t('details')}
-                                                                                            >
-                                                                                                <ActionIcon
-                                                                                                    onClick={() =>
-                                                                                                        toggleExpandResult(
-                                                                                                            res.id,
-                                                                                                        )
-                                                                                                    }
-                                                                                                    aria-label={t(
-                                                                                                        'details',
-                                                                                                    )}
+                                                                            return (
+                                                                                <React.Fragment key={res.id}>
+                                                                                    <Table.Tr
+                                                                                        className={
+                                                                                            rIdx % 2 === 0
+                                                                                                ? 'table-row-odd'
+                                                                                                : 'table-row-even'
+                                                                                        }
+                                                                                    >
+                                                                                        <Table.Td>
+                                                                                            {hasSubResults ? (
+                                                                                                <Tooltip
+                                                                                                    label={t('details')}
                                                                                                 >
-                                                                                                    {isSubExpanded ? (
-                                                                                                        <IconChevronDown
-                                                                                                            size={16}
-                                                                                                        />
-                                                                                                    ) : (
-                                                                                                        <IconChevronRight
-                                                                                                            size={16}
-                                                                                                        />
-                                                                                                    )}
-                                                                                                </ActionIcon>
-                                                                                            </Tooltip>
-                                                                                        ) : null}
-                                                                                    </Table.Td>
-                                                                                    <Table.Td>
-                                                                                        <Text size="sm">
-                                                                                            {formatDistance(
-                                                                                                distance.distance,
+                                                                                                    <ActionIcon
+                                                                                                        onClick={() =>
+                                                                                                            toggleExpandResult(
+                                                                                                                res.id,
+                                                                                                            )
+                                                                                                        }
+                                                                                                        aria-label={t(
+                                                                                                            'details',
+                                                                                                        )}
+                                                                                                    >
+                                                                                                        {isSubExpanded ? (
+                                                                                                            <IconChevronDown
+                                                                                                                size={
+                                                                                                                    16
+                                                                                                                }
+                                                                                                            />
+                                                                                                        ) : (
+                                                                                                            <IconChevronRight
+                                                                                                                size={
+                                                                                                                    16
+                                                                                                                }
+                                                                                                            />
+                                                                                                        )}
+                                                                                                    </ActionIcon>
+                                                                                                </Tooltip>
+                                                                                            ) : null}
+                                                                                        </Table.Td>
+                                                                                        <Table.Td>
+                                                                                            <Text size="sm">
+                                                                                                {formatDistance(
+                                                                                                    distance.distance,
+                                                                                                )}
+                                                                                            </Text>
+                                                                                        </Table.Td>
+                                                                                        <Table.Td>
+                                                                                            <Text size="sm">
+                                                                                                {formatTime(res.time)}
+                                                                                            </Text>
+                                                                                        </Table.Td>
+                                                                                        <Table.Td>
+                                                                                            <Text size="sm">
+                                                                                                {formatPace(
+                                                                                                    paceSecPerKm,
+                                                                                                )}
+                                                                                            </Text>
+                                                                                        </Table.Td>
+                                                                                        <Table.Td>
+                                                                                            <Text size="sm">
+                                                                                                {formatSpeed(speedKmH)}
+                                                                                            </Text>
+                                                                                        </Table.Td>
+                                                                                        <Table.Td ta="right">
+                                                                                            {isOwner && (
+                                                                                                <Group
+                                                                                                    gap="xs"
+                                                                                                    justify="flex-end"
+                                                                                                    wrap="nowrap"
+                                                                                                >
+                                                                                                    <EditActionButton
+                                                                                                        onClick={() =>
+                                                                                                            handleOpenEditResult(
+                                                                                                                res,
+                                                                                                            )
+                                                                                                        }
+                                                                                                    />
+                                                                                                    <DeleteActionButton
+                                                                                                        onClick={() =>
+                                                                                                            handleDeleteResult(
+                                                                                                                res.id,
+                                                                                                            )
+                                                                                                        }
+                                                                                                    />
+                                                                                                </Group>
                                                                                             )}
-                                                                                        </Text>
-                                                                                    </Table.Td>
-                                                                                    <Table.Td>
-                                                                                        <Text size="sm">
-                                                                                            {formatTime(res.time)}
-                                                                                        </Text>
-                                                                                    </Table.Td>
-                                                                                    <Table.Td>
-                                                                                        <Text size="sm">
-                                                                                            {formatPace(paceSecPerKm)}
-                                                                                        </Text>
-                                                                                    </Table.Td>
-                                                                                    <Table.Td>
-                                                                                        <Text size="sm">
-                                                                                            {formatSpeed(speedKmH)}
-                                                                                        </Text>
-                                                                                    </Table.Td>
-                                                                                    <Table.Td ta="right">
-                                                                                        {isOwner && (
-                                                                                            <Group
-                                                                                                gap="xs"
-                                                                                                justify="flex-end"
-                                                                                                wrap="nowrap"
-                                                                                            >
-                                                                                                <EditActionButton
-                                                                                                    onClick={() =>
-                                                                                                        handleOpenEditResult(
-                                                                                                            res,
-                                                                                                        )
-                                                                                                    }
-                                                                                                />
-                                                                                                <DeleteActionButton
-                                                                                                    onClick={() =>
-                                                                                                        handleDeleteResult(
-                                                                                                            res.id,
-                                                                                                        )
-                                                                                                    }
-                                                                                                />
-                                                                                            </Group>
-                                                                                        )}
-                                                                                    </Table.Td>
-                                                                                </Table.Tr>
-                                                                                {hasSubResults && isSubExpanded && (
-                                                                                    <Table.Tr className="table-expansion-row">
-                                                                                        <Table.Td colSpan={6} p={0}>
-                                                                                            <Table verticalSpacing="xs">
-                                                                                                <Table.Thead>
-                                                                                                    <Table.Tr>
-                                                                                                        <Table.Th>
-                                                                                                            {t(
-                                                                                                                'subDistance',
-                                                                                                            )}
-                                                                                                        </Table.Th>
-                                                                                                        <Table.Th>
-                                                                                                            {t('time')}
-                                                                                                        </Table.Th>
-                                                                                                        <Table.Th>
-                                                                                                            {t('pace')}
-                                                                                                        </Table.Th>
-                                                                                                        <Table.Th>
-                                                                                                            {t('speed')}
-                                                                                                        </Table.Th>
-                                                                                                    </Table.Tr>
-                                                                                                </Table.Thead>
-                                                                                                <Table.Tbody>
-                                                                                                    {res.subResults.map(
-                                                                                                        (sr, idx) => {
-                                                                                                            const sd =
-                                                                                                                distance.subDistances?.find(
-                                                                                                                    (
-                                                                                                                        d,
-                                                                                                                    ) =>
-                                                                                                                        d.id ===
-                                                                                                                        sr.eventDisciplineSubDistanceId,
-                                                                                                                );
-                                                                                                            let subPaceSecPerKm: number;
-                                                                                                            let subSpeedKmH: number;
-                                                                                                            const curDist =
-                                                                                                                sd
-                                                                                                                    ? sd.subDistance
-                                                                                                                    : 0;
-                                                                                                            if (
-                                                                                                                idx ===
-                                                                                                                0
-                                                                                                            ) {
-                                                                                                                subPaceSecPerKm =
-                                                                                                                    calculatePace(
-                                                                                                                        curDist,
-                                                                                                                        sr.time,
-                                                                                                                    );
-                                                                                                                subSpeedKmH =
-                                                                                                                    calculateSpeed(
-                                                                                                                        curDist,
-                                                                                                                        sr.time,
-                                                                                                                    );
-                                                                                                            } else {
-                                                                                                                const prevSr =
-                                                                                                                    res
-                                                                                                                        .subResults[
-                                                                                                                        idx -
-                                                                                                                            1
-                                                                                                                    ];
-                                                                                                                const prevSd =
+                                                                                        </Table.Td>
+                                                                                    </Table.Tr>
+                                                                                    {hasSubResults && isSubExpanded && (
+                                                                                        <Table.Tr className="table-expansion-row">
+                                                                                            <Table.Td colSpan={6} p={0}>
+                                                                                                <Table verticalSpacing="xs">
+                                                                                                    <Table.Thead>
+                                                                                                        <Table.Tr>
+                                                                                                            <Table.Th>
+                                                                                                                {t(
+                                                                                                                    'subDistance',
+                                                                                                                )}
+                                                                                                            </Table.Th>
+                                                                                                            <Table.Th>
+                                                                                                                {t(
+                                                                                                                    'time',
+                                                                                                                )}
+                                                                                                            </Table.Th>
+                                                                                                            <Table.Th>
+                                                                                                                {t(
+                                                                                                                    'pace',
+                                                                                                                )}
+                                                                                                            </Table.Th>
+                                                                                                            <Table.Th>
+                                                                                                                {t(
+                                                                                                                    'speed',
+                                                                                                                )}
+                                                                                                            </Table.Th>
+                                                                                                        </Table.Tr>
+                                                                                                    </Table.Thead>
+                                                                                                    <Table.Tbody>
+                                                                                                        {res.subResults.map(
+                                                                                                            (
+                                                                                                                sr,
+                                                                                                                idx,
+                                                                                                            ) => {
+                                                                                                                const sd =
                                                                                                                     distance.subDistances?.find(
                                                                                                                         (
                                                                                                                             d,
                                                                                                                         ) =>
                                                                                                                             d.id ===
-                                                                                                                            prevSr.eventDisciplineSubDistanceId,
+                                                                                                                            sr.eventDisciplineSubDistanceId,
                                                                                                                     );
-                                                                                                                const prevDist =
-                                                                                                                    prevSd
-                                                                                                                        ? prevSd.subDistance
+                                                                                                                let subPaceSecPerKm: number;
+                                                                                                                let subSpeedKmH: number;
+                                                                                                                const curDist =
+                                                                                                                    sd
+                                                                                                                        ? sd.subDistance
                                                                                                                         : 0;
-                                                                                                                subPaceSecPerKm =
-                                                                                                                    calculateSplitPace(
-                                                                                                                        curDist,
-                                                                                                                        prevDist,
-                                                                                                                        sr.time,
-                                                                                                                        prevSr.time,
-                                                                                                                    );
-                                                                                                                subSpeedKmH =
-                                                                                                                    calculateSplitSpeed(
-                                                                                                                        curDist,
-                                                                                                                        prevDist,
-                                                                                                                        sr.time,
-                                                                                                                        prevSr.time,
-                                                                                                                    );
-                                                                                                            }
+                                                                                                                if (
+                                                                                                                    idx ===
+                                                                                                                    0
+                                                                                                                ) {
+                                                                                                                    subPaceSecPerKm =
+                                                                                                                        calculatePace(
+                                                                                                                            curDist,
+                                                                                                                            sr.time,
+                                                                                                                        );
+                                                                                                                    subSpeedKmH =
+                                                                                                                        calculateSpeed(
+                                                                                                                            curDist,
+                                                                                                                            sr.time,
+                                                                                                                        );
+                                                                                                                } else {
+                                                                                                                    const prevSr =
+                                                                                                                        res
+                                                                                                                            .subResults[
+                                                                                                                            idx -
+                                                                                                                                1
+                                                                                                                        ];
+                                                                                                                    const prevSd =
+                                                                                                                        distance.subDistances?.find(
+                                                                                                                            (
+                                                                                                                                d,
+                                                                                                                            ) =>
+                                                                                                                                d.id ===
+                                                                                                                                prevSr.eventDisciplineSubDistanceId,
+                                                                                                                        );
+                                                                                                                    const prevDist =
+                                                                                                                        prevSd
+                                                                                                                            ? prevSd.subDistance
+                                                                                                                            : 0;
+                                                                                                                    subPaceSecPerKm =
+                                                                                                                        calculateSplitPace(
+                                                                                                                            curDist,
+                                                                                                                            prevDist,
+                                                                                                                            sr.time,
+                                                                                                                            prevSr.time,
+                                                                                                                        );
+                                                                                                                    subSpeedKmH =
+                                                                                                                        calculateSplitSpeed(
+                                                                                                                            curDist,
+                                                                                                                            prevDist,
+                                                                                                                            sr.time,
+                                                                                                                            prevSr.time,
+                                                                                                                        );
+                                                                                                                }
 
-                                                                                                            return (
-                                                                                                                <Table.Tr
-                                                                                                                    key={
-                                                                                                                        sr.id
-                                                                                                                    }
-                                                                                                                    className={
-                                                                                                                        idx %
-                                                                                                                            2 ===
-                                                                                                                        0
-                                                                                                                            ? 'table-row-odd'
-                                                                                                                            : 'table-row-even'
-                                                                                                                    }
-                                                                                                                >
-                                                                                                                    <Table.Td>
-                                                                                                                        <Text size="sm">
-                                                                                                                            {sd
-                                                                                                                                ? formatDistance(
-                                                                                                                                      sd.subDistance,
-                                                                                                                                  )
-                                                                                                                                : `#${idx + 1}`}
-                                                                                                                        </Text>
-                                                                                                                    </Table.Td>
-                                                                                                                    <Table.Td>
-                                                                                                                        <Text size="sm">
-                                                                                                                            {formatTime(
-                                                                                                                                sr.time,
-                                                                                                                            )}
-                                                                                                                        </Text>
-                                                                                                                    </Table.Td>
-                                                                                                                    <Table.Td>
-                                                                                                                        <Text size="sm">
-                                                                                                                            {formatPace(
-                                                                                                                                subPaceSecPerKm,
-                                                                                                                            )}
-                                                                                                                        </Text>
-                                                                                                                    </Table.Td>
-                                                                                                                    <Table.Td>
-                                                                                                                        <Text size="sm">
-                                                                                                                            {formatSpeed(
-                                                                                                                                subSpeedKmH,
-                                                                                                                            )}
-                                                                                                                        </Text>
-                                                                                                                    </Table.Td>
-                                                                                                                </Table.Tr>
-                                                                                                            );
-                                                                                                        },
-                                                                                                    )}
-                                                                                                </Table.Tbody>
-                                                                                            </Table>
-                                                                                        </Table.Td>
-                                                                                    </Table.Tr>
-                                                                                )}
-                                                                            </React.Fragment>
-                                                                        );
-                                                                    },
-                                                                )}
-                                                            </Table.Tbody>
-                                                        </Table>
-                                                    </Table.Td>
-                                                </Table.Tr>
-                                            )}
-                                        </React.Fragment>
-                                    );
-                                })}
+                                                                                                                return (
+                                                                                                                    <Table.Tr
+                                                                                                                        key={
+                                                                                                                            sr.id
+                                                                                                                        }
+                                                                                                                        className={
+                                                                                                                            idx %
+                                                                                                                                2 ===
+                                                                                                                            0
+                                                                                                                                ? 'table-row-odd'
+                                                                                                                                : 'table-row-even'
+                                                                                                                        }
+                                                                                                                    >
+                                                                                                                        <Table.Td>
+                                                                                                                            <Text size="sm">
+                                                                                                                                {sd
+                                                                                                                                    ? formatDistance(
+                                                                                                                                          sd.subDistance,
+                                                                                                                                      )
+                                                                                                                                    : `#${idx + 1}`}
+                                                                                                                            </Text>
+                                                                                                                        </Table.Td>
+                                                                                                                        <Table.Td>
+                                                                                                                            <Text size="sm">
+                                                                                                                                {formatTime(
+                                                                                                                                    sr.time,
+                                                                                                                                )}
+                                                                                                                            </Text>
+                                                                                                                        </Table.Td>
+                                                                                                                        <Table.Td>
+                                                                                                                            <Text size="sm">
+                                                                                                                                {formatPace(
+                                                                                                                                    subPaceSecPerKm,
+                                                                                                                                )}
+                                                                                                                            </Text>
+                                                                                                                        </Table.Td>
+                                                                                                                        <Table.Td>
+                                                                                                                            <Text size="sm">
+                                                                                                                                {formatSpeed(
+                                                                                                                                    subSpeedKmH,
+                                                                                                                                )}
+                                                                                                                            </Text>
+                                                                                                                        </Table.Td>
+                                                                                                                    </Table.Tr>
+                                                                                                                );
+                                                                                                            },
+                                                                                                        )}
+                                                                                                    </Table.Tbody>
+                                                                                                </Table>
+                                                                                            </Table.Td>
+                                                                                        </Table.Tr>
+                                                                                    )}
+                                                                                </React.Fragment>
+                                                                            );
+                                                                        },
+                                                                    )}
+                                                                </Table.Tbody>
+                                                            </Table>
+                                                        </Table.Td>
+                                                    </Table.Tr>
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    })
+                                )}
                             </Table.Tbody>
                         </Table>
                     </Table.ScrollContainer>
@@ -666,7 +694,7 @@ export function DistanceParticipantsSection({
                         <Button
                             mt="xs"
                             loading={saveResultMutation.isPending}
-                            disabled={saveResultMutation.isPending || !resultModal.time.trim()}
+                            disabled={saveResultMutation.isPending || !resultModal.time.trim() || isOffline}
                             onClick={() => saveResultMutation.mutate()}
                         >
                             {t('save')}

@@ -70,7 +70,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
                     return;
                 }
             } catch {
-                // Ignore
+                void 0;
             }
         }
 

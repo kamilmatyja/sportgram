@@ -315,22 +315,26 @@ export default function PageDetails() {
                     <Title order={4} mb="xs">
                         {t('participants')}
                     </Title>
-                    {!page.participants || page.participants.length === 0 ? (
-                        <EmptyState title={t('noData')} />
-                    ) : (
-                        <Table.ScrollContainer minWidth={500}>
-                            <Table>
-                                <Table.Thead>
+                    <Table.ScrollContainer minWidth={500}>
+                        <Table>
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>{t('user')}</Table.Th>
+                                    <Table.Th>{t('status')}</Table.Th>
+                                    <Table.Th w={120} ta="right">
+                                        {t('actions')}
+                                    </Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>
+                                {!page.participants || page.participants.length === 0 ? (
                                     <Table.Tr>
-                                        <Table.Th>{t('user')}</Table.Th>
-                                        <Table.Th>{t('status')}</Table.Th>
-                                        <Table.Th w={120} ta="right">
-                                            {t('actions')}
-                                        </Table.Th>
+                                        <Table.Td colSpan={3} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                            <EmptyState title={t('noData')} />
+                                        </Table.Td>
                                     </Table.Tr>
-                                </Table.Thead>
-                                <Table.Tbody>
-                                    {page.participants?.map((p: PageParticipantResource) => {
+                                ) : (
+                                    page.participants.map((p: PageParticipantResource) => {
                                         const u = getUser(p.userId);
                                         const isSelf = p.userId === currentUser?.id;
 
@@ -362,11 +366,11 @@ export default function PageDetails() {
                                                 </Table.Td>
                                             </Table.Tr>
                                         );
-                                    })}
-                                </Table.Tbody>
-                            </Table>
-                        </Table.ScrollContainer>
-                    )}
+                                    })
+                                )}
+                            </Table.Tbody>
+                        </Table>
+                    </Table.ScrollContainer>
 
                     <Group justify="space-between" align="center" mt="lg" mb="xs">
                         <Title order={4}>{t('events')}</Title>
@@ -386,8 +390,6 @@ export default function PageDetails() {
                         <Center h={100}>
                             <Loader size="sm" />
                         </Center>
-                    ) : pageEvents.length === 0 ? (
-                        <EmptyState title={t('noData')} />
                     ) : (
                         <Table.ScrollContainer minWidth={500}>
                             <Table>
@@ -403,39 +405,47 @@ export default function PageDetails() {
                                     </Table.Tr>
                                 </Table.Thead>
                                 <Table.Tbody>
-                                    {pageEvents.map((ev: EventResource) => (
-                                        <Table.Tr key={ev.id}>
-                                            <Table.Td>
-                                                <Group wrap="nowrap">
-                                                    <Avatar src={formatImageSrc(ev.photo)}>?</Avatar>
-                                                    <div>
-                                                        <Text size="sm" fw={600}>
-                                                            {ev.title}
-                                                        </Text>
-                                                        <Text size="sm" c="dimmed">
-                                                            {ev.location || '-'}
-                                                        </Text>
-                                                    </div>
-                                                </Group>
-                                            </Table.Td>
-                                            <Table.Td>
-                                                <Text size="sm" c="dimmed">
-                                                    {formatDateTime(ev.startedAt)}
-                                                </Text>
-                                            </Table.Td>
-                                            <Table.Td>
-                                                <Text size="sm" c="dimmed">
-                                                    {formatDateTime(ev.endedAt)}
-                                                </Text>
-                                            </Table.Td>
-                                            <Table.Td>
-                                                <StatusBadge status={ev.status} />
-                                            </Table.Td>
-                                            <Table.Td ta="right">
-                                                <ViewActionButton to={`/events/${ev.link}`} />
+                                    {pageEvents.length === 0 ? (
+                                        <Table.Tr>
+                                            <Table.Td colSpan={5} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                                <EmptyState title={t('noData')} />
                                             </Table.Td>
                                         </Table.Tr>
-                                    ))}
+                                    ) : (
+                                        pageEvents.map((ev: EventResource) => (
+                                            <Table.Tr key={ev.id}>
+                                                <Table.Td>
+                                                    <Group wrap="nowrap">
+                                                        <Avatar src={formatImageSrc(ev.photo)}>?</Avatar>
+                                                        <div>
+                                                            <Text size="sm" fw={600}>
+                                                                {ev.title}
+                                                            </Text>
+                                                            <Text size="sm" c="dimmed">
+                                                                {ev.location || '-'}
+                                                            </Text>
+                                                        </div>
+                                                    </Group>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Text size="sm" c="dimmed">
+                                                        {formatDateTime(ev.startedAt)}
+                                                    </Text>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <Text size="sm" c="dimmed">
+                                                        {formatDateTime(ev.endedAt)}
+                                                    </Text>
+                                                </Table.Td>
+                                                <Table.Td>
+                                                    <StatusBadge status={ev.status} />
+                                                </Table.Td>
+                                                <Table.Td ta="right">
+                                                    <ViewActionButton to={`/events/${ev.link}`} />
+                                                </Table.Td>
+                                            </Table.Tr>
+                                        ))
+                                    )}
                                 </Table.Tbody>
                             </Table>
                         </Table.ScrollContainer>

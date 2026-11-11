@@ -290,7 +290,7 @@ class FeedResourceTest extends ResourceTestCase
 
         $data = FeedResource::fromEntity($feed, $dto);
 
-        $this->assertSame('Trening interwałowy: {discipline:Running}, {distance:5000}, {time:1500}, {discipline:Swimming}, {distance:1000}, {time:1200}', $data['feedOrigin']);
+        $this->assertSame('Trening interwałowy: {discipline:Running}, {distance:5000}, {time:1500}; {discipline:Swimming}, {distance:1000}, {time:1200}', $data['feedOrigin']);
     }
 
     final public function testMapsCollectionInOrder(): void

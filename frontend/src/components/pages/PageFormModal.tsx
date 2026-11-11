@@ -170,6 +170,7 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
                     value={profilePhotoFile}
                     error={fieldErrors.profilePhoto}
                     onChange={setProfilePhotoFile}
+                    disabled={isOffline}
                 />
                 <ImageInput
                     label={t('backgroundPhoto')}
@@ -178,6 +179,7 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
                     value={bgPhotoFile}
                     error={fieldErrors.backgroundPhoto}
                     onChange={setBgPhotoFile}
+                    disabled={isOffline}
                 />
 
                 {collaboratorOptions.length > 0 && (
@@ -189,6 +191,7 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
                         onChange={setCollaboratorIds}
                         searchable
                         clearable
+                        disabled={isOffline}
                     />
                 )}
 

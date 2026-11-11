@@ -97,8 +97,7 @@
 .story-nav-btn:disabled,
 .story-nav-btn[data-disabled] {
     opacity: 0.3;
-    cursor: default;
-    pointer-events: none;
+    cursor: not-allowed !important;
 }
 
 .story-nav-btn-prev {
@@ -374,23 +373,222 @@
     }
 }
 
-/* Offline mode global button & control disabling outside trainings and goals */
-[data-offline-disabled='true'] button:not([data-offline-allowed='true']),
-[data-offline-disabled='true'] .mantine-ActionIcon-root:not([data-offline-allowed='true']),
+button:disabled,
+button[data-disabled],
+.mantine-ActionIcon-root:disabled,
+.mantine-ActionIcon-root[data-disabled],
+.mantine-Button-root:disabled,
+.mantine-Button-root[data-disabled],
+.mantine-Pagination-control:disabled,
+.mantine-Pagination-control[data-disabled],
+.mantine-Select-input:disabled,
+.mantine-Select-input[data-disabled],
+.mantine-Input-input:disabled,
+.mantine-Input-input[data-disabled],
+.story-nav-btn:disabled,
+.story-nav-btn[data-disabled] {
+    cursor: not-allowed !important;
+}
+
+button:disabled *,
+button[data-disabled] *,
+.mantine-ActionIcon-root:disabled *,
+.mantine-ActionIcon-root[data-disabled] *,
+.mantine-Button-root:disabled *,
+.mantine-Button-root[data-disabled] *,
+.mantine-Pagination-control:disabled *,
+.mantine-Pagination-control[data-disabled] *,
+.story-nav-btn:disabled *,
+.story-nav-btn[data-disabled] * {
+    cursor: not-allowed !important;
+}
+
+[data-offline-disabled='true'] a:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] .mantine-Anchor-root:not([data-offline-allowed='true']),
+[data-offline-disabled='true']
+    button:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(.mantine-CloseButton-root),
+[data-offline-disabled='true']
+    .mantine-ActionIcon-root:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(
+        .mantine-CloseButton-root
+    ),
 [data-offline-disabled='true'] .mantine-Button-root:not([data-offline-allowed='true']),
 [data-offline-disabled='true'] .mantine-Pagination-control:not([data-offline-allowed='true']),
-[data-offline-disabled='true'] .mantine-Select-input:not([data-offline-allowed='true']),
-[data-offline-disabled='true'] .mantine-TextInput-input:not([data-offline-allowed='true']),
 [data-offline-disabled='true'] .mantine-Menu-item:not([data-offline-allowed='true']),
-[data-offline-disabled='true'] .mantine-UnstyledButton-root:not([data-offline-allowed='true']) {
-    pointer-events: none !important;
+[data-offline-disabled='true']
+    .mantine-UnstyledButton-root:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(
+        .mantine-CloseButton-root
+    ),
+[data-offline-disabled='true'] input:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] textarea:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] select:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] .mantine-Input-input:not([data-offline-allowed='true']),
+[data-offline-disabled='true'] .mantine-Checkbox-root,
+[data-offline-disabled='true'] .mantine-Radio-root,
+[data-offline-disabled='true'] .mantine-Switch-root,
+[data-offline-disabled='true'] .mantine-SegmentedControl-root,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    a:not([data-offline-allowed='true']),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Anchor-root:not([data-offline-allowed='true']),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    button:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(.mantine-CloseButton-root),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-ActionIcon-root:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(
+        .mantine-CloseButton-root
+    ),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Button-root:not([data-offline-allowed='true']),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-UnstyledButton-root:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(
+        .mantine-CloseButton-root
+    ),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    input:not([data-offline-allowed='true']),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    textarea:not([data-offline-allowed='true']),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    select:not([data-offline-allowed='true']),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Input-input:not([data-offline-allowed='true']),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Checkbox-root,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Radio-root,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Switch-root,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-SegmentedControl-root,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .story-nav-btn {
     opacity: 0.5 !important;
     cursor: not-allowed !important;
 }
 
+[data-offline-disabled='true'] .mantine-Button-root:not([data-offline-allowed='true']),
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Button-root:not([data-offline-allowed='true']) {
+    background-color: var(--mantine-color-disabled) !important;
+    color: var(--mantine-color-disabled-color) !important;
+    border-color: transparent !important;
+}
+
+[data-offline-disabled='true'] a:not([data-offline-allowed='true']) *,
+[data-offline-disabled='true'] .mantine-Anchor-root:not([data-offline-allowed='true']) *,
+[data-offline-disabled='true']
+    button:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(.mantine-CloseButton-root)
+    *,
+[data-offline-disabled='true']
+    .mantine-ActionIcon-root:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(.mantine-CloseButton-root)
+    *,
+[data-offline-disabled='true'] .mantine-Button-root:not([data-offline-allowed='true']) *,
+[data-offline-disabled='true'] .mantine-Pagination-control:not([data-offline-allowed='true']) *,
+[data-offline-disabled='true'] .mantine-Menu-item:not([data-offline-allowed='true']) *,
+[data-offline-disabled='true']
+    .mantine-UnstyledButton-root:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(
+        .mantine-CloseButton-root
+    )
+    *,
+[data-offline-disabled='true'] input:not([data-offline-allowed='true']) *,
+[data-offline-disabled='true'] textarea:not([data-offline-allowed='true']) *,
+[data-offline-disabled='true'] select:not([data-offline-allowed='true']) *,
+[data-offline-disabled='true'] .mantine-Input-input:not([data-offline-allowed='true']) *,
+[data-offline-disabled='true'] .mantine-Checkbox-root *,
+[data-offline-disabled='true'] .mantine-Radio-root *,
+[data-offline-disabled='true'] .mantine-Switch-root *,
+[data-offline-disabled='true'] .mantine-SegmentedControl-root *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    a:not([data-offline-allowed='true'])
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Anchor-root:not([data-offline-allowed='true'])
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    button:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(.mantine-CloseButton-root)
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-ActionIcon-root:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(.mantine-CloseButton-root)
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Button-root:not([data-offline-allowed='true'])
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-UnstyledButton-root:not([data-offline-allowed='true']):not(.mantine-Modal-close):not(
+        .mantine-CloseButton-root
+    )
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    input:not([data-offline-allowed='true'])
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    textarea:not([data-offline-allowed='true'])
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    select:not([data-offline-allowed='true'])
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Input-input:not([data-offline-allowed='true'])
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Checkbox-root
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Radio-root
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-Switch-root
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .mantine-SegmentedControl-root
+    *,
+[data-offline='true']
+    .mantine-Modal-root:not([data-training-modal='true']):not([data-goal-modal='true']):not(.training-goal-modal)
+    .story-nav-btn
+    * {
+    cursor: not-allowed !important;
+}
+
 [data-offline-disabled='true'] [data-offline-allowed='true'],
-[data-offline-disabled='true'] [data-offline-allowed='true'] * {
-    pointer-events: auto !important;
-    opacity: 1 !important;
+[data-offline-disabled='true'] [data-offline-allowed='true'] *,
+[data-offline='true'] .mantine-Modal-close,
+[data-offline='true'] .mantine-Modal-close *,
+[data-offline='true'] .mantine-CloseButton-root,
+[data-offline='true'] .mantine-CloseButton-root *,
+[data-offline-disabled='true'] .mantine-Modal-close,
+[data-offline-disabled='true'] .mantine-Modal-close *,
+[data-offline-disabled='true'] .mantine-CloseButton-root,
+[data-offline-disabled='true'] .mantine-CloseButton-root *,
+[data-offline='true'] .mantine-Modal-root [data-offline-allowed='true'],
+[data-offline='true'] .mantine-Modal-root [data-offline-allowed='true'] * {
     cursor: pointer !important;
+    opacity: 1 !important;
 }

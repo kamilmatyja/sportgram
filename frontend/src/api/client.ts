@@ -71,21 +71,6 @@ const authMiddleware: Middleware = {
         }
         return response;
     },
-    async onError({ error }) {
-        if (typeof navigator !== 'undefined' && !navigator.onLine) {
-            return new Response(
-                JSON.stringify({
-                    data: [],
-                    pagination: { total: 0, page: 1, limit: 10, totalPages: 1 },
-                }),
-                {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' },
-                },
-            );
-        }
-        throw error;
-    },
 };
 
 api.use(authMiddleware);

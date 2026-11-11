@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             localStorage.removeItem('sportgram_offline_user');
         } catch {
-            // ignore
+            void 0;
         }
         setToken(null);
         setSignId(null);
@@ -95,7 +95,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     useEffect(() => {
-        // Requirement 4: Don't logout when offline
         if (isError && (typeof navigator === 'undefined' || navigator.onLine)) {
             logout();
         }

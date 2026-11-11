@@ -24,9 +24,10 @@ export interface FormEventDiscipline {
 export interface EventDisciplinesEditorProps {
     disciplines: FormEventDiscipline[];
     onChange: (disciplines: FormEventDiscipline[]) => void;
+    disabled?: boolean;
 }
 
-export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplinesEditorProps) {
+export function EventDisciplinesEditor({ disciplines, onChange, disabled = false }: EventDisciplinesEditorProps) {
     const { t } = useTranslation();
 
     const handleAddDiscipline = () => {
@@ -107,7 +108,13 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                 <Text fw={500} size="sm">
                     {t('disciplinesAndDistances')}
                 </Text>
-                <Button size="xs" variant="light" leftSection={<IconPlus size={16} />} onClick={handleAddDiscipline}>
+                <Button
+                    size="xs"
+                    variant="light"
+                    leftSection={<IconPlus size={16} />}
+                    onClick={handleAddDiscipline}
+                    disabled={disabled}
+                >
                     {t('addDiscipline')}
                 </Button>
             </Group>
@@ -129,6 +136,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                             <ActionIcon
                                 color="red"
                                 onClick={() => handleRemoveDiscipline(d.id)}
+                                disabled={disabled}
                                 aria-label={t('delete')}
                             >
                                 <IconTrash size={16} />
@@ -151,6 +159,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                                         <ActionIcon
                                             color="red"
                                             onClick={() => handleRemoveDistance(d.id, dist.id)}
+                                            disabled={disabled}
                                             aria-label={t('delete')}
                                         >
                                             <IconTrash size={16} />
@@ -168,6 +177,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                                             variant="default"
                                             leftSection={<IconPlus size={16} />}
                                             onClick={() => handleAddSubDistance(d.id, dist.id)}
+                                            disabled={disabled}
                                         >
                                             {t('addSubDistance')}
                                         </Button>
@@ -190,6 +200,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                                                     color="red"
                                                     size={26}
                                                     onClick={() => handleRemoveSubDistance(d.id, dist.id, sd.id)}
+                                                    disabled={disabled}
                                                     aria-label={t('delete')}
                                                 >
                                                     <IconTrash size={14} />
@@ -206,6 +217,7 @@ export function EventDisciplinesEditor({ disciplines, onChange }: EventDisciplin
                             variant="default"
                             leftSection={<IconPlus size={16} />}
                             onClick={() => handleAddDistance(d.id)}
+                            disabled={disabled}
                         >
                             {t('addDistance')}
                         </Button>

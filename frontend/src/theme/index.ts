@@ -126,6 +126,9 @@ export const theme = createTheme({
         Modal: Modal.extend({
             defaultProps: {
                 size: 'lg',
+                closeButtonProps: {
+                    'data-offline-allowed': 'true',
+                },
             },
             styles: {
                 content: {
@@ -175,6 +178,7 @@ export const theme = createTheme({
         CloseButton: CloseButton.extend({
             defaultProps: {
                 size: 30,
+                'data-offline-allowed': 'true',
             },
         }),
         Badge: Badge.extend({

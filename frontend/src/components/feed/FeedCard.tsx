@@ -25,6 +25,7 @@ import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { feedService, type FeedResource, type UserResource, type FeedReactionResource } from '../../api/services';
 import { useAuth } from '../../auth';
+import { useOffline } from '../../services';
 import { EntityViewCounter } from '../EntityViewCounter';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
@@ -46,6 +47,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
+    const { isOfflineDisabled } = useOffline();
 
     const [commentsOpen, setCommentsOpen] = useState(false);
     const [commentInput, setCommentInput] = useState('');
@@ -188,12 +190,26 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
         <Card ref={domRef}>
             <Group justify="space-between" mb="xs">
                 <Group>
-                    <Avatar src={formatImageSrc(feedAuthor?.profilePhoto)} component={Link} to={authorLink}>
+                    <Avatar
+                        src={formatImageSrc(feedAuthor?.profilePhoto)}
+                        component={isOfflineDisabled ? 'div' : Link}
+                        to={isOfflineDisabled ? undefined : authorLink}
+                        style={isOfflineDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                    >
                         ?
                     </Avatar>
                     <Box>
                         {feedAuthor ? (
-                            <Anchor size="sm" fw={600} component={Link} to={authorLink} c="inherit" underline="hover">
+                            <Anchor
+                                size="sm"
+                                fw={600}
+                                component={isOfflineDisabled ? 'span' : Link}
+                                to={isOfflineDisabled ? undefined : authorLink}
+                                c="inherit"
+                                underline={isOfflineDisabled ? 'never' : 'hover'}
+                                style={isOfflineDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                                data-disabled={isOfflineDisabled ? 'true' : undefined}
+                            >
                                 {authorName}
                             </Anchor>
                         ) : (
@@ -299,16 +315,25 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                             <Paper key={c.id} p="xs">
                                 <Group justify="space-between" align="center" wrap="nowrap" mb="xs">
                                     <Group wrap="nowrap">
-                                        {cAuthor?.link ? (
+                                        {cAuthor?.link && !isOfflineDisabled ? (
                                             <Avatar src={cAuthorPhoto} component={Link} to={`/users/${cAuthor.link}`}>
                                                 ?
                                             </Avatar>
                                         ) : (
-                                            <Avatar src={cAuthorPhoto}>?</Avatar>
+                                            <Avatar
+                                                src={cAuthorPhoto}
+                                                style={
+                                                    isOfflineDisabled && cAuthor?.link
+                                                        ? { opacity: 0.5, cursor: 'not-allowed' }
+                                                        : undefined
+                                                }
+                                            >
+                                                ?
+                                            </Avatar>
                                         )}
                                         <Box>
                                             {cAuthor ? (
-                                                cAuthor?.link ? (
+                                                cAuthor?.link && !isOfflineDisabled ? (
                                                     <Anchor
                                                         size="sm"
                                                         fw={600}
@@ -320,7 +345,15 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                                                         {cAuthorName}
                                                     </Anchor>
                                                 ) : (
-                                                    <Text size="sm" fw={600}>
+                                                    <Text
+                                                        size="sm"
+                                                        fw={600}
+                                                        style={
+                                                            isOfflineDisabled && cAuthor?.link
+                                                                ? { opacity: 0.5, cursor: 'not-allowed' }
+                                                                : undefined
+                                                        }
+                                                    >
                                                         {cAuthorName}
                                                     </Text>
                                                 )

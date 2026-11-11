@@ -270,9 +270,10 @@ export function EventFormModal({
                     value={photoFile}
                     error={fieldErrors.photo}
                     onChange={setPhotoFile}
+                    disabled={isOffline}
                 />
 
-                <EventDisciplinesEditor disciplines={disciplines} onChange={setDisciplines} />
+                <EventDisciplinesEditor disciplines={disciplines} onChange={setDisciplines} disabled={isOffline} />
 
                 <Button
                     loading={isSubmitting}

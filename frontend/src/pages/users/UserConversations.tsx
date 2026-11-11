@@ -13,6 +13,7 @@ import {
     Card,
     Paper,
     ScrollArea,
+    SimpleGrid,
 } from '@mantine/core';
 import { IconSend } from '@tabler/icons-react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
@@ -70,6 +71,11 @@ export default function UserConversations() {
                     queryKey: ['friendship', currentUser?.id, targetUser.id],
                     queryFn: async () => {
                         if (!currentUser || isOwner) return null;
+                        if (isOffline) {
+                            return (
+                                queryClient.getQueryData<any>(['friendship', currentUser?.id, targetUser.id]) ?? null
+                            );
+                        }
                         const res = await friendService.getFriends({
                             params: {
                                 query: {
@@ -104,6 +110,19 @@ export default function UserConversations() {
                     ],
                     queryFn: async () => {
                         if (!currentUser || !isOwner) return { data: [], pagination: null };
+                        if (isOffline) {
+                            return (
+                                queryClient.getQueryData<any>([
+                                    'conversations-data',
+                                    currentUser?.id,
+                                    targetUser.id,
+                                    tableState.page,
+                                    tableState.limit,
+                                    tableState.sort,
+                                    statusFilter,
+                                ]) ?? { data: [], pagination: null }
+                            );
+                        }
                         return await conversationService.getConversations({
                             params: {
                                 query: {
@@ -118,7 +137,7 @@ export default function UserConversations() {
                         });
                     },
                     enabled: isOwner && !!currentUser,
-                    refetchInterval: 10000,
+                    refetchInterval: isOffline ? false : 10000,
                 });
 
                 const {
@@ -131,6 +150,17 @@ export default function UserConversations() {
                     queryKey: ['chat-messages', currentUser?.id, targetUser.id],
                     queryFn: async ({ pageParam = 1 }) => {
                         if (!currentUser) return { data: [], pagination: {} };
+                        if (isOffline) {
+                            const cached = queryClient.getQueryData<any>([
+                                'chat-messages',
+                                currentUser?.id,
+                                targetUser.id,
+                            ]);
+                            if (cached?.pages?.[(pageParam as number) - 1]) {
+                                return cached.pages[(pageParam as number) - 1];
+                            }
+                            return { data: [], pagination: {} };
+                        }
                         return await conversationService.getConversations({
                             params: {
                                 query: {
@@ -148,14 +178,25 @@ export default function UserConversations() {
                             ? lastPage.pagination.page + 1
                             : undefined,
                     enabled: !isOwner && !!currentUser,
-                    refetchInterval: 3000,
+                    refetchInterval: isOffline ? false : 3000,
                 });
 
+                const lastMessagesRef = useRef<ConversationResource[]>([]);
                 const chatMessages = useMemo(() => {
                     if (isOwner) return [];
                     const msgs = chatInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
-                    return [...msgs].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-                }, [isOwner, chatInfiniteData]);
+                    if (msgs.length > 0) {
+                        const sorted = [...msgs].sort(
+                            (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+                        );
+                        lastMessagesRef.current = sorted;
+                        return sorted;
+                    }
+                    if (isOffline && lastMessagesRef.current.length > 0) {
+                        return lastMessagesRef.current;
+                    }
+                    return [];
+                }, [isOwner, chatInfiniteData, isOffline]);
 
                 const chatViewportRef = useRef<HTMLDivElement>(null);
                 const prevScrollHeightRef = useRef<number>(0);
@@ -202,12 +243,35 @@ export default function UserConversations() {
                 }, [isOwner, conversationsResponse?.data]);
 
                 const { getUser } = useUsersMap(userIdsToFetch);
-                const messages = isOwner ? (conversationsResponse?.data ?? []) : chatMessages;
+                const lastOwnerMessagesRef = useRef<ConversationResource[]>([]);
+                const messages = useMemo(() => {
+                    if (isOwner) {
+                        const data = conversationsResponse?.data ?? [];
+                        if (data.length > 0) {
+                            lastOwnerMessagesRef.current = data;
+                            return data;
+                        }
+                        if (isOffline && lastOwnerMessagesRef.current.length > 0) {
+                            return lastOwnerMessagesRef.current;
+                        }
+                        return [];
+                    }
+                    return chatMessages;
+                }, [isOwner, conversationsResponse?.data, isOffline, chatMessages]);
 
                 const { data: activitiesData } = useQuery({
                     queryKey: ['conversation-activities', currentUser?.id, targetUser.id],
                     queryFn: async () => {
                         if (!currentUser || isOwner) return [];
+                        if (isOffline) {
+                            return (
+                                queryClient.getQueryData<any>([
+                                    'conversation-activities',
+                                    currentUser?.id,
+                                    targetUser.id,
+                                ]) ?? []
+                            );
+                        }
                         const res = await conversationService.getConversationActivities({
                             params: {
                                 query: {
@@ -220,7 +284,7 @@ export default function UserConversations() {
                         return res.data ?? [];
                     },
                     enabled: !isOwner && !!currentUser && canChat,
-                    refetchInterval: 5000,
+                    refetchInterval: isOffline ? false : 5000,
                 });
 
                 const isPartnerTyping = useMemo(() => {
@@ -255,6 +319,7 @@ export default function UserConversations() {
                 useEffect(() => {
                     if (
                         !isOwner &&
+                        !isOffline &&
                         lastIncomingMessage &&
                         lastIncomingMessage.status !== ConversationStatusEnum.READ &&
                         markedReadMsgIdRef.current !== lastIncomingMessage.id
@@ -270,7 +335,7 @@ export default function UserConversations() {
                             })
                             .catch(() => {});
                     }
-                }, [isOwner, lastIncomingMessage, queryClient]);
+                }, [isOwner, isOffline, lastIncomingMessage, queryClient]);
 
                 useEffect(() => {
                     if (!isOwner && isPartnerTyping) {
@@ -461,8 +526,9 @@ export default function UserConversations() {
                                 totalItems={conversationsResponse?.pagination?.total ?? messages.length}
                                 state={tableState}
                                 filtersNode={
-                                    <Group>
+                                    <SimpleGrid cols={{ base: 1, sm: 2 }}>
                                         <Select
+                                            label={t('status')}
                                             placeholder={t('allStatuses')}
                                             data={statusSelectOptions}
                                             value={statusFilter ? String(statusFilter) : ''}
@@ -471,9 +537,9 @@ export default function UserConversations() {
                                                 tableState.resetPage();
                                             }}
                                             clearable
-                                            w={180}
+                                            disabled={isOffline}
                                         />
-                                    </Group>
+                                    </SimpleGrid>
                                 }
                                 activeFiltersCount={statusFilter !== null ? 1 : 0}
                                 onResetFilters={() => {
