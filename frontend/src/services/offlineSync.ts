@@ -102,8 +102,8 @@ export async function synchronizeOfflineData(queryClient?: QueryClient, t?: (key
             }
 
             notifications.show({
-                title: t ? t('offlineMode') : 'Tryb offline',
-                message: t ? t('offlineSyncSuccess') : 'Zsynchronizowano dane z trybu offline',
+                title: t ? t('offlineMode') : '',
+                message: t ? t('offlineSyncSuccess') : '',
                 color: 'green',
             });
         }
