@@ -88,7 +88,7 @@ export default function PasswordReset() {
                 message: t('passwordResetSuccess'),
                 color: 'green',
             });
-            navigate('/sign');
+            void navigate('/sign');
         } catch (err) {
             handleFormError(err, { notifyOnlyIfNoFields: true });
         } finally {
@@ -121,7 +121,11 @@ export default function PasswordReset() {
                 </Title>
 
                 {step === 1 ? (
-                    <form onSubmit={handleEmailSubmit}>
+                    <form
+                        onSubmit={(event) => {
+                            void handleEmailSubmit(event);
+                        }}
+                    >
                         <Stack>
                             <TextInput
                                 label={t('email')}
@@ -162,13 +166,17 @@ export default function PasswordReset() {
                             setCode(val);
                             clearFieldError('code');
                         }}
-                        onSubmit={handleCodeSubmit}
+                        onSubmit={(event) => {
+                            void handleCodeSubmit(event);
+                        }}
                         onBack={() => {
                             passwordResetSession.clear();
                             setStep(1);
                             clearFieldErrors();
                         }}
-                        onResend={handleResend}
+                        onResend={() => {
+                            void handleResend();
+                        }}
                         loading={loading}
                         error={fieldErrors.code}
                         submitLabel={t('save')}

@@ -64,7 +64,7 @@ export default function Register() {
 
     const updateField = (key: keyof typeof INITIAL_FORM_DATA, value: unknown) => {
         setFormData((prev) => ({ ...prev, [key]: value }));
-        clearFieldError(key as string);
+        clearFieldError(key);
     };
 
     const canSubmit =
@@ -96,7 +96,7 @@ export default function Register() {
                     gender: Number(formData.gender) as GenderEnum,
                     phone: Number(formData.phone) || 0,
                     country: Number(formData.country) as CountryEnum,
-                    roles: formData.roles.map(Number) as RoleEnum[],
+                    roles: formData.roles.map(Number),
                 },
             });
 
@@ -156,7 +156,7 @@ export default function Register() {
                 message: t('registerSuccess'),
                 color: 'green',
             });
-            navigate('/sign');
+            void navigate('/sign');
         } catch (err) {
             handleFormError(err, { notifyOnlyIfNoFields: true });
         } finally {
@@ -189,7 +189,11 @@ export default function Register() {
                 </Title>
 
                 {step === 1 ? (
-                    <form onSubmit={handleRegisterSubmit}>
+                    <form
+                        onSubmit={(event) => {
+                            void handleRegisterSubmit(event);
+                        }}
+                    >
                         <Stack gap="sm">
                             <Group grow gap="sm">
                                 <TextInput
@@ -302,13 +306,17 @@ export default function Register() {
                             setCode(val);
                             clearFieldError('code');
                         }}
-                        onSubmit={handleCodeSubmit}
+                        onSubmit={(event) => {
+                            void handleCodeSubmit(event);
+                        }}
                         onBack={() => {
                             registerSession.clear();
                             setStep(1);
                             clearFieldErrors();
                         }}
-                        onResend={handleResend}
+                        onResend={() => {
+                            void handleResend();
+                        }}
                         loading={loading}
                         error={fieldErrors.code}
                     />

@@ -29,7 +29,7 @@ import { DistanceParticipantsSection } from '../../components/events/DistancePar
 import { EventFormModal } from '../../components';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import type { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { createDynamicTheme } from '../../theme';
 import {
@@ -125,7 +125,7 @@ export default function EventDetails() {
         },
         onSuccess: () => {
             notifySuccess(t('deleted'), t('events'));
-            navigate('/events');
+            void navigate('/events');
         },
         onError: (err) => notifyError(err, t('error')),
     });

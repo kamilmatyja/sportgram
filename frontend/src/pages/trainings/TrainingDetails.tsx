@@ -45,7 +45,7 @@ import {
 } from '../../components';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import type { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { SaveStatusEnum } from '../../enums/SaveStatusEnum';
 import { useMyFriends, useUsersMap, useUserSubpageAccess } from '../../hooks';
@@ -175,7 +175,11 @@ export default function TrainingDetails() {
         },
         onSuccess: () => {
             notifySuccess(t('deleted'), t('trainings'));
-            navigate(ownerUser?.link ? `/users/${ownerUser.link}/trainings` : (-1 as unknown as string));
+            if (ownerUser?.link) {
+                void navigate(`/users/${ownerUser.link}/trainings`);
+            } else {
+                void navigate(-1);
+            }
         },
         onError: (err) => notifyError(err, t('error')),
     });
@@ -245,9 +249,7 @@ export default function TrainingDetails() {
                             {canManage && (
                                 <StatusActionMenu
                                     status={training.status}
-                                    onStatusChange={(status) =>
-                                        updateStatusMutation.mutate(status as ElementStatusEnum)
-                                    }
+                                    onStatusChange={(status) => updateStatusMutation.mutate(status)}
                                     isPending={updateStatusMutation.isPending}
                                 />
                             )}
@@ -318,7 +320,7 @@ export default function TrainingDetails() {
                                                                 onStatusChange={(status) =>
                                                                     updateParticipantStatusMutation.mutate({
                                                                         participantId: p.id,
-                                                                        status: status as SaveStatusEnum,
+                                                                        status: status,
                                                                     })
                                                                 }
                                                                 isPending={updateParticipantStatusMutation.isPending}

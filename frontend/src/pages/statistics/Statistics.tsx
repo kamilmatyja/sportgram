@@ -40,7 +40,7 @@ export default function Statistics() {
 
     const queryFilter = useMemo(
         () => ({
-            discipline: disciplineFilter ? (Number(disciplineFilter) as DisciplineEnum) : null,
+            discipline: disciplineFilter ? Number(disciplineFilter) : null,
             distance: distanceFilter.trim() ? Number(distanceFilter) : null,
             userIds: null,
         }),
@@ -56,7 +56,7 @@ export default function Statistics() {
                 sort:
                     (tableState.sort as NonNullable<GetStatisticRecordsQuery>['sort']) ??
                     (activeTab === 'records' ? 'time:asc' : 'createdAt:desc'),
-                filter: queryFilter,
+                filter: queryFilter as NonNullable<GetStatisticRecordsQuery>['filter'],
             };
             return activeTab === 'records'
                 ? statisticService.getStatisticRecords({ params: { query } })
@@ -162,7 +162,7 @@ export default function Statistics() {
                 <SegmentedControl
                     value={activeTab}
                     onChange={(val) => {
-                        const tab = val as 'records' | 'progress';
+                        const tab = val;
                         setActiveTab(tab);
                         tableState.setSort(tab === 'records' ? 'time:asc' : 'createdAt:desc');
                         tableState.resetPage();

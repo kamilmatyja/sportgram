@@ -269,10 +269,10 @@ export default function UserProfile() {
     });
 
     const updateFriendStatusMutation = useMutation({
-        mutationFn: ({ id, status }: { id: string; status: number }) =>
+        mutationFn: ({ id, status }: { id: string; status: FriendStatusEnum }) =>
             friendService.updateFriendStatus({
                 params: { path: { id } },
-                body: { status: status as FriendStatusEnum },
+                body: { status: status },
             }),
         onSuccess: () => {
             void refetchFriendship();
@@ -315,7 +315,7 @@ export default function UserProfile() {
         onSuccess: async () => {
             notifySuccess(t('deleted'), t('users'));
             logout();
-            navigate('/sign');
+            void navigate('/sign');
         },
         onError: (err) => notifyError(err, t('error')),
     });
@@ -382,7 +382,7 @@ export default function UserProfile() {
                         <StatusActionMenu
                             value={user.status}
                             enumType={UserStatusEnum}
-                            onChange={(st) => updateUserStatusMutation.mutate(st as UserStatusEnum)}
+                            onChange={(st) => updateUserStatusMutation.mutate(st)}
                             loading={updateUserStatusMutation.isPending}
                         />
                     )}

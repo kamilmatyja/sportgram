@@ -39,7 +39,7 @@ globalThis.Request = class extends OriginalRequest {
         }
         super(input, init);
     }
-} as typeof OriginalRequest;
+};
 
 const originalFetch = globalThis.fetch;
 let currentFetchHandler: typeof fetch = originalFetch;

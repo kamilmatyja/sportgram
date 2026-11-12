@@ -12,7 +12,7 @@ export interface StatusActionMenuProps<T = number | string> {
     value?: T;
     currentStatus?: T;
     status?: T;
-    enumType?: { getOptions: (t: (key: string) => string) => any[] };
+    enumType?: { getOptions: (t: (key: string) => string) => StatusOption<T>[] };
     options?: StatusOption<T>[];
     onChange?: (status: T) => void;
     onStatusChange?: (status: T) => void;
@@ -44,9 +44,7 @@ export function StatusActionMenu<T = number | string>({
     const isEffectiveDisabled = disabled || actualLoading;
     const actualOptions =
         options ??
-        (enumType
-            ? (enumType.getOptions(t) as unknown as StatusOption<T>[])
-            : (ElementStatusEnum.getOptions(t) as unknown as StatusOption<T>[]));
+        (enumType ? enumType.getOptions(t) : (ElementStatusEnum.getOptions(t) as unknown as StatusOption<T>[]));
     const label = tooltipLabel ?? t('changeStatus');
 
     return (

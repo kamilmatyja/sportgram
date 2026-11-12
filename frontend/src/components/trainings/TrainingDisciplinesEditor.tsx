@@ -60,7 +60,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
 
         if (navigator.permissions && navigator.permissions.query) {
             try {
-                const permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+                const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
                 if (permissionStatus.state === 'denied') {
                     notifications.show({
                         id: 'gps-status-error',

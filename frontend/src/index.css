@@ -301,7 +301,7 @@
     text-transform: uppercase;
     color: var(--mantine-color-dimmed);
     margin-top: 2px;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
 }
 
 :is(

@@ -214,7 +214,7 @@ export default function PageDetails() {
         },
         onSuccess: () => {
             notifySuccess(t('deleted'), t('pages'));
-            navigate('/pages');
+            void navigate('/pages');
         },
         onError: (err) => notifyError(err, t('error')),
     });
@@ -285,7 +285,7 @@ export default function PageDetails() {
                 <StatusActionMenu
                     currentStatus={page.status}
                     options={ElementStatusEnum.getOptions(t)}
-                    onStatusChange={(status) => statusMutation.mutate(status as ElementStatusEnum)}
+                    onStatusChange={(status) => statusMutation.mutate(status)}
                     isPending={statusMutation.isPending}
                 />
             )}
@@ -356,7 +356,7 @@ export default function PageDetails() {
                                                                 onStatusChange={(status) =>
                                                                     updateParticipantStatusMutation.mutate({
                                                                         participantId: p.id,
-                                                                        status: status as ElementStatusEnum,
+                                                                        status: status,
                                                                     })
                                                                 }
                                                                 isPending={updateParticipantStatusMutation.isPending}

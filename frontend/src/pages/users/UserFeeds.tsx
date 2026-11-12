@@ -14,7 +14,7 @@ import {
     TextStatusFilter,
 } from '../../components';
 import { FeedModal } from '../../components';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import type { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { useDataTableState } from '../../hooks';
 import {
     notifySuccess,
@@ -54,7 +54,7 @@ export default function UserFeeds() {
                 const queryFilter = {
                     userId: targetUser?.id ?? null,
                     text: textFilter.trim() || null,
-                    status: statusFilter ? (Number(statusFilter) as ElementStatusEnum) : null,
+                    status: statusFilter ? Number(statusFilter) : null,
                 };
 
                 const { data, isLoading } = useQuery({
@@ -73,7 +73,7 @@ export default function UserFeeds() {
                                 query: {
                                     page: tableState.page,
                                     limit: tableState.limit,
-                                    filter: queryFilter,
+                                    filter: queryFilter as NonNullable<GetFeedsQuery>['filter'],
                                     sort: (tableState.sort as NonNullable<GetFeedsQuery>['sort']) ?? 'createdAt:desc',
                                     'include[]': ['feedOrigin'],
                                 },
@@ -193,7 +193,7 @@ export default function UserFeeds() {
                                             onChange={(st) =>
                                                 statusMutation.mutate({
                                                     id: f.id,
-                                                    status: st as ElementStatusEnum,
+                                                    status: st,
                                                 })
                                             }
                                             loading={statusMutation.isPending}

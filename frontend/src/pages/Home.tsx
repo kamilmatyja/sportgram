@@ -186,10 +186,10 @@ export default function Home() {
                         {t('guestHomeSubtitle')}
                     </Text>
                     <Group justify="center">
-                        <Button size="md" onClick={() => navigate('/sign')}>
+                        <Button size="md" onClick={() => void navigate('/sign')}>
                             {t('sign')}
                         </Button>
-                        <Button size="md" variant="outline" onClick={() => navigate('/register')}>
+                        <Button size="md" variant="outline" onClick={() => void navigate('/register')}>
                             {t('register')}
                         </Button>
                     </Group>

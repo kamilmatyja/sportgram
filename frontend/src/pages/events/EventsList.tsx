@@ -18,7 +18,7 @@ import { useDataTableState, useTitleLinkStatusFilter } from '../../hooks';
 import { notifySuccess, notifyError, confirmDelete, buildSortOptions } from '../../utils';
 import { Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum.ts';
+import type { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 
 export default function EventsList() {
     const { t } = useTranslation();
@@ -87,7 +87,7 @@ export default function EventsList() {
                     query: {
                         page: tableState.page,
                         limit: tableState.limit,
-                        filter: queryFilter,
+                        filter: queryFilter as NonNullable<GetEventsQuery>['filter'],
                         sort: (tableState.sort as NonNullable<GetEventsQuery>['sort']) ?? 'startedAt:desc',
                         'include[]': ['eventDisciplines', 'eventDisciplineDistances', 'eventDisciplineSubDistances'],
                     },
@@ -181,7 +181,7 @@ export default function EventsList() {
                                     onStatusChange={(status) =>
                                         statusMutation.mutate({
                                             id: ev.id,
-                                            status: status as ElementStatusEnum,
+                                            status: status,
                                         })
                                     }
                                     isPending={statusMutation.isPending}

@@ -5,8 +5,7 @@ import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { ImageInput } from '../common';
-import { eventService, type EventResource } from '../../api/services';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
+import { eventService, type EventDto, type EventResource } from '../../api/services';
 import { useFormErrors } from '../../hooks';
 import { toInputDateTime } from '../../utils';
 import { resolveImageBase64 } from '../../utils';
@@ -101,7 +100,7 @@ export function EventFormModal({
             const mappedDisciplines = disciplines
                 .filter((d) => d.discipline !== null)
                 .map((d) => ({
-                    discipline: Number(d.discipline) as DisciplineEnum,
+                    discipline: Number(d.discipline) as NonNullable<EventDto['disciplines']>[number]['discipline'],
                     distances: d.distances.map((dist) => ({
                         distance: Number(dist.distance) || 0,
                         subDistances: (dist.subDistances || []).map((sd) => ({
@@ -132,8 +131,9 @@ export function EventFormModal({
                     body: payload,
                 });
             } else {
+                if (!selectedPageParticipantId) throw new Error('Select a page before creating an event');
                 await eventService.createEvent({
-                    params: { path: { id: selectedPageParticipantId! } },
+                    params: { path: { id: selectedPageParticipantId } },
                     body: payload,
                 });
             }

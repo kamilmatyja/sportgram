@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback } from 'react';
-import type { ElementStatusEnum } from '../enums/ElementStatusEnum';
 
 export function useTitleLinkStatusFilter(resetPage?: () => void) {
     const [titleFilter, setTitleFilter] = useState('');
@@ -19,7 +18,7 @@ export function useTitleLinkStatusFilter(resetPage?: () => void) {
         () => ({
             title: titleFilter.trim() || null,
             link: linkFilter.trim() || null,
-            status: statusFilter ? (Number(statusFilter) as ElementStatusEnum) : null,
+            status: statusFilter ? Number(statusFilter) : null,
         }),
         [titleFilter, linkFilter, statusFilter],
     );

@@ -10,31 +10,31 @@ export type GetFriendsQuery = operations['get_friend_index']['parameters']['quer
 export type GetFriendDetailsQuery = operations['get_friend_details']['parameters']['query'];
 
 export const friendService = {
-    async getFriends(req?: ApiRequest<'get_friend_index'>): Promise<ApiResponse<'get_friend_index'>> {
-        const res = await api.GET('/api/friends', req as any);
+    async getFriends(req: ApiRequest<'get_friend_index'>): Promise<ApiResponse<'get_friend_index'>> {
+        const res = await api.GET('/api/friends', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_friend_index'>;
+        return res.data;
     },
-    async createFriend(req?: ApiRequest<'post_friend_create'>): Promise<ApiResponse<'post_friend_create'>> {
-        const res = await api.POST('/api/friends', req as any);
+    async createFriend(req: ApiRequest<'post_friend_create'>): Promise<ApiResponse<'post_friend_create'>> {
+        const res = await api.POST('/api/friends', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'post_friend_create'>;
+        return res.data;
     },
     async updateFriendStatus(
-        req?: ApiRequest<'patch_friend_update_status'>,
+        req: ApiRequest<'patch_friend_update_status'>,
     ): Promise<ApiResponse<'patch_friend_update_status'>> {
-        const res = await api.PATCH('/api/friends/{id}/status', req as any);
+        const res = await api.PATCH('/api/friends/{id}/status', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'patch_friend_update_status'>;
+        return res.data;
     },
-    async getFriend(req?: ApiRequest<'get_friend_details'>): Promise<ApiResponse<'get_friend_details'>> {
-        const res = await api.GET('/api/friends/{id}', req as any);
+    async getFriend(req: ApiRequest<'get_friend_details'>): Promise<ApiResponse<'get_friend_details'>> {
+        const res = await api.GET('/api/friends/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_friend_details'>;
+        return res.data;
     },
-    async deleteFriend(req?: ApiRequest<'delete_friend_delete'>): Promise<ApiResponse<'delete_friend_delete'>> {
-        const res = await api.DELETE('/api/friends/{id}', req as any);
+    async deleteFriend(req: ApiRequest<'delete_friend_delete'>): Promise<ApiResponse<'delete_friend_delete'>> {
+        const res = await api.DELETE('/api/friends/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'delete_friend_delete'>;
+        return res.data;
     },
 };

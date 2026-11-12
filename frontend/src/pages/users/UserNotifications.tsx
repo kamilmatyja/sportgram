@@ -40,7 +40,7 @@ export default function UserNotifications() {
             {({ targetUser, isOwner }) => {
                 const queryFilter = {
                     text: textFilter.trim() || null,
-                    status: statusFilter ? (Number(statusFilter) as NotificationStatusEnum) : null,
+                    status: statusFilter ? Number(statusFilter) : null,
                 };
 
                 const { data, isLoading } = useQuery({
@@ -59,7 +59,7 @@ export default function UserNotifications() {
                                 query: {
                                     page: tableState.page,
                                     limit: tableState.limit,
-                                    filter: queryFilter,
+                                    filter: queryFilter as NonNullable<GetNotificationsQuery>['filter'],
                                     sort:
                                         (tableState.sort as NonNullable<GetNotificationsQuery>['sort']) ??
                                         'createdAt:desc',
@@ -168,7 +168,7 @@ export default function UserNotifications() {
                                     onChange={(status) =>
                                         updateStatusMutation.mutate({
                                             id: n.id,
-                                            status: status as NotificationStatusEnum,
+                                            status: status,
                                         })
                                     }
                                     loading={updateStatusMutation.isPending}

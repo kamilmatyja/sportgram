@@ -1,4 +1,6 @@
-import type { UserResource, TrainingResource, GoalResource } from '../api/services';
+import type { UserResource, TrainingResource, GoalResource, TrainingDto, GoalDto } from '../api/services';
+import { DisciplineEnum } from '../enums/DisciplineEnum';
+import { coordFromBackendInt } from '../utils/geoUtils';
 
 const DB_NAME = 'sportgram_offline';
 const DB_VERSION = 1;
@@ -8,13 +10,27 @@ const LOCAL_TRAININGS_KEY = 'sportgram_offline_trainings';
 const LOCAL_GOALS_KEY = 'sportgram_offline_goals';
 const LOCAL_SYNC_KEY = 'sportgram_offline_sync_queue';
 
-export interface SyncAction {
-    id?: number;
-    type: 'CREATE_TRAINING' | 'UPDATE_TRAINING' | 'DELETE_TRAINING' | 'CREATE_GOAL' | 'UPDATE_GOAL' | 'DELETE_GOAL';
-    targetId?: string;
-    payload?: any;
-    createdAt: string;
-}
+type TrainingSyncAction =
+    | {
+          id?: number;
+          type: 'CREATE_TRAINING' | 'UPDATE_TRAINING';
+          targetId: string;
+          payload: TrainingDto;
+          createdAt: string;
+      }
+    | { id?: number; type: 'DELETE_TRAINING'; targetId: string; createdAt: string };
+
+type GoalSyncAction =
+    | {
+          id?: number;
+          type: 'CREATE_GOAL' | 'UPDATE_GOAL';
+          targetId: string;
+          payload: GoalDto;
+          createdAt: string;
+      }
+    | { id?: number; type: 'DELETE_GOAL'; targetId: string; createdAt: string };
+
+export type SyncAction = TrainingSyncAction | GoalSyncAction;
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
@@ -56,7 +72,7 @@ function getDb(): Promise<IDBDatabase> {
     return dbPromise;
 }
 
-function notifyServiceWorker(type: string, data: any) {
+function notifyServiceWorker(type: string, data: unknown) {
     if (typeof navigator !== 'undefined' && navigator.serviceWorker?.controller) {
         navigator.serviceWorker.controller.postMessage({ type, data });
     }
@@ -161,7 +177,7 @@ export async function getOfflineTrainings(userId?: string): Promise<TrainingReso
 export async function saveOfflineTraining(
     training: TrainingResource,
     isNew = false,
-    originalBody?: any,
+    originalBody?: TrainingDto,
 ): Promise<TrainingResource> {
     const list = getOfflineTrainingsSync();
     const existingIndex = list.findIndex((t) => t.id === training.id);
@@ -189,14 +205,14 @@ export async function saveOfflineTraining(
         await enqueueSyncAction({
             type: 'CREATE_TRAINING',
             targetId: training.id,
-            payload: originalBody || training,
+            payload: originalBody ?? trainingToDto(training),
             createdAt: new Date().toISOString(),
         });
     } else {
         await enqueueSyncAction({
             type: 'UPDATE_TRAINING',
             targetId: training.id,
-            payload: originalBody || training,
+            payload: originalBody ?? trainingToDto(training),
             createdAt: new Date().toISOString(),
         });
     }
@@ -279,7 +295,11 @@ export async function getOfflineGoals(userId?: string): Promise<GoalResource[]> 
     }
 }
 
-export async function saveOfflineGoal(goal: GoalResource, isNew = false, originalBody?: any): Promise<GoalResource> {
+export async function saveOfflineGoal(
+    goal: GoalResource,
+    isNew = false,
+    originalBody?: GoalDto,
+): Promise<GoalResource> {
     const list = getOfflineGoalsSync();
     const existingIndex = list.findIndex((g) => g.id === goal.id);
     if (existingIndex >= 0) {
@@ -306,14 +326,14 @@ export async function saveOfflineGoal(goal: GoalResource, isNew = false, origina
         await enqueueSyncAction({
             type: 'CREATE_GOAL',
             targetId: goal.id,
-            payload: originalBody || goal,
+            payload: originalBody ?? goalToDto(goal),
             createdAt: new Date().toISOString(),
         });
     } else {
         await enqueueSyncAction({
             type: 'UPDATE_GOAL',
             targetId: goal.id,
-            payload: originalBody || goal,
+            payload: originalBody ?? goalToDto(goal),
             createdAt: new Date().toISOString(),
         });
     }
@@ -404,6 +424,59 @@ export async function getSyncQueue(): Promise<SyncAction[]> {
     } catch {
         return getSyncQueueSync();
     }
+}
+
+function trainingToDto(training: TrainingResource): TrainingDto {
+    return {
+        startedAt: training.startedAt,
+        endedAt: training.endedAt,
+        title: training.title,
+        description: training.description,
+        link: training.link,
+        location: training.location,
+        disciplines: training.disciplines.map((discipline) => {
+            if (!isDiscipline(discipline.discipline)) {
+                throw new Error(`Unsupported training discipline: ${discipline.discipline}`);
+            }
+            return {
+                discipline: discipline.discipline,
+                distances: discipline.distances.map((distance) => ({
+                    distance: distance.distance,
+                    time: distance.time,
+                    subDistances: distance.subDistances.map((subDistance) => ({
+                        subDistance: subDistance.subDistance,
+                        time: subDistance.time,
+                        lat: coordFromBackendInt(subDistance.lat),
+                        lng: coordFromBackendInt(subDistance.lng),
+                        accuracy: subDistance.accuracy,
+                        speed: subDistance.speed,
+                    })),
+                })),
+            };
+        }),
+        userIds: [training.userId],
+    };
+}
+
+function goalToDto(goal: GoalResource): GoalDto {
+    if (!isDiscipline(goal.discipline)) {
+        throw new Error(`Unsupported goal discipline: ${goal.discipline}`);
+    }
+
+    return {
+        startedAt: goal.startedAt,
+        endedAt: goal.endedAt,
+        text: goal.text,
+        link: goal.link,
+        discipline: goal.discipline,
+        distance: goal.distance,
+        time: goal.time,
+        userIds: [goal.userId],
+    };
+}
+
+function isDiscipline(value: number): value is DisciplineEnum {
+    return Object.values(DisciplineEnum).some((option) => typeof option === 'number' && option === value);
 }
 
 export async function removeSyncAction(id: number): Promise<void> {

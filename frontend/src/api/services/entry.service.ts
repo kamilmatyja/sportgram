@@ -12,24 +12,24 @@ export type GetEntriesQuery = operations['get_entry_index']['parameters']['query
 export type GetEntryCountsQuery = operations['get_entry_count_index']['parameters']['query'];
 
 export const entryService = {
-    async getEntries(req?: ApiRequest<'get_entry_index'>): Promise<ApiResponse<'get_entry_index'>> {
-        const res = await api.GET('/api/entries', req as any);
+    async getEntries(req: ApiRequest<'get_entry_index'>): Promise<ApiResponse<'get_entry_index'>> {
+        const res = await api.GET('/api/entries', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_entry_index'>;
+        return res.data;
     },
-    async createEntry(req?: ApiRequest<'post_entry_create'>): Promise<ApiResponse<'post_entry_create'>> {
-        const res = await api.POST('/api/entries', req as any);
+    async createEntry(req: ApiRequest<'post_entry_create'>): Promise<ApiResponse<'post_entry_create'>> {
+        const res = await api.POST('/api/entries', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'post_entry_create'>;
+        return res.data;
     },
-    async getEntry(req?: ApiRequest<'get_entry_details'>): Promise<ApiResponse<'get_entry_details'>> {
-        const res = await api.GET('/api/entries/{id}', req as any);
+    async getEntry(req: ApiRequest<'get_entry_details'>): Promise<ApiResponse<'get_entry_details'>> {
+        const res = await api.GET('/api/entries/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_entry_details'>;
+        return res.data;
     },
-    async getEntryCounts(req?: ApiRequest<'get_entry_count_index'>): Promise<ApiResponse<'get_entry_count_index'>> {
-        const res = await api.GET('/api/entry-counts', req as any);
+    async getEntryCounts(req: ApiRequest<'get_entry_count_index'>): Promise<ApiResponse<'get_entry_count_index'>> {
+        const res = await api.GET('/api/entry-counts', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_entry_count_index'>;
+        return res.data;
     },
 };

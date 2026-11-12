@@ -53,7 +53,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
 
     const handleNav = (path: string) => {
-        navigate(path);
+        void navigate(path);
     };
 
     const userLink = currentUser?.link ?? '';
@@ -115,7 +115,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                                     <SegmentedControl
                                         size="xs"
                                         value={i18n.language.startsWith('en') ? 'en' : 'pl'}
-                                        onChange={(val) => i18n.changeLanguage(val)}
+                                        onChange={(val) => {
+                                            void i18n.changeLanguage(val);
+                                        }}
                                         data={[
                                             { label: 'PL', value: 'pl' },
                                             { label: 'EN', value: 'en' },
@@ -244,7 +246,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                                 <SegmentedControl
                                     size="xs"
                                     value={i18n.language.startsWith('en') ? 'en' : 'pl'}
-                                    onChange={(val) => i18n.changeLanguage(val)}
+                                    onChange={(val) => {
+                                        void i18n.changeLanguage(val);
+                                    }}
                                     data={[
                                         { label: 'PL', value: 'pl' },
                                         { label: 'EN', value: 'en' },

@@ -62,7 +62,7 @@ export default function UserPageFollows() {
                         }),
                 });
 
-                const follows = (data?.data ?? []) as unknown as PageFollowResource[];
+                const follows = data?.data ?? [];
                 const pagination = data?.pagination;
 
                 const pageIds = useMemo(
@@ -188,7 +188,7 @@ export default function UserPageFollows() {
                                             onChange={(status) =>
                                                 statusMutation.mutate({
                                                     id: f.id,
-                                                    status: status as PageFollowStatusEnum,
+                                                    status: status,
                                                 })
                                             }
                                             loading={statusMutation.isPending}

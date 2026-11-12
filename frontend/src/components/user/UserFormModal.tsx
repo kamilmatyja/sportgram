@@ -56,13 +56,15 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
 
     const { data: userDetails } = useQuery({
         queryKey: ['user-modal-details', user?.id],
-        queryFn: () =>
-            userService.getUser({
+        queryFn: () => {
+            if (!user) throw new Error('User is required to fetch user details');
+            return userService.getUser({
                 params: {
-                    path: { id: user!.id },
+                    path: { id: user.id },
                     query: { 'include[]': ['userDisciplines', 'userRoles'] },
                 },
-            }),
+            });
+        },
         enabled: opened && !!user?.id && (user.roles === undefined || user.disciplines === undefined),
     });
 

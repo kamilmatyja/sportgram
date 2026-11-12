@@ -64,7 +64,7 @@ export default function Login() {
                     if (res?.id) {
                         registerSession.start(res.id, { email, password });
                         signSession.clear();
-                        navigate('/register');
+                        void navigate('/register');
                         return;
                     }
                 } catch {
@@ -101,7 +101,7 @@ export default function Login() {
                 message: t('loginSuccess'),
                 color: 'green',
             });
-            navigate('/');
+            void navigate('/');
         } catch (err) {
             handleFormError(err, { notifyOnlyIfNoFields: true });
         } finally {
@@ -140,7 +140,11 @@ export default function Login() {
                 </Title>
 
                 {step === 1 ? (
-                    <form onSubmit={handleSignSubmit}>
+                    <form
+                        onSubmit={(event) => {
+                            void handleSignSubmit(event);
+                        }}
+                    >
                         <Stack>
                             <TextInput
                                 label={t('email')}
@@ -203,9 +207,13 @@ export default function Login() {
                             setCode(val);
                             clearFieldError('code');
                         }}
-                        onSubmit={handleCodeSubmit}
+                        onSubmit={(event) => {
+                            void handleCodeSubmit(event);
+                        }}
                         onBack={handleBackToStep1}
-                        onResend={handleResend}
+                        onResend={() => {
+                            void handleResend();
+                        }}
                         loading={loading}
                         error={fieldErrors.code}
                     />

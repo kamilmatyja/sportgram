@@ -3,9 +3,8 @@ import { Stack, TextInput, Textarea, MultiSelect, Button, Group } from '@mantine
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { trainingService, type TrainingResource } from '../../api/services';
+import { trainingService, type TrainingDto, type TrainingResource } from '../../api/services';
 import { useAuth } from '../../auth';
-import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useFormErrors } from '../../hooks';
 import { toInputDateTime, updateTitleWithSlug, coordFromBackendInt, coordToBackendInt } from '../../utils';
 import { TrainingDisciplinesEditor, type FormTrainingDiscipline } from './TrainingDisciplinesEditor';
@@ -109,7 +108,7 @@ export function TrainingFormModal({
             const mappedDisciplines = disciplines
                 .filter((d) => d.discipline !== null)
                 .map((d) => ({
-                    discipline: Number(d.discipline) as DisciplineEnum,
+                    discipline: Number(d.discipline) as NonNullable<TrainingDto['disciplines']>[number]['discipline'],
                     distances: d.distances.map((dist) => ({
                         distance: Number(dist.distance) || 0,
                         time: Number(dist.time) || 0,

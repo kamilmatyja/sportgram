@@ -112,7 +112,7 @@ export function DistanceParticipantsSection({
         mutationFn: ({ participantId, status }: { participantId: string; status: ElementStatusEnum }) =>
             eventService.updateEventDisciplineDistanceListStatus({
                 params: { path: { id: participantId } },
-                body: { status: status as 1 | 2 | 3 },
+                body: { status: status },
             }),
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['distance-participants', distance.id] });
@@ -312,7 +312,7 @@ export function DistanceParticipantsSection({
                                                                     onStatusChange={(status) =>
                                                                         updateParticipantStatusMutation.mutate({
                                                                             participantId: p.id,
-                                                                            status: status as ElementStatusEnum,
+                                                                            status: status,
                                                                         })
                                                                     }
                                                                     isPending={

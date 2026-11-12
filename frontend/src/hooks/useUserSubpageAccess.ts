@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { friendService, type UserResource } from '../api/services';
 import { useAuth } from '../auth';
 import { FriendStatusEnum } from '../enums/FriendStatusEnum';
-import { RoleEnum } from '../enums/RoleEnum';
+import type { RoleEnum } from '../enums/RoleEnum';
 
 export interface UseUserSubpageAccessOptions {
     targetUser?: UserResource | null;

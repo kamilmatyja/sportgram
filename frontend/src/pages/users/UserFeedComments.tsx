@@ -14,7 +14,7 @@ import {
     UserSubpageContainer,
     TextStatusFilter,
 } from '../../components';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import type { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { useDataTableState, useFeedAuthors, useFormErrors } from '../../hooks';
 import { notifySuccess, notifyError, confirmDelete, formatDateTime, buildSortOptions, truncate } from '../../utils';
 
@@ -46,7 +46,7 @@ export default function UserFeedComments() {
                 const queryFilter = {
                     userId: targetUser?.id ?? null,
                     text: textFilter.trim() || null,
-                    status: statusFilter ? (Number(statusFilter) as ElementStatusEnum) : null,
+                    status: statusFilter ? Number(statusFilter) : null,
                 };
 
                 const { data, isLoading } = useQuery({
@@ -65,7 +65,7 @@ export default function UserFeedComments() {
                                 query: {
                                     page: tableState.page,
                                     limit: tableState.limit,
-                                    filter: queryFilter,
+                                    filter: queryFilter as NonNullable<GetFeedCommentsQuery>['filter'],
                                     sort:
                                         (tableState.sort as NonNullable<GetFeedCommentsQuery>['sort']) ??
                                         'createdAt:desc',
@@ -186,7 +186,7 @@ export default function UserFeedComments() {
                                                 onChange={(st) =>
                                                     statusMutation.mutate({
                                                         id: c.id,
-                                                        status: st as ElementStatusEnum,
+                                                        status: st,
                                                     })
                                                 }
                                                 loading={statusMutation.isPending}

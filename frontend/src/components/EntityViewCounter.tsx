@@ -4,7 +4,7 @@ import { IconEye } from '@tabler/icons-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { entryService } from '../api/services';
-import { EntryTypeEnum } from '../enums/EntryTypeEnum';
+import type { EntryTypeEnum } from '../enums/EntryTypeEnum';
 import { useAuth } from '../auth';
 
 export const sessionTrackedEntities = new Set<string>();

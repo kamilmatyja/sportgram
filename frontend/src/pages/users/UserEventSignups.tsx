@@ -281,7 +281,7 @@ export default function UserEventSignups() {
                                             onChange={(status) =>
                                                 statusMutation.mutate({
                                                     id: s.id,
-                                                    status: status as number,
+                                                    status: status,
                                                 })
                                             }
                                             loading={statusMutation.isPending}

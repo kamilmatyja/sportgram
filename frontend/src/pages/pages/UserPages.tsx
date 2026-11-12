@@ -14,7 +14,7 @@ import {
     TitleLinkStatusFilter,
     getPageTableColumns,
 } from '../../components';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
+import type { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { useDataTableState, useMyFriends, useTitleLinkStatusFilter } from '../../hooks';
 import { notifySuccess, notifyError, confirmDelete, buildSortOptions } from '../../utils';
@@ -55,7 +55,7 @@ export default function UserPages() {
                     userId: targetUser.id,
                     title: title.trim() || null,
                     link: linkFilter.trim() || null,
-                    status: statusFilter ? (Number(statusFilter) as ElementStatusEnum) : null,
+                    status: statusFilter ? Number(statusFilter) : null,
                 };
 
                 const { data, isLoading } = useQuery({
@@ -73,7 +73,7 @@ export default function UserPages() {
                                 query: {
                                     page: tableState.page,
                                     limit: tableState.limit,
-                                    filter: queryFilter,
+                                    filter: queryFilter as NonNullable<GetPagesQuery>['filter'],
                                     sort: (tableState.sort as NonNullable<GetPagesQuery>['sort']) ?? 'createdAt:desc',
                                     'include[]': ['pageParticipants'],
                                 },
@@ -153,7 +153,7 @@ export default function UserPages() {
                                             onStatusChange={(status) =>
                                                 statusMutation.mutate({
                                                     id: p.id,
-                                                    status: status as ElementStatusEnum,
+                                                    status: status,
                                                 })
                                             }
                                             isPending={statusMutation.isPending}

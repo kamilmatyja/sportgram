@@ -45,8 +45,8 @@ export default function UserFeedReactions() {
             {({ targetUser, isOwner, isAdmin, canAccessSubpage }) => {
                 const queryFilter = {
                     userId: targetUser?.id ?? null,
-                    reaction: reactionFilter ? (Number(reactionFilter) as FeedReactionEnum) : null,
-                    status: statusFilter ? (Number(statusFilter) as ElementStatusEnum) : null,
+                    reaction: reactionFilter ? Number(reactionFilter) : null,
+                    status: statusFilter ? Number(statusFilter) : null,
                 };
 
                 const { data, isLoading } = useQuery({
@@ -65,7 +65,7 @@ export default function UserFeedReactions() {
                                 query: {
                                     page: tableState.page,
                                     limit: tableState.limit,
-                                    filter: queryFilter,
+                                    filter: queryFilter as NonNullable<GetFeedReactionsQuery>['filter'],
                                     sort:
                                         (tableState.sort as NonNullable<GetFeedReactionsQuery>['sort']) ??
                                         'createdAt:desc',
@@ -205,7 +205,7 @@ export default function UserFeedReactions() {
                                                 onChange={(st) =>
                                                     statusMutation.mutate({
                                                         id: r.id,
-                                                        status: st as ElementStatusEnum,
+                                                        status: st,
                                                     })
                                                 }
                                                 loading={statusMutation.isPending}

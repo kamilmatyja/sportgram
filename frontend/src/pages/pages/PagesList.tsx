@@ -16,7 +16,7 @@ import {
 } from '../../components';
 import { useDataTableState, useMyFriends, useTitleLinkStatusFilter } from '../../hooks';
 import { notifySuccess, notifyError, confirmDelete, buildSortOptions } from '../../utils';
-import { ElementStatusEnum } from '../../enums/ElementStatusEnum.ts';
+import type { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { Group } from '@mantine/core';
 
 export default function PagesList() {
@@ -57,7 +57,7 @@ export default function PagesList() {
                     query: {
                         page: tableState.page,
                         limit: tableState.limit,
-                        filter: queryFilter,
+                        filter: queryFilter as NonNullable<GetPagesQuery>['filter'],
                         sort: (tableState.sort as NonNullable<GetPagesQuery>['sort']) ?? 'createdAt:desc',
                         'include[]': ['pageParticipants'],
                     },
@@ -141,7 +141,7 @@ export default function PagesList() {
                                     onStatusChange={(status) =>
                                         statusMutation.mutate({
                                             id: p.id,
-                                            status: status as ElementStatusEnum,
+                                            status: status,
                                         })
                                     }
                                     isPending={statusMutation.isPending}

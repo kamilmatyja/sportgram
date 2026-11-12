@@ -9,17 +9,17 @@ export type GetStatisticProgressQuery = operations['get_statistic_progres_index'
 
 export const statisticService = {
     async getStatisticRecords(
-        req?: ApiRequest<'get_statistic_record_index'>,
+        req: ApiRequest<'get_statistic_record_index'>,
     ): Promise<ApiResponse<'get_statistic_record_index'>> {
-        const res = await api.GET('/api/statistics/records', req as any);
+        const res = await api.GET('/api/statistics/records', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_statistic_record_index'>;
+        return res.data;
     },
     async getStatisticProgress(
-        req?: ApiRequest<'get_statistic_progres_index'>,
+        req: ApiRequest<'get_statistic_progres_index'>,
     ): Promise<ApiResponse<'get_statistic_progres_index'>> {
-        const res = await api.GET('/api/statistics/progress', req as any);
+        const res = await api.GET('/api/statistics/progress', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_statistic_progres_index'>;
+        return res.data;
     },
 };

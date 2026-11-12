@@ -11,45 +11,45 @@ export type GetPushSubscriptionDetailsQuery = operations['get_push_subscription_
 
 export const pushSubscriptionService = {
     async getPushSubscriptions(
-        req?: ApiRequest<'get_push_subscription_index'>,
+        req: ApiRequest<'get_push_subscription_index'>,
     ): Promise<ApiResponse<'get_push_subscription_index'>> {
-        const res = await api.GET('/api/push-subscriptions', req as any);
+        const res = await api.GET('/api/push-subscriptions', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_push_subscription_index'>;
+        return res.data;
     },
     async createPushSubscription(
-        req?: ApiRequest<'post_push_subscription_create'>,
+        req: ApiRequest<'post_push_subscription_create'>,
     ): Promise<ApiResponse<'post_push_subscription_create'>> {
-        const res = await api.POST('/api/push-subscriptions', req as any);
+        const res = await api.POST('/api/push-subscriptions', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'post_push_subscription_create'>;
+        return res.data;
     },
     async getPushSubscription(
-        req?: ApiRequest<'get_push_subscription_details'>,
+        req: ApiRequest<'get_push_subscription_details'>,
     ): Promise<ApiResponse<'get_push_subscription_details'>> {
-        const res = await api.GET('/api/push-subscriptions/{id}', req as any);
+        const res = await api.GET('/api/push-subscriptions/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_push_subscription_details'>;
+        return res.data;
     },
     async updatePushSubscription(
-        req?: ApiRequest<'put_push_subscription_update'>,
+        req: ApiRequest<'put_push_subscription_update'>,
     ): Promise<ApiResponse<'put_push_subscription_update'>> {
-        const res = await api.PUT('/api/push-subscriptions/{id}', req as any);
+        const res = await api.PUT('/api/push-subscriptions/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'put_push_subscription_update'>;
+        return res.data;
     },
     async deletePushSubscription(
-        req?: ApiRequest<'delete_push_subscription_delete'>,
+        req: ApiRequest<'delete_push_subscription_delete'>,
     ): Promise<ApiResponse<'delete_push_subscription_delete'>> {
-        const res = await api.DELETE('/api/push-subscriptions/{id}', req as any);
+        const res = await api.DELETE('/api/push-subscriptions/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'delete_push_subscription_delete'>;
+        return res.data;
     },
     async updatePushSubscriptionStatus(
-        req?: ApiRequest<'patch_push_subscription_update_status'>,
+        req: ApiRequest<'patch_push_subscription_update_status'>,
     ): Promise<ApiResponse<'patch_push_subscription_update_status'>> {
-        const res = await api.PATCH('/api/push-subscriptions/{id}/status', req as any);
+        const res = await api.PATCH('/api/push-subscriptions/{id}/status', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'patch_push_subscription_update_status'>;
+        return res.data;
     },
 };

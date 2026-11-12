@@ -36,8 +36,20 @@ export default tseslint.config(
         rules: {
             'prettier/prettier': 'error',
             'unused-imports/no-unused-imports': 'error',
-            '@typescript-eslint/no-unused-vars': 'off',
-            '@typescript-eslint/no-explicit-any': 'off',
+            '@typescript-eslint/no-unused-vars': [
+                'error',
+                {
+                    argsIgnorePattern: '^_',
+                    caughtErrorsIgnorePattern: '^_',
+                    ignoreRestSiblings: true,
+                    varsIgnorePattern: '^_',
+                },
+            ],
+            '@typescript-eslint/no-explicit-any': 'error',
+            '@typescript-eslint/no-floating-promises': 'error',
+            '@typescript-eslint/no-misused-promises': 'error',
+            '@typescript-eslint/no-non-null-assertion': 'error',
+            '@typescript-eslint/consistent-type-imports': 'error',
             '@typescript-eslint/no-namespace': 'off',
         },
     },

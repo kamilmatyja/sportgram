@@ -59,7 +59,7 @@ export default function UsersList() {
         onSuccess: async () => {
             notifySuccess(t('deleted'), t('users'));
             logout();
-            navigate('/login');
+            void navigate('/login');
         },
         onError: (err) => notifyError(err, t('error')),
     });
@@ -96,9 +96,9 @@ export default function UsersList() {
             lastName: lastName.trim() || null,
             email: email.trim() || null,
             link: link.trim() || null,
-            gender: gender ? (Number(gender) as GenderEnum) : null,
-            country: country ? (Number(country) as CountryEnum) : null,
-            status: status ? (Number(status) as UserStatusEnum) : null,
+            gender: gender ? Number(gender) : null,
+            country: country ? Number(country) : null,
+            status: status ? Number(status) : null,
             userIds: null,
         };
     }, [firstName, lastName, email, link, gender, country, status]);
@@ -112,7 +112,7 @@ export default function UsersList() {
                         page: tableState.page,
                         limit: tableState.limit,
                         sort: (tableState.sort as NonNullable<GetUsersQuery>['sort']) ?? 'createdAt:desc',
-                        filter: queryFilter,
+                        filter: queryFilter as NonNullable<GetUsersQuery>['filter'],
                         'include[]': ['userDisciplines', 'userRoles'],
                     },
                 },
@@ -260,7 +260,7 @@ export default function UsersList() {
                                     onChange={(st) =>
                                         statusMutation.mutate({
                                             id: u.id,
-                                            status: st as UserStatusEnum,
+                                            status: st,
                                         })
                                     }
                                     loading={statusMutation.isPending}

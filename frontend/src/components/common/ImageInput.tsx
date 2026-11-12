@@ -3,7 +3,7 @@ import { Input, Group, Button, Paper, Stack, Avatar, Box, Text, FileButton, Load
 import { notifications } from '@mantine/notifications';
 import { IconCamera, IconUpload, IconPhoto, IconRotate, IconCheck } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { DeleteActionButton } from './RowActionButtons.tsx';
+import { DeleteActionButton } from './RowActionButtons';
 
 interface CameraCaptureSectionProps {
     onCapture: (file: File) => void;
@@ -315,7 +315,7 @@ export function ImageInput({
 
             if (navigator.permissions && navigator.permissions.query) {
                 try {
-                    const status = await navigator.permissions.query({ name: 'camera' as PermissionName });
+                    const status = await navigator.permissions.query({ name: 'camera' });
                     if (status.state === 'denied') {
                         notifications.show({
                             id: 'camera-status-error',

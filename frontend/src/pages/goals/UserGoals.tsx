@@ -70,10 +70,10 @@ export default function UserGoals() {
                     userId: targetUser.id,
                     text: textFilter.trim() || null,
                     link: linkFilter.trim() || null,
-                    discipline: disciplineFilter ? (Number(disciplineFilter) as DisciplineEnum) : null,
+                    discipline: disciplineFilter ? Number(disciplineFilter) : null,
                     distance: distanceFilter.trim() ? Number(distanceFilter) : null,
                     time: timeFilter.trim() ? Number(timeFilter) : null,
-                    status: statusFilter ? (Number(statusFilter) as GoalStatusEnum) : null,
+                    status: statusFilter ? Number(statusFilter) : null,
                 };
 
                 const { data, isLoading } = useQuery({
@@ -91,7 +91,7 @@ export default function UserGoals() {
                                 query: {
                                     page: tableState.page,
                                     limit: tableState.limit,
-                                    filter: queryFilter,
+                                    filter: queryFilter as NonNullable<GetGoalsQuery>['filter'],
                                     sort: (tableState.sort as NonNullable<GetGoalsQuery>['sort']) ?? 'createdAt:desc',
                                     'include[]': ['goalParticipants'],
                                 },
@@ -277,7 +277,7 @@ export default function UserGoals() {
                                             onStatusChange={(status) =>
                                                 statusMutation.mutate({
                                                     id: g.id,
-                                                    status: status as GoalStatusEnum,
+                                                    status: status,
                                                 })
                                             }
                                             isPending={statusMutation.isPending}

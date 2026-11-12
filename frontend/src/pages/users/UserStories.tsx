@@ -55,7 +55,7 @@ export default function UserStories() {
                 const queryFilter = {
                     userId: targetUser?.id ?? null,
                     text: textFilter.trim() || null,
-                    status: statusFilter ? (Number(statusFilter) as ElementStatusEnum) : null,
+                    status: statusFilter ? Number(statusFilter) : null,
                 };
 
                 const { data, isLoading } = useQuery({
@@ -74,7 +74,7 @@ export default function UserStories() {
                                 query: {
                                     page: tableState.page,
                                     limit: tableState.limit,
-                                    filter: queryFilter,
+                                    filter: queryFilter as NonNullable<GetStoriesQuery>['filter'],
                                     sort: (tableState.sort as NonNullable<GetStoriesQuery>['sort']) ?? 'createdAt:desc',
                                 },
                             },
@@ -200,7 +200,7 @@ export default function UserStories() {
                                             onChange={(st) =>
                                                 statusMutation.mutate({
                                                     id: s.id,
-                                                    status: st as ElementStatusEnum,
+                                                    status: st,
                                                 })
                                             }
                                             loading={statusMutation.isPending}

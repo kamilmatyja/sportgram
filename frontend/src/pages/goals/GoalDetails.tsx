@@ -167,7 +167,11 @@ export default function GoalDetails() {
         },
         onSuccess: () => {
             notifySuccess(t('deleted'), t('goals'));
-            navigate(ownerUser?.link ? `/users/${ownerUser.link}/goals` : (-1 as unknown as string));
+            if (ownerUser?.link) {
+                void navigate(`/users/${ownerUser.link}/goals`);
+            } else {
+                void navigate(-1);
+            }
         },
         onError: (err) => notifyError(err, t('error')),
     });
@@ -234,7 +238,7 @@ export default function GoalDetails() {
                                 <StatusActionMenu
                                     status={goal.status}
                                     options={GoalStatusEnum.getOptions(t)}
-                                    onStatusChange={(status) => updateStatusMutation.mutate(status as GoalStatusEnum)}
+                                    onStatusChange={(status) => updateStatusMutation.mutate(status)}
                                     isPending={updateStatusMutation.isPending}
                                 />
                             )}
@@ -312,7 +316,7 @@ export default function GoalDetails() {
                                                                 onStatusChange={(status) =>
                                                                     updateParticipantStatusMutation.mutate({
                                                                         participantId: p.id,
-                                                                        status: status as SaveStatusEnum,
+                                                                        status: status,
                                                                     })
                                                                 }
                                                                 isPending={updateParticipantStatusMutation.isPending}
@@ -396,7 +400,7 @@ export default function GoalDetails() {
                                                                 onStatusChange={(status) =>
                                                                     updateResultStatusMutation.mutate({
                                                                         resultId: res.id,
-                                                                        status: status as SaveStatusEnum,
+                                                                        status: status,
                                                                     })
                                                                 }
                                                                 isPending={updateResultStatusMutation.isPending}

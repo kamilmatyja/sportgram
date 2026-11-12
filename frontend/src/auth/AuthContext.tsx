@@ -68,10 +68,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             try {
+                if (!signId) throw new Error('Sign ID is unavailable');
                 const res = await userService.getUsers({
                     params: {
                         query: {
-                            filter: { signId: signId!, userIds: null },
+                            filter: { signId, userIds: null },
                             'include[]': ['userRoles', 'userDisciplines'],
                             limit: 1,
                         },

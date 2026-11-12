@@ -23,7 +23,14 @@ export function NotFound({ title, message }: NotFoundProps) {
                 <Text c="dimmed" ta="center">
                     {message ?? t('notFoundMessage')}
                 </Text>
-                <Button variant="light" size="xs" mt="sm" onClick={() => navigate('/')}>
+                <Button
+                    variant="light"
+                    size="xs"
+                    mt="sm"
+                    onClick={() => {
+                        void navigate('/');
+                    }}
+                >
                     {t('navHome')}
                 </Button>
             </Stack>

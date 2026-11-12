@@ -40,7 +40,7 @@ export default function UserFriends() {
             {({ targetUser, isOwner, canAccessSubpage }) => {
                 const queryFilter = {
                     userIds: targetUser?.id ? [targetUser.id] : [],
-                    status: statusFilter ? (Number(statusFilter) as FriendStatusEnum) : null,
+                    status: statusFilter ? Number(statusFilter) : null,
                 };
 
                 const { data, isLoading } = useQuery({
@@ -59,7 +59,7 @@ export default function UserFriends() {
                                 query: {
                                     page: tableState.page,
                                     limit: tableState.limit,
-                                    filter: queryFilter,
+                                    filter: queryFilter as NonNullable<GetFriendsQuery>['filter'],
                                     sort: (tableState.sort as NonNullable<GetFriendsQuery>['sort']) ?? 'createdAt:desc',
                                 },
                             },

@@ -424,7 +424,7 @@ export default function UserPushSubscriptions() {
                                             onChange={(status) =>
                                                 updateStatusMutation.mutate({
                                                     id: s.id,
-                                                    status: status as PushSubscriptionStatusEnum,
+                                                    status: status,
                                                 })
                                             }
                                             loading={updateStatusMutation.isPending}
@@ -450,7 +450,9 @@ export default function UserPushSubscriptions() {
                                         leftSection={<IconDeviceMobile size={16} />}
                                         loading={subscribing}
                                         disabled={subscribing}
-                                        onClick={handleSubscribeDevice}
+                                        onClick={() => {
+                                            void handleSubscribeDevice();
+                                        }}
                                     >
                                         {t('addAutomatically')}
                                     </Button>
@@ -546,7 +548,9 @@ export default function UserPushSubscriptions() {
                                         leftSection={<IconDeviceMobile size={16} />}
                                         loading={subscribing}
                                         disabled={subscribing}
-                                        onClick={handleSubscribeDeviceInEdit}
+                                        onClick={() => {
+                                            void handleSubscribeDeviceInEdit();
+                                        }}
                                     >
                                         {t('editAutomatically')}
                                     </Button>

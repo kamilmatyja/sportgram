@@ -357,7 +357,7 @@ export default function UserConversations() {
                                                     onChange={(status) =>
                                                         updateStatusMutation.mutate({
                                                             id: c.id,
-                                                            status: status as ConversationStatusEnum,
+                                                            status: status,
                                                         })
                                                     }
                                                     loading={updateStatusMutation.isPending}

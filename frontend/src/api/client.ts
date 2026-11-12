@@ -35,7 +35,14 @@ function serializeQuery(params: Record<string, unknown>, prefix = ''): string[] 
             const arrayKey = paramKey.endsWith('[]') ? paramKey : `${paramKey}[]`;
             for (const item of val) {
                 if (item === undefined || item === null) continue;
-                const str = typeof item === 'object' ? ((item as any).id ?? (item as any).value) : item;
+                const str =
+                    typeof item === 'object'
+                        ? 'id' in item && item.id !== undefined && item.id !== null
+                            ? item.id
+                            : 'value' in item
+                              ? item.value
+                              : undefined
+                        : item;
                 if (str !== undefined && str !== null) {
                     pairs.push(`${encodeURIComponent(arrayKey)}=${encodeURIComponent(String(str))}`);
                 }
@@ -51,7 +58,7 @@ function serializeQuery(params: Record<string, unknown>, prefix = ''): string[] 
 
 export const api = createClient<paths>({
     baseUrl: '',
-    querySerializer: (params) => serializeQuery((params ?? {}) as Record<string, unknown>).join('&'),
+    querySerializer: (params) => serializeQuery(params ?? {}).join('&'),
 });
 
 const authMiddleware: Middleware = {

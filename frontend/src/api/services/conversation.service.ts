@@ -13,64 +13,64 @@ export type GetConversationActivitiesQuery = operations['get_conversation_activi
 
 export const conversationService = {
     async createConversation(
-        req?: ApiRequest<'post_conversation_create'>,
+        req: ApiRequest<'post_conversation_create'>,
     ): Promise<ApiResponse<'post_conversation_create'>> {
-        const res = await api.POST('/api/conversation-users/{id}', req as any);
+        const res = await api.POST('/api/conversation-users/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'post_conversation_create'>;
+        return res.data;
     },
-    async getConversations(req?: ApiRequest<'get_conversation_index'>): Promise<ApiResponse<'get_conversation_index'>> {
-        const res = await api.GET('/api/conversations', req as any);
+    async getConversations(req: ApiRequest<'get_conversation_index'>): Promise<ApiResponse<'get_conversation_index'>> {
+        const res = await api.GET('/api/conversations', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_conversation_index'>;
+        return res.data;
     },
     async getConversation(
-        req?: ApiRequest<'get_conversation_details'>,
+        req: ApiRequest<'get_conversation_details'>,
     ): Promise<ApiResponse<'get_conversation_details'>> {
-        const res = await api.GET('/api/conversations/{id}', req as any);
+        const res = await api.GET('/api/conversations/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_conversation_details'>;
+        return res.data;
     },
     async updateConversation(
-        req?: ApiRequest<'put_conversation_update'>,
+        req: ApiRequest<'put_conversation_update'>,
     ): Promise<ApiResponse<'put_conversation_update'>> {
-        const res = await api.PUT('/api/conversations/{id}', req as any);
+        const res = await api.PUT('/api/conversations/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'put_conversation_update'>;
+        return res.data;
     },
     async deleteConversation(
-        req?: ApiRequest<'delete_conversation_delete'>,
+        req: ApiRequest<'delete_conversation_delete'>,
     ): Promise<ApiResponse<'delete_conversation_delete'>> {
-        const res = await api.DELETE('/api/conversations/{id}', req as any);
+        const res = await api.DELETE('/api/conversations/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'delete_conversation_delete'>;
+        return res.data;
     },
     async updateConversationStatus(
-        req?: ApiRequest<'patch_conversation_update_status'>,
+        req: ApiRequest<'patch_conversation_update_status'>,
     ): Promise<ApiResponse<'patch_conversation_update_status'>> {
-        const res = await api.PATCH('/api/conversations/{id}/status', req as any);
+        const res = await api.PATCH('/api/conversations/{id}/status', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'patch_conversation_update_status'>;
+        return res.data;
     },
     async updateConversationActivityUpdatedAt(
-        req?: ApiRequest<'patch_conversation_activity_update_updated_at'>,
+        req: ApiRequest<'patch_conversation_activity_update_updated_at'>,
     ): Promise<ApiResponse<'patch_conversation_activity_update_updated_at'>> {
-        const res = await api.PATCH('/api/conversation-activity-users/{id}/updated-at', req as any);
+        const res = await api.PATCH('/api/conversation-activity-users/{id}/updated-at', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'patch_conversation_activity_update_updated_at'>;
+        return res.data;
     },
     async getConversationActivities(
-        req?: ApiRequest<'get_conversation_activity_index'>,
+        req: ApiRequest<'get_conversation_activity_index'>,
     ): Promise<ApiResponse<'get_conversation_activity_index'>> {
-        const res = await api.GET('/api/conversation-activities', req as any);
+        const res = await api.GET('/api/conversation-activities', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_conversation_activity_index'>;
+        return res.data;
     },
     async getConversationActivity(
-        req?: ApiRequest<'get_conversation_activity_details'>,
+        req: ApiRequest<'get_conversation_activity_details'>,
     ): Promise<ApiResponse<'get_conversation_activity_details'>> {
-        const res = await api.GET('/api/conversation-activity-users/{id}', req as any);
+        const res = await api.GET('/api/conversation-activity-users/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'get_conversation_activity_details'>;
+        return res.data;
     },
 };

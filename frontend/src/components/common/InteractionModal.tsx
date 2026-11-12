@@ -1,7 +1,7 @@
 import { type ReactNode, type SyntheticEvent, useMemo } from 'react';
 import { Modal, type ModalProps } from '@mantine/core';
 import { useOffline } from '../../services';
-import { type InteractionSurface } from '../../services/InteractionPolicy';
+import { type InteractionSurface } from '../../services';
 
 interface InteractionModalProps extends ModalProps {
     children?: ReactNode;
@@ -69,7 +69,6 @@ export function InteractionModal({ children, offlineAllowed, ...props }: Interac
             {...props}
             closeButtonProps={{
                 ...props.closeButtonProps,
-                'data-interaction-allowed': true,
                 className: ['interaction-modal-close', props.closeButtonProps?.className].filter(Boolean).join(' '),
             }}
         >

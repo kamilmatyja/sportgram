@@ -3,7 +3,7 @@ import { Stack, TextInput, Select, MultiSelect, Button, Group } from '@mantine/c
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { goalService, type GoalResource } from '../../api/services';
+import { goalService, type GoalDto, type GoalResource } from '../../api/services';
 import { useAuth } from '../../auth';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useFormErrors } from '../../hooks';
@@ -68,7 +68,7 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
             const body = {
                 text: formData.text,
                 link: formData.link,
-                discipline: Number(formData.discipline) as DisciplineEnum,
+                discipline: Number(formData.discipline) as GoalDto['discipline'],
                 distance: Math.round(Number(formData.distance)) || 0,
                 time: formData.time ? Math.round(Number(formData.time)) : null,
                 startedAt: formData.startedAt || null,

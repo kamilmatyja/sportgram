@@ -8,8 +8,28 @@ import {
     getOfflineCurrentUserSync,
 } from '../../services';
 
-export type TrainingResource = components['schemas']['TrainingResource'];
+type ApiTrainingResource = components['schemas']['TrainingResource'];
+type OfflineTrainingSubDistance = Omit<
+    ApiTrainingResource['disciplines'][number]['distances'][number]['subDistances'][number],
+    'lat' | 'lng' | 'accuracy' | 'speed'
+> & {
+    lat: number | null;
+    lng: number | null;
+    accuracy: number | null;
+    speed: number | null;
+};
+type OfflineTrainingDistance = Omit<ApiTrainingResource['disciplines'][number]['distances'][number], 'subDistances'> & {
+    subDistances: OfflineTrainingSubDistance[];
+};
+type OfflineTrainingDiscipline = Omit<ApiTrainingResource['disciplines'][number], 'distances'> & {
+    distances: OfflineTrainingDistance[];
+};
+export type OfflineTrainingResource = Omit<ApiTrainingResource, 'disciplines'> & {
+    disciplines: OfflineTrainingDiscipline[];
+};
+export type TrainingResource = ApiTrainingResource | OfflineTrainingResource;
 export type TrainingDto = components['schemas']['TrainingDto'];
+export type TrainingDisciplineDto = components['schemas']['TrainingDisciplineDto'];
 export type TrainingFilterDto = components['schemas']['TrainingFilterDto'];
 export type TrainingParticipantResource = components['schemas']['TrainingParticipantResource'];
 export type TrainingDisciplineResource = components['schemas']['TrainingDisciplineResource'];
@@ -19,10 +39,57 @@ export type TrainingDisciplineSubDistanceResource = components['schemas']['Train
 export type GetTrainingsQuery = operations['get_training_index']['parameters']['query'];
 export type GetTrainingDetailsQuery = operations['get_training_details']['parameters']['query'];
 
+function mapOfflineDisciplines(
+    disciplines: TrainingDto['disciplines'],
+    trainingId: string,
+): OfflineTrainingResource['disciplines'] {
+    const timestamp = new Date().toISOString();
+
+    return (disciplines ?? []).map((discipline, disciplineIndex) => {
+        const disciplineId = `offline_disc_${disciplineIndex}_${Date.now()}`;
+        return {
+            id: disciplineId,
+            trainingId,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+            discipline: discipline.discipline,
+            distances: (discipline.distances ?? []).map((distance, distanceIndex) => {
+                const distanceId = `offline_dist_${distanceIndex}_${Date.now()}`;
+                return {
+                    id: distanceId,
+                    trainingDisciplineId: disciplineId,
+                    createdAt: timestamp,
+                    updatedAt: timestamp,
+                    distance: distance.distance,
+                    time: distance.time,
+                    subDistances: (distance.subDistances ?? []).map((subDistance, subDistanceIndex) => ({
+                        id: `offline_sd_${subDistanceIndex}_${Date.now()}`,
+                        trainingDisciplineDistanceId: distanceId,
+                        createdAt: timestamp,
+                        updatedAt: timestamp,
+                        subDistance: subDistance.subDistance,
+                        time: subDistance.time,
+                        lat: subDistance.lat ? Math.round(subDistance.lat * 1_000_000) : null,
+                        lng: subDistance.lng ? Math.round(subDistance.lng * 1_000_000) : null,
+                        accuracy: subDistance.accuracy || null,
+                        speed: subDistance.speed || null,
+                    })),
+                };
+            }),
+        };
+    });
+}
+
+type TrainingServiceResponse<Op extends keyof operations, Data> = Omit<ApiResponse<Op>, 'data'> & {
+    data?: Data;
+};
+
 export const trainingService = {
-    async getTrainings(req?: ApiRequest<'get_training_index'>): Promise<ApiResponse<'get_training_index'>> {
+    async getTrainings(
+        req: ApiRequest<'get_training_index'>,
+    ): Promise<TrainingServiceResponse<'get_training_index', TrainingResource[]>> {
         const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
-        const queryFilter = req?.params?.query?.filter as any;
+        const queryFilter = req.params?.query?.filter;
 
         if (isOffline) {
             const allOffline = await getOfflineTrainings();
@@ -30,25 +97,25 @@ export const trainingService = {
                 const found = allOffline.filter((t) => t.link === queryFilter.link || t.id === queryFilter.link);
                 return {
                     data: found,
-                    pagination: { total: found.length, page: 1, limit: 1, totalPages: 1 },
-                } as ApiResponse<'get_training_index'>;
+                    pagination: { total: found.length, page: 1, perPage: 1, hasNextPage: false },
+                };
             }
-            const offlineOnly = allOffline.filter((t) => t.id.startsWith('offline_') || (t as any).isOffline);
+            const offlineOnly = allOffline.filter((t) => t.id.startsWith('offline_'));
             return {
                 data: offlineOnly,
                 pagination: {
                     total: offlineOnly.length,
                     page: 1,
-                    limit: Math.max(10, offlineOnly.length),
-                    totalPages: 1,
+                    perPage: Math.max(10, offlineOnly.length),
+                    hasNextPage: false,
                 },
-            } as ApiResponse<'get_training_index'>;
+            };
         }
 
         try {
-            const res = await api.GET('/api/trainings', req as any);
+            const res = await api.GET('/api/trainings', req);
             if (res.error) throw res.error;
-            return res.data as ApiResponse<'get_training_index'>;
+            return res.data;
         } catch (err) {
             if (typeof navigator !== 'undefined' && !navigator.onLine) {
                 const allOffline = await getOfflineTrainings();
@@ -56,77 +123,62 @@ export const trainingService = {
                     const found = allOffline.filter((t) => t.link === queryFilter.link || t.id === queryFilter.link);
                     return {
                         data: found,
-                        pagination: { total: found.length, page: 1, limit: 1, totalPages: 1 },
-                    } as ApiResponse<'get_training_index'>;
+                        pagination: { total: found.length, page: 1, perPage: 1, hasNextPage: false },
+                    };
                 }
-                const offlineOnly = allOffline.filter((t) => t.id.startsWith('offline_') || (t as any).isOffline);
+                const offlineOnly = allOffline.filter((t) => t.id.startsWith('offline_'));
                 return {
                     data: offlineOnly,
                     pagination: {
                         total: offlineOnly.length,
                         page: 1,
-                        limit: Math.max(10, offlineOnly.length),
-                        totalPages: 1,
+                        perPage: Math.max(10, offlineOnly.length),
+                        hasNextPage: false,
                     },
-                } as ApiResponse<'get_training_index'>;
+                };
             }
             throw err;
         }
     },
 
-    async createTraining(req?: ApiRequest<'post_training_create'>): Promise<ApiResponse<'post_training_create'>> {
+    async createTraining(
+        req: ApiRequest<'post_training_create'>,
+    ): Promise<TrainingServiceResponse<'post_training_create', TrainingResource | { id?: string }>> {
         const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
-        const body = (req as any)?.body;
+        const body = req.body;
 
         if (isOffline) {
             const currentUser = getOfflineCurrentUserSync();
             const offlineId = `offline_tr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-            const mappedDisciplines = (body?.disciplines ?? []).map((d: any, dIdx: number) => ({
-                id: `offline_disc_${dIdx}_${Date.now()}`,
-                discipline: Number(d.discipline),
-                distances: (d.distances ?? []).map((dist: any, distIdx: number) => ({
-                    id: `offline_dist_${distIdx}_${Date.now()}`,
-                    distance: Number(dist.distance),
-                    time: Number(dist.time) || 0,
-                    subDistances: (dist.subDistances ?? []).map((sd: any, sdIdx: number) => ({
-                        id: `offline_sd_${sdIdx}_${Date.now()}`,
-                        subDistance: Number(sd.subDistance),
-                        time: Number(sd.time) || 0,
-                        lat: sd.lat ? Math.round(Number(sd.lat) * 1000000) : null,
-                        lng: sd.lng ? Math.round(Number(sd.lng) * 1000000) : null,
-                        accuracy: sd.accuracy ? Number(sd.accuracy) : null,
-                        speed: sd.speed ? Number(sd.speed) : null,
-                    })),
-                })),
-            }));
-
-            const trainingResource: TrainingResource = {
+            const trainingResource: OfflineTrainingResource = {
                 id: offlineId,
-                userId: body?.userIds?.[0] || currentUser?.id || 'offline_user',
-                title: body?.title || '',
-                description: body?.description || '',
-                link: body?.link || offlineId,
-                location: body?.location || '',
-                startedAt: body?.startedAt || new Date().toISOString(),
-                endedAt: body?.endedAt || new Date().toISOString(),
-                status: 1 as any,
-                disciplines: mappedDisciplines as any,
+                feedId: offlineId,
+                userId: body.userIds?.[0] || currentUser?.id || 'offline_user',
+                title: body.title,
+                description: body.description,
+                link: body.link,
+                location: body.location,
+                startedAt: body.startedAt,
+                endedAt: body.endedAt,
+                status: 1,
+                disciplines: mapOfflineDisciplines(body.disciplines, offlineId),
                 participants: [],
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
-                isOffline: true,
-            } as any;
+            };
 
             await saveOfflineTraining(trainingResource, true, body);
-            return { data: trainingResource } as ApiResponse<'post_training_create'>;
+            return { data: trainingResource };
         }
 
-        const res = await api.POST('/api/trainings', req as any);
+        const res = await api.POST('/api/trainings', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'post_training_create'>;
+        return res.data;
     },
 
-    async getTraining(req?: ApiRequest<'get_training_details'>): Promise<ApiResponse<'get_training_details'>> {
+    async getTraining(
+        req: ApiRequest<'get_training_details'>,
+    ): Promise<TrainingServiceResponse<'get_training_details', TrainingResource>> {
         const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
         const targetId = req?.params?.path?.id;
 
@@ -134,78 +186,64 @@ export const trainingService = {
             const all = await getOfflineTrainings();
             const found = all.find((t) => t.id === targetId || t.link === targetId);
             if (found) {
-                return { data: found } as ApiResponse<'get_training_details'>;
+                return { data: found };
             }
         }
 
         try {
-            const res = await api.GET('/api/trainings/{id}', req as any);
+            const res = await api.GET('/api/trainings/{id}', req);
             if (res.error) throw res.error;
-            return res.data as ApiResponse<'get_training_details'>;
+            return res.data;
         } catch (err) {
             if (typeof navigator !== 'undefined' && !navigator.onLine && targetId) {
                 const all = await getOfflineTrainings();
                 const found = all.find((t) => t.id === targetId || t.link === targetId);
                 if (found) {
-                    return { data: found } as ApiResponse<'get_training_details'>;
+                    return { data: found };
                 }
             }
             throw err;
         }
     },
 
-    async updateTraining(req?: ApiRequest<'put_training_update'>): Promise<ApiResponse<'put_training_update'>> {
+    async updateTraining(
+        req: ApiRequest<'put_training_update'>,
+    ): Promise<TrainingServiceResponse<'put_training_update', TrainingResource | { id?: string }>> {
         const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
         const targetId = req?.params?.path?.id;
-        const body = (req as any)?.body;
+        const body = req.body;
 
         if (isOffline && targetId) {
             const all = await getOfflineTrainings();
             const existing = all.find((t) => t.id === targetId || t.link === targetId);
             if (existing) {
-                const mappedDisciplines = body?.disciplines
-                    ? (body.disciplines ?? []).map((d: any, dIdx: number) => ({
-                          id: `offline_disc_${dIdx}_${Date.now()}`,
-                          discipline: Number(d.discipline),
-                          distances: (d.distances ?? []).map((dist: any, distIdx: number) => ({
-                              id: `offline_dist_${distIdx}_${Date.now()}`,
-                              distance: Number(dist.distance),
-                              time: Number(dist.time) || 0,
-                              subDistances: (dist.subDistances ?? []).map((sd: any, sdIdx: number) => ({
-                                  id: `offline_sd_${sdIdx}_${Date.now()}`,
-                                  subDistance: Number(sd.subDistance),
-                                  time: Number(sd.time) || 0,
-                                  lat: sd.lat ? Math.round(Number(sd.lat) * 1000000) : null,
-                                  lng: sd.lng ? Math.round(Number(sd.lng) * 1000000) : null,
-                                  accuracy: sd.accuracy ? Number(sd.accuracy) : null,
-                                  speed: sd.speed ? Number(sd.speed) : null,
-                              })),
-                          })),
-                      }))
-                    : existing.disciplines;
+                const mappedDisciplines =
+                    body.disciplines === null
+                        ? existing.disciplines
+                        : mapOfflineDisciplines(body.disciplines, existing.id);
 
-                const updated: TrainingResource = {
+                const updated: OfflineTrainingResource = {
                     ...existing,
-                    title: body?.title ?? existing.title,
-                    description: body?.description ?? existing.description,
-                    link: body?.link ?? existing.link,
-                    location: body?.location ?? existing.location,
-                    startedAt: body?.startedAt ?? existing.startedAt,
-                    endedAt: body?.endedAt ?? existing.endedAt,
-                    disciplines: mappedDisciplines as any,
+                    title: body.title,
+                    description: body.description,
+                    link: body.link,
+                    location: body.location,
+                    startedAt: body.startedAt,
+                    endedAt: body.endedAt,
+                    disciplines: mappedDisciplines,
                     updatedAt: new Date().toISOString(),
                 };
                 await saveOfflineTraining(updated, false, body);
-                return { data: updated } as ApiResponse<'put_training_update'>;
+                return { data: updated };
             }
         }
 
-        const res = await api.PUT('/api/trainings/{id}', req as any);
+        const res = await api.PUT('/api/trainings/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'put_training_update'>;
+        return res.data;
     },
 
-    async deleteTraining(req?: ApiRequest<'delete_training_delete'>): Promise<ApiResponse<'delete_training_delete'>> {
+    async deleteTraining(req: ApiRequest<'delete_training_delete'>): Promise<ApiResponse<'delete_training_delete'>> {
         const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
         const targetId = req?.params?.path?.id;
 
@@ -214,17 +252,17 @@ export const trainingService = {
             return { data: null } as ApiResponse<'delete_training_delete'>;
         }
 
-        const res = await api.DELETE('/api/trainings/{id}', req as any);
+        const res = await api.DELETE('/api/trainings/{id}', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'delete_training_delete'>;
+        return res.data;
     },
 
     async updateTrainingStatus(
-        req?: ApiRequest<'patch_training_update_status'>,
-    ): Promise<ApiResponse<'patch_training_update_status'>> {
+        req: ApiRequest<'patch_training_update_status'>,
+    ): Promise<TrainingServiceResponse<'patch_training_update_status', TrainingResource | { id?: string } | null>> {
         const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
         const targetId = req?.params?.path?.id;
-        const body = (req as any)?.body;
+        const body = req.body;
 
         if (isOffline && targetId) {
             const all = await getOfflineTrainings();
@@ -232,24 +270,24 @@ export const trainingService = {
             if (existing) {
                 existing.status = body.status;
                 await saveOfflineTraining(existing, false);
-                return { data: existing } as ApiResponse<'patch_training_update_status'>;
+                return { data: existing };
             }
-            return { data: null } as ApiResponse<'patch_training_update_status'>;
+            return { data: null };
         }
 
-        const res = await api.PATCH('/api/trainings/{id}/status', req as any);
+        const res = await api.PATCH('/api/trainings/{id}/status', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'patch_training_update_status'>;
+        return res.data;
     },
 
     async updateTrainingParticipantStatus(
-        req?: ApiRequest<'patch_training_participant_update_status'>,
+        req: ApiRequest<'patch_training_participant_update_status'>,
     ): Promise<ApiResponse<'patch_training_participant_update_status'>> {
         if (typeof navigator !== 'undefined' && !navigator.onLine) {
             return { data: null } as ApiResponse<'patch_training_participant_update_status'>;
         }
-        const res = await api.PATCH('/api/training-participants/{id}/status', req as any);
+        const res = await api.PATCH('/api/training-participants/{id}/status', req);
         if (res.error) throw res.error;
-        return res.data as ApiResponse<'patch_training_participant_update_status'>;
+        return res.data;
     },
 };

@@ -7,7 +7,7 @@ import { userService, type UserResource } from '../../api/services';
 import NotFound from '../NotFound';
 import { UserProfileNav } from '../UserProfileNav';
 import { useUserSubpageAccess } from '../../hooks';
-import { RoleEnum } from '../../enums/RoleEnum';
+import type { RoleEnum } from '../../enums/RoleEnum';
 
 export interface UserSubpageContextValue {
     targetUser: UserResource;
