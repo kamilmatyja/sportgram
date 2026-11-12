@@ -40,9 +40,10 @@ migrate:
 
 test:
 	docker compose exec php vendor/bin/phpunit
+	cd frontend
+	npm test
 
 format:
 	docker compose exec php vendor/bin/php-cs-fixer fix
 	cd frontend
 	npm run fix
-

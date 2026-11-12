@@ -6,13 +6,20 @@
 
 ## Technologie
 
-- Backend: PHP 8.5 + Symfony 8.1
-- Baza danych: PostgreSQL 18.6
-- Frontend: React 19.3 + Vite 8.3
-- UI: Mantine 9.7 + Tabler Icons
-- PWA: manifest + Service Worker
-- Server: Nginx 1.30
-- Funkcje urządzenia: powiadomienia i kamera
+- **Backend:** PHP 8.5, Symfony 8.1, Doctrine ORM 3.7 i Doctrine Migrations.
+- **API:** REST/JSON, Symfony Serializer i Validator, dokumentacja OpenAPI/Swagger (Nelmio API Doc + swagger-php); typy TypeScript generowane przez `openapi-typescript`, zapytania frontendowe przez `openapi-fetch`.
+- **Baza danych:** PostgreSQL 18.6.
+- **Uwierzytelnianie i autoryzacja:** JWT (LexikJWTAuthenticationBundle), Symfony Security oraz autoryzacja zasobów przez Voters; rejestracja, logowanie i reset hasła z weryfikacją kodem wysyłanym e-mailem.
+- **Frontend:** React 19.3, TypeScript 5.9, Vite 8.3 i React Router 7.
+- **UI i formularze:** Mantine 9.7, `@mantine/form`, Tabler Icons; CSS przetwarzany przez PostCSS, `postcss-preset-mantine` i `postcss-simple-vars`.
+- **Stan i komunikacja z API:** TanStack Query 5 do zapytań, mutacji, cache i synchronizacji zadań offline.
+- **Lokalizacja:** i18next, `react-i18next` i browser language detector; dostępne tłumaczenia polskie i angielskie.
+- **Mapy i geolokalizacja:** Leaflet oraz przeglądarkowe Geolocation API do wyświetlania tras i rejestrowania treningów GPS.
+- **PWA i integracje przeglądarkowe:** manifest i Service Worker, lokalna obsługa wybranych operacji offline, Web Push (VAPID), Notifications API, Service Worker API, kamera/wybór zdjęć oraz Wake Lock API. Dostępność funkcji zależy od przeglądarki i uprawnień użytkownika.
+- **Pamięć lokalna:** IndexedDB dla danych offline i kolejki synchronizacji; localStorage dla wybranych informacji lokalnych.
+- **Serwer i środowisko:** Nginx 1.30, PHP-FPM w Docker Compose, PostgreSQL oraz Mailpit do lokalnego przechwytywania wiadomości e-mail.
+- **Testy i jakość:** PHPUnit 13 (backend), Vitest 5, React Testing Library, jsdom, ESLint 10, typescript-eslint i Prettier 3. Testy frontendu uruchamiaj przez `make test-frontend` lub `cd frontend && npm test`.
+- **CI:** GitHub Actions buduje aplikację i uruchamia testy frontendowe Vitest, PHPUnit oraz kontrole formatowania/lintowania.
 
 ---
 
@@ -134,6 +141,8 @@ make test
 docker compose exec php vendor/bin/phpunit
 docker compose exec php bin/phpunit --coverage-html var/coverage
 docker compose exec php vendor/bin/phpunit tests/Factory/FactorySmokeTest.php --testdox
+cd frontend
+npm test
 ```
 
 ---
@@ -634,22 +643,65 @@ npm run fix
 
 ### 1. Zestawy testów automatycznych dla warstwy frontendu (Vitest / React Testing Library)
 
-- **Stan obecny:** 
-  W projekcie frontendu zainstalowano zależności i przygotowano infrastrukturę pod testy (`vitest`, `@testing-library/react`, `frontend/src/test/setup.ts`, `test-utils.tsx`), lecz w katalogu `frontend/src` nie ma jeszcze napisanych plików zestawów testowych (`*.test.tsx`).
+- **Stan obecny:**
+  Vitest i React Testing Library są skonfigurowane. Aktualny zestaw obejmuje podstawowe przepływy autoryzacji, ochronę routingu, wspólne komponenty, dostęp do podstron, obsługę push bez wsparcia przeglądarki oraz lokalną kolejkę offline; nie pokrywa jeszcze wszystkich widoków i formularzy wymienionych poniżej. CI uruchamia `npm test`.
 - **Co jest do zrobienia:**
-  - Pokrycie kluczowych komponentów, formularzy i widoków testami jednostkowymi oraz integracyjnymi.
+  - Zbudować warstwę testów jednostkowych i integracyjnych obejmującą wszystkie widoki routingu, formularze, modale oraz współdzielone komponenty i krytyczne przepływy aplikacji.
+  - Testować zachowanie widoczne dla użytkownika: treści i stany widoków, nawigację, walidację, dostępność akcji zależną od roli, komunikaty, obsługę ładowania/braku danych/błędów oraz wywołania API.
+  - Nie dążyć do mechanicznego testowania każdej linijki ani szczegółów implementacyjnych komponentu. Testy powinny sprawdzać zachowanie i istotne scenariusze; współdzielone elementy wielokrotnie używane warto pokryć osobnymi testami.
 - **Jak to zaimplementować:**
-  - Napisać testy dla formularzy autoryzacyjnych (`Sign`, `Register`, obsługa weryfikacji dwuetapowej 2FA), sprawdzające poprawność walidacji pól, blokowanie wysyłki błędnych danych oraz reakcję na kody błędów API.
-  - Napisać testy formularza treningowego (`TrainingFormModal.tsx`), weryfikujące poprawność przeliczania dystansów, czasów i dyscyplin.
-  - Napisać testy komponentów subskrypcji powiadomień Push (`UserPushSubscriptions.tsx`) z mockowaniem obiektów `Notification` oraz `navigator.serviceWorker`.
-  - Dodać polecenie uruchamiania testów frontendu do głównego pliku `Makefile` (`make test`).
+  - Używać `test-utils.tsx` do renderowania w kontekście routera, TanStack Query, Mantine i pozostałych wymaganych providerów. API, nawigację i integracje przeglądarkowe mockować na granicy zależności; nie łączyć testów z prawdziwym backendem, siecią, bazą danych ani uprawnieniami urządzenia.
+  - Dla każdego widoku sprawdzić co najmniej renderowanie, stan ładowania lub pusty stan (jeśli występuje), poprawne wyświetlenie danych oraz istotny scenariusz błędu i uprawnień.
+  - Pokryć następujące widoki (nazwy w nawiasach odpowiadają komponentom w `frontend/src/pages`):
+    - Strona główna (`/`, `Home`) — widok dla użytkownika niezalogowanego i zalogowanego, dostępne akcje oraz przekierowania.
+    - Logowanie (`/sign`, `Login`) — walidacja, wysyłka poprawnych danych, błędne dane i błędy API, w tym przypadki wymagające dalszej weryfikacji.
+    - Rejestracja (`/register`, `Register`) — walidacja pól, utworzenie konta, błędy API oraz przejście przez weryfikację.
+    - Reset hasła (`/password-reset`, `PasswordReset`) — walidacja i obsługa odpowiedzi sukcesu/błędu.
+    - Wspólny krok weryfikacji (`AuthVerificationStep`) — poprawne i niepoprawne kody, ponowienie wysyłki/akcji oraz stany oczekiwania i błędów; objąć scenariusze 2FA tam, gdzie korzystają z tego przepływu.
+    - Lista użytkowników (`/users`, `UsersList`) — wyszukiwanie, filtry, sortowanie, paginacja oraz akcje zależne od uprawnień.
+    - Profil użytkownika (`/users/:link`, `UserProfile`) — dane profilu, sekcje profilu, relacje znajomości, dostępne akcje właściciela/administratora/gościa oraz przypadki braku użytkownika.
+    - Podstrony profilu: relacje i aktywność (`stories`, `feeds`, `feed-reactions`, `feed-comments`, `friends`), strony (`pages`, `page-follows`), wydarzenia (`events`, `event-signups`), treningi (`trainings`), cele (`goals`), rozmowy (`conversations`), powiadomienia (`notifications`) oraz subskrypcje Push (`push-subscriptions`). Sprawdzić filtry, sortowanie, paginację lub przewijanie, puste wyniki, ograniczenia dostępu i dostępne akcje dla każdej podstrony.
+    - Lista stron (`/pages`, `PagesList`) i szczegóły strony (`/pages/:link`, `PageDetails`) — listowanie, szczegóły, obserwowanie i akcje zarządzania zależne od roli.
+    - Lista wydarzeń (`/events`, `EventsList`), wydarzenia użytkownika (`/users/:link/events`, `UserEvents`) i szczegóły (`/events/:link`, `EventDetails`) — filtrowanie, zapisy uczestników, szczegóły oraz akcje właściciela/organizatora.
+    - Treningi użytkownika (`/users/:link/trainings`, `UserTrainings`) i szczegóły treningu (`/trainings/:link`, `TrainingDetails`) — listowanie, widok szczegółów, trasa/GPS i akcje zarządzania.
+    - Cele użytkownika (`/users/:link/goals`, `UserGoals`) i szczegóły celu (`/goals/:link`, `GoalDetails`) — filtrowanie, uczestnicy/wyniki i akcje zarządzania.
+    - Statystyki (`/statistics`, `Statistics`) — przełączanie zakładek rekordów/postępów, filtry, sortowanie, paginacja oraz puste i błędne odpowiedzi.
+    - Widok nieznalezionej strony (`NotFound`) oraz ochronę tras (`ProtectedRoute`, `GuestRoute`) — przekierowania dla gościa, zalogowanego użytkownika i podczas ładowania sesji.
+  - Pokryć formularze i modale z `frontend/src/components`:
+    - `UserFormModal` — tworzenie i edycja użytkownika, wymagane pola, hasło, role, dyscypliny, zdjęcia oraz błędy walidacji/API.
+    - `PageFormModal` — tworzenie i edycja strony, dane formularza, uczestnicy/współpracownicy oraz błędy API.
+    - `EventFormModal` i `EventDisciplinesEditor` — tworzenie i edycja wydarzenia, wybór strony/uczestnika, zdjęcie, dyscypliny, dystanse i poddystanse.
+    - `TrainingFormModal` i `TrainingDisciplinesEditor` — tworzenie i edycja treningu, współpracownicy, dyscypliny, dystanse, czasy i dane GPS; weryfikować mapowanie formularza do DTO oraz przypadki pustych/niepoprawnych wartości.
+    - `GoalFormModal` — tworzenie i edycja celu, dyscyplina, dystans, czas, daty i uczestnicy.
+    - `FeedModal` — tworzenie/edycja wpisu, walidacja i obsługa odpowiedzi API.
+    - `StoryModal` oraz `StoryViewerModal` — utworzenie/edycja relacji, przejścia między relacjami, zamykanie i stany błędów.
+    - `InteractionModal` — wspólny kontrakt otwierania/zamykania, zatwierdzania, anulowania i wyświetlania błędów formularzy.
+    - `GpsDistanceRecorderPanel` — stany dostępności geolokalizacji, rozpoczęcie/wstrzymanie/zakończenie rejestracji, błędy uprawnień oraz przekazane pomiary.
+  - Dodać osobne testy zachowania współdzielonych elementów: `AppLayout`/nawigacja, `DataTable` (sortowanie, paginacja, akcje wiersza), `PageNav`, `UserProfileNav`, `StoriesBar`, `FeedCard`, `DistanceParticipantsSection`, `TrainingRouteMap`, `StatusActionMenu`, `StatusBadge`, `EmptyState`, `NotFound`, filtry, `ImageInput`, `OfflineStatusBadge`, `EntityViewCounter` oraz `UserSubpageContainer`. Sprawdzać callbacki i widoczne stany, a nie szczegóły biblioteki UI.
+  - Dodać testy modułów i hooków, które implementują logikę krytyczną dla widoków, w szczególności `offlineStorage` (zapis, odczyt, walidacja i synchronizacja kolejki), obsługę błędów formularzy, dostęp do podstron, paginację/filtry i mapowanie danych API.
+  - Dla `UserPushSubscriptions` mockować `Notification`, `navigator.serviceWorker`, `PushManager` i subskrypcję; uwzględnić brak wsparcia przeglądarki, odmowę zgody, istniejącą subskrypcję, utworzenie i usunięcie subskrypcji oraz błędy API. Przywracać zmodyfikowane globalne obiekty po każdym teście.
+  - Rozdzielić testy na małe testy jednostkowe logiki (np. mapowanie i walidacja) oraz testy integracyjne głównych przepływów z użytkownikiem. Mocki powinny zwracać jawne scenariusze sukcesu i błędów; asynchroniczne aktualizacje interfejsu obsługiwać przez `findBy...`/`waitFor`.
+  - Dodać target `test-frontend` uruchamiający `cd frontend && npm test`. Obecny target `make test` uruchamia testy PHPUnit backendu, dlatego połączyć testy obu warstw w `make test` albo zachować je jako osobne targety (`make test` i `make test-frontend`) i opisać ten wybór w README.
+  - Uruchamiać testy w CI i wymagać ich przejścia przed scaleniem. Raportować pokrycie jako narzędzie do identyfikowania luk, nie jako cel sam w sobie; priorytetem są krytyczne ścieżki użytkownika, autoryzacja/uprawnienia, formularze, operacje mutujące dane i obsługa błędów.
 - **Po co:**
-  - Automatyczna weryfikacja poprawności działania interfejsu zabezpiecza projekt przed regresją podczas wprowadzania nowych funkcjonalności i refaktoryzacji, podnosząc niezawodność oprogramowania zgodnie ze standardem ISO/IEC 25010.
+  - Automatyczna weryfikacja zachowania widoków i przepływów ogranicza regresje podczas rozwoju i refaktoryzacji. Szczególne znaczenie mają operacje zmieniające dane, ścieżki autoryzacji i zależności od możliwości przeglądarki. Testy wspierają jakość i niezawodność produktu, ale same nie stanowią certyfikacji zgodności z ISO/IEC 25010.
 
-### 2. Skrypty testów obciążeniowych i wydajnościowych backendu (k6 / Stress Testing)
+### 2. Sprawdzanie typów TypeScript w CI
+
+- **Stan obecny:**
+  Frontend korzysta z TypeScript i jego `strict` mode. Workflow CI uruchamia build Vite, ESLint i Prettier, ale nie wykonuje osobno `tsc --noEmit`. Vite domyślnie transpilujuje TypeScript, lecz nie zastępuje pełnego sprawdzenia typów.
+- **Co jest do zrobienia:**
+  - Dodać sprawdzanie typów frontendu do CI, aby błędy typów blokowały scalanie niezależnie od wyniku bundlowania.
+- **Jak to zaimplementować:**
+  - Dodać krok `cd frontend && npm exec -- tsc --noEmit` do workflow `.github/workflows/ci.yml` oraz analogiczny skrypt, np. `typecheck`, w `frontend/package.json`.
+  - Uruchamiać tę samą kontrolę lokalnie i w CI; nie zastępować jej przez ESLint ani `vite build`.
+- **Po co:**
+  - Wykrywa niespójności kontraktów API i typów formularzy przed scaleniem, także wtedy, gdy kod można poprawnie przetranspilować do JavaScriptu.
+
+### 3. Skrypty testów obciążeniowych i wydajnościowych backendu (k6 / Stress Testing)
 
 - **Stan obecny:** 
-  Backend posiada imponujący zestaw ponad 90 klas testowych Feature w PHPUnit (`backend/tests/Feature`), które dokładnie sprawdzają logikę biznesową, uprawnienia i bazę danych. Brak jednak w repozytorium zdefiniowanych skryptów do testów przeciążeniowych symulujących ruch masowy.
+  Backend ma zestawy testów Unit, Integration i Feature w PHPUnit (`backend/tests`), w tym ponad 100 testów Feature. Brak jednak w repozytorium zdefiniowanych skryptów do testów przeciążeniowych symulujących ruch masowy.
 - **Co jest do zrobienia:**
   - Przygotowanie powtarzalnych skryptów testów wydajnościowych mierzących rzeczywiste czasy odpowiedzi (TTFB, średni czas obsługi, p95, p99) pod obciążeniem setek jednoczesnych użytkowników.
 - **Jak to zaimplementować:**

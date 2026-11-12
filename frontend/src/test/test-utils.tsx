@@ -1,8 +1,13 @@
-import { type ReactNode } from 'react';
+import { type ReactElement, type ReactNode } from 'react';
 import { MantineProvider } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
+import { Notifications } from '@mantine/notifications';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render as rtlRender, type RenderOptions } from '@testing-library/react';
 import { theme } from '../theme';
+import { AuthProvider } from '../auth';
+import { OfflineProvider } from '../services';
 import '../i18n';
 
 export function createTestQueryClient() {
@@ -33,10 +38,33 @@ export function AllProviders({
     return (
         <QueryClientProvider client={queryClient}>
             <MantineProvider theme={theme}>
-                <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+                <Notifications />
+                <MemoryRouter initialEntries={initialEntries}>
+                    <OfflineProvider>
+                        <AuthProvider>
+                            <ModalsProvider>{children}</ModalsProvider>
+                        </AuthProvider>
+                    </OfflineProvider>
+                </MemoryRouter>
             </MantineProvider>
         </QueryClientProvider>
     );
+}
+
+interface ProviderRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+    initialEntries?: string[];
+    queryClient?: QueryClient;
+}
+
+export function render(ui: ReactElement, { initialEntries, queryClient, ...options }: ProviderRenderOptions = {}) {
+    return rtlRender(ui, {
+        wrapper: ({ children }) => (
+            <AllProviders initialEntries={initialEntries} queryClient={queryClient}>
+                {children}
+            </AllProviders>
+        ),
+        ...options,
+    });
 }
 
 export * from '@testing-library/react';

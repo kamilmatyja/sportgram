@@ -1,11 +1,18 @@
 import '@testing-library/jest-dom/vitest';
+import { cleanup } from '@testing-library/react';
+import { afterEach, beforeEach, vi } from 'vitest';
 
 localStorage.setItem('sportgram_lang', 'pl');
 Object.defineProperty(navigator, 'language', { value: 'pl-PL', configurable: true });
 
 import i18n from '../i18n';
 
-void i18n.changeLanguage('pl');
+beforeEach(async () => {
+    if (!i18n.isInitialized) {
+        await new Promise<void>((resolve) => i18n.on('initialized', () => resolve()));
+    }
+    await i18n.changeLanguage('pl');
+});
 
 Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -28,6 +35,7 @@ globalThis.ResizeObserver = class ResizeObserver {
 };
 
 window.scrollTo = () => {};
+Element.prototype.scrollIntoView = () => {};
 
 globalThis.location = window.location;
 
@@ -55,3 +63,12 @@ export function resetTestFetchHandler() {
 globalThis.fetch = function (input: RequestInfo | URL, init?: RequestInit) {
     return currentFetchHandler(input, init);
 };
+
+afterEach(() => {
+    cleanup();
+    resetTestFetchHandler();
+    localStorage.clear();
+    sessionStorage.clear();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+});

@@ -35,6 +35,7 @@ jobs:
           cd frontend
           npm install
           npm run build
+          npm test
           npm run dev &
 
       - name: ⏳ Wait for services and check URLs
