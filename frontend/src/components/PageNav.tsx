@@ -8,7 +8,6 @@ import { EntryTypeEnum } from '../enums/EntryTypeEnum';
 import { EntityViewCounter } from './EntityViewCounter';
 import { formatImageSrc } from '../utils';
 import { HeaderBannerWithAvatar } from './common';
-import { useOffline } from '../services';
 import React from 'react';
 
 export interface PageNavProps {
@@ -20,8 +19,6 @@ export interface PageNavProps {
 export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNavProps) {
     const { t } = useTranslation();
     const location = useLocation();
-    const { isOfflineDisabled } = useOffline();
-
     if (!page) return null;
 
     const bgSrc = formatImageSrc(page.backgroundPhoto);
@@ -52,7 +49,7 @@ export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNa
                                         •
                                     </Text>
                                     <Tooltip label={t('followers')}>
-                                        <Group gap={4} align="center" c="dimmed">
+                                        <Group gap="xs" align="center" c="dimmed">
                                             <IconBookmark size={16} />
                                             <Text size="sm" c="dimmed">
                                                 {
@@ -76,7 +73,6 @@ export function PageNav({ page, extraActions, simplifiedHeader = false }: PageNa
                                 variant="light"
                                 size="xs"
                                 leftSection={<IconArrowLeft size={16} />}
-                                disabled={isOfflineDisabled}
                             >
                                 {simplifiedHeader ? t('backToPage') : t('back')}
                             </Button>

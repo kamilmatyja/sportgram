@@ -13,7 +13,6 @@ import {
     type StoryResource,
 } from '../../api/services';
 import { useAuth } from '../../auth';
-import { useOffline } from '../../services';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
@@ -39,12 +38,12 @@ import {
 } from '../../components';
 import { formatImageSrc, confirmDelete, notifySuccess, notifyError } from '../../utils';
 import { useInfiniteScrollObserver, useUsersMap } from '../../hooks';
+import { runWhenOnline } from '../../hooks';
 
 export default function UserProfile() {
     const { link } = useParams<{ link: string }>();
     const { t } = useTranslation();
     const { currentUser, isAdmin, logout } = useAuth();
-    const { isOffline } = useOffline();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -128,9 +127,7 @@ export default function UserProfile() {
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) =>
-            !isOffline && lastPage.pagination?.hasNextPage && lastPage.pagination.page
-                ? lastPage.pagination.page + 1
-                : undefined,
+            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
         enabled: !!user?.id && canViewPrivateContent,
     });
 
@@ -142,9 +139,8 @@ export default function UserProfile() {
 
     const lastFeedElementRef = useInfiniteScrollObserver({
         isLoading: isFetchingMoreFeeds,
-        hasNextPage: !isOffline && hasMoreFeeds,
-        fetchNextPage: isOffline ? () => {} : fetchNextFeedsPage,
-        disabled: isOffline,
+        hasNextPage: hasMoreFeeds,
+        fetchNextPage: fetchNextFeedsPage,
     });
 
     const relatedUserIds = useMemo(() => {
@@ -188,9 +184,7 @@ export default function UserProfile() {
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) =>
-            !isOffline && lastPage.pagination?.hasNextPage && lastPage.pagination.page
-                ? lastPage.pagination.page + 1
-                : undefined,
+            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
         enabled: !!user?.id && canViewPrivateContent,
     });
 
@@ -202,23 +196,21 @@ export default function UserProfile() {
     const storiesViewportRef = useRef<HTMLDivElement>(null);
     const handleStoriesScroll = useCallback(
         (position: { x: number; y: number }) => {
-            if (isOffline) return;
             const el = storiesViewportRef.current;
             if (!el || isFetchingMoreStories || !hasMoreStories) return;
             const scrollRight = el.scrollWidth - el.clientWidth - position.x;
             if (scrollRight < 100) {
-                void fetchNextStoriesPage();
+                runWhenOnline(() => void fetchNextStoriesPage());
             }
         },
-        [isOffline, isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
+        [isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
     );
 
     const lastStoryElementRef = useInfiniteScrollObserver({
         isLoading: isFetchingMoreStories,
-        hasNextPage: !isOffline && hasMoreStories,
-        fetchNextPage: isOffline ? () => {} : fetchNextStoriesPage,
+        hasNextPage: hasMoreStories,
+        fetchNextPage: fetchNextStoriesPage,
         root: storiesViewportRef.current,
-        disabled: isOffline,
     });
 
     const userStoryGroups = useMemo<UserStoriesGroup[]>(() => {
@@ -363,174 +355,176 @@ export default function UserProfile() {
     const userProfilePhotoSrc = formatImageSrc(user.profilePhoto);
     const userBgPhotoSrc = formatImageSrc(user.backgroundPhoto);
 
-    return (
-        <Stack>
-            <HeaderBannerWithAvatar
-                backgroundPhotoSrc={userBgPhotoSrc}
-                profilePhotoSrc={userProfilePhotoSrc}
-                altText={user.firstName}
-            >
-                <Group justify="space-between" align="flex-start" mt={55}>
-                    <div>
-                        <Title order={2}>
-                            {user.firstName} {user.lastName}
-                        </Title>
-                        <Group gap="xs" align="center" mt={2}>
-                            <Text size="sm" c="dimmed">
-                                @{user.link}
-                            </Text>
-                            <Text size="sm" c="dimmed">
-                                •
-                            </Text>
-                            <EntityViewCounter entityId={user.id} type={EntryTypeEnum.USER} />
-                        </Group>
-                    </div>
+    const profileHeader = (
+        <HeaderBannerWithAvatar
+            backgroundPhotoSrc={userBgPhotoSrc}
+            profilePhotoSrc={userProfilePhotoSrc}
+            altText={user.firstName}
+        >
+            <Group justify="space-between" align="flex-start" mt={55}>
+                <div>
+                    <Title order={2}>
+                        {user.firstName} {user.lastName}
+                    </Title>
+                    <Group gap="xs" align="center" mt={2}>
+                        <Text size="sm" c="dimmed">
+                            @{user.link}
+                        </Text>
+                        <Text size="sm" c="dimmed">
+                            •
+                        </Text>
+                        <EntityViewCounter entityId={user.id} type={EntryTypeEnum.USER} />
+                    </Group>
+                </div>
 
-                    <Group gap="xs">
-                        {isAdmin && (
-                            <StatusActionMenu
-                                value={user.status}
-                                enumType={UserStatusEnum}
-                                onChange={(st) => updateUserStatusMutation.mutate(st as UserStatusEnum)}
-                                loading={updateUserStatusMutation.isPending}
+                <Group gap="xs">
+                    {isAdmin && (
+                        <StatusActionMenu
+                            value={user.status}
+                            enumType={UserStatusEnum}
+                            onChange={(st) => updateUserStatusMutation.mutate(st as UserStatusEnum)}
+                            loading={updateUserStatusMutation.isPending}
+                        />
+                    )}
+
+                    {isOwner && (
+                        <>
+                            <EditActionButton onClick={() => setEditUserOpened(true)} />
+                            <DeleteActionButton
+                                onClick={() => confirmDelete(t, () => deleteUserMutation.mutate())}
+                                loading={deleteUserMutation.isPending}
                             />
-                        )}
+                        </>
+                    )}
 
-                        {isOwner && (
-                            <>
-                                <EditActionButton onClick={() => setEditUserOpened(true)} />
-                                <DeleteActionButton
-                                    onClick={() => confirmDelete(t, () => deleteUserMutation.mutate())}
-                                    loading={deleteUserMutation.isPending}
-                                />
-                            </>
-                        )}
+                    {!isOwner && currentUser && (
+                        <Group gap="xs">
+                            {(!friendship || friendship.status === FriendStatusEnum.REJECTED) && (
+                                <Button
+                                    size="xs"
+                                    leftSection={<IconUserPlus size={16} />}
+                                    onClick={() => sendFriendMutation.mutate()}
+                                    loading={sendFriendMutation.isPending}
+                                    disabled={sendFriendMutation.isPending}
+                                >
+                                    {t('addFriend')}
+                                </Button>
+                            )}
 
-                        {!isOwner && currentUser && (
-                            <Group gap="xs">
-                                {(!friendship || friendship.status === FriendStatusEnum.REJECTED) && (
-                                    <Button
-                                        size="xs"
-                                        leftSection={<IconUserPlus size={16} />}
-                                        onClick={() => sendFriendMutation.mutate()}
-                                        loading={sendFriendMutation.isPending}
-                                        disabled={sendFriendMutation.isPending || isOffline}
-                                    >
-                                        {t('addFriend')}
-                                    </Button>
-                                )}
+                            {friendship && friendship.status === FriendStatusEnum.ACCEPTED && (
+                                <Button
+                                    variant="default"
+                                    size="xs"
+                                    leftSection={<IconUserMinus size={16} />}
+                                    onClick={() =>
+                                        confirmDelete(
+                                            t,
+                                            () =>
+                                                updateFriendStatusMutation.mutate({
+                                                    id: friendship.id,
+                                                    status: FriendStatusEnum.REJECTED,
+                                                }),
+                                            {
+                                                title: t('confirmFriendRemovalTitle'),
+                                                message: t('confirmFriendRemovalMessage'),
+                                            },
+                                        )
+                                    }
+                                    loading={updateFriendStatusMutation.isPending}
+                                    disabled={updateFriendStatusMutation.isPending}
+                                >
+                                    {`${t('delete')} ${t('friendship').toLowerCase()}`}
+                                </Button>
+                            )}
 
-                                {friendship && friendship.status === FriendStatusEnum.ACCEPTED && (
+                            {friendship &&
+                                friendship.status === FriendStatusEnum.PENDING &&
+                                (friendship.senderUserId === currentUser.id ? (
                                     <Button
                                         variant="default"
                                         size="xs"
-                                        leftSection={<IconUserMinus size={16} />}
-                                        onClick={() =>
-                                            confirmDelete(
-                                                t,
-                                                () =>
-                                                    updateFriendStatusMutation.mutate({
-                                                        id: friendship.id,
-                                                        status: FriendStatusEnum.REJECTED,
-                                                    }),
-                                                {
-                                                    title: t('confirmFriendRemovalTitle'),
-                                                    message: t('confirmFriendRemovalMessage'),
-                                                },
-                                            )
-                                        }
-                                        loading={updateFriendStatusMutation.isPending}
-                                        disabled={updateFriendStatusMutation.isPending || isOffline}
+                                        leftSection={<IconUserX size={16} />}
+                                        onClick={() => deleteFriendMutation.mutate(friendship.id)}
+                                        loading={deleteFriendMutation.isPending}
+                                        disabled={deleteFriendMutation.isPending}
                                     >
-                                        {`${t('delete')} ${t('friendship').toLowerCase()}`}
+                                        {t('cancelFriendRequest')}
                                     </Button>
-                                )}
-
-                                {friendship &&
-                                    friendship.status === FriendStatusEnum.PENDING &&
-                                    (friendship.senderUserId === currentUser.id ? (
+                                ) : (
+                                    <Group gap="xs">
                                         <Button
-                                            variant="default"
                                             size="xs"
-                                            leftSection={<IconUserX size={16} />}
-                                            onClick={() => deleteFriendMutation.mutate(friendship.id)}
-                                            loading={deleteFriendMutation.isPending}
-                                            disabled={deleteFriendMutation.isPending || isOffline}
+                                            color="green"
+                                            leftSection={<IconUserCheck size={16} />}
+                                            onClick={() =>
+                                                updateFriendStatusMutation.mutate({
+                                                    id: friendship.id,
+                                                    status: FriendStatusEnum.ACCEPTED,
+                                                })
+                                            }
+                                            loading={updateFriendStatusMutation.isPending}
+                                            disabled={updateFriendStatusMutation.isPending}
                                         >
-                                            {t('cancelFriendRequest')}
+                                            {t('acceptFriend')}
                                         </Button>
-                                    ) : (
-                                        <Group gap="xs">
-                                            <Button
-                                                size="xs"
-                                                color="green"
-                                                leftSection={<IconUserCheck size={16} />}
-                                                onClick={() =>
-                                                    updateFriendStatusMutation.mutate({
-                                                        id: friendship.id,
-                                                        status: FriendStatusEnum.ACCEPTED,
-                                                    })
-                                                }
-                                                loading={updateFriendStatusMutation.isPending}
-                                                disabled={updateFriendStatusMutation.isPending || isOffline}
-                                            >
-                                                {t('acceptFriend')}
-                                            </Button>
-                                            <Button
-                                                size="xs"
-                                                variant="default"
-                                                leftSection={<IconUserX size={16} />}
-                                                onClick={() =>
-                                                    updateFriendStatusMutation.mutate({
-                                                        id: friendship.id,
-                                                        status: FriendStatusEnum.REJECTED,
-                                                    })
-                                                }
-                                                loading={updateFriendStatusMutation.isPending}
-                                                disabled={updateFriendStatusMutation.isPending || isOffline}
-                                            >
-                                                {t('rejectFriend')}
-                                            </Button>
-                                        </Group>
-                                    ))}
-                            </Group>
-                        )}
-                    </Group>
+                                        <Button
+                                            size="xs"
+                                            variant="default"
+                                            leftSection={<IconUserX size={16} />}
+                                            onClick={() =>
+                                                updateFriendStatusMutation.mutate({
+                                                    id: friendship.id,
+                                                    status: FriendStatusEnum.REJECTED,
+                                                })
+                                            }
+                                            loading={updateFriendStatusMutation.isPending}
+                                            disabled={updateFriendStatusMutation.isPending}
+                                        >
+                                            {t('rejectFriend')}
+                                        </Button>
+                                    </Group>
+                                ))}
+                        </Group>
+                    )}
                 </Group>
+            </Group>
 
-                {user.bio && (
-                    <Text size="sm" mt="sm" className="pre-wrap">
-                        {user.bio}
-                    </Text>
-                )}
+            {user.bio && (
+                <Text size="sm" mt="sm" className="pre-wrap">
+                    {user.bio}
+                </Text>
+            )}
 
-                <Group gap="xs" mt="md">
-                    {user.roles?.map((r) => {
-                        if (!r) return null;
-                        const label =
-                            RoleEnum.getOptions(t).find((o) => Number(o.value) === Number(r.role))?.label ??
-                            (r.role === RoleEnum.ADMINISTRATOR
-                                ? t('roleTypes.administrator')
-                                : r.role === RoleEnum.ORGANIZER
-                                  ? t('roleTypes.organizer')
-                                  : t('roleTypes.participant'));
-                        return (
-                            <Badge key={r.id || r.role} color={primaryColor} variant="outline">
-                                {label}
-                            </Badge>
-                        );
-                    })}
-                    {user.disciplines?.map((d) => {
-                        if (!d) return null;
-                        const label =
-                            DisciplineEnum.getOptions(t).find((o) => Number(o.value) === Number(d.discipline))?.label ??
-                            d.discipline;
-                        return <Badge key={d.id || d.discipline}>{label}</Badge>;
-                    })}
-                </Group>
-            </HeaderBannerWithAvatar>
+            <Group gap="xs" mt="md">
+                {user.roles?.map((r) => {
+                    if (!r) return null;
+                    const label =
+                        RoleEnum.getOptions(t).find((o) => Number(o.value) === Number(r.role))?.label ??
+                        (r.role === RoleEnum.ADMINISTRATOR
+                            ? t('roleTypes.administrator')
+                            : r.role === RoleEnum.ORGANIZER
+                              ? t('roleTypes.organizer')
+                              : t('roleTypes.participant'));
+                    return (
+                        <Badge key={r.id || r.role} color={primaryColor} variant="outline">
+                            {label}
+                        </Badge>
+                    );
+                })}
+                {user.disciplines?.map((d) => {
+                    if (!d) return null;
+                    const label =
+                        DisciplineEnum.getOptions(t).find((o) => Number(o.value) === Number(d.discipline))?.label ??
+                        d.discipline;
+                    return <Badge key={d.id || d.discipline}>{label}</Badge>;
+                })}
+            </Group>
+        </HeaderBannerWithAvatar>
+    );
 
-            <UserProfileNav user={user} isOwner={isOwner} simplifiedHeader={false} />
+    return (
+        <Stack>
+            <UserProfileNav user={user} isOwner={isOwner} simplifiedHeader={false} profileHeader={profileHeader} />
 
             {canViewPrivateContent && (
                 <>
@@ -541,7 +535,7 @@ export default function UserProfile() {
                             onSelectGroup={() => setStoryViewerOpened(true)}
                             onAddStory={isOwner ? () => setStoryModalOpened(true) : undefined}
                             onAddFeed={isOwner ? () => setFeedModalOpened(true) : undefined}
-                            isFetchingMore={!isOffline && isFetchingMoreStories}
+                            isFetchingMore={isFetchingMoreStories}
                             viewportRef={storiesViewportRef}
                             onScrollPositionChange={handleStoriesScroll}
                             lastStoryElementRef={lastStoryElementRef}
@@ -583,7 +577,7 @@ export default function UserProfile() {
                             ))
                         )}
 
-                        {isFetchingMoreFeeds && !isOffline && (
+                        {isFetchingMoreFeeds && (
                             <Center py="sm">
                                 <Loader size="sm" />
                             </Center>

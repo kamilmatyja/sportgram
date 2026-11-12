@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stack, TextInput, Textarea, Select, SimpleGrid, Button } from '@mantine/core';
+import { Stack, TextInput, Textarea, Select, Button, Group } from '@mantine/core';
+import { InteractionModal as Modal } from '../common/InteractionModal';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +8,6 @@ import { ImageInput } from '../common';
 import { eventService, type EventResource } from '../../api/services';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
 import { toInputDateTime } from '../../utils';
 import { resolveImageBase64 } from '../../utils';
 import { updateTitleWithSlug } from '../../utils';
@@ -48,7 +48,6 @@ export function EventFormModal({
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
-    const { isOffline } = useOffline();
     const isEdit = !!event;
 
     const [selectedPageParticipantId, setSelectedPageParticipantId] = useState<string | null>(
@@ -244,7 +243,7 @@ export function EventFormModal({
                     required
                 />
 
-                <SimpleGrid>
+                <Group grow gap="sm">
                     <TextInput
                         label={t('startedAt')}
                         type="datetime-local"
@@ -261,7 +260,7 @@ export function EventFormModal({
                         error={fieldErrors.endedAt}
                         onChange={(e) => setFormData({ ...formData, endedAt: e.currentTarget.value })}
                     />
-                </SimpleGrid>
+                </Group>
 
                 <ImageInput
                     label={t('photo')}
@@ -270,14 +269,13 @@ export function EventFormModal({
                     value={photoFile}
                     error={fieldErrors.photo}
                     onChange={setPhotoFile}
-                    disabled={isOffline}
                 />
 
-                <EventDisciplinesEditor disciplines={disciplines} onChange={setDisciplines} disabled={isOffline} />
+                <EventDisciplinesEditor disciplines={disciplines} onChange={setDisciplines} />
 
                 <Button
                     loading={isSubmitting}
-                    disabled={isSubmitting || !canSubmit || isOffline}
+                    disabled={isSubmitting || !canSubmit}
                     onClick={() => mutation.mutate()}
                     mt="sm"
                 >

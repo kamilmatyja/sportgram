@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stack, TextInput, Textarea, Select, MultiSelect, Button } from '@mantine/core';
+import { Stack, TextInput, Textarea, Select, MultiSelect, Button } from '@mantine/core';
+import { InteractionModal as Modal } from '../common/InteractionModal';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +9,6 @@ import { pageService, type PageResource } from '../../api/services';
 import { useAuth } from '../../auth';
 import { ColorEnum } from '../../enums/ColorEnum';
 import { useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
 import { resolveImageBase64, updateTitleWithSlug } from '../../utils';
 
 export interface PageFormModalProps {
@@ -31,7 +31,6 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
-    const { isOffline } = useOffline();
     const isEdit = !!page;
 
     const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
@@ -170,7 +169,6 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
                     value={profilePhotoFile}
                     error={fieldErrors.profilePhoto}
                     onChange={setProfilePhotoFile}
-                    disabled={isOffline}
                 />
                 <ImageInput
                     label={t('backgroundPhoto')}
@@ -179,7 +177,6 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
                     value={bgPhotoFile}
                     error={fieldErrors.backgroundPhoto}
                     onChange={setBgPhotoFile}
-                    disabled={isOffline}
                 />
 
                 {collaboratorOptions.length > 0 && (
@@ -191,13 +188,12 @@ export function PageFormModal({ opened, onClose, page, collaboratorOptions = [],
                         onChange={setCollaboratorIds}
                         searchable
                         clearable
-                        disabled={isOffline}
                     />
                 )}
 
                 <Button
                     loading={isSubmitting}
-                    disabled={isSubmitting || !canSubmit || isOffline}
+                    disabled={isSubmitting || !canSubmit}
                     onClick={() => mutation.mutate()}
                     mt="sm"
                 >

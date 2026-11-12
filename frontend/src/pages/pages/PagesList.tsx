@@ -11,7 +11,7 @@ import {
     EditActionButton,
     DeleteActionButton,
     PageFormModal,
-    TitleLinkStatusFilterGrid,
+    TitleLinkStatusFilter,
     getPageTableColumns,
 } from '../../components';
 import { useDataTableState, useMyFriends, useTitleLinkStatusFilter } from '../../hooks';
@@ -103,7 +103,7 @@ export default function PagesList() {
     const columns = useMemo(() => getPageTableColumns(t), [t]);
 
     const filtersNode = (
-        <TitleLinkStatusFilterGrid
+        <TitleLinkStatusFilter
             title={title}
             onTitleChange={setTitle}
             link={linkFilter}

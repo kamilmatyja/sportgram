@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stack, TextInput, Select, SimpleGrid, MultiSelect, Button } from '@mantine/core';
+import { Stack, TextInput, Select, MultiSelect, Button, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -7,9 +7,9 @@ import { goalService, type GoalResource } from '../../api/services';
 import { useAuth } from '../../auth';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
 import { toInputDateTime } from '../../utils';
 import { slugify } from '../../utils';
+import { InteractionBoundary, InteractionModal } from '../common/InteractionModal';
 
 export interface GoalFormModalProps {
     opened: boolean;
@@ -33,7 +33,6 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
-    const { isOffline } = useOffline();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!goal;
 
@@ -109,15 +108,13 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
         formData.distance.trim().length > 0;
 
     return (
-        <Modal
+        <InteractionModal
             opened={opened}
             onClose={onClose}
             title={isEdit ? t('editGoal') : t('addGoal')}
-            data-goal-modal="true"
-            data-offline-allowed="true"
-            className="training-goal-modal"
+            offlineAllowed
         >
-            <Stack gap="sm" data-goal-modal="true" data-offline-allowed="true">
+            <Stack gap="sm">
                 <TextInput
                     label={t('title')}
                     required
@@ -157,7 +154,7 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
                     onChange={(val) => setFormData({ ...formData, discipline: val })}
                 />
 
-                <SimpleGrid>
+                <Group grow gap="sm">
                     <TextInput
                         label={t('distanceMeters')}
                         required
@@ -171,9 +168,9 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
                         error={fieldErrors.time}
                         onChange={(e) => setFormData({ ...formData, time: e.currentTarget.value })}
                     />
-                </SimpleGrid>
+                </Group>
 
-                <SimpleGrid>
+                <Group grow gap="sm">
                     <TextInput
                         label={t('startedAt')}
                         type="datetime-local"
@@ -188,19 +185,18 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
                         error={fieldErrors.endedAt}
                         onChange={(e) => setFormData({ ...formData, endedAt: e.currentTarget.value })}
                     />
-                </SimpleGrid>
+                </Group>
 
-                {(collaboratorOptions.length > 0 || isOffline) && (
-                    <MultiSelect
-                        label={t('collaborators')}
-                        placeholder={isOffline ? t('offlineUnavailable') : t('selectCollaborators')}
-                        data={collaboratorOptions}
-                        value={collaboratorIds}
-                        onChange={setCollaboratorIds}
-                        disabled={isOffline}
-                        searchable={!isOffline}
-                        clearable={!isOffline}
-                    />
+                {collaboratorOptions.length > 0 && (
+                    <InteractionBoundary surface="online">
+                        <MultiSelect
+                            label={t('collaborators')}
+                            placeholder={t('selectCollaborators')}
+                            data={collaboratorOptions}
+                            value={collaboratorIds}
+                            onChange={setCollaboratorIds}
+                        />
+                    </InteractionBoundary>
                 )}
 
                 <Button
@@ -212,6 +208,6 @@ export function GoalFormModal({ opened, onClose, goal, collaboratorOptions = [],
                     {t('save')}
                 </Button>
             </Stack>
-        </Modal>
+        </InteractionModal>
     );
 }

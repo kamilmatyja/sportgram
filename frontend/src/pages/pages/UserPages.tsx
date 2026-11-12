@@ -11,7 +11,7 @@ import {
     DeleteActionButton,
     UserSubpageContainer,
     PageFormModal,
-    TitleLinkStatusFilterGrid,
+    TitleLinkStatusFilter,
     getPageTableColumns,
 } from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
@@ -119,7 +119,7 @@ export default function UserPages() {
                 const columns = getPageTableColumns(t);
 
                 const filtersNode = (
-                    <TitleLinkStatusFilterGrid
+                    <TitleLinkStatusFilter
                         title={title}
                         onTitleChange={setTitle}
                         link={linkFilter}

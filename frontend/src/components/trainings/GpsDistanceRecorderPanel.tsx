@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Stack, Group, Button, Badge, Paper, SimpleGrid, ActionIcon, Tooltip } from '@mantine/core';
+import { Stack, Group, Button, Badge, Paper } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPlayerPlay, IconPlayerPause, IconCheck, IconTrash } from '@tabler/icons-react';
+import { IconPlayerPlay, IconPlayerPause, IconCheck } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useWakeLock } from '../../hooks';
 import {
@@ -16,6 +16,7 @@ import {
 } from '../../utils';
 import { TrainingRouteMap, type RoutePoint } from './TrainingRouteMap';
 import type { FormTrainingDistance } from './TrainingDisciplinesEditor';
+import { DeleteActionButton } from '../common';
 
 export interface TelemetryPoint extends RoutePoint {
     accuracy: number | null;
@@ -374,7 +375,7 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
     return (
         <Paper p="sm" mt="xs" bg="var(--mantine-color-gray-light)">
             <Stack gap="sm">
-                <SimpleGrid className="metrics-grid" spacing="xs">
+                <Group grow gap="xs">
                     <div className="gps-metric-card">
                         <div className="gps-metric-val">{formatDistance(totalDistance)}</div>
                         <div className="gps-metric-lbl">{t('distance')}</div>
@@ -395,7 +396,7 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                         </div>
                         <div className="gps-metric-lbl">{t('speed')}</div>
                     </div>
-                </SimpleGrid>
+                </Group>
 
                 <TrainingRouteMap points={points} currentPosition={currentPos} isLive={status === 'recording'} />
 
@@ -441,17 +442,7 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                             </>
                         )}
 
-                        <Tooltip label={t('delete')}>
-                            <ActionIcon
-                                size={30}
-                                color="red"
-                                variant="subtle"
-                                onClick={handleDiscard}
-                                aria-label={t('delete')}
-                            >
-                                <IconTrash size={16} />
-                            </ActionIcon>
-                        </Tooltip>
+                        <DeleteActionButton onClick={() => handleDiscard()} />
                     </Group>
                 </Group>
             </Stack>

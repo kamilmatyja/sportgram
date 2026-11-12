@@ -1,12 +1,7 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
 import type { ApiRequest, ApiResponse } from '../types';
-import {
-    getOfflineGoals,
-    saveOfflineGoal,
-    deleteOfflineGoal,
-    getOfflineCurrentUserSync,
-} from '../../services/offlineStorage';
+import { getOfflineGoals, saveOfflineGoal, deleteOfflineGoal, getOfflineCurrentUserSync } from '../../services';
 
 export type GoalResource = components['schemas']['GoalResource'];
 export type GoalDto = components['schemas']['GoalDto'];

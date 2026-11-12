@@ -210,7 +210,7 @@ export default function TrainingDetails() {
 
     return (
         <MantineThemeProvider theme={dynamicTheme} inherit>
-            <Stack gap="lg">
+            <Stack gap="xl">
                 {ownerUser && <UserProfileNav user={ownerUser} isOwner={isOwner} />}
 
                 <Card>
@@ -292,7 +292,7 @@ export default function TrainingDetails() {
                             <Table.Tbody>
                                 {!training.participants || training.participants.length === 0 ? (
                                     <Table.Tr>
-                                        <Table.Td colSpan={3} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                        <Table.Td colSpan={3} className="table-cell-empty">
                                             <EmptyState title={t('noData')} />
                                         </Table.Td>
                                     </Table.Tr>
@@ -362,12 +362,7 @@ export default function TrainingDetails() {
                                             <Table.Tbody>
                                                 {!disc.distances || disc.distances.length === 0 ? (
                                                     <Table.Tr>
-                                                        <Table.Td
-                                                            colSpan={5}
-                                                            p={0}
-                                                            m={0}
-                                                            style={{ padding: 0, margin: 0 }}
-                                                        >
+                                                        <Table.Td colSpan={5} className="table-cell-empty">
                                                             <EmptyState title={t('noData')} />
                                                         </Table.Td>
                                                     </Table.Tr>

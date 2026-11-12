@@ -158,11 +158,6 @@ export async function getOfflineTrainings(userId?: string): Promise<TrainingReso
     }
 }
 
-export async function getOfflineTrainingByLink(link: string): Promise<TrainingResource | null> {
-    const all = await getOfflineTrainings();
-    return all.find((t) => t.link === link || t.id === link) ?? null;
-}
-
 export async function saveOfflineTraining(
     training: TrainingResource,
     isNew = false,
@@ -282,11 +277,6 @@ export async function getOfflineGoals(userId?: string): Promise<GoalResource[]> 
         }
         return syncList;
     }
-}
-
-export async function getOfflineGoalByLink(link: string): Promise<GoalResource | null> {
-    const all = await getOfflineGoals();
-    return all.find((g) => g.link === link || g.id === link) ?? null;
 }
 
 export async function saveOfflineGoal(goal: GoalResource, isNew = false, originalBody?: any): Promise<GoalResource> {

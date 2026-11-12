@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Text, SimpleGrid, TextInput, Select, Avatar, Group } from '@mantine/core';
+import { Text, TextInput, Select, Avatar, Group } from '@mantine/core';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { storyService, type StoryResource, type GetStoriesQuery } from '../../api/services';
@@ -150,7 +150,7 @@ export default function UserStories() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid>
+                    <Group grow align="flex-start" gap="sm">
                         <TextInput
                             label={t('text')}
                             placeholder={t('search')}
@@ -174,7 +174,7 @@ export default function UserStories() {
                             }}
                             clearable
                         />
-                    </SimpleGrid>
+                    </Group>
                 );
 
                 return (

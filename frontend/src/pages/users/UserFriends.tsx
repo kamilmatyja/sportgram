@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Group, Text, SimpleGrid, Select, Modal, Button, Stack } from '@mantine/core';
+import { Group, Text, Select, Button, Stack } from '@mantine/core';
+import { InteractionModal as Modal } from '../../components/common/InteractionModal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { userService, friendService, type FriendResource, type GetFriendsQuery } from '../../api/services';
@@ -17,13 +18,11 @@ import {
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { confirmDelete, formatDateTime, notifySuccess, notifyError } from '../../utils';
 import { useDataTableState, useUsersMap, useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
 
 export default function UserFriends() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
-    const { isOffline } = useOffline();
 
     const tableState = useDataTableState({ initialSort: 'createdAt:desc' });
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -191,7 +190,7 @@ export default function UserFriends() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid>
+                    <Group grow align="flex-start" gap="sm">
                         <Select
                             label={t('status')}
                             placeholder={t('allStatuses')}
@@ -206,7 +205,7 @@ export default function UserFriends() {
                             }}
                             clearable
                         />
-                    </SimpleGrid>
+                    </Group>
                 );
 
                 return (
@@ -274,7 +273,6 @@ export default function UserFriends() {
                                     placeholder={t('selectUser')}
                                     required
                                     searchable
-                                    disabled={isOffline}
                                     data={candidateUsers.map((u) => ({
                                         value: u.id,
                                         label: `${u.firstName} ${u.lastName} (@${u.link})`,
@@ -289,7 +287,7 @@ export default function UserFriends() {
                                 />
                                 <Button
                                     loading={addFriendMutation.isPending}
-                                    disabled={!selectedUserId || addFriendMutation.isPending || isOffline}
+                                    disabled={!selectedUserId || addFriendMutation.isPending}
                                     onClick={() => selectedUserId && addFriendMutation.mutate(selectedUserId)}
                                 >
                                     {t('save')}

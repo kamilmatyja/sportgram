@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Text, SimpleGrid, TextInput, Select, Badge, Group } from '@mantine/core';
+import { Text, TextInput, Select, Badge, Group, SimpleGrid } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -185,7 +185,7 @@ export default function UserGoals() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid className="filter-grid-3">
+                    <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm" w="100%">
                         <TextInput
                             label={t('title')}
                             value={textFilter}
@@ -204,7 +204,7 @@ export default function UserGoals() {
                         />
                         <Select
                             label={t('discipline')}
-                            placeholder={t('discipline')}
+                            placeholder={t('allDisciplines')}
                             data={DisciplineEnum.getOptions(t).map((d) => ({
                                 value: String(d.value),
                                 label: d.label,

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Button, SimpleGrid, TextInput, Modal, Stack, Group, Text } from '@mantine/core';
+import { Button, TextInput, Stack, Group, Text } from '@mantine/core';
+import { InteractionModal as Modal } from '../../components/common/InteractionModal';
 import { useDisclosure } from '@mantine/hooks';
 import { IconDeviceMobile, IconPlus, IconEdit } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
@@ -22,7 +23,6 @@ import {
 import { PushSubscriptionStatusEnum } from '../../enums/PushSubscriptionStatusEnum';
 import { buildSortOptions, confirmDelete, formatDateTime, notifySuccess, notifyError } from '../../utils';
 import { useDataTableState, useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -45,7 +45,6 @@ const initialForm = {
 export default function UserPushSubscriptions() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const { isOffline } = useOffline();
 
     const [subscribing, setSubscribing] = useState(false);
     const [showManualCreate, setShowManualCreate] = useState(false);
@@ -366,7 +365,7 @@ export default function UserPushSubscriptions() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid className="filter-grid-3">
+                    <Group grow align="flex-start" gap="sm">
                         <TextInput
                             label={t('endpoint')}
                             value={endpointFilter}
@@ -391,7 +390,7 @@ export default function UserPushSubscriptions() {
                                 tableState.resetPage();
                             }}
                         />
-                    </SimpleGrid>
+                    </Group>
                 );
 
                 return (
@@ -443,21 +442,22 @@ export default function UserPushSubscriptions() {
                         />
 
                         <Modal opened={createOpened} onClose={closeCreate} title={t('addSubscription')}>
-                            <Stack gap="md">
+                            <Stack gap="xs">
                                 <Group grow gap="xs">
                                     <Button
+                                        size="xs"
                                         variant="light"
                                         leftSection={<IconDeviceMobile size={16} />}
                                         loading={subscribing}
-                                        disabled={subscribing || isOffline}
+                                        disabled={subscribing}
                                         onClick={handleSubscribeDevice}
                                     >
                                         {t('addAutomatically')}
                                     </Button>
                                     <Button
-                                        variant={showManualCreate ? 'filled' : 'default'}
+                                        size="xs"
+                                        variant="default"
                                         leftSection={<IconPlus size={16} />}
-                                        disabled={isOffline}
                                         onClick={() => setShowManualCreate((prev) => !prev)}
                                     >
                                         {t('addManually')}
@@ -470,7 +470,6 @@ export default function UserPushSubscriptions() {
                                             label={t('endpoint')}
                                             placeholder="https://..."
                                             required
-                                            disabled={isOffline}
                                             value={createForm.endpoint}
                                             error={createErrors.errors.endpoint}
                                             onChange={(e) =>
@@ -484,7 +483,6 @@ export default function UserPushSubscriptions() {
                                             label={t('p256dh')}
                                             placeholder="p256dh..."
                                             required
-                                            disabled={isOffline}
                                             value={createForm.p256dh}
                                             error={createErrors.errors.p256dh}
                                             onChange={(e) =>
@@ -498,7 +496,6 @@ export default function UserPushSubscriptions() {
                                             label={t('authKey')}
                                             placeholder="auth..."
                                             required
-                                            disabled={isOffline}
                                             value={createForm.auth}
                                             error={createErrors.errors.auth}
                                             onChange={(e) =>
@@ -512,7 +509,6 @@ export default function UserPushSubscriptions() {
                                             label={t('device')}
                                             placeholder="User-Agent..."
                                             required
-                                            disabled={isOffline}
                                             value={createForm.userAgent}
                                             error={createErrors.errors.userAgent}
                                             onChange={(e) =>
@@ -530,8 +526,7 @@ export default function UserPushSubscriptions() {
                                                 !createForm.endpoint.trim() ||
                                                 !createForm.p256dh.trim() ||
                                                 !createForm.auth.trim() ||
-                                                !createForm.userAgent.trim() ||
-                                                isOffline
+                                                !createForm.userAgent.trim()
                                             }
                                             onClick={() => createManualMutation.mutate()}
                                         >
@@ -543,21 +538,22 @@ export default function UserPushSubscriptions() {
                         </Modal>
 
                         <Modal opened={editOpened} onClose={closeEdit} title={t('editSubscription')}>
-                            <Stack gap="md">
+                            <Stack gap="xs">
                                 <Group grow gap="xs">
                                     <Button
+                                        size="xs"
                                         variant="light"
                                         leftSection={<IconDeviceMobile size={16} />}
                                         loading={subscribing}
-                                        disabled={subscribing || isOffline}
+                                        disabled={subscribing}
                                         onClick={handleSubscribeDeviceInEdit}
                                     >
                                         {t('editAutomatically')}
                                     </Button>
                                     <Button
-                                        variant={showManualEdit ? 'filled' : 'default'}
+                                        size="xs"
+                                        variant="default"
                                         leftSection={<IconEdit size={16} />}
-                                        disabled={isOffline}
                                         onClick={() => setShowManualEdit((prev) => !prev)}
                                     >
                                         {t('editManually')}
@@ -569,7 +565,6 @@ export default function UserPushSubscriptions() {
                                         <TextInput
                                             label={t('endpoint')}
                                             required
-                                            disabled={isOffline}
                                             value={editForm.endpoint}
                                             error={editErrors.errors.endpoint}
                                             onChange={(e) =>
@@ -579,7 +574,6 @@ export default function UserPushSubscriptions() {
                                         <TextInput
                                             label={t('p256dh')}
                                             required
-                                            disabled={isOffline}
                                             value={editForm.p256dh}
                                             error={editErrors.errors.p256dh}
                                             onChange={(e) =>
@@ -589,7 +583,6 @@ export default function UserPushSubscriptions() {
                                         <TextInput
                                             label={t('authKey')}
                                             required
-                                            disabled={isOffline}
                                             value={editForm.auth}
                                             error={editErrors.errors.auth}
                                             onChange={(e) => setEditForm({ ...editForm, auth: e.currentTarget.value })}
@@ -597,7 +590,6 @@ export default function UserPushSubscriptions() {
                                         <TextInput
                                             label={t('device')}
                                             required
-                                            disabled={isOffline}
                                             value={editForm.userAgent}
                                             error={editErrors.errors.userAgent}
                                             onChange={(e) =>
@@ -615,8 +607,7 @@ export default function UserPushSubscriptions() {
                                                 !editForm.endpoint.trim() ||
                                                 !editForm.p256dh.trim() ||
                                                 !editForm.auth.trim() ||
-                                                !editForm.userAgent.trim() ||
-                                                isOffline
+                                                !editForm.userAgent.trim()
                                             }
                                             onClick={() => updateMutation.mutate()}
                                         >

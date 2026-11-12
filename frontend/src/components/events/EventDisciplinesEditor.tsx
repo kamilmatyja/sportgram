@@ -1,8 +1,9 @@
-import { Stack, Group, Paper, Select, TextInput, Button, ActionIcon, Tooltip, Text } from '@mantine/core';
-import { IconPlus, IconTrash } from '@tabler/icons-react';
+import { Stack, Group, Paper, Select, TextInput, Button, Text } from '@mantine/core';
+import { IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { updateItem, removeItem, patchItem, generateUuid } from '../../utils';
+import { DeleteActionButton } from '../common';
 
 export interface FormEventSubDistance {
     id: string;
@@ -132,16 +133,7 @@ export function EventDisciplinesEditor({ disciplines, onChange, disabled = false
                             onChange={(val) => handleDisciplineChange(d.id, val)}
                             flex={1}
                         />
-                        <Tooltip label={t('delete')}>
-                            <ActionIcon
-                                color="red"
-                                onClick={() => handleRemoveDiscipline(d.id)}
-                                disabled={disabled}
-                                aria-label={t('delete')}
-                            >
-                                <IconTrash size={16} />
-                            </ActionIcon>
-                        </Tooltip>
+                        <DeleteActionButton onClick={() => handleRemoveDiscipline(d.id)} />
                     </Group>
 
                     <Stack gap="sm" mt="xs">
@@ -155,16 +147,7 @@ export function EventDisciplinesEditor({ disciplines, onChange, disabled = false
                                         value={dist.distance}
                                         onChange={(e) => handleDistanceChange(d.id, dist.id, e.currentTarget.value)}
                                     />
-                                    <Tooltip label={t('delete')}>
-                                        <ActionIcon
-                                            color="red"
-                                            onClick={() => handleRemoveDistance(d.id, dist.id)}
-                                            disabled={disabled}
-                                            aria-label={t('delete')}
-                                        >
-                                            <IconTrash size={16} />
-                                        </ActionIcon>
-                                    </Tooltip>
+                                    <DeleteActionButton onClick={() => handleRemoveDistance(d.id, dist.id)} />
                                 </Group>
 
                                 <Stack gap="xs" mt="xs" pl="sm" className="subdistances-container">
@@ -195,17 +178,9 @@ export function EventDisciplinesEditor({ disciplines, onChange, disabled = false
                                                     handleSubDistanceChange(d.id, dist.id, sd.id, e.currentTarget.value)
                                                 }
                                             />
-                                            <Tooltip label={t('delete')}>
-                                                <ActionIcon
-                                                    color="red"
-                                                    size={26}
-                                                    onClick={() => handleRemoveSubDistance(d.id, dist.id, sd.id)}
-                                                    disabled={disabled}
-                                                    aria-label={t('delete')}
-                                                >
-                                                    <IconTrash size={14} />
-                                                </ActionIcon>
-                                            </Tooltip>
+                                            <DeleteActionButton
+                                                onClick={() => handleRemoveSubDistance(d.id, dist.id, sd.id)}
+                                            />
                                         </Group>
                                     ))}
                                 </Stack>

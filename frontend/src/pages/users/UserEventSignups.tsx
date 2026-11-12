@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Text, SimpleGrid, Select, Badge, Group, Avatar } from '@mantine/core';
+import { Text, Select, Badge, Group, Avatar } from '@mantine/core';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -236,7 +236,7 @@ export default function UserEventSignups() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid>
+                    <Group grow align="flex-start" gap="sm">
                         <Select
                             label={t('status')}
                             placeholder={t('allStatuses')}
@@ -251,7 +251,7 @@ export default function UserEventSignups() {
                             }}
                             clearable
                         />
-                    </SimpleGrid>
+                    </Group>
                 );
 
                 return (

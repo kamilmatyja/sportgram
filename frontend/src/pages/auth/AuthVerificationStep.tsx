@@ -1,7 +1,6 @@
 import React from 'react';
 import { Stack, Text, PinInput, Button, Group } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
-import { useOffline } from '../../services';
 
 export interface AuthVerificationStepProps {
     promptText?: string;
@@ -31,7 +30,6 @@ export function AuthVerificationStep({
     children,
 }: AuthVerificationStepProps) {
     const { t } = useTranslation();
-    const { isOffline } = useOffline();
 
     return (
         <form onSubmit={onSubmit}>
@@ -63,7 +61,7 @@ export function AuthVerificationStep({
                     fullWidth
                     mt="md"
                     loading={loading}
-                    disabled={loading || code.length < 6 || isSubmitDisabled || isOffline}
+                    disabled={loading || code.length < 6 || isSubmitDisabled}
                 >
                     {submitLabel ?? t('verify')}
                 </Button>
@@ -72,13 +70,7 @@ export function AuthVerificationStep({
                     <Button variant="default" size="xs" onClick={onBack} disabled={loading}>
                         {t('back')}
                     </Button>
-                    <Button
-                        variant="default"
-                        size="xs"
-                        onClick={onResend}
-                        loading={loading}
-                        disabled={loading || isOffline}
-                    >
+                    <Button variant="default" size="xs" onClick={onResend} loading={loading} disabled={loading}>
                         {t('resend')}
                     </Button>
                 </Group>

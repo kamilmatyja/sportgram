@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stack, SimpleGrid, TextInput, Select, MultiSelect, Textarea, Button } from '@mantine/core';
+import { Stack, TextInput, Select, MultiSelect, Textarea, Button, SimpleGrid } from '@mantine/core';
+import { InteractionModal as Modal } from '../common/InteractionModal';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +15,6 @@ import { LanguageEnum } from '../../enums/LanguageEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { ThemeEnum } from '../../enums/ThemeEnum';
 import { useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
 import { resolveImageBase64 } from '../../utils';
 import { slugify } from '../../utils';
 
@@ -48,7 +48,6 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
     const queryClient = useQueryClient();
     const { refetchUser } = useAuth();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
-    const { isOffline } = useOffline();
     const isEdit = !!user;
 
     const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
@@ -203,7 +202,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
     return (
         <Modal opened={opened} onClose={onClose} title={isEdit ? t('editUser') : t('addUser')}>
             <Stack gap="sm">
-                <SimpleGrid>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
                     <TextInput
                         label={t('firstName')}
                         required
@@ -238,7 +237,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
                     <TextInput
                         label={t('email')}
                         placeholder={t('emailPlaceholder')}
@@ -259,7 +258,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
                     <TextInput
                         label={t('link')}
                         required
@@ -277,7 +276,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
                     <TextInput
                         label={t('birthAt')}
                         type="date"
@@ -298,7 +297,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
                     <Select
                         label={t('country')}
                         placeholder={t('country')}
@@ -322,7 +321,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
                     <Select
                         label={t('theme')}
                         placeholder={t('theme')}
@@ -345,7 +344,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     />
                 </SimpleGrid>
 
-                <SimpleGrid>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
                     <MultiSelect
                         label={t('roles')}
                         placeholder={t('roles')}
@@ -384,7 +383,6 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     value={profilePhotoFile}
                     error={fieldErrors.profilePhoto}
                     onChange={setProfilePhotoFile}
-                    disabled={isOffline}
                 />
                 <ImageInput
                     label={t('backgroundPhoto')}
@@ -393,12 +391,11 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                     value={bgPhotoFile}
                     error={fieldErrors.backgroundPhoto}
                     onChange={setBgPhotoFile}
-                    disabled={isOffline}
                 />
 
                 <Button
                     loading={isSubmitting}
-                    disabled={isSubmitting || !canSubmit || isOffline}
+                    disabled={isSubmitting || !canSubmit}
                     onClick={() => mutation.mutate()}
                     mt="sm"
                 >

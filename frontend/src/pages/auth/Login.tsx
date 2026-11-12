@@ -19,7 +19,6 @@ import { getErrorMessage } from '../../api/client';
 import { authService } from '../../api/services';
 import { useAuth } from '../../auth';
 import { useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
 import { signSession, registerSession, UNCONFIRMED_ACCOUNT_ERROR } from '../../utils';
 import { AuthVerificationStep } from './AuthVerificationStep';
 
@@ -27,7 +26,6 @@ export default function Login() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { login } = useAuth();
-    const { isOffline } = useOffline();
     const { fieldErrors, handleFormError, clearFieldError, clearFieldErrors } = useFormErrors();
 
     const [step, setStep] = useState<number>(signSession.step);
@@ -185,7 +183,7 @@ export default function Login() {
                                 fullWidth
                                 mt="md"
                                 loading={loading}
-                                disabled={loading || !email.trim() || !password || isOffline}
+                                disabled={loading || !email.trim() || !password}
                             >
                                 {t('sign')}
                             </Button>

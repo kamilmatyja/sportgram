@@ -11,7 +11,7 @@ import {
     DeleteActionButton,
     UserSubpageContainer,
     EventFormModal,
-    TitleLinkStatusFilterGrid,
+    TitleLinkStatusFilter,
     getEventTableColumns,
 } from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
@@ -141,7 +141,7 @@ export default function UserEvents() {
                 const columns = getEventTableColumns(t);
 
                 const filtersNode = (
-                    <TitleLinkStatusFilterGrid
+                    <TitleLinkStatusFilter
                         title={titleFilter}
                         onTitleChange={setTitleFilter}
                         link={linkFilter}

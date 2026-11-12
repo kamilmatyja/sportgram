@@ -13,7 +13,7 @@ import {
     DeleteActionButton,
     UserSubpageContainer,
     TrainingFormModal,
-    TitleLinkStatusFilterGrid,
+    TitleLinkStatusFilter,
 } from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
@@ -165,7 +165,7 @@ export default function UserTrainings() {
                 ];
 
                 const filtersNode = (
-                    <TitleLinkStatusFilterGrid
+                    <TitleLinkStatusFilter
                         title={titleFilter}
                         onTitleChange={setTitleFilter}
                         link={linkFilter}

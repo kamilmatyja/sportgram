@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Group, Text, SimpleGrid, TextInput, Select } from '@mantine/core';
+import { Group, Text, TextInput, Select } from '@mantine/core';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { notificationService, type NotificationResource, type GetNotificationsQuery } from '../../api/services';
@@ -122,7 +122,7 @@ export default function UserNotifications() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid>
+                    <Group grow align="flex-start" gap="sm">
                         <TextInput
                             label={t('text')}
                             value={textFilter}
@@ -145,7 +145,7 @@ export default function UserNotifications() {
                             }}
                             clearable
                         />
-                    </SimpleGrid>
+                    </Group>
                 );
 
                 return (

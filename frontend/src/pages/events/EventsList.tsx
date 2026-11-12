@@ -11,7 +11,7 @@ import {
     EditActionButton,
     DeleteActionButton,
     EventFormModal,
-    TitleLinkStatusFilterGrid,
+    TitleLinkStatusFilter,
     getEventTableColumns,
 } from '../../components';
 import { useDataTableState, useTitleLinkStatusFilter } from '../../hooks';
@@ -141,7 +141,7 @@ export default function EventsList() {
     const columns = useMemo(() => getEventTableColumns(t), [t]);
 
     const filtersNode = (
-        <TitleLinkStatusFilterGrid
+        <TitleLinkStatusFilter
             title={titleFilter}
             onTitleChange={setTitleFilter}
             link={linkFilter}

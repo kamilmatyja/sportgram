@@ -1,3 +1,5 @@
+import { type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Group, Button, Box, Text, Title } from '@mantine/core';
 import {
     IconArticle,
@@ -24,6 +26,7 @@ import { RoleEnum } from '../enums/RoleEnum';
 import { useUserSubpageAccess } from '../hooks';
 import { formatImageSrc } from '../utils';
 import { HeaderBannerWithAvatar } from './common';
+import { InteractionBoundary } from './common/InteractionModal';
 
 export interface UserProfileNavProps {
     user?:
@@ -41,9 +44,16 @@ export interface UserProfileNavProps {
     userLink?: string;
     isOwner?: boolean;
     simplifiedHeader?: boolean;
+    profileHeader?: ReactNode;
 }
 
-export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = true }: UserProfileNavProps) {
+export function UserProfileNav({
+    user,
+    userLink,
+    isOwner,
+    simplifiedHeader = true,
+    profileHeader,
+}: UserProfileNavProps) {
     const { t } = useTranslation();
     const location = useLocation();
     const { currentUser, isAdmin } = useAuth();
@@ -110,62 +120,76 @@ export function UserProfileNav({ user, userLink, isOwner, simplifiedHeader = tru
     const profileSrc = formatImageSrc(user?.profilePhoto);
     const isProfileRoot = location.pathname === `/users/${link}`;
 
-    return (
-        <Box mb="md">
-            {simplifiedHeader && user && (
-                <HeaderBannerWithAvatar
-                    backgroundPhotoSrc={bgSrc}
-                    profilePhotoSrc={profileSrc}
-                    altText={user.firstName ?? 'Background'}
-                >
-                    <Group justify="space-between" align="flex-start" mt={55}>
-                        <div>
-                            <Title order={2}>
-                                {user.firstName} {user.lastName}
-                            </Title>
-                            <Text size="sm" c="dimmed">
-                                @{user.link}
-                            </Text>
-                        </div>
+    const navigation = (
+        <>
+            {profileHeader && (
+                <Box mb="md">
+                    <InteractionBoundary surface="page">{profileHeader}</InteractionBoundary>
+                </Box>
+            )}
+            <Box mb="md">
+                {simplifiedHeader && user && (
+                    <HeaderBannerWithAvatar
+                        backgroundPhotoSrc={bgSrc}
+                        profilePhotoSrc={profileSrc}
+                        altText={user.firstName ?? 'Background'}
+                    >
+                        <Group justify="space-between" align="flex-start" mt={55}>
+                            <div>
+                                <Title order={2}>
+                                    {user.firstName} {user.lastName}
+                                </Title>
+                                <Text size="sm" c="dimmed">
+                                    @{user.link}
+                                </Text>
+                            </div>
 
-                        {!isProfileRoot && (
-                            <Button
-                                component={Link}
-                                to={`/users/${link}`}
-                                variant="light"
-                                size="xs"
-                                leftSection={<IconArrowLeft size={16} />}
-                                data-offline-allowed="true"
-                            >
-                                {t('backToUser')}
-                            </Button>
-                        )}
+                            {!isProfileRoot && (
+                                <Button
+                                    component={Link}
+                                    to={`/users/${link}`}
+                                    variant="light"
+                                    size="xs"
+                                    leftSection={<IconArrowLeft size={16} />}
+                                >
+                                    {t('backToUser')}
+                                </Button>
+                            )}
+                        </Group>
+                    </HeaderBannerWithAvatar>
+                )}
+
+                {hasAccess && (
+                    <Group gap="xs" wrap="wrap">
+                        {navItems.map((item) => {
+                            const isActive = location.pathname.startsWith(item.to);
+                            return (
+                                <Button
+                                    key={item.to}
+                                    component={Link}
+                                    to={item.to}
+                                    variant={isActive ? 'filled' : 'light'}
+                                    size="xs"
+                                    leftSection={item.icon}
+                                >
+                                    {item.label}
+                                </Button>
+                            );
+                        })}
                     </Group>
-                </HeaderBannerWithAvatar>
-            )}
-
-            {hasAccess && (
-                <Group gap="xs" wrap="wrap">
-                    {navItems.map((item) => {
-                        const isActive = location.pathname.startsWith(item.to);
-                        return (
-                            <Button
-                                key={item.to}
-                                component={Link}
-                                to={item.to}
-                                variant={isActive ? 'filled' : 'light'}
-                                size="xs"
-                                leftSection={item.icon}
-                                data-offline-allowed="true"
-                            >
-                                {item.label}
-                            </Button>
-                        );
-                    })}
-                </Group>
-            )}
-        </Box>
+                )}
+            </Box>
+        </>
     );
+
+    const portalTarget = typeof document !== 'undefined' ? document.getElementById('profile-navigation-root') : null;
+    const navigationWithPolicy = (
+        <InteractionBoundary surface="profile-navigation" offlineAllowed={owner}>
+            {navigation}
+        </InteractionBoundary>
+    );
+
+    return portalTarget ? createPortal(navigationWithPolicy, portalTarget) : navigationWithPolicy;
 }
 
 export default UserProfileNav;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stack, TextInput, Textarea, MultiSelect, SimpleGrid, Button } from '@mantine/core';
+import { Stack, TextInput, Textarea, MultiSelect, Button, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -7,9 +7,9 @@ import { trainingService, type TrainingResource } from '../../api/services';
 import { useAuth } from '../../auth';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
 import { toInputDateTime, updateTitleWithSlug, coordFromBackendInt, coordToBackendInt } from '../../utils';
 import { TrainingDisciplinesEditor, type FormTrainingDiscipline } from './TrainingDisciplinesEditor';
+import { InteractionBoundary, InteractionModal } from '../common/InteractionModal';
 
 export interface TrainingFormModalProps {
     opened: boolean;
@@ -38,7 +38,6 @@ export function TrainingFormModal({
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
-    const { isOffline } = useOffline();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!training;
 
@@ -192,15 +191,13 @@ export function TrainingFormModal({
         areDisciplinesValid;
 
     return (
-        <Modal
+        <InteractionModal
             opened={opened}
             onClose={onClose}
             title={isEdit ? t('editTraining') : t('addTraining')}
-            data-training-modal="true"
-            data-offline-allowed="true"
-            className="training-goal-modal"
+            offlineAllowed
         >
-            <Stack gap="sm" data-training-modal="true" data-offline-allowed="true">
+            <Stack gap="sm">
                 <TextInput
                     label={t('title')}
                     required
@@ -235,7 +232,7 @@ export function TrainingFormModal({
                     onChange={(e) => setFormData({ ...formData, location: e.currentTarget.value })}
                 />
 
-                <SimpleGrid>
+                <Group grow gap="sm">
                     <TextInput
                         label={t('startedAt')}
                         type="datetime-local"
@@ -252,19 +249,18 @@ export function TrainingFormModal({
                         error={fieldErrors.endedAt}
                         onChange={(e) => setFormData({ ...formData, endedAt: e.currentTarget.value })}
                     />
-                </SimpleGrid>
+                </Group>
 
-                {(collaboratorOptions.length > 0 || isOffline) && (
-                    <MultiSelect
-                        label={t('collaborators')}
-                        placeholder={isOffline ? t('offlineUnavailable') : t('selectCollaborators')}
-                        data={collaboratorOptions}
-                        value={collaboratorIds}
-                        onChange={setCollaboratorIds}
-                        disabled={isOffline}
-                        searchable={!isOffline}
-                        clearable={!isOffline}
-                    />
+                {collaboratorOptions.length > 0 && (
+                    <InteractionBoundary surface="online">
+                        <MultiSelect
+                            label={t('collaborators')}
+                            placeholder={t('selectCollaborators')}
+                            data={collaboratorOptions}
+                            value={collaboratorIds}
+                            onChange={setCollaboratorIds}
+                        />
+                    </InteractionBoundary>
                 )}
 
                 <TrainingDisciplinesEditor
@@ -282,6 +278,6 @@ export function TrainingFormModal({
                     {t('save')}
                 </Button>
             </Stack>
-        </Modal>
+        </InteractionModal>
     );
 }

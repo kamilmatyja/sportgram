@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Modal, Stack, Group, Avatar, Text, Image, Box, ActionIcon, Badge, Tooltip, Anchor } from '@mantine/core';
+import { Stack, Group, Avatar, Text, Image, Box, ActionIcon, Badge, Tooltip, Anchor } from '@mantine/core';
+import { Modal } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IconChevronLeft, IconChevronRight, IconEdit, IconTrash } from '@tabler/icons-react';
+import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { formatImageSrc } from '../utils';
 import { formatDateTime } from '../utils';
 import { useAuth } from '../auth';
@@ -11,7 +12,8 @@ import type { UserResource } from '../api/services';
 import { EntryTypeEnum } from '../enums/EntryTypeEnum';
 import { EntityViewCounter } from './EntityViewCounter';
 import { openConfirmActionModal } from '../utils';
-import { useOffline } from '../services';
+import { useInteractionAttributes } from './common/InteractionModal';
+import { DeleteActionButton, EditActionButton } from './common';
 
 export interface UserStoriesGroup {
     userId: string;
@@ -49,7 +51,7 @@ export function StoryViewerModal({
 }: StoryViewerModalProps) {
     const { t } = useTranslation();
     const { currentUser } = useAuth();
-    const { isOffline } = useOffline();
+    const modalInteractionAttributes = useInteractionAttributes('modal');
 
     const effectiveGroups: UserStoriesGroup[] =
         groups && groups.length > 0 ? groups : story ? [{ userId: story.userId, author, stories: [story] }] : [];
@@ -240,7 +242,7 @@ export function StoryViewerModal({
             <Modal.Overlay />
             <Modal.Content>
                 <Modal.Header className="story-modal-header">
-                    <Stack gap={6} w="100%">
+                    <Stack gap={6} className="story-modal-header-content" {...modalInteractionAttributes}>
                         <Box className="story-progress-bar-container">
                             {currentStories.map((s, idx) => (
                                 <Box
@@ -258,24 +260,15 @@ export function StoryViewerModal({
 
                         <Group justify="space-between" align="center" wrap="nowrap" w="100%">
                             <Group wrap="nowrap">
-                                {currentAuthor?.link && !isOffline ? (
+                                {currentAuthor?.link ? (
                                     <Anchor component={Link} to={`/users/${currentAuthor.link}`} underline="never">
                                         <Avatar src={authorPhoto}>?</Avatar>
                                     </Anchor>
                                 ) : (
-                                    <Avatar
-                                        src={authorPhoto}
-                                        style={
-                                            isOffline && currentAuthor?.link
-                                                ? { opacity: 0.5, cursor: 'not-allowed' }
-                                                : undefined
-                                        }
-                                    >
-                                        ?
-                                    </Avatar>
+                                    <Avatar src={authorPhoto}>?</Avatar>
                                 )}
                                 <Box>
-                                    {currentAuthor?.link && !isOffline ? (
+                                    {currentAuthor?.link ? (
                                         <Anchor
                                             size="sm"
                                             fw={600}
@@ -287,15 +280,7 @@ export function StoryViewerModal({
                                             {authorName}
                                         </Anchor>
                                     ) : (
-                                        <Text
-                                            size="sm"
-                                            fw={600}
-                                            style={
-                                                isOffline && currentAuthor?.link
-                                                    ? { opacity: 0.5, cursor: 'not-allowed' }
-                                                    : undefined
-                                            }
-                                        >
+                                        <Text size="sm" fw={600}>
                                             {authorName}
                                         </Text>
                                     )}
@@ -325,98 +310,82 @@ export function StoryViewerModal({
                                 {isStoryOwner && (
                                     <>
                                         {onEdit && (
-                                            <Tooltip label={t('edit')}>
-                                                <ActionIcon
-                                                    disabled={isOffline}
-                                                    onClick={(e) => {
-                                                        if (isOffline) return;
-                                                        e.stopPropagation();
-                                                        onEdit(currentStory);
-                                                    }}
-                                                    aria-label={t('edit')}
-                                                >
-                                                    <IconEdit size={16} />
-                                                </ActionIcon>
-                                            </Tooltip>
+                                            <EditActionButton
+                                                onClick={(e) => {
+                                                    e?.stopPropagation();
+                                                    onEdit(currentStory);
+                                                }}
+                                            />
                                         )}
                                         {onDelete && (
-                                            <Tooltip label={t('delete')}>
-                                                <ActionIcon
-                                                    color="red"
-                                                    disabled={isOffline}
-                                                    onClick={(e) => {
-                                                        if (isOffline) return;
-                                                        e.stopPropagation();
-                                                        const storyIdToDelete = currentStory.id;
-                                                        openConfirmActionModal({
-                                                            title: t('confirmDeleteTitle'),
-                                                            message: t('confirmDeleteMessage'),
-                                                            confirmLabel: t('delete'),
-                                                            cancelLabel: t('cancel'),
-                                                            onConfirm: () => {
-                                                                const remainingStories = currentStories.filter(
-                                                                    (s) => s.id !== storyIdToDelete,
-                                                                );
+                                            <DeleteActionButton
+                                                onClick={(e) => {
+                                                    e?.stopPropagation();
+                                                    const storyIdToDelete = currentStory.id;
+                                                    openConfirmActionModal({
+                                                        title: t('confirmDeleteTitle'),
+                                                        message: t('confirmDeleteMessage'),
+                                                        confirmLabel: t('delete'),
+                                                        cancelLabel: t('cancel'),
+                                                        onConfirm: () => {
+                                                            const remainingStories = currentStories.filter(
+                                                                (s) => s.id !== storyIdToDelete,
+                                                            );
 
-                                                                if (currentUserId) {
-                                                                    setUserStoriesMap((prev) => {
-                                                                        const current = prev[currentUserId];
-                                                                        if (!current) return prev;
-                                                                        return {
-                                                                            ...prev,
-                                                                            [currentUserId]: {
-                                                                                ...current,
-                                                                                stories: remainingStories,
-                                                                            },
-                                                                        };
-                                                                    });
-                                                                }
+                                                            if (currentUserId) {
+                                                                setUserStoriesMap((prev) => {
+                                                                    const current = prev[currentUserId];
+                                                                    if (!current) return prev;
+                                                                    return {
+                                                                        ...prev,
+                                                                        [currentUserId]: {
+                                                                            ...current,
+                                                                            stories: remainingStories,
+                                                                        },
+                                                                    };
+                                                                });
+                                                            }
 
-                                                                if (remainingStories.length === 0) {
-                                                                    if (hasNextGroup) {
-                                                                        setCurrentGroupIdx((prev) => prev + 1);
-                                                                        setCurrentStoryIdx(0);
-                                                                    } else if (hasPrevGroup) {
-                                                                        setCurrentGroupIdx((prev) => prev - 1);
-                                                                        setCurrentStoryIdx(0);
-                                                                    } else {
-                                                                        onClose();
-                                                                    }
+                                                            if (remainingStories.length === 0) {
+                                                                if (hasNextGroup) {
+                                                                    setCurrentGroupIdx((prev) => prev + 1);
+                                                                    setCurrentStoryIdx(0);
+                                                                } else if (hasPrevGroup) {
+                                                                    setCurrentGroupIdx((prev) => prev - 1);
+                                                                    setCurrentStoryIdx(0);
                                                                 } else {
-                                                                    if (currentStoryIdx >= remainingStories.length) {
-                                                                        setCurrentStoryIdx(
-                                                                            Math.max(0, remainingStories.length - 1),
-                                                                        );
-                                                                    }
+                                                                    onClose();
                                                                 }
-                                                                onDelete(storyIdToDelete);
-                                                            },
-                                                        });
-                                                    }}
-                                                    aria-label={t('delete')}
-                                                >
-                                                    <IconTrash size={16} />
-                                                </ActionIcon>
-                                            </Tooltip>
+                                                            } else {
+                                                                if (currentStoryIdx >= remainingStories.length) {
+                                                                    setCurrentStoryIdx(
+                                                                        Math.max(0, remainingStories.length - 1),
+                                                                    );
+                                                                }
+                                                            }
+                                                            onDelete(storyIdToDelete);
+                                                        },
+                                                    });
+                                                }}
+                                            />
                                         )}
                                     </>
                                 )}
-                                <Modal.CloseButton data-offline-allowed="true" />
+                                <Modal.CloseButton className="interaction-modal-close" data-interaction-allowed />
                             </Group>
                         </Group>
                     </Stack>
                 </Modal.Header>
                 <Modal.Body>
-                    <Stack align="center" pos="relative">
+                    <Stack align="center" pos="relative" {...modalInteractionAttributes}>
                         <Box className="story-viewer-viewport">
                             <Tooltip label={t('previous')}>
                                 <ActionIcon
                                     variant="filled"
                                     size={32}
                                     className="story-nav-btn story-nav-btn-prev"
-                                    disabled={(!hasPrevStory && !hasPrevGroup) || isOffline}
+                                    disabled={!hasPrevStory && !hasPrevGroup}
                                     onClick={(e) => {
-                                        if (isOffline) return;
                                         e.stopPropagation();
                                         handlePrevStory();
                                     }}
@@ -441,10 +410,8 @@ export function StoryViewerModal({
                                     variant="filled"
                                     size={32}
                                     className="story-nav-btn story-nav-btn-next"
-                                    loading={!isOffline && isFetchingMoreCurrentStories}
-                                    disabled={isOffline}
+                                    loading={isFetchingMoreCurrentStories}
                                     onClick={(e) => {
-                                        if (isOffline) return;
                                         e.stopPropagation();
                                         handleNextStory();
                                     }}

@@ -6,7 +6,7 @@ import {
     saveOfflineTraining,
     deleteOfflineTraining,
     getOfflineCurrentUserSync,
-} from '../../services/offlineStorage';
+} from '../../services';
 
 export type TrainingResource = components['schemas']['TrainingResource'];
 export type TrainingDto = components['schemas']['TrainingDto'];

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { SegmentedControl, Badge, Text, SimpleGrid, TextInput, Select, Group } from '@mantine/core';
+import { SegmentedControl, Badge, Text, TextInput, Select, Group } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { statisticService, type StatisticResource, type GetStatisticRecordsQuery } from '../../api/services';
@@ -116,7 +116,7 @@ export default function Statistics() {
     ];
 
     const filtersNode = (
-        <SimpleGrid>
+        <Group grow align="flex-start" gap="sm">
             <Select
                 label={t('discipline')}
                 placeholder={t('allDisciplines')}
@@ -136,7 +136,7 @@ export default function Statistics() {
                     tableState.resetPage();
                 }}
             />
-        </SimpleGrid>
+        </Group>
     );
 
     return (

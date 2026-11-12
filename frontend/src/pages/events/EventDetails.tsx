@@ -158,7 +158,7 @@ export default function EventDetails() {
 
     return (
         <MantineThemeProvider theme={dynamicTheme} inherit>
-            <Stack gap="lg">
+            <Stack gap="xl">
                 {page && <PageNav page={page} simplifiedHeader={true} />}
 
                 <Card>

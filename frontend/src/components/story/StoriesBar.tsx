@@ -2,7 +2,6 @@ import React from 'react';
 import { Card, ScrollArea, Group, Stack, Avatar, Text, Center, Loader, UnstyledButton, Skeleton } from '@mantine/core';
 import { IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { useOffline } from '../../services';
 import { formatImageSrc } from '../../utils';
 import { type UserStoriesGroup } from '../StoryViewerModal';
 
@@ -30,8 +29,6 @@ export function StoriesBar({
     lastStoryElementRef,
 }: StoriesBarProps) {
     const { t } = useTranslation();
-    const { isOffline } = useOffline();
-
     return (
         <Card>
             <ScrollArea
@@ -40,16 +37,12 @@ export function StoriesBar({
                 viewportRef={viewportRef}
                 onScrollPositionChange={onScrollPositionChange}
             >
-                <Group gap="md" wrap="nowrap">
+                <Group gap="xs" wrap="nowrap">
                     {onAddStory && (
-                        <UnstyledButton
-                            onClick={isOffline ? undefined : onAddStory}
-                            disabled={isOffline}
-                            style={isOffline ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
-                        >
+                        <UnstyledButton className="story-bar-button" onClick={onAddStory}>
                             <Stack align="center" gap={4} miw={64}>
                                 <Avatar radius="xl" size="lg">
-                                    <IconPlus size={24} />
+                                    <IconPlus size={24} className="story-bar-add-icon" />
                                 </Avatar>
                                 <Text size="xs" lineClamp={1}>
                                     {t('addStory')}
@@ -59,14 +52,10 @@ export function StoriesBar({
                     )}
 
                     {onAddFeed && (
-                        <UnstyledButton
-                            onClick={isOffline ? undefined : onAddFeed}
-                            disabled={isOffline}
-                            style={isOffline ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
-                        >
+                        <UnstyledButton className="story-bar-button" onClick={onAddFeed}>
                             <Stack align="center" gap={4} miw={64}>
                                 <Avatar radius="xl" size="lg">
-                                    <IconPlus size={24} />
+                                    <IconPlus size={24} className="story-bar-add-icon" />
                                 </Avatar>
                                 <Text size="xs" lineClamp={1}>
                                     {t('addFeed')}
@@ -89,13 +78,16 @@ export function StoriesBar({
                               return (
                                   <UnstyledButton
                                       key={group.userId}
+                                      className="story-bar-button"
                                       ref={gIdx === groups.length - 1 ? lastStoryElementRef : undefined}
-                                      onClick={isOffline ? undefined : () => onSelectGroup(gIdx)}
-                                      disabled={isOffline}
-                                      style={isOffline ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                                      onClick={() => onSelectGroup(gIdx)}
                                   >
                                       <Stack align="center" gap={4} miw={64}>
-                                          <Avatar src={storyImg} size="lg" className="story-avatar-border">
+                                          <Avatar
+                                              src={storyImg}
+                                              size="lg"
+                                              className="story-avatar-border story-bar-avatar"
+                                          >
                                               ?
                                           </Avatar>
                                           <Text size="xs" lineClamp={1}>

@@ -47,16 +47,16 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <QueryClientProvider client={queryClient}>
             <MantineProvider theme={theme} defaultColorScheme="dark">
-                <ModalsProvider>
-                    <Notifications position="top-right" />
-                    <BrowserRouter>
-                        <OfflineProvider>
-                            <AuthProvider>
+                <Notifications position="top-right" />
+                <BrowserRouter>
+                    <OfflineProvider>
+                        <AuthProvider>
+                            <ModalsProvider>
                                 <App />
-                            </AuthProvider>
-                        </OfflineProvider>
-                    </BrowserRouter>
-                </ModalsProvider>
+                            </ModalsProvider>
+                        </AuthProvider>
+                    </OfflineProvider>
+                </BrowserRouter>
             </MantineProvider>
         </QueryClientProvider>
     </React.StrictMode>,

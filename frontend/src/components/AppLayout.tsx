@@ -4,7 +4,6 @@ import {
     Group,
     Button,
     ActionIcon,
-    Tooltip,
     useMantineColorScheme,
     Menu,
     Avatar,
@@ -16,7 +15,7 @@ import {
     Drawer,
     Stack,
     Divider,
-    Badge,
+    Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
@@ -30,14 +29,14 @@ import {
     IconChartBar,
     IconLogin,
     IconUserPlus,
-    IconAlertTriangle,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth';
-import { useOffline } from '../services';
 import { formatImageSrc } from '../utils';
 import { RunnerLogo } from './RunnerLogo';
+import { OfflineStatusBadge } from './common/OfflineStatusBadge';
+import { useInteractionAttributes } from './common/InteractionModal';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -47,7 +46,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     const { colorScheme, toggleColorScheme } = useMantineColorScheme();
     const { t, i18n } = useTranslation();
     const { isAuthenticated, currentUser, logout } = useAuth();
-    const { isOffline, isOfflineDisabled } = useOffline();
+    const navigationAttributes = useInteractionAttributes('navigation');
+    const pageAttributes = useInteractionAttributes('page');
     const navigate = useNavigate();
     const location = useLocation();
     const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
@@ -67,8 +67,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
     return (
         <AppShell>
-            <AppShell.Header>
-                <Container h="100%" px="md">
+            <AppShell.Header {...navigationAttributes}>
+                <Container h="100%">
                     <Group h="100%" justify="space-between" wrap="nowrap">
                         <Group wrap="nowrap">
                             <Burger
@@ -77,9 +77,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                                 hiddenFrom="sm"
                                 size="sm"
                                 aria-label="Toggle navigation"
-                                data-offline-allowed="true"
                             />
-                            <UnstyledButton onClick={() => handleNav('/')} data-offline-allowed="true">
+                            <UnstyledButton onClick={() => handleNav('/')}>
                                 <Group gap="xs" wrap="nowrap">
                                     <RunnerLogo size={32} />
                                     <Text fw={700} size="lg" c="var(--mantine-primary-color)">
@@ -88,20 +87,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                                 </Group>
                             </UnstyledButton>
 
-                            {isOffline && (
-                                <Badge
-                                    color="yellow"
-                                    variant="filled"
-                                    size="sm"
-                                    leftSection={<IconAlertTriangle size={14} />}
-                                    data-offline-allowed="true"
-                                >
-                                    {t('offlineMode')}
-                                </Badge>
-                            )}
+                            <OfflineStatusBadge />
 
                             {isAuthenticated && (
-                                <Group gap={4} visibleFrom="sm" wrap="nowrap">
+                                <Group gap="xs" visibleFrom="sm" wrap="nowrap">
                                     {navItems.map((item) => {
                                         const isActive = location.pathname === item.path;
                                         return (
@@ -111,7 +100,6 @@ export function AppLayout({ children }: AppLayoutProps) {
                                                 size="xs"
                                                 leftSection={item.icon}
                                                 onClick={() => handleNav(item.path)}
-                                                data-offline-allowed="true"
                                             >
                                                 {item.label}
                                             </Button>
@@ -185,9 +173,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                 </Container>
             </AppShell.Header>
 
-            <AppShell.Main data-offline-disabled={isOfflineDisabled ? 'true' : undefined}>
-                <Container w="100%" px="md">
-                    {children}
+            <AppShell.Main>
+                <Container w="100%">
+                    <div id="profile-navigation-root" />
+                    <div {...pageAttributes}>{children}</div>
                 </Container>
             </AppShell.Main>
 
@@ -205,19 +194,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                 }
                 hiddenFrom="sm"
             >
-                <Stack gap="xs" mt="sm">
-                    {isOffline && (
-                        <Badge
-                            color="yellow"
-                            variant="filled"
-                            size="sm"
-                            leftSection={<IconAlertTriangle size={14} />}
-                            fullWidth
-                            data-offline-allowed="true"
-                        >
-                            {t('offlineMode')}
-                        </Badge>
-                    )}
+                <Stack gap="xs" mt="sm" {...navigationAttributes}>
+                    <OfflineStatusBadge fullWidth />
                     {isAuthenticated ? (
                         navItems.map((item) => {
                             const isActive = location.pathname === item.path;

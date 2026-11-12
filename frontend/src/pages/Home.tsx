@@ -13,15 +13,14 @@ import { FeedModal } from '../components';
 import { StoriesBar } from '../components';
 import { StoryModal } from '../components';
 import { useUsersMap, useInfiniteScrollObserver } from '../hooks';
-import { useOffline } from '../services';
 import { confirmDelete, notifyError, notifySuccess } from '../utils';
+import { runWhenOnline } from '../hooks';
 
 export default function Home() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { isAuthenticated, currentUser } = useAuth();
-    const { isOffline } = useOffline();
 
     const [storyModalOpened, setStoryModalOpened] = useState(false);
     const [feedModalOpened, setFeedModalOpened] = useState(false);
@@ -52,9 +51,7 @@ export default function Home() {
             }),
         initialPageParam: 1,
         getNextPageParam: (lastPage) =>
-            !isOffline && lastPage.pagination?.hasNextPage && lastPage.pagination.page
-                ? lastPage.pagination.page + 1
-                : undefined,
+            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
         enabled: isAuthenticated,
     });
 
@@ -66,9 +63,8 @@ export default function Home() {
 
     const lastFeedElementRef = useInfiniteScrollObserver({
         isLoading: isFetchingMoreFeeds,
-        hasNextPage: !isOffline && hasMoreFeeds,
-        fetchNextPage: isOffline ? () => {} : fetchNextFeedsPage,
-        disabled: isOffline,
+        hasNextPage: hasMoreFeeds,
+        fetchNextPage: fetchNextFeedsPage,
     });
 
     const {
@@ -91,9 +87,7 @@ export default function Home() {
             }),
         initialPageParam: 1,
         getNextPageParam: (lastPage) =>
-            !isOffline && lastPage.pagination?.hasNextPage && lastPage.pagination.page
-                ? lastPage.pagination.page + 1
-                : undefined,
+            lastPage.pagination?.hasNextPage && lastPage.pagination.page ? lastPage.pagination.page + 1 : undefined,
         enabled: isAuthenticated,
     });
 
@@ -105,22 +99,20 @@ export default function Home() {
     const storiesViewportRef = useRef<HTMLDivElement>(null);
     const handleStoriesScroll = useCallback(
         (position: { x: number; y: number }) => {
-            if (isOffline) return;
             const el = storiesViewportRef.current;
             if (!el || isFetchingMoreStories || !hasMoreStories) return;
             if (el.scrollWidth - el.clientWidth - position.x < 100) {
-                void fetchNextStoriesPage();
+                runWhenOnline(() => void fetchNextStoriesPage());
             }
         },
-        [isOffline, isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
+        [isFetchingMoreStories, hasMoreStories, fetchNextStoriesPage],
     );
 
     const lastStoryElementRef = useInfiniteScrollObserver({
         isLoading: isFetchingMoreStories,
-        hasNextPage: !isOffline && hasMoreStories,
-        fetchNextPage: isOffline ? () => {} : fetchNextStoriesPage,
+        hasNextPage: hasMoreStories,
+        fetchNextPage: fetchNextStoriesPage,
         root: storiesViewportRef.current,
-        disabled: isOffline,
     });
 
     const relatedUserIds = useMemo(() => {
@@ -217,7 +209,7 @@ export default function Home() {
                 }}
                 onAddStory={() => setStoryModalOpened(true)}
                 onAddFeed={() => setFeedModalOpened(true)}
-                isFetchingMore={!isOffline && isFetchingMoreStories}
+                isFetchingMore={isFetchingMoreStories}
                 viewportRef={storiesViewportRef}
                 onScrollPositionChange={handleStoriesScroll}
                 lastStoryElementRef={lastStoryElementRef}
@@ -258,7 +250,7 @@ export default function Home() {
                     })
                 )}
 
-                {isFetchingMoreFeeds && !isOffline && (
+                {isFetchingMoreFeeds && (
                     <Text ta="center" size="sm" c="dimmed">
                         {t('loadingMore')}
                     </Text>

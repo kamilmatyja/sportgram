@@ -202,7 +202,7 @@ export default function GoalDetails() {
 
     return (
         <MantineThemeProvider theme={dynamicTheme} inherit>
-            <Stack gap="lg">
+            <Stack gap="xl">
                 {ownerUser && <UserProfileNav user={ownerUser} isOwner={isOwner} />}
 
                 <Card>
@@ -285,7 +285,7 @@ export default function GoalDetails() {
                             <Table.Tbody>
                                 {!goal.participants || goal.participants.length === 0 ? (
                                     <Table.Tr>
-                                        <Table.Td colSpan={3} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                        <Table.Td colSpan={3} className="table-cell-empty">
                                             <EmptyState title={t('noData')} />
                                         </Table.Td>
                                     </Table.Tr>
@@ -350,7 +350,7 @@ export default function GoalDetails() {
                             <Table.Tbody>
                                 {allResults.length === 0 ? (
                                     <Table.Tr>
-                                        <Table.Td colSpan={8} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                        <Table.Td colSpan={8} className="table-cell-empty">
                                             <EmptyState title={t('noData')} />
                                         </Table.Td>
                                     </Table.Tr>

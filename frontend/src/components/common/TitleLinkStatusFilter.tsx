@@ -1,40 +1,48 @@
-import { SimpleGrid, TextInput, Select } from '@mantine/core';
+import { Group, TextInput, Select } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { useOffline } from '../../services';
 
-export interface TextStatusFilterGridProps {
-    text: string;
-    onTextChange: (val: string) => void;
+export interface TitleLinkStatusFilterProps {
+    title: string;
+    onTitleChange: (val: string) => void;
+    link: string;
+    onLinkChange: (val: string) => void;
     status: string | null;
     onStatusChange: (val: string | null) => void;
     onFilterChange?: () => void;
     disabled?: boolean;
 }
 
-export function TextStatusFilterGrid({
-    text,
-    onTextChange,
+export function TitleLinkStatusFilter({
+    title,
+    onTitleChange,
+    link,
+    onLinkChange,
     status,
     onStatusChange,
     onFilterChange,
     disabled = false,
-}: TextStatusFilterGridProps) {
+}: TitleLinkStatusFilterProps) {
     const { t } = useTranslation();
-    const { isOfflineDisabled } = useOffline();
-    const isEffectiveDisabled = disabled || isOfflineDisabled;
-
     return (
-        <SimpleGrid>
+        <Group grow align="flex-start" gap="sm">
             <TextInput
-                label={t('text')}
-                placeholder={t('search')}
-                value={text}
+                label={t('title')}
+                value={title}
                 onChange={(e) => {
-                    onTextChange(e.currentTarget.value);
+                    onTitleChange(e.currentTarget.value);
                     onFilterChange?.();
                 }}
-                disabled={isEffectiveDisabled}
+                disabled={disabled}
+            />
+            <TextInput
+                label={t('link')}
+                value={link}
+                onChange={(e) => {
+                    onLinkChange(e.currentTarget.value);
+                    onFilterChange?.();
+                }}
+                disabled={disabled}
             />
             <Select
                 label={t('status')}
@@ -48,9 +56,9 @@ export function TextStatusFilterGrid({
                     onStatusChange(v);
                     onFilterChange?.();
                 }}
-                disabled={isEffectiveDisabled}
+                disabled={disabled}
                 clearable
             />
-        </SimpleGrid>
+        </Group>
     );
 }

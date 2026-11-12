@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Modal, Stack, Textarea, Button } from '@mantine/core';
+import { Stack, Textarea, Button } from '@mantine/core';
+import { InteractionModal as Modal } from '../common/InteractionModal';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { feedService, type FeedResource } from '../../api/services';
 import { ImageInput } from '../common';
 import { useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
 import { resolveImageBase64 } from '../../utils';
 
 export interface FeedModalProps {
@@ -19,7 +19,6 @@ export interface FeedModalProps {
 export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const { isOffline } = useOffline();
     const { fieldErrors, handleFormError, clearFieldErrors } = useFormErrors();
     const isEdit = !!feed;
 
@@ -87,13 +86,8 @@ export function FeedModal({ opened, onClose, feed, onSuccess }: FeedModalProps) 
                     error={fieldErrors.photo}
                     onChange={setPhoto}
                     required={isPhotoRequired}
-                    disabled={isOffline}
                 />
-                <Button
-                    loading={isSubmitting}
-                    disabled={isSubmitting || !canSubmit || isOffline}
-                    onClick={() => mutation.mutate()}
-                >
+                <Button loading={isSubmitting} disabled={isSubmitting || !canSubmit} onClick={() => mutation.mutate()}>
                     {t('save')}
                 </Button>
             </Stack>

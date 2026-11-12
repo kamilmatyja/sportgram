@@ -11,7 +11,6 @@ import {
     Text,
     Tooltip,
     ActionIcon,
-    Modal,
     TextInput,
 } from '@mantine/core';
 import { IconCheck, IconPlus, IconChevronDown, IconChevronRight } from '@tabler/icons-react';
@@ -44,7 +43,7 @@ import {
     calculateSplitPace,
     calculateSplitSpeed,
 } from '../../utils';
-import { useOffline } from '../../services';
+import { InteractionModal as Modal } from '../common/InteractionModal';
 
 export interface DistanceParticipantsProps {
     distance: EventDisciplineDistanceResource;
@@ -75,7 +74,6 @@ export function DistanceParticipantsSection({
 }: DistanceParticipantsProps) {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const { isOffline } = useOffline();
 
     const [expandedParticipantIds, setExpandedParticipantIds] = useState<string[]>([]);
     const [expandedResultIds, setExpandedResultIds] = useState<string[]>([]);
@@ -266,7 +264,7 @@ export function DistanceParticipantsSection({
                             <Table.Tbody>
                                 {participants.length === 0 ? (
                                     <Table.Tr>
-                                        <Table.Td colSpan={4} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                        <Table.Td colSpan={4} className="table-cell-empty">
                                             <EmptyState title={t('noData')} />
                                         </Table.Td>
                                     </Table.Tr>
@@ -694,7 +692,7 @@ export function DistanceParticipantsSection({
                         <Button
                             mt="xs"
                             loading={saveResultMutation.isPending}
-                            disabled={saveResultMutation.isPending || !resultModal.time.trim() || isOffline}
+                            disabled={saveResultMutation.isPending || !resultModal.time.trim()}
                             onClick={() => saveResultMutation.mutate()}
                         >
                             {t('save')}

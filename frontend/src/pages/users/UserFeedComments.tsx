@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Text, TextInput, Button, Stack, Modal, Group } from '@mantine/core';
+import { Text, TextInput, Button, Stack, Group } from '@mantine/core';
+import { InteractionModal as Modal } from '../../components/common/InteractionModal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { feedService, type FeedCommentResource, type GetFeedCommentsQuery } from '../../api/services';
@@ -11,17 +12,15 @@ import {
     EditActionButton,
     DeleteActionButton,
     UserSubpageContainer,
-    TextStatusFilterGrid,
+    TextStatusFilter,
 } from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { useDataTableState, useFeedAuthors, useFormErrors } from '../../hooks';
 import { notifySuccess, notifyError, confirmDelete, formatDateTime, buildSortOptions, truncate } from '../../utils';
-import { useOffline } from '../../services';
 
 export default function UserFeedComments() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
-    const { isOffline } = useOffline();
 
     const tableState = useDataTableState();
     const { errors, setFromError, clearErrors, clearFieldError } = useFormErrors();
@@ -154,7 +153,7 @@ export default function UserFeedComments() {
                 ];
 
                 const filtersNode = (
-                    <TextStatusFilterGrid
+                    <TextStatusFilter
                         text={textFilter}
                         onTextChange={setTextFilter}
                         status={statusFilter}
@@ -225,7 +224,6 @@ export default function UserFeedComments() {
                                 <TextInput
                                     label={t('text')}
                                     required
-                                    disabled={isOffline}
                                     value={editText}
                                     onChange={(e) => {
                                         setEditText(e.currentTarget.value);
@@ -236,7 +234,7 @@ export default function UserFeedComments() {
                                 <Button
                                     onClick={() => updateMutation.mutate()}
                                     loading={updateMutation.isPending}
-                                    disabled={!editText.trim() || updateMutation.isPending || isOffline}
+                                    disabled={!editText.trim() || updateMutation.isPending}
                                 >
                                     {t('save')}
                                 </Button>

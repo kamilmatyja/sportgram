@@ -2,7 +2,6 @@ import { ActionIcon, Menu, Tooltip } from '@mantine/core';
 import { IconAdjustments } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
-import { useOffline } from '../../services';
 
 export interface StatusOption<T = number | string> {
     value: T;
@@ -39,11 +38,10 @@ export function StatusActionMenu<T = number | string>({
     width = 150,
 }: StatusActionMenuProps<T>) {
     const { t } = useTranslation();
-    const { isOfflineDisabled } = useOffline();
     const actualValue = value ?? currentStatus ?? status;
     const actualOnChange = onChange ?? onStatusChange ?? (() => {});
     const actualLoading = loading || isPending;
-    const isEffectiveDisabled = disabled || actualLoading || isOfflineDisabled;
+    const isEffectiveDisabled = disabled || actualLoading;
     const actualOptions =
         options ??
         (enumType
@@ -65,7 +63,7 @@ export function StatusActionMenu<T = number | string>({
                     <Menu.Item
                         key={String(opt.value)}
                         onClick={() => actualOnChange(opt.value)}
-                        disabled={actualValue === opt.value || actualLoading || isOfflineDisabled}
+                        disabled={actualValue === opt.value || actualLoading}
                     >
                         {opt.label}
                     </Menu.Item>

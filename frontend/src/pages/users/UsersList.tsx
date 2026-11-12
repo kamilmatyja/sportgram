@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Group, Text, SimpleGrid, TextInput, Select } from '@mantine/core';
+import { Group, Text, TextInput, Select, SimpleGrid } from '@mantine/core';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -21,12 +21,10 @@ import { GenderEnum } from '../../enums/GenderEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
 import { buildSortOptions, confirmDelete, formatDateTime, notifySuccess, notifyError } from '../../utils';
 import { useDataTableState } from '../../hooks';
-import { useOffline } from '../../services';
 
 export default function UsersList() {
     const { t } = useTranslation();
     const { currentUser, isAdmin, logout } = useAuth();
-    const { isOffline } = useOffline();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -156,7 +154,7 @@ export default function UsersList() {
     ];
 
     const filtersNode = (
-        <SimpleGrid className="filter-grid-3">
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm" w="100%">
             <TextInput
                 label={t('firstName')}
                 placeholder={t('firstName')}
@@ -165,7 +163,6 @@ export default function UsersList() {
                     setFirstName(e.currentTarget.value);
                     tableState.setPage(1);
                 }}
-                disabled={isOffline}
             />
             <TextInput
                 label={t('lastName')}
@@ -175,7 +172,6 @@ export default function UsersList() {
                     setLastName(e.currentTarget.value);
                     tableState.setPage(1);
                 }}
-                disabled={isOffline}
             />
             <TextInput
                 label={t('email')}
@@ -185,7 +181,6 @@ export default function UsersList() {
                     setEmail(e.currentTarget.value);
                     tableState.setPage(1);
                 }}
-                disabled={isOffline}
             />
             <TextInput
                 label={t('link')}
@@ -195,7 +190,6 @@ export default function UsersList() {
                     setLink(e.currentTarget.value);
                     tableState.setPage(1);
                 }}
-                disabled={isOffline}
             />
             <Select
                 label={t('gender')}
@@ -207,7 +201,6 @@ export default function UsersList() {
                     tableState.setPage(1);
                 }}
                 clearable
-                disabled={isOffline}
             />
             <Select
                 label={t('country')}
@@ -220,7 +213,6 @@ export default function UsersList() {
                 }}
                 clearable
                 searchable
-                disabled={isOffline}
             />
             <Select
                 label={t('status')}
@@ -232,7 +224,6 @@ export default function UsersList() {
                     tableState.setPage(1);
                 }}
                 clearable
-                disabled={isOffline}
             />
         </SimpleGrid>
     );

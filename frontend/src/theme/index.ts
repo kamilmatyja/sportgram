@@ -17,7 +17,6 @@ import {
     Menu,
     Image,
     Container,
-    SimpleGrid,
     Stack,
     Group,
     Skeleton,
@@ -47,9 +46,7 @@ export function createDynamicTheme(primaryColor?: string) {
 
 export const theme = createTheme({
     primaryColor: 'blue',
-    colors: {
-        brown,
-    },
+    colors: { brown },
     defaultRadius: 'sm',
     fontFamily:
         '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
@@ -63,12 +60,6 @@ export const theme = createTheme({
         Container: Container.extend({
             defaultProps: {
                 size: 'lg',
-            },
-        }),
-        SimpleGrid: SimpleGrid.extend({
-            defaultProps: {
-                cols: 2,
-                spacing: 'sm',
             },
         }),
         Stack: Stack.extend({
@@ -112,7 +103,7 @@ export const theme = createTheme({
                 radius: 'sm',
                 withBorder: true,
                 shadow: 'xs',
-                padding: 'md',
+                padding: 'xs',
             },
         }),
         Paper: Paper.extend({
@@ -126,36 +117,11 @@ export const theme = createTheme({
         Modal: Modal.extend({
             defaultProps: {
                 size: 'lg',
-                closeButtonProps: {
-                    'data-offline-allowed': 'true',
-                },
-            },
-            styles: {
-                content: {
-                    padding: 0,
-                },
-                header: {
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 100,
-                    backgroundColor: 'var(--mantine-color-body)',
-                },
             },
         }),
         ModalRoot: ModalRoot.extend({
             defaultProps: {
                 size: 'lg',
-            },
-            styles: {
-                content: {
-                    padding: 0,
-                },
-                header: {
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 100,
-                    backgroundColor: 'var(--mantine-color-body)',
-                },
             },
         }),
         ModalContent: ModalContent.extend({
@@ -164,10 +130,8 @@ export const theme = createTheme({
             },
         }),
         Drawer: Drawer.extend({
-            styles: {
-                content: {
-                    padding: 0,
-                },
+            defaultProps: {
+                size: 'xs',
             },
         }),
         DrawerContent: DrawerContent.extend({
@@ -178,7 +142,6 @@ export const theme = createTheme({
         CloseButton: CloseButton.extend({
             defaultProps: {
                 size: 30,
-                'data-offline-allowed': 'true',
             },
         }),
         Badge: Badge.extend({

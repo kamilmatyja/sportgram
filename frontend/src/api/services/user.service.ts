@@ -1,7 +1,7 @@
 import { api } from '../client';
 import type { components, operations } from '../schema';
 import type { ApiRequest, ApiResponse } from '../types';
-import { getOfflineCurrentUserSync } from '../../services/offlineStorage';
+import { getOfflineCurrentUserSync } from '../../services';
 
 export type UserResource = components['schemas']['UserResource'];
 export type UserCreateDto = components['schemas']['UserCreateDto'];

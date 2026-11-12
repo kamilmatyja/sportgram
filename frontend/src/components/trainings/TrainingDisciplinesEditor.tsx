@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Stack, Group, Paper, Select, TextInput, Button, ActionIcon, Tooltip, Text, SimpleGrid } from '@mantine/core';
+import { Stack, Group, Paper, Select, TextInput, Button, Text, SimpleGrid } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconTrash, IconPlayerPlay } from '@tabler/icons-react';
+import { IconPlus, IconPlayerPlay } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { updateItem, removeItem, patchItem, generateUuid } from '../../utils';
 import { GpsDistanceRecorderPanel } from './GpsDistanceRecorderPanel';
+import { DeleteActionButton } from '../common';
 
 export interface FormTrainingSubDistance {
     id: string;
@@ -226,21 +227,13 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
                             onChange={(val) => handleDisciplineChange(d.id, val)}
                             flex={1}
                         />
-                        <Tooltip label={t('delete')}>
-                            <ActionIcon
-                                color="red"
-                                onClick={() => handleRemoveDiscipline(d.id)}
-                                aria-label={t('delete')}
-                            >
-                                <IconTrash size={16} />
-                            </ActionIcon>
-                        </Tooltip>
+                        <DeleteActionButton onClick={() => handleRemoveDiscipline(d.id)} />
                     </Group>
 
                     <Stack gap="sm" mt="xs">
                         {d.distances.map((dist) => (
                             <Paper key={dist.id} p="xs" bg="var(--mantine-color-gray-light)">
-                                <SimpleGrid spacing="xs">
+                                <SimpleGrid cols={2} spacing="xs" w="100%">
                                     <TextInput
                                         label={t('distanceMeters')}
                                         required
@@ -259,15 +252,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
                                     />
                                 </SimpleGrid>
                                 <Group justify="flex-end" mt={4}>
-                                    <Tooltip label={t('delete')}>
-                                        <ActionIcon
-                                            color="red"
-                                            onClick={() => handleRemoveDistance(d.id, dist.id)}
-                                            aria-label={t('delete')}
-                                        >
-                                            <IconTrash size={16} />
-                                        </ActionIcon>
-                                    </Tooltip>
+                                    <DeleteActionButton onClick={() => handleRemoveDistance(d.id, dist.id)} />
                                 </Group>
 
                                 <Stack gap="xs" mt="xs" pl="sm" className="subdistances-container">
@@ -287,7 +272,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
 
                                     {dist.subDistances?.map((sd) => (
                                         <Paper key={sd.id} p="xs">
-                                            <SimpleGrid className="subdistances-grid" spacing="xs">
+                                            <SimpleGrid cols={2} spacing="xs" w="100%">
                                                 <TextInput
                                                     size="xs"
                                                     label={t('subDistanceMeters')}
@@ -376,15 +361,9 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
                                                 />
                                             </SimpleGrid>
                                             <Group justify="flex-end" mt={4}>
-                                                <Tooltip label={t('delete')}>
-                                                    <ActionIcon
-                                                        color="red"
-                                                        onClick={() => handleRemoveSubDistance(d.id, dist.id, sd.id)}
-                                                        aria-label={t('delete')}
-                                                    >
-                                                        <IconTrash size={16} />
-                                                    </ActionIcon>
-                                                </Tooltip>
+                                                <DeleteActionButton
+                                                    onClick={() => handleRemoveSubDistance(d.id, dist.id, sd.id)}
+                                                />
                                             </Group>
                                         </Paper>
                                     ))}

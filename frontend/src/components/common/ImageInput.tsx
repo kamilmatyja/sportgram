@@ -1,21 +1,9 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
-import {
-    Input,
-    Group,
-    Button,
-    Paper,
-    Stack,
-    Avatar,
-    Box,
-    Text,
-    ActionIcon,
-    Tooltip,
-    FileButton,
-    Loader,
-} from '@mantine/core';
+import { Input, Group, Button, Paper, Stack, Avatar, Box, Text, FileButton, Loader } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconCamera, IconUpload, IconTrash, IconPhoto, IconRotate, IconCheck } from '@tabler/icons-react';
+import { IconCamera, IconUpload, IconPhoto, IconRotate, IconCheck } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { DeleteActionButton } from './RowActionButtons.tsx';
 
 interface CameraCaptureSectionProps {
     onCapture: (file: File) => void;
@@ -247,17 +235,7 @@ function CameraCaptureSection({ onCapture, onCancel }: CameraCaptureSectionProps
                             </>
                         )}
 
-                        <Tooltip label={t('delete')}>
-                            <ActionIcon
-                                size={30}
-                                color="red"
-                                variant="subtle"
-                                onClick={handleDiscard}
-                                aria-label={t('delete')}
-                            >
-                                <IconTrash size={16} />
-                            </ActionIcon>
-                        </Tooltip>
+                        <DeleteActionButton onClick={() => handleDiscard()} />
                     </Group>
                 </Group>
             </Stack>
@@ -432,18 +410,7 @@ export function ImageInput({
                                 </Text>
                             </Box>
                         </Group>
-                        <Tooltip label={t('delete')}>
-                            <ActionIcon
-                                color="red"
-                                variant="subtle"
-                                size={30}
-                                onClick={handleRemove}
-                                disabled={disabled}
-                                aria-label={t('delete')}
-                            >
-                                <IconTrash size={16} />
-                            </ActionIcon>
-                        </Tooltip>
+                        <DeleteActionButton onClick={() => handleRemove()} />
                     </Group>
                 </Paper>
             )}

@@ -302,7 +302,7 @@ export default function PageDetails() {
 
     return (
         <MantineThemeProvider theme={dynamicTheme} inherit>
-            <Stack gap="lg">
+            <Stack gap="xl">
                 <PageNav page={page} extraActions={extraActions} />
 
                 <Card>
@@ -329,7 +329,7 @@ export default function PageDetails() {
                             <Table.Tbody>
                                 {!page.participants || page.participants.length === 0 ? (
                                     <Table.Tr>
-                                        <Table.Td colSpan={3} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                        <Table.Td colSpan={3} className="table-cell-empty">
                                             <EmptyState title={t('noData')} />
                                         </Table.Td>
                                     </Table.Tr>
@@ -407,7 +407,7 @@ export default function PageDetails() {
                                 <Table.Tbody>
                                     {pageEvents.length === 0 ? (
                                         <Table.Tr>
-                                            <Table.Td colSpan={5} p={0} m={0} style={{ padding: 0, margin: 0 }}>
+                                            <Table.Td colSpan={5} className="table-cell-empty">
                                                 <EmptyState title={t('noData')} />
                                             </Table.Td>
                                         </Table.Tr>

@@ -80,7 +80,7 @@ export function EntityViewCounter({
     if (!entityId) return null;
 
     const content = (
-        <Group gap={4} align="center" wrap="nowrap" c={c} opacity={opacity} className={className}>
+        <Group gap="xs" align="center" wrap="nowrap" c={c} opacity={opacity} className={className}>
             <IconEye size={size} />
             <Text size={textSize} c={c} span>
                 {viewsCount}

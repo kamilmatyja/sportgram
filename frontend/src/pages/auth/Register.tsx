@@ -10,8 +10,8 @@ import {
     Stack,
     Anchor,
     Text,
-    SimpleGrid,
     Container,
+    Group,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useTranslation } from 'react-i18next';
@@ -22,7 +22,6 @@ import { CountryEnum } from '../../enums/CountryEnum';
 import { GenderEnum } from '../../enums/GenderEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
 import { registerSession, signSession } from '../../utils';
 import { AuthVerificationStep } from './AuthVerificationStep';
 
@@ -41,7 +40,6 @@ const INITIAL_FORM_DATA = {
 export default function Register() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { isOffline } = useOffline();
     const { fieldErrors, handleFormError, clearFieldError, clearFieldErrors } = useFormErrors();
 
     const [step, setStep] = useState<number>(registerSession.step);
@@ -193,7 +191,7 @@ export default function Register() {
                 {step === 1 ? (
                     <form onSubmit={handleRegisterSubmit}>
                         <Stack gap="sm">
-                            <SimpleGrid>
+                            <Group grow gap="sm">
                                 <TextInput
                                     label={t('firstName')}
                                     required
@@ -208,9 +206,9 @@ export default function Register() {
                                     error={fieldErrors.lastName}
                                     onChange={(e) => updateField('lastName', e.currentTarget.value)}
                                 />
-                            </SimpleGrid>
+                            </Group>
 
-                            <SimpleGrid>
+                            <Group grow gap="sm">
                                 <TextInput
                                     label={t('email')}
                                     required
@@ -228,9 +226,9 @@ export default function Register() {
                                     error={fieldErrors.password}
                                     onChange={(e) => updateField('password', e.currentTarget.value)}
                                 />
-                            </SimpleGrid>
+                            </Group>
 
-                            <SimpleGrid>
+                            <Group grow gap="sm">
                                 <TextInput
                                     label={t('birthAt')}
                                     type="date"
@@ -247,9 +245,9 @@ export default function Register() {
                                     error={fieldErrors.phone}
                                     onChange={(e) => updateField('phone', e.currentTarget.value)}
                                 />
-                            </SimpleGrid>
+                            </Group>
 
-                            <SimpleGrid>
+                            <Group grow gap="sm">
                                 <Select
                                     label={t('gender')}
                                     placeholder={t('gender')}
@@ -271,7 +269,7 @@ export default function Register() {
                                     required
                                     clearable
                                 />
-                            </SimpleGrid>
+                            </Group>
 
                             <MultiSelect
                                 label={t('roles')}
@@ -284,13 +282,7 @@ export default function Register() {
                                 clearable
                             />
 
-                            <Button
-                                type="submit"
-                                fullWidth
-                                mt="md"
-                                loading={loading}
-                                disabled={loading || !canSubmit || isOffline}
-                            >
+                            <Button type="submit" fullWidth mt="md" loading={loading} disabled={loading || !canSubmit}>
                                 {t('register')}
                             </Button>
 

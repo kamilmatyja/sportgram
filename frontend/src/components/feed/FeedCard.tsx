@@ -18,14 +18,13 @@ import {
     Skeleton,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconMessageCircle, IconEdit, IconTrash, IconCheck, IconX } from '@tabler/icons-react';
+import { IconMessageCircle, IconCheck, IconX } from '@tabler/icons-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { feedService, type FeedResource, type UserResource, type FeedReactionResource } from '../../api/services';
 import { useAuth } from '../../auth';
-import { useOffline } from '../../services';
 import { EntityViewCounter } from '../EntityViewCounter';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import { FeedReactionEnum } from '../../enums/FeedReactionEnum';
@@ -33,6 +32,7 @@ import { openConfirmActionModal } from '../../utils';
 import { formatDateTime } from '../../utils';
 import { formatImageSrc } from '../../utils';
 import { formatFeedOrigin } from '../../utils';
+import { DeleteActionButton, EditActionButton } from '../common';
 
 export interface FeedCardProps {
     feed: FeedResource;
@@ -47,8 +47,6 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
-    const { isOfflineDisabled } = useOffline();
-
     const [commentsOpen, setCommentsOpen] = useState(false);
     const [commentInput, setCommentInput] = useState('');
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
@@ -190,26 +188,12 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
         <Card ref={domRef}>
             <Group justify="space-between" mb="xs">
                 <Group>
-                    <Avatar
-                        src={formatImageSrc(feedAuthor?.profilePhoto)}
-                        component={isOfflineDisabled ? 'div' : Link}
-                        to={isOfflineDisabled ? undefined : authorLink}
-                        style={isOfflineDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
-                    >
+                    <Avatar src={formatImageSrc(feedAuthor?.profilePhoto)} component={Link} to={authorLink}>
                         ?
                     </Avatar>
                     <Box>
                         {feedAuthor ? (
-                            <Anchor
-                                size="sm"
-                                fw={600}
-                                component={isOfflineDisabled ? 'span' : Link}
-                                to={isOfflineDisabled ? undefined : authorLink}
-                                c="inherit"
-                                underline={isOfflineDisabled ? 'never' : 'hover'}
-                                style={isOfflineDisabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
-                                data-disabled={isOfflineDisabled ? 'true' : undefined}
-                            >
+                            <Anchor size="sm" fw={600} component={Link} to={authorLink} c="inherit" underline="hover">
                                 {authorName}
                             </Anchor>
                         ) : (
@@ -223,20 +207,8 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
 
                 {isFeedOwner && (
                     <Group gap="xs">
-                        {onEditFeed && (
-                            <Tooltip label={t('edit')}>
-                                <ActionIcon onClick={() => onEditFeed(feed)} aria-label={t('edit')}>
-                                    <IconEdit size={16} />
-                                </ActionIcon>
-                            </Tooltip>
-                        )}
-                        {onDeleteFeed && (
-                            <Tooltip label={t('delete')}>
-                                <ActionIcon color="red" onClick={() => onDeleteFeed(feed.id)} aria-label={t('delete')}>
-                                    <IconTrash size={16} />
-                                </ActionIcon>
-                            </Tooltip>
-                        )}
+                        {onEditFeed && <EditActionButton onClick={() => onEditFeed(feed)} />}
+                        {onDeleteFeed && <DeleteActionButton onClick={() => onDeleteFeed(feed.id)} />}
                     </Group>
                 )}
             </Group>
@@ -257,7 +229,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
 
             <Group justify="space-between" mt="xs">
                 <Group gap="xs">
-                    <Group gap={4} wrap="wrap">
+                    <Group gap="xs" wrap="wrap">
                         {FeedReactionEnum.ALL_REACTIONS.map((r) => {
                             const count = feed.reactions?.filter((rx) => rx.reaction === r.type).length ?? 0;
                             const isMy = myReaction?.reaction === r.type;
@@ -315,25 +287,16 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                             <Paper key={c.id} p="xs">
                                 <Group justify="space-between" align="center" wrap="nowrap" mb="xs">
                                     <Group wrap="nowrap">
-                                        {cAuthor?.link && !isOfflineDisabled ? (
+                                        {cAuthor?.link ? (
                                             <Avatar src={cAuthorPhoto} component={Link} to={`/users/${cAuthor.link}`}>
                                                 ?
                                             </Avatar>
                                         ) : (
-                                            <Avatar
-                                                src={cAuthorPhoto}
-                                                style={
-                                                    isOfflineDisabled && cAuthor?.link
-                                                        ? { opacity: 0.5, cursor: 'not-allowed' }
-                                                        : undefined
-                                                }
-                                            >
-                                                ?
-                                            </Avatar>
+                                            <Avatar src={cAuthorPhoto}>?</Avatar>
                                         )}
                                         <Box>
                                             {cAuthor ? (
-                                                cAuthor?.link && !isOfflineDisabled ? (
+                                                cAuthor?.link ? (
                                                     <Anchor
                                                         size="sm"
                                                         fw={600}
@@ -345,15 +308,7 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                                                         {cAuthorName}
                                                     </Anchor>
                                                 ) : (
-                                                    <Text
-                                                        size="sm"
-                                                        fw={600}
-                                                        style={
-                                                            isOfflineDisabled && cAuthor?.link
-                                                                ? { opacity: 0.5, cursor: 'not-allowed' }
-                                                                : undefined
-                                                        }
-                                                    >
+                                                    <Text size="sm" fw={600}>
                                                         {cAuthorName}
                                                     </Text>
                                                 )
@@ -367,29 +322,17 @@ export function FeedCard({ feed, author, usersMap = {}, onEditFeed, onDeleteFeed
                                     </Group>
 
                                     {canManageComment && !isEditing && (
-                                        <Group gap={4} wrap="nowrap">
-                                            <Tooltip label={t('edit')}>
-                                                <ActionIcon
-                                                    onClick={() => {
-                                                        setEditingCommentId(c.id);
-                                                        setEditingCommentText(c.text);
-                                                    }}
-                                                    aria-label={t('edit')}
-                                                >
-                                                    <IconEdit size={16} />
-                                                </ActionIcon>
-                                            </Tooltip>
-                                            <Tooltip label={t('delete')}>
-                                                <ActionIcon
-                                                    color="red"
-                                                    onClick={() => handleDeleteComment(c.id)}
-                                                    loading={deleteCommentMutation.isPending}
-                                                    disabled={deleteCommentMutation.isPending}
-                                                    aria-label={t('delete')}
-                                                >
-                                                    <IconTrash size={16} />
-                                                </ActionIcon>
-                                            </Tooltip>
+                                        <Group gap="xs" wrap="nowrap">
+                                            <EditActionButton
+                                                onClick={() => {
+                                                    setEditingCommentId(c.id);
+                                                    setEditingCommentText(c.text);
+                                                }}
+                                            />
+                                            <DeleteActionButton
+                                                onClick={() => handleDeleteComment(c.id)}
+                                                loading={deleteCommentMutation.isPending}
+                                            />
                                         </Group>
                                     )}
                                 </Group>

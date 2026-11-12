@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Text, SimpleGrid, Select, Group, Avatar } from '@mantine/core';
+import { Text, Select, Group, Avatar } from '@mantine/core';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { pageService, type PageFollowResource, type PageResource, type GetPageFollowsQuery } from '../../api/services';
@@ -148,7 +148,7 @@ export default function UserPageFollows() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid>
+                    <Group grow align="flex-start" gap="sm">
                         <Select
                             label={t('status')}
                             placeholder={t('allStatuses')}
@@ -163,7 +163,7 @@ export default function UserPageFollows() {
                             }}
                             clearable
                         />
-                    </SimpleGrid>
+                    </Group>
                 );
 
                 return (

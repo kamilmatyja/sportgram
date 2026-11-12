@@ -11,7 +11,7 @@ import {
     EditActionButton,
     DeleteActionButton,
     UserSubpageContainer,
-    TextStatusFilterGrid,
+    TextStatusFilter,
 } from '../../components';
 import { FeedModal } from '../../components';
 import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
@@ -161,7 +161,7 @@ export default function UserFeeds() {
                 ];
 
                 const filtersNode = (
-                    <TextStatusFilterGrid
+                    <TextStatusFilter
                         text={textFilter}
                         onTextChange={setTextFilter}
                         status={statusFilter}

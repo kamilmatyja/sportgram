@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback, type SyntheticEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, type SyntheticEvent } from 'react';
 import {
     Text,
     Group,
@@ -9,18 +9,15 @@ import {
     Center,
     Loader,
     Select,
-    Modal,
     Card,
     Paper,
     ScrollArea,
-    SimpleGrid,
 } from '@mantine/core';
 import { IconSend } from '@tabler/icons-react';
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { conversationService, friendService, type ConversationResource } from '../../api/services';
+import { conversationService, type ConversationResource } from '../../api/services';
 import { useAuth } from '../../auth';
-import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { ConversationStatusEnum } from '../../enums/ConversationStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import {
@@ -37,14 +34,13 @@ import {
     UserInfoCell,
 } from '../../components';
 import { confirmDelete, formatDateTime, formatClockTime, truncate, notifySuccess, notifyError } from '../../utils';
-import { useDataTableState, useUsersMap, useMyFriends, useFormErrors } from '../../hooks';
-import { useOffline } from '../../services';
+import { useDataTableState, useMyFriends, useFormErrors, useConversationData } from '../../hooks';
+import { InteractionModal as Modal } from '../../components/common/InteractionModal';
 
 export default function UserConversations() {
     const { t } = useTranslation();
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
-    const { isOffline } = useOffline();
     const chatEndRef = useRef<HTMLDivElement>(null);
 
     const tableState = useDataTableState({ initialSort: 'createdAt:desc' });
@@ -67,136 +63,29 @@ export default function UserConversations() {
     return (
         <UserSubpageContainer>
             {({ targetUser, isOwner }) => {
-                const { data: friendship } = useQuery({
-                    queryKey: ['friendship', currentUser?.id, targetUser.id],
-                    queryFn: async () => {
-                        if (!currentUser || isOwner) return null;
-                        if (isOffline) {
-                            return (
-                                queryClient.getQueryData<any>(['friendship', currentUser?.id, targetUser.id]) ?? null
-                            );
-                        }
-                        const res = await friendService.getFriends({
-                            params: {
-                                query: {
-                                    filter: { userIds: [targetUser.id] },
-                                    limit: 10,
-                                },
-                            },
-                        });
-                        return (
-                            res.data?.find(
-                                (f) =>
-                                    (f.senderUserId === targetUser.id && f.receiverUserId === currentUser.id) ||
-                                    (f.senderUserId === currentUser.id && f.receiverUserId === targetUser.id),
-                            ) ?? null
-                        );
-                    },
-                    enabled: !!currentUser && !isOwner,
+                const conversationData = useConversationData({
+                    targetUser,
+                    isOwner,
+                    page: tableState.page,
+                    limit: tableState.limit,
+                    sort: tableState.sort,
+                    statusFilter,
                 });
-
-                const canChat = !isOwner && friendship?.status === FriendStatusEnum.ACCEPTED;
-                const { collaboratorOptions } = useMyFriends();
-
-                const { data: conversationsResponse, isLoading: conversationsLoading } = useQuery({
-                    queryKey: [
-                        'conversations-data',
-                        currentUser?.id,
-                        targetUser.id,
-                        tableState.page,
-                        tableState.limit,
-                        tableState.sort,
-                        statusFilter,
-                    ],
-                    queryFn: async () => {
-                        if (!currentUser || !isOwner) return { data: [], pagination: null };
-                        if (isOffline) {
-                            return (
-                                queryClient.getQueryData<any>([
-                                    'conversations-data',
-                                    currentUser?.id,
-                                    targetUser.id,
-                                    tableState.page,
-                                    tableState.limit,
-                                    tableState.sort,
-                                    statusFilter,
-                                ]) ?? { data: [], pagination: null }
-                            );
-                        }
-                        return await conversationService.getConversations({
-                            params: {
-                                query: {
-                                    page: tableState.page,
-                                    limit: tableState.limit,
-                                    sort: tableState.sort as any,
-                                    filter: {
-                                        ...(statusFilter ? { status: statusFilter as any } : {}),
-                                    },
-                                },
-                            },
-                        });
-                    },
-                    enabled: isOwner && !!currentUser,
-                    refetchInterval: isOffline ? false : 10000,
-                });
-
                 const {
-                    data: chatInfiniteData,
-                    isLoading: chatLoading,
-                    fetchNextPage: fetchNextChatPage,
-                    hasNextPage: hasMoreChatMessages,
-                    isFetchingNextPage: isFetchingMoreChatMessages,
-                } = useInfiniteQuery({
-                    queryKey: ['chat-messages', currentUser?.id, targetUser.id],
-                    queryFn: async ({ pageParam = 1 }) => {
-                        if (!currentUser) return { data: [], pagination: {} };
-                        if (isOffline) {
-                            const cached = queryClient.getQueryData<any>([
-                                'chat-messages',
-                                currentUser?.id,
-                                targetUser.id,
-                            ]);
-                            if (cached?.pages?.[(pageParam as number) - 1]) {
-                                return cached.pages[(pageParam as number) - 1];
-                            }
-                            return { data: [], pagination: {} };
-                        }
-                        return await conversationService.getConversations({
-                            params: {
-                                query: {
-                                    page: pageParam,
-                                    limit: 10,
-                                    sort: 'createdAt:desc',
-                                    filter: { userId: targetUser.id },
-                                },
-                            },
-                        });
-                    },
-                    initialPageParam: 1,
-                    getNextPageParam: (lastPage) =>
-                        lastPage.pagination?.hasNextPage && lastPage.pagination.page
-                            ? lastPage.pagination.page + 1
-                            : undefined,
-                    enabled: !isOwner && !!currentUser,
-                    refetchInterval: isOffline ? false : 3000,
-                });
-
-                const lastMessagesRef = useRef<ConversationResource[]>([]);
-                const chatMessages = useMemo(() => {
-                    if (isOwner) return [];
-                    const msgs = chatInfiniteData?.pages.flatMap((page) => page.data ?? []) ?? [];
-                    if (msgs.length > 0) {
-                        const sorted = [...msgs].sort(
-                            (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-                        );
-                        lastMessagesRef.current = sorted;
-                        return sorted;
-                    }
-                    if (isOffline && lastMessagesRef.current.length > 0) {
-                        return lastMessagesRef.current;
-                    }
-                    return [];
-                }, [isOwner, chatInfiniteData, isOffline]);
+                    canChat,
+                    conversationsResponse,
+                    conversationsLoading,
+                    fetchNextChatPage,
+                    hasMoreChatMessages,
+                    isFetchingMoreChatMessages,
+                    chatLoading,
+                    messages,
+                    getUser,
+                    isPartnerTyping,
+                    recordActivity,
+                    resetActivityThrottle,
+                } = conversationData;
+                const { collaboratorOptions } = useMyFriends();
 
                 const chatViewportRef = useRef<HTMLDivElement>(null);
                 const prevScrollHeightRef = useRef<number>(0);
@@ -204,11 +93,11 @@ export default function UserConversations() {
                 const hasInitialScrolledRef = useRef(false);
 
                 useEffect(() => {
-                    if (!isOwner && !hasInitialScrolledRef.current && chatMessages.length > 0) {
+                    if (!isOwner && !hasInitialScrolledRef.current && messages.length > 0) {
                         chatEndRef.current?.scrollIntoView({ behavior: 'instant' });
                         hasInitialScrolledRef.current = true;
                     }
-                }, [isOwner, chatMessages.length]);
+                }, [isOwner, messages.length]);
 
                 const handleChatScroll = useCallback(
                     ({ y }: { y: number }) => {
@@ -230,112 +119,7 @@ export default function UserConversations() {
                         chatViewportRef.current.scrollTop = newScrollHeight - prevScrollHeightRef.current;
                         isPrependingRef.current = false;
                     }
-                }, [chatMessages.length]);
-
-                const userIdsToFetch = useMemo(() => {
-                    if (!isOwner) return [];
-                    const set = new Set<string>();
-                    conversationsResponse?.data?.forEach((c) => {
-                        if (c.senderUserId) set.add(c.senderUserId);
-                        if (c.receiverUserId) set.add(c.receiverUserId);
-                    });
-                    return Array.from(set);
-                }, [isOwner, conversationsResponse?.data]);
-
-                const { getUser } = useUsersMap(userIdsToFetch);
-                const lastOwnerMessagesRef = useRef<ConversationResource[]>([]);
-                const messages = useMemo(() => {
-                    if (isOwner) {
-                        const data = conversationsResponse?.data ?? [];
-                        if (data.length > 0) {
-                            lastOwnerMessagesRef.current = data;
-                            return data;
-                        }
-                        if (isOffline && lastOwnerMessagesRef.current.length > 0) {
-                            return lastOwnerMessagesRef.current;
-                        }
-                        return [];
-                    }
-                    return chatMessages;
-                }, [isOwner, conversationsResponse?.data, isOffline, chatMessages]);
-
-                const { data: activitiesData } = useQuery({
-                    queryKey: ['conversation-activities', currentUser?.id, targetUser.id],
-                    queryFn: async () => {
-                        if (!currentUser || isOwner) return [];
-                        if (isOffline) {
-                            return (
-                                queryClient.getQueryData<any>([
-                                    'conversation-activities',
-                                    currentUser?.id,
-                                    targetUser.id,
-                                ]) ?? []
-                            );
-                        }
-                        const res = await conversationService.getConversationActivities({
-                            params: {
-                                query: {
-                                    filter: { userId: targetUser.id },
-                                    limit: 10,
-                                    sort: 'updatedAt:desc',
-                                },
-                            },
-                        });
-                        return res.data ?? [];
-                    },
-                    enabled: !isOwner && !!currentUser && canChat,
-                    refetchInterval: isOffline ? false : 5000,
-                });
-
-                const isPartnerTyping = useMemo(() => {
-                    if (!activitiesData || activitiesData.length === 0 || !currentUser?.id) {
-                        return false;
-                    }
-                    const partnerActivity = activitiesData.find(
-                        (a) => a.senderUserId === targetUser.id && a.receiverUserId === currentUser.id,
-                    );
-                    if (!partnerActivity) return false;
-                    if (partnerActivity.isWriting) return true;
-                    const diffMs = Date.now() - new Date(partnerActivity.updatedAt).getTime();
-                    return diffMs <= 6000;
-                }, [activitiesData, targetUser.id, currentUser?.id]);
-
-                const lastIncomingMessage = useMemo(() => {
-                    if (isOwner || !messages || messages.length === 0) return null;
-                    for (let i = messages.length - 1; i >= 0; i--) {
-                        if (messages[i].senderUserId === targetUser.id) {
-                            return messages[i];
-                        }
-                    }
-                    return null;
-                }, [isOwner, messages, targetUser.id]);
-
-                const markedReadMsgIdRef = useRef<string | null>(null);
-
-                useEffect(() => {
-                    markedReadMsgIdRef.current = null;
-                }, [targetUser.id]);
-
-                useEffect(() => {
-                    if (
-                        !isOwner &&
-                        !isOffline &&
-                        lastIncomingMessage &&
-                        lastIncomingMessage.status !== ConversationStatusEnum.READ &&
-                        markedReadMsgIdRef.current !== lastIncomingMessage.id
-                    ) {
-                        markedReadMsgIdRef.current = lastIncomingMessage.id;
-                        conversationService
-                            .updateConversationStatus({
-                                params: { path: { id: lastIncomingMessage.id } },
-                                body: { status: ConversationStatusEnum.READ },
-                            })
-                            .then(() => {
-                                void queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
-                            })
-                            .catch(() => {});
-                    }
-                }, [isOwner, isOffline, lastIncomingMessage, queryClient]);
+                }, [messages.length]);
 
                 useEffect(() => {
                     if (!isOwner && isPartnerTyping) {
@@ -343,21 +127,9 @@ export default function UserConversations() {
                     }
                 }, [isOwner, isPartnerTyping]);
 
-                const lastActivitySentRef = useRef<number>(0);
-
                 const handleInputChange = (val: string) => {
                     setMessageInput(val);
-                    if (isOwner) return;
-
-                    const now = Date.now();
-                    if (now - lastActivitySentRef.current >= 4500) {
-                        lastActivitySentRef.current = now;
-                        conversationService
-                            .updateConversationActivityUpdatedAt({
-                                params: { path: { id: targetUser.id } },
-                            })
-                            .catch(() => {});
-                    }
+                    recordActivity();
                 };
 
                 const sendMutation = useMutation({
@@ -368,7 +140,7 @@ export default function UserConversations() {
                         }),
                     onSuccess: () => {
                         setMessageInput('');
-                        lastActivitySentRef.current = 0;
+                        resetActivityThrottle();
                         setSendModalText('');
                         setSendModalOpened(false);
                         sendErrors.clearErrors();
@@ -500,7 +272,7 @@ export default function UserConversations() {
                             />
                             <Button
                                 loading={updateMessageMutation.isPending}
-                                disabled={!editModalText.trim() || updateMessageMutation.isPending || isOffline}
+                                disabled={!editModalText.trim() || updateMessageMutation.isPending}
                                 onClick={() => {
                                     if (editingMessage) {
                                         updateMessageMutation.mutate({
@@ -526,7 +298,7 @@ export default function UserConversations() {
                                 totalItems={conversationsResponse?.pagination?.total ?? messages.length}
                                 state={tableState}
                                 filtersNode={
-                                    <SimpleGrid cols={{ base: 1, sm: 2 }}>
+                                    <Group grow align="flex-start" gap="sm">
                                         <Select
                                             label={t('status')}
                                             placeholder={t('allStatuses')}
@@ -537,9 +309,8 @@ export default function UserConversations() {
                                                 tableState.resetPage();
                                             }}
                                             clearable
-                                            disabled={isOffline}
                                         />
-                                    </SimpleGrid>
+                                    </Group>
                                 }
                                 activeFiltersCount={statusFilter !== null ? 1 : 0}
                                 onResetFilters={() => {
@@ -642,10 +413,7 @@ export default function UserConversations() {
                                     <Button
                                         loading={sendMutation.isPending}
                                         disabled={
-                                            !sendModalText.trim() ||
-                                            !sendModalRecipientId ||
-                                            sendMutation.isPending ||
-                                            isOffline
+                                            !sendModalText.trim() || !sendModalRecipientId || sendMutation.isPending
                                         }
                                         onClick={() => {
                                             if (sendModalRecipientId && sendModalText.trim()) {
@@ -738,7 +506,7 @@ export default function UserConversations() {
                                                                     {formatClockTime(m.createdAt)}
                                                                 </Text>
                                                                 {isMine && (
-                                                                    <Group gap={4}>
+                                                                    <Group gap="xs">
                                                                         <EditActionButton
                                                                             onClick={() => {
                                                                                 setEditingMessage(m);
@@ -786,7 +554,7 @@ export default function UserConversations() {
                                     {isPartnerTyping && (
                                         <Group gap="xs" align="center" mt="xs">
                                             <Paper p="xs" className="chat-bubble-other">
-                                                <Group gap={6} align="center">
+                                                <Group gap="xs" align="center">
                                                     <Loader size={12} type="dots" />
                                                     <Text size="xs" c="dimmed" fs="italic">
                                                         {targetUser.firstName} {t('isTyping')}...
@@ -804,7 +572,7 @@ export default function UserConversations() {
                                     <TextInput
                                         aria-label={canChat ? t('typeMessage') : t('mustBeFriendsToChat')}
                                         placeholder={canChat ? t('typeMessage') : t('mustBeFriendsToChat')}
-                                        disabled={!canChat || sendMutation.isPending || isOffline}
+                                        disabled={!canChat || sendMutation.isPending}
                                         value={messageInput}
                                         error={chatErrors.errors.text}
                                         onChange={(e) => {
@@ -815,9 +583,7 @@ export default function UserConversations() {
                                     />
                                     <Button
                                         type="submit"
-                                        disabled={
-                                            sendMutation.isPending || !canChat || !messageInput.trim() || isOffline
-                                        }
+                                        disabled={sendMutation.isPending || !canChat || !messageInput.trim()}
                                         loading={sendMutation.isPending}
                                         leftSection={<IconSend size={16} />}
                                     >

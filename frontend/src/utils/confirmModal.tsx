@@ -1,6 +1,6 @@
 import { Button, Group, Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
-import { isTrainingsOrGoalsRoute } from '../services';
+import { useOffline } from '../services';
 
 export interface ConfirmModalOptions {
     title: string;
@@ -25,17 +25,21 @@ export function openConfirmActionModal({
     isOfflineAllowed,
     withCancelButton = false,
 }: ConfirmModalOptions) {
-    const isAllowed =
-        isOfflineAllowed ?? (typeof window !== 'undefined' && isTrainingsOrGoalsRoute(window.location.pathname));
-
     const id = `confirm-modal-${Math.random().toString(36).slice(2, 9)}`;
+    const confirmationButton = (
+        <ConfirmationButton
+            confirmColor={confirmColor}
+            confirmLabel={confirmLabel}
+            id={id}
+            isOfflineAllowed={isOfflineAllowed}
+            onConfirm={onConfirm}
+        />
+    );
 
     modals.open({
         modalId: id,
         title,
         onClose: onCancel,
-        className: isAllowed ? 'training-goal-modal' : undefined,
-        'data-training-modal': isAllowed ? 'true' : undefined,
         children: (
             <>
                 {message && (
@@ -44,20 +48,10 @@ export function openConfirmActionModal({
                     </Text>
                 )}
                 <Group justify="flex-end" mt={message ? 0 : 'md'}>
-                    <Button
-                        color={confirmColor}
-                        data-offline-allowed={isAllowed ? 'true' : undefined}
-                        onClick={() => {
-                            onConfirm();
-                            modals.close(id);
-                        }}
-                    >
-                        {confirmLabel}
-                    </Button>
+                    {confirmationButton}
                     {withCancelButton && (
                         <Button
                             variant="default"
-                            data-offline-allowed="true"
                             onClick={() => {
                                 onCancel?.();
                                 modals.close(id);
@@ -70,6 +64,32 @@ export function openConfirmActionModal({
             </>
         ),
     });
+}
+
+interface ConfirmationButtonProps {
+    id: string;
+    confirmColor: string;
+    confirmLabel: string;
+    isOfflineAllowed?: boolean;
+    onConfirm: () => void;
+}
+
+function ConfirmationButton({ id, confirmColor, confirmLabel, isOfflineAllowed, onConfirm }: ConfirmationButtonProps) {
+    const { interactionPolicy } = useOffline();
+    const isDisabled = interactionPolicy.isDisabled('confirmation', isOfflineAllowed);
+
+    return (
+        <Button
+            color={confirmColor}
+            disabled={isDisabled}
+            onClick={() => {
+                onConfirm();
+                modals.close(id);
+            }}
+        >
+            {confirmLabel}
+        </Button>
+    );
 }
 
 export function confirmDelete(

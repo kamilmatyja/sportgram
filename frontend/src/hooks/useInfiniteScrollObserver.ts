@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { onlineManager } from '@tanstack/react-query';
 
 export interface UseInfiniteScrollObserverOptions {
     isLoading: boolean;
@@ -26,8 +27,7 @@ export function useInfiniteScrollObserver({
             if (!node || isLoading || disabled) return;
             observer.current = new IntersectionObserver(
                 (entries) => {
-                    const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
-                    if (entries[0]?.isIntersecting && hasNextPage && !disabled && !isOffline) {
+                    if (entries[0]?.isIntersecting && hasNextPage && !disabled && onlineManager.isOnline()) {
                         void fetchNextPage();
                     }
                 },
