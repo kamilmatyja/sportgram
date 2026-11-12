@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Stack, Group, Paper, Select, TextInput, Button, Text, SimpleGrid } from '@mantine/core';
+import { Stack, Group, Paper, Select, TextInput, Button, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconPlus, IconPlayerPlay } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
@@ -233,7 +233,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
                     <Stack gap="sm" mt="xs">
                         {d.distances.map((dist) => (
                             <Paper key={dist.id} p="xs" bg="var(--mantine-color-gray-light)">
-                                <SimpleGrid cols={2} spacing="xs" w="100%">
+                                <Group grow gap="xs">
                                     <TextInput
                                         label={t('distanceMeters')}
                                         required
@@ -250,7 +250,7 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
                                             handleDistanceChange(d.id, dist.id, 'time', e.currentTarget.value)
                                         }
                                     />
-                                </SimpleGrid>
+                                </Group>
                                 <Group justify="flex-end" mt={4}>
                                     <DeleteActionButton onClick={() => handleRemoveDistance(d.id, dist.id)} />
                                 </Group>
@@ -272,94 +272,100 @@ export function TrainingDisciplinesEditor({ disciplines, onChange, onSessionTime
 
                                     {dist.subDistances?.map((sd) => (
                                         <Paper key={sd.id} p="xs">
-                                            <SimpleGrid cols={2} spacing="xs" w="100%">
-                                                <TextInput
-                                                    size="xs"
-                                                    label={t('subDistanceMeters')}
-                                                    required
-                                                    value={sd.subDistance}
-                                                    onChange={(e) =>
-                                                        handleSubDistanceChange(
-                                                            d.id,
-                                                            dist.id,
-                                                            sd.id,
-                                                            'subDistance',
-                                                            e.currentTarget.value,
-                                                        )
-                                                    }
-                                                />
-                                                <TextInput
-                                                    size="xs"
-                                                    label={t('timeSeconds')}
-                                                    required
-                                                    value={sd.time}
-                                                    onChange={(e) =>
-                                                        handleSubDistanceChange(
-                                                            d.id,
-                                                            dist.id,
-                                                            sd.id,
-                                                            'time',
-                                                            e.currentTarget.value,
-                                                        )
-                                                    }
-                                                />
-                                                <TextInput
-                                                    size="xs"
-                                                    label={t('lat')}
-                                                    value={sd.lat}
-                                                    onChange={(e) =>
-                                                        handleSubDistanceChange(
-                                                            d.id,
-                                                            dist.id,
-                                                            sd.id,
-                                                            'lat',
-                                                            e.currentTarget.value,
-                                                        )
-                                                    }
-                                                />
-                                                <TextInput
-                                                    size="xs"
-                                                    label={t('lng')}
-                                                    value={sd.lng}
-                                                    onChange={(e) =>
-                                                        handleSubDistanceChange(
-                                                            d.id,
-                                                            dist.id,
-                                                            sd.id,
-                                                            'lng',
-                                                            e.currentTarget.value,
-                                                        )
-                                                    }
-                                                />
-                                                <TextInput
-                                                    size="xs"
-                                                    label={t('accuracy')}
-                                                    value={sd.accuracy}
-                                                    onChange={(e) =>
-                                                        handleSubDistanceChange(
-                                                            d.id,
-                                                            dist.id,
-                                                            sd.id,
-                                                            'accuracy',
-                                                            e.currentTarget.value,
-                                                        )
-                                                    }
-                                                />
-                                                <TextInput
-                                                    size="xs"
-                                                    label={t('speed')}
-                                                    value={sd.speed}
-                                                    onChange={(e) =>
-                                                        handleSubDistanceChange(
-                                                            d.id,
-                                                            dist.id,
-                                                            sd.id,
-                                                            'speed',
-                                                            e.currentTarget.value,
-                                                        )
-                                                    }
-                                                />
-                                            </SimpleGrid>
+                                            <Stack gap="xs">
+                                                <Group grow gap="xs">
+                                                    <TextInput
+                                                        size="xs"
+                                                        label={t('subDistanceMeters')}
+                                                        required
+                                                        value={sd.subDistance}
+                                                        onChange={(e) =>
+                                                            handleSubDistanceChange(
+                                                                d.id,
+                                                                dist.id,
+                                                                sd.id,
+                                                                'subDistance',
+                                                                e.currentTarget.value,
+                                                            )
+                                                        }
+                                                    />
+                                                    <TextInput
+                                                        size="xs"
+                                                        label={t('timeSeconds')}
+                                                        required
+                                                        value={sd.time}
+                                                        onChange={(e) =>
+                                                            handleSubDistanceChange(
+                                                                d.id,
+                                                                dist.id,
+                                                                sd.id,
+                                                                'time',
+                                                                e.currentTarget.value,
+                                                            )
+                                                        }
+                                                    />
+                                                </Group>
+                                                <Group grow gap="xs">
+                                                    <TextInput
+                                                        size="xs"
+                                                        label={t('lat')}
+                                                        value={sd.lat}
+                                                        onChange={(e) =>
+                                                            handleSubDistanceChange(
+                                                                d.id,
+                                                                dist.id,
+                                                                sd.id,
+                                                                'lat',
+                                                                e.currentTarget.value,
+                                                            )
+                                                        }
+                                                    />
+                                                    <TextInput
+                                                        size="xs"
+                                                        label={t('lng')}
+                                                        value={sd.lng}
+                                                        onChange={(e) =>
+                                                            handleSubDistanceChange(
+                                                                d.id,
+                                                                dist.id,
+                                                                sd.id,
+                                                                'lng',
+                                                                e.currentTarget.value,
+                                                            )
+                                                        }
+                                                    />
+                                                </Group>
+                                                <Group grow gap="xs">
+                                                    <TextInput
+                                                        size="xs"
+                                                        label={t('accuracy')}
+                                                        value={sd.accuracy}
+                                                        onChange={(e) =>
+                                                            handleSubDistanceChange(
+                                                                d.id,
+                                                                dist.id,
+                                                                sd.id,
+                                                                'accuracy',
+                                                                e.currentTarget.value,
+                                                            )
+                                                        }
+                                                    />
+                                                    <TextInput
+                                                        size="xs"
+                                                        label={t('speed')}
+                                                        value={sd.speed}
+                                                        onChange={(e) =>
+                                                            handleSubDistanceChange(
+                                                                d.id,
+                                                                dist.id,
+                                                                sd.id,
+                                                                'speed',
+                                                                e.currentTarget.value,
+                                                            )
+                                                        }
+                                                    />
+                                                </Group>
+                                            </Stack>
                                             <Group justify="flex-end" mt={4}>
                                                 <DeleteActionButton
                                                     onClick={() => handleRemoveSubDistance(d.id, dist.id, sd.id)}

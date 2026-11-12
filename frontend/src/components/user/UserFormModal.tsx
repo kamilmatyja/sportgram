@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Stack, TextInput, Select, MultiSelect, Textarea, Button, SimpleGrid } from '@mantine/core';
+import { Stack, TextInput, Select, MultiSelect, Textarea, Button, Group } from '@mantine/core';
 import { InteractionModal as Modal } from '../common/InteractionModal';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -202,7 +202,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
     return (
         <Modal opened={opened} onClose={onClose} title={isEdit ? t('editUser') : t('addUser')}>
             <Stack gap="sm">
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
+                <Group grow gap="sm">
                     <TextInput
                         label={t('firstName')}
                         required
@@ -235,9 +235,9 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                             }
                         }}
                     />
-                </SimpleGrid>
+                </Group>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
+                <Group grow gap="sm">
                     <TextInput
                         label={t('email')}
                         placeholder={t('emailPlaceholder')}
@@ -256,9 +256,9 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                         error={fieldErrors.password}
                         onChange={(e) => setFormData({ ...formData, password: e.currentTarget.value })}
                     />
-                </SimpleGrid>
+                </Group>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
+                <Group grow gap="sm">
                     <TextInput
                         label={t('link')}
                         required
@@ -274,9 +274,9 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                         error={fieldErrors.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.currentTarget.value })}
                     />
-                </SimpleGrid>
+                </Group>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
+                <Group grow gap="sm">
                     <TextInput
                         label={t('birthAt')}
                         type="date"
@@ -295,9 +295,9 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                         error={fieldErrors.gender}
                         onChange={(val) => setFormData({ ...formData, gender: val })}
                     />
-                </SimpleGrid>
+                </Group>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
+                <Group grow gap="sm">
                     <Select
                         label={t('country')}
                         placeholder={t('country')}
@@ -319,9 +319,9 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                         error={fieldErrors.language}
                         onChange={(val) => setFormData({ ...formData, language: val })}
                     />
-                </SimpleGrid>
+                </Group>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
+                <Group grow gap="sm">
                     <Select
                         label={t('theme')}
                         placeholder={t('theme')}
@@ -342,9 +342,9 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                         error={fieldErrors.color}
                         onChange={(val) => setFormData({ ...formData, color: val })}
                     />
-                </SimpleGrid>
+                </Group>
 
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
+                <Group grow gap="sm">
                     <MultiSelect
                         label={t('roles')}
                         placeholder={t('roles')}
@@ -364,7 +364,7 @@ export function UserFormModal({ opened, onClose, user, onSuccess }: UserFormModa
                         error={fieldErrors.disciplines}
                         onChange={(val) => setFormData({ ...formData, disciplines: val })}
                     />
-                </SimpleGrid>
+                </Group>
 
                 <Textarea
                     label={t('bio')}

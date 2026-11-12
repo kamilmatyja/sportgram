@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Text, TextInput, Select, Badge, Group, SimpleGrid } from '@mantine/core';
+import { Text, TextInput, Select, Badge, Group, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -185,68 +185,72 @@ export default function UserGoals() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm" w="100%">
-                        <TextInput
-                            label={t('title')}
-                            value={textFilter}
-                            onChange={(e) => {
-                                setTextFilter(e.currentTarget.value);
-                                tableState.resetPage();
-                            }}
-                        />
-                        <TextInput
-                            label={t('link')}
-                            value={linkFilter}
-                            onChange={(e) => {
-                                setLinkFilter(e.currentTarget.value);
-                                tableState.resetPage();
-                            }}
-                        />
-                        <Select
-                            label={t('discipline')}
-                            placeholder={t('allDisciplines')}
-                            data={DisciplineEnum.getOptions(t).map((d) => ({
-                                value: String(d.value),
-                                label: d.label,
-                            }))}
-                            value={disciplineFilter}
-                            onChange={(v) => {
-                                setDisciplineFilter(v);
-                                tableState.resetPage();
-                            }}
-                            clearable
-                        />
-                        <TextInput
-                            label={t('distanceMeters')}
-                            value={distanceFilter}
-                            onChange={(e) => {
-                                setDistanceFilter(e.currentTarget.value);
-                                tableState.resetPage();
-                            }}
-                        />
-                        <TextInput
-                            label={t('timeSeconds')}
-                            value={timeFilter}
-                            onChange={(e) => {
-                                setTimeFilter(e.currentTarget.value);
-                                tableState.resetPage();
-                            }}
-                        />
-                        <Select
-                            label={t('status')}
-                            placeholder={t('allStatuses')}
-                            data={GoalStatusEnum.getOptions(t).map((s) => ({
-                                value: String(s.value),
-                                label: s.label,
-                            }))}
-                            value={statusFilter}
-                            onChange={(v) => {
-                                setStatusFilter(v);
-                                tableState.resetPage();
-                            }}
-                            clearable
-                        />
-                    </SimpleGrid>
+                    <Stack gap="sm">
+                        <Group grow gap="sm">
+                            <TextInput
+                                label={t('title')}
+                                value={textFilter}
+                                onChange={(e) => {
+                                    setTextFilter(e.currentTarget.value);
+                                    tableState.resetPage();
+                                }}
+                            />
+                            <TextInput
+                                label={t('link')}
+                                value={linkFilter}
+                                onChange={(e) => {
+                                    setLinkFilter(e.currentTarget.value);
+                                    tableState.resetPage();
+                                }}
+                            />
+                            <Select
+                                label={t('discipline')}
+                                placeholder={t('allDisciplines')}
+                                data={DisciplineEnum.getOptions(t).map((d) => ({
+                                    value: String(d.value),
+                                    label: d.label,
+                                }))}
+                                value={disciplineFilter}
+                                onChange={(v) => {
+                                    setDisciplineFilter(v);
+                                    tableState.resetPage();
+                                }}
+                                clearable
+                            />
+                        </Group>
+                        <Group grow gap="sm">
+                            <TextInput
+                                label={t('distanceMeters')}
+                                value={distanceFilter}
+                                onChange={(e) => {
+                                    setDistanceFilter(e.currentTarget.value);
+                                    tableState.resetPage();
+                                }}
+                            />
+                            <TextInput
+                                label={t('timeSeconds')}
+                                value={timeFilter}
+                                onChange={(e) => {
+                                    setTimeFilter(e.currentTarget.value);
+                                    tableState.resetPage();
+                                }}
+                            />
+                            <Select
+                                label={t('status')}
+                                placeholder={t('allStatuses')}
+                                data={GoalStatusEnum.getOptions(t).map((s) => ({
+                                    value: String(s.value),
+                                    label: s.label,
+                                }))}
+                                value={statusFilter}
+                                onChange={(v) => {
+                                    setStatusFilter(v);
+                                    tableState.resetPage();
+                                }}
+                                clearable
+                            />
+                        </Group>
+                    </Stack>
                 );
 
                 return (

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Group, Text, TextInput, Select, SimpleGrid } from '@mantine/core';
+import { Group, Stack, Text, TextInput, Select } from '@mantine/core';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -154,78 +154,84 @@ export default function UsersList() {
     ];
 
     const filtersNode = (
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm" w="100%">
-            <TextInput
-                label={t('firstName')}
-                placeholder={t('firstName')}
-                value={firstName}
-                onChange={(e) => {
-                    setFirstName(e.currentTarget.value);
-                    tableState.setPage(1);
-                }}
-            />
-            <TextInput
-                label={t('lastName')}
-                placeholder={t('lastName')}
-                value={lastName}
-                onChange={(e) => {
-                    setLastName(e.currentTarget.value);
-                    tableState.setPage(1);
-                }}
-            />
-            <TextInput
-                label={t('email')}
-                placeholder={t('email')}
-                value={email}
-                onChange={(e) => {
-                    setEmail(e.currentTarget.value);
-                    tableState.setPage(1);
-                }}
-            />
-            <TextInput
-                label={t('link')}
-                placeholder={t('link')}
-                value={link}
-                onChange={(e) => {
-                    setLink(e.currentTarget.value);
-                    tableState.setPage(1);
-                }}
-            />
-            <Select
-                label={t('gender')}
-                placeholder={t('allGenders')}
-                data={GenderEnum.getOptions(t).map((g) => ({ value: String(g.value), label: g.label }))}
-                value={gender}
-                onChange={(v) => {
-                    setGender(v);
-                    tableState.setPage(1);
-                }}
-                clearable
-            />
-            <Select
-                label={t('country')}
-                placeholder={t('allCountries')}
-                data={CountryEnum.getOptions(t).map((c) => ({ value: String(c.value), label: c.label }))}
-                value={country}
-                onChange={(v) => {
-                    setCountry(v);
-                    tableState.setPage(1);
-                }}
-                clearable
-                searchable
-            />
-            <Select
-                label={t('status')}
-                placeholder={t('allStatuses')}
-                data={UserStatusEnum.getOptions(t).map((s) => ({ value: String(s.value), label: s.label }))}
-                value={status}
-                onChange={(v) => {
-                    setStatus(v);
-                    tableState.setPage(1);
-                }}
-                clearable
-            />
-        </SimpleGrid>
+        <Stack gap="sm">
+            <Group grow gap="sm">
+                <TextInput
+                    label={t('firstName')}
+                    placeholder={t('firstName')}
+                    value={firstName}
+                    onChange={(e) => {
+                        setFirstName(e.currentTarget.value);
+                        tableState.setPage(1);
+                    }}
+                />
+                <TextInput
+                    label={t('lastName')}
+                    placeholder={t('lastName')}
+                    value={lastName}
+                    onChange={(e) => {
+                        setLastName(e.currentTarget.value);
+                        tableState.setPage(1);
+                    }}
+                />
+                <TextInput
+                    label={t('email')}
+                    placeholder={t('email')}
+                    value={email}
+                    onChange={(e) => {
+                        setEmail(e.currentTarget.value);
+                        tableState.setPage(1);
+                    }}
+                />
+            </Group>
+            <Group grow gap="sm">
+                <TextInput
+                    label={t('link')}
+                    placeholder={t('link')}
+                    value={link}
+                    onChange={(e) => {
+                        setLink(e.currentTarget.value);
+                        tableState.setPage(1);
+                    }}
+                />
+                <Select
+                    label={t('gender')}
+                    placeholder={t('allGenders')}
+                    data={GenderEnum.getOptions(t).map((g) => ({ value: String(g.value), label: g.label }))}
+                    value={gender}
+                    onChange={(v) => {
+                        setGender(v);
+                        tableState.setPage(1);
+                    }}
+                    clearable
+                />
+                <Select
+                    label={t('country')}
+                    placeholder={t('allCountries')}
+                    data={CountryEnum.getOptions(t).map((c) => ({ value: String(c.value), label: c.label }))}
+                    value={country}
+                    onChange={(v) => {
+                        setCountry(v);
+                        tableState.setPage(1);
+                    }}
+                    clearable
+                    searchable
+                />
+            </Group>
+            <Group grow gap="sm">
+                <Select
+                    label={t('status')}
+                    placeholder={t('allStatuses')}
+                    data={UserStatusEnum.getOptions(t).map((s) => ({ value: String(s.value), label: s.label }))}
+                    value={status}
+                    onChange={(v) => {
+                        setStatus(v);
+                        tableState.setPage(1);
+                    }}
+                    clearable
+                />
+            </Group>
+        </Stack>
     );
 
     return (

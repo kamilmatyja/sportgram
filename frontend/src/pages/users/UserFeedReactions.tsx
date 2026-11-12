@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Text, Button, Stack, Select, Group, SimpleGrid } from '@mantine/core';
+import { Text, Button, Stack, Select, Group } from '@mantine/core';
 import { InteractionModal as Modal } from '../../components/common/InteractionModal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -149,7 +149,7 @@ export default function UserFeedReactions() {
                 ];
 
                 const filtersNode = (
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" w="100%">
+                    <Group grow gap="sm">
                         <Select
                             label={t('reaction')}
                             placeholder={t('allReactions')}
@@ -178,7 +178,7 @@ export default function UserFeedReactions() {
                             }}
                             clearable
                         />
-                    </SimpleGrid>
+                    </Group>
                 );
 
                 return (
