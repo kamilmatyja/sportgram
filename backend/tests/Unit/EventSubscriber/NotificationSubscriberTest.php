@@ -111,20 +111,26 @@ class NotificationSubscriberTest extends TestCase
         $this->assertNotificationSavedThenMarkedSent('Body', null);
     }
 
-    final public function testMarksNotificationSentEvenWhenPushFails(): void
+    final public function testDoesNotMarkNotificationSentWhenPushFails(): void
     {
         $this->givenSubscriptions([PushSubscriptionFactory::make(['user' => $this->user])]);
         $this->translator->expects($this->once())->method('trans')->willReturn('Body');
         $this->webPushService->expects($this->once())
             ->method('sendNotification')
             ->willThrowException(new ErrorException('Push failed'));
-        $this->recordSavedNotifications(2);
+        $this->recordSavedNotifications(1);
 
         $this->subscriber->onNotification(
             new NotificationEvent($this->user, NotificationTypeEnum::Friend, 'text', '/friends'),
         );
 
-        $this->assertNotificationSavedThenMarkedSent('Body', '/friends');
+        $this->assertCount(1, $this->savedNotifications);
+        [$status, $notification] = $this->savedNotifications[0];
+        $this->assertSame(NotificationStatusEnum::NotSent, $status);
+        $this->assertSame(NotificationStatusEnum::NotSent, $notification->status);
+        $this->assertSame($this->user, $notification->user);
+        $this->assertSame('Body', $notification->text);
+        $this->assertSame('/friends', $notification->link);
     }
 
     final public function testUsesUserLocale(): void

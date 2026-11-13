@@ -61,7 +61,7 @@ class PushSubscriptionIndexTest extends ApiTestCase
 
         $result = $this->get('/api/push-subscriptions?filter[userId]=' . $owner->id, $user);
 
-        $this->assertEquals(400, $result['status']);
+        $this->assertEquals(409, $result['status']);
     }
 
     final public function testFiltersAndSorting(): void

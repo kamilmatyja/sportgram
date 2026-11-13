@@ -23,9 +23,9 @@ use App\Service\UserService;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\{AllowMockObjectsWithoutExpectations, DataProvider};
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Validator\Exception\ValidatorException;
 use Tests\Factory\{PageFactory, UserDisciplineFactory, UserFactory, UserRoleFactory};
 
@@ -42,7 +42,7 @@ class UserServiceTest extends ServiceTestCase
 
     private UserPasswordHasherInterface&MockObject $hasher;
 
-    private AuthorizationCheckerInterface&MockObject $authorizationChecker;
+    private Security&MockObject $security;
 
     private UserService $service;
 
@@ -56,7 +56,7 @@ class UserServiceTest extends ServiceTestCase
         $this->userDisciplineRepository = $this->createMock(UserDisciplineRepository::class);
         $this->userRegisterRepository = $this->createMock(UserRegisterRepository::class);
         $this->hasher = $this->createMock(UserPasswordHasherInterface::class);
-        $this->authorizationChecker = $this->createMock(AuthorizationCheckerInterface::class);
+        $this->security = $this->createMock(Security::class);
 
         $this->service = new UserService(
             $this->userRepository,
@@ -64,7 +64,7 @@ class UserServiceTest extends ServiceTestCase
             $this->userDisciplineRepository,
             $this->userRegisterRepository,
             $this->hasher,
-            $this->authorizationChecker,
+            $this->security,
             $this->dispatcher(),
         );
     }
@@ -215,7 +215,7 @@ class UserServiceTest extends ServiceTestCase
         $dto->password = 'n3w-Pa55';
         $dto->roles = [RoleEnum::Administrator];
         $dto->disciplines = [DisciplineEnum::Cycling, DisciplineEnum::InlineSkating];
-        $this->authorizationChecker->expects($this->once())
+        $this->security->expects($this->once())
             ->method('isGranted')
             ->with(AssignAdminRoleVoter::ASSIGN_ADMIN_ROLE, $dto)
             ->willReturn(true);
@@ -270,7 +270,7 @@ class UserServiceTest extends ServiceTestCase
         $oldPassword = $user->password;
         $dto = $this->updateDto();
         $dto->password = $password;
-        $this->authorizationChecker->method('isGranted')->willReturn(true);
+        $this->security->method('isGranted')->willReturn(true);
         $this->userRepository->method('findById')->willReturn($user);
         $this->hasher->expects($this->never())->method('hashPassword');
         $this->recordWrites();
@@ -288,7 +288,7 @@ class UserServiceTest extends ServiceTestCase
         $oldFirstName = $user->firstName;
         $dto = $this->updateDto();
         $dto->roles = [RoleEnum::Administrator];
-        $this->authorizationChecker->expects($this->once())
+        $this->security->expects($this->once())
             ->method('isGranted')
             ->with(AssignAdminRoleVoter::ASSIGN_ADMIN_ROLE, $dto)
             ->willReturn(false);
@@ -309,7 +309,7 @@ class UserServiceTest extends ServiceTestCase
 
     final public function testUpdatePropagatesNotFound(): void
     {
-        $this->authorizationChecker->method('isGranted')->willReturn(true);
+        $this->security->method('isGranted')->willReturn(true);
         $this->userRepository->method('findById')->willThrowException(new NotFoundHttpException());
         $this->recordWrites();
 

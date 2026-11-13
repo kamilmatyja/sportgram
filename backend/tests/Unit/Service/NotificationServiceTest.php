@@ -14,7 +14,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Uid\Uuid;
-use Symfony\Component\Validator\Exception\ValidationFailedException;
+use Symfony\Component\Validator\Exception\ValidatorException;
 use Tests\Factory\NotificationFactory;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -131,7 +131,7 @@ class NotificationServiceTest extends ServiceTestCase
         $dto->filter->userId = Uuid::v4();
         $this->notificationRepository->expects($this->never())->method('findNotifications');
 
-        $this->expectException(ValidationFailedException::class);
+        $this->expectException(ValidatorException::class);
 
         $this->service->index($dto);
     }

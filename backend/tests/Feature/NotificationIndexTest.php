@@ -61,7 +61,7 @@ class NotificationIndexTest extends ApiTestCase
 
         $result = $this->get('/api/notifications?filter[userId]=' . $owner->id, $user);
 
-        $this->assertEquals(400, $result['status']);
+        $this->assertEquals(409, $result['status']);
     }
 
     final public function testFiltersAndSorting(): void
