@@ -71,4 +71,26 @@ class FriendUpdateStatusTest extends ApiTestCase
         );
         $this->assertEquals(200, $result['status']);
     }
+
+    final public function testSuccessAsAdministratorUpdatingOwnFriendship(): void
+    {
+        $admin = self::createUser(RoleEnum::Administrator);
+        $owner = self::createUser(RoleEnum::Participant);
+        $friend = FriendFactory::make(
+            [
+                'senderUser' => $admin,
+                'receiverUser' => $owner,
+                'status' => FriendStatusEnum::Pending,
+            ],
+            $this->em,
+        );
+
+        $result = $this->patch(
+            "/api/friends/{$friend->id->toString()}/status",
+            ['status' => FriendStatusEnum::Accepted->value],
+            $admin,
+        );
+
+        $this->assertEquals(200, $result['status']);
+    }
 }

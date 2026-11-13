@@ -276,19 +276,18 @@ describe('EventsList', () => {
         expect(screen.queryByRole('dialog', { name: 'Nowe wydarzenie' })).not.toBeInTheDocument();
     });
 
-    it('allows administrators to create and moderate events but hides owner-only actions', async () => {
-        const user = userEvent.setup();
+    it('does not allow administrators to create events but lets them moderate events', async () => {
         mocks.currentUser = { id: 'admin-1', link: 'admin' };
         mocks.isOrganizer = false;
         mocks.isAdmin = true;
         renderEvents();
 
         expect(await screen.findByText('Bieg miejski')).toBeVisible();
-        expect(screen.getByRole('button', { name: 'Dodaj wydarzenie' })).toBeVisible();
+        expect(screen.queryByRole('button', { name: 'Dodaj wydarzenie' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Edytuj' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Usuń' })).not.toBeInTheDocument();
 
-        await user.click(screen.getAllByRole('button', { name: 'Zmień status wydarzenia' })[0]);
+        await userEvent.click(screen.getAllByRole('button', { name: 'Zmień status wydarzenia' })[0]);
         await waitFor(() => {
             expect(eventService.updateEventStatus).toHaveBeenCalledWith({
                 params: { path: { id: 'event-1' } },

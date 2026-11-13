@@ -18,6 +18,7 @@ import { DisciplineEnum } from '../../enums/DisciplineEnum';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import { UserStatusEnum } from '../../enums/UserStatusEnum';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { EntryTypeEnum } from '../../enums/EntryTypeEnum';
 import {
     NotFound,
@@ -110,13 +111,13 @@ export default function UserProfile() {
         hasNextPage: hasMoreFeeds,
         isFetchingNextPage: isFetchingMoreFeeds,
     } = useInfiniteQuery({
-        queryKey: ['user-profile-feeds', user?.id],
+        queryKey: ['user-profile-feeds', user?.id, ElementStatusEnum.ACTIVE],
         queryFn: async ({ pageParam = 1 }) => {
             if (!user?.id) return { data: [], pagination: null };
             return await feedService.getFeeds({
                 params: {
                     query: {
-                        filter: { userId: user.id },
+                        filter: { userId: user.id, status: ElementStatusEnum.ACTIVE },
                         page: pageParam,
                         limit: 10,
                         sort: 'createdAt:desc',
@@ -168,13 +169,13 @@ export default function UserProfile() {
         hasNextPage: hasMoreStories,
         isFetchingNextPage: isFetchingMoreStories,
     } = useInfiniteQuery({
-        queryKey: ['user-profile-stories', user?.id],
+        queryKey: ['user-profile-stories', user?.id, ElementStatusEnum.ACTIVE],
         queryFn: async ({ pageParam = 1 }) => {
             if (!user?.id) return { data: [], pagination: null };
             return await storyService.getStories({
                 params: {
                     query: {
-                        filter: { userId: user.id },
+                        filter: { userId: user.id, status: ElementStatusEnum.ACTIVE },
                         page: pageParam,
                         limit: 10,
                         sort: 'createdAt:desc',

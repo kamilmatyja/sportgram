@@ -4,11 +4,12 @@ namespace App\Service;
 
 use App\Dto\{PushSubscriptionDto, PushSubscriptionIndexDto, PushSubscriptionStatusDto};
 use App\Entity\{PushSubscription, User};
-use App\Enum\PushSubscriptionStatusEnum;
+use App\Enum\{PushSubscriptionStatusEnum, RoleEnum};
 use App\Repository\PushSubscriptionRepository;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 readonly class PushSubscriptionService
 {
@@ -73,8 +74,13 @@ readonly class PushSubscriptionService
     {
         /** @var User $user */
         $user = $this->security->getUser();
+        $targetUserId = $dto->filter->userId ?? $user->id;
 
-        return $this->pushSubscriptionRepository->findPushSubscriptions($user->id, $dto);
+        if (! $targetUserId->equals($user->id) && ! $this->security->isGranted(RoleEnum::ROLE_ADMINISTRATOR)) {
+            throw new ValidatorException('Filter not allowed for this user.');
+        }
+
+        return $this->pushSubscriptionRepository->findPushSubscriptions($targetUserId, $dto);
     }
 
     final public function details(Uuid $pushSubscriptionId): PushSubscription

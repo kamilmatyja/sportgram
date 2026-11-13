@@ -9,6 +9,7 @@ import { formatDateTime } from '../utils';
 import { useAuth } from '../auth';
 import { storyService, type StoryResource } from '../api/services';
 import type { UserResource } from '../api/services';
+import { ElementStatusEnum } from '../enums/ElementStatusEnum';
 import { EntryTypeEnum } from '../enums/EntryTypeEnum';
 import { EntityViewCounter } from './EntityViewCounter';
 import { openConfirmActionModal } from '../utils';
@@ -127,7 +128,7 @@ export function StoryViewerModal({
             const res = await storyService.getStories({
                 params: {
                     query: {
-                        filter: { userId },
+                        filter: { userId, status: ElementStatusEnum.ACTIVE },
                         page: pageToFetch,
                         limit: 10,
                         sort: 'createdAt:desc',

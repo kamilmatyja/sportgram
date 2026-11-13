@@ -7,6 +7,7 @@ namespace Tests\Unit\Dto;
 use App\Dto\NotificationFilterDto;
 use App\Enum\NotificationStatusEnum;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\Uid\Uuid;
 
 class NotificationFilterDtoTest extends DtoTestCase
 {
@@ -16,6 +17,7 @@ class NotificationFilterDtoTest extends DtoTestCase
 
         $this->assertNull($dto->text);
         $this->assertNull($dto->status);
+        $this->assertNull($dto->userId);
         $this->assertValid($dto);
     }
 
@@ -24,6 +26,7 @@ class NotificationFilterDtoTest extends DtoTestCase
         $dto = new NotificationFilterDto();
         $dto->text = 'new message';
         $dto->status = NotificationStatusEnum::Read;
+        $dto->userId = Uuid::v4();
 
         $this->assertValid($dto);
     }

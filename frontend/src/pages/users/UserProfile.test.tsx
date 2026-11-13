@@ -6,6 +6,7 @@ import { feedService, friendService, storyService, userService, type UserResourc
 import type * as AuthModule from '../../auth';
 import type * as ComponentsModule from '../../components';
 import type * as UtilsModule from '../../utils';
+import { ElementStatusEnum } from '../../enums/ElementStatusEnum';
 import { FriendStatusEnum } from '../../enums/FriendStatusEnum';
 import { RoleEnum } from '../../enums/RoleEnum';
 import UserProfile from './UserProfile';
@@ -182,6 +183,24 @@ describe('UserProfile', () => {
             '/users/ada-runner/notifications',
         );
         expect(await screen.findByText('Brak danych do wyświetlenia')).toBeVisible();
+        expect(feedService.getFeeds).toHaveBeenCalledWith(
+            expect.objectContaining({
+                params: expect.objectContaining({
+                    query: expect.objectContaining({
+                        filter: { userId: profile.id, status: ElementStatusEnum.ACTIVE },
+                    }),
+                }),
+            }),
+        );
+        expect(storyService.getStories).toHaveBeenCalledWith(
+            expect.objectContaining({
+                params: expect.objectContaining({
+                    query: expect.objectContaining({
+                        filter: { userId: profile.id, status: ElementStatusEnum.ACTIVE },
+                    }),
+                }),
+            }),
+        );
 
         await user.click(screen.getByRole('button', { name: 'Edytuj profil' }));
         expect(screen.getByRole('dialog', { name: 'Edycja profilu' })).toBeVisible();

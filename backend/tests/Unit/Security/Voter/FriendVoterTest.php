@@ -44,6 +44,15 @@ class FriendVoterTest extends VoterTestCase
         $this->assertGranted($this->voter, self::reloaded($receiver), self::idOf($friend), FriendVoter::FRIEND);
     }
 
+    final public function testGrantsAdministratorWhoIsInFriendship(): void
+    {
+        $admin = self::admin();
+        $friend = $this->friendBetween($admin, self::user(RoleEnum::Participant));
+        $this->givenFriend($friend);
+
+        $this->assertGranted($this->voter, self::reloaded($admin), self::idOf($friend), FriendVoter::FRIEND);
+    }
+
     final public function testDeniesUserOutsideFriendship(): void
     {
         $friend = $this->friendBetween(self::user(RoleEnum::Participant), self::user(RoleEnum::Participant));

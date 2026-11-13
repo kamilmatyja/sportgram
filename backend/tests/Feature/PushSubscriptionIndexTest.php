@@ -39,6 +39,31 @@ class PushSubscriptionIndexTest extends ApiTestCase
         $this->assertCount(2, $result['json']['data']);
     }
 
+    final public function testAdministratorCanViewTargetUsersSubscriptions(): void
+    {
+        $admin = self::createUser(RoleEnum::Administrator);
+        $owner = self::createUser(RoleEnum::Participant);
+        PushSubscriptionFactory::make(['user' => $admin, 'endpoint' => 'admin-endpoint'], $this->em);
+        PushSubscriptionFactory::make(['user' => $owner, 'endpoint' => 'owner-endpoint'], $this->em);
+
+        $result = $this->get('/api/push-subscriptions?filter[userId]=' . $owner->id, $admin);
+
+        $this->assertEquals(200, $result['status']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals('owner-endpoint', $result['json']['data'][0]['endpoint']);
+    }
+
+    final public function testNonAdministratorCannotViewAnotherUsersSubscriptions(): void
+    {
+        $user = self::createUser(RoleEnum::Participant);
+        $owner = self::createUser(RoleEnum::Participant);
+        PushSubscriptionFactory::make(['user' => $owner], $this->em);
+
+        $result = $this->get('/api/push-subscriptions?filter[userId]=' . $owner->id, $user);
+
+        $this->assertEquals(400, $result['status']);
+    }
+
     final public function testFiltersAndSorting(): void
     {
         $user = self::createUser(RoleEnum::Participant);

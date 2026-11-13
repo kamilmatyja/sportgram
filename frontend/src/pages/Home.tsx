@@ -15,6 +15,7 @@ import { StoryModal } from '../components';
 import { useUsersMap, useInfiniteScrollObserver } from '../hooks';
 import { confirmDelete, notifyError, notifySuccess } from '../utils';
 import { runWhenOnline } from '../hooks';
+import { ElementStatusEnum } from '../enums/ElementStatusEnum';
 
 export default function Home() {
     const { t } = useTranslation();
@@ -37,7 +38,7 @@ export default function Home() {
         hasNextPage: hasMoreFeeds,
         isFetchingNextPage: isFetchingMoreFeeds,
     } = useInfiniteQuery({
-        queryKey: ['feeds'],
+        queryKey: ['feeds', ElementStatusEnum.ACTIVE],
         queryFn: ({ pageParam = 1 }) =>
             feedService.getFeeds({
                 params: {
@@ -45,6 +46,7 @@ export default function Home() {
                         page: pageParam,
                         limit: 10,
                         sort: 'createdAt:desc',
+                        filter: { status: ElementStatusEnum.ACTIVE },
                         'include[]': ['feedComments', 'feedReactions', 'feedOrigin'],
                     },
                 },
@@ -74,7 +76,7 @@ export default function Home() {
         hasNextPage: hasMoreStories,
         isFetchingNextPage: isFetchingMoreStories,
     } = useInfiniteQuery({
-        queryKey: ['stories'],
+        queryKey: ['stories', ElementStatusEnum.ACTIVE],
         queryFn: ({ pageParam = 1 }) =>
             storyService.getStories({
                 params: {
@@ -82,6 +84,7 @@ export default function Home() {
                         page: pageParam,
                         limit: 10,
                         sort: 'createdAt:desc',
+                        filter: { status: ElementStatusEnum.ACTIVE },
                     },
                 },
             }),

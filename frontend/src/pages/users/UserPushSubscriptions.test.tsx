@@ -184,6 +184,28 @@ describe('UserPushSubscriptions', () => {
         );
     });
 
+    it('requests subscriptions belonging to the profile owner when an administrator views the profile', async () => {
+        mocks.isOwner = false;
+        mocks.isAdmin = true;
+        renderSubscriptions();
+
+        expect(await screen.findByText('Test Browser 1.0...')).toBeVisible();
+        expect(pushSubscriptionService.getPushSubscriptions).toHaveBeenCalledWith(
+            expect.objectContaining({
+                params: expect.objectContaining({
+                    query: expect.objectContaining({
+                        filter: {
+                            userId: 'user-1',
+                            endpoint: null,
+                            p256dh: null,
+                            auth: null,
+                        },
+                    }),
+                }),
+            }),
+        );
+    });
+
     it('filters by endpoint and keys, sorts and paginates results', async () => {
         const user = userEvent.setup();
         vi.mocked(pushSubscriptionService.getPushSubscriptions).mockResolvedValue({

@@ -11,7 +11,10 @@ use App\Repository\PushSubscriptionRepository;
 use App\Service\PushSubscriptionService;
 use PHPUnit\Framework\Attributes\{AllowMockObjectsWithoutExpectations, DataProvider};
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Tests\Factory\PushSubscriptionFactory;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -160,6 +163,35 @@ class PushSubscriptionServiceTest extends ServiceTestCase
             ->willReturn($window);
 
         $this->assertSame($window, $this->service->index($dto));
+    }
+
+    final public function testIndexCanTargetAnotherUserForAdministrator(): void
+    {
+        $ownerId = Uuid::v4();
+        $dto = new PushSubscriptionIndexDto();
+        $dto->filter->userId = $ownerId;
+        $window = self::window([]);
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn($this->currentUser);
+        $security->method('isGranted')->willReturn(true);
+        $service = new PushSubscriptionService($this->pushSubscriptionRepository, $security);
+        $this->pushSubscriptionRepository->expects($this->once())
+            ->method('findPushSubscriptions')
+            ->with($ownerId, $dto)
+            ->willReturn($window);
+
+        $this->assertSame($window, $service->index($dto));
+    }
+
+    final public function testIndexRejectsAnotherUserForNonAdministrator(): void
+    {
+        $dto = new PushSubscriptionIndexDto();
+        $dto->filter->userId = Uuid::v4();
+        $this->pushSubscriptionRepository->expects($this->never())->method('findPushSubscriptions');
+
+        $this->expectException(ValidationFailedException::class);
+
+        $this->service->index($dto);
     }
 
     final public function testDetails(): void

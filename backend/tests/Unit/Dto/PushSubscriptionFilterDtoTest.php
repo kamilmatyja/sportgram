@@ -6,6 +6,7 @@ namespace Tests\Unit\Dto;
 
 use App\Dto\PushSubscriptionFilterDto;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\Uid\Uuid;
 
 class PushSubscriptionFilterDtoTest extends DtoTestCase
 {
@@ -16,6 +17,15 @@ class PushSubscriptionFilterDtoTest extends DtoTestCase
         $this->assertNull($dto->endpoint);
         $this->assertNull($dto->p256dh);
         $this->assertNull($dto->auth);
+        $this->assertNull($dto->userId);
+        $this->assertValid($dto);
+    }
+
+    final public function testAcceptsUserId(): void
+    {
+        $dto = new PushSubscriptionFilterDto();
+        $dto->userId = Uuid::v4();
+
         $this->assertValid($dto);
     }
 

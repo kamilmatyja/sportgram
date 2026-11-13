@@ -152,8 +152,6 @@ export default function EventsList() {
         />
     );
 
-    const canAddEvent = isOrganizer || isAdmin;
-
     return (
         <>
             <DataTable
@@ -166,7 +164,7 @@ export default function EventsList() {
                 filtersNode={filtersNode}
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
-                onAdd={canAddEvent ? handleOpenCreate : undefined}
+                onAdd={isOrganizer ? handleOpenCreate : undefined}
                 addLabel={t('addEvent')}
                 actions={(ev) => {
                     const isEventOwner = !!(ev.pageParticipantId && myPageParticipantIds.has(ev.pageParticipantId));

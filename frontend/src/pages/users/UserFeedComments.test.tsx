@@ -182,7 +182,9 @@ describe('UserFeedComments', () => {
 
         expect(await screen.findByText('Świetny trening!')).toBeVisible();
         await user.click(screen.getByRole('button', { name: /Filtry/ }));
-        await user.type(screen.getByLabelText('Treść'), ' świetny ');
+        const textFilter = screen.getByLabelText('Treść');
+        await waitFor(() => expect(textFilter).toBeVisible());
+        await user.type(textFilter, ' świetny ');
 
         await waitFor(() => {
             expect(feedService.getFeedComments).toHaveBeenLastCalledWith(

@@ -2914,7 +2914,7 @@ class DatabaseSeedCommand extends Command
         [$c1, $c2, $c3, $c4, $c5] = $palette;
         $id = 'pg_' . substr(md5($seed), 0, 8);
 
-        $words = preg_split('/[\s\-_]+/u', trim($title)) ?: [];
+        $words = preg_split('/[^\p{L}\p{N}]+/u', trim($title)) ?: [];
         $initials = '';
         foreach ($words as $w) {
             if ($w !== '' && mb_strlen($initials) < 3) {
@@ -2924,6 +2924,7 @@ class DatabaseSeedCommand extends Command
         if ($initials === '') {
             $initials = 'SG';
         }
+        $initials = htmlspecialchars($initials, ENT_QUOTES | ENT_XML1, 'UTF-8');
 
         $svg = <<<SVG
             <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">

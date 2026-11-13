@@ -16,9 +16,9 @@ use App\Security\Voter\AssignAdminRoleVoter;
 use DateMalformedStringException;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Random\RandomException;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
@@ -30,7 +30,7 @@ readonly class UserService
         private UserDisciplineRepository $userDisciplineRepository,
         private UserRegisterRepository $userRegisterRepository,
         private UserPasswordHasherInterface $hasher,
-        private AuthorizationCheckerInterface $authorizationChecker,
+        private Security $security,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -122,7 +122,7 @@ readonly class UserService
     /** @throws DateMalformedStringException */
     final public function update(Uuid $userId, UserUpdateDto $dto): Uuid
     {
-        if (! $this->authorizationChecker->isGranted(AssignAdminRoleVoter::ASSIGN_ADMIN_ROLE, $dto)) {
+        if (! $this->security->isGranted(AssignAdminRoleVoter::ASSIGN_ADMIN_ROLE, $dto)) {
             throw new ValidatorException('Role not allowed for this user.');
         }
 

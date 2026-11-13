@@ -39,6 +39,7 @@ export default function UserNotifications() {
         <UserSubpageContainer ownerOrAdminOnly={true}>
             {({ targetUser, isOwner }) => {
                 const queryFilter = {
+                    userId: targetUser.id,
                     text: textFilter.trim() || null,
                     status: statusFilter ? Number(statusFilter) : null,
                 };

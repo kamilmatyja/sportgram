@@ -2003,6 +2003,8 @@ export interface components {
             status: 1 | 2 | 3;
         };
         NotificationFilterDto: {
+            /** Format: uuid */
+            userId?: string | null;
             /** @example new message */
             text?: string | null;
             /**
@@ -2174,6 +2176,8 @@ export interface components {
             status: 1 | 2;
         };
         PushSubscriptionFilterDto: {
+            /** Format: uuid */
+            userId?: string | null;
             /** @example endpoint-url */
             endpoint?: string | null;
             /** @example p256dh-key */

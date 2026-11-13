@@ -124,7 +124,7 @@ describe('UserNotifications', () => {
                     query: expect.objectContaining({
                         page: 1,
                         limit: 10,
-                        filter: { text: null, status: null },
+                        filter: { userId: 'user-1', text: null, status: null },
                         sort: 'createdAt:desc',
                     }),
                 }),
@@ -152,7 +152,11 @@ describe('UserNotifications', () => {
                     params: expect.objectContaining({
                         query: expect.objectContaining({
                             page: 1,
-                            filter: { text: 'wiadomość', status: NotificationStatusEnum.SENT },
+                            filter: {
+                                userId: 'user-1',
+                                text: 'wiadomość',
+                                status: NotificationStatusEnum.SENT,
+                            },
                         }),
                     }),
                 }),
@@ -209,6 +213,15 @@ describe('UserNotifications', () => {
         renderNotifications();
 
         expect(await screen.findByText('Otrzymałeś nową wiadomość')).toBeVisible();
+        expect(notificationService.getNotifications).toHaveBeenCalledWith(
+            expect.objectContaining({
+                params: expect.objectContaining({
+                    query: expect.objectContaining({
+                        filter: { userId: 'user-1', text: null, status: null },
+                    }),
+                }),
+            }),
+        );
         expect(screen.queryByRole('button', { name: 'Usuń' })).not.toBeInTheDocument();
         await user.click(screen.getAllByRole('button', { name: 'Oznacz jako przeczytane' })[0]);
         await waitFor(() => {

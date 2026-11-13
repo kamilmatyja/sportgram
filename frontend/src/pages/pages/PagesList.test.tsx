@@ -234,19 +234,18 @@ describe('PagesList', () => {
         expect(screen.queryByRole('button', { name: 'Zmień status strony' })).not.toBeInTheDocument();
     });
 
-    it('allows administrators to create pages and moderate page status but not edit or delete other pages', async () => {
-        const user = userEvent.setup();
+    it('does not allow administrators to create pages but lets them moderate page status', async () => {
         mocks.currentUser = { id: 'admin-1', link: 'admin' };
         mocks.isOrganizer = false;
         mocks.isAdmin = true;
         renderPages();
 
         expect(await screen.findByText('Klub Biegowy')).toBeVisible();
-        expect(screen.getByRole('button', { name: 'Dodaj stronę' })).toBeVisible();
+        expect(screen.queryByRole('button', { name: 'Dodaj stronę' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Edytuj' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Usuń' })).not.toBeInTheDocument();
 
-        await user.click(screen.getAllByRole('button', { name: 'Zmień status strony' })[0]);
+        await userEvent.click(screen.getAllByRole('button', { name: 'Zmień status strony' })[0]);
         await waitFor(() => {
             expect(pageService.updatePageStatus).toHaveBeenCalledWith({
                 params: { path: { id: 'page-1' } },

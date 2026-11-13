@@ -11,8 +11,10 @@ use App\Repository\NotificationRepository;
 use App\Service\NotificationService;
 use PHPUnit\Framework\Attributes\{AllowMockObjectsWithoutExpectations, DataProvider};
 use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Tests\Factory\NotificationFactory;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -103,6 +105,35 @@ class NotificationServiceTest extends ServiceTestCase
             ->willReturn($window);
 
         $this->assertSame($window, $this->service->index($dto));
+    }
+
+    final public function testIndexCanTargetAnotherUserForAdministrator(): void
+    {
+        $ownerId = Uuid::v4();
+        $dto = new NotificationIndexDto();
+        $dto->filter->userId = $ownerId;
+        $window = self::window([]);
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn($this->currentUser);
+        $security->method('isGranted')->willReturn(true);
+        $service = new NotificationService($this->notificationRepository, $security);
+        $this->notificationRepository->expects($this->once())
+            ->method('findNotifications')
+            ->with($ownerId, $dto)
+            ->willReturn($window);
+
+        $this->assertSame($window, $service->index($dto));
+    }
+
+    final public function testIndexRejectsAnotherUserForNonAdministrator(): void
+    {
+        $dto = new NotificationIndexDto();
+        $dto->filter->userId = Uuid::v4();
+        $this->notificationRepository->expects($this->never())->method('findNotifications');
+
+        $this->expectException(ValidationFailedException::class);
+
+        $this->service->index($dto);
     }
 
     final public function testDetails(): void

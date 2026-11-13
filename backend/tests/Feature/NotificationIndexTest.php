@@ -39,6 +39,31 @@ class NotificationIndexTest extends ApiTestCase
         $this->assertCount(2, $result['json']['data']);
     }
 
+    final public function testAdministratorCanViewTargetUsersNotifications(): void
+    {
+        $admin = self::createUser(RoleEnum::Administrator);
+        $owner = self::createUser(RoleEnum::Participant);
+        NotificationFactory::make(['user' => $admin, 'text' => 'Admin notification'], $this->em);
+        NotificationFactory::make(['user' => $owner, 'text' => 'Owner notification'], $this->em);
+
+        $result = $this->get('/api/notifications?filter[userId]=' . $owner->id, $admin);
+
+        $this->assertEquals(200, $result['status']);
+        $this->assertCount(1, $result['json']['data']);
+        $this->assertEquals('Owner notification', $result['json']['data'][0]['text']);
+    }
+
+    final public function testNonAdministratorCannotViewAnotherUsersNotifications(): void
+    {
+        $user = self::createUser(RoleEnum::Participant);
+        $owner = self::createUser(RoleEnum::Participant);
+        NotificationFactory::make(['user' => $owner], $this->em);
+
+        $result = $this->get('/api/notifications?filter[userId]=' . $owner->id, $user);
+
+        $this->assertEquals(400, $result['status']);
+    }
+
     final public function testFiltersAndSorting(): void
     {
         $user = self::createUser(RoleEnum::Participant);

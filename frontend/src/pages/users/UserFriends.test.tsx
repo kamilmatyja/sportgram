@@ -102,6 +102,15 @@ const candidate = {
     lastName: 'Runner',
 } as UserResource;
 
+const friendshipWithAdmin = {
+    id: 'friendship-with-admin',
+    senderUserId: profile.id,
+    receiverUserId: 'admin-user',
+    status: FriendStatusEnum.PENDING,
+    createdAt: '2026-11-08T09:00:00',
+    updatedAt: '2026-11-08T09:00:00',
+} as FriendResource;
+
 const friendships = [
     {
         id: 'friendship-1',
@@ -140,6 +149,7 @@ describe('UserFriends', () => {
             'other-user': { id: 'other-user', firstName: 'Piotr', lastName: 'Kolarz', link: 'piotr' } as UserResource,
             [candidate.id]: candidate,
             [profile.id]: profile,
+            'admin-user': { id: 'admin-user', firstName: 'Admin', lastName: 'User', link: 'admin' } as UserResource,
         };
         vi.spyOn(userService, 'getUsers').mockImplementation(async (request) => {
             const link = request.params?.query?.filter?.link;
@@ -268,6 +278,30 @@ describe('UserFriends', () => {
         await waitFor(() => {
             expect(friendService.deleteFriend).toHaveBeenCalledWith({
                 params: { path: { id: 'friendship-1' } },
+            });
+        });
+    });
+
+    it('lets an administrator change only the status of their relationship with the profile owner', async () => {
+        const user = userEvent.setup();
+        mocks.currentUser = { id: 'admin-user', link: 'admin' };
+        mocks.isAdmin = true;
+        vi.mocked(friendService.getFriends).mockResolvedValue({
+            data: [...friendships, friendshipWithAdmin],
+            pagination: { page: 1, total: 3, hasNextPage: false },
+        } as never);
+        renderFriends();
+
+        expect(await screen.findByText('Admin User')).toBeVisible();
+        expect(screen.getAllByRole('button', { name: 'Zmień status znajomości' })).toHaveLength(1);
+        expect(screen.queryByRole('button', { name: 'Dodaj znajomego' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Usuń' })).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole('button', { name: 'Zmień status znajomości' }));
+        await waitFor(() => {
+            expect(friendService.updateFriendStatus).toHaveBeenCalledWith({
+                params: { path: { id: friendshipWithAdmin.id } },
+                body: { status: FriendStatusEnum.ACCEPTED },
             });
         });
     });

@@ -4,10 +4,12 @@ namespace App\Service;
 
 use App\Dto\{NotificationIndexDto, NotificationStatusDto};
 use App\Entity\{Notification, User};
+use App\Enum\RoleEnum;
 use App\Repository\NotificationRepository;
 use Doctrine\ORM\Tools\Pagination\WindowPage;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 readonly class NotificationService
 {
@@ -40,8 +42,13 @@ readonly class NotificationService
     {
         /** @var User $user */
         $user = $this->security->getUser();
+        $targetUserId = $dto->filter->userId ?? $user->id;
 
-        return $this->notificationRepository->findNotifications($user->id, $dto);
+        if (! $targetUserId->equals($user->id) && ! $this->security->isGranted(RoleEnum::ROLE_ADMINISTRATOR)) {
+            throw new ValidatorException('Filter not allowed for this user.');
+        }
+
+        return $this->notificationRepository->findNotifications($targetUserId, $dto);
     }
 
     final public function details(Uuid $notificationId): Notification

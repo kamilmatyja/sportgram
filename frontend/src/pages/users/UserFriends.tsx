@@ -37,7 +37,7 @@ export default function UserFriends() {
 
     return (
         <UserSubpageContainer>
-            {({ targetUser, isOwner, canAccessSubpage }) => {
+            {({ targetUser, isOwner, isAdmin, canAccessSubpage }) => {
                 const queryFilter = {
                     userIds: targetUser?.id ? [targetUser.id] : [],
                     status: statusFilter ? Number(statusFilter) : null,
@@ -231,23 +231,30 @@ export default function UserFriends() {
                             actions={(f) => {
                                 const otherId = f.senderUserId === targetUser?.id ? f.receiverUserId : f.senderUserId;
                                 const otherUser = getUser(otherId);
+                                const isCurrentUserFriendship =
+                                    !!targetUser?.id &&
+                                    !!currentUser?.id &&
+                                    [f.senderUserId, f.receiverUserId].includes(targetUser.id) &&
+                                    [f.senderUserId, f.receiverUserId].includes(currentUser.id);
 
                                 return (
                                     <Group gap="xs" justify="flex-end" wrap="nowrap">
                                         {otherUser?.link && <ViewActionButton to={`/users/${otherUser.link}`} />}
+                                        {(isOwner || (isAdmin && isCurrentUserFriendship)) && (
+                                            <StatusActionMenu
+                                                value={f.status}
+                                                enumType={FriendStatusEnum}
+                                                onChange={(st) =>
+                                                    updateStatusMutation.mutate({
+                                                        id: f.id,
+                                                        status: Number(st),
+                                                    })
+                                                }
+                                                loading={updateStatusMutation.isPending}
+                                            />
+                                        )}
                                         {isOwner && (
                                             <>
-                                                <StatusActionMenu
-                                                    value={f.status}
-                                                    enumType={FriendStatusEnum}
-                                                    onChange={(st) =>
-                                                        updateStatusMutation.mutate({
-                                                            id: f.id,
-                                                            status: Number(st),
-                                                        })
-                                                    }
-                                                    loading={updateStatusMutation.isPending}
-                                                />
                                                 <DeleteActionButton
                                                     onClick={() => confirmDelete(t, () => deleteMutation.mutate(f.id))}
                                                     loading={deleteMutation.isPending}

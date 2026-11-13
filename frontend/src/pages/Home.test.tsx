@@ -5,6 +5,7 @@ import type * as AuthModule from '../auth';
 import type * as ComponentsModule from '../components';
 import type * as HooksModule from '../hooks';
 import type { FeedResource, StoryResource, UserResource } from '../api/services';
+import { ElementStatusEnum } from '../enums/ElementStatusEnum';
 import Home from './Home';
 import { render, screen, userEvent } from '../test/test-utils';
 
@@ -173,6 +174,20 @@ describe('Home', () => {
 
         expect(await screen.findByText('Mój pierwszy wpis')).toBeVisible();
         expect(await screen.findByRole('button', { name: 'Otwórz relację Alex' })).toBeVisible();
+        expect(feedService.getFeeds).toHaveBeenCalledWith(
+            expect.objectContaining({
+                params: expect.objectContaining({
+                    query: expect.objectContaining({ filter: { status: ElementStatusEnum.ACTIVE } }),
+                }),
+            }),
+        );
+        expect(storyService.getStories).toHaveBeenCalledWith(
+            expect.objectContaining({
+                params: expect.objectContaining({
+                    query: expect.objectContaining({ filter: { status: ElementStatusEnum.ACTIVE } }),
+                }),
+            }),
+        );
         await user.click(screen.getByRole('button', { name: 'Dodaj relację' }));
         expect(screen.getByRole('dialog', { name: 'Edytor relacji' })).toBeVisible();
         await user.click(screen.getByRole('button', { name: 'Zamknij relację' }));

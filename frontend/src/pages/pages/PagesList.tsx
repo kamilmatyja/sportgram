@@ -126,7 +126,7 @@ export default function PagesList() {
                 filtersNode={filtersNode}
                 activeFiltersCount={activeFiltersCount}
                 onResetFilters={handleResetFilters}
-                onAdd={isOrganizer || isAdmin ? handleOpenCreate : undefined}
+                onAdd={isOrganizer ? handleOpenCreate : undefined}
                 addLabel={t('addPage')}
                 actions={(p) => {
                     const isPageOwner = currentUser?.id === p.userId;
