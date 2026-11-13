@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { notifications } from '@mantine/notifications';
 import { Route, Routes } from 'react-router-dom';
 import { eventService, pageService, type EventResource, type PageResource } from '../../api/services';
 import type * as AuthModule from '../../auth';
@@ -99,7 +100,7 @@ const event = {
             ],
         },
     ],
-} as EventResource;
+} as unknown as EventResource;
 
 function renderEvent(link = event.link) {
     return render(
@@ -169,6 +170,22 @@ describe('EventDetails', () => {
             expect(eventService.createEventDisciplineDistanceList).toHaveBeenCalledWith({
                 params: { path: { id: 'distance-1' } },
             });
+        });
+    });
+
+    it('shows an API error when signing up for a distance fails', async () => {
+        const user = userEvent.setup();
+        notifications.clean();
+        vi.mocked(eventService.createEventDisciplineDistanceList).mockRejectedValueOnce(
+            new Error('Nie można zapisać uczestnika'),
+        );
+        renderEvent();
+
+        await user.click(await screen.findByRole('button', { name: 'Zapisz się' }));
+
+        expect(await screen.findByText('Nie można zapisać uczestnika')).toBeVisible();
+        expect(eventService.createEventDisciplineDistanceList).toHaveBeenCalledWith({
+            params: { path: { id: 'distance-1' } },
         });
     });
 

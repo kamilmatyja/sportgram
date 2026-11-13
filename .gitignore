@@ -8,6 +8,7 @@
 /backend/vendor/
 /backend/var/
 /backend/.env
+/infra/nginx/certs/
 
 # Frontend
 /frontend/node_modules/

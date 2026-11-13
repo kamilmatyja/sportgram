@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { DataTable } from './DataTable';
 import { EmptyState } from './EmptyState';
@@ -11,6 +12,35 @@ import { render, screen, userEvent, within } from '../test/test-utils';
 function LocationPath() {
     const location = useLocation();
     return <output aria-label="current location">{location.pathname}</output>;
+}
+
+function ValidatedInteractionForm() {
+    const [value, setValue] = useState('');
+    const [error, setError] = useState('');
+
+    return (
+        <InteractionModal opened onClose={vi.fn()} title="Edycja">
+            <form
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    setError(value.trim() ? 'Nie udało się zapisać formularza' : 'To pole jest wymagane');
+                }}
+            >
+                <label>
+                    Nazwa
+                    <input
+                        value={value}
+                        onChange={(event) => {
+                            setValue(event.currentTarget.value);
+                            setError('');
+                        }}
+                    />
+                </label>
+                {error && <p role="alert">{error}</p>}
+                <button type="submit">Zapisz</button>
+            </form>
+        </InteractionModal>
+    );
 }
 
 describe('shared components', () => {
@@ -65,6 +95,30 @@ describe('shared components', () => {
         expect(screen.getByText('Treść formularza')).toBeVisible();
         await user.click(within(screen.getByRole('dialog')).getByRole('button'));
         expect(onClose).toHaveBeenCalledOnce();
+    });
+
+    it('does not render a closed interaction modal', () => {
+        render(
+            <InteractionModal opened={false} onClose={vi.fn()} title="Edycja">
+                <p>Treść formularza</p>
+            </InteractionModal>,
+        );
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(screen.queryByText('Treść formularza')).not.toBeInTheDocument();
+    });
+
+    it('allows form submission and displays validation and server errors', async () => {
+        const user = userEvent.setup();
+        render(<ValidatedInteractionForm />);
+
+        await user.click(screen.getByRole('button', { name: 'Zapisz' }));
+        expect(await screen.findByRole('alert')).toHaveTextContent('To pole jest wymagane');
+
+        await user.type(screen.getByRole('textbox', { name: 'Nazwa' }), 'Test');
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Zapisz' }));
+        expect(await screen.findByRole('alert')).toHaveTextContent('Nie udało się zapisać formularza');
     });
 
     it('returns to the home page from the not-found view', async () => {

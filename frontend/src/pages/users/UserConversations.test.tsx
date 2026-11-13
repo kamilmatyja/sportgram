@@ -4,6 +4,7 @@ import { conversationService, type ConversationResource } from '../../api/servic
 import type * as AuthModule from '../../auth';
 import type * as ComponentsModule from '../../components';
 import type * as HooksModule from '../../hooks';
+import type * as UtilsModule from '../../utils';
 import { ConversationStatusEnum } from '../../enums/ConversationStatusEnum';
 import UserConversations from './UserConversations';
 import { render, screen, userEvent, waitFor, within } from '../../test/test-utils';

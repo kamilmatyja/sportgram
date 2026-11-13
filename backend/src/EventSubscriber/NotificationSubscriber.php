@@ -58,18 +58,26 @@ readonly class NotificationSubscriber implements EventSubscriberInterface
             'link' => $event->getLink(),
         ]);
 
-        try {
-            /** @var PushSubscription $subscription */
-            foreach ($window->getItems() as $subscription) {
-                $this->webPushService->sendNotification(
+        $allPushesSent = true;
+
+        /** @var PushSubscription $subscription */
+        foreach ($window->getItems() as $subscription) {
+            try {
+                $sent = $this->webPushService->sendNotification(
                     $subscription->endpoint,
                     $subscription->p256dh,
                     $subscription->auth,
                     $payload,
                 );
+                if (! $sent) {
+                    $allPushesSent = false;
+                }
+            } catch (Throwable) {
+                $allPushesSent = false;
             }
-        } catch (Throwable) {
-        } finally {
+        }
+
+        if ($allPushesSent) {
             $notification->status = NotificationStatusEnum::Sent;
             $this->notificationRepository->save($notification);
         }

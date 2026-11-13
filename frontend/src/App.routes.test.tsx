@@ -39,6 +39,38 @@ describe('application routes', () => {
         expect(screen.getByRole('heading', { name: 'Logowanie' })).toBeVisible();
     });
 
+    it('keeps a protected route in its loading state until the session is resolved', async () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => {});
+        authStorage.save('test-token', 'test-sign', true);
+        let resolveSession!: (value: { data: { id: string; link: string; roles: never[] }[] }) => void;
+        vi.spyOn(userService, 'getUsers')
+            .mockImplementationOnce(
+                () =>
+                    new Promise((resolve) => {
+                        resolveSession = resolve;
+                    }) as never,
+            )
+            .mockResolvedValue({ data: [] } as never);
+
+        render(
+            <>
+                <App />
+                <LocationPath />
+            </>,
+            { initialEntries: ['/users'] },
+        );
+
+        expect(document.querySelector('.mantine-Loader-root')).toBeInTheDocument();
+        expect(screen.getByLabelText('current location')).toHaveTextContent('/users');
+        expect(screen.queryByRole('heading', { name: 'Logowanie' })).not.toBeInTheDocument();
+
+        await vi.waitFor(() => expect(resolveSession).toBeDefined());
+        resolveSession({ data: [{ id: 'user-1', link: 'runner', roles: [] }] });
+
+        expect(await screen.findByText('Brak danych do wyświetlenia')).toBeVisible();
+        expect(screen.getByLabelText('current location')).toHaveTextContent('/users');
+    });
+
     it('redirects signed-in users away from guest-only routes', async () => {
         vi.spyOn(console, 'warn').mockImplementation(() => {});
         authStorage.save('test-token', 'test-sign', true);

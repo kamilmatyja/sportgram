@@ -35,6 +35,20 @@ services:
     depends_on:
       - php
 
+  nginx-tls:
+    image: nginx:1.30-alpine
+    profiles:
+      - tls
+    ports:
+      - "8081:80"
+      - "8443:443"
+    volumes:
+      - ./backend:/var/www/backend:ro
+      - ./infra/nginx/tls.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./infra/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - php
+
   mailer:
     image: axllent/mailpit
     container_name: sportgram-mailer
@@ -45,6 +59,16 @@ services:
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  k6:
+    image: grafana/k6:0.56.0
+    profiles:
+      - load
+    volumes:
+      - ./tests/load:/scripts:ro
+    environment:
+      BASE_URL: ${LOAD_TEST_BASE_URL:-http://nginx}
+      LOAD_TEST_TOKEN: ${LOAD_TEST_TOKEN:-}
 
 volumes:
   pg_data:

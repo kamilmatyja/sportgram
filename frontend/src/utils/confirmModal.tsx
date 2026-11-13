@@ -26,20 +26,26 @@ export function openConfirmActionModal({
     withCancelButton = false,
 }: ConfirmModalOptions) {
     const id = `confirm-modal-${Math.random().toString(36).slice(2, 9)}`;
+    let confirmed = false;
     const confirmationButton = (
         <ConfirmationButton
             confirmColor={confirmColor}
             confirmLabel={confirmLabel}
             id={id}
             isOfflineAllowed={isOfflineAllowed}
-            onConfirm={onConfirm}
+            onConfirm={() => {
+                confirmed = true;
+                onConfirm();
+            }}
         />
     );
 
     modals.open({
         modalId: id,
         title,
-        onClose: onCancel,
+        onClose: () => {
+            if (!confirmed) onCancel?.();
+        },
         children: (
             <>
                 {message && (
@@ -53,7 +59,6 @@ export function openConfirmActionModal({
                         <Button
                             variant="default"
                             onClick={() => {
-                                onCancel?.();
                                 modals.close(id);
                             }}
                         >

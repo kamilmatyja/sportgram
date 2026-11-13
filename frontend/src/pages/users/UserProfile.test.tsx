@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { notifications } from '@mantine/notifications';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { feedService, friendService, storyService, userService, type UserResource } from '../../api/services';
 import type * as AuthModule from '../../auth';
@@ -221,6 +222,19 @@ describe('UserProfile', () => {
         });
         expect(feedService.getFeeds).not.toHaveBeenCalled();
         expect(storyService.getStories).not.toHaveBeenCalled();
+    });
+
+    it('shows an API error when a friend request cannot be created', async () => {
+        const user = userEvent.setup();
+        notifications.clean();
+        mocks.currentUser = { id: 'viewer-1', link: 'viewer' };
+        vi.mocked(friendService.createFriend).mockRejectedValueOnce(new Error('Nie można wysłać zaproszenia'));
+        renderProfile();
+
+        await user.click(await screen.findByRole('button', { name: 'Dodaj znajomego' }));
+
+        expect(await screen.findByText('Nie można wysłać zaproszenia')).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Dodaj znajomego' })).toBeVisible();
     });
 
     it('allows administrators to moderate profile status without owner controls', async () => {

@@ -31,6 +31,7 @@ export interface GpsDistanceRecorderPanelProps {
 }
 
 type RecorderStatus = 'idle' | 'recording' | 'paused';
+const MAX_GPS_ACCURACY_METERS = 30;
 
 export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceRecorderPanelProps) {
     const { t } = useTranslation();
@@ -70,6 +71,8 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
     }, [status]);
 
     useEffect(() => {
+        if (status === 'paused') return;
+
         if (!navigator.geolocation) {
             notifications.show({
                 id: 'gps-status-error',
@@ -83,6 +86,10 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
 
         const handleSuccess = (position: GeolocationPosition) => {
             const { latitude, longitude, accuracy, speed } = position.coords;
+
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || !Number.isFinite(accuracy)) {
+                return;
+            }
 
             let calculatedSpeed: number | null = speed != null && speed >= 0 ? speed : null;
 
@@ -110,6 +117,10 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                 return;
             }
 
+            if (accuracy > MAX_GPS_ACCURACY_METERS) {
+                return;
+            }
+
             if (!lastPointRef.current) {
                 const initialPoint: TelemetryPoint = {
                     lat: latitude,
@@ -120,7 +131,7 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                     time: elapsedRef.current,
                 };
                 lastPointRef.current = initialPoint;
-                setPoints([initialPoint]);
+                setPoints((prev) => (prev.length === 0 ? [initialPoint] : [...prev, initialPoint]));
                 return;
             }
 
@@ -179,15 +190,16 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
                 watchIdRef.current = null;
             }
         };
-    }, [onCancel, t]);
+    }, [onCancel, status, t]);
 
     const handleStart = () => {
         setStartedAt(new Date());
+        statusRef.current = 'recording';
         setStatus('recording');
         setElapsedSeconds(0);
         setTotalDistance(0);
         lastPointRef.current = null;
-        if (currentPos) {
+        if (currentPos && currentPos.accuracy <= MAX_GPS_ACCURACY_METERS) {
             const initialPoint: TelemetryPoint = {
                 lat: currentPos.lat,
                 lng: currentPos.lng,
@@ -204,10 +216,14 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
     };
 
     const handlePause = () => {
+        statusRef.current = 'paused';
+        lastPointRef.current = null;
         setStatus('paused');
     };
 
     const handleResume = () => {
+        statusRef.current = 'recording';
+        lastPointRef.current = null;
         setStatus('recording');
     };
 
@@ -223,7 +239,7 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
             const timeDiff = Math.abs(pt.time - lastAccepted.time);
             const distDiff = Math.abs(pt.subDistance - lastAccepted.subDistance);
 
-            if (timeDiff >= 10 && distDiff >= 10) {
+            if (timeDiff >= 5 || distDiff >= 10) {
                 result.push(pt);
                 lastAccepted = pt;
             } else if (isLast) {
@@ -246,7 +262,7 @@ export function GpsDistanceRecorderPanel({ onFinish, onCancel }: GpsDistanceReco
         const sessionStart = startedAt || new Date(finishTime.getTime() - elapsedSeconds * 1000);
 
         let finalPoints = [...points];
-        if (currentPos) {
+        if (statusRef.current === 'recording' && currentPos && currentPos.accuracy <= MAX_GPS_ACCURACY_METERS) {
             const lastPt = finalPoints[finalPoints.length - 1];
             if (!lastPt) {
                 finalPoints = [

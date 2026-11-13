@@ -52,6 +52,9 @@ jobs:
       - name: 🧪 Run PHPUnit
         run: docker compose exec -T php vendor/bin/phpunit
 
+      - name: 🔎 Check frontend TypeScript types
+        run: cd frontend && npm exec -- tsc --noEmit
+
       - name: 🧹 Run PHP CS Fixer
         run: docker compose exec -T php vendor/bin/php-cs-fixer fix --dry-run --diff
 

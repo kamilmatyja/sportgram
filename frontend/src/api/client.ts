@@ -101,7 +101,7 @@ export function extractFieldErrors(err: unknown): Record<string, string> {
         }
     };
 
-    const errors = record.errors ?? record.violations ?? record.details;
+    const errors = record.errors ?? record.details;
 
     if (Array.isArray(errors)) {
         for (const item of errors) {
@@ -130,7 +130,8 @@ export function extractFieldErrors(err: unknown): Record<string, string> {
 
     if (Array.isArray(record.violations)) {
         for (const v of record.violations) {
-            append(v.propertyPath, v.message);
+            if (!v || typeof v !== 'object') continue;
+            append(v.propertyPath ?? v.field ?? v.property ?? v.path, v.message ?? v.error ?? v.detail);
         }
     }
 

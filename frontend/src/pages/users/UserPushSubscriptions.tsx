@@ -155,10 +155,12 @@ export default function UserPushSubscriptions() {
                         }
                         await navigator.serviceWorker.register('/sw.js');
                         const reg = await navigator.serviceWorker.ready;
-                        const subscription = await reg.pushManager.subscribe({
-                            userVisibleOnly: true,
-                            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-                        });
+                        const subscription =
+                            (await reg.pushManager.getSubscription()) ??
+                            (await reg.pushManager.subscribe({
+                                userVisibleOnly: true,
+                                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+                            }));
 
                         const keys = subscription.toJSON().keys ?? {};
 
@@ -226,10 +228,12 @@ export default function UserPushSubscriptions() {
                         }
                         await navigator.serviceWorker.register('/sw.js');
                         const reg = await navigator.serviceWorker.ready;
-                        const subscription = await reg.pushManager.subscribe({
-                            userVisibleOnly: true,
-                            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-                        });
+                        const subscription =
+                            (await reg.pushManager.getSubscription()) ??
+                            (await reg.pushManager.subscribe({
+                                userVisibleOnly: true,
+                                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+                            }));
 
                         const keys = subscription.toJSON().keys ?? {};
 

@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Route, Routes } from 'react-router-dom';
+import { notifications } from '@mantine/notifications';
+import { act } from '@testing-library/react';
 import { pushSubscriptionService, type PushSubscriptionResource } from '../../api/services';
 import type * as ComponentsModule from '../../components';
 import type * as UtilsModule from '../../utils';
@@ -96,6 +98,7 @@ function setupPushBrowser(options?: {
     permission?: NotificationPermission;
     requestPermission?: () => Promise<NotificationPermission>;
     subscribe?: ReturnType<typeof vi.fn>;
+    getSubscription?: ReturnType<typeof vi.fn>;
 }) {
     const subscriptionResult = {
         endpoint: 'https://push.example/new-device',
@@ -103,6 +106,7 @@ function setupPushBrowser(options?: {
     };
     const pushManager = {
         subscribe: options?.subscribe ?? vi.fn().mockResolvedValue(subscriptionResult as unknown as PushSubscription),
+        getSubscription: options?.getSubscription ?? vi.fn().mockResolvedValue(null),
     };
     const registration = { pushManager };
     const serviceWorker = {
@@ -121,6 +125,7 @@ function setupPushBrowser(options?: {
 }
 
 afterEach(() => {
+    act(() => notifications.clean());
     restoreProperty(navigator, 'serviceWorker', serviceWorkerDescriptor);
     restoreProperty(window, 'Notification', notificationDescriptor);
     restoreProperty(window, 'PushManager', pushManagerDescriptor);
@@ -189,9 +194,13 @@ describe('UserPushSubscriptions', () => {
 
         expect(await screen.findByText('Test Browser 1.0...')).toBeVisible();
         await user.click(screen.getByRole('button', { name: /Filtry/ }));
-        await user.type(screen.getByLabelText('Adres endpoint'), ' https://push.example ');
-        await user.type(screen.getByLabelText('Klucz p256dh'), ' public-key ');
-        await user.type(screen.getByLabelText('Klucz auth'), ' auth-key ');
+        const endpoint = screen.getByLabelText('Adres endpoint');
+        const p256dh = screen.getByLabelText('Klucz p256dh');
+        const auth = screen.getByLabelText('Klucz auth');
+        await waitFor(() => expect(endpoint).toBeVisible());
+        await user.type(endpoint, 'https://push.example');
+        await user.type(p256dh, 'public-key');
+        await user.type(auth, 'auth-key');
         await waitFor(() => {
             expect(pushSubscriptionService.getPushSubscriptions).toHaveBeenLastCalledWith(
                 expect.objectContaining({
@@ -288,6 +297,61 @@ describe('UserPushSubscriptions', () => {
         });
     }, 20000);
 
+    it('shows API validation errors when manual creation fails and keeps the form open', async () => {
+        const user = userEvent.setup();
+        vi.mocked(pushSubscriptionService.createPushSubscription).mockRejectedValueOnce({
+            errors: [{ field: 'endpoint', message: 'Endpoint został już zarejestrowany' }],
+        });
+        renderSubscriptions();
+
+        await user.click(await screen.findByRole('button', { name: 'Dodaj subskrypcję' }));
+        const dialog = screen.getByRole('dialog', { name: 'Dodaj subskrypcję' });
+        await user.click(within(dialog).getByRole('button', { name: 'Dodaj ręcznie' }));
+        await user.type(within(dialog).getByRole('textbox', { name: 'Adres endpoint' }), 'https://push.example/new');
+        await user.type(within(dialog).getByRole('textbox', { name: 'Klucz p256dh' }), 'public-key');
+        await user.type(within(dialog).getByRole('textbox', { name: 'Klucz auth' }), 'auth-key');
+        await user.type(within(dialog).getByRole('textbox', { name: 'Urządzenie' }), 'Test Browser');
+        await user.click(within(dialog).getByRole('button', { name: 'Zapisz' }));
+
+        expect(await within(dialog).findByText('Endpoint został już zarejestrowany')).toBeVisible();
+        expect(mocks.confirmDelete).not.toHaveBeenCalled();
+        expect(screen.getByRole('dialog', { name: 'Dodaj subskrypcję' })).toBeVisible();
+    });
+
+    it('shows API validation errors when updating an existing subscription', async () => {
+        const user = userEvent.setup();
+        vi.mocked(pushSubscriptionService.updatePushSubscription).mockRejectedValueOnce({
+            errors: [{ field: 'p256dh', message: 'Nieprawidłowy klucz' }],
+        });
+        renderSubscriptions();
+
+        await user.click(await screen.findByRole('button', { name: 'Edytuj' }));
+        const dialog = screen.getByRole('dialog', { name: 'Edytuj subskrypcję' });
+        await user.click(within(dialog).getByRole('button', { name: 'Edytuj ręcznie' }));
+        await user.click(within(dialog).getByRole('button', { name: 'Zapisz' }));
+
+        expect(await within(dialog).findByText('Nieprawidłowy klucz')).toBeVisible();
+        expect(screen.getByRole('dialog', { name: 'Edytuj subskrypcję' })).toBeVisible();
+    });
+
+    it('reports an API error when deleting a subscription', async () => {
+        const user = userEvent.setup();
+        const showNotification = vi.spyOn(notifications, 'show').mockImplementation(() => '');
+        vi.mocked(pushSubscriptionService.deletePushSubscription).mockRejectedValueOnce(
+            new Error('Nie udało się usunąć subskrypcji'),
+        );
+        renderSubscriptions();
+
+        expect(await screen.findByText('Test Browser 1.0...')).toBeVisible();
+        await user.click(screen.getByRole('button', { name: 'Usuń' }));
+
+        await waitFor(() => {
+            expect(showNotification).toHaveBeenCalledWith(
+                expect.objectContaining({ message: 'Nie udało się usunąć subskrypcji', color: 'red' }),
+            );
+        });
+    });
+
     it('lets the owner change status and delete a subscription', async () => {
         const user = userEvent.setup();
         renderSubscriptions();
@@ -364,6 +428,36 @@ describe('UserPushSubscriptions', () => {
                 },
             });
         });
+    });
+
+    it('saves an existing browser push subscription without creating a duplicate', async () => {
+        const user = userEvent.setup();
+        const existingSubscription = {
+            endpoint: 'https://push.example/existing-device',
+            toJSON: () => ({ keys: { p256dh: 'existing-p256dh', auth: 'existing-auth' } }),
+        };
+        const getSubscription = vi.fn().mockResolvedValue(existingSubscription as unknown as PushSubscription);
+        const subscribe = vi.fn();
+        const browser = setupPushBrowser({ permission: 'granted', getSubscription, subscribe });
+        vi.stubEnv('VITE_VAPID_PUBLIC_KEY', 'AQIDBA');
+        renderSubscriptions();
+
+        await user.click(await screen.findByRole('button', { name: 'Dodaj subskrypcję' }));
+        await user.click(screen.getByRole('button', { name: 'Dodaj automatycznie' }));
+
+        await waitFor(() => {
+            expect(getSubscription).toHaveBeenCalledOnce();
+            expect(subscribe).not.toHaveBeenCalled();
+            expect(pushSubscriptionService.createPushSubscription).toHaveBeenCalledWith({
+                body: {
+                    endpoint: 'https://push.example/existing-device',
+                    p256dh: 'existing-p256dh',
+                    auth: 'existing-auth',
+                    userAgent: navigator.userAgent,
+                },
+            });
+        });
+        expect(browser.serviceWorker.register).toHaveBeenCalledWith('/sw.js');
     });
 
     it('allows administrators to manage status but hides owner-only create and delete actions', async () => {

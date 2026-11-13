@@ -62,6 +62,16 @@ W procesie logowania (`SignController`), rejestracji (`RegisterController`) oraz
 1. W kroku pierwszym użytkownik przesyła identyfikator i hasło; po pomyślnej weryfikacji serwer generuje 6-cyfrowy, kryptograficznie bezpieczny kod numeryczny, zapisuje go w tabeli `user_signs` wraz z licznikiem prób i znacznikiem czasu ważności (10 minut), po czym wysyła go wiadomością e-mail za pośrednictwem serwisu Mailer.
 2. W kroku drugim użytkownik przesyła otrzymany kod PIN. Po poprawnej weryfikacji serwer generuje token JWT podpisany kluczem prywatnym, uprawniający do autoryzacji żądań API.
 
+### 4. Konfiguracja HTTPS
+
+Konfiguracja Nginx dla środowiska lokalnego nasłuchuje na HTTP, natomiast
+repozytorium udostępnia opcjonalny profil `tls` z serwerem HTTPS na porcie
+8443 i przekierowaniem z portu 8081. Uruchomienie tego profilu wymaga
+dostarczenia z zewnątrz łańcucha certyfikatu oraz klucza prywatnego; pliki
+klucza są wykluczone z repozytorium. Wdrożenie produkcyjne musi użyć
+certyfikatu właściwego dla swojej domeny lub terminować TLS w zaufanym
+zewnętrznym reverse proxy.
+
 ---
 
 ## 5.2. Implementacja frontendu (React, SPA)
@@ -228,14 +238,23 @@ self.addEventListener('push', (event) => {
 });
 ```
 
-### 2. Integracja z Geolocation API (moduł GPS)
-Do rejestracji aktywności sportowej wykorzystano interfejs `navigator.geolocation.watchPosition()`. Aby osiągnąć precyzję wymaganą w dyscyplinach biegowych i kolarskich, włączono tryb wysokiej dokładności (`enableHighAccuracy: true`), który wymusza na układzie scalonym smartfona uruchomienie modułu odbiornika GPS zamiast pasywnej triangulacji stacji bazowych GSM lub punktów dostępowych Wi-Fi.
+Powiadomienie jest najpierw zapisywane w centrum powiadomień aplikacji.
+Wysyłka do każdego aktywnego endpointu jest obsługiwana niezależnie; wynik
+negatywny lub wyjątek jest logowany, nie przerywa prób dla pozostałych
+subskrypcji i pozostawia status `NotSent`. Status `Sent` jest zapisywany po
+powodzeniu wszystkich prób (albo gdy użytkownik nie ma aktywnych subskrypcji,
+więc wysyłka push nie jest wymagana).
 
-Pozyskiwane próbki zawierają współrzędne geograficzne, wysokość n.p.m. oraz aktualną prędkość. Punkty te są agregowane w buforze pamięci lokalnej, a następnie obliczany jest dystans pomiędzy kolejnymi próbkami z wykorzystaniem wzoru **Haversine'a**:
+### 2. Integracja z Geolocation API (moduł GPS)
+Do rejestracji aktywności sportowej wykorzystano interfejs `navigator.geolocation.watchPosition()`. Włączono opcję wysokiej dokładności (`enableHighAccuracy: true`), która jest wskazówką dla przeglądarki, a nie gwarancją użycia wyłącznie odbiornika GPS ani określonej częstotliwości próbkowania.
+
+Pozyskiwane próbki zawierają szerokość i długość geograficzną, deklarowaną przez przeglądarkę dokładność oraz — jeśli jest dostępna — prędkość. Aplikacja nie zapisuje wysokości n.p.m. Pozycje o dokładności gorszej niż 30 m nie są używane do wyznaczania trasy ani dystansu; dodatkowo pomijane są przemieszczenia mniejsze niż 2 m. Zapis punktów trasy jest ograniczany przez próg 5 s lub 10 m; końcowy punkt jest uwzględniany, jeśli różni się od poprzedniego o co najmniej 2 s lub 2 m. Są to heurystyki ograniczające wpływ szumu i wielkość danych, a nie gwarancja określonej dokładności.
+
+Podczas pauzy zegar i naliczanie dystansu są zatrzymane, a obserwacja lokalizacji zostaje wstrzymana. Po wznowieniu pierwsza poprawna pozycja rozpoczyna nowy odcinek odniesienia, dlatego przemieszczenie w czasie pauzy nie jest doliczane. Dystans pomiędzy kolejnymi zaakceptowanymi próbkami obliczany jest z wykorzystaniem wzoru **Haversine'a**:
 
 $$d = 2r \arcsin \left( \sqrt{\sin^2\left(\frac{\Delta \varphi}{2}\right) + \cos(\varphi_1)\cos(\varphi_2)\sin^2\left(\frac{\Delta \lambda}{2}\right)} \right)$$
 
-gdzie $r$ to średni promień Ziemi ($6371\text{ km}$), $\varphi_1, \varphi_2$ to szerokości geograficzne, a $\Delta \lambda$ to różnica długości geograficznych.
+gdzie $r$ to średni promień Ziemi ($6371\text{ km}$), $\varphi_1, \varphi_2$ to szerokości geograficzne, a $\Delta \lambda$ to różnica długości geograficznych. Jest to przybliżenie sferyczne; błąd całego śladu zależy również od jakości i gęstości próbek oraz zastosowanych filtrów.
 
 ### 3. Integracja z aparatem (MediaDevices API) oraz zidentyfikowane wyzwania implementacyjne
 Integrację z aparatem fotograficznym zaimplementowano z wykorzystaniem strumienia `navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })`. Pozwala to na wykonywanie zdjęć sprzętem urządzenia i natychmiastowe ich dołączanie do relacji (Stories) lub postów na feedzie.

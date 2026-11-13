@@ -48,7 +48,7 @@ vi.mock('../../components', async (importOriginal: () => Promise<typeof Componen
         ...components,
         EntityViewCounter: () => <span>Wyświetlenia: 3</span>,
         TrainingRouteMap: ({ points }: { points: { lat: number; lng: number }[] }) => (
-            <div aria-label="Mapa trasy">{`Punkty trasy: ${points.length}`}</div>
+            <div aria-label="Mapa trasy">{JSON.stringify(points)}</div>
         ),
         StatusActionMenu: ({ onStatusChange }: { onStatusChange: (status: number) => void }) => (
             <button onClick={() => onStatusChange(ElementStatusEnum.ACTIVE)}>Zmień status</button>
@@ -144,7 +144,12 @@ describe('TrainingDetails', () => {
         expect(screen.queryByLabelText('Mapa trasy')).not.toBeInTheDocument();
 
         await user.click(screen.getByRole('button', { name: 'Szczegóły' }));
-        expect(screen.getByLabelText('Mapa trasy')).toHaveTextContent('Punkty trasy: 2');
+        expect(screen.getByLabelText('Mapa trasy')).toHaveTextContent(
+            JSON.stringify([
+                { lat: 52, lng: 21 },
+                { lat: 52.01, lng: 21.01 },
+            ]),
+        );
         expect(screen.getByText('2,5km')).toBeVisible();
     });
 

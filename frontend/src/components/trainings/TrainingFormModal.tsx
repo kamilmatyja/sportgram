@@ -27,6 +27,14 @@ const INITIAL_FORM_DATA = {
     endedAt: '',
 };
 
+const mapGpsCoordinate = (value: string, min: number, max: number): number | null => {
+    const coordinate = Number(value);
+    if (!value.trim() || !Number.isFinite(coordinate) || coordinate < min || coordinate > max) {
+        return null;
+    }
+    return coordToBackendInt(coordinate);
+};
+
 export function TrainingFormModal({
     opened,
     onClose,
@@ -115,8 +123,8 @@ export function TrainingFormModal({
                         subDistances: (dist.subDistances || []).map((sd) => ({
                             subDistance: Number(sd.subDistance) || 0,
                             time: Number(sd.time) || 0,
-                            lat: sd.lat ? coordToBackendInt(Number(sd.lat)) : null,
-                            lng: sd.lng ? coordToBackendInt(Number(sd.lng)) : null,
+                            lat: mapGpsCoordinate(sd.lat, -90, 90),
+                            lng: mapGpsCoordinate(sd.lng, -180, 180),
                             accuracy:
                                 sd.accuracy !== '' && sd.accuracy != null && !Number.isNaN(Number(sd.accuracy))
                                     ? Math.round(Number(sd.accuracy))

@@ -29,6 +29,8 @@ Pomiary profilera Chrome DevTools oraz Xcode Instruments wykazały:
 
 W celu ewaluacji modułu geolokalizacji przeprowadzono testy terenowe na wyznaczonej trasie biegowej o długości referencyjnej 5 000 metrów (atestowana pętla parkowa), porównując odczyty rejestrowane przez Sportgram PWA (Google Pixel 7 / Chrome) z profesjonalnym zegarkiem sportowym wyposażonym w wielopasmowy odbiornik GNSS (Garmin Forerunner 955) oraz natywną aplikacją Strava uruchomioną na identycznym modelu telefonu.
 
+Wartości poniżej opisują pojedynczy przebieg i nie stanowią miary ogólnej dokładności aplikacji. Repozytorium nie zawiera surowych śladów GPS ani pełnego protokołu pomiarowego, dlatego wyników nie można niezależnie odtworzyć. Liczbę próbek trzeba ponadto odróżniać od punktów zaakceptowanych przez filtr i punktów zapisanych w treningu. Wnioski o porównywalności wymagają powtórzeń na tej samej trasie, jawnego opisania warunków oraz zachowania surowych danych.
+
 | Parametr pomiarowy | Wzorzec (Garmin Multi-GNSS) | Aplikacja natywna (Strava Android) | Sportgram PWA (Geolocation API) | Błąd względny PWA |
 | :--- | :--- | :--- | :--- | :--- |
 | **Zarejestrowany dystans** | 5 000 m | 5 024 m | 5 048 m | **+0.96%** |
@@ -38,9 +40,7 @@ W celu ewaluacji modułu geolokalizacji przeprowadzono testy terenowe na wyznacz
 | **Średni błąd pozycji (odchylenie)** | Referencyjny (< 1.5 m) | ~2.8 m | ~3.9 m | - |
 
 ### Interpretacja wyników pomiarów przestrzennych
-Uzyskany błąd względny pomiaru dystansu na poziomie **poniżej 1%** mieści się w dopuszczalnych granicach błędu dla cywilnych systemów rekreacyjnej telemetrii sportowej. Zaobserwowano jednak specyficzne zjawiska wynikające z warstwy pośredniej przeglądarki internetowej:
-1. **Zmniejszona częstotliwość próbkowania w PWA**: O ile dedykowany odbiornik GNSS próbkuje pozycję ze stałą częstotliwością 1 Hz (co sekundę), o tyle interfejs `navigator.geolocation.watchPosition()` przekazuje próbki asynchronicznie, w zależności od decyzji silnika systemu Android/Chromium. W efekcie Sportgram zarejestrował o ok. 19% mniej próbek trajektorii, co w ostrych zakrętach trasy skutkowało zjawiskiem delikatnego „ścinania narożników” (ang. *corner cutting*).
-2. **Kalkulacja odległości**: Zastosowanie numerycznego wzoru Haversine'a na kolejnych parach współrzędnych dało wyniki w pełni zbieżne z algorytmami geodezyjnymi (różnica poniżej 0.05% w stosunku do elipsoidy WGS-84 / wzoru Vincenty'ego na odcinkach rzędu kilku kilometrów).
+W pojedynczym opisanym przebiegu różnica dystansu PWA względem dystansu referencyjnego wyniosła **+0,96%**. Bez surowych danych, powtórzeń oraz opisu warunków nie można uznać tej wartości za typowy błąd aplikacji ani potwierdzić jej statystycznej powtarzalności. Interfejs `watchPosition()` dostarcza pozycje asynchronicznie, a nie z gwarantowaną częstotliwością; filtr dokładności do 30 m, próg przemieszczenia 2 m i redukcja liczby punktów wpływają na wynikowy ślad. Wzór Haversine'a jest przybliżeniem sferycznym i sam w sobie nie usuwa błędów odbiornika ani skutków rzadkiego próbkowania.
 
 ---
 

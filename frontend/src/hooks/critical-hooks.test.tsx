@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { useDataTableState } from './useDataTableState';
 import { useFormErrors } from './useFormErrors';
+import { notifications } from '@mantine/notifications';
 import { render, screen, userEvent } from '../test/test-utils';
 
 function TableStateProbe() {
@@ -52,5 +53,40 @@ describe('critical hooks', () => {
         expect(screen.getByText('Nieprawidłowy adres')).toBeVisible();
         await user.click(screen.getByRole('button', { name: 'clear' }));
         expect(screen.getByText('none')).toBeVisible();
+    });
+
+    it('sets only valid field errors without a redundant notification', async () => {
+        const user = userEvent.setup();
+        const showError = vi.fn((handle: ReturnType<typeof useFormErrors>['handleFormError']) => {
+            handle(
+                {
+                    errors: [{ property: 'email', message: 'Invalid address' }, { message: 'Missing field key' }, null],
+                },
+                { notifyOnlyIfNoFields: true },
+            );
+        });
+        const notification = vi.spyOn(notifications, 'show').mockImplementation(() => '');
+        render(<FormErrorsProbe showError={showError} />);
+
+        await user.click(screen.getByRole('button', { name: 'set error' }));
+
+        expect(screen.getByText('Invalid address')).toBeVisible();
+        expect(notification).not.toHaveBeenCalled();
+    });
+
+    it('notifies for a server error without field details when configured', async () => {
+        const user = userEvent.setup();
+        const showError = vi.fn((handle: ReturnType<typeof useFormErrors>['handleFormError']) => {
+            handle({ message: 'Unexpected server error' }, { notifyOnlyIfNoFields: true });
+        });
+        const notification = vi.spyOn(notifications, 'show').mockImplementation(() => '');
+        render(<FormErrorsProbe showError={showError} />);
+
+        await user.click(screen.getByRole('button', { name: 'set error' }));
+
+        expect(screen.getByText('none')).toBeVisible();
+        expect(notification).toHaveBeenCalledWith(
+            expect.objectContaining({ message: 'Unexpected server error', color: 'red' }),
+        );
     });
 });

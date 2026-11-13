@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { notifications } from '@mantine/notifications';
 import { Route, Routes } from 'react-router-dom';
 import { goalService, userService, type GoalResource } from '../../api/services';
 import type * as AuthModule from '../../auth';
@@ -254,6 +255,22 @@ describe('GoalDetails', () => {
                 params: { path: { id: 'goal-1' } },
                 body: { status: GoalStatusEnum.ACTIVE },
             });
+        });
+    });
+
+    it('shows an API error when updating the goal status fails', async () => {
+        const user = userEvent.setup();
+        notifications.clean();
+        vi.mocked(goalService.updateGoalStatus).mockRejectedValueOnce(new Error('Nie można zmienić statusu celu'));
+        renderGoal();
+
+        await screen.findByRole('heading', { name: 'Przebiec półmaraton' });
+        await user.click(screen.getByRole('button', { name: 'Zmień status celu' }));
+
+        expect(await screen.findByText('Nie można zmienić statusu celu')).toBeVisible();
+        expect(goalService.updateGoalStatus).toHaveBeenCalledWith({
+            params: { path: { id: 'goal-1' } },
+            body: { status: GoalStatusEnum.ACTIVE },
         });
     });
 

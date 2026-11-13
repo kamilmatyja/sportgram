@@ -207,6 +207,23 @@ describe('Home', () => {
         expect(screen.getByRole('button', { name: 'Dodaj wpis' })).toBeVisible();
     });
 
+    it('keeps the story bar usable when fetching stories fails', async () => {
+        mocks.isAuthenticated = true;
+        mocks.currentUser = { id: 'user-1', link: 'runner' };
+        vi.mocked(storyService.getStories).mockRejectedValueOnce(new Error('Stories request failed'));
+        vi.mocked(feedService.getFeeds).mockResolvedValue({
+            data: [],
+            pagination: { page: 1, hasNextPage: false },
+        } as never);
+
+        render(<Home />);
+
+        expect(await screen.findByRole('region', { name: 'Relacje' })).toBeVisible();
+        expect(await screen.findByText('Brak danych do wyświetlenia')).toBeVisible();
+        expect(screen.getByRole('button', { name: 'Dodaj relację' })).toBeVisible();
+        expect(screen.queryByRole('button', { name: /Otwórz relację/ })).not.toBeInTheDocument();
+    });
+
     it('shows loading placeholders until the feed and stories requests resolve', async () => {
         mocks.isAuthenticated = true;
         mocks.currentUser = { id: 'user-1', link: 'runner' };
